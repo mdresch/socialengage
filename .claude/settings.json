@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/enforce-contract-first.cjs",
+            "timeout": 10,
+            "statusMessage": "Checking contract-first policy..."
+          }
+        ]
+      }
+    ]
+  }
+}

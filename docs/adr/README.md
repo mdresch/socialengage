@@ -1,0 +1,77 @@
+# Architecture Decision Records — Social Listening / Insights Subsystem
+
+ADRs derived from [`2026-07-28-social-listening-ingestion-design.md`](../project%20docs/2026-07-28-social-listening-ingestion-design.md) (Status: Approved for implementation). Each record captures one architecturally significant decision from that spec, with the context and alternatives that motivated it.
+
+Each ADR feeds a [user story](../user-stories/README.md); each story is built per [`docs/implementation-methodology.md`](../implementation-methodology.md) (contract-first, component `SKILL.md`s, permanent regression suite) — so an ADR's decision stays enforced in code, not just recorded in prose.
+
+## Conventions for changing an existing ADR
+
+Four situations, four different responses — don't default to editing the original Decision/Consequences text in place:
+
+| Situation | Response |
+|---|---|
+| The underlying decision itself changes | New ADR, or a superseding ADR that says so explicitly |
+| The decision stands, but *why* it was made needs more explanation | Add a "Note on provenance" or similar, without altering the original text (e.g. ADR-0002, ADR-0016) |
+| An adjustable parameter changes (a window length, a threshold) | Log it in that ADR's "Amendment Log" (e.g. ADR-0017–0019) — doesn't need superseding |
+| Implementation surfaces a constraint that was already logically required by the decision, just not stated | Add a dated "Clarification" section (e.g. ADR-0013) — not a new decision, just making an implicit requirement explicit |
+| A still-Proposed ADR would change part of this (Accepted) ADR's decision, if accepted | Add a dated "Pending supersession note" pointing to it, naming exactly which part would change (e.g. ADR-0009/0010 → ADR-0023) — not an edit to the original text, and not a full supersession unless the whole decision is affected |
+
+The common thread: the original Decision and Consequences text is a historical record and stays put. Everything learned later is appended, dated, and labeled by which of the four categories it is.
+
+| # | Title | Spec Section |
+|---|-------|--------------|
+| [0001](0001-two-repository-split.md) | Split into `social-listening-core` and `social-listening-admin` repositories | §2 |
+| [0002](0002-unified-provider-connector-pattern.md)² | Unified `ProviderConnector` contract for social platforms and AI providers | §3.1 |
+| [0003](0003-per-tenant-per-provider-rate-limiting.md) | Rate limiting enforced per `(tenantId, providerId)` via a shared `RequestGate` | §3.2 |
+| [0004](0004-author-normalized-separately-from-post.md) | Normalize `Author` once per platform account, not embedded per post | §4.1 |
+| [0005](0005-ingestion-run-as-audit-anchor.md) | `IngestionRun` as the immutable acquisition/audit anchor for every post | §4.3 |
+| [0006](0006-watchlist-matching-connector-side-with-fallback.md) | Prefer connector-side native filtering for watchlist matching, with post-fetch fallback | §4.4 |
+| [0007](0007-author-topic-signal-minimal-v1.md) | `AuthorTopicSignal` ships with raw signals only, no computed expertise score | §4.5 |
+| [0008](0008-defer-topic-time-series-and-charting.md) | Defer `TopicDailyCount` aggregation and all charting to a future subsystem | §4.6, §9 |
+| [0009](0009-connector-health-derived-not-stored.md) | `ConnectorHealth` is fully derived from `IngestionRun` history, not stored mutable state | §5 |
+| [0010](0010-error-handling-and-auto-disable-policy.md) | Retryable-vs-non-retryable error policy with per-tenant auto-disable | §5 |
+| [0011](0011-cursor-based-pagination-for-posts-api.md) | Cursor-based pagination for `GET /posts` | §6 |
+| [0012](0012-thin-events-with-rest-fetch-on-demand.md) | Service Bus events carry IDs and minimal fields only; full data fetched via REST on demand | §7 |
+| [0013](0013-per-tenant-event-filtering-via-subscription-rules.md) | Per-tenant event filtering via Service Bus subscription SQL filters | §7 |
+| [0014](0014-credential-storage-envelope-encryption-oauth-first.md) | Envelope-encrypted credential storage via Azure Key Vault, OAuth preferred with API-key fallback | §8 |
+| [0015](0015-tenant-isolation-via-postgres-row-level-security.md) | Enforce tenant isolation at the database layer with Postgres Row-Level Security | §8 |
+| [0016](0016-postgres-as-database-engine.md)¹ | Postgres as the database engine | §2, §4.2, §8 |
+| [0017](0017-api-versioning-and-compatibility-policy.md)³ | API versioning and compatibility policy | — (originated, see below) |
+| [0019](0019-event-schema-versioning-policy.md)³ | Event schema versioning policy | — (originated, see below) |
+
+¹ Unlike 0001–0015, the spec states this decision as a given rather than arguing it — the spec doesn't carry the reasoning. The reasoning is instead sourced from the chat conversation that produced the spec (linked in the ADR), not from the spec document itself. See its "Note on provenance."
+
+² Mostly spec-sourced (§3.1/§3.3), with one exception: the `deliveryMode` rationale in its Consequences section is sourced from the same chat conversation as ADR-0016, not from the spec. See its "Note on provenance."
+
+³ Originated as Proposed ADRs (gaps neither the spec nor the design conversation addressed), then accepted on 2026-07-29 — deliberately ahead of the implementation phase that would otherwise touch them (Phase 0 of `docs/implementation-plan.md`), because both are cheap to build in from day one and expensive to retrofit later. See each ADR's "Acceptance note." Unlike ADR-0016, these don't have spec/chat-sourced reasoning to cite — the reasoning is the ADR's own, same as when they were Proposed; only the Status changed.
+
+## Proposed (not yet decided)
+
+These originate new policy rather than document an existing decision — gaps identified during review (independently by this series' author and by two rounds of Copilot review) that the spec and design conversation left unaddressed. **Status: Proposed**, not Accepted — each separates a durable *decision* from adjustable *implementation defaults*, with an Amendment Log for logging parameter changes (e.g. a deprecation window changing from 6 to 12 months) without superseding the ADR. Only a change to the underlying decision itself would warrant superseding. (ADR-0017 and ADR-0019 have since been accepted — see the main table above — and are no longer listed here.)
+
+| # | Title | Gap identified in |
+|---|-------|--------------------|
+| [0018](0018-data-retention-and-archival-policy.md) | Data retention and archival policy | ADR-0005 Negative consequences |
+| [0020](0020-rate-limit-queue-bounds-and-distributed-gate-state.md) | Rate-limit queue bounds, dead-letter handling, and distributed gate state | ADR-0003 Negative consequences; third-party review |
+| [0021](0021-watchlist-boolean-query-ast-and-capability-matrix.md) | Unified boolean-query AST for watchlist matching, with per-connector capability matrix | ADR-0006 Negative consequences; third-party review |
+| [0022](0022-derived-data-caching-and-refresh-strategy.md) | Derived-data caching and refresh strategy (`ConnectorHealth` cache, `AuthorTopicSignal` refresh cadence) | ADR-0007, ADR-0009 Negative consequences; third-party review |
+| [0023](0023-proportional-connector-failure-threshold.md) | Proportional (rate-relative) connector failure threshold for auto-disable | Spec §5/§10 placeholder; third-party review |
+
+Third-party review also surfaced two numeric disagreements with ADR-0017/0018's original defaults, resolved and logged in those ADRs' own Amendment Logs (not new ADRs): ADR-0017's deprecation window shortened from 6 months to 90 days; ADR-0018's `IngestionRun` archival window shortened from 18 months to 90 days (aligned with `rawPayload`'s existing window), with monthly range partitioning added as the archival mechanism.
+
+**Still outstanding, not yet drafted:** ADR-0004's point-in-time author snapshot (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) was flagged as a genuine trade-off — not a strict improvement — during the same review round, but wasn't included in the batch above. Needs an explicit go/no-go before drafting, since it partially reintroduces the per-post duplication ADR-0004 argued against.
+
+Considered and explicitly **not** drafted as ADRs, per review discussion:
+- **Capability-based connector composition / connector capability registry** — premature for a two-branch hierarchy (`SocialConnector`, `AIProviderConnector`); the spec doesn't describe a third, structurally different provider type that would justify it yet. Revisit if one materializes (rule of three).
+- **CODEOWNERS / repo ownership** — reasonable, but a repo-governance artifact, not an architecture decision.
+- **OpenAPI-first contract governance, connector certification, sandbox/test harness, DR/replay strategy** — reasonable platform-maturity investments, but ahead of where this subsystem is: pre-implementation, no downstream consumers built yet. **Revisit trigger:** before the first downstream subsystem (likely Brand Reputation & Alerts) begins integrating against `social-listening-core`'s API — not before, per a second round of Copilot review.
+- **Consumer contract ownership** (who owns backward compatibility as the producer/consumer graph grows — `social-listening-core` vs. each downstream subsystem) — flagged as a likely future ADR candidate once implementation begins and a second or third real downstream consumer exists to reason about. Not drafted now, and not pinned to a specific number since 0020–0023 are now in use — noted so it isn't lost.
+
+## Not captured as ADRs
+
+The following are called out in the spec but are scope boundaries or process decisions rather than architecture decisions, so they're not recorded as ADRs — none of them involve the kind of hard-to-reverse technical trade-off this series exists to justify:
+
+- Initial connector build order — **resolved 2026-07-29**, see spec §10 and `docs/implementation-plan.md` (RSS/News first, then Reddit; remaining platforms prioritized in Phase 4)
+- Exact dead-letter failure threshold — governed by ADR-0010 (flat placeholder) through Phase 3, ADR-0023 (Proposed, proportional rule) in Phase 4; see spec §10
+- Testing strategy and CI/CD pipeline details for the two repos — **resolved 2026-07-29**, see spec §10 (lightweight CI given this is a solo-developer project, not team-scale process)
+- Geocoding of `profileLocation` — explicitly out of scope, §9, no decision made to record

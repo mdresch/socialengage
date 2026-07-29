@@ -1,0 +1,49 @@
+# ADR-0023: Proportional (rate-relative) connector failure threshold for auto-disable
+
+**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Source:** Not specified in the design spec, which explicitly names its own threshold a placeholder (§5: "10 consecutive failures used as a placeholder above"; §10 lists it as an open question). Expanded on in a third-party architectural review. This ADR originates the policy; it does not document a prior decision.
+**Relationship to existing ADRs:** if accepted, **partially supersedes** the `failing` derivation rule in ADR-0009's Decision and the auto-disable threshold in ADR-0010's Decision — specifically and only the flat "≥10 failures/hour" rule each currently states. Nothing else in either ADR is affected (see the "Pending supersession note" each of those ADRs now carries). This is a partial, single-rule supersession, not a replacement of either ADR as a whole.
+
+## Context
+
+ADR-0009 derives `failing` status as "≥10 failed `IngestionRun`s within the last hour" — a flat absolute count, explicitly carried over from the spec's own placeholder. This number doesn't account for how differently connectors are actually invoked: a platform polled every couple of minutes and a platform polled hourly both accumulate runs at very different rates, so a flat count-per-hour conflates two very different situations — 10 failures out of 10 attempts (100% failure, clearly broken) and 10 failures out of 200 attempts (5% failure, probably a transient blip) would trigger identically.
+
+## Decision
+
+**The durable decision — this is what would need superseding, not just amending:**
+
+Auto-disable is triggered by failure *rate* relative to actual attempt volume for that `(tenantId, platformId)` pair within the evaluation window, not a flat absolute count — so connectors invoked at very different frequencies aren't held to the same absolute threshold. A minimum attempt-count floor applies alongside the rate threshold, so a connector with very few attempts in the window doesn't trigger off statistical noise (e.g., 1 failure out of 2 attempts looking identical to 100% failure on a high-volume connector). A separate absolute ceiling still applies regardless of rate, so a persistently broken low-frequency connector (one that fails every single time it runs, but only runs a handful of times an hour) still gets caught within a bounded time, rather than needing an implausibly long window to accumulate enough attempts to trip a purely rate-based rule.
+
+**Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
+
+- Evaluation window: **1 hour**, unchanged from ADR-0009's existing base unit.
+- Rate threshold: `failing` when **≥50%** of attempts in the window failed, **and** at least **5 attempts** occurred in the window (the floor, to avoid a single failed attempt on a low-frequency connector reading as "100% failure").
+- Absolute ceiling: `failing` when **≥20 consecutive failures** have occurred, regardless of rate or the 1-hour window — catches a connector that's broken on every run but polls infrequently enough that it wouldn't otherwise hit the attempt floor within an hour.
+- `degraded` (ADR-0009's existing intermediate state) continues to mean "some recent failures, but a successful run within the last hour" — unchanged by this ADR.
+
+## Consequences
+
+**Positive**
+- A connector polled every few minutes and one polled hourly are now judged by comparable standards (failure *rate*, not absolute count), removing an unfairness the flat threshold had by construction.
+- The attempt-count floor prevents a low-frequency, low-sample-size connector from being disabled off noise (e.g., one bad poll out of two).
+- The absolute ceiling preserves the original intent of the placeholder threshold — genuinely broken connectors still get caught — for the specific case a pure percentage rule would handle poorly (very low attempt volume).
+
+**Negative**
+- Materially more complex than a flat count: `ConnectorHealth`'s derivation (ADR-0009) now needs both attempt count and failure count per window, not just a failure count, and two threshold rules instead of one.
+- Three numbers (50%, 5-attempt floor, 20 consecutive) are this ADR's own estimates, not derived from real failure-pattern data across actual connectors — likely need tuning once real tenant/platform traffic exists.
+- Changes what `ConnectorHealth`'s `failing` derivation actually computes (ADR-0009's Decision text describes the old flat rule) — this ADR should be read alongside ADR-0009, not in isolation; ADR-0009 itself isn't edited, per this series' convention of not rewriting an Accepted ADR's original text (see README governance conventions).
+
+## Alternatives Considered
+
+- **Keep the flat 10-failures/hour count** — status quo (the spec's own placeholder); rejected for the reason above: it doesn't distinguish a fast-polling connector's blip from a slow-polling connector's persistent failure.
+- **Pure percentage, no attempt-count floor** — closer to "true" rate-based judgment, but rejected because a connector with very few attempts (e.g., 1 attempt, 1 failure = 100%) would look indistinguishable from a genuinely broken high-volume connector and trigger too eagerly.
+- **Percentage only, no absolute ceiling** — rejected because a connector that fails every single time but only attempts a handful of times per hour could take a long time to accumulate the attempt-count floor, delaying detection of an outright-broken connector well beyond what the original flat-count rule would have caught.
+
+## Open questions for decision
+
+- Are 50% / 5-attempt floor / 20-consecutive the right numbers? These need real traffic data to validate, more than any other threshold in this series.
+- Should the rate threshold vary further by connector `deliveryMode` (ADR-0002) — e.g., should push-mode connectors, which don't "attempt" in the same sense as poll-mode ones, use a different rule entirely?
+
+## Amendment Log
+
+- 2026-07-28 — Initial proposal: 50% failure rate with a 5-attempt floor over a 1-hour window, plus a 20-consecutive-failure absolute ceiling.
