@@ -62,15 +62,16 @@
 
 ## Story 3.5 — Tiered data retention and archival
 
-**Source:** ADR-0018 · **Status:** Blocked — pending ADR-0018 acceptance
+**Source:** ADR-0018 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`, since storage volume rather than correctness is the driver)
 
 **As a** platform operator managing storage cost on an unbounded, high-volume table,
 **I want** `rawPayload` and `IngestionRun` moved to cheaper archival storage after a bounded hot-storage window, while analytically-relevant fields stay indefinitely in primary storage,
 **so that** primary storage growth is bounded by the actually-expensive part of the data, without losing the fields needed for future multi-year topic aggregation.
 
 **Acceptance Criteria**
-- A `SocialPost` older than 90 days (implementation default — see ADR-0018's Amendment Log) has its `rawPayload` replaced by a pointer to archival blob storage, while `tenantId`, `platformId`, `publishedAt`, `authorId`, `engagementMetrics`, and `enrichment.*` remain live and queryable.
-- An `IngestionRun` older than 90 days is archived, not hard-deleted — every `SocialPost.acquisitionId` referencing it continues to resolve.
+- A `SocialPost` older than 90 days (configurable — see ADR-0018's Amendment Log) has its `rawPayload` replaced by a pointer to archival blob storage, while `tenantId`, `platformId`, `publishedAt`, `authorId`, `engagementMetrics`, and `enrichment.*` remain live and queryable.
+- An `IngestionRun` older than 18 months (configurable — see ADR-0018's Amendment Log) is archived, not hard-deleted — every `SocialPost.acquisitionId` referencing it continues to resolve.
+- Both retention windows are read from configuration rather than hardcoded, so changing either is an operational change, not a code change.
 - `SocialPost` and `IngestionRun` are partitioned monthly, and archival operates by detaching/exporting the oldest partition rather than a row-by-row delete sweep.
 - Fetching an archived `rawPayload` (e.g., for a support investigation) succeeds via the archival pointer, confirming the "never discarded" guarantee (§4.2) still holds post-archival.
 
@@ -78,7 +79,7 @@
 
 ## Story 3.6 — Unified boolean-query AST for watchlist matching
 
-**Source:** ADR-0021 · **Status:** Blocked — pending ADR-0021 acceptance
+**Source:** ADR-0021 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; whole-query degradation kept for v1, per ADR-0021's Acceptance note)
 
 **As a** tenant with a watchlist using a boolean query,
 **I want** that query parsed once into a canonical AST that every connector's native translation and the shared post-fetch fallback both evaluate identically, with unsupported query features surfaced to me rather than silently degrading,

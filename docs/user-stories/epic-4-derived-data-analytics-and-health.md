@@ -33,7 +33,7 @@
 ## Story 4.3 — Derived connector health from IngestionRun history
 
 **Source:** ADR-0009 · **Status:** Ready
-*(See Story 2.5 / ADR-0023 — the flat threshold below is what's currently Accepted, but a Proposed ADR would replace it if accepted.)*
+*(See Story 2.5 / ADR-0023, accepted 2026-07-29 — the flat threshold below is what's currently shipped; ADR-0023's rate-relative rule supersedes it once Story 2.5 is actually built, per ADR-0009's "Supersession update" note. This story's own code/contract are unaffected until then — see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
 
 **As a** tenant administrator,
 **I want** `GET /connectors` to report health computed live from `IngestionRun` history — never a separately stored, independently updatable health record —
@@ -49,7 +49,7 @@
 
 ## Story 4.4 — Derived-data caching and refresh strategy
 
-**Source:** ADR-0022 · **Status:** Blocked — pending ADR-0022 acceptance
+**Source:** ADR-0022 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; 60s TTL, hourly refresh, and in-process cache locality all kept as originally proposed, per ADR-0022's Acceptance note)
 
 **As a** platform operator supporting frequent `GET /connectors` polling from the admin UI,
 **I want** `ConnectorHealth` served from a short-TTL read-through cache that's always reconstructable from `IngestionRun`, and `AuthorTopicSignal` refreshed hourly via a scheduled job,

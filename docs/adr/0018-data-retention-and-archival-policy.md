@@ -1,7 +1,8 @@
 # ADR-0018: Data retention and archival policy
 
-**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Status:** Accepted (2026-07-29) — see Acceptance note below
 **Source:** Not specified in the design spec, which explicitly leaves this open (§10 lists "specific dead-letter failure threshold" and "testing strategy" as open questions but doesn't mention retention at all). Flagged independently in ADR-0005's Negative consequences and in a Copilot review of this ADR series. This ADR originates a proposed policy; it does not document a prior decision.
+**Acceptance note:** accepted with `rawPayload` retained hot for 90 days and `IngestionRun` retained hot for 18 months — reverting the 2026-07-28 alignment amendment that had shortened `IngestionRun` to match `rawPayload`'s 90-day window. Both windows are configurable (not hardcoded constants), rather than fixed at these values. See the Amendment Log for the full history of this number.
 
 ## Context
 
@@ -21,8 +22,9 @@ Retention is tiered — hot primary storage plus cheaper archival storage — ra
 **Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
 
 - **Aggregation-relevant fields** (`tenantId`, `platformId`, `publishedAt`, `authorId`, `engagementMetrics`, `enrichment.*` excluding raw payload) — retained indefinitely in primary Postgres storage. These are exactly the fields the deferred `TopicDailyCount` (ADR-0008) and `AuthorTopicSignal` (ADR-0007) need, including for the multi-year graphing capability raised in the original design discussion.
-- **`rawPayload` (JSONB)** — the bulkiest and least-frequently-queried field, and the one most directly responsible for table bloat at "high-volume and unbounded" scale. Proposed: retain in the hot Postgres row for **90 days**, then move to cheaper archival storage (Azure Blob Storage, keyed by post ID) and replace the JSONB column's content with a pointer/reference. This preserves §4.2's "never discarded" guarantee — the data still exists and is still traceable to the post it came from — without keeping the heaviest field hot indefinitely.
-- **`IngestionRun`** — primarily operational/audit data (ADR-0005's "which process, at what time, with what connector version" trail), not analytical data queried by tenants. Proposed: retain individual run rows for **90 days**, after which they move to the same archival tier as aged-out `rawPayload` — aligned to the same window as `rawPayload` rather than a longer, separate one, since its primary value (debugging a recent ingestion problem) decays faster than analytically-relevant post data does, and a shared window lets one archival sweep handle both tiers. Because every `SocialPost.acquisitionId` is a foreign key into `IngestionRun` (ADR-0005), archiving (not hard-deleting) is the required approach here — a hard delete would either orphan the FK or require cascading through every post it produced, neither of which is acceptable given `IngestionRun` is meant to be an *immutable* audit anchor.
+- **`rawPayload` (JSONB)** — the bulkiest and least-frequently-queried field, and the one most directly responsible for table bloat at "high-volume and unbounded" scale. Accepted: retain in the hot Postgres row for **90 days** (configurable), then move to cheaper archival storage (Azure Blob Storage, keyed by post ID) and replace the JSONB column's content with a pointer/reference. This preserves §4.2's "never discarded" guarantee — the data still exists and is still traceable to the post it came from — without keeping the heaviest field hot indefinitely.
+- **`IngestionRun`** — primarily operational/audit data (ADR-0005's "which process, at what time, with what connector version" trail), not analytical data queried by tenants. Accepted: retain individual run rows for **18 months** (configurable), after which they move to the same archival tier as aged-out `rawPayload`. Because every `SocialPost.acquisitionId` is a foreign key into `IngestionRun` (ADR-0005), archiving (not hard-deleting) is the required approach here — a hard delete would either orphan the FK or require cascading through every post it produced, neither of which is acceptable given `IngestionRun` is meant to be an *immutable* audit anchor.
+- **Configurability:** both windows are exposed as configuration (e.g., a per-deployment or per-tenant setting), not hardcoded constants — so changing them going forward is an operational change, not a code change or an ADR amendment.
 - **Mechanism:** implement the hot-tier boundary via monthly range partitioning on both `SocialPost` and `IngestionRun` (partitioned by `publishedAt`/`startedAt` respectively). Archival then becomes "detach and export the oldest partition," not a row-by-row delete/update sweep — cheaper, and avoids long-running mutation locks on a high-volume table.
 
 **Explicitly not addressed by this ADR:** tenant offboarding / right-to-erasure requests (e.g. GDPR Article 17). That's a distinct legal/compliance question — who initiates deletion, what "deleted" means for archived/blob-tier data, what the SLA is — that deserves its own decision with input beyond what this ADR can respons‌ibly originate. Flagging it here so it isn't lost, not resolving it.
@@ -37,7 +39,7 @@ Retention is tiered — hot primary storage plus cheaper archival storage — ra
 **Negative**
 - Requires building and operating an actual archival mechanism (blob export + pointer rewrite, or equivalent) — this is new infrastructure, not a configuration flag, and needs its own implementation design.
 - A `SocialPost` older than 90 days no longer has its full raw payload immediately queryable; recovering it means a blob fetch, not a JSONB query. Any tooling that assumed `rawPayload` was always live-queryable (e.g., ad hoc debugging via `rawPayload->>'field'`) needs to account for the two-tier reality.
-- The specific numbers (90 days for both tiers) are this ADR's proposed defaults, not derived from any stated requirement — they need an actual decision, informed by real storage cost data and how often aged raw payloads/runs actually get referenced in practice.
+- The specific numbers (90 days for `rawPayload`, 18 months for `IngestionRun`) are accepted implementation defaults, not derived from any stated requirement in the spec — they may need revisiting once real storage cost data and actual reference patterns for aged raw payloads/runs are available. Being configurable rather than hardcoded lowers the cost of that revision.
 - Monthly partitioning is a real schema commitment (partition key choice, partition-maintenance automation) made this early, before there's real volume data to validate the partition granularity against.
 
 ## Alternatives Considered
@@ -45,9 +47,9 @@ Retention is tiered — hot primary storage plus cheaper archival storage — ra
 - **Retain everything indefinitely, no tiering** — simplest to implement (nothing to build), but directly at odds with `SocialPost` being explicitly "high-volume and unbounded" (§6); primary storage cost and query performance degrade without limit as tenants and time accumulate.
 - **Fixed whole-row TTL with hard deletion** (e.g., delete `SocialPost` rows entirely after N months) — simple and bounds storage cleanly, but breaks the multi-year topic-graphing capability the original design conversation explicitly anticipated, and would also orphan `AuthorTopicSignal`/`IngestionRun` references depending on cutoff timing.
 
-## Open questions for decision
+## Open questions (implementation defaults, not blocking acceptance)
 
-- Is 90 days the right window for both `rawPayload` and `IngestionRun`, or should they diverge, or be tenant-configurable / tied to a pricing tier? These are implementation-default questions (see Amendment Log), not grounds to revisit the tiered-retention decision itself.
+- ~~Is 90 days the right window for both `rawPayload` and `IngestionRun`, or should they diverge, or be configurable?~~ **Resolved at acceptance:** they diverge (90 days / 18 months) and both are configurable rather than tenant-tied at this stage.
 - Is monthly partitioning the right granularity, or is that premature before real ingestion-volume data exists?
 - Tenant offboarding and right-to-erasure handling is out of scope here and needs its own decision.
 
@@ -57,3 +59,4 @@ Changes to the *implementation defaults* (specific day/month counts, partitionin
 
 - 2026-07-28 — Initial proposal: `rawPayload` to archival at 90 days, `IngestionRun` to archival at 18 months.
 - 2026-07-28 — Revised after a second review round: `IngestionRun` window shortened from 18 months to 90 days (aligned with `rawPayload`); added monthly range partitioning as the archival mechanism for both tables.
+- 2026-07-29 — Accepted: reverted `IngestionRun` back to its original 18-month window (no longer aligned with `rawPayload`'s 90 days); both windows made configurable rather than fixed constants.

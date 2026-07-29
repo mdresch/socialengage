@@ -1,7 +1,8 @@
 # ADR-0022: Derived-data caching and refresh strategy (`ConnectorHealth` read cache, `AuthorTopicSignal` refresh cadence)
 
-**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Status:** Accepted (2026-07-29) — see Acceptance note below
 **Source:** Not specified in the design spec. Flagged in ADR-0009's own Negative consequences ("may warrant caching if `GET /connectors` is polled frequently") and ADR-0007's own text ("refresh cadence isn't specified here and needs to be decided during implementation"), expanded on in a third-party architectural review. This ADR originates the policy; it does not document a prior decision.
+**Acceptance note:** accepted with both numbers unchanged — 60-second `ConnectorHealth` cache TTL and hourly `AuthorTopicSignal` refresh. The 60s figure is a status indicator's staleness, not an input to any automated decision (auto-disable logic reads `IngestionRun` directly, not the cache), so it's acceptable as-is; a `?fresh=true` bypass param for troubleshooting is a cheap optional addition, not required for acceptance. Hourly `AuthorTopicSignal` refresh stands: "an expert isn't created in an hour" describes the *signal's* semantics (it should aggregate over a long window), not how often it's safe to recompute that aggregate — hourly just bounds staleness of a long-window value, cheaply, via `pg_cron`. In-process cache locality for `ConnectorHealth` is accepted as-is too: single-instance is the real deployment shape right now, and this ADR's own analysis already shows cross-instance display inconsistency (not incorrectness) is the only cost — no Redis dependency taken on for this until multi-instance is real. See the Amendment Log.
 
 ## Context
 
@@ -48,11 +49,12 @@ Both `AuthorTopicSignal` and `ConnectorHealth` get periodic-refresh treatment ra
 
 ## Open questions for decision
 
-- Is 60 seconds the right `ConnectorHealth` staleness tolerance, or does the admin UI's connector-status view need tighter freshness?
-- Is hourly sufficient for `AuthorTopicSignal`, or should it be daily given the "sustained engagement over years" framing from the original design discussion?
-- Is in-process cache locality actually acceptable, or does the admin UI need a single consistent view regardless of which `social-listening-core` instance serves a given request?
+- ~~Is 60 seconds the right `ConnectorHealth` staleness tolerance, or does the admin UI's connector-status view need tighter freshness?~~ **Resolved at acceptance:** yes, keep 60s — it's a status indicator, not an input to any automated decision. A `?fresh=true` bypass param for troubleshooting is optional, not required.
+- ~~Is hourly sufficient for `AuthorTopicSignal`, or should it be daily given the "sustained engagement over years" framing from the original design discussion?~~ **Resolved at acceptance:** keep hourly — that framing describes the signal's aggregation window, not its safe recompute cadence; hourly just bounds staleness of that long-window aggregate, cheaply, via `pg_cron`.
+- ~~Is in-process cache locality actually acceptable, or does the admin UI need a single consistent view regardless of which `social-listening-core` instance serves a given request?~~ **Resolved at acceptance:** yes, in-process is acceptable — single-instance is the real deployment shape now, and the only cost is cross-instance display inconsistency (not incorrectness); don't take on a Redis dependency for this until multi-instance is real.
 
 ## Amendment Log
 
 - 2026-07-28 — Initial proposal: `AuthorTopicSignal` hourly via `pg_cron`; `ConnectorHealth` 60-second TTL read-through cache.
 - 2026-07-28 — Added explicit cache-locality decision after a review round flagged it as unspecified: `ConnectorHealth` cache is in-process, not Redis/shared, distinguishing it from ADR-0020's correctness-critical `RequestGate` state.
+- 2026-07-29 — Accepted: both numbers (60s TTL, hourly refresh) and in-process cache locality confirmed as-is; optional `?fresh=true` bypass noted as a cheap, non-required addition.

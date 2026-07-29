@@ -1,8 +1,9 @@
 # ADR-0023: Proportional (rate-relative) connector failure threshold for auto-disable
 
-**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Status:** Accepted (2026-07-29) — see Acceptance note below
 **Source:** Not specified in the design spec, which explicitly names its own threshold a placeholder (§5: "10 consecutive failures used as a placeholder above"; §10 lists it as an open question). Expanded on in a third-party architectural review. This ADR originates the policy; it does not document a prior decision.
-**Relationship to existing ADRs:** if accepted, **partially supersedes** the `failing` derivation rule in ADR-0009's Decision and the auto-disable threshold in ADR-0010's Decision — specifically and only the flat "≥10 failures/hour" rule each currently states. Nothing else in either ADR is affected (see the "Pending supersession note" each of those ADRs now carries). This is a partial, single-rule supersession, not a replacement of either ADR as a whole.
+**Relationship to existing ADRs:** **partially supersedes** the `failing` derivation rule in ADR-0009's Decision and the auto-disable threshold in ADR-0010's Decision — specifically and only the flat "≥10 failures/hour" rule each currently states. Nothing else in either ADR is affected (see the "Supersession update" note each of those ADRs now carries). This is a partial, single-rule supersession, not a replacement of either ADR as a whole. It also does not retroactively change already-shipped code: Stories 2.3 and 4.3 were built and passed their contracts against the flat rule before this ADR was accepted — their code and contracts stay as shipped until Story 2.5 (this ADR's own story) is actually picked up and built, which is when the flat-rule implementation actually gets healed to match. See `docs/user-stories/README.md`'s "Known cross-story conflict" note.
+**Acceptance note:** accepted with 50% / 5-attempt floor / 20-consecutive kept as the launch defaults — not derived from real data, but neither was the flat "10/hour" placeholder they replace, and this rule is structurally better-reasoned (it explicitly handles the low-volume-noise case the flat rule doesn't). Tune later once real connector traffic exists, logged in the Amendment Log, same treatment as ADR-0017's deprecation window and ADR-0018's retention numbers. Varying the threshold by `deliveryMode` (push vs. poll) is deferred, not resolved: both connectors currently on the roadmap (RSS/News, Reddit) are poll-mode, and push-mode isn't scheduled until later platforms — solving it now would mean designing against a connector type that doesn't exist yet. Logged as a known gap, not a blocker.
 
 ## Context
 
@@ -41,9 +42,10 @@ Auto-disable is triggered by failure *rate* relative to actual attempt volume fo
 
 ## Open questions for decision
 
-- Are 50% / 5-attempt floor / 20-consecutive the right numbers? These need real traffic data to validate, more than any other threshold in this series.
-- Should the rate threshold vary further by connector `deliveryMode` (ADR-0002) — e.g., should push-mode connectors, which don't "attempt" in the same sense as poll-mode ones, use a different rule entirely?
+- ~~Are 50% / 5-attempt floor / 20-consecutive the right numbers? These need real traffic data to validate, more than any other threshold in this series.~~ **Resolved at acceptance:** accepted as the launch defaults — structurally better-reasoned than the flat placeholder they replace even without real data yet; tune later once real connector traffic exists.
+- ~~Should the rate threshold vary further by connector `deliveryMode` (ADR-0002) — e.g., should push-mode connectors, which don't "attempt" in the same sense as poll-mode ones, use a different rule entirely?~~ **Deferred at acceptance (not resolved):** both connectors currently on the roadmap (RSS/News, Reddit) are poll-mode; push-mode isn't scheduled until later platforms. Noted as a known gap, revisit when a push-mode connector is actually being built.
 
 ## Amendment Log
 
 - 2026-07-28 — Initial proposal: 50% failure rate with a 5-attempt floor over a 1-hour window, plus a 20-consecutive-failure absolute ceiling.
+- 2026-07-29 — Accepted: 50% / 5-attempt floor / 20-consecutive confirmed as launch defaults; `deliveryMode`-based variation deferred as a known gap, not resolved.

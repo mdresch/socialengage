@@ -34,3 +34,7 @@ Ingestion failures have different causes with different correct responses: a rat
 ## Pending supersession note (2026-07-28)
 
 **ADR-0023** (Proposed, not yet accepted) would replace the auto-disable threshold in this ADR's Decision (the flat "10 consecutive failures" placeholder) with a rate-relative rule. If ADR-0023 is accepted, only that one line changes — retryable/non-retryable classification, automatic OAuth refresh-before-failing, and per-tenant isolation are unaffected and don't need re-deciding. This note is a forward-pointer only; per this series' convention, the original Decision text above is not edited. See `docs/adr/README.md`'s governance table.
+
+## Supersession update (2026-07-29)
+
+**ADR-0023 has been accepted.** The flat "10 consecutive failures" auto-disable threshold above is now superseded by ADR-0023's rate-relative rule, exactly as the note above anticipated — retryable/non-retryable classification, automatic OAuth refresh-before-failing, and per-tenant isolation are unaffected. This does not retroactively change already-shipped code: Story 2.3 was built and passed its contract against the flat rule before ADR-0023 was accepted, and stays as shipped until Story 2.5 (now Ready) is actually picked up and built — that's when the implementation gets healed to match. See `docs/user-stories/README.md`'s "Known cross-story conflict" note. This ADR's own Decision text is still not edited, per this series' convention.

@@ -15,6 +15,7 @@ Four situations, four different responses — don't default to editing the origi
 | An adjustable parameter changes (a window length, a threshold) | Log it in that ADR's "Amendment Log" (e.g. ADR-0017–0019) — doesn't need superseding |
 | Implementation surfaces a constraint that was already logically required by the decision, just not stated | Add a dated "Clarification" section (e.g. ADR-0013) — not a new decision, just making an implicit requirement explicit |
 | A still-Proposed ADR would change part of this (Accepted) ADR's decision, if accepted | Add a dated "Pending supersession note" pointing to it, naming exactly which part would change (e.g. ADR-0009/0010 → ADR-0023) — not an edit to the original text, and not a full supersession unless the whole decision is affected |
+| A "Pending supersession note" above becomes real because the other ADR gets accepted | Add a dated "Supersession update" note confirming it, without editing the original Pending supersession note or Decision text (e.g. ADR-0009/0010, once ADR-0023 was accepted) — and don't assume already-shipped code changes automatically; it only changes when the superseding ADR's own story is actually built |
 
 The common thread: the original Decision and Consequences text is a historical record and stays put. Everything learned later is appended, dated, and labeled by which of the four categories it is.
 
@@ -37,7 +38,12 @@ The common thread: the original Decision and Consequences text is a historical r
 | [0015](0015-tenant-isolation-via-postgres-row-level-security.md) | Enforce tenant isolation at the database layer with Postgres Row-Level Security | §8 |
 | [0016](0016-postgres-as-database-engine.md)¹ | Postgres as the database engine | §2, §4.2, §8 |
 | [0017](0017-api-versioning-and-compatibility-policy.md)³ | API versioning and compatibility policy | — (originated, see below) |
+| [0018](0018-data-retention-and-archival-policy.md)⁴ | Data retention and archival policy | ADR-0005 Negative consequences |
 | [0019](0019-event-schema-versioning-policy.md)³ | Event schema versioning policy | — (originated, see below) |
+| [0020](0020-rate-limit-queue-bounds-and-distributed-gate-state.md)⁵ | Rate-limit queue bounds, dead-letter handling, and distributed gate state | ADR-0003 Negative consequences; third-party review |
+| [0021](0021-watchlist-boolean-query-ast-and-capability-matrix.md)⁵ | Unified boolean-query AST for watchlist matching, with per-connector capability matrix | ADR-0006 Negative consequences; third-party review |
+| [0022](0022-derived-data-caching-and-refresh-strategy.md)⁵ | Derived-data caching and refresh strategy (`ConnectorHealth` cache, `AuthorTopicSignal` refresh cadence) | ADR-0007, ADR-0009 Negative consequences; third-party review |
+| [0023](0023-proportional-connector-failure-threshold.md)⁵ | Proportional (rate-relative) connector failure threshold for auto-disable | Spec §5/§10 placeholder; third-party review |
 
 ¹ Unlike 0001–0015, the spec states this decision as a given rather than arguing it — the spec doesn't carry the reasoning. The reasoning is instead sourced from the chat conversation that produced the spec (linked in the ADR), not from the spec document itself. See its "Note on provenance."
 
@@ -45,19 +51,17 @@ The common thread: the original Decision and Consequences text is a historical r
 
 ³ Originated as Proposed ADRs (gaps neither the spec nor the design conversation addressed), then accepted on 2026-07-29 — deliberately ahead of the implementation phase that would otherwise touch them (Phase 0 of `docs/implementation-plan.md`), because both are cheap to build in from day one and expensive to retrofit later. See each ADR's "Acceptance note." Unlike ADR-0016, these don't have spec/chat-sourced reasoning to cite — the reasoning is the ADR's own, same as when they were Proposed; only the Status changed.
 
+⁴ Also originated as a Proposed ADR, accepted on 2026-07-29 — unlike ADR-0017/0019, this one wasn't accepted early for a schedule reason; it's a straightforward acceptance of the tiered-retention policy with `rawPayload` at 90 days and `IngestionRun` at 18 months, both configurable. See its "Acceptance note" and Amendment Log for the full numeric history.
+
+⁵ ADR-0020–0023, all also originated as Proposed ADRs and all accepted on 2026-07-29, closing out this series' last four open decisions. Each ADR's own "Acceptance note" and Amendment Log carry the specifics, but the shared thread: numeric implementation defaults were kept as originally proposed in every case (no real traffic data existed to justify changing them), and two decisions were deliberately sequenced rather than built immediately — ADR-0020's Redis-backed distributed `RequestGate` state waits for an actual second concurrent instance to be deployed, and ADR-0023's rate-relative failure threshold doesn't retroactively change Stories 2.3/4.3's already-shipped flat-rule code until Story 2.5 is actually built (see ADR-0009's and ADR-0010's "Supersession update" notes). ADR-0023's `deliveryMode`-based variation question was deferred, not resolved — logged as a known gap, revisit once a push-mode connector exists.
+
 ## Proposed (not yet decided)
 
-These originate new policy rather than document an existing decision — gaps identified during review (independently by this series' author and by two rounds of Copilot review) that the spec and design conversation left unaddressed. **Status: Proposed**, not Accepted — each separates a durable *decision* from adjustable *implementation defaults*, with an Amendment Log for logging parameter changes (e.g. a deprecation window changing from 6 to 12 months) without superseding the ADR. Only a change to the underlying decision itself would warrant superseding. (ADR-0017 and ADR-0019 have since been accepted — see the main table above — and are no longer listed here.)
+**None currently outstanding.** As of 2026-07-29, all 23 ADRs in this series are Accepted.
 
-| # | Title | Gap identified in |
-|---|-------|--------------------|
-| [0018](0018-data-retention-and-archival-policy.md) | Data retention and archival policy | ADR-0005 Negative consequences |
-| [0020](0020-rate-limit-queue-bounds-and-distributed-gate-state.md) | Rate-limit queue bounds, dead-letter handling, and distributed gate state | ADR-0003 Negative consequences; third-party review |
-| [0021](0021-watchlist-boolean-query-ast-and-capability-matrix.md) | Unified boolean-query AST for watchlist matching, with per-connector capability matrix | ADR-0006 Negative consequences; third-party review |
-| [0022](0022-derived-data-caching-and-refresh-strategy.md) | Derived-data caching and refresh strategy (`ConnectorHealth` cache, `AuthorTopicSignal` refresh cadence) | ADR-0007, ADR-0009 Negative consequences; third-party review |
-| [0023](0023-proportional-connector-failure-threshold.md) | Proportional (rate-relative) connector failure threshold for auto-disable | Spec §5/§10 placeholder; third-party review |
+These originated new policy rather than documenting an existing decision — gaps identified during review (independently by this series' author and by two rounds of Copilot review) that the spec and design conversation left unaddressed. Each separated a durable *decision* from adjustable *implementation defaults*, with an Amendment Log for logging parameter changes (e.g. a deprecation window changing from 6 to 12 months) without superseding the ADR — that pattern remains in force post-acceptance; only a change to the underlying decision itself now warrants superseding. (ADR-0017, ADR-0018, ADR-0019, ADR-0020, ADR-0021, ADR-0022, and ADR-0023 have all since been accepted — see the main table above — and none remain in this section.)
 
-Third-party review also surfaced two numeric disagreements with ADR-0017/0018's original defaults, resolved and logged in those ADRs' own Amendment Logs (not new ADRs): ADR-0017's deprecation window shortened from 6 months to 90 days; ADR-0018's `IngestionRun` archival window shortened from 18 months to 90 days (aligned with `rawPayload`'s existing window), with monthly range partitioning added as the archival mechanism.
+Third-party review also surfaced a numeric disagreement with ADR-0017's original default, resolved and logged in that ADR's own Amendment Log (not a new ADR): ADR-0017's deprecation window shortened from 6 months to 90 days. A similar review-round disagreement briefly shortened ADR-0018's `IngestionRun` archival window from 18 months to 90 days (aligned with `rawPayload`'s window), but that alignment was reverted at acceptance — see ADR-0018's Amendment Log — back to 18 months, now configurable. Monthly range partitioning was added as the archival mechanism for both `SocialPost` and `IngestionRun` regardless of the window length. ADR-0020–0023 saw no such numeric disagreements — each was accepted with its originally proposed defaults unchanged (see footnote 5).
 
 **Still outstanding, not yet drafted:** ADR-0004's point-in-time author snapshot (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) was flagged as a genuine trade-off — not a strict improvement — during the same review round, but wasn't included in the batch above. Needs an explicit go/no-go before drafting, since it partially reintroduces the per-post duplication ADR-0004 argued against.
 
@@ -72,6 +76,6 @@ Considered and explicitly **not** drafted as ADRs, per review discussion:
 The following are called out in the spec but are scope boundaries or process decisions rather than architecture decisions, so they're not recorded as ADRs — none of them involve the kind of hard-to-reverse technical trade-off this series exists to justify:
 
 - Initial connector build order — **resolved 2026-07-29**, see spec §10 and `docs/implementation-plan.md` (RSS/News first, then Reddit; remaining platforms prioritized in Phase 4)
-- Exact dead-letter failure threshold — governed by ADR-0010 (flat placeholder) through Phase 3, ADR-0023 (Proposed, proportional rule) in Phase 4; see spec §10
+- Exact dead-letter failure threshold — governed by ADR-0010 (flat placeholder) through Phase 3, ADR-0023 (accepted 2026-07-29, proportional rule) once Story 2.5 is actually built in Phase 4; see spec §10
 - Testing strategy and CI/CD pipeline details for the two repos — **resolved 2026-07-29**, see spec §10 (lightweight CI given this is a solo-developer project, not team-scale process)
 - Geocoding of `profileLocation` — explicitly out of scope, §9, no decision made to record

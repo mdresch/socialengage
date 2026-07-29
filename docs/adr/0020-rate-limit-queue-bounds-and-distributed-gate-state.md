@@ -1,7 +1,8 @@
 # ADR-0020: Rate-limit queue bounds, dead-letter handling, and distributed gate state
 
-**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Status:** Accepted (2026-07-29) — see Acceptance note below
 **Source:** Not specified in the design spec. Flagged in ADR-0003's own Negative consequences ("needs monitoring/backpressure that isn't detailed in this spec") and expanded on in a third-party architectural review. This ADR originates the policy; it does not document a prior decision.
+**Acceptance note:** accepted with the queue-TTL/depth/dead-letter numbers (6h / 1,000 / 3) kept flat rather than varied by platform — no real traffic data yet to justify per-platform tuning, and building per-platform config now would be speculative complexity. Queue-depth rejection folds into the existing `degraded`/`failing` `ConnectorHealth` states (ADR-0009) rather than getting a new status — the abandonment is already auditable via `IngestionRun.errorSummary`; surface the reason in the connector detail view, not as a new enum value. The distributed-gate half is accepted as written, but build order matters: the single-instance/in-process `RequestGate` ships first, and the Redis-backed shared state is explicitly "build when a second concurrent instance is actually deployed," not built speculatively — exactly how Story 2.4 is scheduled in `docs/implementation-plan.md` Phase 4. See the Amendment Log for the full history.
 
 ## Context
 
@@ -46,10 +47,11 @@ Separately: requests that fail repeatedly once actually dispatched (not while wa
 
 ## Open questions for decision
 
-- Are 6 hours / 1,000 / 3 the right numbers, or should they vary by platform (a slow-moving RSS feed vs. a high-volume X watchlist)?
-- Should queue-depth rejection surface as a distinct `ConnectorHealth` status, or fold into the existing `degraded`/`failing` states (ADR-0009)?
+- ~~Are 6 hours / 1,000 / 3 the right numbers, or should they vary by platform (a slow-moving RSS feed vs. a high-volume X watchlist)?~~ **Resolved at acceptance:** kept flat for v1 — no real traffic data yet to justify per-platform tuning; log per-platform overrides in the Amendment Log if RSS and a high-volume connector actually show divergent needs once both are running.
+- ~~Should queue-depth rejection surface as a distinct `ConnectorHealth` status, or fold into the existing `degraded`/`failing` states (ADR-0009)?~~ **Resolved at acceptance:** folds into the existing states — a new top-level status is UI and derivation-logic surface area tenants mostly don't need to act on differently; the reason is already auditable via `IngestionRun.errorSummary` and surfaces in the connector detail view instead.
 
 ## Amendment Log
 
 - 2026-07-28 — Initial proposal: 6-hour queue TTL, 1,000-request depth ceiling, 3-failure dead-letter threshold, Redis-backed distributed gate state.
 - 2026-07-29 — Context note (not a change to the proposal): confirmed this is a solo-developer personal project. The distributed-gate-state half of this ADR is only load-bearing once more than one `social-listening-core` instance runs concurrently — a condition with no team-driven scaling pressure behind it here, and which may not arise for a long time, if ever. The queue-TTL/depth/dead-letter half is unaffected by this and remains relevant even single-instance. See `docs/implementation-plan.md` Phase 4.
+- 2026-07-29 — Accepted: numbers kept flat (no per-platform variance); queue-depth rejection folds into existing `ConnectorHealth` states rather than a new one; single-instance gate ships first, Redis-backed distributed state deferred to an actual second-instance deployment.

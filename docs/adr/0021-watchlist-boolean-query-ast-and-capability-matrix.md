@@ -1,7 +1,8 @@
 # ADR-0021: Unified boolean-query AST for watchlist matching, with per-connector capability matrix
 
-**Status:** Proposed (2026-07-28) — awaiting decision, not yet accepted
+**Status:** Accepted (2026-07-29) — see Acceptance note below
 **Source:** Not specified in the design spec. Flagged in ADR-0006's own Negative consequences ("matching logic now effectively exists in two places... need to behave equivalently... isn't specified here") and expanded on in a third-party architectural review. This ADR originates the policy; it does not document a prior decision.
+**Acceptance note:** accepted with whole-query degradation for v1, as drafted — with only two connectors in near-term scope (RSS/News, Reddit; spec §10's committed order), there isn't yet a real case where per-clause degradation would recover meaningful value, and RSS likely has little-to-no native boolean support at all, making it close to "always fallback" regardless. Revisit once a 3rd connector's capability matrix actually shows partial, divergent support — the same rule-of-three trigger `docs/adr/README.md` already applies to the deferred connector-capability-registry idea. `supportedQueryFeatures` surfaces on the connector status page first (already planned admin UI scope for Phase 1, per ADR-0009/0010), plus a lightweight badge on the watchlist detail view ("using post-fetch matching for X") rather than a creation-time blocking warning — meets this ADR's "not silently absorbed" requirement without building creation-flow validation UI ahead of need. See the Amendment Log.
 
 ## Context
 
@@ -41,9 +42,10 @@ Each connector declares which AST node types it can translate to its platform's 
 
 ## Open questions for decision
 
-- Is whole-query degradation an acceptable v1 simplification, or does the native-filtering cost benefit (ADR-0006) matter enough that per-clause degradation should be built from the start?
-- Where does `supportedQueryFeatures` surface to the tenant — connector status page, watchlist creation UI, both?
+- ~~Is whole-query degradation an acceptable v1 simplification, or does the native-filtering cost benefit (ADR-0006) matter enough that per-clause degradation should be built from the start?~~ **Resolved at acceptance:** whole-query, as drafted — with only RSS/News and Reddit in near-term scope, there isn't yet a real case where per-clause degradation recovers meaningful value; revisit once a 3rd connector's capability matrix shows partial, divergent support (rule of three).
+- ~~Where does `supportedQueryFeatures` surface to the tenant — connector status page, watchlist creation UI, both?~~ **Resolved at acceptance:** the connector status page (already planned Phase 1 admin UI scope), plus a lightweight badge on the watchlist detail view — not a creation-time blocking warning, which would be building creation-flow validation UI ahead of need.
 
 ## Amendment Log
 
 - 2026-07-28 — Initial proposal: shared AST, whole-query degradation granularity, `supportedQueryFeatures` capability declaration.
+- 2026-07-29 — Accepted: whole-query degradation confirmed for v1; `supportedQueryFeatures` surfaces on the connector status page plus a watchlist-detail-view badge, not a creation-time blocking warning.
