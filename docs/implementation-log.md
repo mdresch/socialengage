@@ -117,3 +117,15 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 - **Full suite at merge:** PASS (35/35 — prior 31 + this story's 4)
 
 **Bug caught by the contract before shipping:** initial implementation ordered by `created_at`; `pg`'s millisecond-precision `Date` conversion vs. Postgres's microsecond `TIMESTAMPTZ` caused genuine duplicate rows across pages for same-millisecond inserts. Fixed by switching to a monotonic `seq` identity column — see the commit message and `posts-api`'s SKILL.md for the full explanation.
+
+---
+
+## 2026-07-29 — Story 2.2 — social-listening-core@00322f2
+
+- **Full commit:** `00322f2f3d1eb241a0e504fc9dbd90d589914b92`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.2 / ADR-0003
+- **Contract:** social-listening-core/contracts/epic-2/story-2.2.per-tenant-rate-limiting.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md (updated, not new)
+- **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.2.per-tenant-rate-limiting.contract.test.ts, social-listening-core/src/connectors/requestGate.ts
+- **Full suite at merge:** PASS (39/39 — prior 35 + this story's 4)
