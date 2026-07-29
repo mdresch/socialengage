@@ -17,8 +17,9 @@ function coreBaseUrl(): string {
  * Placeholder call proving the REST-only mechanism works end to end. Real endpoint
  * calls (connect/disconnect a platform, manage watchlists, connector status, ...)
  * are added here as Phase 1 stories build the corresponding core routes and admin
- * features — see docs/implementation-plan.md.
+ * features — see docs/implementation-plan.md. Path is under /v1/ per ADR-0017
+ * (Story 1.3) — every core route lives behind a version prefix, no exceptions.
  */
 export async function checkCoreHealth(): Promise<Response> {
-  return fetch(`${coreBaseUrl()}/health`);
+  return fetch(`${coreBaseUrl()}/v1/health`);
 }

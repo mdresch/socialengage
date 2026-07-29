@@ -14,6 +14,7 @@ description: The sole sanctioned path from social-listening-admin to social-list
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0001 | Split into `social-listening-core` / `social-listening-admin`; admin talks to core only via REST, never the database directly | 1.1 |
+| ADR-0017 | Core's REST API is versioned under `/v1/`; this client's request paths must include the version prefix | 1.3 |
 
 ## Contracts that constrain this component
 
@@ -23,7 +24,7 @@ description: The sole sanctioned path from social-listening-admin to social-list
 
 - Every future admin feature that needs core data (connect/disconnect a platform, manage watchlists, connector status, etc. — Phase 1) must call through this module, adding a typed function here rather than calling `fetch` directly from a component or page.
 - The base URL is read from an environment variable (`CORE_API_BASE_URL`), never hardcoded, so admin and core stay independently deployable (ADR-0001's third Acceptance Criterion).
-- When Story 1.3 (ADR-0017, `/v1/` API versioning) lands in core, this client's request paths should be updated to include the version prefix — check that story before adding new endpoint calls here.
+- Every path is under `/v1/` (ADR-0017, Story 1.3 — see core's `.claude/skills/http-api-versioning/SKILL.md`): `checkCoreHealth()` calls `/v1/health`. Any new endpoint call added here must include its version prefix too — core has no unversioned routes.
 
 ## Load-bearing constraints — do not change casually
 
