@@ -20,6 +20,7 @@ The judgment layer sitting on top of `IngestionRun` history: `src/ingestion/erro
 
 - `contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts` — retryable errors retry with backoff; non-retryable errors fail immediately with no further attempts; a failed OAuth refresh (not a successful one) is what surfaces; `shouldAttemptIngestion()` flips to `false` once the trailing-hour failure count crosses `FAILING_THRESHOLD`, with `getAutoDisableReason()` returning the most recent failure's message; a second tenant is provably unaffected.
 - `contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts` — no `connector_health` (or similarly named) table exists at all; all four `ConnectorHealth` states derive correctly from a manually inserted `IngestionRun` sequence; `credentialStatus` reads from `platform_credentials.status` directly, independent of run-derived `status`.
+- `contracts/epic-4/story-4.3.health-derivation-index.contract.test.ts` (healing pass, 2026-07-29) — `ingestion_runs` has an index covering `(tenant_id, platform_id, started_at)`, the exact columns `deriveConnectorHealth()`'s query uses, confirmed via live `pg_indexes` introspection.
 
 ## How to extend this safely
 
@@ -40,3 +41,8 @@ The judgment layer sitting on top of `IngestionRun` history: `src/ingestion/erro
 - No real connector calls `runIngestionAttempt()` yet — proven correct against synthetic `attempt()`/`refreshOAuthToken()` functions, the same pattern as Stories 2.1/2.2's example connectors.
 - `RequestGate` (Story 2.2) and this orchestrator aren't wired together yet — a real connector's `attempt()` will need to call `acquireForProvider()`/`acquireForAiModel()` itself before making its platform call; that wiring happens when the first real connector is built, not here.
 - Story 2.5's rate-relative threshold (ADR-0023, Blocked) and Story 4.4's read-through cache (ADR-0022, Blocked) both build directly on this component once their source ADRs are accepted.
+- ADR-0014's Negative consequences names Key Vault throttling/outage as "almost certainly retryable" for connector error handling, but `errorClassification.ts`'s `ErrorKind` has no dedicated kind for it — flagged by the same 2026-07-29 consistency audit that caught the two gaps below, deliberately left open (generic `network`/`http_5xx` may already cover it adequately; revisit if a real Key Vault-dependent connector call shows otherwise).
+
+## Corrections
+
+- **2026-07-29 (healing pass):** a full ADR/story consistency audit found two gaps this component had shipped without: `ingestion_runs.retryable` (ADR-0005 names it as a field; Story 3.2's own migration deferred it to "Story 2.3," which then shipped without adding it) and the `(tenant_id, platform_id, started_at)` index ADR-0009's own Negative consequences names as needed. Both fixed in this pass — see the two new contracts above and `runIngestionAttempt.ts`/the migration for the fix itself.

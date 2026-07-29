@@ -14,6 +14,8 @@ export interface CompleteIngestionRunInput {
   postsIngested: number;
   postsSkipped: number;
   errorSummary?: string;
+  /** The last error's retryable classification (ADR-0005); null when no error occurred. */
+  retryable?: boolean;
 }
 
 export interface IngestionRunRef {
@@ -45,9 +47,16 @@ export async function completeIngestionRun(
   await withTenant(tenantId, async (client) => {
     await client.query(
       `UPDATE ingestion_runs
-       SET completed_at = now(), status = $2, posts_ingested = $3, posts_skipped = $4, error_summary = $5
+       SET completed_at = now(), status = $2, posts_ingested = $3, posts_skipped = $4, error_summary = $5, retryable = $6
        WHERE id = $1`,
-      [runId, input.status, input.postsIngested, input.postsSkipped, input.errorSummary ?? null]
+      [
+        runId,
+        input.status,
+        input.postsIngested,
+        input.postsSkipped,
+        input.errorSummary ?? null,
+        input.retryable ?? null,
+      ]
     );
   });
 }

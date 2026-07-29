@@ -72,6 +72,7 @@ export async function runIngestionAttempt(
             postsIngested: 0,
             postsSkipped: 0,
             errorSummary,
+            retryable: isRetryable(err.kind),
           });
           return { runId: run.id, status: 'failed', errorSummary };
         }
@@ -83,6 +84,7 @@ export async function runIngestionAttempt(
           postsIngested: 0,
           postsSkipped: 0,
           errorSummary: err.message,
+          retryable: isRetryable(err.kind),
         });
         return { runId: run.id, status: 'failed', errorSummary: err.message };
       }

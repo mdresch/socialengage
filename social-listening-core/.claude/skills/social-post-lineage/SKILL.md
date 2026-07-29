@@ -20,6 +20,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 
 - `contracts/epic-3/story-3.1.author-normalization.contract.test.ts` — two ingests of the same external author yield one `Author` row with `lastSeenAt` advancing; `social_posts` has no embedded author display fields; `postGeoLocation` (per-event) lives on `social_posts`, `profileLocation` (per-account) lives on `authors`.
 - `contracts/epic-3/story-3.2.ingestion-run-audit-anchor.contract.test.ts` — a post inserted via `insertSocialPost()` has a real `acquisitionId`; `IngestionRun` records `triggerType`/`connectorVersion`/timestamps/`status`/counts/`errorSummary`; a post's originating run's `connectorVersion`/`triggerType` resolve in one JOIN query.
+- `contracts/epic-3/story-3.2.ingestion-run-retryable-field.contract.test.ts` (healing pass, 2026-07-29) — `ingestion_runs.retryable`: `null` for a clean first-attempt success, `true` for a failure after a retryable error was exhausted, `false` for a non-retryable failure or a failed-OAuth-refresh failure.
 
 ## How to extend this safely
 
@@ -36,5 +37,8 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 ## Known gaps / deferred work
 
 - No real connector calls any of this yet — `upsertAuthor()`/`startIngestionRun()`/`insertSocialPost()` are proven correct in isolation (this story's contracts), not yet wired into an actual poll cycle. That's Phase 1's "also build, not storied" RSS/News connector work, layered on top once Story 3.3 (watchlist matching) and 3.4 (pagination) are also ready.
-- `ingestion_runs.retryable` (named in ADR-0005's full field list) isn't added yet — it belongs to Story 2.3's error-classification work, which actually populates and consumes it.
 - `AuthorTopicSignal` (Story 4.1) and the expert-finder query (`GET /topics/:topic/authors`) build on `authors` later; nothing here anticipates their shape.
+
+## Corrections
+
+- **2026-07-29 (healing pass):** this file previously claimed `ingestion_runs.retryable` "belongs to Story 2.3's error-classification work, which actually populates and consumes it." That was wrong — Story 2.3 shipped using an in-code, non-persisted classification (`ClassifiableError.kind`) and never added the column, a gap only caught by a later full ADR/story consistency audit (2026-07-29). Fixed in this same pass — see `runIngestionAttempt.ts` and the retryable-field contract above. Noted here so the same stale claim doesn't get copied forward again.
