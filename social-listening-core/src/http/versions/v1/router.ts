@@ -1,12 +1,15 @@
 import { Router } from 'express';
+import { postsRouter } from './postsRouter';
 
 export const v1Router = Router();
 
 /**
- * Placeholder proving the versioning mechanism works end to end. Real
- * business endpoints (connectors, watchlists, posts, ...) are Phase 1+
- * stories — see .claude/skills/http-api-versioning/SKILL.md.
+ * Placeholder proving the versioning mechanism works end to end — see
+ * .claude/skills/http-api-versioning/SKILL.md.
  */
 v1Router.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+/** Story 3.4 (ADR-0011) — see .claude/skills/posts-api/SKILL.md. */
+v1Router.use('/posts', postsRouter);
