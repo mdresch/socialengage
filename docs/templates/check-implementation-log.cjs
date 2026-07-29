@@ -84,10 +84,14 @@ if (fs.existsSync(LOG_PATH)) {
 
     let actualFiles;
     try {
-      actualFiles = sh(`git show --stat --format= ${entry.commit}`)
+      // `git diff-tree --name-only`, not `git show --stat`: --stat's path column
+      // truncates long paths (e.g. a nested .claude/skills/.../SKILL.md) to fit
+      // terminal width — reproduces even at a plain 80-column non-tty default, so
+      // it's not just a tty-width edge case. diff-tree's --name-only output is
+      // never truncated and has no trailing summary line to filter out either.
+      actualFiles = sh(`git diff-tree --no-commit-id --name-only -r ${entry.commit}`)
         .split('\n')
-        .filter((l) => l.includes(' | ')) // excludes the trailing "N files changed, ..." summary line
-        .map((l) => l.split('|')[0].trim())
+        .map((l) => l.trim())
         .filter(Boolean);
     } catch {
       console.error(`FAIL: could not read file list for commit ${entry.commit}.`);
