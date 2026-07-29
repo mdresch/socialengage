@@ -91,3 +91,15 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 - **Full suite at merge:** PASS (25/25 — Phase 0's 18 + this story's 7)
 
 **First Phase 1 story.** Goal per `docs/implementation-plan.md`: the smallest real slice — one platform, one tenant, one watchlist, posts flowing into a queryable API, with visible health status.
+
+---
+
+## 2026-07-29 — Story 3.1 + 3.2 — social-listening-core@34264e6
+
+- **Full commit:** `34264e6f1fb9e850bee1632e0668d803f9939451`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.1 / ADR-0004; 3.2 / ADR-0005
+- **Contract:** social-listening-core/contracts/epic-3/story-3.1.author-normalization.contract.test.ts; social-listening-core/contracts/epic-3/story-3.2.ingestion-run-audit-anchor.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/social-post-lineage/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-3/story-3.1.author-normalization.contract.test.ts, social-listening-core/contracts/epic-3/story-3.2.ingestion-run-audit-anchor.contract.test.ts, social-listening-core/migrations/0004_create_authors.sql, social-listening-core/migrations/0005_create_ingestion_runs.sql, social-listening-core/src/authors/authorStore.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Full suite at merge:** PASS (31/31 — prior 25 + this pair's 6)
