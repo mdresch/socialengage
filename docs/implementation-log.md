@@ -103,3 +103,17 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 - **SKILL.md:** social-listening-core/.claude/skills/social-post-lineage/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-3/story-3.1.author-normalization.contract.test.ts, social-listening-core/contracts/epic-3/story-3.2.ingestion-run-audit-anchor.contract.test.ts, social-listening-core/migrations/0004_create_authors.sql, social-listening-core/migrations/0005_create_ingestion_runs.sql, social-listening-core/src/authors/authorStore.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/posts/socialPostStore.ts
 - **Full suite at merge:** PASS (31/31 — prior 25 + this pair's 6)
+
+---
+
+## 2026-07-29 — Story 3.4 — social-listening-core@a5399d5
+
+- **Full commit:** `a5399d53d6eb104353693a61e40d7eabe30eabb8`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.4 / ADR-0011
+- **Contract:** social-listening-core/contracts/epic-3/story-3.4.cursor-pagination.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.4.cursor-pagination.contract.test.ts, social-listening-core/migrations/0006_add_social_posts_pagination_index.sql, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/posts/cursor.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Full suite at merge:** PASS (35/35 — prior 31 + this story's 4)
+
+**Bug caught by the contract before shipping:** initial implementation ordered by `created_at`; `pg`'s millisecond-precision `Date` conversion vs. Postgres's microsecond `TIMESTAMPTZ` caused genuine duplicate rows across pages for same-millisecond inserts. Fixed by switching to a monotonic `seq` identity column — see the commit message and `posts-api`'s SKILL.md for the full explanation.
