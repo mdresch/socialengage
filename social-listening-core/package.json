@@ -7,13 +7,21 @@
     "build": "tsc -p tsconfig.json",
     "test": "jest",
     "test:contracts": "jest contracts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
+    "db:test:down": "docker compose -f docker-compose.test.yml down -v",
+    "db:migrate": "ts-node src/db/migrate.ts"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
     "@types/node": "26.1.2",
+    "@types/pg": "8.20.0",
     "jest": "30.4.2",
     "ts-jest": "29.4.12",
+    "ts-node": "10.9.2",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "pg": "8.22.0"
   }
 }
