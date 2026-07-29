@@ -15,6 +15,7 @@ The unifying abstraction every social platform integration and every AI enrichme
 |---|---|---|
 | ADR-0002 | Shared `ProviderConnector` base, specialized into `SocialConnector`/`AIProviderConnector`; new connectors are additive, no core pipeline edits | 2.1 |
 | ADR-0003 | Rate limits enforced per `(tenantId, providerId)` (and per-model for AI) via a shared `RequestGate`; live header state takes priority over static config; exceeding the limit queues and retries, never drops | 2.2 |
+| ADR-0006 | `SocialConnector` gains an optional `translateWatchlistQuery()` — see `.claude/skills/watchlist-matching/SKILL.md` for the matching mechanism built on it | 3.3 (types.ts touched, mechanism lives elsewhere) |
 
 ## Contracts that constrain this component
 

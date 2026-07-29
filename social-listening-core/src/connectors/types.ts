@@ -1,3 +1,5 @@
+import { WatchlistTerms } from '../watchlists/types';
+
 export type AuthMode = 'oauth' | 'api_key' | 'none';
 
 export interface RateLimitConfig {
@@ -26,12 +28,21 @@ export interface NormalizedPost {
   rawPayload: unknown;
 }
 
+export interface NativeQueryTranslation {
+  supported: boolean;
+  queryParams?: Record<string, string>;
+}
+
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
   normalize(rawItem: unknown): NormalizedPost;
   /** Optional, authMode-agnostic hook — a specific connector's OAuth exchange
    * logic (if any) lives in its own implementation, not this interface. */
   getAuthHeaders?(credential: string): Record<string, string>;
+  /** Optional: platforms with native query filtering translate a Watchlist's
+   * terms (ADR-0006). Omitting this (or returning { supported: false }) falls
+   * back to post-fetch matching — see src/watchlists/dispatch.ts. */
+  translateWatchlistQuery?(terms: WatchlistTerms): NativeQueryTranslation;
 }
 
 export interface ModelCapabilities {
