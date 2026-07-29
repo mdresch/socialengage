@@ -129,3 +129,15 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 - **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md (updated, not new)
 - **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.2.per-tenant-rate-limiting.contract.test.ts, social-listening-core/src/connectors/requestGate.ts
 - **Full suite at merge:** PASS (39/39 — prior 35 + this story's 4)
+
+---
+
+## 2026-07-29 — Story 2.3 + 4.3 — social-listening-core@10e7c43
+
+- **Full commit:** `10e7c43b324ee9b36867cfff113c0c26e96c3a21`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.3 / ADR-0010; 4.3 / ADR-0009
+- **Contract:** social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts; social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts, social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts, social-listening-core/migrations/0007_add_platform_credentials_status.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
+- **Full suite at merge:** PASS (51/51 — prior 39 + this pair's 12)
