@@ -1,0 +1,119 @@
+import { withTenant } from '../db/withTenant';
+
+export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected';
+export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
+
+export interface ConnectorHealth {
+  status: ConnectorHealthStatus;
+  lastSuccessfulFetchAt: string | null;
+  lastAttemptAt: string | null;
+  consecutiveFailures: number;
+  credentialStatus: CredentialStatus | null;
+}
+
+/** Current placeholder (ADR-0009/ADR-0010) — see Story 2.5 / ADR-0023 for the rate-relative replacement. */
+export const FAILING_THRESHOLD = 10;
+const RECENT_WINDOW_MS = 60 * 60 * 1000;
+
+interface IngestionRunRow {
+  status: 'running' | 'succeeded' | 'failed';
+  started_at: Date;
+  completed_at: Date | null;
+  error_summary: string | null;
+}
+
+/**
+ * ConnectorHealth has no backing table of its own (ADR-0009) — every field is
+ * derived by querying ingestion_runs (and platform_credentials for
+ * credentialStatus) at read time. See
+ * .claude/skills/connector-health-and-error-handling/SKILL.md.
+ */
+export async function deriveConnectorHealth(
+  tenantId: string,
+  platformId: string
+): Promise<ConnectorHealth> {
+  return withTenant(tenantId, async (client) => {
+    const { rows: runs } = await client.query<IngestionRunRow>(
+      `SELECT status, started_at, completed_at, error_summary FROM ingestion_runs
+       WHERE platform_id = $1 ORDER BY started_at DESC`,
+      [platformId]
+    );
+
+    const { rows: credentialRows } = await client.query<{ status: CredentialStatus }>(
+      `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [platformId]
+    );
+    const credentialStatus = credentialRows.length > 0 ? credentialRows[0].status : null;
+
+    if (runs.length === 0) {
+      return {
+        status: 'disconnected',
+        lastSuccessfulFetchAt: null,
+        lastAttemptAt: null,
+        consecutiveFailures: 0,
+        credentialStatus,
+      };
+    }
+
+    const cutoff = Date.now() - RECENT_WINDOW_MS;
+    let recentFailures = 0;
+    let recentSuccesses = 0;
+    let lastSuccessfulFetchAt: string | null = null;
+    let consecutiveFailures = 0;
+    let sawSuccess = false;
+
+    for (const run of runs) {
+      const withinWindow = run.started_at.getTime() >= cutoff;
+      if (run.status === 'failed' && withinWindow) recentFailures += 1;
+      if (run.status === 'succeeded' && withinWindow) recentSuccesses += 1;
+      if (run.status === 'succeeded' && lastSuccessfulFetchAt === null) {
+        lastSuccessfulFetchAt = run.completed_at ? run.completed_at.toISOString() : null;
+      }
+      if (!sawSuccess) {
+        if (run.status === 'failed') consecutiveFailures += 1;
+        else if (run.status === 'succeeded') sawSuccess = true;
+      }
+    }
+
+    const status: ConnectorHealthStatus =
+      recentFailures >= FAILING_THRESHOLD
+        ? 'failing'
+        : recentFailures > 0 && recentSuccesses > 0
+          ? 'degraded'
+          : 'healthy';
+
+    return {
+      status,
+      lastSuccessfulFetchAt,
+      lastAttemptAt: runs[0].started_at.toISOString(),
+      consecutiveFailures,
+      credentialStatus,
+    };
+  });
+}
+
+/**
+ * Auto-disable is *behavior*, not stored state (ADR-0009's whole point): the
+ * scheduler consults the same derived health this module already computes,
+ * rather than a separate "disabled" flag anyone could write independently.
+ */
+export async function shouldAttemptIngestion(tenantId: string, platformId: string): Promise<boolean> {
+  const health = await deriveConnectorHealth(tenantId, platformId);
+  return health.status !== 'failing';
+}
+
+/** The reason shown to the tenant when auto-disabled — the most recent failure's errorSummary. */
+export async function getAutoDisableReason(
+  tenantId: string,
+  platformId: string
+): Promise<string | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ error_summary: string | null }>(
+      `SELECT error_summary FROM ingestion_runs
+       WHERE platform_id = $1 AND status = 'failed'
+       ORDER BY started_at DESC LIMIT 1`,
+      [platformId]
+    );
+    return rows.length > 0 ? rows[0].error_summary : null;
+  });
+}
