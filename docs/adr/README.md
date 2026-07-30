@@ -71,6 +71,15 @@ Third-party review also surfaced a numeric disagreement with ADR-0017's original
 
 **Still outstanding, not yet drafted:** ADR-0004's point-in-time author snapshot (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) was flagged as a genuine trade-off — not a strict improvement — during the same review round, but wasn't included in the batch above. Needs an explicit go/no-go before drafting, since it partially reintroduces the per-post duplication ADR-0004 argued against.
 
+**Multi-tenant Admin/Tenant/User model (brainstormed 2026-07-30, not yet drafted):** no `tenants` table, `users` table, or Admin tier exist anywhere in this series — "tenant" today is purely a `tenant_id` UUID convention (ADR-0015 isolates it; nothing provisions it). A same-day brainstorm settled several shapes without drafting any ADR yet (paused mid-session, to be continued):
+- Three tiers: Platform Admin → Tenant (with its own Tenant-Admin role) → Tenant User.
+- User onboarding: invite-only, gated by a per-tenant license/seat count — no request-then-approve queue.
+- Connectors are tenant-owned only; personal-account connectors are a future Social Selling subsystem's concern, not this one's.
+- Platform Admin's boundary leans toward provisioning-only (create/suspend a tenant, set its license count), zero tenant-data access — floated, not locked.
+- Two opens, unresolved: whether connector *activation* needs its own table separate from `platform_credentials` (built around an encrypted secret every connector doesn't have — Newswire's `authMode: 'none'` has none); whether a tenant needs multiple activations of one platform (e.g. several Facebook Pages).
+
+Candidate future ADRs, roughly in dependency order, none drafted: (1) authentication mechanism — blocks everything else; (2) Admin-tier design (an RLS exception, same shape as the migration role's existing superuser bypass); (3) `tenants` table shape; (4) `users` table shape + RLS; (5) retiring the `X-Tenant-Id` header placeholder; (6) connector connect/disconnect CRUD; (7) admin UI's own shape (one app or two).
+
 Considered and explicitly **not** drafted as ADRs, per review discussion:
 - **Capability-based connector composition / connector capability registry** — premature for a two-branch hierarchy (`SocialConnector`, `AIProviderConnector`); the spec doesn't describe a third, structurally different provider type that would justify it yet. Revisit if one materializes (rule of three).
 - **CODEOWNERS / repo ownership** — reasonable, but a repo-governance artifact, not an architecture decision.
