@@ -76,6 +76,6 @@ Considered and explicitly **not** drafted as ADRs, per review discussion:
 The following are called out in the spec but are scope boundaries or process decisions rather than architecture decisions, so they're not recorded as ADRs — none of them involve the kind of hard-to-reverse technical trade-off this series exists to justify:
 
 - Initial connector build order — **resolved 2026-07-29**, see spec §10 and `docs/implementation-plan.md` (RSS/News first, then Reddit; remaining platforms prioritized in Phase 4)
-- Exact dead-letter failure threshold — governed by ADR-0010 (flat placeholder) through Phase 3, ADR-0023 (accepted 2026-07-29, proportional rule) once Story 2.5 is actually built in Phase 4; see spec §10
+- Exact connector auto-disable failure threshold — governed by ADR-0010's flat placeholder through Phase 3; superseded 2026-07-30 by ADR-0023's proportional rule (Story 2.5, implemented ahead of the rest of Phase 4 — see `docs/implementation-log.md`); see spec §10. (Distinct from ADR-0020's separate per-request dead-letter threshold, Story 2.4.)
 - Testing strategy and CI/CD pipeline details for the two repos — **resolved 2026-07-29**, see spec §10 (lightweight CI given this is a solo-developer project, not team-scale process)
 - Geocoding of `profileLocation` — explicitly out of scope, §9, no decision made to record

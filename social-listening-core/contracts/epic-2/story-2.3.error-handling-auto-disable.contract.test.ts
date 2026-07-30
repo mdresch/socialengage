@@ -12,17 +12,28 @@
 // errors mark the run failed immediately, no further blind retries; (3) an
 // OAuth-capable attempt tries token refresh once before surfacing a credential
 // failure — a successful refresh retries transparently, only a failed refresh
-// surfaces; (4) after >=10 failed IngestionRuns in the trailing hour,
-// shouldAttemptIngestion() returns false with a reason drawn from the most recent
-// failure's errorSummary (auto-disable is *behavior* driven by Story 4.3's derived
-// health, not a separately stored disabled flag — ADR-0009's whole point); (5) a
-// second tenant's connector for the same platform is provably unaffected by the
-// first tenant's auto-disable.
-// Explicitly out of scope: the actual ≥10/trailing-hour derivation rule's
-// correctness across all four ConnectorHealth states (Story 4.3's own contract);
-// real per-connector error classification against an actual platform's responses
-// (no real connector exists yet); the rate-relative threshold that would replace
-// the flat 10 (Story 2.5 / ADR-0023, Blocked).
+// surfaces; (4) auto-disable genuinely happens and is wired to derived health —
+// proven with whatever failure count crosses the connector-level threshold, not a
+// hardcoded rule-specific number (that number's correctness is Story 4.3's/2.5's
+// own contract) — with a reason drawn from the most recent failure's errorSummary
+// (auto-disable is *behavior* driven by derived health, not a separately stored
+// disabled flag — ADR-0009's whole point); (5) a second tenant's connector for the
+// same platform is provably unaffected by the first tenant's auto-disable.
+// Explicitly out of scope: the actual failure-threshold derivation rule's
+// correctness across all four ConnectorHealth states (Story 4.3's own contract)
+// or its specific rate/floor/ceiling numbers (Story 2.5's own contract); real
+// per-connector error classification against an actual platform's responses (no
+// real connector exists yet).
+//
+// 2026-07-30 (dated note, ADR-0023): AC4 originally hardcoded "9 failures still
+// allowed, 10th failure disables" — numbers specific to the flat "≥10/hour" rule
+// ADR-0023 (accepted 2026-07-29) explicitly supersedes (see ADR-0009's/ADR-0010's
+// "Supersession update" notes). That rule-specific claim cannot survive under any
+// rate-based rule that can trigger before a flat count of exactly 10 — under
+// ADR-0023's now-current rule, 5 consecutive pure failures already crosses the
+// 50%-rate/5-attempt-floor threshold. AC4 was rewritten to prove the same thing
+// (auto-disable wiring + visible reason) using Story 2.5's now-current threshold,
+// per Story 2.5's own implementation — not a decision this file makes on its own.
 
 import { randomUUID } from 'crypto';
 import { closePool } from '../../src/db/pool';
@@ -118,9 +129,13 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
     expect(failing.errorSummary).toMatch(/refresh/i);
   });
 
-  it('AC4: auto-disables after >=10 failed IngestionRuns in the trailing hour, with a visible reason', async () => {
+  it('AC4: auto-disables once the connector-level failure threshold is crossed, with a visible reason', async () => {
+    // Story 2.5/ADR-0023's now-current threshold, not re-asserted here in
+    // detail (see that story's own contract): >=5 attempts with >=50%
+    // failing crosses it. 4 pure failures stays under the attempt floor;
+    // the 5th crosses both the floor and the rate.
     const tenantId = randomUUID();
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 4; i++) {
       await runIngestionAttempt({
         tenantId,
         connectorInfo,
@@ -137,12 +152,12 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
       connectorInfo,
       backoffMs: fastBackoff,
       attempt: async () => {
-        throw new ClassifiableError('malformed_watchlist', 'the tenth failure');
+        throw new ClassifiableError('malformed_watchlist', 'the fifth failure');
       },
     });
 
     expect(await shouldAttemptIngestion(tenantId, connectorInfo.platformId)).toBe(false);
-    expect(await getAutoDisableReason(tenantId, connectorInfo.platformId)).toBe('the tenth failure');
+    expect(await getAutoDisableReason(tenantId, connectorInfo.platformId)).toBe('the fifth failure');
   });
 
   it('AC5: a second tenant is provably unaffected by the first tenant\'s auto-disable', async () => {

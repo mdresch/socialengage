@@ -35,7 +35,7 @@
 ## Story 2.3 — Retryable/non-retryable error handling with per-tenant auto-disable
 
 **Source:** ADR-0010 · **Status:** Ready
-*(See Story 2.5 / ADR-0023, accepted 2026-07-29 — the flat threshold below is what's currently shipped; ADR-0023's rate-relative rule supersedes it once Story 2.5 is actually built, per ADR-0010's "Supersession update" note. This story's own code/contract are unaffected until then — see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
+*(Story 2.5 / ADR-0023, accepted 2026-07-29 and implemented 2026-07-30, supersedes the flat threshold this story originally shipped with — per ADR-0010's "Supersession update" note. AC4 below reflects the current, rate-relative behavior; see `docs/user-stories/README.md`'s "Known cross-story conflict" note for what did and didn't change in this story's own contract.)*
 
 **As a** tenant relying on continuous ingestion,
 **I want** transient errors retried automatically with backoff, non-retryable errors surfaced immediately without blind retries, and a connector auto-disabled after sustained failures — all scoped to my tenant alone,
@@ -45,7 +45,7 @@
 - Rate-limit hits, transient network failures, and 5xx responses trigger exponential backoff and automatic retry.
 - 401/403 responses and malformed-watchlist errors immediately mark the connector `failing` with no further blind retries.
 - An OAuth connector attempts token refresh automatically before surfacing a credential failure to the tenant; only a failed refresh surfaces.
-- A connector auto-disables after ≥10 failed `IngestionRun`s within the trailing hour (current placeholder threshold; see Story 2.5), with a clear reason recorded and visible to that tenant.
+- A connector auto-disables once the connector-level failure threshold is crossed (originally the flat ≥10/hour placeholder; superseded 2026-07-30 by Story 2.5's rate-relative rule — see that story below), with a clear reason recorded and visible to that tenant.
 - A second tenant's connector for the same platform is provably unaffected by the first tenant's auto-disable (isolation test: disable tenant A's X connector, confirm tenant B's X ingestion continues).
 
 ---
@@ -69,8 +69,8 @@
 
 ## Story 2.5 — Proportional, rate-relative connector failure threshold
 
-**Source:** ADR-0023 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; 50%/5-attempt floor/20-consecutive kept as launch defaults, per ADR-0023's Acceptance note)
-*(Supersedes the flat threshold in Story 2.3 / ADR-0009-0010, per each ADR's "Supersession update" note — but only once this story is actually built; see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
+**Source:** ADR-0023 · **Status:** Ready — implemented 2026-07-30 (50%/5-attempt floor/20-consecutive kept as launch defaults, per ADR-0023's Acceptance note)
+*(Supersedes the flat threshold in Story 2.3 / ADR-0009-0010, per each ADR's "Supersession update" note — now in effect; see `docs/user-stories/README.md`'s "Known cross-story conflict" note for what changed in those stories' own contracts.)*
 
 **As a** tenant with connectors polling at very different frequencies,
 **I want** auto-disable triggered by failure *rate* relative to attempt volume, with a minimum attempt floor and an absolute ceiling as a backstop,

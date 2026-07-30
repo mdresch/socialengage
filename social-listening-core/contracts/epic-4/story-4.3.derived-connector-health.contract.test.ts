@@ -9,16 +9,28 @@
 // there is nothing to write to, so "no separate health-table writes" is true by
 // construction; (2) the four derivation rules — disconnected (no runs),
 // healthy (no recent failures), degraded (recent failures + a recent success),
-// failing (>=10 recent failures) — each verified by manually inserting a known
-// IngestionRun sequence via the sanctioned store functions, no other writes; (3)
-// credentialStatus is read from platform_credentials.status directly, independent
-// of run history (an expired credential reads as 'expired' even when the
-// run-derived status is otherwise healthy).
-// Explicitly out of scope: the read-through cache (Story 4.4, ADR-0022, Blocked);
-// the rate-relative threshold that would replace the flat 10 (Story 2.5, ADR-0023,
-// Blocked); auto-disable *behavior* built on top of this derivation (Story 2.3's
-// own contract, which consumes deriveConnectorHealth via shouldAttemptIngestion
-// rather than re-deriving health itself).
+// failing (enough recent failures to cross the connector-level threshold) — each
+// verified by manually inserting a known IngestionRun sequence via the sanctioned
+// store functions, no other writes; (3) credentialStatus is read from
+// platform_credentials.status directly, independent of run history (an expired
+// credential reads as 'expired' even when the run-derived status is otherwise
+// healthy).
+// Explicitly out of scope: the read-through cache (Story 4.4, ADR-0022, accepted
+// 2026-07-29, not yet built); the exact rate/floor/ceiling numbers of the
+// `failing` rule (Story 2.5's own contract owns those specifics); auto-disable
+// *behavior* built on top of this derivation (Story 2.3's own contract, which
+// consumes deriveConnectorHealth via shouldAttemptIngestion rather than
+// re-deriving health itself).
+//
+// 2026-07-30 (dated note, ADR-0023): the `failing` derivation rule changed from a
+// flat "≥10 failures/hour" placeholder to a rate-relative rule (see ADR-0009's
+// "Supersession update" note) — this is the one thing ADR-0023 changes;
+// degraded/disconnected/healthy and credentialStatus are unaffected. AC2's
+// "failing" test below still uses 10 pure failures and its assertion is
+// unchanged: 10/10 attempts is 100% failure with 10 attempts, which trivially
+// clears the new rule's 50%-rate/5-attempt-floor too, just for a different
+// underlying reason than before. It is a superset case, not a test of the new
+// rule's exact boundary — that precision lives in Story 2.5's own contract.
 
 import { randomUUID } from 'crypto';
 import { getPool, closePool } from '../../src/db/pool';
@@ -97,7 +109,7 @@ describe('Story 4.3 — derived ConnectorHealth contract', () => {
     expect(health.status).toBe('degraded');
   });
 
-  it('AC2: failing — >=10 failed runs within the trailing hour', async () => {
+  it('AC2: failing — enough recent failures to cross the connector-level threshold (10/10 clears Story 2.5\'s rate+floor rule, a superset case — see this file\'s dated ADR-0023 note)', async () => {
     const tenantId = randomUUID();
     for (let i = 0; i < 10; i++) {
       await recordRun(tenantId, 'failed', `failure ${i}`);

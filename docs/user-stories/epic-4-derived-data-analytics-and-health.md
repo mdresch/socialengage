@@ -33,7 +33,7 @@
 ## Story 4.3 — Derived connector health from IngestionRun history
 
 **Source:** ADR-0009 · **Status:** Ready
-*(See Story 2.5 / ADR-0023, accepted 2026-07-29 — the flat threshold below is what's currently shipped; ADR-0023's rate-relative rule supersedes it once Story 2.5 is actually built, per ADR-0009's "Supersession update" note. This story's own code/contract are unaffected until then — see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
+*(Story 2.5 / ADR-0023, accepted 2026-07-29 and implemented 2026-07-30, supersedes the flat threshold named in AC2 below — per ADR-0009's "Supersession update" note. This story's own contract needed no assertion changes; see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
 
 **As a** tenant administrator,
 **I want** `GET /connectors` to report health computed live from `IngestionRun` history — never a separately stored, independently updatable health record —
@@ -41,7 +41,7 @@
 
 **Acceptance Criteria**
 - `ConnectorHealth` has no backing table of its own (aside from the read-cache in Story 4.4, which is explicitly reconstructable, not authoritative).
-- `failing` is derived as ≥10 failed `IngestionRun`s in the trailing hour for a `(tenantId, platformId)` pair (current placeholder — see Story 2.5); `degraded` as recent failures with a success within the last hour; `disconnected` as zero recorded runs; `healthy` otherwise.
+- `failing` is derived from a connector-level failure threshold (originally the flat ≥10/hour placeholder; superseded 2026-07-30 by Story 2.5's rate-relative rule — ≥50% of ≥5 attempts in the trailing hour, or ≥20 consecutive failures); `degraded` as recent failures with a success within the last hour; `disconnected` as zero recorded runs; `healthy` otherwise.
 - `credentialStatus` is read from the `Credential` entity directly, not derived from run history.
 - A test that manually inserts a known sequence of `IngestionRun`s and asserts the resulting derived status for all four states passes without any separate health-table writes.
 

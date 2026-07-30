@@ -10,11 +10,11 @@ A story sourced from an **Accepted** ADR is **Ready** — the decision is settle
 
 **Historical note — the "Blocked" status this section used to describe:** stories sourced from a still-Proposed ADR were **Blocked — pending ADR acceptance** until their source ADR was accepted; none remain in that state now. The **known cross-story conflict** that motivated calling this out explicitly is now resolved at the ADR level, not just theoretical — see below.
 
-## Known cross-story conflict — resolved at the ADR level, not yet at the code level
+## Known cross-story conflict — resolved, 2026-07-30
 
-Story 2.3 (ADR-0010's error/auto-disable policy) and Story 4.3 (ADR-0009's derived `ConnectorHealth`) were both built and shipped against the flat "≥10 failures/hour" rule, before ADR-0023 (Story 2.5's proportional, rate-relative threshold) was accepted. **ADR-0023 is now Accepted (2026-07-29)** and, per its own "Relationship to existing ADRs" note, partially supersedes that flat rule in both ADR-0009 and ADR-0010 (see each ADR's "Supersession update" note) — Story 2.5 is now Ready, not Blocked.
+Story 2.3 (ADR-0010's error/auto-disable policy) and Story 4.3 (ADR-0009's derived `ConnectorHealth`) were both built and shipped against the flat "≥10 failures/hour" rule, before ADR-0023 (Story 2.5's proportional, rate-relative threshold) was accepted. **Story 2.5 has now been implemented (2026-07-30)** — `connectorHealth.ts`'s `failing` derivation is the rate-relative rule (≥50% of ≥5 attempts, or ≥20 consecutive failures), per ADR-0009's and ADR-0010's "Supersession update" notes.
 
-This does **not** silently change Stories 2.3/4.3's already-shipped code or contracts: they stay exactly as built, using the flat rule, until Story 2.5 is actually picked up and implemented — at which point healing 2.3/4.3's implementation to the new rule is part of that story's own scope (via the `heal-contract-failure` skill, since it touches already-passing contracts), not a side effect of this documentation update. Both stories' own italic notes point here.
+This did **not** silently rewrite Stories 2.3/4.3's contracts. Story 4.3's assertions needed no changes at all — its 10-pure-failures fixture still clears the new rule, just for a different underlying reason. Story 2.3's AC4 had exactly one assertion that couldn't survive under any rate-based rule ("9 failures still allowed" — the new rule already flags `failing` well before 9 pure failures) and was rewritten with new numbers to prove the same thing (auto-disable wiring + visible reason), under Story 2.5's own implementation, with a dated note in that file — not decided by the healing/editing pass on its own. See both files' own 2026-07-30 dated notes for the specifics.
 
 ## Epics
 

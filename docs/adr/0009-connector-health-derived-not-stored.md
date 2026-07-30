@@ -39,3 +39,5 @@ Tenants and the admin UI need to see connector status (healthy/degraded/failing/
 ## Supersession update (2026-07-29)
 
 **ADR-0023 has been accepted.** The flat "≥10 failed runs within the last hour" `failing` rule above is now superseded by ADR-0023's rate-relative rule, exactly as the note above anticipated — nothing else in this ADR's Decision is affected. This does not retroactively change already-shipped code: Story 4.3 was built and passed its contract against the flat rule before ADR-0023 was accepted, and stays as shipped until Story 2.5 (now Ready) is actually picked up and built — that's when the implementation gets healed to match. See `docs/user-stories/README.md`'s "Known cross-story conflict" note. This ADR's own Decision text is still not edited, per this series' convention.
+
+**2026-07-30 — Story 2.5 implemented.** The healing this note anticipated is done: `connectorHealth.ts`'s `failing` derivation is now ADR-0023's rate-relative rule. Story 4.3's own contract needed no assertion changes (its 10-pure-failures fixture still clears the new rule, just for a different reason); see that story's contract file for its own dated note.

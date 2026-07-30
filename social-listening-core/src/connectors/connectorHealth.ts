@@ -11,8 +11,16 @@ export interface ConnectorHealth {
   credentialStatus: CredentialStatus | null;
 }
 
-/** Current placeholder (ADR-0009/ADR-0010) — see Story 2.5 / ADR-0023 for the rate-relative replacement. */
-export const FAILING_THRESHOLD = 10;
+/**
+ * `failing` derivation (Story 2.5, ADR-0023) — supersedes the original flat
+ * "≥10 failures/hour" placeholder (ADR-0009/ADR-0010's own text, see each
+ * ADR's "Supersession update" note). `degraded`/`disconnected`/`healthy`
+ * are unaffected — ADR-0023 changes only this one rule. See
+ * .claude/skills/connector-health-and-error-handling/SKILL.md.
+ */
+const RATE_FAILURE_THRESHOLD = 0.5;
+const RATE_ATTEMPT_FLOOR = 5;
+const CONSECUTIVE_FAILURE_CEILING = 20;
 const RECENT_WINDOW_MS = 60 * 60 * 1000;
 
 interface IngestionRunRow {
@@ -75,8 +83,13 @@ export async function deriveConnectorHealth(
       }
     }
 
+    const recentAttempts = recentFailures + recentSuccesses;
+    const rateFailing =
+      recentAttempts >= RATE_ATTEMPT_FLOOR && recentFailures / recentAttempts >= RATE_FAILURE_THRESHOLD;
+    const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
+
     const status: ConnectorHealthStatus =
-      recentFailures >= FAILING_THRESHOLD
+      rateFailing || ceilingFailing
         ? 'failing'
         : recentFailures > 0 && recentSuccesses > 0
           ? 'degraded'
