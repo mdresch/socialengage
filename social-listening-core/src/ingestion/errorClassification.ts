@@ -4,7 +4,9 @@ export type ErrorKind =
   | 'http_5xx'
   | 'http_401'
   | 'http_403'
-  | 'malformed_watchlist';
+  | 'malformed_watchlist'
+  | 'queue_ttl_exceeded'
+  | 'queue_depth_exceeded';
 
 const RETRYABLE_KINDS: ReadonlySet<ErrorKind> = new Set(['rate_limit', 'network', 'http_5xx']);
 const CREDENTIAL_KINDS: ReadonlySet<ErrorKind> = new Set(['http_401', 'http_403']);

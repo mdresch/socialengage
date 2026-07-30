@@ -10,6 +10,50 @@ const state = new Map<string, GateState>();
 /** Serializes acquisitions per key so a shared bucket's state is never raced. */
 const keyLocks = new Map<string, Promise<unknown>>();
 
+/** Story 2.4 (ADR-0020) — real-world defaults; overridable per call for tests. */
+const DEFAULT_QUEUE_TTL_MS = 6 * 60 * 60 * 1000;
+const DEFAULT_MAX_QUEUE_DEPTH = 1000;
+
+/** Requests currently queued (waiting or actively acquiring) per key — Story 2.4's depth ceiling. */
+const queueDepth = new Map<string, number>();
+
+/**
+ * A request that could not be dispatched within its queue TTL — abandoned,
+ * not delivered stale (ADR-0020). The caller (a connector's attempt(), the
+ * same way it already throws ClassifiableError for platform failures) is
+ * responsible for reclassifying this into a ClassifiableError so
+ * runIngestionAttempt() records it via the owning IngestionRun — RequestGate
+ * itself has no ingestion-domain knowledge. See
+ * .claude/skills/provider-connector-framework/SKILL.md.
+ */
+export class QueueTtlExceededError extends Error {
+  constructor(
+    public readonly key: string,
+    public readonly ttlMs: number
+  ) {
+    super(`Rate-limit queue wait for '${key}' exceeded its TTL (${ttlMs}ms); request abandoned.`);
+    this.name = 'QueueTtlExceededError';
+  }
+}
+
+/** A request rejected outright because its key's queue was already at its depth ceiling (ADR-0020) — never queued at all. */
+export class QueueDepthExceededError extends Error {
+  constructor(
+    public readonly key: string,
+    public readonly maxDepth: number
+  ) {
+    super(`Rate-limit queue for '${key}' is at its depth ceiling (${maxDepth}); request rejected.`);
+    this.name = 'QueueDepthExceededError';
+  }
+}
+
+export interface AcquireOptions {
+  /** Overrides DEFAULT_QUEUE_TTL_MS — test-only in practice; real callers get ADR-0020's 6h default. */
+  queueTtlMs?: number;
+  /** Overrides DEFAULT_MAX_QUEUE_DEPTH — test-only in practice; real callers get ADR-0020's 1,000 default. */
+  maxQueueDepth?: number;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -27,7 +71,12 @@ async function withKeyLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return run;
 }
 
-async function acquireOnce(key: string, config: RateLimitConfig): Promise<void> {
+async function acquireOnce(key: string, config: RateLimitConfig, enqueuedAt: number, ttlMs: number): Promise<void> {
+  const elapsedMs = Date.now() - enqueuedAt;
+  if (elapsedMs >= ttlMs) {
+    throw new QueueTtlExceededError(key, ttlMs);
+  }
+
   const nowMs = Date.now();
   let s = state.get(key);
   if (!s || nowMs >= s.windowResetAt) {
@@ -41,15 +90,39 @@ async function acquireOnce(key: string, config: RateLimitConfig): Promise<void> 
   }
 
   // Exhausted this window: queue and retry after reset (ADR-0003) — never
-  // reject/drop. See .claude/skills/provider-connector-framework/SKILL.md.
+  // reject/drop for exceeding the *rate*. Sleep only up to the remaining TTL
+  // budget, not the full time-to-reset, so a TTL shorter than the reset
+  // window is actually checked promptly rather than only after an
+  // arbitrarily long single sleep completes.
+  // See .claude/skills/provider-connector-framework/SKILL.md.
   const waitMs = Math.max(0, s.windowResetAt - nowMs);
-  await sleep(waitMs);
-  return acquireOnce(key, config);
+  const remainingTtlMs = ttlMs - elapsedMs;
+  await sleep(Math.min(waitMs, remainingTtlMs));
+  return acquireOnce(key, config, enqueuedAt, ttlMs);
 }
 
-/** Gates a request under an arbitrary key (tenantId:providerId, or +modelId for AI). */
-export async function acquire(key: string, config: RateLimitConfig): Promise<void> {
-  return withKeyLock(key, () => acquireOnce(key, config));
+/**
+ * Gates a request under an arbitrary key (tenantId:providerId, or +modelId
+ * for AI). Bounded (Story 2.4, ADR-0020): rejects immediately with
+ * QueueDepthExceededError once the key's queue is at its depth ceiling, and
+ * abandons (QueueTtlExceededError) a wait that exceeds its TTL rather than
+ * waiting forever.
+ */
+export async function acquire(key: string, config: RateLimitConfig, options: AcquireOptions = {}): Promise<void> {
+  const maxQueueDepth = options.maxQueueDepth ?? DEFAULT_MAX_QUEUE_DEPTH;
+  const depth = queueDepth.get(key) ?? 0;
+  if (depth >= maxQueueDepth) {
+    throw new QueueDepthExceededError(key, maxQueueDepth);
+  }
+
+  queueDepth.set(key, depth + 1);
+  const enqueuedAt = Date.now();
+  const ttlMs = options.queueTtlMs ?? DEFAULT_QUEUE_TTL_MS;
+  try {
+    return await withKeyLock(key, () => acquireOnce(key, config, enqueuedAt, ttlMs));
+  } finally {
+    queueDepth.set(key, Math.max(0, (queueDepth.get(key) ?? 1) - 1));
+  }
 }
 
 export function socialConnectorKey(tenantId: string, connector: ProviderConnector): string {
@@ -90,4 +163,5 @@ export async function acquireForAiModel(
 export function __resetGateForTests(): void {
   state.clear();
   keyLocks.clear();
+  queueDepth.clear();
 }

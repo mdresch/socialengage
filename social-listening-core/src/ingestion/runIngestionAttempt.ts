@@ -79,14 +79,23 @@ export async function runIngestionAttempt(
       }
 
       if (!isRetryable(err.kind) || attemptsMade > maxRetries) {
+        // Retries genuinely exhausted for a retryable error (not an
+        // immediate non-retryable failure) is ADR-0020's dead-letter case —
+        // a single poisoned request, distinctly marked, independent of
+        // connector-level auto-disable (Story 2.3/2.5's aggregate
+        // threshold). See .claude/skills/connector-health-and-error-handling/SKILL.md.
+        const deadLettered = isRetryable(err.kind) && attemptsMade > maxRetries;
+        const errorSummary = deadLettered
+          ? `Dead-lettered after ${attemptsMade} consecutive execution failures: ${err.message}`
+          : err.message;
         await completeIngestionRun(options.tenantId, run.id, {
           status: 'failed',
           postsIngested: 0,
           postsSkipped: 0,
-          errorSummary: err.message,
+          errorSummary,
           retryable: isRetryable(err.kind),
         });
-        return { runId: run.id, status: 'failed', errorSummary: err.message };
+        return { runId: run.id, status: 'failed', errorSummary };
       }
 
       await sleep(backoffMs(attemptsMade));
