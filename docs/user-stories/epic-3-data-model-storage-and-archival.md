@@ -41,7 +41,7 @@
 **Acceptance Criteria**
 - For a platform whose connector translates watchlist terms into native query parameters, requests sent to that platform include the translated filter.
 - For a platform without native filtering support, the core evaluates the watchlist against every fetched post before persisting matches.
-- A given `Watchlist` produces the same matched posts regardless of which platform sourced them (subject to Story 3.6 / ADR-0021 closing the AST-consistency gap).
+- A given `Watchlist` produces the same matched posts regardless of which platform sourced them — proven for this story's own `WatchlistTerms` (keyword/hashtag/account, OR-only) shape by this story's contract; Story 3.6 (ADR-0021, shipped 2026-07-30) closes the same consistency question more rigorously for a `booleanQuery`'s AST, as an independent parallel matching mode, not a replacement of this one.
 
 ---
 
