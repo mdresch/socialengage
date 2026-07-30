@@ -1,11 +1,11 @@
 # Implementation & Delivery Plan — Social Listening / Insights Subsystem
 
-Sequences the 23 [user stories](user-stories/README.md) — grounded in the [23 ADRs](adr/README.md) — into build phases. This is a dependency-ordered plan, not a calendar: no durations or sprint lengths are estimated. This is a solo-developer personal project (confirmed 2026-07-29), so "no team-scale process" is a deliberate choice throughout this plan (see Phase 0's testing/CI recommendation and Phase 4's note on multi-instance work), not just an absence of data to estimate against.
+Sequences the [user stories](user-stories/README.md) — grounded in the [ADRs](adr/README.md) — into build phases. Originally 23 stories/ADRs (2026-07-29); now 25, after Story 2.6/ADR-0024 and Story 1.4/ADR-0025 were each added and accepted the same day they were drafted (2026-07-30) — see `docs/adr/README.md`'s footnotes 6/7. This is a dependency-ordered plan, not a calendar: no durations or sprint lengths are estimated. This is a solo-developer personal project (confirmed 2026-07-29), so "no team-scale process" is a deliberate choice throughout this plan (see Phase 0's testing/CI recommendation and Phase 4's note on multi-instance work), not just an absence of data to estimate against.
 
 ## How to read this
 
-- **Ready** stories (23 of 23, as of 2026-07-29) are sourced from Accepted ADRs and can be built as written. All 23 ADRs in this series are now Accepted — none remain Blocked. "Ready" is not the same as "built yet," though: several Ready stories (e.g. 2.4, 2.5, 3.5, 3.6, 4.4) are still deliberately scheduled for a later phase below, per their own Status line's scheduling note.
-- **Blocked** stories (0 of 23) — historical category, kept here for readers of earlier phases of this plan. A phase that included a Blocked story needed that ADR accepted before the phase could close; that constraint no longer applies to any phase.
+- **Ready** stories (25 of 25, as of 2026-07-30) are sourced from Accepted ADRs and can be built as written. All 25 ADRs in this series are now Accepted — none remain Blocked. "Ready" is not the same as "built yet," though: several Ready stories (e.g. 2.4, 2.5, 3.5, 3.6, 4.4) are still deliberately scheduled for a later phase below, per their own Status line's scheduling note.
+- **Blocked** stories (0 of 25) — historical category, kept here for readers of earlier phases of this plan. A phase that included a Blocked story needed that ADR accepted before the phase could close; that constraint no longer applies to any phase.
 - **This plan is not the whole scope.** The 23 stories cover architecturally significant decisions — that's what the ADR series was for. Ordinary CRUD surface (watchlist create/read/update/delete, connector connect/disconnect endpoints, the admin UI's screens) was never architecturally interesting enough to warrant its own ADR, but it's real, necessary work that has to happen alongside the storied work. It's called out per phase below so it isn't invisible.
 - **Not covered at all:** Brand Reputation & Alerts, Social Care, Social Selling — explicitly deferred to be designed separately once this subsystem ships (spec §1, §9). Nothing in this plan builds toward them beyond leaving the REST API and Service Bus events they'll eventually consume.
 - **How each story actually gets built** (scope discipline, contract-first testing, component `SKILL.md`s, permanent regression suite) is a separate concern from *when* — see [`docs/implementation-methodology.md`](implementation-methodology.md), operationalized as the `implement-story` Claude Code skill. This plan says what and when; that document and skill say how, uniformly, for every story in every phase below.
@@ -24,8 +24,8 @@ Three things needed an answer that nothing in the ADR series or spec resolved on
 
 **Goal:** two deployable-but-empty repos, a tenant-isolated database, and credential storage — nothing that ingests a post yet, but everything a connector will need to plug into.
 
-**Stories:** 1.1 (repo split), 1.2 (Postgres + JSONB), 5.4 (RLS on every tenant table), 5.3 (Key Vault envelope-encrypted credential storage), 1.3 (API versioning — decided ahead of schedule, see above).
-**Also build, not storied:** `/v1/` route scaffold (empty, per the now-accepted ADR-0017); lightweight GitHub Actions CI per the decision above; local dev environment (Postgres + Key Vault emulator or dev tenant).
+**Stories:** 1.1 (repo split), 1.2 (Postgres + JSONB), 5.4 (RLS on every tenant table), 5.3 (Key Vault envelope-encrypted credential storage), 1.3 (API versioning — decided ahead of schedule, see above), 1.4 (persistent local dev database, ADR-0025, accepted 2026-07-30 — the Postgres half of the "local dev environment" line below, promoted out of unstoried tooling after real friction was hit in practice; see ADR-0025's own Acceptance note for why this is a deliberate exception).
+**Also build, not storied:** `/v1/` route scaffold (empty, per the now-accepted ADR-0017); lightweight GitHub Actions CI per the decision above; the Key Vault half of a local dev environment (an emulator or dev tenant — the Postgres half is now Story 1.4 above).
 
 **Deliverable:** `social-listening-core` and `social-listening-admin` both deploy successfully to a dev environment; a smoke-test tenant can be created with RLS-isolated tables and a stored, encrypted dummy credential — with no connector, watchlist, or post yet.
 
@@ -91,11 +91,11 @@ Three things needed an answer that nothing in the ADR series or spec resolved on
 
 | Phase | Ready stories | Blocked stories (ADR must be accepted to close the phase) |
 |---|---|---|
-| 0 | 1.1, 1.2, 1.3, 5.3, 5.4 | — |
+| 0 | 1.1, 1.2, 1.3, 1.4, 5.3, 5.4 | — |
 | 1 | 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 4.3 | — |
 | 2 | 4.1, 4.2 | — |
 | 3 | 5.1, 5.2, 5.5 | — |
 | 4 | 2.4 (may never trigger — see Phase 4's solo-project note), 2.5, 3.5, 3.6, 4.4, 2.6 | — |
 | 5 | — | — |
 
-Every story from the original 23-ADR series appears exactly once, plus Story 2.6 (ADR-0024, a genuine 24th addition accepted 2026-07-30 — see `docs/adr/README.md`'s footnote 6). As of 2026-07-30, all 24 are Ready (1.3 and 5.5 moved up after ADR-0017/0019 were accepted ahead of schedule; 3.5 after ADR-0018's acceptance; 2.4/2.5/3.6/4.4 after ADR-0020–0023's acceptance; 2.6 accepted and added the same day as drafted) — none stay Blocked anywhere. Phase 4's six stories remain scheduled there on their own merits (multi-connector/multi-instance/volume triggers), not because any ADR is still pending.
+Every story from the original 23-ADR series appears exactly once, plus Story 2.6 (ADR-0024) and Story 1.4 (ADR-0025) — two genuine additions, both accepted 2026-07-30, the day each was drafted (see `docs/adr/README.md`'s footnotes 6/7). As of 2026-07-30, all 25 are Ready (1.3 and 5.5 moved up after ADR-0017/0019 were accepted ahead of schedule; 3.5 after ADR-0018's acceptance; 2.4/2.5/3.6/4.4 after ADR-0020–0023's acceptance; 2.6 and 1.4 both accepted and added the same day as drafted) — none stay Blocked anywhere. Phase 4's six stories remain scheduled there on their own merits (multi-connector/multi-instance/volume triggers), not because any ADR is still pending. Unlike every other addition here, Story 1.4/ADR-0025 is dev tooling, not production architecture — see its own Acceptance note for why it's an ADR anyway.

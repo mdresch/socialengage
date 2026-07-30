@@ -5,12 +5,18 @@
   "description": "Social Listening / Insights backend: connector framework, ingestion, normalization, enrichment, storage, event publishing, and the REST API (ADR-0001). Independently deployable from social-listening-admin.",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "ts-node src/http/server.ts",
+    "dev": "node scripts/withDevEnv.js ts-node src/http/server.ts",
     "test": "jest",
     "test:contracts": "jest contracts",
     "typecheck": "tsc --noEmit",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down -v",
-    "db:migrate": "ts-node src/db/migrate.ts"
+    "db:migrate": "ts-node src/db/migrate.ts",
+    "db:dev:up": "docker compose -f docker-compose.dev.yml up -d --wait",
+    "db:dev:down": "docker compose -f docker-compose.dev.yml down",
+    "db:dev:reset": "docker compose -f docker-compose.dev.yml down -v",
+    "db:dev:migrate": "node scripts/withDevEnv.js ts-node src/db/migrate.ts"
   },
   "devDependencies": {
     "@types/express": "5.0.6",

@@ -1,0 +1,32 @@
+name: social-listening-core-dev
+
+# A persistent local dev database, deliberately separate from
+# docker-compose.test.yml's ephemeral one: different compose project name,
+# container, network, port, and database name, so `npm test`'s
+# globalSetup/globalTeardown (which owns docker-compose.test.yml exclusively)
+# can never start, stop, or wipe this one, and vice versa. Data survives
+# `npm run db:dev:down`; only `npm run db:dev:reset` deletes it. See
+# README.md's "Local development against a persistent dev database".
+services:
+  postgres:
+    build:
+      context: ./docker/test-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: social_listening_dev
+    command: ["postgres", "-c", "shared_preload_libraries=pg_cron", "-c", "cron.database_name=social_listening_dev"]
+    ports:
+      # 5435: distinct from the test container's 5434 and the default 5432,
+      # chosen after confirming both were otherwise in use on this machine.
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - dev-pgdata:/var/lib/postgresql/data
+
+volumes:
+  dev-pgdata:

@@ -6,8 +6,8 @@ Solo-developer, self-funded personal project. Rebuild of the discontinued Micros
 
 1. [`docs/implementation-methodology.md`](docs/implementation-methodology.md) — **how** work gets done: contract-first TDD, component `SKILL.md`s, permanent regression suite, bounded self-healing, hash-anchored Implementation Log. This is not optional background reading — it's the process this repo enforces.
 2. [`docs/implementation-plan.md`](docs/implementation-plan.md) — **what and when**: 6 phases, story-by-story, dependency-ordered. No calendar dates.
-3. [`docs/adr/README.md`](docs/adr/README.md) — 23 ADRs (Accepted decisions + Proposed policy awaiting acceptance), plus the governance conventions for changing one.
-4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — 23 stories, one per ADR, grouped into 5 epics. Each carries its source ADR's status forward (Ready vs. Blocked).
+3. [`docs/adr/README.md`](docs/adr/README.md) — 25 ADRs (Accepted decisions + Proposed policy awaiting acceptance), plus the governance conventions for changing one.
+4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — 25 stories, one per ADR, grouped into 5 epics. Each carries its source ADR's status forward (Ready vs. Blocked).
 
 ## Mandatory workflow — do not freelance
 
@@ -19,8 +19,8 @@ Solo-developer, self-funded personal project. Rebuild of the discontinued Micros
 ## Map
 
 - `docs/project docs/` — design spec + business case/charter/stakeholder register (context, not process)
-- `docs/adr/` — 23 ADRs
-- `docs/user-stories/` — 23 stories, 5 epics
+- `docs/adr/` — 25 ADRs
+- `docs/user-stories/` — 25 stories, 5 epics
 - `docs/implementation-plan.md`, `docs/implementation-methodology.md`, `docs/implementation-log.md`
 - `docs/templates/` — CI workflow, pre-commit hook, traceability/log verification scripts — copy into `social-listening-core`/`social-listening-admin` when Phase 0 creates them (not created yet)
 - `.claude/skills/implement-story/`, `.claude/skills/heal-contract-failure/` — the two mandatory skills

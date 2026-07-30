@@ -42,3 +42,19 @@
 - Every REST endpoint is reachable under `/v1/...`; no unversioned route exists.
 - A deprecated version continues serving unmodified traffic and returns `Deprecation`/`Sunset` response headers (RFC 8594) for at least 90 days after its successor version ships (implementation default — see ADR-0017's Amendment Log for the current number).
 - CI includes a contract check that fails the build if a change to a `/v1/` response shape would break a documented consumer expectation (i.e., catches the kind of change that should have been a `/v2/` bump).
+
+---
+
+## Story 1.4 — Persistent local dev database, separate from the ephemeral test database
+
+**Source:** ADR-0025 · **Status:** Ready — accepted 2026-07-30, the same day it was built and verified (see ADR-0025's Acceptance note on why this is a deliberate exception to Phase 0's "also build, not storied" classification of local dev tooling)
+
+**As a** developer running `social-listening-core` locally to see it actually work (not just pass its contract suite),
+**I want** a persistent dev Postgres database, fully independent from the ephemeral one Jest owns for the contract suite,
+**so that** running `npm test` can never wipe out data I'm actively looking at through a running `npm run dev` server, and vice versa.
+
+**Acceptance Criteria**
+- `docker-compose.dev.yml` defines a Postgres container with its own compose project name, container, network, port, database name, and a named volume — none shared with `docker-compose.test.yml`.
+- Data in the dev database survives `docker compose -f docker-compose.dev.yml down`; only an explicit, separately-named reset action deletes it.
+- Running the full contract suite (`npm test`) while `npm run dev` is live against the dev database leaves the dev database and the running server unaffected — proven by running both concurrently, not just argued.
+- `npm run dev` starts the real Express server against the dev database using only npm scripts — no manual per-shell environment-variable export required, and the mechanism works unmodified from both bash and PowerShell.
