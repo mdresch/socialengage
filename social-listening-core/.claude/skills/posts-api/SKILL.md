@@ -1,13 +1,13 @@
 ---
 name: posts-api
-description: GET /v1/posts and its cursor-based (keyset) pagination for social-listening-core. Read this before adding a new /posts filter, or before touching how social_posts is queried for a page of results.
+description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) pagination for social-listening-core. Read this before adding a new /posts filter, before touching how social_posts is queried for a page of results, or before touching the single-post-fetch path.
 ---
 
 # Posts API and cursor pagination
 
 ## What this is
 
-`GET /v1/posts` (`src/http/versions/v1/postsRouter.ts`), the first real business endpoint in `social-listening-core`'s REST API (following `/v1/health`'s versioning-mechanism placeholder from Story 1.3). `listSocialPosts()` (`src/posts/socialPostStore.ts`) implements ADR-0011's cursor-based pagination: results are ordered by `social_posts.seq`, a monotonic identity column added specifically for this purpose (`migrations/0006_add_social_posts_pagination_index.sql`), and the cursor (`src/posts/cursor.ts`) is an opaque token encoding that `seq` value.
+`GET /v1/posts` (`src/http/versions/v1/postsRouter.ts`), the first real business endpoint in `social-listening-core`'s REST API (following `/v1/health`'s versioning-mechanism placeholder from Story 1.3). `listSocialPosts()` (`src/posts/socialPostStore.ts`) implements ADR-0011's cursor-based pagination: results are ordered by `social_posts.seq`, a monotonic identity column added specifically for this purpose (`migrations/0006_add_social_posts_pagination_index.sql`), and the cursor (`src/posts/cursor.ts`) is an opaque token encoding that `seq` value. `GET /v1/posts/:id`, backed by `getSocialPostById()`, is Story 5.1/ADR-0012's REST-fetch-on-demand endpoint — the paired half of keeping Service Bus events thin (see `.claude/skills/ingestion-events/SKILL.md`): a subscriber that only got an event's `postId` fetches full post data here.
 
 ## Governing ADRs and Stories
 
@@ -15,16 +15,19 @@ description: GET /v1/posts and its cursor-based (keyset) pagination for social-l
 |---|---|---|
 | ADR-0011 | `GET /posts` paginated by opaque cursor, not offset/limit | 3.4 |
 | ADR-0017 | Every route lives under `/v1/` | 1.3 (cross-cutting — this endpoint follows that pattern) |
+| ADR-0012 | Full post data is fetched via REST on demand (`GET /posts/:id`), not carried in Service Bus events | 5.1 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-3/story-3.4.cursor-pagination.contract.test.ts` — `GET /v1/posts` accepts `cursor`, returns a `nextCursor`; `page`/`offset` query params have no effect; paging while new posts are ingested concurrently produces no duplicates; the implementation never issues a SQL `OFFSET` clause; a page near the "end" costs about the same as one near the "start" at a practical test scale (500 rows — a proxy for ADR-0011's literal multi-million-row claim, not a literal benchmark at that scale).
 - `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — `listSocialPosts()`'s read path (and therefore `GET /v1/posts`'s response) round-trips `publishedAt`/`enrichment` for a post that has them set (see `.claude/skills/social-post-enrichment/SKILL.md` for what owns those fields' schema/semantics — this contract only constrains that the existing read path doesn't drop them).
+- `contracts/epic-5/story-5.1.thin-events.contract.test.ts` — `GET /v1/posts/:id` returns full post data for a known id, 404s for an unknown one, and never returns another tenant's post even by the right id (RLS).
 
 ## How to extend this safely
 
 - **Adding a query filter** (`watchlistId`, `platformId`, `from`/`to`, `sentiment` — all named in ADR-0011's Context but none built yet, since none of those fields exist on `social_posts` yet): add a `WHERE` clause to `queryFirstPage`/`queryAfterCursor` in `socialPostStore.ts`, keyed off the new column once its owning story adds it. Keep it additive to the existing `seq`-ordered keyset query — never replace `seq` ordering with something else without re-deriving the whole cursor scheme.
 - **The cursor is opaque by contract** (ADR-0011's own Negative consequence) — never document or rely on its internal shape (`{ seq: string }`) as a public API contract; treat `encodeCursor`/`decodeCursor` as the only code allowed to construct or parse one.
+- **Adding a field to `GET /v1/posts/:id`'s response:** extend `getSocialPostById()`'s `SELECT` and its `SocialPostFull` interface together — keep it a superset of `SocialPostSummary`'s fields (the list endpoint), not a divergent shape.
 
 ## Load-bearing constraints — do not change casually
 

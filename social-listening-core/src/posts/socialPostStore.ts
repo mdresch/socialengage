@@ -44,6 +44,55 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
   });
 }
 
+export interface SocialPostFull {
+  id: string;
+  createdAt: string;
+  rawPayload: unknown;
+  publishedAt: string | null;
+  enrichment: unknown;
+  authorId: string | null;
+  acquisitionId: string;
+  postGeoLocation: unknown;
+}
+
+/**
+ * Fetches full post data by id, tenant-scoped (RLS) — the REST-fetch-on-demand
+ * half of keeping Service Bus events thin (Story 5.1, ADR-0012). Returns null
+ * for an unknown id or one belonging to another tenant. See
+ * .claude/skills/ingestion-events/SKILL.md and
+ * .claude/skills/posts-api/SKILL.md.
+ */
+export async function getSocialPostById(tenantId: string, id: string): Promise<SocialPostFull | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{
+      id: string;
+      created_at: Date;
+      raw_payload: unknown;
+      published_at: Date | null;
+      enrichment: unknown;
+      author_id: string | null;
+      acquisition_id: string;
+      post_geo_location: unknown;
+    }>(
+      `SELECT id, created_at, raw_payload, published_at, enrichment, author_id, acquisition_id, post_geo_location
+       FROM social_posts WHERE id = $1`,
+      [id]
+    );
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return {
+      id: row.id,
+      createdAt: row.created_at.toISOString(),
+      rawPayload: row.raw_payload,
+      publishedAt: row.published_at ? row.published_at.toISOString() : null,
+      enrichment: row.enrichment,
+      authorId: row.author_id,
+      acquisitionId: row.acquisition_id,
+      postGeoLocation: row.post_geo_location,
+    };
+  });
+}
+
 export interface PostIngestionLineage {
   connectorVersion: string;
   triggerType: string;
