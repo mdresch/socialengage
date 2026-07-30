@@ -2,11 +2,18 @@ name: social-listening-core-test
 
 services:
   postgres:
-    image: postgres:17-alpine
+    # Custom-built, not postgres:17-alpine (Story 4.4, ADR-0022) — AuthorTopicSignal's
+    # hourly refresh needs a real pg_cron extension; see docker/test-postgres/Dockerfile.
+    build:
+      context: ./docker/test-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: social_listening_test
+    # pg_cron requires shared_preload_libraries set at server start, and
+    # cron.database_name pointed at the one real database this project uses —
+    # both only settable via server startup flags, not CREATE EXTENSION alone.
+    command: ["postgres", "-c", "shared_preload_libraries=pg_cron", "-c", "cron.database_name=social_listening_test"]
     ports:
       - "5434:5432"
     healthcheck:

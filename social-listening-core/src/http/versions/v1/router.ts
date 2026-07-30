@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { postsRouter } from './postsRouter';
 import { topicsRouter } from './topicsRouter';
+import { connectorsRouter } from './connectorsRouter';
 
 export const v1Router = Router();
 
@@ -17,3 +18,6 @@ v1Router.use('/posts', postsRouter);
 
 /** Story 4.1 (ADR-0007) — see .claude/skills/author-topic-signals/SKILL.md. */
 v1Router.use('/topics', topicsRouter);
+
+/** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
+v1Router.use('/connectors', connectorsRouter);
