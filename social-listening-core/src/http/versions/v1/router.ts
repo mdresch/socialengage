@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { postsRouter } from './postsRouter';
+import { topicsRouter } from './topicsRouter';
 
 export const v1Router = Router();
 
@@ -13,3 +14,6 @@ v1Router.get('/health', (_req, res) => {
 
 /** Story 3.4 (ADR-0011) — see .claude/skills/posts-api/SKILL.md. */
 v1Router.use('/posts', postsRouter);
+
+/** Story 4.1 (ADR-0007) — see .claude/skills/author-topic-signals/SKILL.md. */
+v1Router.use('/topics', topicsRouter);
