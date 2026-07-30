@@ -26,9 +26,14 @@ export interface InsertedSocialPost {
  */
 export async function insertSocialPost(input: InsertSocialPostInput): Promise<InsertedSocialPost> {
   return withTenant(input.tenantId, async (client) => {
+    // acquisition_started_at is resolved via a subquery, not a new required
+    // parameter — it's what social_posts' composite FK into partitioned
+    // ingestion_runs(id, started_at) needs (Story 3.5, ADR-0018), but every
+    // existing caller already only ever provides acquisitionId. See
+    // .claude/skills/data-retention-and-archival/SKILL.md.
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, post_geo_location, published_at, enrichment)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, acquisition_started_at, post_geo_location, published_at, enrichment)
+       VALUES ($1, $2, $3, $4, (SELECT started_at FROM ingestion_runs WHERE id = $4), $5, $6, $7)
        RETURNING id`,
       [
         input.tenantId,
