@@ -9,7 +9,11 @@ export interface IngestionAttemptResult {
 export interface RunIngestionAttemptOptions {
   tenantId: string;
   connectorInfo: StartIngestionRunInput;
-  attempt: () => Promise<IngestionAttemptResult>;
+  /** Receives the just-opened IngestionRun's id (Story 2.6) — a real connector
+   * needs it to satisfy insertSocialPost()'s required acquisitionId from
+   * inside its own attempt() closure. Purely additive: an existing zero-arg
+   * `async () => {...}` callback still satisfies this type. */
+  attempt: (runId: string) => Promise<IngestionAttemptResult>;
   /** OAuth connectors only — attempted once before a credential error surfaces (ADR-0010). */
   refreshOAuthToken?: () => Promise<void>;
   maxRetries?: number;
@@ -48,7 +52,7 @@ export async function runIngestionAttempt(
   for (;;) {
     attemptsMade += 1;
     try {
-      const result = await options.attempt();
+      const result = await options.attempt(run.id);
       await completeIngestionRun(options.tenantId, run.id, {
         status: 'succeeded',
         postsIngested: result.postsIngested,

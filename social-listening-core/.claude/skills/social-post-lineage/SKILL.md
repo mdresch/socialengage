@@ -22,6 +22,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 - `contracts/epic-3/story-3.2.ingestion-run-audit-anchor.contract.test.ts` — a post inserted via `insertSocialPost()` has a real `acquisitionId`; `IngestionRun` records `triggerType`/`connectorVersion`/timestamps/`status`/counts/`errorSummary`; a post's originating run's `connectorVersion`/`triggerType` resolve in one JOIN query.
 - `contracts/epic-3/story-3.2.ingestion-run-retryable-field.contract.test.ts` (healing pass, 2026-07-29) — `ingestion_runs.retryable`: `null` for a clean first-attempt success, `true` for a failure after a retryable error was exhausted, `false` for a non-retryable failure or a failed-OAuth-refresh failure.
 - `contracts/epic-3/story-3.5.tiered-retention-and-archival.contract.test.ts` — constrains `insertSocialPost()`'s `acquisition_started_at` population and both tables' composite-PK/partitioned shape; see `.claude/skills/data-retention-and-archival/SKILL.md` for what that story actually owns.
+- `contracts/epic-2/story-2.6.newswire-connector.contract.test.ts` — the first contract exercising `upsertAuthor()` and `insertSocialPost()` together inside one real, live-fetched poll cycle (not in isolation) — see `.claude/skills/newswire-connector/SKILL.md`.
 
 ## How to extend this safely
 
@@ -39,7 +40,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 
 ## Known gaps / deferred work
 
-- No real connector calls any of this yet — `upsertAuthor()`/`startIngestionRun()`/`insertSocialPost()` are proven correct in isolation (this story's contracts), not yet wired into an actual poll cycle. That's Phase 1's "also build, not storied" RSS/News connector work, layered on top once Story 3.3 (watchlist matching) and 3.4 (pagination) are also ready.
+- **The Newswire connector (Story 2.6, ADR-0024) is now the first real connector wiring all three together** — `upsertAuthor()` and `insertSocialPost()` (with `acquisitionId` sourced from `runIngestionAttempt()`'s now-exposed `runId`, see `provider-connector-framework`'s SKILL.md) inside one real poll cycle against live feeds. See `.claude/skills/newswire-connector/SKILL.md`. RSS/News's own real connector (Phase 1's "also build, not storied" scope) still doesn't exist yet — this gap is closed for Newswire specifically, not for every future connector automatically.
 - `AuthorTopicSignal` (Story 4.1) and the expert-finder query (`GET /topics/:topic/authors`) build on `authors` later; nothing here anticipates their shape.
 
 ## Corrections

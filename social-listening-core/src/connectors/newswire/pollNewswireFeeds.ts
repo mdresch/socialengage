@@ -1,0 +1,106 @@
+import { runIngestionAttempt, IngestionAttemptResult, RunIngestionAttemptResult } from '../../ingestion/runIngestionAttempt';
+import { acquireForProvider, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
+import { ClassifiableError } from '../../ingestion/errorClassification';
+import { upsertAuthor } from '../../authors/authorStore';
+import { insertSocialPost, findSocialPostByExternalId } from '../../posts/socialPostStore';
+import { newswireConnector, fetchNewswireFeed, NEWSWIRE_PROVIDER_ID, DEFAULT_NEWSWIRE_FEED_URLS } from './newswireConnector';
+import { ParsedRssItem } from './rssFeedParser';
+
+/**
+ * acquireForProvider() has no ingestion-domain knowledge of its own (see
+ * .claude/skills/provider-connector-framework/SKILL.md) — reclassifying its
+ * queue-exhaustion errors into a ClassifiableError is documented as "the
+ * connector's job" in .claude/skills/connector-health-and-error-handling/SKILL.md,
+ * so this connector does it rather than leaving the gap that SKILL.md already
+ * flags for "whichever real connector is built first."
+ */
+async function gatedAcquire(tenantId: string): Promise<void> {
+  try {
+    await acquireForProvider(tenantId, newswireConnector);
+  } catch (err) {
+    if (err instanceof QueueTtlExceededError) {
+      throw new ClassifiableError('queue_ttl_exceeded', err.message);
+    }
+    if (err instanceof QueueDepthExceededError) {
+      throw new ClassifiableError('queue_depth_exceeded', err.message);
+    }
+    throw err;
+  }
+}
+
+/**
+ * Normalizes, dedups, and inserts an already-fetched batch of feed items for
+ * one IngestionRun. Split out from pollNewswireFeeds() so it can be exercised
+ * directly against a synthetic batch (Story 2.6 AC5's cross-wire-duplicate
+ * fixture) without a live HTTP fetch.
+ */
+export async function ingestNewswireItems(
+  tenantId: string,
+  runId: string,
+  items: ParsedRssItem[]
+): Promise<IngestionAttemptResult> {
+  let postsIngested = 0;
+  let postsSkipped = 0;
+
+  for (const item of items) {
+    const normalized = newswireConnector.normalize(item);
+
+    const existing = await findSocialPostByExternalId(tenantId, NEWSWIRE_PROVIDER_ID, normalized.externalId);
+    if (existing) {
+      postsSkipped += 1;
+      continue;
+    }
+
+    const author = await upsertAuthor(tenantId, NEWSWIRE_PROVIDER_ID, normalized.authorExternalId, {
+      displayName: normalized.authorExternalId !== 'unknown' ? normalized.authorExternalId : undefined,
+      rawProfile: item,
+    });
+
+    await insertSocialPost({
+      tenantId,
+      authorId: author.id,
+      acquisitionId: runId,
+      rawPayload: { providerId: NEWSWIRE_PROVIDER_ID, externalId: normalized.externalId, ...item },
+      publishedAt: normalized.publishedAt,
+    });
+
+    postsIngested += 1;
+  }
+
+  return { postsIngested, postsSkipped };
+}
+
+/**
+ * One poll cycle across the given Newswire feed URLs (default: one
+ * GlobeNewswire + one PR Newswire feed), wired through the shared ingestion
+ * pipeline (runIngestionAttempt -> RequestGate -> normalize -> Author upsert
+ * -> SocialPost insert), same as any other real connector would be. See
+ * .claude/skills/newswire-connector/SKILL.md.
+ */
+export async function pollNewswireFeeds(
+  tenantId: string,
+  feedUrls: string[] = DEFAULT_NEWSWIRE_FEED_URLS
+): Promise<RunIngestionAttemptResult> {
+  return runIngestionAttempt({
+    tenantId,
+    connectorInfo: {
+      platformId: NEWSWIRE_PROVIDER_ID,
+      triggerType: 'poll',
+      connectorVersion: '1.0.0',
+    },
+    attempt: async (runId) => {
+      let postsIngested = 0;
+      let postsSkipped = 0;
+
+      for (const feedUrl of feedUrls) {
+        await gatedAcquire(tenantId);
+        const items = await fetchNewswireFeed(feedUrl);
+        const result = await ingestNewswireItems(tenantId, runId, items);
+        postsIngested += result.postsIngested;
+        postsSkipped += result.postsSkipped;
+      }
+
+      return { postsIngested, postsSkipped };
+    },
+  });
+}

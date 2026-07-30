@@ -49,6 +49,31 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
   });
 }
 
+/**
+ * Dedup lookup for poll-mode connectors (Story 2.6): finds a previously
+ * ingested post by the (providerId, externalId) a connector's own attempt()
+ * embeds into rawPayload — social_posts has no dedicated external-id column,
+ * so this queries the JSONB blob directly rather than adding one speculatively
+ * for a single connector. Tenant-scoped via RLS (withTenant), same as every
+ * other reader in this file.
+ */
+export async function findSocialPostByExternalId(
+  tenantId: string,
+  providerId: string,
+  externalId: string
+): Promise<{ id: string } | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT id FROM social_posts
+       WHERE raw_payload->>'providerId' = $1
+         AND raw_payload->>'externalId' = $2
+       LIMIT 1`,
+      [providerId, externalId]
+    );
+    return rows.length > 0 ? { id: rows[0].id } : null;
+  });
+}
+
 export interface SocialPostFull {
   id: string;
   createdAt: string;

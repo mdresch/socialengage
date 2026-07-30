@@ -16,6 +16,7 @@ The judgment layer sitting on top of `IngestionRun` history: `src/ingestion/erro
 | ADR-0010 | Retryable errors get backoff+retry; non-retryable fail immediately; OAuth refreshes once before surfacing a credential failure; auto-disable after the failure threshold, per tenant | 2.3 |
 | ADR-0009 | `ConnectorHealth` (`healthy`/`degraded`/`failing`/`disconnected`, `credentialStatus`) is fully derived from `IngestionRun` history at read time — never separately stored mutable state | 4.3 |
 | ADR-0023 | `failing` is rate-relative (≥50% of ≥5 attempts in the trailing hour) with an absolute 20-consecutive-failure ceiling, superseding ADR-0009's/ADR-0010's flat "≥10/hour" rule — the only rule this ADR changes | 2.5 |
+| ADR-0024 | `runIngestionAttempt()`'s `attempt` callback gains a `runId` parameter (additive) — the wiring a real connector needs to satisfy `insertSocialPost()`'s required `acquisitionId`; no change to retry/backoff/OAuth-refresh/health-derivation behavior itself | 2.6 |
 
 ## Contracts that constrain this component
 
@@ -24,6 +25,7 @@ The judgment layer sitting on top of `IngestionRun` history: `src/ingestion/erro
 - `contracts/epic-4/story-4.3.health-derivation-index.contract.test.ts` (healing pass, 2026-07-29) — `ingestion_runs` has an index covering `(tenant_id, platform_id, started_at)`, the exact columns `deriveConnectorHealth()`'s query uses, confirmed via live `pg_indexes` introspection.
 - `contracts/epic-2/story-2.4.bounded-queues-and-dead-lettering.contract.test.ts` — a gate wait abandoned on TTL, reclassified by a synthetic `attempt()` into a `ClassifiableError`, records a non-retryable failed `IngestionRun`; a request that exhausts retries for a genuinely retryable error gets a distinctly-worded "dead-lettered" `errorSummary`, and dead-lettering one request alone does not cross `shouldAttemptIngestion()`'s threshold — the two mechanisms proven independent.
 - `contracts/epic-2/story-2.5.proportional-failure-threshold.contract.test.ts` — ≥50% failure rate with ≥5 attempts (including exactly the 50% boundary) is `failing`; fewer than 5 attempts never triggers the rate rule regardless of failure percentage; 20 consecutive failures is `failing` regardless of the trailing-1-hour window (proven with failures spread far enough apart that none fall inside it); a high-frequency (rate-triggered) and low-frequency (ceiling-triggered) connector under equivalent "mostly broken" conditions are both correctly flagged.
+- `contracts/epic-2/story-2.6.newswire-connector.contract.test.ts` — exercises `runIngestionAttempt()`'s `attempt(runId)` parameter and the `acquireForProvider()` → `ClassifiableError` reclassification pattern via a real connector for the first time (see `.claude/skills/newswire-connector/SKILL.md`); doesn't itself constrain the retry/health-derivation rules above.
 
 ## How to extend this safely
 
@@ -45,8 +47,8 @@ The judgment layer sitting on top of `IngestionRun` history: `src/ingestion/erro
 
 ## Known gaps / deferred work
 
-- No real connector calls `runIngestionAttempt()` yet — proven correct against synthetic `attempt()`/`refreshOAuthToken()` functions, the same pattern as Stories 2.1/2.2's example connectors.
-- `RequestGate` (Story 2.2/2.4) and this orchestrator aren't wired together yet — a real connector's `attempt()` will need to call `acquireForProvider()`/`acquireForAiModel()` itself before making its platform call, and reclassify any `QueueTtlExceededError`/`QueueDepthExceededError` into a `ClassifiableError`; that wiring happens when the first real connector is built, not here.
+- **The Newswire connector (Story 2.6, ADR-0024) is now the first real connector calling `runIngestionAttempt()`**, including the `acquireForProvider()` → reclassify → `ClassifiableError` wiring this file's own "How to extend this safely" section prescribes — see `.claude/skills/newswire-connector/SKILL.md`. `runIngestionAttempt()`'s `attempt` callback also gained a `runId: string` parameter as part of that story (additive only — every existing zero-arg `attempt` callback in this component's own contracts above remains valid). RSS/News's real connector (Phase 1's "also build, not storied" scope) still doesn't exist.
+- `acquireForAiModel()`'s equivalent reclassification (the AI-provider half) still isn't exercised by any real caller — no real `AIProviderConnector` exists yet (Phase 2 work).
 - Story 4.4's read-through cache (ADR-0022, accepted 2026-07-29, implemented 2026-07-30) builds directly on this component — see `.claude/skills/derived-data-caching-and-refresh/SKILL.md`.
 - ADR-0023's `deliveryMode`-based threshold variation (push vs. poll) remains an open, deliberately-deferred question per that ADR's own Acceptance note — not this story's scope, and not built.
 - **Distributed (Redis-backed) `RequestGate` state across more than one process instance (the other half of Story 2.4, ADR-0020) is deliberately not built** — see `provider-connector-framework`'s SKILL.md for why (solo-deployment, single-instance is the real shape right now).
