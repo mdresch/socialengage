@@ -9,6 +9,10 @@ export interface InsertSocialPostInput {
   acquisitionId: string;
   rawPayload: unknown;
   postGeoLocation?: unknown;
+  /** When the post was actually published on-platform (Story 4.2, ADR-0008) — distinct from createdAt (when this system ingested it). Only set for enriched posts. */
+  publishedAt?: string | Date;
+  /** entities/keyPhrases (Story 4.2) plus later sentiment/detectedLanguage/modelUsed (Phase 2 enrichment pipeline) — additive keys in one JSONB blob, not separate columns. Only set for enriched posts. See .claude/skills/social-post-enrichment/SKILL.md. */
+  enrichment?: Record<string, unknown>;
 }
 
 export interface InsertedSocialPost {
@@ -23,8 +27,8 @@ export interface InsertedSocialPost {
 export async function insertSocialPost(input: InsertSocialPostInput): Promise<InsertedSocialPost> {
   return withTenant(input.tenantId, async (client) => {
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, post_geo_location)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, post_geo_location, published_at, enrichment)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
       [
         input.tenantId,
@@ -32,6 +36,8 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
         input.authorId,
         input.acquisitionId,
         input.postGeoLocation ? JSON.stringify(input.postGeoLocation) : null,
+        input.publishedAt ?? null,
+        input.enrichment ? JSON.stringify(input.enrichment) : null,
       ]
     );
     return { id: rows[0].id };
@@ -70,6 +76,8 @@ export interface SocialPostSummary {
   id: string;
   createdAt: string;
   rawPayload: unknown;
+  publishedAt: string | null;
+  enrichment: unknown;
 }
 
 export interface SocialPostsPage {
@@ -106,6 +114,8 @@ export async function listSocialPosts(
         id: row.id,
         createdAt: row.created_at.toISOString(),
         rawPayload: row.raw_payload,
+        publishedAt: row.published_at ? row.published_at.toISOString() : null,
+        enrichment: row.enrichment,
       })),
       nextCursor: hasMore && last ? encodeCursor({ seq: last.seq }) : null,
     };
@@ -117,6 +127,8 @@ interface PostRow {
   seq: string;
   created_at: Date;
   raw_payload: unknown;
+  published_at: Date | null;
+  enrichment: unknown;
 }
 
 async function queryFirstPage(
@@ -124,7 +136,7 @@ async function queryFirstPage(
   limit: number
 ): Promise<PostRow[]> {
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload FROM social_posts
+    `SELECT id, seq, created_at, raw_payload, published_at, enrichment FROM social_posts
      ORDER BY seq ASC
      LIMIT $1`,
     [limit + 1]
@@ -139,7 +151,7 @@ async function queryAfterCursor(
 ): Promise<PostRow[]> {
   const { seq } = decodeCursor(cursorToken);
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload FROM social_posts
+    `SELECT id, seq, created_at, raw_payload, published_at, enrichment FROM social_posts
      WHERE seq > $1
      ORDER BY seq ASC
      LIMIT $2`,

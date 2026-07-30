@@ -1,0 +1,22 @@
+-- Story 4.2 (ADR-0008): social_posts gains published_at and enrichment
+-- (entities/keyPhrases at minimum) — ADR-0008's own Decision text treats
+-- this data as already captured ("the underlying data is already captured on
+-- SocialPost") so a future insights/dashboard subsystem can build
+-- TopicDailyCount itself, without this subsystem building that aggregation
+-- (explicitly ruled out by ADR-0008's own Decision). In reality neither
+-- Story 1.2's original minimal social_posts table nor any story since (3.1
+-- author_id, 3.2 acquisition_id, 3.4 seq) added these columns — this is the
+-- first story whose own Acceptance Criteria actually requires them to exist,
+-- so it's the one that adds them, per migration 0001's own "added by a later
+-- migration, not speculated here" rule.
+--
+-- `enrichment` is a single JSONB blob, not separate entities/keyPhrases
+-- columns, so later enrichment fields (sentiment, detectedLanguage,
+-- modelUsed — named in docs/implementation-plan.md's Phase 2 deliverable but
+-- not this story's own AC) are additive keys inside the same column when
+-- their owning work lands, not a further migration each time. Nullable, same
+-- rationale as author_id/acquisition_id (Story 3.1's migration): only
+-- *enriched* posts have it set; Stories 1.2/3.4/5.3/5.4's pre-existing
+-- minimal test inserts don't (and shouldn't need to) set it.
+ALTER TABLE social_posts ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
+ALTER TABLE social_posts ADD COLUMN IF NOT EXISTS enrichment JSONB;

@@ -19,6 +19,7 @@ description: GET /v1/posts and its cursor-based (keyset) pagination for social-l
 ## Contracts that constrain this component
 
 - `contracts/epic-3/story-3.4.cursor-pagination.contract.test.ts` — `GET /v1/posts` accepts `cursor`, returns a `nextCursor`; `page`/`offset` query params have no effect; paging while new posts are ingested concurrently produces no duplicates; the implementation never issues a SQL `OFFSET` clause; a page near the "end" costs about the same as one near the "start" at a practical test scale (500 rows — a proxy for ADR-0011's literal multi-million-row claim, not a literal benchmark at that scale).
+- `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — `listSocialPosts()`'s read path (and therefore `GET /v1/posts`'s response) round-trips `publishedAt`/`enrichment` for a post that has them set (see `.claude/skills/social-post-enrichment/SKILL.md` for what owns those fields' schema/semantics — this contract only constrains that the existing read path doesn't drop them).
 
 ## How to extend this safely
 
