@@ -1,10 +1,22 @@
 const { execSync } = require('child_process');
+require('dotenv').config();
 
 /**
  * Brings up the ephemeral test Postgres container and applies migrations
  * before the contract suite runs. Requires Docker to be running locally.
  * Env vars set here propagate to Jest's test-file workers (Jest forks them
  * after globalSetup completes) — see .claude/skills/postgres-tenant-db/SKILL.md.
+ *
+ * The dotenv load above reads a local, gitignored .env (see .env.example)
+ * into process.env before this function runs — same "set env vars in JS, not
+ * the shell" convention scripts/withDevEnv.js already established (Story 1.4),
+ * chosen here specifically because a real per-tenant credential (GNEWS_API_KEY,
+ * Story 2.7) is the first thing a contract test in this repo needs that isn't
+ * a fixed local-dev default — an OS-level environment variable set via System
+ * Properties doesn't propagate to already-running shells/terminals until they
+ * restart, which a file read at process start avoids entirely. dotenv.config()
+ * never overrides a variable already set in the real environment, so this is
+ * additive only.
  */
 module.exports = async function globalSetup() {
   process.env.PGHOST = process.env.PGHOST || 'localhost';

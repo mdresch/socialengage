@@ -37,6 +37,24 @@ export async function storeCredential(
   return { id };
 }
 
+/**
+ * Most recently stored credential id for (tenantId, platformId), or null if
+ * none registered — mirrors connectorHealth.ts's existing inline lookup
+ * pattern, returning `id` instead of `status`. Story 2.7's first real
+ * caller: a connector resolving its own tenant-supplied credential before
+ * use, rather than a credential embedded in the connector itself (Newswire's
+ * authMode: 'none' never needed this).
+ */
+export async function getLatestCredentialId(tenantId: string, platformId: string): Promise<string | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT id FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [platformId]
+    );
+    return rows.length > 0 ? rows[0].id : null;
+  });
+}
+
 /** Unwraps the DEK via Key Vault, then decrypts. Throws if the wrapping key is unusable. */
 export async function readCredential(tenantId: string, credentialId: string): Promise<string> {
   return withTenant(tenantId, async (client) => {
