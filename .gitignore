@@ -2,3 +2,12 @@
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+# Environment / secrets — never commit real values (docs/ai-roles' AI-agent API keys, etc.)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# docs/ai-roles/ tooling dependencies (@google/genai etc.) — reinstall via npm install
+node_modules/
