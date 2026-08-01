@@ -230,7 +230,7 @@ interface AuthorTopicSignal {
 
 ### 4.6 Deferred (explicitly out of scope for this subsystem)
 
-- `TopicDailyCount` — daily mention-count time series for charting topic volume over time. Underlying data (`enrichment.entities`/`keyPhrases`, `publishedAt`) is already captured; the aggregation and any charting UI is deferred to a future insights/dashboard subsystem.
+- `TopicDailyCount` — daily mention-count time series for charting topic volume over time. Underlying data (`enrichment.entities`/`keyPhrases`, `publishedAt`) is already captured; the aggregation and any charting UI is deferred to a future insights/dashboard subsystem — see [`docs/future-subsystems.md`](../future-subsystems.md) for the (currently unresolved) question of which one.
 
 ---
 
@@ -333,7 +333,7 @@ Per-tenant filtering is handled via Service Bus subscription SQL filters on `ten
 ## 9. Explicitly Out of Scope (this spec)
 
 - Charting/visualization UI (topic-over-time graphs, dashboards) — deferred to a future insights subsystem
-- Brand Reputation, Social Care, Social Selling subsystems — each will be its own spec, consuming this subsystem's events/API
+- Brand Reputation, Social Care, Social Selling subsystems — each will be its own spec, consuming this subsystem's events/API (see [`docs/future-subsystems.md`](../future-subsystems.md) for what's parked against each)
 - Geocoding of `profileLocation` free text into structured region data
 - Sophisticated expertise scoring beyond raw `AuthorTopicSignal` fields
 
