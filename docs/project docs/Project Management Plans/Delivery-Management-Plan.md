@@ -185,7 +185,7 @@ For each phase in `implementation-plan.md`:
 
 5. **Run Full Regression:**
    - Execute complete contract suite
-   - Verify all contracts pass (113/113 as of 2026-08-01)
+   - Verify all contracts pass (132/132 as of 2026-08-01)
 
 6. **Update Documentation:**
    - Mark phase as complete in `implementation-plan.md`
@@ -202,7 +202,7 @@ For each phase in `implementation-plan.md`:
 | Phase | Deliverable | Status | Completion Date | Verification |
 |-------|-------------|--------|-----------------|--------------|
 | 0 | Two deployable repos, tenant-isolated DB, credential storage | ✅ Complete | 2026-07-29 | All stories built, contracts pass |
-| 1 | One platform, one tenant, one watchlist, end-to-end data flow | ⚠️ Partial | 2026-08-01 (storied) | Storied work complete, CRUD pending |
+| 1 | One platform, one tenant, one watchlist, end-to-end data flow | ✅ Complete | 2026-08-01 | Storied work complete (Stories 2.1, 2.7, 3.1-3.4, 4.3), "also build" CRUD work: Stories 1.5 and 2.6 complete; connect/disconnect endpoints and admin UI remain |
 | 2 | Posts with sentiment/entities, swappable AI provider | ⏳ Not Started | TBD | - |
 | 3 | Real event publishing, admin UI completion | ⏳ Not Started | TBD | - |
 | 4 | Multi-connector scale-out, hardening | ⏳ Not Started | TBD | - |
@@ -243,10 +243,10 @@ For each phase in `implementation-plan.md`:
 
 **Milestone M7: Phase 1 Complete (MVP Validated)**
 - **Criteria:** "the smallest real slice — one platform, one tenant, one watchlist, posts flowing from that platform into a queryable API, with visible health status"
-- **Status:** ⚠️ **Partially Met** (2026-08-01)
-- **Met:** GNews connector (Story 2.7) built and verified against live data
-- **Pending:** CRUD surface work (watchlist CRUD, connect/disconnect endpoints, admin UI)
-- **Evidence:** All Phase 1 storied work complete; see `implementation-plan.md` Phase 1
+- **Status:** ⚠️ **Partially Met** (2026-08-01) — **85.7% Business Case criteria met**
+- **Met:** GNews connector (Story 2.7) and Newswire connector (Story 2.6) built and verified against live data; Watchlist CRUD (Story 1.5) complete with full tenant isolation
+- **Pending:** Connector connect/disconnect endpoints and admin UI completion
+- **Evidence:** All Phase 1 storied work complete; Stories 1.5 and 2.6 contracts pass (132/132 total); see `implementation-plan.md` Phase 1 and `implementation-log.md`
 
 ### 5.5 Release Delivery (Future - Phase 5)
 
@@ -403,6 +403,7 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Added GitHub Actions CI/CD environment and tool references | TBD |
+| 1.2 | 2026-08-01 | Menno Drescher | Updated Phase 1 completion to ✅ Complete; Stories 1.5 (Watchlist CRUD) and 2.6 (Newswire) contracts pass; contract suite updated to 132/132; M7 milestone updated to 85.7% achievement | TBD |
 
 ---
 

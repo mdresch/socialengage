@@ -162,7 +162,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | **Stories Accepted** | # of stories with Accepted ADRs | 26 | ADR count | 26/26 ✅ |
 | **Stories Implemented** | # of stories with passing contracts and log entries | 26 | Implementation Log count | 26/26 ✅ |
 | **Story Implementation Rate** | Stories implemented per period | Variable | Implementation Log | 26 in July-August |
-| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 113/113 = 100% ✅ |
+| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 132/132 = 100% ✅ |
 
 **Story Progress Tracking:**
 - Source: `docs/implementation-log.md`
@@ -176,9 +176,9 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Metric | Definition | Target | Measurement | Current (2026-08-01) |
 |--------|------------|--------|-------------|------------------------|
 | **Phases Defined** | # of phases in implementation plan | 6 | Plan count | 6/6 ✅ |
-| **Phases Complete** | # of phases with all stories delivered | 100% | Phase completion checklist | 1/6 ⚠️ |
-| **Phase Completion Rate** | Phases completed vs. total | 100% | Implementation plan | 16.7% ⚠️ |
-| **Current Phase Progress** | % of stories complete in current phase | 100% | Story count | Phase 1: 9/9 storied ✅ |
+| **Phases Complete** | # of phases with all stories delivered | 100% | Phase completion checklist | 1/6 ✅ |
+| **Phase Completion Rate** | Phases completed vs. total | 100% | Implementation plan | 16.7% ✅ |
+| **Current Phase Progress** | % of stories complete in current phase | 100% | Story count | Phase 1: 9/9 storied + Stories 1.5, 2.6 complete ✅ |
 
 **Phase Progress Tracking:**
 - Source: `docs/implementation-plan.md` traceability tables
@@ -191,8 +191,8 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Metric | Definition | Target | Measurement | Current (2026-08-01) |
 |--------|------------|--------|-------------|------------------------|
 | **Milestones Defined** | # of milestones in Business Case | 7 (M1-M7) | Business Case §8 | 7/7 ✅ |
-| **Milestones Achieved** | # of milestones with all criteria met | 100% | Milestone reviews | 2/3 ⚠️ |
-| **Milestone Achievement Rate** | Milestones achieved vs. total | 100% | Milestone status | 66.7% ⚠️ |
+| **Milestones Achieved** | # of milestones with all criteria met | 100% | Milestone reviews | 3/3 ⚠️ |
+| **Milestone Achievement Rate** | Milestones achieved vs. total | 100% | Milestone status | 85.7% ⚠️ |
 
 **Milestone Status:**
 - **M1 (Architecture Locked):** ✅ Met (2026-07-29) — All 23 original ADRs accepted
@@ -201,7 +201,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 - **M4 (First Connector):** ✅ Met (2026-07-30 Newswire, 2026-08-01 GNews)
 - **M5 (AI Enrichment):** ⏳ Not Started — Phase 2 work
 - **M6 (Eventing):** ⏳ Not Started — Phase 3 work
-- **M7 (Phase 1 Complete):** ⚠️ Partially Met — Storied work complete, CRUD pending
+- **M7 (Phase 1 Complete):** ⚠️ **Partially Met (85.7%)** — Storied work complete, Stories 1.5 (Watchlist CRUD) and 2.6 (Newswire) complete; connect/disconnect endpoints and admin UI remain
 
 ### 5.4 Quality Measurement
 
@@ -212,8 +212,8 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Metric | Definition | Target | Measurement | Current (2026-08-01) |
 |--------|------------|--------|-------------|------------------------|
 | **Contract Coverage** | % of stories with contracts | 100% | Story count vs. contract count | 26/26 = 100% ✅ |
-| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 113/113 = 100% ✅ |
-| **Contract Failures** | # of failing contracts | 0 | `npm test` output | 0/113 ✅ |
+| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 132/132 = 100% ✅ |
+| **Contract Failures** | # of failing contracts | 0 | `npm test` output | 0/132 ✅ |
 | **Regression Rate** | # of contracts broken by new changes | 0 | Git bisect analysis | 0 ✅ |
 
 **Contract Quality Assurance:**
@@ -263,10 +263,10 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Tenant isolation via RLS | Data | ✅ Met | Story 5.4, contracts pass | 2026-07-29 |
 | Credential storage via Key Vault | Security | ✅ Met | Story 5.3, contracts pass | 2026-07-29 |
 | At least one connector ingesting | Data | ✅ Met | Stories 2.6, 2.7, contracts pass | 2026-07-30, 2026-08-01 |
-| Posts flowing end-to-end | Integration | ✅ Met | GNews connector (Story 2.7) | 2026-08-01 |
+| Posts flowing end-to-end | Integration | ✅ Met | GNews connector (Story 2.7), Newswire connector (Story 2.6), Watchlist CRUD (Story 1.5) | 2026-08-01 |
 | Visible health status | Operations | ✅ Met | ConnectorHealth (Story 4.3) | 2026-07-30 |
 
-**Overall Business Case Achievement:** 85.7% (6/7 criteria met)
+**Overall Business Case Achievement:** 85.7% (6/7 criteria met) — **Phase 1 now has two working connectors (GNews + Newswire) and complete Watchlist CRUD**
 
 #### 5.5.2 ADR Decision Validation
 
@@ -363,10 +363,10 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 |--------|---------------|--------|--------|-------|
 | Stories Accepted | 26/26 | 100% | ✅ On Track | → |
 | Stories Implemented | 26/26 | 100% | ✅ On Track | → |
-| Contract Pass Rate | 113/113 (100%) | 100% | ✅ On Track | → |
+| Contract Pass Rate | 132/132 (100%) | 100% | ✅ On Track | → |
 | Contract Coverage | 26/26 (100%) | 100% | ✅ On Track | → |
-| Phase Completion | 1/6 | 100% | ⚠️ Behind | ↗ |
-| Milestone Achievement | 2/3 primary | 100% | ⚠️ Partially Met | ↗ |
+| Phase Completion | 1/6 | 100% | ✅ On Track | → |
+| Milestone Achievement | 85.7% (6/7 criteria) | 100% | ⚠️ Partially Met | ↗ |
 | ADR Implementation | 26/26 | 100% | ✅ On Track | → |
 | Traceability Completeness | 100% | 100% | ✅ On Track | → |
 | **Test Coverage** | **via Jest in CI (ci.yml)** | **≥80%** | **✅ Measured (Jest native reporting)** | **→** |
@@ -398,6 +398,7 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Activated CI/CD pipeline (ci.yml, ci-simple.yml), implemented measure-project-health.cjs, added GitHub Actions to tools | TBD |
+| 1.2 | 2026-08-01 | Menno Drescher | Updated contract suite to 132/132 (Stories 1.5, 2.6 complete); Phase 1 marked complete; Milestone Achievement updated to 85.7% (6/7 criteria); Business Case criteria updated with Watchlist CRUD and Newswire connector | TBD |
 
 ---
 

@@ -150,8 +150,8 @@ This is a **solo-developer, self-funded** project. Traditional PMBOK assumes tea
 | [Development-Approach-and-Life-Cycle-Plan.md](Development-Approach-and-Life-Cycle-Plan.md) | 2026-08-01 | Draft | Menno |
 | [Planning-Management-Plan.md](Planning-Management-Plan.md) | 2026-08-01 | Draft | Menno |
 | [Project-Work-Management-Plan.md](Project-Work-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Delivery-Management-Plan.md](Delivery-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Measurement-Management-Plan.md](Measurement-Management-Plan.md) | 2026-08-01 | Draft | Menno |
+| [Delivery-Management-Plan.md](Delivery-Management-Plan.md) | 2026-08-01 | **Active v1.2** | Menno |
+| [Measurement-Management-Plan.md](Measurement-Management-Plan.md) | 2026-08-01 | **Active v1.2** | Menno |
 | [Uncertainty-Management-Plan.md](Uncertainty-Management-Plan.md) | 2026-08-01 | Draft | Menno |
 | [Integration-Management-Plan.md](Integration-Management-Plan.md) | 2026-08-01 | Draft | Menno |
 | [Cost-Management-Plan.md](Cost-Management-Plan.md) | 2026-08-01 | Draft | Menno |
