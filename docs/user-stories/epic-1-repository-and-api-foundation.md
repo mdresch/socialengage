@@ -58,3 +58,27 @@
 - Data in the dev database survives `docker compose -f docker-compose.dev.yml down`; only an explicit, separately-named reset action deletes it.
 - Running the full contract suite (`npm test`) while `npm run dev` is live against the dev database leaves the dev database and the running server unaffected — proven by running both concurrently, not just argued.
 - `npm run dev` starts the real Express server against the dev database using only npm scripts — no manual per-shell environment-variable export required, and the mechanism works unmodified from both bash and PowerShell.
+
+---
+
+## Story 1.5 — Watchlist CRUD REST surface
+
+**Source:** Phase 1 "also build, not storied" work (see `docs/open-items-and-deferred-work.md` §A, `docs/implementation-plan.md` Phase 1) · **Status:** Ready
+
+**As a** user of the social listening platform,
+**I want** to create, read, update, and delete watchlists via REST endpoints,
+**so that** I can define what content I want to monitor and have it persist across sessions.
+
+**Acceptance Criteria**
+- `POST /v1/watchlists` creates a watchlist and returns it with a generated id, `createdAt`, and `updatedAt` timestamps.
+- `GET /v1/watchlists` returns all watchlists for the current tenant (filtered by RLS), ordered by `createdAt` descending.
+- `GET /v1/watchlists?matchType=<type>` filters watchlists by their `matchType` field.
+- `PATCH /v1/watchlists/:id` updates a watchlist by id for the current tenant, only modifying fields provided in the request body (PATCH semantics), and updates the `updatedAt` timestamp.
+- `DELETE /v1/watchlists/:id` removes a watchlist by id for the current tenant and returns 204 on success.
+- All endpoints return 404 for non-existent watchlists or watchlists belonging to a different tenant (RLS enforced).
+- All endpoints require the `X-Tenant-Id` header and return 400 if it is missing.
+- The `watchlists` table exists with RLS policy `tenant_isolation` matching the pattern of other tenant-scoped tables.
+- `isActive` defaults to `true` and `platformIds` defaults to an empty array when not provided on creation.
+- Watchlists support all four match types: `keyword`, `hashtag`, `account`, `boolean`.
+- When `matchType` is `boolean`, a `booleanQuery` field is required and carries the boolean query syntax.
+- Tenant isolation is enforced at the database layer: a tenant can only see and modify their own watchlists.

@@ -1,6 +1,8 @@
 # User Stories — Social Listening / Insights Subsystem
 
-One user story per ADR (26 stories total — the original 23, plus Story 2.6 / ADR-0024 and Story 1.4 / ADR-0025 (both accepted 2026-07-30), and Story 2.7 / ADR-0026 (drafted 2026-07-31, accepted later the same day)), grouped into 5 epics that mirror the thematic grouping already used in [`docs/adr/README.md`](../adr/README.md)'s Master Index. Each story cites its source ADR and carries that ADR's status forward. **27 ADRs now exist** (see the Exception note immediately below) — ADR-0027 is the one without a story.
+One user story per ADR (26 stories from 26 ADRs, plus Story 1.5 for Phase 1 "also build, not storied" work — see below), grouped into 5 epics that mirror the thematic grouping already used in [`docs/adr/README.md`](../adr/README.md)'s Master Index. Each story cites its source ADR and carries that ADR's status forward. **27 ADRs now exist** (see the Exception note immediately below) — ADR-0027 is the one without a story.
+
+**Note on Story 1.5:** This is Phase 1's "also build, not storied" CRUD surface work (watchlist CRUD — see `docs/open-items-and-deferred-work.md` §A, `docs/implementation-plan.md` Phase 1), not sourced from an ADR. It is the first (and currently only) story in this series that exists to close a deliberate gap in the ADR-driven scope rather than to implement an ADR's decision directly.
 
 **Exception, 2026-08-01: ADR-0027 has no story.** ADR-0027 (connector architecture is a technical intermediary only, never a contracting party — drafted and Accepted 2026-08-01, same day) is the first ADR in this series that does not generate a user story: it introduces no interface, stored field, endpoint, or provider selection, only a constraint already satisfied by the connectors that exist today (ADR-0024, ADR-0026) without any code change. The "one user story per ADR" convention above still holds for ADRs 0001–0026; ADR-0027 is a named, flagged departure from it, not a silent gap — see ADR-0027's own "A note on this ADR's own place in the series' conventions" section and `docs/adr/README.md`'s footnote 9. At acceptance, Menno's own call was to leave this as a documented, named exception rather than write a permanent "non-story ADR" convention — one instance isn't enough to generalize from.
 
@@ -22,10 +24,10 @@ This did **not** silently rewrite Stories 2.3/4.3's contracts. Story 4.3's asser
 
 ## Epics
 
-| Epic | Theme | ADRs |
-|---|---|---|
-| [1](epic-1-repository-and-api-foundation.md) | Repository & API Foundation | 0001, 0016, 0017, 0025 |
-| [2](epic-2-ingestion-connectors-and-rate-limits.md) | Ingestion, Connectors & Rate Limits | 0002, 0003, 0010, 0020, 0023, 0024, 0026 |
-| [3](epic-3-data-model-storage-and-archival.md) | Data Model, Storage & Archival | 0004, 0005, 0006, 0011, 0018, 0021 |
-| [4](epic-4-derived-data-analytics-and-health.md) | Derived Data, Analytics & Health | 0007, 0008, 0009, 0022 |
-| [5](epic-5-security-isolation-and-messaging.md) | Security, Isolation & Messaging | 0012, 0013, 0014, 0015, 0019 |
+| Epic | Theme | ADRs | Stories |
+|---|---|---|---|
+| [1](epic-1-repository-and-api-foundation.md) | Repository & API Foundation | 0001, 0016, 0017, 0025 | 1.1, 1.2, 1.3, 1.4, 1.5 |
+| [2](epic-2-ingestion-connectors-and-rate-limits.md) | Ingestion, Connectors & Rate Limits | 0002, 0003, 0010, 0020, 0023, 0024, 0026 | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 |
+| [3](epic-3-data-model-storage-and-archival.md) | Data Model, Storage & Archival | 0004, 0005, 0006, 0011, 0018, 0021 | 3.1, 3.2, 3.3, 3.4, 3.5, 3.6 |
+| [4](epic-4-derived-data-analytics-and-health.md) | Derived Data, Analytics & Health | 0007, 0008, 0009, 0022 | 4.1, 4.2, 4.3, 4.4 |
+| [5](epic-5-security-isolation-and-messaging.md) | Security, Isolation & Messaging | 0012, 0013, 0014, 0015, 0019 | 5.1, 5.2, 5.3, 5.4, 5.5 |
