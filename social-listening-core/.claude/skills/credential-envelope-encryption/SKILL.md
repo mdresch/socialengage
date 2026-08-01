@@ -7,7 +7,11 @@ description: Envelope-encrypted platform credential storage (Azure Key Vault-bac
 
 ## What this is
 
-The mechanism that keeps tenant-supplied platform credentials (OAuth tokens, API keys) out of plaintext everywhere: a fresh per-credential data-encryption key (DEK) encrypts the value locally (AES-256-GCM, `src/credentials/envelopeEncryption.ts`), and the DEK itself is wrapped by a real Azure Key Vault key (`src/credentials/keyVaultProvider.ts`) before either the ciphertext or the wrapped DEK is persisted (`src/credentials/credentialStore.ts`, `platform_credentials` table). `src/credentials/platformAuth.ts` decides OAuth vs. API-key entry per platform. It exists so ADR-0014's guarantee — a database compromise alone can't expose credentials — is a property that's actually tested against a real Key Vault, not just asserted in a design doc.
+The mechanism that keeps tenant-supplied platform credentials (OAuth tokens, API keys) out of plaintext everywhere: a fresh per-credential data-encryption key (DEK) encrypts the value locally (AES-256-GCM, `src/credentials/envelopeEncryption.ts`), and the DEK itself is wrapped by a real Azure Key Vault key (`src/credentials/keyVaultProvider.ts`) before either the ciphertext or the wrapped DEK is persisted (`src/credentials/credentialStore.ts`, `platform_credentials` table). `src/credentials/platformAuth.ts` decides OAuth vs. API-key entry per platform. 
+
+**Phase 1 "also build, not storied" work adds HTTP endpoints for credential management:** `POST /v1/connectors/:platformId/connect` and `DELETE /v1/connectors/:platformId/disconnect` in `src/http/versions/v1/connectorsRouter.ts`, enabling tenants to connect/disconnect platforms via the REST API.
+
+It exists so ADR-0014's guarantee — a database compromise alone can't expose credentials — is a property that's actually tested against a real Key Vault, not just asserted in a design doc.
 
 ## Governing ADRs and Stories
 
@@ -36,6 +40,7 @@ The mechanism that keeps tenant-supplied platform credentials (OAuth tokens, API
 
 ## Known gaps / deferred work
 
+- **Phase 1 "also build, not storied" connect/disconnect endpoints now implemented** — `POST /v1/connectors/:platformId/connect` and `DELETE /v1/connectors/:platformId/disconnect` with `storeCredential()`/`deleteCredential()` in `credentialStore.ts`. Admin UI for these endpoints remains deferred.
 - No real OAuth flow exists yet for any platform — `platformAuth.ts` only decides which UI/flow *would* be offered; Phase 1's connector work wires up an actual OAuth exchange when the first OAuth-capable platform is built (RSS/News, Phase 1's first connector, is API-key-only anyway).
 - Key Vault throttling/outage isn't classified as a connector error type yet (ADR-0010) — deferred until a real connector actually depends on reading a credential mid-poll.
 - Credential rotation/refresh (OAuth token refresh before expiry, ADR-0010's automatic-refresh-before-fail behavior) isn't implemented — this story only covers storage/retrieval, not lifecycle management.

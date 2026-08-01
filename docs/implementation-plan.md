@@ -46,7 +46,9 @@ Three things needed an answer that nothing in the ADR series or spec resolved on
 
 **2026-08-01 update — Story 2.6 (Newswire connector) complete.** GlobeNewswire and PR Newswire RSS feeds now ingesting via `src/connectors/newswire/newswireConnector.ts` with `pollNewswireFeeds()`. All contracts pass, including AC1 (real items from both wires) and AC3 (fallback behavior for unsupported query features). Phase 1 now has **two working connectors** (GNews API + Newswire RSS).
 
-Phase 1 now closes on its own original terms ("one platform, one tenant, one watchlist... end to end") for the storied half of that deliverable. The "also build, not storied" half has **watchlist CRUD complete** — only connector connect/disconnect endpoints and admin UI remain open, see below.
+**2026-08-01 update — Story 1.6 (Connector connect/disconnect) complete.** `POST /v1/connectors/:platformId/connect` and `DELETE /v1/connectors/:platformId/disconnect` endpoints implemented in `src/http/versions/v1/connectorsRouter.ts`, with `deleteCredential()` added to `src/credentials/credentialStore.ts`. All 8 contracts pass, including tenant isolation via RLS (AC6). See `contracts/epic-1/story-1.6.connector-connect-disconnect.contract.test.ts` and `.claude/skills/credential-envelope-encryption/SKILL.md`.
+
+Phase 1 now closes on its own original terms ("one platform, one tenant, one watchlist... end to end") for the storied half of that deliverable. The "also build, not storied" half has **watchlist CRUD complete** and **connector connect/disconnect endpoints complete (Story 1.6)** — only admin UI (connect flow, watchlist management screen, connector status view) remains open, see below.
 
 **Deliverable:** a tenant can connect one real platform through the admin UI, create a watchlist, and see matching posts appear via `GET /posts` within one polling cycle — with `GET /connectors` correctly showing `healthy`, and correctly flipping to `degraded`/`failing` when the connection is deliberately broken in a test.
 

@@ -75,3 +75,17 @@ export async function readCredential(tenantId: string, credentialId: string): Pr
     );
   });
 }
+
+/**
+ * Deletes all credentials for a given (tenantId, platformId) combination.
+ * Phase 1 "also build, not storied" work for disconnect endpoint.
+ * See implementation-plan.md Phase 1.
+ */
+export async function deleteCredential(tenantId: string, platformId: string): Promise<void> {
+  await withTenant(tenantId, async (client) => {
+    await client.query(
+      `DELETE FROM platform_credentials WHERE tenant_id = $1 AND platform_id = $2`,
+      [tenantId, platformId]
+    );
+  });
+}
