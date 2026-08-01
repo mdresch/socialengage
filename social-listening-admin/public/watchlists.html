@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watchlist Management - Spark Capture Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #333; margin-bottom: 20px; }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 15px; }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #0078d4; }
+    textarea { min-height: 80px; resize: vertical; }
+    button {
+      background: #0078d4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #005a9e; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    button.danger { background: #dc3545; }
+    button.danger:hover { background: #c82333; }
+    button.secondary { background: #6c757d; }
+    button.secondary:hover { background: #5a6268; }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-badge.active { background: #d4edda; color: #155724; }
+    .status-badge.inactive { background: #f8d7da; color: #721c24; }
+    .watchlist-list {
+      display: grid;
+      gap: 15px;
+    }
+    .watchlist-item {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .watchlist-info {
+      flex: 1;
+    }
+    .watchlist-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+    .modal.active { display: flex; align-items: center; justify-content: center; }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 500px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .tag {
+      display: inline-block;
+      background: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+    .terms-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Watchlist Management</h1>
+    
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Your Watchlists</h2>
+        <button onclick="showCreateModal()">+ Create Watchlist</button>
+      </div>
+      <div id="watchlistList" class="watchlist-list">
+        Loading watchlists...
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Modal -->
+  <div class="modal" id="watchlistModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Create Watchlist</h2>
+      <form id="watchlistForm" onsubmit="saveWatchlist(event)">
+        <input type="hidden" id="watchlistId">
+        <div class="form-group">
+          <label for="watchlistName">Name *</label>
+          <input type="text" id="watchlistName" required placeholder="e.g., Tech News, Competitor Mentions">
+        </div>
+        <div class="form-group">
+          <label for="matchType">Match Type *</label>
+          <select id="matchType" required onchange="updateFormForMatchType()">
+            <option value="keyword">Keyword</option>
+            <option value="hashtag">Hashtag</option>
+            <option value="account">Account</option>
+            <option value="boolean">Boolean Query</option>
+          </select>
+          <p style="color: #666; font-size: 12px; margin-top: 5px;">
+            Keyword: Simple text matching | Hashtag: #tag matching | Account: @user matching | Boolean: Advanced query syntax
+          </p>
+        </div>
+        <div class="form-group" id="termsGroup">
+          <label for="terms">Terms *</label>
+          <textarea id="terms" required placeholder="One term per line"></textarea>
+        </div>
+        <div class="form-group" id="booleanQueryGroup" style="display: none;">
+          <label for="booleanQuery">Boolean Query *</label>
+          <textarea id="booleanQuery" required placeholder="e.g., (ai OR ml) AND news"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="platformIds">Platforms (optional)</label>
+          <select id="platformIds" multiple>
+            <option value="gnews">GNews</option>
+            <option value="newswire">Newswire</option>
+          </select>
+          <p style="color: #666; font-size: 12px; margin-top: 5px;">
+            Leave empty to apply to all platforms
+          </p>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="isActive" checked> Active
+          </label>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit">Save Watchlist</button>
+          <button type="button" onclick="closeModal()" class="secondary">Cancel</button>
+          <button type="button" onclick="deleteWatchlistFromModal()" class="danger" id="deleteButton" style="display: none;">Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Status Message -->
+  <div class="modal" id="statusModal">
+    <div class="modal-content" style="text-align: center;">
+      <h2 id="statusTitle"></h2>
+      <p id="statusMessage"></p>
+      <button onclick="closeStatusModal()" style="margin-top: 20px;">OK</button>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const CORE_API_BASE = (window.CORE_API_BASE_URL || 'http://localhost:3001');
+    const TENANT_ID = localStorage.getItem('tenantId') || prompt('Enter Tenant ID:', 'default-tenant');
+    
+    if (TENANT_ID) {
+      localStorage.setItem('tenantId', TENANT_ID);
+    }
+
+    let currentWatchlists = [];
+
+    // Load watchlists
+    async function loadWatchlists() {
+      try {
+        const response = await fetch(`${CORE_API_BASE}/v1/watchlists`, {
+          headers: { 'X-Tenant-Id': TENANT_ID }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        currentWatchlists = await response.json();
+        renderWatchlists();
+      } catch (err) {
+        showStatus('Error', `Failed to load watchlists: ${err.message}`);
+      }
+    }
+
+    // Render watchlists
+    function renderWatchlists() {
+      const container = document.getElementById('watchlistList');
+      
+      if (!currentWatchlists || currentWatchlists.length === 0) {
+        container.innerHTML = '<p style="color: #666;">No watchlists created yet. Create your first watchlist above.</p>';
+        return;
+      }
+      
+      container.innerHTML = currentWatchlists.map(w => `
+        <div class="watchlist-item">
+          <div class="watchlist-info">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+              <strong>${escapeHtml(w.name)}</strong>
+              <span class="status-badge ${w.isActive ? 'active' : 'inactive'}">
+                ${w.isActive ? 'Active' : 'Inactive'}
+              </span>
+              <span class="tag">${w.matchType}</span>
+            </div>
+            <div class="terms-list">
+              ${w.terms.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+              ${w.booleanQuery ? `<span class="tag">Query: ${escapeHtml(w.booleanQuery)}</span>` : ''}
+            </div>
+            <div style="color: #666; font-size: 12px; margin-top: 5px;">
+              Created: ${formatDate(w.createdAt)} | Updated: ${formatDate(w.updatedAt)}
+            </div>
+          </div>
+          <div class="watchlist-actions">
+            <button onclick="editWatchlist('${w.id}')" class="secondary">Edit</button>
+            <button onclick="deleteWatchlist('${w.id}')" class="danger">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Form management
+    function updateFormForMatchType() {
+      const matchType = document.getElementById('matchType').value;
+      const termsGroup = document.getElementById('termsGroup');
+      const booleanQueryGroup = document.getElementById('booleanQueryGroup');
+      
+      if (matchType === 'boolean') {
+        termsGroup.style.display = 'none';
+        booleanQueryGroup.style.display = 'block';
+      } else {
+        termsGroup.style.display = 'block';
+        booleanQueryGroup.style.display = 'none';
+      }
+    }
+
+    // Show create modal
+    function showCreateModal() {
+      document.getElementById('modalTitle').textContent = 'Create Watchlist';
+      document.getElementById('watchlistId').value = '';
+      document.getElementById('watchlistName').value = '';
+      document.getElementById('matchType').value = 'keyword';
+      document.getElementById('terms').value = '';
+      document.getElementById('booleanQuery').value = '';
+      document.getElementById('isActive').checked = true;
+      document.getElementById('platformIds').selectedIndex = -1;
+      document.getElementById('deleteButton').style.display = 'none';
+      updateFormForMatchType();
+      document.getElementById('watchlistModal').classList.add('active');
+    }
+
+    // Show edit modal
+    function editWatchlist(id) {
+      const w = currentWatchlists.find(w => w.id === id);
+      if (!w) return;
+      
+      document.getElementById('modalTitle').textContent = 'Edit Watchlist';
+      document.getElementById('watchlistId').value = w.id;
+      document.getElementById('watchlistName').value = w.name;
+      document.getElementById('matchType').value = w.matchType;
+      document.getElementById('terms').value = w.terms.join('\n');
+      document.getElementById('booleanQuery').value = w.booleanQuery || '';
+      document.getElementById('isActive').checked = w.isActive;
+      document.getElementById('deleteButton').style.display = 'block';
+      updateFormForMatchType();
+      document.getElementById('watchlistModal').classList.add('active');
+    }
+
+    // Save watchlist
+    async function saveWatchlist(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('watchlistId').value;
+      const name = document.getElementById('watchlistName').value;
+      const matchType = document.getElementById('matchType').value;
+      const terms = document.getElementById('terms').value
+        .split('\n')
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+      const booleanQuery = document.getElementById('booleanQuery').value;
+      const isActive = document.getElementById('isActive').checked;
+      const platformIds = Array.from(document.getElementById('platformIds').selectedOptions)
+        .map(o => o.value);
+      
+      // Validate
+      if (!name) {
+        showStatus('Error', 'Name is required');
+        return;
+      }
+      if (matchType !== 'boolean' && terms.length === 0) {
+        showStatus('Error', 'At least one term is required for non-boolean match types');
+        return;
+      }
+      if (matchType === 'boolean' && !booleanQuery) {
+        showStatus('Error', 'Boolean query is required for boolean match type');
+        return;
+      }
+      
+      try {
+        const payload = {
+          name,
+          matchType,
+          terms,
+          ...(matchType === 'boolean' ? { booleanQuery } : {}),
+          isActive,
+          platformIds
+        };
+        
+        let response;
+        if (id) {
+          // Update
+          response = await fetch(`${CORE_API_BASE}/v1/watchlists/${id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Tenant-Id': TENANT_ID
+            },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Create
+          response = await fetch(`${CORE_API_BASE}/v1/watchlists`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Tenant-Id': TENANT_ID
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to save watchlist');
+        }
+        
+        closeModal();
+        showStatus('Success', `Watchlist ${id ? 'updated' : 'created'} successfully!`);
+        loadWatchlists();
+      } catch (err) {
+        showStatus('Error', `Failed to save watchlist: ${err.message}`);
+      }
+    }
+
+    // Delete watchlist
+    async function deleteWatchlist(id) {
+      if (!confirm('Are you sure you want to delete this watchlist?')) return;
+      
+      try {
+        const response = await fetch(`${CORE_API_BASE}/v1/watchlists/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'X-Tenant-Id': TENANT_ID
+          }
+        });
+        
+        if (!response.ok && response.status !== 204) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete watchlist');
+        }
+        
+        showStatus('Success', 'Watchlist deleted successfully!');
+        loadWatchlists();
+      } catch (err) {
+        showStatus('Error', `Failed to delete watchlist: ${err.message}`);
+      }
+    }
+
+    function deleteWatchlistFromModal() {
+      const id = document.getElementById('watchlistId').value;
+      if (id) {
+        deleteWatchlist(id);
+        closeModal();
+      }
+    }
+
+    // Modal management
+    function closeModal() {
+      document.getElementById('watchlistModal').classList.remove('active');
+    }
+
+    function showStatus(title, message) {
+      document.getElementById('statusTitle').textContent = title;
+      document.getElementById('statusMessage').textContent = message;
+      document.getElementById('statusModal').classList.add('active');
+    }
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').classList.remove('active');
+    }
+
+    // Utility functions
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+
+    // Close modals on outside click
+    document.getElementById('watchlistModal').onclick = function(e) {
+      if (e.target === this) closeModal();
+    };
+    document.getElementById('statusModal').onclick = function(e) {
+      if (e.target === this) closeStatusModal();
+    };
+
+    // Initialize
+    loadWatchlists();
+  </script>
+</body>
+</html>

@@ -34,6 +34,7 @@ description: The sole sanctioned path from social-listening-admin to social-list
 
 ## Known gaps / deferred work
 
-- No actual endpoint calls exist yet — there is no admin UI feature to call one for (those are Phase 1 work, per `docs/implementation-plan.md`). This module currently only proves the mechanism (a working `fetch`-based call against a configurable base URL) via a placeholder health check.
-- Next.js scaffolding for the admin UI itself is deferred to the first story that actually needs a page/route — not required by Story 1.1's Acceptance Criteria.
-- Request/response typing shared with core's API shape isn't established yet; revisit once core has real endpoints (Phase 1) to type against.
+- **Phase 1 "also build, not storied" admin UI now implemented** — `public/connect.html` (connect/disconnect flow), `public/watchlists.html` (watchlist CRUD management), `public/connectors.html` (connector health status), and `public/index.html` (navigation landing page). All pages call through this module's functions.
+- **New endpoint functions added**: `connectPlatform()`, `disconnectPlatform()`, `getWatchlists()`, `createWatchlist()`, `updateWatchlist()`, `deleteWatchlist()`, `getConnectorHealth()` — all calling respective `/v1/...` core endpoints via fetch.
+- Next.js scaffolding for the admin UI itself is deferred to the first story that actually needs a page/route — not required by Story 1.1's Acceptance Criteria. Current implementation uses vanilla HTML/JS pages in `public/` directory for simplicity.
+- Request/response typing shared with core's API shape is partially established via TypeScript interfaces in this module; full shared types across repos is deferred until a real need emerges.
