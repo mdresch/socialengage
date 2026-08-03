@@ -37,7 +37,10 @@ async function gatedAcquire(tenantId: string): Promise<void> {
  * from GNews would be, and correctly does not blind-retry it.
  */
 async function getGNewsApiKey(tenantId: string): Promise<string> {
-  const credentialId = await getLatestCredentialId(tenantId, GNEWS_PROVIDER_ID);
+  // GNews credentials are always tenant-wide (ADR-0026's "per-tenant
+  // credential, not a shared pool" — ADR-0028 Tier 2), never user-bound —
+  // ownerType is now required (Story 1.7, ADR-0034).
+  const credentialId = await getLatestCredentialId(tenantId, GNEWS_PROVIDER_ID, 'tenant');
   if (!credentialId) {
     throw new ClassifiableError('http_401', `No GNews credential registered for tenant ${tenantId}`);
   }

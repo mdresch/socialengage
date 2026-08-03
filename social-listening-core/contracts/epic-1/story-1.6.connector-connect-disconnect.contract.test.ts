@@ -19,6 +19,24 @@
  * testAuthBypassMiddleware, NODE_ENV==='test' only) — see
  * .claude/skills/tenant-auth-middleware/SKILL.md. Business-logic assertions
  * are otherwise unchanged.
+ *
+ * 2026-08-03 — Story 1.7 (ADR-0034): this story's own authorization/schema
+ * shape is now explicitly superseded, per ADR-0034 §4 item 6's own naming
+ * of this exact supersession (not a surprise regression this pass
+ * discovered — the ADR itself, accepted before this contract was touched,
+ * names Story 1.7 as reworking Story 1.6's shape). Every connect/disconnect
+ * call below is a tenant-wide operation, which now requires the caller's
+ * resolved role to be `tenant_admin` (ADR-0034 §3, ADR-0028 Tier 2) —
+ * updated from the generic `testIdentityHeaderValue(tenantId)` (implicitly
+ * `tenant_user`) to explicitly pass `{ role: 'tenant_admin' }`, since that
+ * was always this test's own implicit intent (Story 1.6 had no
+ * ownership-tier concept at all, only ever tested tenant-wide credentials).
+ * No other assertion changed — this file still proves the same basic
+ * wiring (credential storage, tenant isolation via RLS, the health endpoint
+ * working post-connect) it always did, now under real authorization rather
+ * than none. See `contracts/epic-1/story-1.7.ownership-tier-connect-
+ * disconnect.contract.test.ts` for the new ownership-tier coverage this
+ * file was never meant to duplicate.
  */
 
 import { randomUUID } from 'crypto';
@@ -74,7 +92,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({ credential });
 
@@ -99,7 +117,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       const tenantId = randomUUID();
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({});
 
@@ -114,7 +132,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({ credential });
 
@@ -133,14 +151,14 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // First connect
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({ credential: 'to-be-deleted' });
 
       // Then disconnect
       const response = await request(app)
         .delete(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/disconnect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }));
 
       expect(response.status).toBe(200);
       const body = response.body;
@@ -174,7 +192,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // Connect as tenantId
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({ credential: 'tenant1-key' });
 
@@ -182,7 +200,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // due to RLS - the delete will affect 0 rows for anotherTenantId
       const response = await request(app)
         .delete(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/disconnect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(anotherTenantId));
+        .set('X-Test-Identity', testIdentityHeaderValue(anotherTenantId, { role: 'tenant_admin' }));
 
       // RLS should prevent the delete from affecting other tenants
       // The endpoint returns 200 but no rows are deleted for anotherTenantId
@@ -207,14 +225,14 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // Connect first
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }))
         .set('Content-Type', 'application/json')
         .send({ credential: 'health-test-key' });
 
       // Check health
       const response = await request(app)
         .get(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}`)
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { role: 'tenant_admin' }));
 
       expect(response.status).toBe(200);
       const body = response.body;
