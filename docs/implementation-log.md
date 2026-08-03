@@ -518,3 +518,17 @@ ADR-0031 §3 named a real, unresolved seat-count race condition as its own Open 
 - **Full suite at merge:** not independently re-verified retroactively — trusted from the commit's own contents and this project's later full-suite runs (e.g. Story 5.6's own session), which included this contract passing alongside everything else, per `docs/implementation-log.md`'s own entries for those later stories
 
 `POST /v1/connectors/:platformId/connect` and `DELETE /v1/connectors/:platformId/disconnect` — Phase 1's minimal connector CRUD, built against the `X-Tenant-Id` placeholder (pre-dating any real authentication or `users`/ownership-tier model) with no role or ownership check of any kind, exactly as `Business-Case-v6.0.md` §6's own dependency matrix anticipated ("could theoretically be built against the placeholder... not recommended," built anyway). **Fully superseded by Story 1.7 (ADR-0034, this same session) — see that entry below for the ownership-tier rework this story's own shape made necessary.** Logged here, retroactively, so the record of what actually shipped and when is complete before its own supersession is logged immediately after it — not skipped in favor of only logging the replacement.
+
+---
+
+## 2026-08-03 — Healing: bump Story 5.3's Key Vault timeout for real network latency — social-listening-core@4fb55bf
+
+- **Full commit:** `4fb55bf21a771c8d05054462ce1b5044f90e9fa2`
+- **Repo:** social-listening-core (this commit touches only `social-listening-core/**`, no separate repo exists yet — pre-split convention per Story 1.1's own entry)
+- **Story / ADR:** 5.3 / ADR-0014 — the contract healed (surfaced while validating Story 1.7, not caused by it)
+- **Contract:** social-listening-core/contracts/epic-5/story-5.3.credential-envelope-encryption.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/credential-envelope-encryption/SKILL.md (updated, not new)
+- **Files touched:** social-listening-core/.claude/skills/credential-envelope-encryption/SKILL.md, social-listening-core/contracts/epic-5/story-5.3.credential-envelope-encryption.contract.test.ts
+- **Full suite at merge:** PASS (13/13 for this pair in isolation; full suite confirmed separately in Story 1.7's own entry below)
+
+Surfaced while validating Story 1.7's own full-suite run, a foreign, previously-stable contract failing alongside Story 1.7's own two new timeouts, same root cause: AC3's real Key Vault key-disable/read-attempt round trip exceeded 30000ms under this session's cumulative real Key Vault load (a 790-second full run, versus ~250–300s for every other full-suite run earlier the same day) — not a logic regression; `storeCredential()`'s Key Vault interaction itself is completely unchanged by Story 1.7, which only added optional `ownerType`/`userId` parameters this file's own calls don't use. Fixed by bumping to 60000ms, matching the exact same fix this project already applied once before, for the identical reason, to Story 1.6's contract. No assertion changed.
