@@ -392,3 +392,19 @@ Remaining Phase 1 gap, **partially closed by Story 1.5** (watchlist CRUD impleme
 - **Session duration (approximate):** ~4h55m — proxy from the git commit-timestamp gap (`72fbe72` 10:15 → `fdad724` 15:09, same day), not a measured value. See `Cost-Management-Plan.md` §5.2.5 for the full caveat and the still-open hourly-rate decision — this is now that section's single source of truth for this session's own row, not duplicated there.
 
 Eight ADRs drafted (ADR-0028's own batch, then ADR-0029–ADR-0035 as a second, sequenced seven-ADR batch closing `docs/adr/README.md`'s 2026-07-30 multi-tenant governance note in full) and reviewed/accepted by Menno across a series of exchanges, several revised in place first (ADR-0030's break-glass mechanism, ADR-0031's sign-up domain capture, ADR-0032's `access_ends_at`), two with their own flagged questions confirmed directly rather than waved through (ADR-0034's Tenant-Admin revocation reading, ADR-0035's rule-of-three no-story-convention decision). Sequenced into a new Phase 4.5 in `docs/implementation-plan.md`; two UI design references added under `docs/design/` (explicitly non-Next.js, flagged as such). See `docs/adr/README.md`'s footnotes 10–11 and each ADR's own Amendment Log for the full drafting/revision record this one-paragraph summary can't carry.
+
+---
+
+## 2026-08-03 — Healing: extend Story 1.6's Jest timeout for real Key Vault calls — socialengage@438d93e
+
+- **Full commit:** `438d93e2a72773382dd38a91e79d82185f469ea4`
+- **Repo:** socialengage (pre-split convention, per Story 1.1's own entry — this commit touches only `social-listening-core/contracts/...`, no separate repo exists yet)
+- **Story / ADR:** 1.6 (Phase 1 "also build, not storied" work, no ADR) — the contract healed
+- **Contract:** social-listening-core/contracts/epic-1/story-1.6.connector-connect-disconnect.contract.test.ts
+- **SKILL.md:** none touched (no component-behavior change, only a test timeout)
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.6.connector-connect-disconnect.contract.test.ts
+- **Full suite at merge:** PASS (147/147)
+
+Surfaced while validating Story 5.6's own full-suite run (see the next entry), not caused by it. Story 1.6's contract performs the same real, cold Azure Key Vault RSA key create/delete Story 5.3 already does, but never set Story 5.3's own `jest.setTimeout(30000)` — it silently relied on Jest's 5000ms default, which the `afterAll` cleanup's `beginDeleteKey` call intermittently exceeded. Reproduced directly (one run: 7/8 passed, only the cleanup hook timed out), fixed by matching Story 5.3's existing precedent exactly — no assertion changed, per `heal-contract-failure`'s own "fix the underlying thing, never the check" rule.
+
+**A second, separate issue investigated in the same pass, requiring no code fix:** the same full-suite run also failed Story 5.2 and Story 5.5 (real Azure Service Bus `RestError`/`UnauthorizedRequestError` on `adminClient.createSubscription(...)`). Root cause, confirmed via a direct diagnostic script against the real namespace: this session's own `az login --tenant <ciam-tenant-id>` (unrelated infrastructure work, provisioning a real Entra External ID tenant for Story 5.6) had switched the Azure CLI's active account context away from the original subscription that the real `social-listening-dev` Service Bus namespace lives in — `DefaultAzureCredential`'s CLI-credential fallback picked up the wrong tenant. Fixed by `az account set --subscription "Azure Free subscription"`, confirmed by the diagnostic script succeeding again and both stories' contracts passing cleanly on re-run. No file changes were needed or made for this half — an environmental/session-state issue, not a code regression.
