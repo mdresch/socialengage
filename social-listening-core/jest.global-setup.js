@@ -29,6 +29,9 @@ module.exports = async function globalSetup() {
   process.env.PLATFORM_ADMIN_PGUSER = process.env.PLATFORM_ADMIN_PGUSER || 'platform_admin_role';
   process.env.PLATFORM_ADMIN_PGPASSWORD =
     process.env.PLATFORM_ADMIN_PGPASSWORD || 'platform_admin_role_password';
+  process.env.IDENTITY_RESOLVER_PGUSER = process.env.IDENTITY_RESOLVER_PGUSER || 'identity_resolver_role';
+  process.env.IDENTITY_RESOLVER_PGPASSWORD =
+    process.env.IDENTITY_RESOLVER_PGPASSWORD || 'identity_resolver_role_password';
 
   execSync('docker compose -f docker-compose.test.yml up -d --wait', {
     cwd: __dirname,
