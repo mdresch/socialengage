@@ -28,7 +28,15 @@ import { storeCredential, readCredential } from '../../src/credentials/credentia
 import { authMethodFor } from '../../src/credentials/platformAuth';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
 
-jest.setTimeout(30000);
+// Bumped from 30000, 2026-08-03, via heal-contract-failure during Story 1.7's
+// own full-suite validation: AC3's real Key Vault key-disable/read-attempt
+// round trip timed out at 30000ms under this session's cumulative real
+// Key Vault load (unrelated to Story 1.7's own code — storeCredential()'s
+// Key Vault interaction is unchanged; only its new, optional
+// ownerType/userId parameters were added, not used by this file's calls).
+// No assertion changed. See this component's own "Known gaps" for the
+// fuller account.
+jest.setTimeout(60000);
 
 let testKeyName: string;
 let testKeyId: string;
