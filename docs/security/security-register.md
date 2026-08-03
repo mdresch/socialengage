@@ -188,3 +188,15 @@ Resolved (per this reviewer's own re-check): finding 1 (`GET /v1/me` identity so
 **Resolution note (same day):** added to ADR-0036 §1: the key is named explicitly as an application-level secret distinct from ADR-0014's tenant-credential scope (that mechanism doesn't apply here); minimum bar decided now (256-bit entropy, environment-variable only, never committed). **Named honestly rather than solved narrowly:** this project has no decided real-production secrets-management strategy for *any* application-level secret yet (this key, the Entra client secret, database credentials) — a real, pre-existing, project-wide gap, now recorded in `docs/open-items-and-deferred-work.md`'s "Security / authentication" section rather than invented a fix for just this one key in isolation. Story 6.1's own Acceptance Criteria updated with the minimum-entropy/never-committed requirement. Not yet contract-verified — no code exists yet.
 
 ---
+
+## 2026-08-04 — reviewed docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, fifth pass (manual run, not --register — appended by hand for a complete history)
+
+**Disposition: no new findings — all three items re-flag material already addressed or deliberately deferred, not acted on further.**
+
+1. **Application-level secrets management (project-wide)** — this is the same gap §1 already discloses honestly ("this project has no decided real-production secrets-management strategy for any application-level secret yet") and cross-references into `docs/open-items-and-deferred-work.md` as a real, pre-existing, project-wide gap out of this ADR's own scope to solve. The reviewer flagged the disclosure itself, not an undiscovered gap.
+2. **`core-client.ts` single-choke-point enforcement** — identical to the finding from two passes ago (2026-08-04, third pass, above). Already dispositioned: accepted as-is, consistent with every other convention-enforced module boundary in this project, no new enforcement added.
+3. **Hand-rolled PKCE vs. Auth.js** — already an explicit, named trade-off in Decision §3 and Open Questions, with the ADR's own words that adopting Auth.js later is "a legitimate, lower-maintenance alternative" pending Story 6.1's own verification of its Entra External ID support — not a fresh gap, a re-surfacing of an already-disclosed, deliberately-deferred decision.
+
+No further ADR revision made this pass — continuing to revise for restated findings would itself be inconsistent with this project's own engineering-pragmatism discipline (don't solve a gap twice, don't chase a reviewer's repeated flag past the point where the project owner has already made the call). ADR-0036 has now had four substantive, distinct rounds of hardening (identity-source spoofing, session lifetime, redirect-URI exactness, session-key entropy) plus this one confirming pass with nothing new — judged ready for Menno's own accept/reject review.
+
+---
