@@ -116,6 +116,8 @@ Phase 1 now closes on its own original terms ("one platform, one tenant, one wat
 
 **Deliverable:** every `/v1` endpoint derives tenant and user identity exclusively from a validated Entra-issued bearer token, resolved against real `tenants`/`users` tables under RLS; `X-Tenant-Id` is retired as a trust mechanism everywhere; connector connect/disconnect enforces ADR-0028's ownership tiers for the first time in real code; `Business-Case-v6.0.md` Risk R-04 is closed, not merely mitigated.
 
+**2026-08-03 update — Story 5.6 built, the first story in this phase.** `src/http/auth/entraAuthMiddleware.ts` validates a bearer token's signature and issuer via standard OIDC/JWT verification (`jose`) against a **real** Microsoft Entra External ID tenant (`getsocialengage.onmicrosoft.com`, provisioned this same session specifically for this story) — not a mock. Proven with a real, live-issued token (client-credentials grant against a test-only app registration), including real signature-tamper and foreign-issuer rejection. **Not yet mounted on any real route** — per this story's own scope, wiring it into the `/v1` router and retiring `X-Tenant-Id` is Story 5.10's job. See `.claude/skills/entra-authentication/SKILL.md` for what's deferred and one real, partial finding on ADR-0029's own `oid`-vs-`sub` Open Question (present for client-credentials tokens; still unverified for interactive user sign-in tokens). A pre-existing, unrelated timeout flakiness in Story 1.6's own contract (real Key Vault calls, no `jest.setTimeout` override) was found and fixed via `heal-contract-failure` during this story's full-suite validation — see `docs/implementation-log.md`'s matching Healing entry.
+
 ---
 
 ## Phase 5 — Production readiness

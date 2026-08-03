@@ -37,6 +37,7 @@
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.33.0",
     "express": "5.2.1",
+    "jose": "^5.10.0",
     "pg": "8.22.0"
   }
 }
