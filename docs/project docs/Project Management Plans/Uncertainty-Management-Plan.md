@@ -1,20 +1,20 @@
 # Uncertainty Management Plan
-## Spark Capture Project — PMBOK Domain: Uncertainty
+## SocialEngage Project — PMBOK Domain: Uncertainty
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
-**Status:** Active — CI/CD implemented, R-06 added  
-**Version:** 1.1
+**Status:** Active — CI/CD implemented, canonical risk register (R-01–R-06)  
+**Version:** 1.3
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how risks, issues, and uncertainties are identified, assessed, and responded to** for the Spark Capture project. It establishes a systematic approach to managing the unknowns and potential problems that could impact project objectives.
+This plan defines **how risks, issues, and uncertainties are identified, assessed, and responded to** for the SocialEngage project. It establishes a systematic approach to managing the unknowns and potential problems that could impact project objectives.
 
-The Uncertainty Performance Domain (PMBOK 7th Edition) emphasizes that uncertainty is inherent in all projects and that effective management of uncertainty is critical to project success. For Spark Capture, this means: **proactively identifying risks, explicitly tracking deferred decisions, and maintaining a bias toward transparency over optimism.**
+The Uncertainty Performance Domain (PMBOK 7th Edition) emphasizes that uncertainty is inherent in all projects and that effective management of uncertainty is critical to project success. For SocialEngage, this means: **proactively identifying risks, explicitly tracking deferred decisions, and maintaining a bias toward transparency over optimism.**
 
 ---
 
@@ -125,7 +125,7 @@ The project tracks several types of uncertainty:
    - Urgency (Immediate/Short-term/Long-term)
 
 4. **Assign to Risk Register:**
-   - Business Case §9 for project-level risks
+   - This plan's own Appendix D for canonical project-level risk IDs R-01–R-06 (Business Case §5 keeps a dated snapshot only) — see Appendix D's status correction below for the full ownership history
    - `open-items-and-deferred-work.md` for execution-level risks
    - Component `SKILL.md` for component-specific risks
 
@@ -134,7 +134,7 @@ The project tracks several types of uncertainty:
 - Implementation Log entries (issues encountered)
 - AI reviewer findings (security, pragmatism, product)
 - External dependency changes (Azure, API providers)
-- Business Case risk register (R-01 to R-05)
+- This plan's own risk register (R-01 to R-06 — Appendix D, canonical; Business-Case-v6.0.md §5 holds a dated snapshot only)
 
 #### 5.1.2 Risk Assessment
 
@@ -227,6 +227,8 @@ The project tracks several types of uncertainty:
 **Deferred Work Categories (from `open-items-and-deferred-work.md`):**
 
 #### 5.3.1 Section A: "Also Build, Not Storied"
+
+**Current baseline (2026-08-03):** Watchlist CRUD is complete. Connector connect/disconnect routes exist but require ADR-0033/0034 authentication, ownership, and authorization rework. The remaining admin deliverable is the role-gated Next.js application required by ADR-0035.
 Real, substantial work the ADR process didn't cover because it isn't architecturally interesting.
 
 | Phase | Not-Yet-Built Items | Status | Blocking |
@@ -249,7 +251,11 @@ Real, substantial work the ADR process didn't cover because it isn't architectur
 4. **Prioritized:** Deferred work is ordered by dependency and value
 
 #### 5.3.2 Section B: Deferred Sub-Scope Within Shipped Stories
+
+**Authentication distinction (2026-08-03):** SocialEngage user authentication and bearer-token identity are now architecturally decided by ADR-0029–0033 and are implementation work. Connector-specific OAuth token exchange remains deferred until the first OAuth connector, such as Reddit.
 Gaps within already-shipped components.
+
+**Current interpretation:** The OAuth row below refers to connector-specific OAuth and remains deferred until an OAuth connector is built. Entra-based SocialEngage authentication is separately accepted by ADR-0029–0033 and is an implementation risk, not an open architectural decision.
 
 | Component | Deferred Item | Status | Impact |
 |-----------|---------------|--------|--------|
@@ -287,6 +293,8 @@ Technical debt in development tools and processes.
 | No migration tool | Plain .sql files applied via pg client | ⏳ Accepted | Low |
 | Docker required for tests | Ephemeral Postgres container | ⏳ Accepted | Low |
 
+**Status correction (2026-08-03):** The OAuth item below refers only to connector-specific OAuth token exchange. It does not mean SocialEngage authentication is undecided: ADR-0029–0033 define Entra External ID, bearer-token identity, and tenant/user resolution; those decisions are now implementation risks.
+
 ### 5.4 Open Questions Management
 
 **Purpose:** Track questions that need answers but aren't blocking immediate work
@@ -319,7 +327,7 @@ Technical debt in development tools and processes.
 
 | ID | Assumption | Category | Status | Verification | Risk if Wrong |
 |----|------------|----------|--------|--------------|---------------|
-| A-01 | Sufficient available time outside ADPA/RPAS commitments | Resource | Active | Self-assessment | Project stalls |
+| A-01 | Sufficient available time outside ADPA/RPAS commitments — **never numerically quantified** (Charter §6; see `Ideation-Document-v7.2.md`'s R-03 justification for this exact wording), by design: rather than inventing an hours threshold, a proxy trigger is used instead (see Verification column) | Resource | Active | Self-assessment; proxy trigger = a gap exceeding 30 days between consecutive `docs/implementation-log.md` entries | Project stalls |
 | A-02 | Azure services will remain available and priced as expected | External | Active | Monthly review | Cost spikes, outages |
 | A-03 | Free-tier API access will remain available | External | Active | Quarterly review | Connector failures |
 | A-04 | Solo-developer approach is sustainable for MVP | Process | Active | Periodic reassessment | Quality degradation |
@@ -364,7 +372,7 @@ Technical debt in development tools and processes.
 | Tool | Purpose | Usage |
 |------|---------|-------|
 | `open-items-and-deferred-work.md` | Deferred work tracking | Primary register |
-| Business-Case-v6.0.md §9 | Project-level risk register | R-01 to R-05 |
+| This plan's own Appendix D (canonical, R-01–R-06); Business-Case-v6.0.md §5 (dated snapshot only) | Project-level risk register (canonical IDs) | R-01 to R-06 |
 | `implementation-log.md` | Issues encountered and resolved | Per-story issues |
 | ADR series | Architecture decisions and open questions | Per-ADR tracking |
 | Component SKILL.md files | Component-specific known gaps | Per-component tracking |
@@ -394,11 +402,11 @@ Technical debt in development tools and processes.
 | **Deferred Work Visibility** | % of deferred work explicitly tracked | 100% | `open-items-and-deferred-work.md` audit | Quarterly |
 | **Assumption Validity** | % of assumptions that remain valid | ≥90% | Assumption verification | Quarterly |
 
-### 7.2 Current Uncertainty Status (2026-08-01)
+### 7.2 Current Uncertainty Status (last verified 2026-08-03)
 
 | Metric | Current Value | Target | Status | Trend |
 |--------|---------------|--------|--------|-------|
-| Active Risks | 5 (R-01 to R-05) | ≤10 | ✅ On Track | → |
+| Active Risks | 6 (R-01 to R-06 — this plan's own Appendix D, canonical) | ≤10 | ✅ On Track | → |
 | Resolved Risks | 0 | ≥50% | ⚠️ Needs Attention | → |
 | Deferred Work Items | 15+ | ≤20 | ✅ On Track | → |
 | Open Questions | 4 | ≤5 | ✅ On Track | → |
@@ -430,6 +438,8 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Added R-06 (late-stage integration risk) with mitigation strategy, updated status to Active | TBD |
+| 1.2 | 2026-08-03 | Menno Drescher | Reconciled Appendix D's risk IDs against Business-Case-v6.0.md §5/§9 (previously a non-matching independent numbering); annotated A-01 with its "never numerically quantified" status and proxy trigger; re-baselined §7.2 Active Risks to 6 (R-01–R-06) | TBD |
+| 1.3 | 2026-08-03 | Menno Drescher | Canonical ownership of the risk register (R-01–R-06) flipped from Business-Case-v6.0.md §5 to this plan's own Appendix D, per Menno's direction that the risk-management process, not the business case, should own it; Business Case §5 now holds a dated snapshot only | TBD |
 
 ---
 
@@ -580,24 +590,28 @@ This plan is reviewed when:
 
 ### Appendix D: Risk Register Summary
 
-**Active Risks (from Business-Case-v6.0.md §9):**
+**Status correction, 2026-08-03 (superseded same day — see the note directly below).** This appendix previously used its own R-01–R-06 numbering that did not match `Business-Case-v6.0.md` §5's table at all (this appendix's old R-01 "scope creep" was actually the Business Case's R-02; this appendix's old R-02 "multi-tenant isolation not proven" had no Business Case counterpart and is folded into R-04's trigger below, since a live two-tenant proof is gated on the same authentication gap; old R-05/R-06 had no Business Case counterpart either). First reconciled by pulling R-01–R-04 directly from the Business Case's table and consolidating R-05/R-06 there too, making the Business Case the single physical location.
+
+**Canonical ownership flip, 2026-08-03 (same day, supersedes the paragraph above).** Per Menno's own direction: a Risk Register belongs to the risk-management process, not the business-case document that justified starting the project. **This appendix (Appendix D) is now this project's sole canonical, actively-maintained risk register (R-01–R-06).** `Business-Case-v6.0.md` §5 keeps a point-in-time snapshot as of 2026-08-03, explicitly marked there as no longer authoritative — update risk status here going forward, not there. Any future new risk is added here first.
+
+**Active Risks (canonical — this is now the single source of truth, IDs R-01–R-06):**
 
 | ID | Risk | Category | Probability | Impact | Status |
 |----|------|----------|------------|--------|--------|
-| R-01 | Scope creep across subsystems outruns solo development bandwidth | Scope | Medium | High | Open |
-| R-02 | Multi-tenant isolation criterion not yet proven with two live tenants | Technical | Medium | High | Open |
-| R-03 | Bus factor risk (Menno as sole developer) | Resource | Low | High | Open |
-| R-04 | No authentication mechanism exists for safe tenant onboarding | Security | Medium | High | Open |
-| R-05 | No formal multi-tenant admin/tenant/user provisioning model | Architecture | Medium | Medium | Open |
-| **R-06** | **Late-stage integration issues (Azure services, RLS policies, OAuth)** | **Technical** | **Medium** | **High** | **Open** |
+| R-01 | Platform API pricing/policy change makes a connector infeasible | External | Medium | High | Open |
+| R-02 | Scope creep across the four-subsystem vision outruns solo bandwidth | Scope | Medium | Medium | Open |
+| R-03 | Solo-developer bus factor — no redundancy if availability changes | Resource | Low–Medium | High | Open |
+| R-04 | No authentication mechanism exists; `X-Tenant-Id` is an unauthenticated placeholder (includes the related fact that a live two-tenant isolation proof cannot happen until this closes) | Security | High (certain, if triggered) | High | Open — ADR-0029–0033 accepted, implementation in progress (Phase 4.5) |
+| R-05 | Accepted tenant/admin/user model (ADR-0030–0032) is architecturally decided but not yet implemented | Architecture | Medium | Medium | Open — ADR-0030–0032 accepted |
+| **R-06** | **Late-stage integration issues across Azure services, RLS policy interactions, and OAuth as Phase 4.5's identity work lands** | **Technical** | **Medium** | **High** | **Open** |
 
 **Risk Response Summary:**
-- **R-01:** Mitigated by phase-gated approach, deferred subsystems
-- **R-02:** Will be addressed in Phase 5 (load/chaos testing)
-- **R-03:** Accepted; documentation written for future onboarding
-- **R-04:** Deferred to Phase 5 (production readiness)
-- **R-05:** Deferred; candidate ADRs #1-#4 needed first
-- **R-06:** Mitigated by CI/CD pipeline (ci.yml) which tests Azure integrations early; RLS policies tested in Phase 0; OAuth and auth deferred to Phase 5 with explicit tracking
+- **R-01:** Mitigated by favoring free/low-cost platforms first; monthly cost cap still outstanding (Business Case §5)
+- **R-02:** Mitigated by phase-gated approach, deferred subsystems; trigger is a second subsystem's charter being drafted before this subsystem's Phase-1 success criteria are re-verified
+- **R-03:** Accepted; documentation written for future onboarding; trigger is a >30-day gap between Implementation Log entries
+- **R-04:** Architecture is resolved by ADR-0029–0033; implement bearer-token middleware and Entra integration before exposing tenant operations to any external caller, and before claiming a live two-tenant isolation proof
+- **R-05:** Architecture is resolved by ADR-0030–0032; implement migrations, identity resolution, role checks, and tenant/user contract tests
+- **R-06:** Mitigated by CI/CD and contract testing; keep Entra authentication implementation separate from connector OAuth, which remains deferred until the first OAuth connector
 
 ### Appendix E: Dependency Monitoring Checklist
 
@@ -633,4 +647,4 @@ This plan is reviewed when:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

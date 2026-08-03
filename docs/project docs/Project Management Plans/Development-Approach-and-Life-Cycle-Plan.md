@@ -1,18 +1,18 @@
 # Development Approach and Life Cycle Management Plan
-## Spark Capture Project — PMBOK Domain: Development Approach & Life Cycle
+## SocialEngage Project — PMBOK Domain: Development Approach & Life Cycle
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Draft  
-**Version:** 1.0
+**Version:** 1.1
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how the Spark Capture project approaches development and the lifecycle model** it follows. It addresses:
+This plan defines **how the SocialEngage project approaches development and the lifecycle model** it follows. It addresses:
 - The **development methodology** (contract-first, ADR-driven)
 - The **project lifecycle** (phased, dependency-ordered, not calendar-driven)
 - The **decision framework** (ADRs as the primary decision mechanism)
@@ -59,7 +59,7 @@ This is the **core management plan** that ties together all other plans. Without
 
 ### Development Methodology
 
-The Spark Capture project uses a **hybrid methodology** combining:
+The SocialEngage project uses a **hybrid methodology** combining:
 
 - **Contract-First Development**: Tests define requirements; code satisfies tests
 - **ADR-Driven Architecture**: Architecture decisions are explicit and documented
@@ -104,7 +104,7 @@ The Spark Capture project uses a **hybrid methodology** combining:
 
 ### Project Lifecycle Model
 
-The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Lifecycle**:
+The SocialEngage project uses a **Phased, Dependency-Ordered, Non-Calendar Lifecycle**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -144,7 +144,7 @@ The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Life
 | 2 | Enrichment | AI-powered post understanding | Sentiment, entities, key phrases populated | 4.1-4.2 |
 | 3 | Eventing | Platform for downstream subsystems | Events published, filtering working, test subscriber | 5.1-5.2, 5.5 |
 | 4 | Scale-out | Multi-connector, multi-instance | 2+ connectors, 2+ instances, volume tested | 2.4-2.6, 3.5-3.6, 4.4 |
-| 5 | Production Readiness | Hardened for real use | Authentication, tenants, operational runbooks, go-live | Not storied |
+| 5 | Production Readiness | Hardened for real use | Implemented Entra authentication/identity, security review, operational runbooks, go-live | Not storied |
 | Future | Downstream Subsystems | Brand Reputation, Social Care, Social Selling | Phase 1 validated, separate charters | Deferred |
 
 ### Decision Framework: Architecture Decision Records (ADRs)
@@ -183,9 +183,9 @@ The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Life
 - **Change Process:** Amendments for parameters, Supersessions for decisions
 - **Versioning:** All changes are append-only (never edit original text)
 
-**ADR Statistics (2026-08-01):**
-- Total ADRs: 27
-- Accepted: 27 (100%)
+**ADR Statistics (2026-08-03):**
+- Total ADRs: 35
+- Accepted: 35 (100%)
 - Proposed: 0
 - Draft: 0
 - Superseded: 0
@@ -193,7 +193,8 @@ The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Life
 **ADR Categories:**
 - **Foundation:** 0001-0016 (Repository split, connector pattern, database, RLS, API versioning)
 - **Core Architecture:** 0017-0023 (Versioning, retention, events, health, error handling, rate limits)
-- **Connectors:** 0024-0027 (Newswire, GNews, connector intermediation principle)
+- **Connectors & credential ownership:** 0024-0028 (Newswire, GNews, connector intermediation, credential ownership tiers)
+- **Identity & administration:** 0029-0035 (Entra External ID, roles, tenant/user data, bearer-token identity, connector authorization, and one role-gated Next.js admin app)
 
 ---
 
@@ -417,13 +418,15 @@ The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Life
 | **Regression Rate** | Number of regressions per story | 0 | Test suite diff | Per commit |
 | **Documentation Completeness** | Percentage of components with SKILL.md | 100% | SKILL.md directory review | Per phase |
 
-### Current Metrics (2026-08-01)
+### Current Metrics (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
 
 | KPI | Current Value | Target | Status |
 |-----|---------------|--------|--------|
-| ADR Acceptance Rate | 100% (27/27 accepted) | ≥80% | ✅ Exceeding |
+| ADR Acceptance Rate | 100% (35/35 accepted) | ≥80% | ✅ Exceeding |
 | ADR Decision Stability | 100% (0 superseded) | ≥90% | ✅ Exceeding |
-| Contract Coverage | 100% (26/26 stories + Story 1.5) | 100% | ✅ On Track |
+| Contract Coverage | 100% (34/34 stories, 159/159 contracts, 32/32 suites) | 100% | ✅ On Track |
 | Implementation Velocity | ~1 story/day (recent) | Per phase plan | ✅ On Track |
 | Regression Rate | 0 | 0 | ✅ On Track |
 | Documentation Completeness | ~100% | 100% | ✅ On Track |
@@ -456,6 +459,7 @@ The Spark Capture project uses a **Phased, Dependency-Ordered, Non-Calendar Life
 | Version | Date | Author | Changes | Commit |
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
+| 1.1 | 2026-08-03 | Menno Drescher | Re-baselined §7.2 KPIs to 35/35 ADRs, 34/34 stories, 159/159 contracts (32/32 suites), last verified 2026-08-03; confirmed AI-role references in this file already match Stakeholder-Register.md (no OpenAI/Mistral Vibe mismatch found here) | TBD |
 
 ---
 
@@ -536,4 +540,4 @@ graph TD
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

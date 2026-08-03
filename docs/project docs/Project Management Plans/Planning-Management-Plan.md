@@ -1,20 +1,20 @@
 # Planning Management Plan
-## Spark Capture Project — PMBOK Domain: Planning
+## SocialEngage Project — PMBOK Domain: Planning
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Active — CI/CD workflows implemented  
-**Version:** 1.1
+**Version:** 1.2
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how scope, schedule, budget, and resources are defined and managed** for the Spark Capture project. It establishes the processes for planning, estimating, and controlling the project's work within the constraints of a solo-developer, self-funded context.
+This plan defines **how scope, schedule, budget, and resources are defined and managed** for the SocialEngage project. It establishes the processes for planning, estimating, and controlling the project's work within the constraints of a solo-developer, self-funded context.
 
-The Planning Performance Domain (PMBOK 7th Edition) emphasizes that planning is not a one-time activity but an iterative process that continues throughout the project lifecycle. For Spark Capture, this means: **just-enough planning to enable execution, with heavy reliance on the existing ADR-driven, phase-gated approach** already established in `docs/implementation-plan.md`.
+The Planning Performance Domain (PMBOK 7th Edition) emphasizes that planning is not a one-time activity but an iterative process that continues throughout the project lifecycle. For SocialEngage, this means: **just-enough planning to enable execution, with heavy reliance on the existing ADR-driven, phase-gated approach** already established in `docs/implementation-plan.md`.
 
 ---
 
@@ -103,14 +103,14 @@ Each level is **traceable to the level above it**. This is the planning spine of
 **Process:**
 1. **Project Charter** defines high-level scope (Social Listening / Insights subsystem)
 2. **Business Case** defines success criteria and out-of-scope items
-3. **ADR Series** defines architectural boundaries (26 ADRs as of 2026-08-01)
+3. **ADR Series** defines architectural boundaries (35 accepted ADRs as of 2026-08-03)
 4. **Implementation Plan** defines phase-by-phase delivery scope
 5. **User Stories** define feature-level scope with acceptance criteria
 
 **Current Scope (2026-08-01):**
 - **In Scope:** Social Listening / Insights subsystem (Phases 0-5)
 - **Out of Scope:** Brand Reputation & Alerts, Social Care, Social Selling (future subsystems)
-- **Deferred:** Charting UI, multi-tenant authentication, production deployment
+- **Deferred:** Charting UI and production deployment. Authentication, tenant/user modeling, connector ownership, and admin UI architecture are decided by ADR-0028–0035 and are now implementation work rather than undecided scope.
 
 #### 5.1.2 Scope Change Control
 **Trigger:** New requirement, architecture change, or external dependency change
@@ -130,12 +130,15 @@ Each level is **traceable to the level above it**. This is the planning spine of
 | 2026-07-30 | Added persistent dev DB | Phase 0 scope expansion | Accepted | ADR-0025, Story 1.4 |
 | 2026-07-31 | Added GNews connector as RSS/News implementation | Phase 1 gap closure | Accepted | ADR-0026, Story 2.7 |
 | 2026-08-01 | GNews connector built | Story 2.7 completion | Complete | Story 2.7 |
+| 2026-08-03 | Accepted ADR-0028–0035 | Credential ownership, Entra identity, roles, tenant/user model, bearer-token identity, connector authorization, and one role-gated Next.js admin app | Accepted; implementation backlog updated | ADR-0028–0035 |
 
 #### 5.1.3 Scope Verification
 **Method:** Contract-first development ensures scope is verified
 - Each story has a Jest contract that encodes acceptance criteria
 - Contract must pass before story is considered complete
-- Full accumulated suite must pass (113/113 passing as of 2026-08-01)
+- Full accumulated suite must pass (159/159 passing, 32/32 suites, last verified 2026-08-03)
+
+**Status correction (2026-08-03):** The Phase 1 row below predates ADR-0028–0035. “CRUD pending” means only the ownership-aware connector rework and the Next.js admin UI remain; Watchlist CRUD and the initial connector routes already exist.
 
 ### 5.2 Schedule Management
 
@@ -152,6 +155,7 @@ The project uses a **phase-gated approach** with 6 phases (0-5):
 | 5 | Production readiness | None storied | ⏳ Not started | TBD |
 
 **Phase Gate Criteria:**
+- **Current baseline (2026-08-03):** Phase 1's core data path and Watchlist CRUD are complete. Connector routes require ADR-0033/0034 rework, and the role-gated Next.js admin UI required by ADR-0035 remains to be built. The accepted ADR-0028–0035 decisions are implementation constraints, not pending architecture.
 - All stories in phase have passing contracts
 - All ADRs for phase are Accepted
 - "Also build, not storied" work for phase is complete
@@ -336,13 +340,16 @@ All planning artifacts maintain **bidirectional traceability**:
 | Phase Completion Rate | # of phases closed vs. total | 100% | Implementation plan review | Per phase |
 | Dependency Health | % of external dependencies with no blocking issues | 100% | Weekly dependency check | Weekly |
 
-### 7.2 Current Metrics (2026-08-01)
+### 7.2 Current Metrics (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
+
 | KPI | Current Value | Target | Status |
 |-----|---------------|--------|--------|
 | Planning Artifact Completeness | 80% (2/5 supplementary plans missing) | 100% | ⚠️ In Progress |
 | Traceability Coverage | 100% | 100% | ✅ On Track |
-| Scope Stability | 3 changes (all accepted) | ≤3/phase | ✅ On Track |
-| Phase Completion Rate | 1/6 (Phase 0 complete) | 100% | ⚠️ Phase 1 in progress |
+| Scope Stability | 5 changes (all accepted, including ADR-0028–0035 batch) | ≤3/phase | ⚠️ Above target for the phase in which the batch landed |
+| Phase Completion Rate | Phase 0 complete; Phase 1 storied work complete (CRUD/admin UI pending); Phase 4.5 underway and unblocked | 100% | ⚠️ In progress |
 | Dependency Health | 100% | 100% | ✅ On Track |
 
 ---
@@ -368,6 +375,7 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Added GitHub Actions CI workflows (ci.yml, ci-simple.yml) to dependency management and planning tools | TBD |
+| 1.2 | 2026-08-03 | Menno Drescher | Re-baselined §5.1.3 and §7.2 to 159/159 contracts (32/32 suites) and Phase 4.5 status, last verified 2026-08-03; recounted Scope Stability against §5.1.2's actual 5-row change log | TBD |
 
 ---
 
@@ -378,7 +386,7 @@ This plan is reviewed when:
 ```markdown
 # [Artifact Name]
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)
+**Project:** Social Listening & Engagement Platform (SocialEngage)
 **Phase:** [Phase Number] — [Phase Name]
 **Owner:** [Owner Name]
 **Date:** [YYYY-MM-DD]
@@ -465,4 +473,4 @@ This plan is reviewed when:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

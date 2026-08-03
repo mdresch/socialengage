@@ -1,18 +1,18 @@
 # Integration Management Plan
-## Spark Capture Project — Supplementary Plan: Integration
+## SocialEngage Project — Supplementary Plan: Integration
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Draft — Integration Management (PMBOK Knowledge Area)  
-**Version:** 1.0
+**Version:** 1.1
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how the various project components, subsystems, and dependencies are coordinated** for the Spark Capture project. It addresses the integration of architectural decisions, user stories, code components, and external dependencies into a cohesive, functioning system.
+This plan defines **how the various project components, subsystems, and dependencies are coordinated** for the SocialEngage project. It addresses the integration of architectural decisions, user stories, code components, and external dependencies into a cohesive, functioning system.
 
 While PMBOK 7th Edition treats Integration as a core competency that permeates all Performance Domains rather than as a separate domain, this supplementary plan explicitly addresses the **coordination challenges** specific to a modular, phase-gated, ADR-driven project. It ensures that the sum of the project's parts works together correctly.
 
@@ -172,7 +172,7 @@ Integration happens at **every level**, with verification at each step.
 **Internal Interface Standards:**
 1. **Explicit Contracts:** Every interface has Jest contracts
 2. **Error Handling:** All error paths are defined and tested
-3. **Tenant Context:** All cross-tenant operations pass and validate `tenantId`
+3. **Tenant Context:** All requests use the authenticated identity resolved by middleware (`req.tenantId`, `req.userId`, and `req.role`); client-supplied `X-Tenant-Id` is not trusted (ADR-0033)
 4. **Rate Limiting:** All external calls go through RequestGate
 5. **Credentials:** All credential access goes through credentialStore
 
@@ -228,8 +228,8 @@ Integration happens at **every level**, with verification at each step.
    - Run against real external services (GNews, Newswire, Azure)
    - Verify credentials, rate limiting, error handling
 
-**Current Integration Test Status (2026-08-01):**
-- Component contracts: 113/113 passing ✅
+**Current Integration Test Status (last verified 2026-08-03):**
+- Component contracts: 159/159 passing, 32/32 suites ✅
 - Cross-component contracts: All passing ✅
 - End-to-end flow: GNews (Story 2.7) and Newswire (Story 2.6) verified ✅
 - External integration: GNews, Newswire, PostgreSQL, Key Vault verified ✅
@@ -242,7 +242,9 @@ Integration happens at **every level**, with verification at each step.
 |-----|------------|--------|--------|------------|
 | Watchlist matching not wired | watchlist-matching ↔ connectors | Medium | ⚠️ Open | Phase 1 completion |
 | publishEvent() not wired | ingestion-events ↔ connectors | Medium | ⚠️ Open | Phase 3 start |
-| OAuth flow not implemented | credential-envelope-encryption ↔ OAuth platforms | Medium | ⏳ Deferred | OAuth platform build |
+| Entra sign-in and bearer-token identity resolution not implemented | Admin UI ↔ core API authentication middleware | High | ⏳ Open | Implement ADR-0029–0033 before production UI |
+| Connector OAuth token exchange not implemented | credential-envelope-encryption ↔ OAuth platforms | Medium | ⏳ Deferred | First OAuth connector, such as Reddit; separate from Entra sign-in |
+| Connector ownership authorization not implemented | connector CRUD ↔ users/roles/credentials | High | ⏳ Open | Implement ADR-0034 |
 | Enrichment not wired | social-post-enrichment ↔ ingestion pipeline | High | ⏳ Open | Phase 2 start |
 | Service Bus not integrated | ingestion-events ↔ azure-service-bus | Medium | ⏳ Deferred | Phase 3 start |
 
@@ -441,12 +443,14 @@ Integration happens at **every level**, with verification at each step.
 | **Dependency Health** | % of external dependencies with no issues | 100% | Weekly monitoring | Weekly |
 | **Configuration Drift** | % of configuration artifacts current | 100% | Manual audit | Quarterly |
 
-### 7.2 Current Integration Status (2026-08-01)
+### 7.2 Current Integration Status (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
 
 | Metric | Current Value | Target | Status | Trend |
 |--------|---------------|--------|--------|-------|
 | Integration Test Coverage | ~95% | 100% | ⚠️ Needs Review | → |
-| Integration Test Pass Rate | 113/113 (100%) | 100% | ✅ On Track | → |
+| Integration Test Pass Rate | 159/159 (100%, 32/32 suites) | 100% | ✅ On Track | → |
 | End-to-End Flow Verification | 2/2 connectors (GNews, Newswire) | 100% | ✅ On Track | → |
 | Dependency Health | 100% | 100% | ✅ On Track | → |
 | Configuration Drift | ~90% | 100% | ⚠️ Needs Review | → |
@@ -474,6 +478,7 @@ This plan is reviewed when:
 | Version | Date | Author | Changes | Commit |
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
+| 1.1 | 2026-08-03 | Menno Drescher | Re-baselined §5.3.2 and §7.2 integration test figures to 159/159 contracts (32/32 suites), last verified 2026-08-03 | TBD |
 
 ---
 
@@ -485,7 +490,7 @@ This plan is reviewed when:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                            SPARK CAPTURE SYSTEM                           │
+│                            SOCIALENGAGE SYSTEM                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
@@ -539,7 +544,7 @@ This plan is reviewed when:
 │  │                                                                  │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │   │
 │  │  │  Admin UI    │  │  Core API    │  │  (Future)    │      │   │
-│  │  │  (React)     │──┼──│  Client     │  │  Dashboard   │      │   │
+│  │  │ (Next.js)    │──┼──│  REST API   │  │  Dashboard   │      │   │
 │  │  └──────────────┘  │  │              │  │  UI          │      │   │
 │  │                    └──────────────┘  └──────────────┘      │   │
 │  └─────────────────────────────────────────────────────────────┘   │
@@ -694,4 +699,4 @@ it('should handle [error condition]', async () => {
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

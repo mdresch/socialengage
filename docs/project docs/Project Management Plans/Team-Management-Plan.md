@@ -1,18 +1,18 @@
 # Team Management Plan
-## Spark Capture Project — PMBOK Domain: Team
+## SocialEngage Project — PMBOK Domain: Team
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Draft  
-**Version:** 1.0
+**Version:** 1.1
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how the project team is structured, developed, and led** to deliver the Spark Capture project. Given this is a **solo-developer** project, this plan addresses:
+This plan defines **how the project team is structured, developed, and led** to deliver the SocialEngage project. Given this is a **solo-developer** project, this plan addresses:
 - The **team structure** (currently one person with multiple roles)
 - **Skill development** and continuous learning
 - **Workload management** and capacity planning
@@ -52,7 +52,7 @@ Traditional team management focuses on **leading, developing, and supporting** a
 
 3. **Automation as Team Scalability**: Automate repetitive tasks to increase effective capacity. What would be delegated to a team member in a larger project is automated here.
 
-4. **AI as Team Amplifier**: AI agents (Claude Code, Mistral Vibe) are treated as **team extensions**, not just tools. They follow the same methodology and quality standards as human team members.
+4. **AI as Team Amplifier**: Claude Code — the only chartered AI Delivery Agent for this project (Stakeholder-Register.md S-09) — is treated as a **team extension**, not just a tool, bound by the same contract-first methodology and quality standards as any implementer. External, episodic AI reviewers (e.g., Mistral — Stakeholder-Register.md S-14/S-15) contribute advisory findings in their own domain but are never delivery agents; see §5.3's correction note below for why that distinction matters operationally, not just semantically.
 
 5. **Capacity is Finite**: Recognize and respect personal capacity limits. Scope must fit available time, not the other way around.
 
@@ -80,10 +80,12 @@ This project uses a **solo-adapted** approach combining:
 | **Developer** | Implementation, coding, testing | Menno Drescher | All code development |
 | **Quality Assurance** | Test design, contract verification, quality gates | Menno Drescher + Automated | Contract-first methodology |
 | **DevOps Engineer** | Infrastructure, CI/CD, deployment | Menno Drescher | Azure infrastructure |
-| **Business Analyst** | Requirements, business case, market validation | AI Business & Requirements Analyst (OpenAI) | External, advisory |
-| **Security Reviewer** | Security assessment, risk identification | AI Security Reviewer (Gemini) | External, advisory |
-| **Engineering Pragmatism Reviewer** | Anti-overengineering, simplicity advocacy | AI Engineering Pragmatism Reviewer (Mistral) | External, advisory |
-| **AI Delivery Agent** | Code implementation, contract healing | Mistral Vibe / Claude Code | Internal, bounded |
+| **Business Analyst** | Requirements, business case, market validation | AI Business & Requirements Analyst (Claude Code, distinct invocation — Stakeholder-Register.md S-11) | Internal / Tool-Agent, advisory (no unilateral acceptance authority) |
+| **Security Reviewer** | Security assessment, risk identification | AI Security Reviewer (Gemini) | External, episodic, advisory |
+| **Engineering Pragmatism Reviewer** | Anti-overengineering, simplicity advocacy | AI Engineering Pragmatism Reviewer (Mistral — Stakeholder-Register.md S-15) | External, episodic, advisory |
+| **AI Delivery Agent** | Code implementation, contract healing | Claude Code (Stakeholder-Register.md S-09 — the only chartered Delivery Agent) | Internal, bounded |
+
+**Status correction, 2026-08-03:** This table previously listed the Business Analyst role's agent as "AI Business & Requirements Analyst (OpenAI)" and the AI Delivery Agent row as "Mistral Vibe / Claude Code." Neither matches `docs/project docs/Stakeholder-Register.md`, which is this project's own canonical roster: S-11 (Business & Requirements Analyst) is Claude Code, an internal tool-agent, not OpenAI — OpenAI was only ever considered for the unrelated Product & Market-Fit Reviewer role (S-14) and was reassigned to Mistral the same day, before ever being exercised. S-09 (AI Delivery Agent) is Claude Code alone; no "Mistral Vibe" entity exists anywhere in the Stakeholder Register. See §5.3 below for why this correction matters beyond naming accuracy.
 
 ### Role Matrix
 
@@ -93,32 +95,25 @@ This project uses a **solo-adapted** approach combining:
 | AI Business Analyst | Advisory only | None | Advisory (requirements) |
 | AI Security Reviewer | Advisory only | None | Advisory (security) |
 | AI Engineering Pragmatism Reviewer | Advisory only | None | Advisory (simplicity) |
-| AI Delivery Agent | None (bounded by contracts) | Code changes (within contract scope) | None (verification only) |
+| AI Delivery Agent (Claude Code) | None (bounded by contracts) | Code changes (within contract scope) | None (verification only) |
 
 ### Capacity Allocation
 
-**Current Capacity (Estimated):**
-- **Available Time:** 15-20 hours/week (variable based on other commitments)
-- **Effective Capacity:** ~12-15 hours/week (accounting for context switching, meetings, etc.)
+**Status correction, 2026-08-03:** The "15-20 hours/week" / "~12-15 hours/week" figures and the hour-by-hour breakdown below were invented — no real data supports them, and they contradict Charter Assumption A-01 ("Menno has sufficient available time outside other commitments... to sustain solo development"), which this project's own `Uncertainty-Management-Plan.md` §5.5 and `Ideation-Document-v7.2.md` both treat as **never numerically quantified**, deliberately using a proxy trigger (a 30-day gap in `docs/implementation-log.md` entries) rather than an invented hours figure precisely because no real one exists. Replaced below with an honest framing.
 
-**Time Allocation Breakdown:**
+**Current Capacity:** Not numerically quantified (Charter Assumption A-01). No formal capacity-tracking mechanism exists, and no invented hours-per-week figure should be treated as real data.
 
-| Activity | Weekly Hours | % of Capacity | Priority |
-|----------|--------------|---------------|----------|
-| Development (Coding) | 8-10 | 53-67% | High |
-| Architecture & Design (ADRs) | 2-3 | 13-20% | High |
-| Testing & Quality Assurance | 2-3 | 13-20% | High |
-| Documentation | 2 | 13% | Medium |
-| Review & Validation | 1-2 | 7-13% | Medium |
-| Learning & Skill Development | 1 | 7% | Medium |
-| Stakeholder Engagement | <1 | <7% | Low |
-| **Total** | **15-20** | **100%** | - |
+**The one real (partial) proxy that exists:** `docs/implementation-log.md`'s 2026-08-03 governance entry logs "~4h55m" for that session, explicitly flagged there as a git-commit-timestamp-gap proxy, not a measured value (see also Cost-Management-Plan.md §5.2.5, which defers to the Implementation Log as the single source of truth for this figure). **Recommendation (forward-looking, not a new number):** extend this same per-session proxy-logging approach in future Implementation Log entries rather than reintroducing a fixed weekly-hours figure that isn't backed by real data.
+
+**Time Allocation Breakdown:** Removed — the table previously shown here (hours by activity: Development, Architecture, Testing, etc.) was derived from the same invented weekly-capacity figure above and carries no more evidentiary weight. If a real activity-time breakdown becomes valuable, it should be built from actual Implementation Log session-duration entries once enough of them accumulate, not re-estimated.
 
 ---
 
 ## 5. Processes & Procedures
 
 ### 5.1 Work Planning & Prioritization
+
+**Flag, 2026-08-03 (not a rewrite — this section's content is kept below as-is, per this project's "flag rather than fabricate" convention):** The "Weekly planning session," "Daily Standup (Self)," and — further down in §6 — Pomodoro and Personal Kanban read below as things that actually happen on a fixed cadence. There is no evidence in `docs/implementation-log.md` or `docs/time-tracking.md` that any of these run on the schedule described (no logged planning-session entries, no standup notes, no time-tracking rows at all). This project's actual observed working pattern is **session-based and artifact-mediated** — a session picks up context entirely from committed artifacts (ADRs, `SKILL.md`s, the Implementation Log) per `docs/implementation-methodology.md`'s own "Why this exists" rationale and `Stakeholder-Register.md` §3.2, not a fixed daily/weekly ritual schedule. The process below is retained as aspirational template content (a reasonable model *if* adopted), not asserted as current practice.
 
 **Process:** Weekly planning session (self)
 
@@ -220,15 +215,17 @@ This project uses a **solo-adapted** approach combining:
 
 ### 5.3 AI Agent Collaboration
 
+**Status correction, 2026-08-03:** The table below previously listed "Mistral Vibe" as an AI Delivery Agent co-equal with Claude Code, and Claude Code itself as "(legacy)" in §6.1's tools table. Neither is accurate against `docs/project docs/Stakeholder-Register.md`, this project's own canonical stakeholder roster: Claude Code (S-09) is the **only** chartered AI Delivery Agent — the agent that actually executes `implement-story`/`heal-contract-failure`, bound by the `PreToolUse` hook (`.claude/hooks/enforce-contract-first.cjs`), a hard no-weakening rule, and a 3-attempt escalation cap. Mistral (S-14/S-15) is external, episodic, and advisory-only — Product & Market-Fit review and Engineering Pragmatism review — and has never written implementation code on this project. This is not a naming nitpick: framing Mistral as a co-equal "AI Delivery Agent," if ever acted on literally, would let a tool with no bounded write-access enforcement bypass this repo's contract-first gate — the exact mechanism `enforce-contract-first.cjs` and the `implement-story`/`heal-contract-failure` skills exist to prevent. Corrected below.
+
 **AI Agent Roles:**
 
 | Agent | Role | Authority | Constraints |
 |-------|------|-----------|--------------|
-| Mistral Vibe | AI Delivery Agent | Write code, within contract scope | Cannot edit plan file (Plan mode), cannot bypass contract tests, bounded retry cap (3 attempts) |
-| Claude Code | AI Delivery Agent | Write code, implement stories | Same as Mistral Vibe |
-| AI Business Analyst (OpenAI) | Requirements Review | Advisory only | Findings logged, not auto-applied |
-| AI Security Reviewer (Gemini) | Security Review | Advisory only | Findings logged, not auto-applied |
-| AI Engineering Pragmatism Reviewer (Mistral) | Simplicity Review | Advisory only | Findings logged, not auto-applied |
+| Claude Code (Stakeholder-Register.md S-09) | AI Delivery Agent — the only chartered Delivery Agent for this project | Write code, implement stories | Cannot edit plan file (Plan mode), cannot bypass contract tests, bounded retry cap (3 attempts), bound by `PreToolUse` hook |
+| AI Business Analyst (Claude Code, distinct invocation — S-11) | Requirements Review | Advisory only | Findings logged, not auto-applied; no unilateral acceptance authority |
+| AI Security Reviewer (Gemini — S-10) | Security Review | Advisory only, external, episodic | Findings logged, not auto-applied |
+| AI Engineering Pragmatism Reviewer (Mistral — S-15) | Simplicity Review | Advisory only, external, episodic | Findings logged, not auto-applied; never implements code |
+| AI Product & Market-Fit Reviewer (Mistral — S-14) | Market/adoption Review | Advisory only, external, episodic | Findings logged, not auto-applied; never implements code |
 
 **AI Collaboration Process:**
 
@@ -364,8 +361,7 @@ This project uses a **solo-adapted** approach combining:
 | **Azure** | Cloud services | Hosting, storage, messaging |
 | **Node.js** | Runtime | Backend services |
 | **Docker** | Containerization | Test databases, local dev |
-| **Mistral Vibe** | AI Delivery Agent | Code implementation, contract healing |
-| **Claude Code** | AI Delivery Agent | Code implementation (legacy) |
+| **Claude Code** | AI Delivery Agent — the only chartered Delivery Agent (Stakeholder-Register.md S-09) | Code implementation, contract healing |
 
 ### Techniques
 
@@ -392,12 +388,14 @@ This project uses a **solo-adapted** approach combining:
 | **Documentation Completeness** | Percentage of work with SKILL.md/ADR | 100% | Documentation review | Per phase |
 | **Bus-Factor Risk** | Number of single points of failure | 0 | Knowledge audit | Quarterly |
 
-### Current Metrics (2026-08-01)
+### Current Metrics (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
 
 | KPI | Current Value | Target | Status |
 |-----|---------------|--------|--------|
 | Velocity | ~1 story/day (recent) | 1-2 stories/week | ✅ On Track |
-| Test Coverage | 100% (132/132 tests passing) | 100% | ✅ On Track |
+| Test Coverage | 100% (159/159 tests passing, 32/32 suites) | 100% | ✅ On Track |
 | Regression Rate | 0 | 0 | ✅ On Track |
 | Estimation Accuracy | N/A (not yet tracked) | ±25% | ⚠️ Not Measured |
 | Cycle Time | Varies | ≤2 weeks | ⚠️ Not Consistently Measured |
@@ -433,10 +431,7 @@ This project uses a **solo-adapted** approach combining:
 | Version | Date | Author | Changes | Commit |
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
-
----
-
-## 9. Appendices
+| 1.1 | 2026-08-03 | Menno Drescher | Status corrections: removed "Mistral Vibe" as a co-equal AI Delivery Agent and "(legacy)" from Claude Code (§3, §4, §5.3, §6.1) to match Stakeholder-Register.md's S-09/S-14/S-15; corrected AI Business Analyst's agent from "OpenAI" to Claude Code (S-11); replaced invented weekly-capacity figures with an honest "not numerically quantified (Charter A-01)" framing (§4); flagged §5.1's rituals as aspirational, not asserted current practice; re-baselined §7 KPIs to 159/159 contracts (32/32 suites), last verified 2026-08-03 | TBD |
 
 ### Appendix A: Personal Development Plan
 
@@ -457,7 +452,7 @@ This project uses a **solo-adapted** approach combining:
 - Books: TypeScript Design Patterns, PostgreSQL 17 Internals
 - Courses: Azure Architect Technologies (if budget allows)
 - Communities: TypeScript Discord, PostgreSQL mailing lists
-- Practice: Continue building Spark Capture, contribute to OSS
+- Practice: Continue building SocialEngage, contribute to OSS
 
 ### Appendix B: Workload Management Template
 
@@ -527,4 +522,4 @@ This project uses a **solo-adapted** approach combining:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

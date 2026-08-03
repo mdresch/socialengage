@@ -1,20 +1,20 @@
 # Project Work Management Plan
-## Spark Capture Project — PMBOK Domain: Project Work
+## SocialEngage Project — PMBOK Domain: Project Work
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
-**Status:** Active — CI/CD and mandatory time tracking via pre-commit hook  
-**Version:** 1.3
+**Status:** Active — CI/CD implemented; mandatory time tracking via pre-commit hook is **Planned, not yet installed** (see §5.1.3 and §6.1 — Status correction, 2026-08-03)  
+**Version:** 1.4
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how work is executed, monitored, and controlled** for the Spark Capture project. It describes the day-to-day processes that turn planning artifacts (ADRs, stories, phases) into delivered, verified software.
+This plan defines **how work is executed, monitored, and controlled** for the SocialEngage project. It describes the day-to-day processes that turn planning artifacts (ADRs, stories, phases) into delivered, verified software.
 
-The Project Work Performance Domain (PMBOK 7th Edition) covers the execution of project activities to deliver outputs, outcomes, and benefits. For Spark Capture, this is operationalized through the **`implement-story` skill** and its supporting methodology (`docs/implementation-methodology.md`), which provides the mechanical enforcement of the project's quality and traceability standards.
+The Project Work Performance Domain (PMBOK 7th Edition) covers the execution of project activities to deliver outputs, outcomes, and benefits. For SocialEngage, this is operationalized through the **`implement-story` skill** and its supporting methodology (`docs/implementation-methodology.md`), which provides the mechanical enforcement of the project's quality and traceability standards.
 
 ---
 
@@ -150,14 +150,15 @@ This is the **`implement-story` workflow**, operationalized as a Claude Code ski
    - All existing contracts must continue to pass (no regressions)
    - New contract must pass
 
-4. **Track Time Spent (Mandatory):**
-   - **Enforced by git pre-commit hook** (`scripts/git-hooks/pre-commit`)
-   - **Installation:** Run `node scripts/setup-git-hooks.js` to activate
-   - Prompts for: date, start/end time, duration, activity, story/ADR, notes
-   - Automatically adds entry to `docs/time-tracking.md` as a line item
-   - Auto-calculates duration from start/end times
-   - Cannot be bypassed without `--no-verify` flag
-   - Enables estimation accuracy metrics (see Measurement-Management-Plan.md)
+4. **Track Time Spent (Planned, not yet installed):**
+   - **Status correction, 2026-08-03:** This subsection previously described the hook below as "Enforced" and "Cannot be bypassed without `--no-verify`." Verified against the repo: `.git/hooks/pre-commit` does not exist (only Git's own `pre-commit.sample` template is present), and `docs/time-tracking.md`'s log table has zero rows ("Total Time: 0 minutes") despite 34 stories having shipped since this plan was drafted. The hook was described here but never actually installed — reframed below as planned, not active.
+   - **Designed mechanism (not yet built/installed):** `scripts/git-hooks/pre-commit`
+   - **Installation (not yet run):** `node scripts/setup-git-hooks.js` would activate it, if/when built
+   - Intended to prompt for: date, start/end time, duration, activity, story/ADR, notes
+   - Intended to automatically add an entry to `docs/time-tracking.md` as a line item
+   - Intended to auto-calculate duration from start/end times
+   - Would not be bypassable without `--no-verify`, once actually installed
+   - Would enable estimation accuracy metrics (see Measurement-Management-Plan.md) — until then, the only real (partial) time proxy in this project is `docs/implementation-log.md`'s per-session "Session duration (approximate)" field, itself git-timestamp-derived, not measured (see Cost-Management-Plan.md §5.2.5)
 
 #### 5.1.4 Post-Implementation
 1. **Append Implementation Log Entry:**
@@ -358,9 +359,9 @@ Update the component's `SKILL.md` when:
 | Git | Version control, commit verification | All changes |
 | `check-implementation-log.cjs` | Traceability verification | CI and manual |
 | Component `SKILL.md` files | Component documentation | Per component |
-| **`docs/time-tracking.md`** | **Mandatory time tracking log** | **Auto-populated by pre-commit hook** |
-| **`scripts/git-hooks/pre-commit`** | **Time tracking enforcement** | **Node.js hook, installed via setup script** |
-| **`scripts/setup-git-hooks.js`** | **Hook installation script** | **Run once to activate pre-commit hook** |
+| **`docs/time-tracking.md`** | **Mandatory time tracking log (planned)** | **⚠️ Not yet populated — 0 rows logged as of 2026-08-03 despite 34 stories shipped; hook not installed** |
+| **`scripts/git-hooks/pre-commit`** | **Time tracking enforcement (planned)** | **⚠️ Not yet installed — `.git/hooks/pre-commit` does not exist (only `pre-commit.sample`)** |
+| **`scripts/setup-git-hooks.js`** | **Hook installation script (planned)** | **Would be run once to activate the pre-commit hook, if/when built** |
 
 ### 6.2 Automation Layers
 
@@ -406,12 +407,14 @@ Update the component's `SKILL.md` when:
 | SKILL.md Accuracy | % of components with current SKILL.md | 100% | Manual audit | Quarterly |
 | Traceability Completeness | % of artifacts with bidirectional links | 100% | `check-implementation-log.cjs` | Per commit |
 
-### 7.2 Current Metrics (2026-08-01)
+### 7.2 Current Metrics (last verified 2026-08-03)
+
+**Note:** figures below are hand-maintained point-in-time snapshots; consider generating this table from `docs/templates/measure-project-health.cjs`'s output instead, so it can't go stale between manual updates.
 
 | KPI | Current Value | Target | Status |
 |-----|---------------|--------|--------|
-| Contract Pass Rate | 113/113 (100%) | 100% | ✅ On Track |
-| Story Completion Rate | 26/26 stories built | 100% of ADR scope | ✅ Complete |
+| Contract Pass Rate | 159/159 (100%, 32/32 suites) | 100% | ✅ On Track |
+| Story Completion Rate | 34/34 stories built (Phase 4.5 underway) | 100% of ADR scope | ✅ Complete |
 | Healing Time | N/A (no healing needed recently) | ≤1 day | ✅ On Track |
 | SKILL.md Accuracy | ~95% (some components need updates) | 100% | ⚠️ Needs Review |
 | Traceability Completeness | 100% | 100% | ✅ On Track |
@@ -442,6 +445,7 @@ This plan is reviewed when:
 | 1.1 | 2026-08-01 | Menno Drescher | Added time-tracking.md integration, referenced in workflow and tools | TBD |
 | 1.2 | 2026-08-01 | Menno Drescher | Implemented mandatory pre-commit hook for time tracking, moved to docs/time-tracking.md | TBD |
 | 1.3 | 2026-08-01 | Menno Drescher | Created tracked git hook script with setup utility (scripts/git-hooks/pre-commit, scripts/setup-git-hooks.js) | TBD |
+| 1.4 | 2026-08-03 | Menno Drescher | Status correction: time-tracking pre-commit hook was never actually installed (`.git/hooks/pre-commit` absent, `docs/time-tracking.md` has 0 rows); reframed §5.1.3/§6.1 from "Active/Enforced" to "Planned, not yet installed." Re-baselined §7.2 KPIs to 34 stories / 159/159 contracts (32/32 suites), last verified 2026-08-03 | TBD |
 
 ---
 
@@ -589,4 +593,4 @@ Use this checklist when writing or reviewing a contract:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

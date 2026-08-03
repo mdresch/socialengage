@@ -1,6 +1,6 @@
-# Project Management Plans — Spark Capture Project
+# Project Management Plans — SocialEngage Project
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Project Manager:** Menno Drescher  
 **Date:** 2026-08-01  
@@ -10,7 +10,7 @@
 
 ## Overview
 
-This directory contains **domain-specific management plans** for the Spark Capture project, organized according to **PMBOK (Project Management Body of Knowledge) 7th Edition Performance Domains** and supplementing the existing project documentation.
+This directory contains **domain-specific management plans** for the SocialEngage project, organized according to **PMBOK (Project Management Body of Knowledge) 7th Edition Performance Domains** and supplementing the existing project documentation.
 
 Unlike the **architectural** focus of ADRs and the **execution** focus of user stories, these plans address **how the project is managed** across each performance domain. They provide the governance, processes, and decision frameworks that ensure the technical work aligns with project management best practices.
 
@@ -85,7 +85,7 @@ This is a **solo-developer, self-funded** project. Traditional PMBOK assumes tea
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Spark Capture Project                       │
+│                    SocialEngage Project                       │
 │                                                          │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
 │  │ Stakeholders │  │    Team      │  │Development   │    │
@@ -143,18 +143,20 @@ This is a **solo-developer, self-funded** project. Traditional PMBOK assumes tea
 
 ## Document Index
 
+**Status correction, 2026-08-03:** the table below previously disagreed with several plans' own front-matter Status line (most read "Active" in their own header while this index marked them "Draft"). Synced below against each document's own front matter, which is accurate — these documents describe real, implemented state (CI/CD workflows, cost tracking, the risk register), corrected where a specific claim inside them was wrong, rather than the documents themselves being unfinished drafts.
+
 | Document | Last Updated | Status | Owner |
 |----------|--------------|--------|-------|
-| [Stakeholder-Management-Plan.md](Stakeholder-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Team-Management-Plan.md](Team-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Development-Approach-and-Life-Cycle-Plan.md](Development-Approach-and-Life-Cycle-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Planning-Management-Plan.md](Planning-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Project-Work-Management-Plan.md](Project-Work-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Delivery-Management-Plan.md](Delivery-Management-Plan.md) | 2026-08-01 | **Active v1.2** | Menno |
-| [Measurement-Management-Plan.md](Measurement-Management-Plan.md) | 2026-08-01 | **Active v1.2** | Menno |
-| [Uncertainty-Management-Plan.md](Uncertainty-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Integration-Management-Plan.md](Integration-Management-Plan.md) | 2026-08-01 | Draft | Menno |
-| [Cost-Management-Plan.md](Cost-Management-Plan.md) | 2026-08-01 | Draft | Menno |
+| [Stakeholder-Management-Plan.md](Stakeholder-Management-Plan.md) | 2026-08-03 | Draft | Menno |
+| [Team-Management-Plan.md](Team-Management-Plan.md) | 2026-08-03 | Draft | Menno |
+| [Development-Approach-and-Life-Cycle-Plan.md](Development-Approach-and-Life-Cycle-Plan.md) | 2026-08-03 | Draft | Menno |
+| [Planning-Management-Plan.md](Planning-Management-Plan.md) | 2026-08-03 | **Active v1.2** | Menno |
+| [Project-Work-Management-Plan.md](Project-Work-Management-Plan.md) | 2026-08-03 | **Active v1.4** | Menno |
+| [Delivery-Management-Plan.md](Delivery-Management-Plan.md) | 2026-08-03 | **Active v1.3** | Menno |
+| [Measurement-Management-Plan.md](Measurement-Management-Plan.md) | 2026-08-03 | **Active v1.4** | Menno |
+| [Uncertainty-Management-Plan.md](Uncertainty-Management-Plan.md) | 2026-08-03 | **Active v1.3** | Menno |
+| [Integration-Management-Plan.md](Integration-Management-Plan.md) | 2026-08-03 | Draft | Menno |
+| [Cost-Management-Plan.md](Cost-Management-Plan.md) | 2026-08-03 | **Active v1.2** | Menno |
 
 ---
 

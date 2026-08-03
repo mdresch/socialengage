@@ -1,18 +1,18 @@
 # Cost Management Plan
-## Spark Capture Project — Supplementary Plan: Cost
+## SocialEngage Project — Supplementary Plan: Cost
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Active — CI/CD costs tracked  
-**Version:** 1.1
+**Version:** 1.2
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how cloud costs, API expenses, and budget constraints are tracked and controlled** for the Spark Capture project. It establishes processes for monitoring, forecasting, and optimizing costs across all project dependencies.
+This plan defines **how cloud costs, API expenses, and budget constraints are tracked and controlled** for the SocialEngage project. It establishes processes for monitoring, forecasting, and optimizing costs across all project dependencies.
 
 As a solo-developer, self-funded project (per Charter §5 and Business-Case-v6.0.md), cost management focuses on **transparency, minimization, and sustainability** rather than formal budgeting and approval workflows. The goal is to ensure Menno can continue funding the project without unexpected cost spikes.
 
@@ -132,7 +132,7 @@ Spend Decision (continue, adjust, or stop)
 | C-11 | Gemini | AI Agent Services | Google API | Pay-per-request | Episodic |
 | C-12 | Mistral | AI Agent Services | Mistral API | Pay-per-request | Episodic |
 | C-13 | Ollama (self-hosted) | AI Agent Services | Local | $0 | Active |
-| C-14 | Azure AI Language (future) | AI Services | Pay-as-you-go | TBD | Planned — **2026-08-03 note: this row's assumption (a single project-operated subscription, billed to and tracked as a SocialEngage cost item) is superseded by ADR-0028 (Accepted 2026-08-03), which resolves `AIProviderConnector` credentials as tenant-owned, with cost incurred and settled directly between each tenant and Microsoft/Azure — not a SocialEngage-tracked cost item at all once that model is built. This row is not removed or re-derived here (a separate exercise for whoever next revises this document); flagged so it isn't mistaken for still-current guidance. See ADR-0028's Amendment Log (2026-08-03 resolution entry) and `Business-Case-v6.0.md` §4's own matching flag.** |
+| C-14 | Azure AI Language (future) | Tenant-owned AI service | Tenant pays Microsoft/Azure directly | Not a SocialEngage cost item | Planned — ADR-0028; credential ownership and direct vendor billing are required |
 | C-15 | Azure Service Bus (future) | Cloud Infrastructure | Pay-as-you-go | TBD | Planned |
 
 ### 5.2 Cost Tracking
@@ -328,11 +328,11 @@ Spend Decision (continue, adjust, or stop)
 | Azure Cloud | ~$200 | Full Phase 1-5 infrastructure |
 | API Services | <$100 | Reddit, YouTube free tiers |
 | AI Agents | <$240 | Regular usage |
-| Azure AI Language | ~$100 | Enrichment pipeline — **2026-08-03: superseded by ADR-0028 (Accepted 2026-08-03); this line assumed a project-operated subscription, but the resolved model is tenant-owned/tenant-billed (see C-14's note above), so this figure should not be carried into the project's own 12-month total once re-derived** |
-| **Total** | **~$640** | For 12 months — **this total includes the now-superseded ~$100 Azure AI Language line above; not yet recalculated, flagged 2026-08-03** |
+| **Tenant-owned Azure AI Language** | **Excluded** | ADR-0028 requires the tenant to pay Microsoft/Azure directly; not included in the SocialEngage forecast |
+| **Total** | **~$540** | For 12 months, excluding tenant-owned AI-provider spend |
 
 **Forecast Assumptions:**
-1. No paid-tier API providers (continue free tier usage)
+1. SocialEngage does not intermediate provider billing; tenants obtain and pay for any required free or paid source tier directly (ADR-0027)
 2. Azure costs remain at current rates
 3. AI agent usage remains episodic
 4. No production deployment (Phase 5 deferred)
@@ -433,16 +433,18 @@ Spend Decision (continue, adjust, or stop)
 | **Cost per Story** | Average cost to deliver one story | ≤$10 | Cost / story count | Per phase |
 | **Cost per Phase** | Total cost to deliver one phase | ≤$100 | Cost / phase count | Per phase |
 
-### 7.2 Current Cost Status (2026-08-01)
+### 7.2 Current Cost Status (last verified 2026-08-03)
+
+**Status correction, 2026-08-03:** The "Cost per Story" and "Monthly Spend" rows below were marked "✅ On Track" without flagging that they exclude the cost category §5.2.5 already names as real and unresolved: Menno's own working time, and the actual Claude subscription cost beyond "Included" (§5.1.2's C-10 row states cost as "Included" but does not quantify what that subscription actually costs against this project specifically). Flagged directly in the table below, not just in §5.2.5's prose four sections earlier, so a reader scanning this KPI table sees the caveat where they'd actually look for it.
 
 | Metric | Current Value | Target | Status | Trend |
 |--------|---------------|--------|--------|-------|
 | Cost Visibility | 100% | 100% | ✅ On Track | → |
 | Cost Prediction Accuracy | 100% (July) | ≥90% | ✅ On Track | → |
 | Cost Optimization Rate | 100% (all identified optimizations implemented) | ≥80% | ✅ On Track | → |
-| Cost per Story | ~$2.50 (26 stories / ~$65) | ≤$10 | ✅ On Track | → |
-| Cost per Phase | ~$65 (Phase 0-1) | ≤$100 | ✅ On Track | → |
-| Monthly Spend | ~$35 | ≤$50 | ✅ On Track | → |
+| Cost per Story | ~$2.50 (26 stories / ~$65, figure not yet re-derived for 34 stories) | ≤$10 | ⚠️ Provisional — excludes unresolved time/subscription cost, see §5.2.5 | → |
+| Cost per Phase | ~$65 (Phase 0-1) | ≤$100 | ⚠️ Provisional — excludes unresolved time/subscription cost, see §5.2.5 | → |
+| Monthly Spend | ~$35 | ≤$50 | ⚠️ Provisional — excludes unresolved time/subscription cost, see §5.2.5 | → |
 
 ---
 
@@ -470,6 +472,7 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Added C-16 (GitHub Actions CI/CD) to cost register as $0 for public repo | TBD |
+| 1.2 | 2026-08-03 | Menno Drescher | Status correction: §7.2 KPI table's "Cost per Story"/"Monthly Spend" rows marked ⚠️ Provisional directly in the table (previously ✅ On Track), since both exclude the unresolved time/subscription cost §5.2.5 already flags | TBD |
 
 ---
 
@@ -669,7 +672,7 @@ This plan is reviewed when:
 
 # Create a budget (example: $50/month)
 az budget create \
-  --budget-name "SparkCapture-Monthly" \
+  --budget-name "SocialEngage-Monthly" \
   --amount 50 \
   --time-grain Monthly \
   --start-date 2026-08-01 \
@@ -679,7 +682,7 @@ az budget create \
 
 # Create an alert for 80% of budget
 az consumption budget alert create \
-  --budget-name "SparkCapture-Monthly" \
+  --budget-name "SocialEngage-Monthly" \
   --alert-name "80PercentAlert" \
   --alert-type Actual \
   --threshold 80 \
@@ -688,7 +691,7 @@ az consumption budget alert create \
 
 # Create an alert for $10/day daily spend
 az consumption budget alert create \
-  --budget-name "SparkCapture-Monthly" \
+  --budget-name "SocialEngage-Monthly" \
   --alert-name "Daily10DollarAlert" \
   --alert-type Actual \
   --threshold 10 \
@@ -734,4 +737,4 @@ az consumption budget alert create \
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

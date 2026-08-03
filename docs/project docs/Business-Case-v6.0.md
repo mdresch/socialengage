@@ -112,12 +112,20 @@ A ±10% swing cannot be meaningfully applied to the NPV/ROI/Payback figures in S
 
 ## Qualitative Risk Taxonomy
 
+**2026-08-03 note — canonical ownership moved to `Uncertainty-Management-Plan.md`.** This table was this project's canonical risk register through 2026-08-03. Per Menno's own direction and standard practice (a Risk Register is owned and actively maintained by the risk-management process, not the business-case document that justified starting the project), it is now a **point-in-time snapshot as of 2026-08-03** — accurate at time of writing, but no longer the actively-updated source. `Project Management Plans/Uncertainty-Management-Plan.md`'s Appendix D is the canonical, actively-maintained register going forward; check there for current risk status, not here.
+
 | Risk ID | Description | Likelihood | Impact | Mitigation Trigger |
 |---|---|---|---|---|
 | R-01 | Platform API pricing/policy change makes a connector infeasible | Medium | High | Monthly platform-API spend exceeds the (not-yet-set) cost cap, or a targeted platform's terms change before a connector targeting it ships |
 | R-02 | Scope creep across the four-subsystem vision outruns solo bandwidth | Medium | Medium | A second subsystem's charter is drafted before this subsystem's four Phase-1 success criteria (Business Case §8) are independently re-verified |
 | R-03 | Solo-developer bus factor — no redundancy if availability changes | Low–Medium | High | A gap exceeding 30 days between consecutive `docs/implementation-log.md` entries |
 | R-04 | No authentication mechanism exists; `X-Tenant-Id` is an unauthenticated placeholder | High (certain, if triggered) | High | Any caller beyond local testing reaches a deployed instance before an authentication ADR is drafted and accepted — this is a release-blocking dependency, not a probabilistic risk, once external users are contemplated |
+| R-05 | Accepted tenant/admin/user model (ADR-0030–0032) is architecturally decided but not yet implemented | Medium | Medium | Any real tenant or user is onboarded, or connector connect/disconnect endpoints are exposed, before ADR-0030–0032's migrations, identity resolution, and role checks are implemented and contract-verified |
+| R-06 | Late-stage integration issues across Azure services, RLS policy interactions, and OAuth as Phase 4.5's identity work lands | Medium | High | Azure services, RLS policy interactions, or an OAuth connector are integrated for the first time without a dedicated integration-level contract test preceding the change |
+
+**R-05/R-06 provenance:** added 2026-08-03, sourced from `Project Management Plans/Uncertainty-Management-Plan.md`'s own risk analysis (its former Appendix D R-05/R-06 rows) at the time this table was still canonical. See the note above this table for the current (post-2026-08-03) direction of the relationship: `Uncertainty-Management-Plan.md` now owns R-01–R-06 going forward, this snapshot no longer does.
+
+**Also flagged, not reconciled:** `docs/project docs/Ideation-Document-v7.2.md` carries its own earlier, richer R-01–R-04 table (with Trigger Condition/Contingency/Owner columns) that this snapshot's R-01–R-04 rows were originally derived from — a third copy of the same register that predates this one. Not folded into this reconciliation; noted so a future pass doesn't discover it cold.
 
 ---
 
@@ -209,5 +217,7 @@ No formal end-user validation has occurred — the Stakeholder Register lists fu
 **2026-08-01 Update:** Phase 1 has **two working connectors** (GNews + Newswire) and complete Watchlist CRUD. 85.7% of Business Case criteria (6/7) are now met. Full contract suite passes at 132/132.
 
 **2026-08-03 Update:** Menno (Sponsor) has recorded a new requirement, not yet an ADR: the future authentication/credential architecture (candidate ADRs #1, #3, #4 in Section 6) must support credentials held per-user, not only tenant-wide — see Section 2's Gap Analysis Matrix note and Section 6's Dependency Matrix note for the full sourcing. The clearest concrete driver is a future connector needing an individual user's own OAuth grant (Reddit is the named example) rather than a tenant-wide credential, since today's model (ADR-0014, ADR-0024, ADR-0026) is entirely tenant-scoped. This is recorded here as a known future requirement for whoever drafts candidate ADR #4, not a decision this business case makes on the tenant-vs-user question itself — that stays exactly as open as `docs/adr/README.md`'s 2026-07-30 governance note and ADR-0027's own "exact mechanics of 'whoever connects'" open question left it.
+
+**2026-08-03 note — Risk Register history.** R-05/R-06 (sourced from `Project Management Plans/Uncertainty-Management-Plan.md`'s own risk analysis) passed through this section briefly, then Section 5, before canonical ownership of the whole register (R-01–R-06) moved to `Uncertainty-Management-Plan.md`'s Appendix D the same day — see Section 5's own note for the current, authoritative pointer.
 
 No committed timeline is attached to these conditions, consistent with Charter §5's deliberate dependency-ordered, non-calendar approach — the roadmap is sequence, not schedule.

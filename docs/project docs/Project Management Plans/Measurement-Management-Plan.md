@@ -1,20 +1,20 @@
 # Measurement Management Plan
-## Spark Capture Project — PMBOK Domain: Measurement
+## SocialEngage Project — PMBOK Domain: Measurement
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Active — CI/CD and health script implemented  
-**Version:** 1.1
+**Version:** 1.4
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how progress, quality, and outcomes are measured** for the Spark Capture project. It establishes the metrics, measurement methods, and evaluation processes that ensure the project is delivering value and meeting its objectives.
+This plan defines **how progress, quality, and outcomes are measured** for the SocialEngage project. It establishes the metrics, measurement methods, and evaluation processes that ensure the project is delivering value and meeting its objectives.
 
-The Measurement Performance Domain (PMBOK 7th Edition) emphasizes that measurement is essential for understanding project performance, making informed decisions, and demonstrating value delivery. For Spark Capture, measurement is **automated and contract-driven**, with a focus on objective, verifiable metrics rather than subjective assessments.
+The Measurement Performance Domain (PMBOK 7th Edition) emphasizes that measurement is essential for understanding project performance, making informed decisions, and demonstrating value delivery. For SocialEngage, measurement is **automated and contract-driven**, with a focus on objective, verifiable metrics rather than subjective assessments.
 
 ---
 
@@ -157,12 +157,12 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 
 **Metrics:**
 
-| Metric | Definition | Target | Measurement | Current (2026-08-01) |
+| Metric | Definition | Target | Measurement | Current (last verified 2026-08-03) |
 |--------|------------|--------|-------------|------------------------|
-| **Stories Accepted** | # of stories with Accepted ADRs | 26 | ADR count | 26/26 ✅ |
-| **Stories Implemented** | # of stories with passing contracts and log entries | 26 | Implementation Log count | 26/26 ✅ |
-| **Story Implementation Rate** | Stories implemented per period | Variable | Implementation Log | 26 in July-August |
-| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 132/132 = 100% ✅ |
+| **Stories Accepted** | # of stories with Accepted ADRs | 34 | ADR count | 34/34 ✅ |
+| **Stories Implemented** | # of stories with passing contracts and log entries | 34 | Implementation Log count | 34/34 ✅ |
+| **Story Implementation Rate** | Stories implemented per period | Variable | Implementation Log | 34 total, through Phase 4.5 |
+| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 159/159 (32/32 suites) = 100% ✅ |
 
 **Story Progress Tracking:**
 - Source: `docs/implementation-log.md`
@@ -173,12 +173,12 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 
 **Metrics:**
 
-| Metric | Definition | Target | Measurement | Current (2026-08-01) |
+| Metric | Definition | Target | Measurement | Current (last verified 2026-08-03) |
 |--------|------------|--------|-------------|------------------------|
-| **Phases Defined** | # of phases in implementation plan | 6 | Plan count | 6/6 ✅ |
-| **Phases Complete** | # of phases with all stories delivered | 100% | Phase completion checklist | 1/6 ✅ |
-| **Phase Completion Rate** | Phases completed vs. total | 100% | Implementation plan | 16.7% ✅ |
-| **Current Phase Progress** | % of stories complete in current phase | 100% | Story count | Phase 1: 9/9 storied + Stories 1.5, 2.6 complete ✅ |
+| **Phases Defined** | # of phases in implementation plan | 6 (now 7 counting the inserted Phase 4.5) | Plan count | 7/7 (Phases 0-5 plus Phase 4.5) — `docs/implementation-plan.md` |
+| **Phases Complete** | # of phases with all stories delivered | 100% | Phase completion checklist | 1/7 fully complete (Phase 0); Phase 1 storied-complete (CRUD/admin UI pending); Phase 4.5 underway and unblocked |
+| **Phase Completion Rate** | Phases completed vs. total | 100% | Implementation plan | ~14% fully complete; do not read as a single clean percentage while Phase 1 and Phase 4.5 are both partially in progress |
+| **Current Phase Progress** | % of stories complete in current phase | 100% | Story count | Phase 1: storied work complete; Phase 4.5: unblocked, stories in progress (see `docs/implementation-log.md`'s Story 5.6/5.7 entries) |
 
 **Phase Progress Tracking:**
 - Source: `docs/implementation-plan.md` traceability tables
@@ -194,7 +194,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | **Milestones Achieved** | # of milestones with all criteria met | 100% | Milestone reviews | 3/3 ⚠️ |
 | **Milestone Achievement Rate** | Milestones achieved vs. total | 100% | Milestone status | 85.7% ⚠️ |
 
-**Milestone Status:**
+**Milestone Status (current interpretation):** M1 is met against all 35 accepted ADRs. The historical bullets below retain the original 2026-07-29 checkpoint for audit context; they are not the current ADR count.
 - **M1 (Architecture Locked):** ✅ Met (2026-07-29) — All 23 original ADRs accepted
 - **M2 (Repo Split):** ⚠️ Deferred — Not blocking (pre-split acceptable)
 - **M3 (Tenant Isolation):** ✅ Met — RLS on all tenant tables (Story 5.4)
@@ -203,17 +203,19 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 - **M6 (Eventing):** ⏳ Not Started — Phase 3 work
 - **M7 (Phase 1 Complete):** ⚠️ **Partially Met (85.7%)** — Storied work complete, Stories 1.5 (Watchlist CRUD) and 2.6 (Newswire) complete; connect/disconnect endpoints and admin UI remain
 
+**Status correction (2026-08-03):** The M1 and architecture criteria below should be read against all 35 accepted ADRs, not only the original 23. ADR-0028–0035 are accepted but remain implementation work; this plan does not treat them as validated merely because they are accepted.
+
 ### 5.4 Quality Measurement
 
 #### 5.4.1 Contract Quality
 
 **Metrics:**
 
-| Metric | Definition | Target | Measurement | Current (2026-08-01) |
+| Metric | Definition | Target | Measurement | Current (last verified 2026-08-03) |
 |--------|------------|--------|-------------|------------------------|
-| **Contract Coverage** | % of stories with contracts | 100% | Story count vs. contract count | 26/26 = 100% ✅ |
-| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 132/132 = 100% ✅ |
-| **Contract Failures** | # of failing contracts | 0 | `npm test` output | 0/132 ✅ |
+| **Contract Coverage** | % of stories with contracts | 100% | Story count vs. contract count | 34/34 = 100% ✅ |
+| **Contract Pass Rate** | % of contracts passing | 100% | `npm test` | 159/159 (32/32 suites) = 100% ✅ |
+| **Contract Failures** | # of failing contracts | 0 | `npm test` output | 0/159 ✅ |
 | **Regression Rate** | # of contracts broken by new changes | 0 | Git bisect analysis | 0 ✅ |
 
 **Contract Quality Assurance:**
@@ -228,7 +230,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Metric | Definition | Target | Measurement | Current (2026-08-01) |
 |--------|------------|--------|-------------|------------------------|
 | **Type Check Pass Rate** | % of files passing TypeScript | 100% | `tsc --noEmit` | 100% ✅ |
-| **Lint Pass Rate** | % of files passing ESLint | 100% | ESLint execution | 100% ✅ |
+| **Lint Pass Rate** | % of files passing ESLint | 100% | ESLint execution | ⚠️ Not yet configured — no ESLint config exists anywhere in the repo (root, `social-listening-core/`, `social-listening-admin/`), and `.github/workflows/ci.yml`'s lint step (`npx eslint . --ext .ts \|\| true`) is explicitly non-blocking. Status correction, 2026-08-03 — this row previously read "100% ✅," which was never true; matches `Team-Management-Plan.md`'s §5.5 wording for the same fact so the corpus stops contradicting itself. |
 | **Test Coverage** | % of code covered by tests | ≥80% | Jest coverage report | TBD ⚠️ |
 | **Cyclomatic Complexity** | Avg complexity per function | ≤10 | TSC complexity analysis | TBD ⚠️ |
 
@@ -242,10 +244,10 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 
 **Metrics:**
 
-| Metric | Definition | Target | Measurement | Current (2026-08-01) |
+| Metric | Definition | Target | Measurement | Current (last verified 2026-08-03) |
 |--------|------------|--------|-------------|------------------------|
-| **ADR Completeness** | % of architectural decisions with ADRs | 100% | ADR series review | 26/26 ✅ |
-| **ADR Acceptance Rate** | % of ADRs with Accepted status | 100% | ADR README | 26/26 ✅ |
+| **ADR Completeness** | % of architectural decisions with ADRs | 100% | ADR series review | 35/35 ✅ |
+| **ADR Acceptance Rate** | % of ADRs with Accepted status | 100% | ADR README | 35/35 ✅ |
 | **SKILL.md Coverage** | % of components with SKILL.md | 100% | Component directory check | ~95% ⚠️ |
 | **SKILL.md Currency** | % of SKILL.md files current | 100% | Manual audit | ~90% ⚠️ |
 | **Traceability Completeness** | % of artifacts with bidirectional links | 100% | `check-implementation-log.cjs` | 100% ✅ |
@@ -253,6 +255,8 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 ### 5.5 Outcome Measurement
 
 #### 5.5.1 Business Case Criteria Achievement
+
+**Status correction (2026-08-03):** The architecture criterion is met against ADR-0001–0035. Phase 1 remains partially met until the ADR-0034 connector rework and ADR-0035 Next.js admin UI are delivered.
 
 **Source:** Business-Case-v6.0.md §8
 
@@ -270,13 +274,15 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 
 #### 5.5.2 ADR Decision Validation
 
+**Current baseline (2026-08-03):** The project has 35 accepted ADRs. ADR-0028–0035 are accepted architectural constraints but are not yet fully implemented; acceptance must therefore be measured separately from implementation and real-world validation. No ADR is currently superseded.
+
 **Metrics:**
 
-| Metric | Definition | Target | Measurement | Current (2026-08-01) |
+| Metric | Definition | Target | Measurement | Current (last verified 2026-08-03) |
 |--------|------------|--------|-------------|------------------------|
-| **ADRs Implemented** | # of ADRs with at least one story built | 100% | ADR README traceability | 26/26 ✅ |
-| **ADRs Validated** | # of ADRs with real-world validation | 100% | Story Implementation Logs | 26/26 ✅ |
-| **ADR Supersession Rate** | # of ADRs superseded by later decisions | ≤10% | ADR Amendment Logs | 2/26 (7.7%) ✅ |
+| **ADRs Implemented** | # of ADRs with at least one story built | 100% | ADR README traceability | ⚠️ Not a clean fraction while Phase 4.5 is in progress — 35 ADRs total, of which ADR-0027/0028/0035 are the series' three "no-story" exceptions by design; the remainder generate Stories 5.6–5.10 and 1.7, some built, some still in progress. See §5.5.2's baseline note above and `docs/implementation-plan.md`'s Phase 4.5 section for current per-ADR status rather than asserting a single fraction here |
+| **ADRs Validated** | # of ADRs with real-world validation | 100% | Story Implementation Logs | Same caveat as ADRs Implemented above — do not read as a clean fraction until Phase 4.5 closes |
+| **ADR Supersession Rate** | # of ADRs superseded by later decisions | ≤10% | ADR Amendment Logs | 0/35 (0%) ✅ — corrected 2026-08-03; the prior "2/26" figure did not match `docs/adr/README.md` (no ADR is currently marked Superseded) or `Development-Approach-and-Life-Cycle-Plan.md`'s own "ADR Statistics (2026-08-03): Superseded: 0" |
 
 **ADR Validation:**
 - Each ADR is validated when its first story is built and verified
@@ -357,17 +363,19 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | **Actionability** | % of metrics that inform decisions | ≥80% | Decision log review | Quarterly |
 | **Automation Rate** | % of measurements that are automated | ≥90% | Tool usage audit | Quarterly |
 
-### 7.2 Current Measurement Status (2026-08-01)
+### 7.2 Current Measurement Status (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it, since several rows below (Stories, Contracts, ADRs) are exactly the kind of figures that script already computes from real state.
 
 | Metric | Current Value | Target | Status | Trend |
 |--------|---------------|--------|--------|-------|
-| Stories Accepted | 26/26 | 100% | ✅ On Track | → |
-| Stories Implemented | 26/26 | 100% | ✅ On Track | → |
-| Contract Pass Rate | 132/132 (100%) | 100% | ✅ On Track | → |
-| Contract Coverage | 26/26 (100%) | 100% | ✅ On Track | → |
-| Phase Completion | 1/6 | 100% | ✅ On Track | → |
-| Milestone Achievement | 85.7% (6/7 criteria) | 100% | ⚠️ Partially Met | ↗ |
-| ADR Implementation | 26/26 | 100% | ✅ On Track | → |
+| Stories Accepted | 34/34 | 100% | ✅ On Track | → |
+| Stories Implemented | 34/34 | 100% | ✅ On Track | → |
+| Contract Pass Rate | 159/159 (100%, 32/32 suites) | 100% | ✅ On Track | → |
+| Contract Coverage | 34/34 (100%) | 100% | ✅ On Track | → |
+| Phase Completion | Phase 0 complete; Phase 1 storied work complete (CRUD/admin UI pending); Phase 4.5 (multi-tenant identity & access) underway and unblocked, per `docs/implementation-plan.md` | 100% | ⚠️ In Progress | → |
+| Milestone Achievement | 85.7% (6/7 criteria, per Business-Case-v6.0.md §8 — unchanged since 2026-08-01) | 100% | ⚠️ Partially Met | ↗ |
+| ADR Implementation | 35/35 accepted; implementation status per-ADR is not a clean single fraction while Phase 4.5 is in progress (see §5.5.2 above) | 100% | ⚠️ In Progress | → |
 | Traceability Completeness | 100% | 100% | ✅ On Track | → |
 | **Test Coverage** | **via Jest in CI (ci.yml)** | **≥80%** | **✅ Measured (Jest native reporting)** | **→** |
 | SKILL.md Currency | ~90% | 100% | ⚠️ Needs Improvement | ↗ |
@@ -399,6 +407,8 @@ This plan is reviewed when:
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Activated CI/CD pipeline (ci.yml, ci-simple.yml), implemented measure-project-health.cjs, added GitHub Actions to tools | TBD |
 | 1.2 | 2026-08-01 | Menno Drescher | Updated contract suite to 132/132 (Stories 1.5, 2.6 complete); Phase 1 marked complete; Milestone Achievement updated to 85.7% (6/7 criteria); Business Case criteria updated with Watchlist CRUD and Newswire connector | TBD |
+| 1.3 | 2026-08-03 | Menno Drescher | Re-baselined architecture and implementation reporting for ADR-0028–0035; clarified connector rework and Next.js UI gaps | TBD |
+| 1.4 | 2026-08-03 | Menno Drescher | Status correction: §5.4.2 Lint Pass Rate corrected from "100% ✅" to "⚠️ Not yet configured" (no ESLint config exists; CI lint step is non-blocking), matching Team-Management-Plan.md's existing wording. Re-baselined all stories/contracts/ADR counts to 34 stories, 159/159 contracts (32/32 suites), 35 ADRs, last verified 2026-08-03 | TBD |
 
 ---
 
@@ -458,26 +468,26 @@ This plan is reviewed when:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    SPARK CAPTURE HEALTH                         │
+│                    SOCIALENGAGE HEALTH                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  PROGRESS                                                  │
-│  ├─ Stories: 26/26 implemented (100%)                        │
-│  ├─ Phases: 1/6 complete (16.7%)                             │
+│  ├─ Stories: 34/34 implemented (100%)                        │
+│  ├─ Phases: 0 complete, 1 storied-complete, 4.5 in progress   │
 │  └─ Milestones: 2/3 primary met (66.7%)                      │
 │                                                             │
 │  QUALITY                                                   │
-│  ├─ Contracts: 113/113 passing (100%)                        │
+│  ├─ Contracts: 159/159 passing (100%, 32/32 suites)           │
 │  ├─ Type Check: PASS                                        │
-│  ├─ Lint: PASS                                             │
+│  ├─ Lint: NOT CONFIGURED (no ESLint config; CI lint non-blocking) │
 │  └─ Traceability: 100% complete                              │
 │                                                             │
 │  OUTCOMES                                                  │
 │  ├─ Business Case: 6/7 criteria met (85.7%)                   │
-│  ├─ ADRs: 26/26 implemented (100%)                          │
+│  ├─ ADRs: 35/35 accepted (implementation in progress)         │
 │  └─ Architecture: Locked ✅                                  │
 │                                                             │
-│  LAST UPDATE: 2026-08-01 14:00 UTC                           │
+│  LAST UPDATE: last verified 2026-08-03 (example values above, illustrative dashboard) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -560,4 +570,4 @@ node docs/templates/measure-project-health.cjs --ci
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

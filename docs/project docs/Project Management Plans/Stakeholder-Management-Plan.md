@@ -1,18 +1,18 @@
 # Stakeholder Management Plan
-## Spark Capture Project — PMBOK Domain: Stakeholders
+## SocialEngage Project — PMBOK Domain: Stakeholders
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Draft  
-**Version:** 1.0
+**Version:** 1.1
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how stakeholders are identified, analyzed, engaged, and managed** throughout the Spark Capture project lifecycle. Stakeholders are individuals, groups, or organizations that can **affect, be affected by, or perceive themselves to be affected by** a decision, activity, or outcome of the project.
+This plan defines **how stakeholders are identified, analyzed, engaged, and managed** throughout the SocialEngage project lifecycle. Stakeholders are individuals, groups, or organizations that can **affect, be affected by, or perceive themselves to be affected by** a decision, activity, or outcome of the project.
 
 Given this is a **solo-developer, self-funded** project, stakeholder management focuses on:
 - **Identification** of current and future stakeholders
@@ -71,9 +71,9 @@ This project uses a **hybrid** approach combining:
 | **Project Sponsor** | Provides funding, sets high-level direction, approves major scope changes | Menno Drescher | Solo-developer self-funded; approval is self-approval with explicit sign-off |
 | **Project Manager** | Day-to-day management, stakeholder engagement, risk management | Menno Drescher | Same person as sponsor in this context |
 | **Technical Lead** | Architectural decisions, technical direction, code quality | Menno Drescher | Solo developer |
-| **Business Analyst** | Requirements analysis, market validation, business case refinement | AI Business & Requirements Analyst (OpenAI) | External, episodic, advisory only |
-| **Security Architect** | Security review, risk assessment, hardening recommendations | AI Security & Architecture Reviewer (Gemini) | External, episodic, advisory only |
-| **Engineering Pragmatism Reviewer** | Anti-overengineering review, simplicity advocacy | AI Engineering Pragmatism Reviewer (Mistral) | External, episodic, advisory only |
+| **Business Analyst** | Requirements analysis, market validation, business case refinement | AI Business & Requirements Analyst (Claude Code, distinct invocation — Stakeholder-Register.md S-11) | Internal / Tool-Agent, advisory only — no unilateral acceptance authority (Status correction, 2026-08-03: previously misattributed to "OpenAI"; OpenAI was only ever considered for the unrelated Product & Market-Fit Reviewer role and reassigned to Mistral before ever being exercised) |
+| **Security Architect** | Security review, risk assessment, hardening recommendations | AI Security & Architecture Reviewer (Gemini — S-10) | External, episodic, advisory only |
+| **Engineering Pragmatism Reviewer** | Anti-overengineering review, simplicity advocacy | AI Engineering Pragmatism Reviewer (Mistral — S-15) | External, episodic, advisory only |
 | **Future End Users/Tenants** | Provide feedback, validate requirements, adoption | Not yet identified | Engagement deferred until Phase 1 validation (Milestone M7) |
 | **Future Contributors** | Code contributions, reviews, testing | Not yet identified | Engagement deferred until project is open-sourced |
 | **Azure Platform** | Cloud services provider | Microsoft Azure | Vendor relationship, managed via subscriptions |
@@ -133,9 +133,9 @@ For each stakeholder, assess:
 | Stakeholder | Power | Interest | Engagement Strategy | Rationale |
 |-------------|-------|----------|---------------------|-----------|
 | Menno Drescher | High | High | **Governed** | Project sponsor, manager, and sole developer |
-| AI Business & Requirements Analyst (OpenAI) | Medium | Medium | **Keep Informed** | External reviewer, advisory only |
-| AI Security & Architecture Reviewer (Gemini) | Medium | Medium | **Keep Informed** | External reviewer, advisory only |
-| AI Engineering Pragmatism Reviewer (Mistral) | Medium | Medium | **Keep Informed** | External reviewer, advisory only |
+| AI Business & Requirements Analyst (Claude Code, distinct invocation — S-11) | High within its scope, no unilateral acceptance authority | N/A — no independent stake | **Governed** | Internal tool-agent, not external — corrected 2026-08-03 from "OpenAI"/Keep Informed to match Stakeholder-Register.md's S-11 entry (Internal / Tool-Agent, Governed) |
+| AI Security & Architecture Reviewer (Gemini — S-10) | Low | N/A | **Keep Informed** | External reviewer, episodic, advisory only |
+| AI Engineering Pragmatism Reviewer (Mistral — S-15) | Low | N/A | **Keep Informed** | External reviewer, episodic, advisory only, never an implementer |
 | Future End Users/Tenants | Low | High | **Keep Informed** | Engagement deferred until M7 |
 | Azure Platform | High | Medium | **Keep Satisfied** | Cloud services dependency |
 | GNews API | Medium | Medium | **Keep Satisfied** | Data source, API dependency |
@@ -167,7 +167,7 @@ For each stakeholder, assess:
 - **Communication Method:** Asynchronous (email, service dashboards, API changelog monitoring)
 
 #### Level 3: Keep Informed (Low Power, High Interest)
-- **Stakeholders:** AI Reviewers (OpenAI, Gemini, Mistral), Future End Users/Tenants
+- **Stakeholders:** External AI Reviewers (Gemini — Security; Mistral — Engineering Pragmatism and Product/Market-Fit; Ollama — Data Privacy), Future End Users/Tenants. (Status correction, 2026-08-03: "OpenAI" removed — it was only ever considered for the Product & Market-Fit Reviewer role and reassigned to Mistral before ever being exercised, per Stakeholder-Register.md S-14. The internal AI Business & Requirements Analyst, S-11, is **Governed**, not Keep Informed — see §5.2's Current Stakeholder Mapping above.)
 - **Engagement Actions:**
   - Provide access to all project documentation
   - Share major milestones and decisions (Phase completions, architecture changes)
@@ -205,7 +205,7 @@ For each stakeholder, assess:
 | **GitHub** | Code collaboration, issue tracking | GitHub repository, Issues, Discussions |
 | **Email** | Formal communications, external stakeholders | menno.drescher@gmail.com |
 | **Azure Portal** | Cloud service monitoring | Azure Cost Management, Service Health |
-| **AI Agent Sessions** | Real-time collaboration | Claude Code, Mistral Vibe |
+| **AI Agent Sessions** | Real-time collaboration | Claude Code — the only chartered AI Delivery Agent (Stakeholder-Register.md S-09); "Mistral Vibe" removed 2026-08-03, no such entity exists in the Stakeholder Register — Mistral (S-14/S-15) is external, episodic, advisory-only, never a delivery agent |
 
 ### 5.5 Stakeholder Feedback Management
 
@@ -312,8 +312,7 @@ Given the solo-developer context, escalation is primarily about **decision docum
 | Version | Date | Author | Changes | Commit |
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
-
----
+| 1.1 | 2026-08-03 | Menno Drescher | Status correction: AI Business & Requirements Analyst corrected from "OpenAI"/External/Keep Informed to Claude Code (S-11)/Internal/Governed; removed "Mistral Vibe" from §5.4's AI Agent Sessions row; corrected §5.3 Level 3's stakeholder list — all to match `Stakeholder-Register.md` | TBD |
 
 ## 9. Appendices
 
@@ -359,6 +358,7 @@ Use this checklist when identifying new stakeholders:
 | 2026-07-30 | ADR-0024, ADR-0025 Accepted | Menno + AI Reviewers | ✅ Complete |
 | 2026-07-31 | ADR-0026 Accepted | Menno + AI Reviewers | ✅ Complete |
 | 2026-08-01 | Story 1.5 Implemented | Menno | ✅ Complete |
+| 2026-08-03 | ADR-0028–0035 Accepted: credential ownership, Entra identity, roles, tenant/user model, connector authorization, and one role-gated Next.js admin app | Menno + AI Reviewers | ✅ Complete |
 | 2026-08-XX | Milestone M7 (Phase 1 Review) | Menno + Future End Users (TBD) | 📅 Planned |
 
 ---
@@ -373,4 +373,4 @@ Use this checklist when identifying new stakeholders:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*

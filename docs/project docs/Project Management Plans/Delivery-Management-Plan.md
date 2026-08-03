@@ -1,20 +1,20 @@
 # Delivery Management Plan
-## Spark Capture Project — PMBOK Domain: Delivery
+## SocialEngage Project — PMBOK Domain: Delivery
 
-**Project:** Social Listening & Engagement Platform (Spark Capture)  
+**Project:** Social Listening & Engagement Platform (SocialEngage)  
 **Phase:** Phase 1 — Social Listening / Insights Subsystem  
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Active — GitHub Actions CI/CD implemented  
-**Version:** 1.1
+**Version:** 1.3
 
 ---
 
 ## 1. Purpose
 
-This plan defines **how deliverables are produced, verified, and transitioned** for the Spark Capture project. It covers the processes for taking completed stories and assembling them into releasable artifacts, ensuring they meet quality standards and can be deployed to target environments.
+This plan defines **how deliverables are produced, verified, and transitioned** for the SocialEngage project. It covers the processes for taking completed stories and assembling them into releasable artifacts, ensuring they meet quality standards and can be deployed to target environments.
 
-The Delivery Performance Domain (PMBOK 7th Edition) focuses on producing the project's outputs, delivering value, and transitioning outputs to the next phase or to operations. For Spark Capture, delivery is **continuous at the story level** (each story produces a verifiable deliverable) and **gated at the phase level** (phases produce milestone deliverables).
+The Delivery Performance Domain (PMBOK 7th Edition) focuses on producing the project's outputs, delivering value, and transitioning outputs to the next phase or to operations. For SocialEngage, delivery is **continuous at the story level** (each story produces a verifiable deliverable) and **gated at the phase level** (phases produce milestone deliverables).
 
 ---
 
@@ -185,7 +185,7 @@ For each phase in `implementation-plan.md`:
 
 5. **Run Full Regression:**
    - Execute complete contract suite
-   - Verify all contracts pass (132/132 as of 2026-08-01)
+   - Verify all contracts pass (159/159, 32/32 suites, last verified 2026-08-03)
 
 6. **Update Documentation:**
    - Mark phase as complete in `implementation-plan.md`
@@ -208,6 +208,8 @@ For each phase in `implementation-plan.md`:
 | 4 | Multi-connector scale-out, hardening | ⏳ Not Started | TBD | - |
 | 5 | Production readiness | ⏳ Not Started | TBD | - |
 
+**Current baseline (2026-08-03):** Phase 1's core data slice and Watchlist CRUD are complete. Connector connect/disconnect routes exist as placeholder-auth code and require the ownership-aware rework defined by ADR-0033/0034. The remaining admin deliverable is one role-gated Next.js application under ADR-0035. Phase 3's admin-UI wording refers to completion beyond these MVP screens.
+
 ### 5.4 Milestone Delivery
 
 **Purpose:** Validate achievement of Business Case success criteria
@@ -227,9 +229,13 @@ For each phase in `implementation-plan.md`:
 5. **Accept/Reject:** Menno accepts milestone as complete or identifies gaps
 6. **Update Plans:** Update all relevant plans with milestone status
 
-#### 5.4.2 Milestone Status (2026-08-01)
+#### 5.4.2 Milestone Status (2026-08-03)
+
+**Status correction:** The historical M1 bullets immediately below originally recorded the 0001–0023 checkpoint. The current M1 baseline is all 35 accepted ADRs, as stated above.
 
 **Milestone M1: Architecture Locked**
+
+The milestone is met against all 35 accepted ADRs. ADR-0028–0035 are accepted architectural constraints whose implementation is tracked separately from acceptance.
 - **Criteria:** All 23 original ADRs accepted
 - **Status:** ✅ **Met** (2026-07-29)
 - **Evidence:** All ADRs 0001-0023 show Accepted status with dates
@@ -245,8 +251,8 @@ For each phase in `implementation-plan.md`:
 - **Criteria:** "the smallest real slice — one platform, one tenant, one watchlist, posts flowing from that platform into a queryable API, with visible health status"
 - **Status:** ⚠️ **Partially Met** (2026-08-01) — **85.7% Business Case criteria met**
 - **Met:** GNews connector (Story 2.7) and Newswire connector (Story 2.6) built and verified against live data; Watchlist CRUD (Story 1.5) complete with full tenant isolation
-- **Pending:** Connector connect/disconnect endpoints and admin UI completion
-- **Evidence:** All Phase 1 storied work complete; Stories 1.5 and 2.6 contracts pass (132/132 total); see `implementation-plan.md` Phase 1 and `implementation-log.md`
+- **Pending:** Ownership-aware/authenticated connector connect-disconnect rework (ADR-0034) and the role-gated Next.js admin UI (ADR-0035)
+- **Evidence:** All Phase 1 storied work complete; Stories 1.5 and 2.6 contracts pass (132/132 total as of the 2026-08-01 milestone snapshot above; full suite has since grown to 159/159, 32/32 suites, last verified 2026-08-03, as work continued into Phase 4.5 — see `implementation-plan.md` Phase 1 and `implementation-log.md`)
 
 ### 5.5 Release Delivery (Future - Phase 5)
 
@@ -368,12 +374,14 @@ For each phase in `implementation-plan.md`:
 | Delivery Cycle Time | Time from story start to delivery | ≤1 session | Implementation Log timestamps | Per story |
 | Milestone Achievement | % of Business Case milestones met | 100% | Milestone review | Per milestone |
 
-### 7.2 Current Metrics (2026-08-01)
+### 7.2 Current Metrics (last verified 2026-08-03)
+
+**Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
 
 | KPI | Current Value | Target | Status |
 |-----|---------------|--------|--------|
-| Story Delivery Rate | 26/26 stories delivered | 100% of ADR scope | ✅ Complete |
-| Phase Delivery Rate | 1/6 phases complete | 100% | ⚠️ Phase 1 in progress |
+| Story Delivery Rate | 34/34 stories delivered | 100% of ADR scope | ✅ Complete |
+| Phase Delivery Rate | Phase 0 complete; Phase 1 storied work complete (CRUD/admin UI pending); Phase 4.5 underway | 100% | ⚠️ In progress |
 | Deliverable Quality | 100% (all stories meet criteria) | 100% | ✅ On Track |
 | Delivery Cycle Time | N/A (not tracked) | ≤1 session | ⚠️ Not Measured |
 | Milestone Achievement | 2/3 milestones met (M1, M4) | 100% | ⚠️ M7 partially met |
@@ -404,6 +412,7 @@ This plan is reviewed when:
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-01 | Menno Drescher | Added GitHub Actions CI/CD environment and tool references | TBD |
 | 1.2 | 2026-08-01 | Menno Drescher | Updated Phase 1 completion to ✅ Complete; Stories 1.5 (Watchlist CRUD) and 2.6 (Newswire) contracts pass; contract suite updated to 132/132; M7 milestone updated to 85.7% achievement | TBD |
+| 1.3 | 2026-08-03 | Menno Drescher | Re-baselined §5.3.1 and §7.2 to 34/34 stories, 159/159 contracts (32/32 suites), Phase 4.5 underway, last verified 2026-08-03 | TBD |
 
 ---
 
@@ -578,4 +587,4 @@ This plan is reviewed when:
 
 ---
 
-*This document is maintained as part of the Spark Capture project's Project Management Plans. For questions or updates, contact Menno Drescher.*
+*This document is maintained as part of the SocialEngage project's Project Management Plans. For questions or updates, contact Menno Drescher.*
