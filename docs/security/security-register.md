@@ -36,3 +36,108 @@ Here are the security and architecture findings from the review of the provided 
     **Suggested Control:** Implement a comprehensive ESLint configuration with security-focused rules and integrate it as a blocking step in the CI pipeline, preventing the merge of code that does not adhere to established quality and security standards.
 
 ---
+
+## 2026-08-03 — reviewed stdin (e.g. git diff)
+
+Here are the security and architecture findings from the review of the provided material:
+
+1.  **Boundary/Asset Affected:** Authentication Boundary, Tenant Boundary
+    **Specific Gap:** The `implementation-plan.md` explicitly states that the newly built Entra authentication middleware (from Story 5.6) is "Not yet mounted on any real route," and that wiring it into the `/v1` router (which would retire the unauthenticated `X-Tenant-Id` header) is deferred to Story 5.10. This means that despite the existence of a working authentication solution, the system's `/v1` endpoints continue to rely on `X-Tenant-Id` as an unauthenticated source of tenant identity, perpetuating a known, critical trust boundary vulnerability in the current operational state.
+    **Concrete Exploit Scenario:** An attacker can continue to supply an arbitrary `X-Tenant-Id` header to any `/v1` API endpoint not otherwise protected. If the underlying application logic or Row-Level Security policies (which are correctly applied *once* `tenant_id` is trusted) are presented with a forged `tenant_id` value, the attacker could potentially gain unauthorized access to, or manipulate, data belonging to another tenant.
+    **Suggested Control:** Immediately prioritize and accelerate the integration of the Entra authentication middleware into all `/v1` API endpoints, ensuring that all tenant and user identity claims are exclusively derived from cryptographically validated and authorized bearer tokens, and that the `X-Tenant-Id` header is explicitly ignored or rejected for identity purposes.
+
+2.  **Boundary/Asset Affected:** Privilege Boundary, Operational Security
+    **Specific Gap:** The `platform-admin-access/SKILL.md` explicitly notes that "Real request-time authorization (which caller may actually invoke these Platform Admin actions) is Story 1.7/5.10's job," indicating that the application-level mechanism for authorizing who can trigger platform administration functions (e.g., initiating break-glass requests, creating/modifying tenants) is not yet implemented. While the database-level grants for `platform_admin_role` are appropriately scoped and the break-glass mechanism is robustly designed at a lower level, the critical decision of *who* is entitled to initiate these powerful actions from the client or application layer remains undefined and unenforced.
+    **Concrete Exploit Scenario:** If the application exposes any internal or external endpoints or services that directly trigger `platform_admin_role` actions (such as tenant creation, license seat count modifications, or break-glass password resets) without performing explicit authorization checks on the calling entity, an unauthorized actor (internal or external) could potentially invoke these highly privileged operations, leading to unauthorized system configuration changes, tenant data manipulation, or privilege escalation within the platform.
+    **Suggested Control:** Implement a comprehensive application-layer authorization service that strictly validates the identity and permissions of any caller attempting to initiate platform administration actions, ensuring that only explicitly authorized platform administrators, and potentially requiring additional factors for sensitive operations, can trigger these privileged workflows.
+
+---
+
+## 2026-08-03 — reviewed stdin (e.g. git diff)
+
+Here are the security and architecture findings from the review of the provided material:
+
+1.  **Boundary/Asset Affected:** Privilege Boundary, Secrets Boundary
+    **Specific Gap:** The introduction of `identity_resolver_role` as a new `BYPASSRLS` Postgres role, accompanied by its dedicated test environment variables (`IDENTITY_RESOLVER_PGUSER`, `IDENTITY_RESOLVER_PGPASSWORD`), establishes a new high-privilege entity within the system, but the comprehensive and precise definition of its database grants and constraints is deferred to `.claude/skills/identity-resolution/SKILL.md`, which is not present in the current review material.
+    **Concrete Exploit Scenario:** Without immediate and explicit confirmation of the `identity_resolver_role`'s grants, there is a risk that its privileges could inadvertently be broader than strictly necessary for its stated "even-narrower" function, potentially allowing an attacker who compromises this role (even in a test environment that could influence production practices or design assumptions) to bypass Row-Level Security and access or manipulate sensitive data outside its intended scope.
+    **Suggested Control:** Mandate that all definitions for new `BYPASSRLS` roles, including their complete and minimum-necessary Postgres DDL grants, are presented for security review concurrently with any material that introduces or references the role.
+
+2.  **Boundary/Asset Affected:** Operational Security, Privilege Boundary, Tenant Boundary
+    **Specific Gap:** The `platform-admin-access/SKILL.md` explicitly states that the mechanism for a platform administrator to reliably look up a Tenant-Admin's `external_subject` (required to target a break-glass password reset) given a `tenantId` is *still not implemented*, preventing the secure and efficient initiation of this critical privileged action.
+    **Concrete Exploit Scenario:** In the event of an urgent security incident requiring a break-glass password reset for a specific tenant, the absence of an integrated and authorized lookup pathway forces platform administrators to either develop insecure, ad-hoc methods to find the target `external_subject`, or leads to operational delays, both of which increase the risk profile and could compromise the effectiveness of the break-glass recovery process itself.
+    **Suggested Control:** Implement a dedicated, securely authorized application-layer service that enables platform administrators to resolve a `tenantId` to its corresponding Tenant-Admin's `external_subject` through a controlled and auditable process, integrating this lookup directly into the workflow for initiating break-glass requests.
+
+---
+
+## 2026-08-03 — reviewed stdin (e.g. git diff)
+
+## 2026-08-03 — reviewed stdin (e.g. git diff)
+
+Here are the security and architecture findings from the review of the provided material:
+
+### Resolution of Previous Findings
+
+1.  **Finding Resolved:** The finding from 2026-08-03 (second entry), finding 1, which stated: "Authentication middleware not mounted on real routes, X-Tenant-Id still in use," is now resolved.
+    **Resolution Note:** The provided `git diff` for Story 5.10 (ADR-0033) demonstrates that the `createTenantAuthMiddleware()` (composing `createEntraAuthMiddleware()` and `resolveIdentity()`) is now explicitly mounted on the `/v1` router stack in `social-listening-core/src/http/app.ts`. Furthermore, all `/v1` router files (`connectorsRouter.ts`, `postsRouter.ts`, `topicsRouter.ts`, `watchlistsRouter.ts`) have removed their reliance on the `X-Tenant-Id` header and now invoke `requireTenantUser()`, which extracts identity from the authenticated request context. The `.claude/skills/entra-authentication/SKILL.md` and `.claude/skills/identity-resolution/SKILL.md` files also reflect this change, explicitly stating that mounting has occurred and `X-Tenant-Id` no longer holds any trust role.
+
+### New Findings
+
+1.  **Boundary/Asset Affected:** Privilege Boundary, Operational Security, Deployment Boundary
+    **Specific Gap:** The application's core authentication middleware is conditionally swapped with a test-only bypass (`testAuthBypassMiddleware`) based on `process.env.NODE_ENV === 'test'` in `social-listening-core/src/http/app.ts`. This relies on a runtime environment variable to enforce a critical security boundary, which is susceptible to misconfiguration or malicious manipulation.
+    **Concrete Exploit Scenario:** An attacker or an operator making a configuration error could set `NODE_ENV='test'` in a non-test environment (e.g., staging, QA, or even a developer machine interacting with shared services). This would cause the application to load the insecure test bypass, allowing unauthenticated or arbitrarily authenticated access to `/v1` endpoints (e.g., by supplying an `X-Test-Identity` header as seen in the updated contract tests), thereby bypassing all real Entra authentication and identity resolution and enabling tenant impersonation or unauthorized data access.
+    **Suggested Control:** Replace the reliance on `NODE_ENV` for this critical security switch with an explicit, distinct, and securely managed configuration flag that defaults to secure authentication and requires a strong, auditable override for the test bypass, ideally tied to specific build artifacts or segregated, non-production credentials.
+
+### Open Gaps (Previously Logged, Not Addressed in This Review Material)
+
+The following findings, previously logged, were not addressed by the material provided for this review and therefore remain open:
+
+*   **2026-08-03 (first entry), Finding 1:** The documentation mismatch regarding the status of the `X-Tenant-Id` control (specifically the `Integration-Management-Plan.md` and `Uncertainty-Management-Plan.md` R-04) might still exist in the cited documents, even though the underlying technical gap has been closed. This finding specifically concerns the documentation itself.
+*   **2026-08-03 (first entry), Finding 2:** "Connector ownership authorization not implemented" (ADR-0034) remains an open privilege boundary gap for connector CRUD operations.
+*   **2026-08-03 (first entry), Finding 3:** The lack of enforced linting in the CI pipeline is still an open code quality and security posture gap.
+*   **2026-08-03 (second entry), Finding 2:** "Platform admin authorization not implemented" (Story 1.7/5.10's job) remains an open privilege boundary gap for platform administration functions.
+*   **2026-08-03 (third entry), Finding 1:** The comprehensive and precise definition of the `identity_resolver_role`'s `BYPASSRLS` database grants and constraints (the actual DDL) is still deferred and not present in the review material.
+*   **2026-08-03 (third entry), Finding 2:** The mechanism for platform administrators to reliably look up a Tenant-Admin's `external_subject` for break-glass password resets is still not implemented.
+
+---
+
+## 2026-08-03 — reviewed stdin (e.g. git diff)
+
+Here are the security and architecture findings from the review of the provided material:
+
+### Resolution of Previous Findings
+
+1.  **Finding Resolved:** The finding from 2026-08-03 (second entry), finding 1, which stated: "Authentication middleware not mounted on real routes, X-Tenant-Id still in use," is now resolved.
+    **Resolution Note:** The `security-register.md` update within the reviewed material explicitly documents this resolution, referencing the `git diff` for Story 5.10 (ADR-0033). The provided code changes in `social-listening-core/src/http/auth/requireTenantUser.ts` introduce `requireTenantUserIdentity`, and `social-listening-core/src/http/versions/v1/connectorsRouter.ts` now consistently uses this authenticated identity, explicitly deriving `tenantId`, `userId`, and `role` from the request context, eliminating reliance on the unauthenticated `X-Tenant-Id` header for these critical `/v1` routes.
+
+2.  **Finding Resolved:** The finding from 2026-08-03 (first entry), finding 2, which stated: "Connector ownership authorization not implemented" (ADR-0034) as an open privilege boundary gap for connector CRUD operations, is now resolved for the `connect` and `disconnect` endpoints.
+    **Resolution Note:** The changes in `social-listening-core/src/http/versions/v1/connectorsRouter.ts` implement robust, role-based and ownership-tier authorization for `POST /v1/connectors/:platformId/connect` and `DELETE /v1/connectors/:platformId/disconnect`. Specifically, creating or deleting tenant-wide credentials (`ownerType: 'tenant'`) now explicitly requires the caller's role to be `tenant_admin`. Creating a user-bound credential (`ownerType: 'user'`) always associates it with the calling user's authenticated `userId` (ignoring any client-supplied `userId`). Deleting a user-bound credential allows the owning user to disconnect their own credential or a `tenant_admin` to disconnect any user's credential within their tenant. These controls, combined with updates to `social-listening-core/src/credentials/credentialStore.ts` to accept and persist `owner_type` and `user_id`, directly address the requirements of ADR-0034 and the previously identified gap.
+
+### New Findings
+
+No new trust boundary gaps fitting the specified criteria were identified in the material under review. The changes primarily focus on implementing and hardening previously defined authentication and authorization controls.
+
+### Open Gaps (Previously Logged, Not Addressed in This Review Material)
+
+The following findings, previously logged, were not addressed by the material provided for this review and therefore remain open:
+
+*   **2026-08-03 (first entry), Finding 1:** The documentation mismatch regarding the status of the `X-Tenant-Id` control (specifically the `Integration-Management-Plan.md` and `Uncertainty-Management-Plan.md` R-04) might still exist in the cited documents, even though the underlying technical gap has been closed. This finding specifically concerns the documentation itself.
+*   **2026-08-03 (first entry), Finding 3:** The lack of enforced linting in the CI pipeline is still an open code quality and security posture gap.
+*   **2026-08-03 (second entry), Finding 2:** "Platform admin authorization not implemented" (Story 1.7/5.10's job) remains an open privilege boundary gap for platform administration functions.
+*   **2026-08-03 (third entry), Finding 1:** The comprehensive and precise definition of the `identity_resolver_role`'s `BYPASSRLS` database grants and constraints (the actual DDL) is still deferred and not present in the review material.
+*   **2026-08-03 (third entry), Finding 2:** The mechanism for platform administrators to reliably look up a Tenant-Admin's `external_subject` for break-glass password resets is still not implemented.
+*   **2026-08-03 (fourth entry), Finding 1:** The application's core authentication middleware is conditionally swapped with a test-only bypass (`testAuthBypassMiddleware`) based on `process.env.NODE_ENV === 'test'` in `social-listening-core/src/http/app.ts`, which relies on a runtime environment variable to enforce a critical security boundary.
+
+---
+
+## 2026-08-04 — reviewed docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md (manual run, not --register — appended by hand for a complete history)
+
+Here are the security and architecture findings from ADR-0036:
+
+1.  **Boundary/Asset Affected:** Privilege Boundary, Secrets Boundary, Network Boundary (`GET /v1/me` endpoint).
+    **Specific Gap:** The proposed `GET /v1/me` endpoint in `social-listening-core` is described as "authenticated" but its specific authorization mechanism for ensuring it only returns the identity corresponding to the *caller's own bearer token* is not explicitly stated, leaving open how it will prevent identity spoofing or disclosure of other users' roles/tenant IDs.
+    **Concrete Exploit Scenario:** An attacker with a valid bearer token for Tenant A could make a request to the `GET /v1/me` endpoint. If this endpoint's implementation is flawed and does not strictly derive the returned identity solely from the authenticated token (e.g., by allowing a query parameter or custom header to influence the target `tenantId` or `userId`), the attacker could potentially discover the internal identity details (ID, role, tenant ID) of users in other tenants or even Platform Admins.
+    **Suggested Control:** The `GET /v1/me` endpoint must be rigorously protected by `createTenantAuthMiddleware()` and must rely exclusively on the `resolveIdentity()` function to extract the caller's identity from their bearer token, ensuring no client-supplied parameters can override or influence the returned identity object.
+
+**Resolution note (same day):** ADR-0036 §5 was still Proposed (not yet accepted) at the time of this finding — revised in place with a Clarification stating exactly this requirement (identity derived exclusively from `req.identity`, never a client-supplied parameter), and Story 6.1's own Acceptance Criteria (`docs/user-stories/epic-6-admin-ui.md`) was updated to make it a testable requirement for whoever builds the actual endpoint. See ADR-0036's own Amendment Log for the full account. Not yet contract-verified — no code exists yet (Story 6.1 is Blocked pending this ADR's acceptance) — this closes the *design* gap, not an implementation one.
+
+---
