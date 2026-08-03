@@ -207,6 +207,16 @@ Spend Decision (continue, adjust, or stop)
 - Monitor subscription usage
 - Log AI agent invocations in Implementation Log (future enhancement)
 
+#### 5.2.5 Session Time Tracking — added 2026-08-03, rolled into `docs/implementation-log.md` the same day
+
+**Why this exists:** every cost line above (Azure, API providers, AI subscriptions) is a direct dollar cost, but this plan has never tracked Menno's own working time — for a self-funded solo project, time is a real cost too (opportunity cost, at minimum), even with no invoice attached to it. Added per Menno's own direct recommendation: *"time can be expressed as monies for cost management review."*
+
+**Session duration lives in `docs/implementation-log.md`, not duplicated here.** Per Menno's own follow-up direction ("roll this up with the implementation-log"), each session's approximate duration is recorded once, in that log's own per-session entry (its "Session duration (approximate)" field, alongside the commit hash and files touched it already verifies against git) — this section only explains the *policy*, not the numbers themselves, per the same single-source-of-truth-per-field discipline ADR-0029 §3 established this session. See `docs/implementation-log.md`'s 2026-08-03 "Governance" entry for this session's own row.
+
+**Two open items, named rather than silently assumed:**
+- **No hourly rate is decided anywhere in this document.** Converting a session's duration into a dollar "notional cost" is left uncomputed on purpose — inventing a rate (a market contractor rate? a personal opportunity-cost figure?) without Menno deciding one first would be a fabricated number, not a real cost figure. **Open item:** Menno to decide what rate, if any, future session-duration entries should be converted at.
+- **Duration is currently only a proxy (the gap between git commits), not a measured value** — reasonable for a session that produces one commit at its end, but would misstate duration for a session spanning multiple days or mixed with unrelated work between commits. **Open item:** decide whether a lighter manual log (a start/end note per session) is worth adding, or whether the commit-timestamp-gap proxy is good enough at this project's current scale.
+
 ### 5.3 Cost Analysis
 
 #### 5.3.1 Cost Trend Analysis
