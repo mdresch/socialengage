@@ -99,6 +99,10 @@
 
 **Acceptance Criteria note, added 2026-08-03:** this story's contract must also cover ADR-0030 §3's break-glass addition — a test that a Platform-Admin-authenticated caller can trigger a credential reset for a named tenant's Tenant-Admin identity, that the action is logged per the same audit requirement as tenant-creation/suspension writes, and that no code path this story adds grants Platform Admin read/write access to `users`, `watchlists`, `social_posts`, or `platform_credentials` beyond that one narrow action.
 
+**Second note, added 2026-08-03, during implementation:** per ADR-0030's own Clarification (added the same day), the break-glass mechanism is two explicit, separately-recorded phases — a request (no Entra action), and a Platform Admin's own separate act of picking it up for execution (the only step that touches Entra) — never one automated action chaining them. An already-executed request must reject a second execution attempt.
+
+**Third note, added 2026-08-03, during implementation:** per ADR-0030's own second Clarification (same day), execution also issues a real Temporary Access Pass, not only a password reset — a password reset alone does not restore access for a Tenant-Admin locked out by a lost MFA device, verified directly against Microsoft's own documentation. Both actions happen within the same JIT elevation window and are revoked together. The TAP code itself must never appear in the audit log.
+
 **As a** platform operator provisioning or suspending a SocialEngage tenant,
 **I want** my actions to run through a database role that can see the tenant registry but nothing else, with every write durably logged,
 **so that** platform administration never becomes an unaudited, implicit path to any tenant's own data.

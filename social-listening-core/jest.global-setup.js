@@ -26,6 +26,9 @@ module.exports = async function globalSetup() {
   process.env.PGPASSWORD = process.env.PGPASSWORD || 'postgres';
   process.env.APP_PGUSER = process.env.APP_PGUSER || 'app_user';
   process.env.APP_PGPASSWORD = process.env.APP_PGPASSWORD || 'app_user_password';
+  process.env.PLATFORM_ADMIN_PGUSER = process.env.PLATFORM_ADMIN_PGUSER || 'platform_admin_role';
+  process.env.PLATFORM_ADMIN_PGPASSWORD =
+    process.env.PLATFORM_ADMIN_PGPASSWORD || 'platform_admin_role_password';
 
   execSync('docker compose -f docker-compose.test.yml up -d --wait', {
     cwd: __dirname,
