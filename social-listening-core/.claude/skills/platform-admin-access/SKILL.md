@@ -18,10 +18,11 @@ A dedicated, narrowly-scoped Postgres role (`platform_admin_role`, `BYPASSRLS`) 
 ## Contracts that constrain this component
 
 - `contracts/epic-5/story-5.7.platform-admin-rls-bypass.contract.test.ts` — `platform_admin_role` has BYPASSRLS and zero grants on every existing tenant-content table; a write through the role is audit-logged; an ordinary `withTenant()` write runs as `app_user`, never this role; a break-glass request performs no Entra action; executing a request against the live `getsocialengage` tenant performs a real password reset AND issues a real Temporary Access Pass, confirms de-elevation of both JIT roles actually completes, confirms the TAP code never reaches the audit log, and rejects re-executing an already-executed request.
+- `contracts/epic-5/story-5.8.tenants-table-rls.contract.test.ts` — `platform_admin_role`'s first real grant (on `tenants`): can create/administer `status`/`license_seat_count`, is column-level DB-denied from writing `active_seat_count`, and every write is audit-logged (re-proving AC2 for this specific table).
 
 ## How to extend this safely
 
-- **Story 5.8 (tenants table):** when creating `tenants`, add `GRANT SELECT, INSERT, UPDATE ON tenants TO platform_admin_role` to *that* migration — don't come back and edit `migrations/0015_create_platform_admin_role_and_audit_log.sql`, which predates the table and correctly couldn't grant anything on it.
+- **Story 5.8 (tenants table) — done, 2026-08-03.** `migrations/0017_create_tenants.sql` (not `0015`, which predates the table and correctly couldn't grant anything on it) grants `platform_admin_role` `SELECT, INSERT` on `tenants`, plus a **column-scoped** `UPDATE (status, license_seat_count)` — narrower than the `GRANT SELECT, INSERT, UPDATE` this note originally sketched, because AC3 required `platform_admin_role` to be DB-level denied from writing `active_seat_count`, and Postgres's column-level privilege grants are the direct way to enforce that rather than trusting application code alone. See `.claude/skills/tenants/SKILL.md`'s own "Load-bearing constraints" for the full rationale — do not widen this to a blanket `UPDATE`.
 - **Story 5.9 (users/platform_admins tables):** Platform Admin's own identity table (ADR-0030 §6) also needs a grant to `platform_admin_role`, added by whichever migration creates it — same pattern as above.
 - **Real request-time authorization** (which caller may actually invoke these Platform Admin actions) is Story 1.7/5.10's job — this component only proves the database/Entra mechanics work; it does not itself check who's calling.
 - **`logPlatformAdminAction()` is the only sanctioned way to write to the audit log** — every new Platform Admin action (tenant creation/suspension, whatever Story 5.8 adds) must call it, never write to `platform_admin_audit_log` directly.
@@ -37,7 +38,7 @@ A dedicated, narrowly-scoped Postgres role (`platform_admin_role`, `BYPASSRLS`) 
 
 ## Known gaps / deferred work
 
-- **The `tenants`-table grant does not exist yet** — Story 5.8's own job, per this ADR's own explicit sequencing (see this story's own "Acceptance Criteria note" in `docs/user-stories/epic-5-security-isolation-and-messaging.md`).
+- **The `tenants`-table grant now exists (Story 5.8, 2026-08-03)** — see `.claude/skills/tenants/SKILL.md`. This bullet is kept, corrected, rather than deleted, per this doc series' own "don't rewrite history" convention.
 - **The Tenant-Admin lookup ("which Entra user is this tenant's Tenant-Admin") is not implemented here** — this component proves the break-glass mechanism against a directly-specified target user; resolving a tenant name to the right Entra user is Story 5.9's job (it owns `users`).
 - **No notification is sent to the affected Tenant-Admin or any secondary contact** — ADR-0030's own Open Question, still open.
 - **How the TAP code actually reaches the real Tenant-Admin (a verified, out-of-band channel) is not designed here** — ADR-0030's own second Clarification names this as a real, undesigned gap, not solved by returning the code to the caller.
