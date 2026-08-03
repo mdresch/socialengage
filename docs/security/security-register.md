@@ -175,3 +175,16 @@ Menno asked directly whether ADR-0036's OAuth flow registers/enforces a specific
 **A real gap, corrected same day:** a wildcard or pattern-matched redirect URI is a well-documented real-world source of OAuth authorization-code interception, and would have materially weakened this design regardless of PKCE/BFF-session hygiene elsewhere. Added to ADR-0036 §3: redirect URI must be an exact-match, pre-registered value per environment, never a wildcard/pattern — a distinct, complementary control to PKCE (constrains *where* a code is delivered, not just who can redeem it). Corrected the Open Questions bullet that previously waved this off. Story 6.1's own Acceptance Criteria updated to make this a testable requirement. Not yet contract-verified — no code exists yet.
 
 ---
+
+## 2026-08-04 — reviewed docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, fourth pass (manual run, not --register — appended by hand for a complete history)
+
+Resolved (per this reviewer's own re-check): finding 1 (`GET /v1/me` identity source) and finding 2 (session lifetime) both confirmed closed by the prior revisions.
+
+3.  **Boundary/Asset Affected:** Secrets boundary (the session cookie's encryption key).
+    **Specific Gap:** Decision §1 mandates an "encrypted... session cookie" but does not specify how the *encryption key* itself is secured, provisioned, or rotated. `ADR-0014`'s Key Vault envelope encryption is a project fact, but this ADR does not extend that same explicit control to the admin UI's own session key.
+    **Concrete Exploit Scenario:** An attacker with access to the `social-listening-admin` deployment environment (misconfigured CI/CD, an exposed plaintext env var) obtains the session-cookie encryption key, decrypts any user's session, forges a valid one, and bypasses authentication entirely.
+    **Suggested Control:** Treat the key as a sensitive secret, provisioned via a real secrets-management system at runtime, never hardcoded or committed.
+
+**Resolution note (same day):** added to ADR-0036 §1: the key is named explicitly as an application-level secret distinct from ADR-0014's tenant-credential scope (that mechanism doesn't apply here); minimum bar decided now (256-bit entropy, environment-variable only, never committed). **Named honestly rather than solved narrowly:** this project has no decided real-production secrets-management strategy for *any* application-level secret yet (this key, the Entra client secret, database credentials) — a real, pre-existing, project-wide gap, now recorded in `docs/open-items-and-deferred-work.md`'s "Security / authentication" section rather than invented a fix for just this one key in isolation. Story 6.1's own Acceptance Criteria updated with the minimum-entropy/never-committed requirement. Not yet contract-verified — no code exists yet.
+
+---
