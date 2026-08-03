@@ -132,7 +132,7 @@ Spend Decision (continue, adjust, or stop)
 | C-11 | Gemini | AI Agent Services | Google API | Pay-per-request | Episodic |
 | C-12 | Mistral | AI Agent Services | Mistral API | Pay-per-request | Episodic |
 | C-13 | Ollama (self-hosted) | AI Agent Services | Local | $0 | Active |
-| C-14 | Azure AI Language (future) | AI Services | Pay-as-you-go | TBD | Planned |
+| C-14 | Azure AI Language (future) | AI Services | Pay-as-you-go | TBD | Planned — **2026-08-03 note: this row's assumption (a single project-operated subscription, billed to and tracked as a SocialEngage cost item) is superseded by ADR-0028 (Accepted 2026-08-03), which resolves `AIProviderConnector` credentials as tenant-owned, with cost incurred and settled directly between each tenant and Microsoft/Azure — not a SocialEngage-tracked cost item at all once that model is built. This row is not removed or re-derived here (a separate exercise for whoever next revises this document); flagged so it isn't mistaken for still-current guidance. See ADR-0028's Amendment Log (2026-08-03 resolution entry) and `Business-Case-v6.0.md` §4's own matching flag.** |
 | C-15 | Azure Service Bus (future) | Cloud Infrastructure | Pay-as-you-go | TBD | Planned |
 
 ### 5.2 Cost Tracking
@@ -318,8 +318,8 @@ Spend Decision (continue, adjust, or stop)
 | Azure Cloud | ~$200 | Full Phase 1-5 infrastructure |
 | API Services | <$100 | Reddit, YouTube free tiers |
 | AI Agents | <$240 | Regular usage |
-| Azure AI Language | ~$100 | Enrichment pipeline |
-| **Total** | **~$640** | For 12 months |
+| Azure AI Language | ~$100 | Enrichment pipeline — **2026-08-03: superseded by ADR-0028 (Accepted 2026-08-03); this line assumed a project-operated subscription, but the resolved model is tenant-owned/tenant-billed (see C-14's note above), so this figure should not be carried into the project's own 12-month total once re-derived** |
+| **Total** | **~$640** | For 12 months — **this total includes the now-superseded ~$100 Azure AI Language line above; not yet recalculated, flagged 2026-08-03** |
 
 **Forecast Assumptions:**
 1. No paid-tier API providers (continue free tier usage)

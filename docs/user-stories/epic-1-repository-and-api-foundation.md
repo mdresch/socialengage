@@ -82,3 +82,43 @@
 - Watchlists support all four match types: `keyword`, `hashtag`, `account`, `boolean`.
 - When `matchType` is `boolean`, a `booleanQuery` field is required and carries the boolean query syntax.
 - Tenant isolation is enforced at the database layer: a tenant can only see and modify their own watchlists.
+
+---
+
+## Story 1.6 — Connector connect/disconnect REST surface (placeholder-auth shape)
+
+**Source:** Phase 1 "also build, not storied" work (see `docs/open-items-and-deferred-work.md` §A, `docs/implementation-plan.md` Phase 1) · **Status:** Ready — already built and contract-verified (see `docs/implementation-plan.md`'s 2026-08-01 update); this entry is added retroactively, 2026-08-03, to give the already-in-use "Story 1.6" label a home in this file, per this project's own "don't rewrite history" convention (no prior entry existed here for it).
+
+**As a** tenant connecting a social or news platform,
+**I want** to store and remove a platform credential via REST endpoints,
+**so that** a connector can poll on my tenant's behalf without engineering help.
+
+**Acceptance Criteria**
+- `POST /v1/connectors/:platformId/connect` stores a credential (envelope-encrypted per ADR-0014) and returns `201` with `id`, `platformId`, `authMethod`.
+- The endpoint requires the `X-Tenant-Id` header and a `credential` (string) request body field, returning `400` if either is missing.
+- `DELETE /v1/connectors/:platformId/disconnect` removes the stored credential(s) for that `(tenantId, platformId)` pair and returns `200`.
+- Tenant isolation is enforced at the database layer (RLS) — a request scoped to one tenant cannot delete or read another tenant's credential.
+- `GET /v1/connectors/:platformId` (connector health, Story 4.4) continues to function correctly after a credential is connected.
+
+**A named, flagged limitation, not a silent one:** this story's endpoints trust the `X-Tenant-Id` header as their entire tenant boundary (no real authentication exists yet) and have **no ownership-tier or role concept at all** — any caller presenting any `X-Tenant-Id` value can connect or disconnect that tenant's credential. `Business-Case-v6.0.md` §6's own dependency matrix flagged this exact risk before this story was built ("could theoretically be built against the placeholder... not recommended"). **Story 1.7 (ADR-0034) supersedes this story's authorization and schema shape** once real authentication (ADR-0029/ADR-0033) and the `users`/ownership-tier model (ADR-0028, ADR-0032) exist — see Story 1.7 below and ADR-0034's own Context/Consequences for exactly what changes and why.
+
+---
+
+## Story 1.7 — Ownership-tier-aware connector connect/disconnect, superseding Story 1.6
+
+**Source:** ADR-0034 · **Status:** Ready — ADR-0034 accepted 2026-08-03, its own flagged interpretive question (Tenant-Admin's offboarding revocation authority) confirmed as drafted. All dependencies (ADR-0028–0033) now Accepted. Scheduled last in Phase 4.5 (`docs/implementation-plan.md`) — the only remaining Blocked-to-Ready transition in that phase; Phase 4.5 now has no Blocked stories left.
+
+**As a** Tenant-Admin or an individual tenant user,
+**I want** connecting or disconnecting a platform credential to respect who is actually allowed to create or remove it — a tenant-wide credential only by Tenant-Admin, a personal credential only by the user themself — with real caller identity instead of a self-declared tenant header,
+**so that** no caller can create a credential on another party's behalf, and a Tenant-Admin's ordinary disconnect action can never silently destroy another user's personal credential.
+
+**Acceptance Criteria**
+- `platform_credentials` carries `owner_type` (`'tenant'` | `'user'`, default `'tenant'`) and a nullable `user_id` (required and FK-valid when `owner_type = 'user'`, `NULL` otherwise) — enforced by a check constraint, added via an additive migration that leaves every existing (Story 1.6/2.6/2.7-created) row valid as `owner_type = 'tenant'`.
+- `POST /v1/connectors/:platformId/connect` with `ownerType: 'tenant'` (or omitted) succeeds only when the caller's resolved role is `tenant_admin`; returns `403` otherwise.
+- `POST /v1/connectors/:platformId/connect` with `ownerType: 'user'` always sets `user_id` to the caller's own resolved identity — any client-supplied `user_id` in the request body is ignored, never trusted, verified by a test that supplies a different user's id and confirms it has no effect.
+- Deleting a tenant-wide credential requires the caller's resolved role to be `tenant_admin`.
+- Deleting a user-bound credential succeeds for the owning user, or for a Tenant-Admin of the same tenant (offboarding case) — and for no one else.
+- `deleteCredential(...)` no longer deletes every credential for a `(tenantId, platformId)` pair indiscriminately — it is scoped by `(tenantId, platformId, ownerType, userId?)`, verified by a test that connects one tenant-wide and one user-bound credential for the same `platformId` and confirms disconnecting one never removes the other.
+- `X-Tenant-Id` is no longer read or trusted by any of these endpoints — caller identity comes exclusively from the `Authorization: Bearer` token resolved per ADR-0029/ADR-0033.
+
+**Note:** this story supersedes Story 1.6's authorization and schema shape, per ADR-0034's own Decision and Consequences — it does not represent new, additive scope on top of an unrelated Story 1.6, it is the rework `Business-Case-v6.0.md` §6 already anticipated as necessary before real auth existed.

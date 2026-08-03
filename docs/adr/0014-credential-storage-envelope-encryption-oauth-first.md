@@ -27,3 +27,9 @@ The system connects to platforms using each tenant's own credentials (§1) — O
 
 - **Application-level encryption with a key stored in application config/environment** — avoids the Key Vault dependency, but a single static key protecting all tenants' credentials is a much weaker boundary than envelope encryption with Key Vault-managed key-encryption keys, and complicates key rotation.
 - **Require OAuth only, refuse to support API-key platforms** — stronger uniform security posture, but would exclude legitimate platforms (some RSS/newswire providers) that don't offer OAuth at all, contradicting the goal of supporting "multiple social/web platforms."
+
+## Note on relation to ADR-0028 (2026-08-03)
+
+**ADR-0028** (Proposed, not yet accepted) adds an organizational layer this ADR was always silent on and never assumed: *who* is authorized to create a credential, at each of three ownership scopes (system-wide, tenant-wide, user-bound), before that credential reaches the encryption/storage mechanism this ADR governs. This is not the governance-table's fifth-row case (a formalization of something this ADR's Decision text already assumed) — this ADR never addressed organizational creation authority at all, so there is nothing here for ADR-0028 to be making explicit. This note is a plain wayfinding pointer, not a correction: **this ADR's own Decision and Consequences are unaffected**, and remain the record of *how* a credential is stored and *which* auth mechanism is preferred, regardless of who was authorized to create it. Once ADR-0028 is accepted, a credential this ADR's model stores should be understood as having already passed ADR-0028's creation-authority check upstream of storage.
+
+**Accepted 2026-08-03, same day as this note.** The condition above is now met: every credential this ADR's model stores should be understood as having already passed ADR-0028's creation-authority check upstream of storage.

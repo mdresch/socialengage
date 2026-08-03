@@ -29,7 +29,9 @@
 
 **Example:** a customer posts on X, "My internet has been down for two days." The social care team sees the mention, responds publicly, moves the conversation to direct messages if needed, and works to resolve the problem.
 
-**Parked concepts:** none yet.
+**Parked concepts:**
+
+- **Requirement: any "respond to social media content" capability inherits a fixed credential rule from this subsystem's ADR-0028, not something Social Care would decide on its own.** Surfaced 2026-08-03 while drafting `docs/adr/0028-credential-creation-authority-scoped-by-ownership-tier.md` (this subsystem's credential-ownership-tier ADR) and confirmed directly by Menno. The rule: any capability that acts *as* a specific platform account — replying to a post, sending a direct message, voting/reacting, submitting a comment — requires that platform's own user-context authentication (e.g. Reddit's `authorization_code` OAuth grant, distinct from the app-only `client_credentials`/`installed_client` grant this subsystem's own public-content monitoring uses — verified against `github.com/reddit-archive/reddit/wiki/OAuth2`), because an app-only, tenant-wide credential has no account identity to act as. Under ADR-0028's Tier 3 rule, that credential can only be created by the individual user's own act of activation — never by Tenant-Admin or Platform Admin on that user's behalf, even for a support/case-routing workflow. Whenever Social Care is actually chartered, its own connect-flow design needs to account for this: responding through a given platform requires that specific tenant user to personally hold and activate their own credential for it, not a shared/organizational one. See ADR-0028's Decision section (Tier 3 worked example) for the fuller reasoning, sourced there rather than duplicated here.
 
 ## Social Selling
 
