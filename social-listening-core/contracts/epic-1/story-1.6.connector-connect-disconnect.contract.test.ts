@@ -19,6 +19,14 @@ import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
 
+// Real, cold Azure Key Vault RSA key creation/deletion can exceed Jest's 5000ms
+// default hook timeout — same real-network reasoning as Story 5.3's identical
+// pattern (contracts/epic-5/story-5.3.credential-envelope-encryption.contract.test.ts),
+// which already sets this. Added 2026-08-03 via heal-contract-failure after a
+// real, reproduced marginal timeout on this file's own beforeAll/afterAll hooks —
+// not a functional bug, no assertion changed.
+jest.setTimeout(30000);
+
 const CONNECTOR_BASE = '/v1/connectors';
 const TEST_PLATFORM_ID = 'test-platform';
 
