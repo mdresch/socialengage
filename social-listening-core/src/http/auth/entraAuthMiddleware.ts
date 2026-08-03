@@ -7,9 +7,8 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
  * verification only (jose) — no Entra-specific SDK or Graph API call, per
  * ADR-0029 §2's Decision-level requirement.
  *
- * Not mounted on any real route yet — see .claude/skills/entra-authentication/
- * SKILL.md for what's deliberately deferred to Story 5.9 (identity resolution)
- * and Story 5.10 (wiring this into the real /v1 router, retiring X-Tenant-Id).
+ * As of Story 5.10, composed inside tenantAuthMiddleware.ts (not called
+ * directly by any route) — see .claude/skills/tenant-auth-middleware/SKILL.md.
  */
 
 export interface EntraAuthConfig {
@@ -22,8 +21,16 @@ export interface EntraAuthConfig {
 }
 
 export interface AuthenticatedRequest extends Request {
-  /** Set only on successful verification. `sub` is an opaque identifier — never parsed for meaning (ADR-0029 §2). */
-  auth?: { sub: string };
+  /**
+   * Set only on successful verification. `sub` is an opaque identifier —
+   * never parsed for meaning (ADR-0029 §2). `email` (added Story 5.10) is
+   * extracted the same way — a verbatim claim value, not derived meaning —
+   * for resolveIdentity()'s own invite-link lookup (ADR-0032 §6). Empty
+   * string if the token carries no `email` claim (e.g. today's app-only
+   * client-credentials tokens — see this component's own SKILL.md "Known
+   * gaps" for why interactive user tokens remain unverified).
+   */
+  auth?: { sub: string; email: string };
 }
 
 const BEARER_PREFIX = 'Bearer ';
@@ -65,7 +72,8 @@ export function createEntraAuthMiddleware(config: EntraAuthConfig): RequestHandl
         return;
       }
 
-      (req as AuthenticatedRequest).auth = { sub: payload.sub };
+      const email = typeof payload.email === 'string' ? payload.email : '';
+      (req as AuthenticatedRequest).auth = { sub: payload.sub, email };
       next();
     } catch {
       // Signature failure, issuer/audience mismatch, and expiry all land here —

@@ -1,15 +1,24 @@
 /**
  * Story 1.6 — Connector Connect/Disconnect Contract
  * Phase 1 "also build, not storied" work for connector credential management.
- * 
+ *
  * AC0: POST /v1/connectors/:platformId/connect stores a credential and returns 201
- * AC1: POST requires X-Tenant-Id header, returns 400 without it
+ * AC1: POST with no authenticated identity returns 401
  * AC2: POST requires credential (string) in body, returns 400 without it
  * AC3: POST returns credential id, platformId, authMethod
  * AC4: DELETE /v1/connectors/:platformId/disconnect removes credential and returns 200
- * AC5: DELETE requires X-Tenant-Id header, returns 400 without it
+ * AC5: DELETE with no authenticated identity returns 401
  * AC6: Tenant isolation enforced — tenant can only access their own credentials
  * AC7: Connector health endpoint still works after connect
+ *
+ * 2026-08-03 — Story 5.10 (ADR-0033): AC1/AC5 rewritten from "missing
+ * X-Tenant-Id header → 400" to "missing Authorization/X-Test-Identity → 401"
+ * — rejection now happens in the auth middleware, before any route handler
+ * runs, not a per-route header check. Every other AC below just swapped its
+ * identity-establishment mechanism (X-Test-Identity via
+ * testAuthBypassMiddleware, NODE_ENV==='test' only) — see
+ * .claude/skills/tenant-auth-middleware/SKILL.md. Business-logic assertions
+ * are otherwise unchanged.
  */
 
 import { randomUUID } from 'crypto';
@@ -18,6 +27,7 @@ import { createApp } from '../../src/http/app';
 import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 
 // Real, cold Azure Key Vault RSA key creation/deletion can exceed Jest's 5000ms
 // default hook timeout — same real-network reasoning as Story 5.3's identical
@@ -64,7 +74,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({ credential });
 
@@ -76,22 +86,20 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       expect(body.authMethod).toBe('api_key');
     });
 
-    it('AC1: requires X-Tenant-Id header, returns 400 without it', async () => {
+    it('AC1: with no authenticated identity returns 401', async () => {
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
         .set('Content-Type', 'application/json')
         .send({ credential: 'test-key' });
 
-      expect(response.status).toBe(400);
-      const body = response.body;
-      expect(body.error).toContain('X-Tenant-Id');
+      expect(response.status).toBe(401);
     });
 
     it('AC2: requires credential (string) in body, returns 400 without it', async () => {
       const tenantId = randomUUID();
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({});
 
@@ -106,7 +114,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       
       const response = await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({ credential });
 
@@ -125,14 +133,14 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // First connect
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({ credential: 'to-be-deleted' });
 
       // Then disconnect
       const response = await request(app)
         .delete(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/disconnect`)
-        .set('X-Tenant-Id', tenantId);
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
       expect(response.status).toBe(200);
       const body = response.body;
@@ -150,13 +158,11 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       expect(countResult).toBe(0);
     });
 
-    it('AC5: requires X-Tenant-Id header, returns 400 without it', async () => {
+    it('AC5: with no authenticated identity returns 401', async () => {
       const response = await request(app)
         .delete(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/disconnect`);
 
-      expect(response.status).toBe(400);
-      const body = response.body;
-      expect(body.error).toContain('X-Tenant-Id');
+      expect(response.status).toBe(401);
     });
   });
 
@@ -168,7 +174,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // Connect as tenantId
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({ credential: 'tenant1-key' });
 
@@ -176,7 +182,7 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // due to RLS - the delete will affect 0 rows for anotherTenantId
       const response = await request(app)
         .delete(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/disconnect`)
-        .set('X-Tenant-Id', anotherTenantId);
+        .set('X-Test-Identity', testIdentityHeaderValue(anotherTenantId));
 
       // RLS should prevent the delete from affecting other tenants
       // The endpoint returns 200 but no rows are deleted for anotherTenantId
@@ -201,14 +207,14 @@ describe('Story 1.6 — Connector Connect/Disconnect Contract', () => {
       // Connect first
       await request(app)
         .post(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}/connect`)
-        .set('X-Tenant-Id', tenantId)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
         .set('Content-Type', 'application/json')
         .send({ credential: 'health-test-key' });
 
       // Check health
       const response = await request(app)
         .get(`${CONNECTOR_BASE}/${TEST_PLATFORM_ID}`)
-        .set('X-Tenant-Id', tenantId);
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
       expect(response.status).toBe(200);
       const body = response.body;

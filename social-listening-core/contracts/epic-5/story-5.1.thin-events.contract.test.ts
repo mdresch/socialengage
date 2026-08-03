@@ -23,6 +23,11 @@
 // (once a namespace exists) would call to construct the message body from;
 // that publish step itself is not built here.
 
+// 2026-08-03 — Story 5.10 (ADR-0033): tenant identity now comes from
+// X-Test-Identity (via testAuthBypassMiddleware, NODE_ENV==='test' only),
+// not X-Tenant-Id — see .claude/skills/tenant-auth-middleware/SKILL.md.
+// Business-logic assertions below are otherwise unchanged.
+
 import { randomUUID } from 'crypto';
 import request from 'supertest';
 import { createApp } from '../../src/http/app';
@@ -31,6 +36,7 @@ import { startIngestionRun } from '../../src/ingestion/ingestionRunStore';
 import { insertSocialPost } from '../../src/posts/socialPostStore';
 import { buildSocialPostIngestedEvent } from '../../src/events/socialPostIngestedEvent';
 import { buildConnectorHealthChangedEvent } from '../../src/events/connectorHealthChangedEvent';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 
 jest.setTimeout(20000);
 
@@ -87,14 +93,16 @@ describe('Story 5.1 — thin events + GET /v1/posts/:id contract', () => {
       enrichment: { entities: ['acme'], keyPhrases: ['hello world'] },
     });
 
-    const found = await request(app).get(`/v1/posts/${id}`).set('X-Tenant-Id', tenantId);
+    const found = await request(app).get(`/v1/posts/${id}`).set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(found.status).toBe(200);
     expect(found.body.id).toBe(id);
     expect(found.body.rawPayload).toEqual({ text: 'hello world' });
     expect(found.body.enrichment).toEqual({ entities: ['acme'], keyPhrases: ['hello world'] });
     expect(found.body.publishedAt).toBe('2026-01-01T00:00:00.000Z');
 
-    const notFound = await request(app).get(`/v1/posts/${randomUUID()}`).set('X-Tenant-Id', tenantId);
+    const notFound = await request(app)
+      .get(`/v1/posts/${randomUUID()}`)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(notFound.status).toBe(404);
   });
 
@@ -114,7 +122,9 @@ describe('Story 5.1 — thin events + GET /v1/posts/:id contract', () => {
       rawPayload: { text: 'owner only' },
     });
 
-    const crossTenant = await request(app).get(`/v1/posts/${id}`).set('X-Tenant-Id', otherTenantId);
+    const crossTenant = await request(app)
+      .get(`/v1/posts/${id}`)
+      .set('X-Test-Identity', testIdentityHeaderValue(otherTenantId));
     expect(crossTenant.status).toBe(404);
   });
 });

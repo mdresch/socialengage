@@ -26,6 +26,11 @@
 // ConnectorHealth contract used for IngestionRun; the scheduled refresh job
 // itself (Story 4.4, ADR-0022 — hourly via pg_cron) is not built here either.
 
+// 2026-08-03 — Story 5.10 (ADR-0033): tenant identity now comes from
+// X-Test-Identity (via testAuthBypassMiddleware, NODE_ENV==='test' only),
+// not X-Tenant-Id — see .claude/skills/tenant-auth-middleware/SKILL.md.
+// Business-logic assertions below are otherwise unchanged.
+
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -34,6 +39,7 @@ import { createApp } from '../../src/http/app';
 import { getPool, closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { upsertAuthor } from '../../src/authors/authorStore';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 
 jest.setTimeout(20000);
 
@@ -105,7 +111,7 @@ describe('Story 4.1 — raw author-topic signals contract', () => {
 
     const byMentionCount = await request(app)
       .get(`/v1/topics/${topic}/authors?sortBy=mentionCount`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(byMentionCount.status).toBe(200);
     expect(byMentionCount.body.authors.map((a: { authorId: string }) => a.authorId)).toEqual([
       authorA.id,
@@ -116,7 +122,7 @@ describe('Story 4.1 — raw author-topic signals contract', () => {
 
     const byActiveMonths = await request(app)
       .get(`/v1/topics/${topic}/authors?sortBy=activeMonths`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(byActiveMonths.status).toBe(200);
     expect(byActiveMonths.body.authors.map((a: { authorId: string }) => a.authorId)).toEqual([
       authorB.id,
@@ -128,7 +134,7 @@ describe('Story 4.1 — raw author-topic signals contract', () => {
   it('AC2: an invalid sortBy value is rejected, not silently defaulted', async () => {
     const res = await request(app)
       .get('/v1/topics/acme/authors?sortBy=nonsense')
-      .set('X-Tenant-Id', randomUUID());
+      .set('X-Test-Identity', testIdentityHeaderValue(randomUUID()));
     expect(res.status).toBe(400);
   });
 

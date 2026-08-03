@@ -2,22 +2,20 @@ import { Router } from 'express';
 import { getCachedConnectorHealth } from '../../../connectors/connectorHealthCache';
 import { storeCredential, deleteCredential } from '../../../credentials/credentialStore';
 import { authMethodFor } from '../../../credentials/platformAuth';
+import { requireTenantUser } from '../../auth/requireTenantUser';
 
 export const connectorsRouter = Router();
 
 /**
  * GET /v1/connectors/:platformId (Story 4.4, ADR-0022) — ConnectorHealth
  * served from the in-process TTL cache, never a live recompute per request.
- * Tenant identity comes from the same X-Tenant-Id header placeholder
- * postsRouter/topicsRouter use. See
- * .claude/skills/derived-data-caching-and-refresh/SKILL.md.
+ * Tenant identity comes from the resolved, token-authenticated caller
+ * (Story 5.10) via requireTenantUser(), the same as every other /v1 route.
+ * See .claude/skills/derived-data-caching-and-refresh/SKILL.md.
  */
 connectorsRouter.get('/:platformId', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const health = await getCachedConnectorHealth(tenantId, req.params.platformId);
   res.json(health);
@@ -31,11 +29,8 @@ connectorsRouter.get('/:platformId', async (req, res) => {
  * See implementation-plan.md Phase 1.
  */
 connectorsRouter.post('/:platformId/connect', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const { credential } = req.body;
   if (!credential || typeof credential !== 'string') {
@@ -64,11 +59,8 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
  * See implementation-plan.md Phase 1.
  */
 connectorsRouter.delete('/:platformId/disconnect', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const platformId = req.params.platformId;
 

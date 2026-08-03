@@ -1,20 +1,18 @@
 import { Router } from 'express';
 import { listSocialPosts, getSocialPostById } from '../../../posts/socialPostStore';
+import { requireTenantUser } from '../../auth/requireTenantUser';
 
 export const postsRouter = Router();
 
 /**
  * Cursor-paginated (ADR-0011) — page/offset query params are silently ignored,
  * not rejected (standard REST tolerance for unrecognized params). Tenant
- * identity comes from an X-Tenant-Id header, a Phase 1 placeholder — see
- * .claude/skills/posts-api/SKILL.md's Known gaps.
+ * identity comes from the resolved, token-authenticated caller (Story 5.10)
+ * via requireTenantUser() — see .claude/skills/posts-api/SKILL.md.
  */
 postsRouter.get('/', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
@@ -30,14 +28,11 @@ postsRouter.get('/', async (req, res) => {
 /**
  * REST-fetch-on-demand for a single post (Story 5.1, ADR-0012) — what a
  * subscriber calls after receiving a thin SocialPostIngestedEvent. Same
- * X-Tenant-Id placeholder as the list route above.
+ * requireTenantUser() identity source as the list route above.
  */
 postsRouter.get('/:id', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const post = await getSocialPostById(tenantId, req.params.id);
   if (!post) {

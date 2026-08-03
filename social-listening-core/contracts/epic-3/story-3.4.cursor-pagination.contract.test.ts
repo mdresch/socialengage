@@ -18,10 +18,14 @@
 // property of the query shape, not of scale, so this is a proxy check, not a
 // literal million-row benchmark).
 // Explicitly out of scope: GET /posts's other documented filters (watchlistId,
-// platformId, from/to, sentiment — none of those fields exist on social_posts yet);
-// real tenant authentication — the X-Tenant-Id header is a Phase 1 placeholder (see
-// .claude/skills/posts-api/SKILL.md's Known gaps); no ADR in this series covers
-// real API auth, and closing that gap is Phase 5's production-readiness job.
+// platformId, from/to, sentiment — none of those fields exist on social_posts yet).
+//
+// 2026-08-03 — Story 5.10 (ADR-0033): real tenant authentication now exists
+// (Entra bearer tokens + resolveIdentity()) — the X-Tenant-Id placeholder this
+// note used to describe is retired. Tenant identity below comes from
+// X-Test-Identity (via testAuthBypassMiddleware, NODE_ENV==='test' only) — see
+// .claude/skills/tenant-auth-middleware/SKILL.md. Business-logic assertions
+// are otherwise unchanged.
 
 import { randomUUID } from 'crypto';
 import fs from 'fs';
@@ -32,6 +36,7 @@ import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { startIngestionRun } from '../../src/ingestion/ingestionRunStore';
 import { insertSocialPost } from '../../src/posts/socialPostStore';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 
 jest.setTimeout(30000);
 
@@ -53,21 +58,21 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
       await insertSocialPost({ tenantId, authorId: null, acquisitionId: run.id, rawPayload: { i } });
     }
 
-    const first = await request(app).get('/v1/posts?limit=2').set('X-Tenant-Id', tenantId);
+    const first = await request(app).get('/v1/posts?limit=2').set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(first.status).toBe(200);
     expect(first.body.posts).toHaveLength(2);
     expect(first.body.nextCursor).toBeTruthy();
 
     const withPageOffset = await request(app)
       .get('/v1/posts?limit=2&page=99&offset=999')
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(withPageOffset.body.posts.map((p: { id: string }) => p.id)).toEqual(
       first.body.posts.map((p: { id: string }) => p.id)
     );
 
     const second = await request(app)
       .get(`/v1/posts?limit=2&cursor=${encodeURIComponent(first.body.nextCursor)}`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(second.status).toBe(200);
     expect(second.body.posts).toHaveLength(2);
     const firstIds = new Set(first.body.posts.map((p: { id: string }) => p.id));
@@ -87,7 +92,7 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
       await insertSocialPost({ tenantId, authorId: null, acquisitionId: run.id, rawPayload: { i } });
     }
 
-    const page1 = await request(app).get('/v1/posts?limit=3').set('X-Tenant-Id', tenantId);
+    const page1 = await request(app).get('/v1/posts?limit=3').set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     const seenIds = new Set<string>(page1.body.posts.map((p: { id: string }) => p.id));
 
     // Concurrent insert between page 1 and page 2 — must not shift page 2's results
@@ -104,7 +109,7 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
     while (cursor && pagesWalked < 10) {
       const page = await request(app)
         .get(`/v1/posts?limit=3&cursor=${encodeURIComponent(cursor)}`)
-        .set('X-Tenant-Id', tenantId);
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
       for (const post of page.body.posts as { id: string }[]) {
         expect(seenIds.has(post.id)).toBe(false);
         seenIds.add(post.id);
@@ -148,7 +153,7 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
     const startBegin = process.hrtime.bigint();
     const startPage = await request(app)
       .get(`/v1/posts?limit=${PAGE_SIZE}`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     const startMs = Number(process.hrtime.bigint() - startBegin) / 1e6;
     expect(startPage.status).toBe(200);
 
@@ -160,7 +165,7 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
     while (cursor && hops < maxHops) {
       const page: request.Response = await request(app)
         .get(`/v1/posts?limit=${PAGE_SIZE}&cursor=${encodeURIComponent(cursor)}`)
-        .set('X-Tenant-Id', tenantId);
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
       cursor = page.body.nextCursor;
       hops += 1;
     }
@@ -168,7 +173,7 @@ describe('Story 3.4 — cursor-based pagination contract', () => {
     const endBegin = process.hrtime.bigint();
     const endPage = await request(app)
       .get(`/v1/posts?limit=${PAGE_SIZE}&cursor=${encodeURIComponent(cursor as string)}`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     const endMs = Number(process.hrtime.bigint() - endBegin) / 1e6;
     expect(endPage.status).toBe(200);
 

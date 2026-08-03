@@ -13,16 +13,26 @@
 // (RLS) — a tenant can only see/modify their own watchlists; (6) createdAt/updatedAt
 // timestamps are managed automatically; (7) the watchlists table exists with
 // correct schema.
-// Explicitly out of scope: authentication (X-Tenant-Id is a Phase 1 placeholder,
-// see .claude/skills/posts-api/SKILL.md Known gaps); watchlist validation
-// beyond schema; pagination on GET; soft-delete; watchlist usage in ingestion
-// (wiring watchlist matching into connectors — separate Phase 1 deferred work).
+// Explicitly out of scope: watchlist validation beyond schema; pagination on
+// GET; soft-delete; watchlist usage in ingestion (wiring watchlist matching
+// into connectors — separate Phase 1 deferred work).
+//
+// 2026-08-03 — Story 5.10 (ADR-0033): real tenant authentication now exists —
+// AC8-11 below were rewritten from "missing X-Tenant-Id header → 400" to
+// "missing Authorization/X-Test-Identity → 401", since that's now where and
+// how rejection actually happens (the auth middleware, before any route
+// handler runs), not a per-route header check. Every other AC below just
+// swapped its identity-establishment mechanism (X-Test-Identity via
+// testAuthBypassMiddleware, NODE_ENV==='test' only) — see
+// .claude/skills/tenant-auth-middleware/SKILL.md. Business-logic assertions
+// are otherwise unchanged.
 
 import { randomUUID } from 'crypto';
 import request from 'supertest';
 import { createApp } from '../../src/http/app';
 import { closePool } from '../../src/db/pool';
 import { getPool } from '../../src/db/pool';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 
 jest.setTimeout(30000);
 
@@ -79,7 +89,7 @@ describe('Watchlist CRUD contract', () => {
 
     const response = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send(watchlistData);
 
     expect(response.status).toBe(201);
@@ -108,7 +118,7 @@ describe('Watchlist CRUD contract', () => {
 
     const response = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send(watchlistData);
 
     expect(response.status).toBe(201);
@@ -137,11 +147,11 @@ describe('Watchlist CRUD contract', () => {
 
     const create1 = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send(watchlist1);
     const create2 = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send(watchlist2);
 
     expect(create1.status).toBe(201);
@@ -150,7 +160,7 @@ describe('Watchlist CRUD contract', () => {
     // List all watchlists for the tenant
     const response = await request(app)
       .get('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
     expect(response.status).toBe(200);
     expect(response.body.watchlists).toBeDefined();
@@ -168,21 +178,21 @@ describe('Watchlist CRUD contract', () => {
     // Create watchlists of different types
     await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({ name: 'Keyword', matchType: 'keyword', terms: ['test'], platformIds: ['gnews'] });
     await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({ name: 'Hashtag', matchType: 'hashtag', terms: ['#test'], platformIds: ['gnews'] });
     await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({ name: 'Boolean', matchType: 'boolean', booleanQuery: 'test AND more', platformIds: ['gnews'] });
 
     // Filter by matchType
     const response = await request(app)
       .get('/v1/watchlists?matchType=keyword')
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
     expect(response.status).toBe(200);
     expect(response.body.watchlists.length).toBe(1);
@@ -195,7 +205,7 @@ describe('Watchlist CRUD contract', () => {
     // Create a watchlist
     const createResponse = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'Original Name',
         matchType: 'keyword',
@@ -211,7 +221,7 @@ describe('Watchlist CRUD contract', () => {
     const originalUpdatedAt = createResponse.body.updatedAt;
     const updateResponse = await request(app)
       .patch(`/v1/watchlists/${watchlistId}`)
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'Updated Name',
         terms: ['updated', 'terms'],
@@ -233,7 +243,7 @@ describe('Watchlist CRUD contract', () => {
     // Create a watchlist
     const createResponse = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'To Delete',
         matchType: 'keyword',
@@ -247,14 +257,14 @@ describe('Watchlist CRUD contract', () => {
     // Delete the watchlist
     const deleteResponse = await request(app)
       .delete(`/v1/watchlists/${watchlistId}`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
     expect(deleteResponse.status).toBe(204);
 
     // Verify it's gone
     const listResponse = await request(app)
       .get('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
     expect(listResponse.status).toBe(200);
     const returnedIds = listResponse.body.watchlists.map((w: { id: string }) => w.id);
@@ -268,7 +278,7 @@ describe('Watchlist CRUD contract', () => {
     // Create watchlist for tenant 1
     const createResponse = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId1)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId1))
       .send({
         name: 'Tenant 1 Watchlist',
         matchType: 'keyword',
@@ -282,7 +292,7 @@ describe('Watchlist CRUD contract', () => {
     // Tenant 2 should not see tenant 1's watchlist
     const listResponse = await request(app)
       .get('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId2);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId2));
 
     expect(listResponse.status).toBe(200);
     const returnedIds = listResponse.body.watchlists.map((w: { id: string }) => w.id);
@@ -291,7 +301,7 @@ describe('Watchlist CRUD contract', () => {
     // Tenant 2 should not be able to update tenant 1's watchlist
     const updateResponse = await request(app)
       .patch(`/v1/watchlists/${watchlistId}`)
-      .set('X-Tenant-Id', tenantId2)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId2))
       .send({ name: 'Should Not Work' });
 
     // Should return 404 (not found) due to RLS, not 200
@@ -300,12 +310,12 @@ describe('Watchlist CRUD contract', () => {
     // Tenant 2 should not be able to delete tenant 1's watchlist
     const deleteResponse = await request(app)
       .delete(`/v1/watchlists/${watchlistId}`)
-      .set('X-Tenant-Id', tenantId2);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId2));
 
     expect(deleteResponse.status).toBe(404);
   });
 
-  it('AC8: POST /v1/watchlists without X-Tenant-Id header returns 400', async () => {
+  it('AC8: POST /v1/watchlists with no authenticated identity returns 401', async () => {
     const response = await request(app)
       .post('/v1/watchlists')
       .send({
@@ -315,22 +325,20 @@ describe('Watchlist CRUD contract', () => {
         platformIds: ['gnews'],
       });
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toContain('X-Tenant-Id');
+    expect(response.status).toBe(401);
   });
 
-  it('AC9: GET /v1/watchlists without X-Tenant-Id header returns 400', async () => {
+  it('AC9: GET /v1/watchlists with no authenticated identity returns 401', async () => {
     const response = await request(app).get('/v1/watchlists');
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toContain('X-Tenant-Id');
+    expect(response.status).toBe(401);
   });
 
-  it('AC10: PATCH /v1/watchlists/:id without X-Tenant-Id header returns 400', async () => {
+  it('AC10: PATCH /v1/watchlists/:id with no authenticated identity returns 401', async () => {
     const tenantId = randomUUID();
     const createResponse = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'Test',
         matchType: 'keyword',
@@ -343,15 +351,14 @@ describe('Watchlist CRUD contract', () => {
       .patch(`/v1/watchlists/${watchlistId}`)
       .send({ name: 'Updated' });
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toContain('X-Tenant-Id');
+    expect(response.status).toBe(401);
   });
 
-  it('AC11: DELETE /v1/watchlists/:id without X-Tenant-Id header returns 400', async () => {
+  it('AC11: DELETE /v1/watchlists/:id with no authenticated identity returns 401', async () => {
     const tenantId = randomUUID();
     const createResponse = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'Test',
         matchType: 'keyword',
@@ -362,8 +369,7 @@ describe('Watchlist CRUD contract', () => {
     const watchlistId = createResponse.body.id;
     const response = await request(app).delete(`/v1/watchlists/${watchlistId}`);
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toContain('X-Tenant-Id');
+    expect(response.status).toBe(401);
   });
 
   it('AC12: PATCH /v1/watchlists/:id with non-existent id returns 404', async () => {
@@ -372,7 +378,7 @@ describe('Watchlist CRUD contract', () => {
 
     const response = await request(app)
       .patch(`/v1/watchlists/${nonExistentId}`)
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({ name: 'Updated' });
 
     expect(response.status).toBe(404);
@@ -384,7 +390,7 @@ describe('Watchlist CRUD contract', () => {
 
     const response = await request(app)
       .delete(`/v1/watchlists/${nonExistentId}`)
-      .set('X-Tenant-Id', tenantId);
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId));
 
     expect(response.status).toBe(404);
   });
@@ -394,7 +400,7 @@ describe('Watchlist CRUD contract', () => {
 
     const response = await request(app)
       .post('/v1/watchlists')
-      .set('X-Tenant-Id', tenantId)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
       .send({
         name: 'Minimal Watchlist',
         matchType: 'keyword',

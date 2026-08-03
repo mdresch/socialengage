@@ -7,7 +7,7 @@ description: Bearer-token validation against Microsoft Entra External ID's real 
 
 ## What this is
 
-Standalone Express middleware (`createEntraAuthMiddleware`) that validates an `Authorization: Bearer` token's signature and issuer against Microsoft Entra External ID's real JWKS endpoint, using standard OIDC/JWT verification (`jose`) only — never an Entra-specific SDK or Graph API call. On success it attaches `req.auth = { sub }` (an opaque string) and calls `next()`; on any failure it responds `401` and never calls `next()`. It is **not yet mounted** on the real `/v1` router — that wiring, and retiring `X-Tenant-Id`, is Story 5.10's job (ADR-0033).
+Standalone Express middleware (`createEntraAuthMiddleware`) that validates an `Authorization: Bearer` token's signature and issuer against Microsoft Entra External ID's real JWKS endpoint, using standard OIDC/JWT verification (`jose`) only — never an Entra-specific SDK or Graph API call. On success it attaches `req.auth = { sub, email }` (both opaque strings — `email` added by Story 5.10 for `resolveIdentity()`'s own invite-link lookup) and calls `next()`; on any failure it responds `401` and never calls `next()`. **Mounted as of Story 5.10** — not directly, but composed inside `createTenantAuthMiddleware()` (`.claude/skills/tenant-auth-middleware/SKILL.md`), which is what's actually wired onto the `/v1` router stack.
 
 ## Governing ADRs and Stories
 
@@ -21,7 +21,7 @@ Standalone Express middleware (`createEntraAuthMiddleware`) that validates an `A
 
 ## How to extend this safely
 
-- **Wiring into the real request path (Story 5.10):** mount `createEntraAuthMiddleware(...)` once, at the top of the `/v1` router stack — not per-route — per ADR-0029 §2's "one piece of middleware, applied once" design. Do not add a second, parallel auth check anywhere else.
+- **Wiring into the real request path — done, Story 5.10.** `createTenantAuthMiddleware()` composes this function unchanged with `resolveIdentity()` and is mounted once, at the top of the `/v1` router stack. Do not add a second, parallel auth check anywhere else, and do not call `createEntraAuthMiddleware` directly from a new route — go through `tenant-auth-middleware`.
 - **Identity resolution (Story 5.9):** consume `req.auth.sub` as an opaque string only. Never parse it, never assume a shape, never use it directly as a `tenantId` — it is looked up against `users.external_subject` (candidate ADR #4 / ADR-0032), not trusted on its own.
 - **Config values** (`issuer`, `jwksUri`, `audience`) are real, tenant-specific strings — see `.env.example`'s `ENTRA_*` vars. `jose`'s `createRemoteJWKSet` caches keys internally; do not add a second JWKS-fetching mechanism.
 
@@ -33,6 +33,6 @@ Standalone Express middleware (`createEntraAuthMiddleware`) that validates an `A
 
 ## Known gaps / deferred work
 
-- **Not mounted anywhere yet** — every existing `/v1` route still trusts `X-Tenant-Id` exclusively (Story 1.6, etc.). Retiring that is Story 5.10 (ADR-0033), which also has its own named "real, substantial rework" item for the ~130+ existing contract tests that set `X-Tenant-Id` directly.
+- **Now mounted (Story 5.10)** — see `.claude/skills/tenant-auth-middleware/SKILL.md`. `X-Tenant-Id` no longer has any trust role anywhere in this codebase. This bullet is kept, corrected, rather than deleted, per this doc series' "don't rewrite history" convention.
 - **The `oid`-vs-`sub` question (ADR-0029's own Open Question) is only partially informed by this story.** This story's real, live-tenant test proved `oid` **is** present for a **client-credentials (app-only)** token, equal to `sub` — but ADR-0029's actual question was about **interactive user sign-in ID tokens**, which follow different claim rules. Still unverified; whoever builds Story 5.9's actual sign-in flow should check a real interactive-flow token before relying on `oid` for anything.
 - **Token revocation/refresh is out of scope** — this middleware only validates whatever token it's handed; session/refresh-token handling belongs to whichever app (the admin UI) performs the interactive sign-in.

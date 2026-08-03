@@ -40,6 +40,11 @@
 // within one test process instead — same "prove the mechanism" pattern this
 // session has used throughout).
 
+// 2026-08-03 — Story 5.10 (ADR-0033): tenant identity now comes from
+// X-Test-Identity (via testAuthBypassMiddleware, NODE_ENV==='test' only),
+// not X-Tenant-Id — see .claude/skills/tenant-auth-middleware/SKILL.md.
+// Business-logic assertions below are otherwise unchanged.
+
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -48,6 +53,7 @@ import { createApp } from '../../src/http/app';
 import { getPool, closePool } from '../../src/db/pool';
 import { getAdminPool, closeAdminPool } from '../../src/db/adminPool';
 import { withTenant } from '../../src/db/withTenant';
+import { testIdentityHeaderValue } from '../../src/testUtils/testIdentityHeader';
 import { startIngestionRun, completeIngestionRun } from '../../src/ingestion/ingestionRunStore';
 import { insertSocialPost } from '../../src/posts/socialPostStore';
 import { upsertAuthor } from '../../src/authors/authorStore';
@@ -87,7 +93,7 @@ describe('Story 4.4 — derived-data caching and refresh strategy contract', () 
     const tenantId = randomUUID();
     await recordRun(tenantId, 'succeeded');
 
-    const res = await request(app).get(`/v1/connectors/${platformId}`).set('X-Tenant-Id', tenantId);
+    const res = await request(app).get(`/v1/connectors/${platformId}`).set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('healthy');
     expect(res.body).toHaveProperty('lastSuccessfulFetchAt');
@@ -142,7 +148,7 @@ describe('Story 4.4 — derived-data caching and refresh strategy contract', () 
 
     // The module-level shared cache (what the router actually uses) supports
     // the same flush operation.
-    await request(app).get(`/v1/connectors/${platformId}`).set('X-Tenant-Id', tenantId);
+    await request(app).get(`/v1/connectors/${platformId}`).set('X-Test-Identity', testIdentityHeaderValue(tenantId));
     expect(() => flushConnectorHealthCache()).not.toThrow();
   });
 

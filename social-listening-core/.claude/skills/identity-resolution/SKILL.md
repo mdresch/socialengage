@@ -7,7 +7,7 @@ description: The `users`/`platform_admins` tables, `identity_resolver_role` (a f
 
 ## What this is
 
-`resolveIdentity()` is the first thing a real authenticated request does, before any tenant-scoped query — it turns a validated token's `sub`/`email` claims into `{ type: 'tenant_user', tenantId, userId, role }`, `{ type: 'platform_admin', adminId }`, or `null` (rejected). It reads through `identity_resolver_role`, a fourth Postgres role alongside `app_user`/`platform_admin_role`/the migration superuser — `BYPASSRLS`, column-scoped `SELECT`-only on `users`/`platform_admins`, no write grant at all (ADR-0032 §5). Not yet mounted on any real HTTP route — that's Story 5.10's job, alongside retiring `X-Tenant-Id`.
+`resolveIdentity()` is the first thing a real authenticated request does, before any tenant-scoped query — it turns a validated token's `sub`/`email` claims into `{ type: 'tenant_user', tenantId, userId, role }`, `{ type: 'platform_admin', adminId }`, or `null` (rejected). It reads through `identity_resolver_role`, a fourth Postgres role alongside `app_user`/`platform_admin_role`/the migration superuser — `BYPASSRLS`, column-scoped `SELECT`-only on `users`/`platform_admins`, no write grant at all (ADR-0032 §5). **Mounted as of Story 5.10** — composed inside `createTenantAuthMiddleware()` (`.claude/skills/tenant-auth-middleware/SKILL.md`), the actual middleware wired onto the `/v1` router stack, alongside retiring `X-Tenant-Id`.
 
 ## Governing ADRs and Stories
 
@@ -23,7 +23,7 @@ description: The `users`/`platform_admins` tables, `identity_resolver_role` (a f
 
 ## How to extend this safely
 
-- **Story 5.10 (retire `X-Tenant-Id`):** call `resolveIdentity({ sub, email })` once per request, immediately after token validation (`entraAuthMiddleware`) and before any `withTenant()` call. A `null` result is a 401/403 — this component only proves the resolution logic, it does not itself reject an HTTP request.
+- **Story 5.10 (retire `X-Tenant-Id`) — done.** `resolveIdentity({ sub, email })` is called once per request, inside `createTenantAuthMiddleware()`, immediately after token validation and before any `withTenant()` call. A `null` result is a `403` (`tenant-auth-middleware/SKILL.md`).
 - **A real write triggered by resolution (the first-sign-in link) always runs through the ordinary `withTenant(tenantId, ...)` `app_user` path** — never add a write capability to `identity_resolver_role` to "simplify" this. See "Load-bearing constraints" below for why.
 - **Provisioning a real `platform_admins` row** is deliberately not designed by ADR-0032 or built here — this component's own contract inserts fixture rows directly via `platformAdminPool`, the same way Story 5.7's contract handles its own fixtures. A real provisioning flow is future work, not a gap in this story.
 - **`access_ends_at`'s audit trail** is not built here (ADR-0032 §9's own deferral) — `setAccessEndsAt()` performs the write; wiring it through whatever audit mechanism eventually resolves ADR-0030 §5/ADR-0031's shared Open Question is a later story's job, not silently invented here.
@@ -38,7 +38,7 @@ description: The `users`/`platform_admins` tables, `identity_resolver_role` (a f
 
 ## Known gaps / deferred work
 
-- **Not mounted on any real HTTP route** — Story 5.10's own job, alongside retiring `X-Tenant-Id` as a trust mechanism.
+- **Now mounted (Story 5.10)** — see `.claude/skills/tenant-auth-middleware/SKILL.md`. Kept, corrected, not deleted, per this doc series' "don't rewrite history" convention.
 - **No real `platform_admins` provisioning flow** — not designed by ADR-0032, not built here.
 - **`access_ends_at` writes are not audited** — ADR-0032 §9's own named Open Question, deferred to whichever future work resolves ADR-0030 §5/ADR-0031's shared audit-log question.
 - **Tenant Reader / Tenant Business Analyst have no separate `role` value** — both map to `role = 'tenant_user'` in v1, per ADR-0032 §4's own deliberate deferral, not an oversight.

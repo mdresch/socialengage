@@ -9,21 +9,19 @@ import {
   UpdateWatchlistInput,
   Watchlist,
 } from '../../../watchlists/watchlistStore';
+import { requireTenantUser } from '../../auth/requireTenantUser';
 
 export const watchlistsRouter = Router();
 
 /**
  * POST /v1/watchlists — create a new watchlist for the current tenant.
- * Tenant identity comes from the X-Tenant-Id header placeholder (Phase 1,
- * see .claude/skills/posts-api/SKILL.md Known gaps). Returns 201 with the
- * created watchlist, including generated id and timestamps.
+ * Tenant identity comes from the resolved, token-authenticated caller
+ * (Story 5.10) via requireTenantUser() — never a client-supplied header.
+ * Returns 201 with the created watchlist, including generated id and timestamps.
  */
 watchlistsRouter.post('/', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const input: CreateWatchlistInput = {
     name: req.body.name,
@@ -60,15 +58,13 @@ watchlistsRouter.post('/', async (req, res) => {
 
 /**
  * GET /v1/watchlists — list all watchlists for the current tenant.
- * Tenant identity comes from the X-Tenant-Id header placeholder.
- * Supports optional matchType query parameter to filter by match type.
+ * Tenant identity comes from the resolved, token-authenticated caller
+ * (Story 5.10) via requireTenantUser(). Supports optional matchType query
+ * parameter to filter by match type.
  */
 watchlistsRouter.get('/', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const options = {
     matchType: typeof req.query.matchType === 'string' ? req.query.matchType : undefined,
@@ -88,11 +84,8 @@ watchlistsRouter.get('/', async (req, res) => {
  * Returns 404 if the watchlist doesn't exist or belongs to a different tenant.
  */
 watchlistsRouter.patch('/:id', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   const input: UpdateWatchlistInput = {
     name: req.body.name,
@@ -133,11 +126,8 @@ watchlistsRouter.patch('/:id', async (req, res) => {
  * to a different tenant.
  */
 watchlistsRouter.delete('/:id', async (req, res) => {
-  const tenantId = req.header('X-Tenant-Id');
-  if (!tenantId) {
-    res.status(400).json({ error: 'X-Tenant-Id header is required.' });
-    return;
-  }
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
 
   try {
     const deleted = await deleteWatchlist(tenantId, req.params.id);
