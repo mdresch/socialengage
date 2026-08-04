@@ -4,16 +4,29 @@
   "private": true,
   "description": "Social Listening / Insights admin UI. Talks to social-listening-core exclusively through its REST API; never accesses the database directly (ADR-0001). Independently deployable from social-listening-core.",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
     "test": "jest",
     "test:contracts": "jest contracts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@types/jest": "30.0.0",
     "@types/node": "26.1.2",
+    "@types/react": "19.2.4",
+    "@types/react-dom": "19.2.4",
+    "dotenv": "17.4.2",
     "jest": "30.4.2",
     "ts-jest": "29.4.12",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "jose": "5.10.0",
+    "next": "16.3.0",
+    "openid-client": "6.8.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }
