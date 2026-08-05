@@ -33,7 +33,7 @@ const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 // in this environment: qwen2.5:3b (~1.3GB buffer) and llama3.1:8b (~3.4GB buffer) both failed
 // with CPU_REPACK allocation errors, suggesting tight available memory generally right now,
 // not a model-size-specific problem. Override with --model once more headroom is available.
-const DEFAULT_MODEL = 'qwen2.5:0.5b';
+const DEFAULT_MODEL = 'qwen3.5:9b';
 
 function argValue(flag) {
   const i = process.argv.indexOf(flag);

@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# Queues every commit for the Ideal Manager's own review — never blocking (the commit
+# has already succeeded by the time this runs), never an API call (just a fast local
+# file append). The Ideal Manager (.claude/agents/ideal-manager.md) has no standalone
+# API-invocation script the way the external reviewers do — it's a Claude Code-native
+# subagent, so nothing can actually run the review from a plain shell hook. This hook
+# only leaves a marker; a Claude Code session working in this repo checks
+# docs/management/pending-manager-reviews.md and runs the review when present, per
+# ideal-manager.md's own instructions.
+#
+# Post-commit, not pre-commit: pre-commit runs before the commit object exists, so
+# there is no stable hash yet to queue a review against.
+
+QUEUE_FILE="docs/management/pending-manager-reviews.md"
+mkdir -p "$(dirname "$QUEUE_FILE")"
+
+if [ ! -f "$QUEUE_FILE" ]; then
+  {
+    echo "# Pending Manager Reviews"
+    echo ""
+    echo "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Ideal Manager (\`.claude/agents/ideal-manager.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note pointing to \`docs/management/manager-register.md\`'s matching finding, never deleted."
+    echo ""
+    echo "---"
+    echo ""
+  } > "$QUEUE_FILE"
+fi
+
+HASH=$(git rev-parse HEAD)
+SHORT_HASH=$(git rev-parse --short HEAD)
+SUBJECT=$(git log -1 --format=%s)
+FILES=$(git diff-tree --no-commit-id --name-only -r "$HASH" | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
+DATE=$(date -u +%Y-%m-%d)
+
+{
+  echo "## ${DATE} — ${SHORT_HASH} — ${SUBJECT}"
+  echo ""
+  echo "- **Full commit:** \`${HASH}\`"
+  echo "- **Files touched:** ${FILES}"
+  echo "- **Status:** Pending review"
+  echo ""
+} >> "$QUEUE_FILE"
+
+exit 0

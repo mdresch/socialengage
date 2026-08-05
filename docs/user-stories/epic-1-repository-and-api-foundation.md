@@ -122,3 +122,49 @@
 - `X-Tenant-Id` is no longer read or trusted by any of these endpoints — caller identity comes exclusively from the `Authorization: Bearer` token resolved per ADR-0029/ADR-0033.
 
 **Note:** this story supersedes Story 1.6's authorization and schema shape, per ADR-0034's own Decision and Consequences — it does not represent new, additive scope on top of an unrelated Story 1.6, it is the rework `Business-Case-v6.0.md` §6 already anticipated as necessary before real auth existed.
+
+---
+
+## Story 1.8 — Tenant self-view REST endpoint
+
+**Source:** ADR-0031 (Accepted) · **Status:** Ready — no new ADR needed. `tenants.md`'s own RLS policy (Story 5.8, built) already proves a tenant-scoped session sees exactly its own row at the database layer; this story only adds the HTTP route calling into it, the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: Story 5.8's own stated purpose is "viewing my own tenant's settings needs no special-case authorization path," but its Acceptance Criteria only prove the RLS policy returns one row at the DB layer (`contracts/epic-5/story-5.8.tenants-table-rls.contract.test.ts`) — no route in any `versions/v1/*Router.ts` file exposes it over HTTP, confirmed directly against the current router files.
+
+**As a** Tenant-Admin or tenant user,
+**I want** `GET /v1/tenants/me` to return my own tenant's name, status, and seat counts,
+**so that** I can see my own tenant's settings without any special-case authorization path beyond the ordinary tenant-scoped session I already use for every other request.
+
+**Acceptance Criteria**
+- `GET /v1/tenants/me` is mounted in `createV1Router()` behind the same `authMiddleware` every other substantive `/v1` route uses (the same pattern Story 5.11 already established for `GET /v1/me`) — not a second, parallel auth mechanism.
+- A request with a missing, invalid, expired, or wrong-issuer bearer token is rejected `401` before this route's own handler runs, inherited from the shared middleware, not reimplemented.
+- A `platform_admin` resolved identity (Story 5.11's `GET /v1/me` shape) receives `403` — this route is for a resolved tenant user/Tenant-Admin only, consistent with Platform Admin's own zero-tenant-content-access boundary (ADR-0030 §2); Platform Admin's own equivalent view is Story 5.12, not this route.
+- On success, returns `200` with `{ id, name, status, licenseSeatCount, activeSeatCount, domain, createdAt }` — read via the ordinary `withTenant(resolvedTenantId, ...)` path (ADR-0015), never `platform_admin_role`, proven by a test confirming the query runs entirely under `app_user`.
+- Returns exactly one row — the caller's own tenant — never any other tenant's, proven by a two-tenant test.
+- `GET` only — no `POST`/`PATCH`/`DELETE` at this path; updating `status`/`license_seat_count`/`domain` remains Platform-Admin-only (Story 5.12), and this route does not expose a write path around that boundary.
+- This story is additive-only: mounted alongside `/posts`, `/topics`, `/connectors`, `/watchlists`, `/tenants/users` (Story 1.9), and `/me` in `createV1Router()`; no existing route's behavior changes.
+
+---
+
+## Story 1.9 — User invitation and offboarding REST surface
+
+**Source:** ADR-0032 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0032 §6 (invite/link flow) and §9 (`access_ends_at`) already fully designed the schema, RLS, and seat-enforcement mechanics this story exposes over HTTP; the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: Story 5.9's own Acceptance Criteria assume "Tenant-Admin creates a `users` row in `invited` status" and that `access_ends_at` gets set for offboarding, but no story builds the endpoint for either — the same shape of gap Story 1.5 already closed for watchlists, confirmed directly against the current router files (no `/v1/tenants/users` route exists anywhere).
+
+**As a** Tenant-Admin,
+**I want** REST endpoints to invite a new user into my tenant, list my tenant's users, and end a user's access,
+**so that** I can manage who belongs to my tenant without engineering help, respecting my tenant's own license-seat ceiling.
+
+**Acceptance Criteria**
+- `POST /v1/tenants/users` creates a `users` row in `invited` status (`external_subject = NULL`, `email` from the request body) — restricted to callers whose resolved role is `tenant_admin`; returns `403` for a `tenant_user` caller.
+- `POST /v1/tenants/users` rejects the invite with `409` once `active_seat_count >= license_seat_count` for the caller's own tenant (`tenants/SKILL.md`'s own sanctioned `incrementActiveSeatCount()` enforcement point, Story 5.8's AC5) — proven by a test that fills every licensed seat and confirms the next invite is rejected, not silently accepted past the ceiling.
+- `POST /v1/tenants/users` does not increment `active_seat_count` at invite time — per ADR-0032 §6, a seat is occupied once the invited user actually links their `external_subject` at first sign-in (not at invite creation); this story's contract must prove the counter only moves on activation, never on invite alone.
+- `GET /v1/tenants/users` lists the caller's own tenant's users (RLS-filtered, per ADR-0032 §2), including `invited` and `active` rows — available to both `tenant_admin` and `tenant_user` resolved identities (read-only visibility, no role gate on `GET`).
+- `PATCH /v1/tenants/users/:id` sets, clears, or updates `access_ends_at` — restricted to `tenant_admin` callers only; returns `403` for a `tenant_user` attempting to modify any user's `access_ends_at`, including their own.
+- `PATCH /v1/tenants/users/:id` decrements `active_seat_count` when `access_ends_at` is set to a value that is now-or-past (an immediate offboarding), and does not decrement it for a future-dated `access_ends_at` (a scheduled expiration not yet in effect) — per ADR-0032 §9's own active/ended semantics, proven by both cases in this story's contract.
+- Clearing `access_ends_at` back to `NULL` via `PATCH` re-increments `active_seat_count`, subject to the same seat-ceiling check `POST` uses — reactivating a user past the tenant's own license ceiling is rejected `409`, the same as a fresh invite would be.
+- Every endpoint is RLS-scoped to the caller's own tenant — a request cannot invite into, list, or modify a user in any other tenant, proven by a two-tenant isolation test.
+- Every write these endpoints perform is durably recorded per Story 5.17's own audit mechanism (`user_access_audit_log`, or equivalent) for `access_ends_at` changes specifically — this story is the first place that table actually gets written to; Story 5.17 designs the table, this story is one of (potentially several) callers of it.
+
+**Named as a required, practical dependency, not a blocker to drafting:** Story 5.17 (audit trail for `access_ends_at` writes) should exist before this story's `PATCH` endpoint ships to production, so every `access_ends_at` change is audited from day one rather than retrofitted — the same "name the dependency, don't silently build past it" discipline this series applies elsewhere (e.g. Story 6.6 naming its own backend REST gap). This story's own Acceptance Criteria can still be written and its contract built independently; the audit call is a real, load-bearing part of AC8 above, not a separate follow-up.

@@ -53,6 +53,8 @@ Retention is tiered — hot primary storage plus cheaper archival storage — ra
 - Is monthly partitioning the right granularity, or is that premature before real ingestion-volume data exists?
 - Tenant offboarding and right-to-erasure handling is out of scope here and needs its own decision.
 
+**Pending supersession note, added 2026-08-05 — not yet in effect, ADR-0039 is still Proposed.** [ADR-0039](0039-tenant-offboarding-data-lifecycle-export-and-deletion.md), if accepted, resolves this Open Question directly and decides one narrow, scoped exception to this ADR's own "`IngestionRun` archived, never hard-deleted" Decision text — for a deleted tenant's own `IngestionRun` rows only, once every `SocialPost` row referencing them is also deleted in the same action. This ADR's own Decision and Consequences text is unaffected and stays exactly as written; the general rule (archive, don't hard-delete `IngestionRun` for an *active* tenant) is unchanged. Per this file's own governance-table convention, this note takes effect only once ADR-0039 is actually accepted, not before.
+
 ## Amendment Log
 
 Changes to the *implementation defaults* (specific day/month counts, partitioning granularity, which fields fall in which tier) are logged here, dated, instead of superseding this ADR. Superseding is only needed if the underlying decision changes — e.g., moving away from tiered hot/archival storage entirely, or archiving `IngestionRun` stops being required because the FK relationship in ADR-0005 changes.

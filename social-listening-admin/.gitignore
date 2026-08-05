@@ -5,3 +5,5 @@ coverage/
 .next/
 playwright-report/
 test-results/
+.vercel
+.env*

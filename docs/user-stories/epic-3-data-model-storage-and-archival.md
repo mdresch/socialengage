@@ -89,3 +89,26 @@
 - A `Watchlist.booleanQuery` is parsed into an AST with `AND`/`OR`/`NOT`/`TERM`/`HASHTAG`/`ACCOUNT` node types before any connector or fallback matcher evaluates it.
 - Each connector declares `supportedQueryFeatures: AstNodeType[]`; a query containing a node type the connector doesn't support falls back to post-fetch matching for that platform, and this fallback is visible on the connector/watchlist status view.
 - A test asserting the same `Watchlist` against a mock platform with full native support and a mock platform with none produces identical matched posts for identical input data.
+
+---
+
+## Story 3.7 — Tenant offboarding data lifecycle: export and deletion
+
+**Source:** ADR-0039 (Proposed, drafted this same batch) · **Status:** Blocked — pending ADR-0039's acceptance. A genuinely undecided, hard-to-reverse data-deletion/compliance-adjacent question — twice already named and twice already declined by an Accepted ADR (ADR-0018, ADR-0031) as needing its own decision, not ordinary CRUD/UI surface.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, twice-named gap: ADR-0018's own Decision text states outright "tenant offboarding / right-to-erasure requests... deserves its own decision"; ADR-0031 names "Tenant deletion/offboarding" as its own out-of-scope Open Question. Story 5.7 (built) can suspend a tenant, but nothing addresses what happens to a suspended tenant's data — every table (`social_posts`, `authors`, `ingestion_runs`, `watchlists`, `platform_credentials`, `users`) continues to exist indefinitely.
+
+**As** Platform Admin, offboarding a tenant that has left the platform,
+**I want** to give that tenant a chance to export their own data, then delete it completely — across primary storage, archival storage, and Key Vault — in a bounded, auditable way,
+**so that** a departed tenant's data doesn't linger forever, and the deletion actually reaches every tier ADR-0018's own retention mechanism created, not just the hot Postgres rows.
+
+**Acceptance Criteria**
+- `POST /v1/admin/tenants/:id/export` (Platform-Admin-only, `platform_admin_role`) triggers a structured export of the named tenant's `social_posts` (including archived `rawPayload` resolved via its blob pointer), `authors`, `watchlists`, and `ingestion_runs` (including archived rows) — available before any deletion action against that tenant.
+- `POST /v1/admin/tenants/:id/delete` (Platform-Admin-only, two-step confirmation — an explicit, distinct action from suspension, never a side effect of `PATCH .../status`) initiates deletion; the actual row/blob removal runs as a bounded, asynchronous, partition-aware job (ADR-0039 §4), not a single synchronous transaction.
+- Deletion hard-deletes `users`, `watchlists`, and `platform_credentials` rows for the target tenant, and actively revokes/deletes the corresponding secrets from Key Vault — proven by a test confirming a previously-valid credential is unreadable from Key Vault after deletion completes, not merely dereferenced in Postgres.
+- Deletion hard-deletes `social_posts` and `authors` rows (hot and, for `rawPayload`, archived-blob tier) for the target tenant.
+- Deletion hard-deletes `ingestion_runs` rows for the target tenant — both hot and already-archived-out-of-Postgres rows (ADR-0018's 2026-07-30 amendment) — a named, scoped exception to ADR-0018's own general "archived, never hard-deleted" rule (ADR-0039 §3), proven only once every `social_posts` row referencing a given run is also gone.
+- `platform_admin_audit_log` and `domain_signup_attempts` rows referencing the deleted tenant are retained, not deleted — proven by a test confirming they remain queryable (by `tenants.id` as an unenforced tombstone reference) after the tenant itself is gone.
+- A deletion in progress or completed for a tenant is reflected in that tenant's own `status` (or equivalent) so a stale reference elsewhere in the system (e.g. a lingering session) fails cleanly rather than silently continuing to operate against partially-deleted data.
+- Every export and deletion action is durably logged via the existing `platform_admin_audit_log`/`logPlatformAdminAction()` mechanism (ADR-0030 §5) — reusing, not duplicating, the existing audit path.
+- No self-service, Tenant-Admin-initiated deletion path exists — both endpoints above are reachable only through `platform_admin_role`, proven by a test confirming no `app_user` session can reach either.

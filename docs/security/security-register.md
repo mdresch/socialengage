@@ -279,3 +279,45 @@ No further ADR revision made this pass — continuing to revise for restated fin
 No new trust boundary gaps fitting the specified criteria were identified in the material under review beyond those already explicitly acknowledged, tracked, or resolved in the project's documentation and security register. The changes primarily focus on documenting the acceptance of ADRs that have undergone extensive security review and consolidating existing known open items.
 
 ---
+
+## 2026-08-05 — reviewed stdin (e.g. git diff)
+
+Here are the security and architecture findings from the review of ADR-0038, ADR-0039, and ADR-0040:
+
+### Resolution of Previous Findings
+
+No previous security findings from the provided "Existing Security Register" were explicitly addressed or resolved by the material in ADR-0038, ADR-0039, or ADR-0040. The ADRs do acknowledge and cross-reference several existing open items from project documentation (e.g., GDPR data processing, lack of outbound email, general platform admin authorization, volumetric abuse concerns) but do not claim to resolve them within their scope.
+
+### New Findings
+
+1.  **Boundary/Asset Affected:** Compliance Boundary, Data Flow Boundary (ADR-0038: AI enrichment provider selection)
+    **Specific Gap:** ADR-0038 Decision §4 explicitly names, but does not resolve, the GDPR-adjacent third-party data processing question, acknowledging that enrichment sends potentially personal post content to third-party AI vendors (Microsoft or LLM vendors).
+    **Concrete Exploit Scenario:** Without a defined and verified data processing agreement or control, the platform might inadvertently violate GDPR Article 5 (principles relating to processing of personal data) or Article 28 (processor contracts) by sending personal data to a third-party AI processor without adequate legal or technical safeguards, leading to compliance penalties or data breach notifications.
+    **Suggested Control:** Mandate a formal legal and technical review to establish a verified data processing agreement and corresponding technical controls with all chosen AI providers, or clarify the project's stance on processing public personal data for enrichment purposes within legal frameworks.
+
+2.  **Boundary/Asset Affected:** Compliance Boundary, Data Portability Boundary (ADR-0039: Tenant offboarding data lifecycle)
+    **Specific Gap:** ADR-0039's Open Questions explicitly state that "Formal legal review of whether this ADR's own design actually satisfies GDPR Article 17/20 as a matter of law" is "out of this ADR's own competence; named as a required follow-up, not resolved here."
+    **Concrete Exploit Scenario:** A tenant attempting to exercise their right to erasure (GDPR Article 17) or data portability (GDPR Article 20) might find that the technical mechanisms implemented by SocialEngage, while designed with the *spirit* of these articles in mind, do not legally satisfy the stringent requirements, potentially leading to legal challenge, fines, or reputational damage for SocialEngage.
+    **Suggested Control:** Prioritize a formal legal review of the proposed tenant offboarding and data export mechanisms, ensuring that the implemented technical controls are formally certified as compliant with GDPR Article 17 and 20 by competent legal counsel.
+
+3.  **Boundary/Asset Affected:** Privilege Boundary, Operational Security (ADR-0039: Tenant offboarding data lifecycle)
+    **Specific Gap:** ADR-0039 Decision §1 assigns the highly privileged action of "Tenant deletion" exclusively to the `platform_admin_role`, but the material does not introduce or claim to implement the application-layer authorization that controls *who* can invoke `platform_admin_role` actions, which is an existing, critical open gap (`2026-08-03 (second entry), Finding 2` in the security register).
+    **Concrete Exploit Scenario:** If an unauthorized actor bypasses the currently undefined application-layer authorization for platform admin functions and gains the ability to initiate actions as `platform_admin_role`, they could trigger an irreversible tenant deletion, leading to catastrophic data loss for a tenant without proper entitlement.
+    **Suggested Control:** Ensure that the implementation of tenant deletion via `platform_admin_role` is strictly gated by the full implementation of platform admin authorization, preventing any API endpoint or internal service from triggering this action without explicit, authenticated, and role-verified platform administrator approval.
+
+4.  **Boundary/Asset Affected:** Feature Availability, Operational Efficiency, Trust (ADR-0039: Tenant offboarding data lifecycle)
+    **Specific Gap:** ADR-0039 Open Questions notes that the "exact export format and delivery mechanism" are not decided, specifically highlighting that "this project has no outbound-email capability today, per ADR-0037's own already-named gap."
+    **Concrete Exploit Scenario:** If the chosen export mechanism relies on email delivery (e.g., an emailed link to a download) without the underlying email capability being implemented, tenants requesting data exports would be unable to receive their data, effectively blocking their ability to exercise data portability and potentially leading to tenant frustration, support burden, or compliance issues.
+    **Suggested Control:** Mandate the decision and implementation of a robust, non-email-dependent data export delivery mechanism (e.g., direct download from an authenticated Admin UI endpoint) concurrent with the tenant deletion feature, or prioritize the implementation of a secure, auditable outbound email capability specifically for this purpose.
+
+5.  **Boundary/Asset Affected:** Deployment Boundary, Operational Security, System Availability (ADR-0040: Self-service sign-up rate limiting)
+    **Specific Gap:** ADR-0040 Decision §2 explicitly defers the "Exact storage (in-process vs. shared)" for its rate-limiting counters, stating it's an "implementation default" and following precedent of deferring distributed state until a "real multi-instance need exists."
+    **Concrete Exploit Scenario:** In a future scenario where SocialEngage is deployed with multiple concurrent instances, an in-process rate-limiting counter would fail to synchronize across instances. An attacker could then bypass rate limits by distributing requests across the different instances, leading to the same volumetric abuse and resource exhaustion that the ADR is explicitly designed to prevent.
+    **Suggested Control:** Mandate a "fail-safe" approach where the rate-limiting mechanism defaults to a shared, distributed store (e.g., Redis, a dedicated database table) that can correctly synchronize counters across multiple instances from day one, or explicitly constrain initial deployment to a single instance with a clear, auditable warning against multi-instance deployment until a shared store is implemented.
+
+6.  **Boundary/Asset Affected:** Operational Visibility, Auditability (ADR-0040: Self-service sign-up rate limiting)
+    **Specific Gap:** ADR-0040 Decision §4 states that a `429` rate-limit rejection "does not, on its own, write a `domain_signup_attempts` row or trigger ADR-0037 §8c's escalation logic," and its Open Questions asks "Whether rejected-attempt counters (§4) should also flow into `platform_admin_audit_log`... not decided here."
+    **Concrete Exploit Scenario:** Without automatic logging of rate-limited attempts into an auditable system (like `platform_admin_audit_log`), platform administrators would lack crucial visibility into attempted volumetric abuse patterns, making it difficult to detect evolving attack vectors, tune rate-limiting thresholds, or conduct forensic analysis after a suspected attack.
+    **Suggested Control:** Implement mandatory, detailed logging of all rate-limited attempts into `platform_admin_audit_log`, ensuring that critical signals about abuse attempts are captured and available for review, analysis, and alert generation.
+
+---

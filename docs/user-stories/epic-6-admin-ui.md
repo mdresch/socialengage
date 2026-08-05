@@ -146,3 +146,60 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - **This story explicitly does not implement, and its own Acceptance Criteria do not require, any rate-limiting or abuse-prevention behavior** — ADR-0037 §7 names that as a precondition for exposing the backend endpoint to real, untrusted traffic, tracked there, not silently assumed satisfied by this UI-side story.
 
 **Named as required, not designed here** (restating ADR-0037's own list for this story's direct dependents): `POST /v1/tenants/self-service-signup` and its underlying `tenant_signup_role`/migration — real `social-listening-core` scope, for the AI Delivery Agent or Menno to build, following that project's own contract-first discipline, not designed or implemented by this document.
+
+---
+
+## Story 6.8 — Tenant-Admin: user invitation and management screen
+
+**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.9's real REST surface · **Status:** Ready — no new ADR needed, Story 1.5/6.3/6.4's own precedent for ordinary CRUD/UI surface against an already-real REST surface. Practically sequenced after Stories 1.9 and 6.2 (role-gating) both existing.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: no Epic 6 screen lets a Tenant-Admin invite anyone, despite the flow being designed at ADR level (ADR-0032 §6) and referenced as already-working in Story 5.9's own Acceptance Criteria — no screen exists to actually drive it.
+
+**As a** Tenant-Admin,
+**I want** a screen to invite new users into my tenant, see who belongs to it, and end a user's access,
+**so that** I can manage my own tenant's membership without calling the REST API directly.
+
+**Acceptance Criteria**
+- Lists all users for the current tenant (`GET /v1/tenants/users`, RLS-filtered per Story 1.9), showing email, role, status, and `access_ends_at` (or "active indefinitely" when `NULL`).
+- An invite form (`POST /v1/tenants/users`) is offered only when the signed-in session's resolved role is `tenant_admin` (Story 6.2's role-gating) — not rendered at all for a `tenant_user` session, consistent with Story 6.3's own UX-convenience framing (the real boundary stays Story 1.9's own `403`).
+- The invite form surfaces a clear, specific error when the tenant is at its license-seat ceiling (Story 1.9's `409`) — not a generic failure message.
+- Setting or clearing a user's `access_ends_at` (`PATCH /v1/tenants/users/:id`) requires an explicit confirm step before the call is made, distinguishing an immediate offboarding from a scheduled future expiration in the UI's own copy.
+- A `403` from the backend (e.g. a `tenant_user` session attempting an invite despite the UI's own role-gating) surfaces the real reason to the caller, the same pattern Story 6.3 already established.
+- This screen's own access-history view (if built here) reads Story 5.17's `user_access_audit_log` via its own read endpoint — named as a natural companion, not required by this story's own Acceptance Criteria to ship in the same pass.
+
+---
+
+## Story 6.9 — Tenant settings screen
+
+**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.8's real REST surface · **Status:** Ready — no new ADR needed, Story 1.5/6.3/6.4's own precedent. Practically sequenced after Story 1.8 exists.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Companion UI to Story 1.8 — no screen currently lets a Tenant-Admin or tenant user view their own tenant's own settings from the admin UI.
+
+**As a** Tenant-Admin or tenant user,
+**I want** to see my own tenant's name, status, domain, and seat counts from the admin UI,
+**so that** I don't have to call the REST API directly to know my own tenant's current state.
+
+**Acceptance Criteria**
+- Reads `GET /v1/tenants/me` (Story 1.8) and displays `name`, `status`, `domain`, `licenseSeatCount`, `activeSeatCount`, `createdAt` — read-only, no edit form (writes to `status`/`licenseSeatCount`/`domain` remain Platform-Admin-only, Story 5.12).
+- Visible to both `tenant_admin` and `tenant_user` resolved identities (Story 6.2's role-gating) — no role gate on this read-only view.
+- Seat counts are shown as "used of licensed" (e.g. "7 of 10 seats used"), not raw numbers alone, so a Tenant-Admin can see at a glance whether they're near their own license ceiling before attempting an invite (Story 6.8).
+- No tenant-content data (posts, watchlists, credentials) is shown on this screen — settings/administrative metadata only, consistent with this project's own "status views show status, not content" principle already applied to Story 6.5.
+
+---
+
+## Story 6.10 — Same-Domain Invite Assist view (Tenant-Admin dashboard)
+
+**Source:** ADR-0037 §8b (Accepted), against Story 5.16's real REST surface · **Status:** Ready — no new ADR needed, ADR-0037 §8b already exhaustively decided the mechanism this screen surfaces; only the screen itself is undesigned. Practically sequenced after Story 5.16 exists.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno. Renumbered from Menno's own proposed "Story 6.11" — his listed Epic 6 items (6.8, 6.9, 6.11) skip 6.10 with nothing named to fill it; corrected silently to the next actual sequential number in Epic 6, per this project's own numbering convention (see `docs/user-stories/README.md`'s dated note on this batch for the full accounting).** Closes ADR-0037 §8b's own explicitly-named gap: "which admin-UI story/screen owns building the Same-Domain Invite Assist — none of Epic 6's existing stories (6.1–6.6) name it."
+
+**As a** Tenant-Admin,
+**I want** to see same-domain sign-up attempts against my own tenant, with a one-click way to invite a legitimate colleague,
+**so that** a not-yet-invited person from my own organization's domain isn't invisible to me just because self-service sign-up rejected them.
+
+**Acceptance Criteria**
+- Reads `GET /v1/tenants/domain-signup-attempts` (Story 5.16), showing one item per domain (always the caller's own tenant's matched domain, per Story 5.16's own RLS scoping) with a distinct-verified-email count.
+- An item that has crossed ADR-0037 §8b's own escalation threshold is visually distinguished with materially more prominence than a first attempt — not just a bigger number in the same UI element, per ADR-0037 §8b's own decided treatment.
+- Expanding an item reveals the full list of distinct verified email addresses behind it (Story 5.16's own expand-on-demand data), each with a one-click "invite this person" action that pre-fills Story 6.8's own invite-creation form with that email — never an automatic invite, never an auto-join; the Tenant-Admin's own act of confirming the invite remains the only thing that actually grants access (ADR-0037 §8b).
+- Visible only to `tenant_admin` resolved identities (Story 6.2's role-gating) — `403`/not rendered for `tenant_user`.
+- No org-identifying detail about a *different* tenant is ever shown here — this view only ever surfaces attempts matched to the caller's own tenant's own domain, consistent with ADR-0037 §3's own anti-enumeration decision, which this screen must not accidentally undermine by displaying data cross-tenant.

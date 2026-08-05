@@ -1,0 +1,82 @@
+# ADR-0039: Tenant offboarding data lifecycle — export before deletion, retention interaction, and what "deleted" means across primary, archival, and credential storage
+
+**Status:** Proposed — drafted by the AI Business & Requirements Analyst persona. This persona does not hold ADR-acceptance authority; awaiting Menno's own review and acceptance before Story 3.7 can move to Ready.
+**Source:** Requested directly by Menno as part of a 16-item story-drafting batch. Confirmed directly against the codebase and prior ADRs that this gap is real and not yet designed anywhere: ADR-0018 (data retention/archival, Accepted) states outright, in its own Decision text, "**Explicitly not addressed by this ADR:** tenant offboarding / right-to-erasure requests (e.g. GDPR Article 17)... a distinct legal/compliance question... that deserves its own decision"; ADR-0031 (`tenants` table shape, Accepted) names "Tenant deletion/offboarding" as its own out-of-scope Open Question, cross-referenced to `docs/open-items-and-deferred-work.md` §C; and `docs/open-items-and-deferred-work.md` §C itself lists "Tenant offboarding / right-to-erasure (GDPR Article 17)" under "Explicitly out of scope (not deferred — a boundary, not a gap)." No ADR, story, or shipped code addresses what happens to a tenant's data once Story 5.7's tenant-suspension write occurs.
+
+## Context
+
+Story 5.7 (built) lets Platform Admin suspend a tenant (`tenants.status`), but suspension is not deletion — a suspended tenant's `social_posts`, `authors`, `ingestion_runs`, `watchlists`, `platform_credentials`, and `users` rows all continue to exist, fully intact, indefinitely. Nothing in this project currently answers:
+
+- What "delete a tenant" actually does to each of those tables, and to `platform_credentials`' own Key-Vault-stored secrets (ADR-0014).
+- Whether a tenant gets to export their own data before it's gone, and in what format.
+- How this interacts with ADR-0018's own tiered retention/archival mechanism — a `SocialPost` whose `rawPayload` has already moved to Blob Storage (post-90-days) and an `IngestionRun` whose row has already left Postgres entirely for the archival tier (post-18-months, per ADR-0018's own 2026-07-30 implementation-default note that `IngestionRun`'s archival is "the whole row leaves Postgres") both need a deletion story that accounts for data that may no longer be a simple Postgres row at all.
+- Whether this is even fully deletable given ADR-0005's audit-anchor design (`SocialPost.acquisitionId` referencing `IngestionRun`, already application-enforced only, not a DB constraint, per ADR-0018's own 2026-07-30 amendment) and ADR-0018's "archived, never hard-deleted" treatment of `IngestionRun` specifically.
+
+This is squarely ADR territory by this series' own established bar (ADR-0027/0028/0035/0036/0038's "hard-to-reverse, real security/compliance consequence, not just a new field/endpoint shape"): a real, irreversible data-deletion decision, a genuine GDPR-adjacent compliance question this project has twice already named and twice already declined to design (ADR-0018, ADR-0031), and a decision that must reconcile with an already-Accepted, already-implemented retention/archival mechanism rather than design in a vacuum.
+
+## Decision
+
+### 1. Tenant deletion is Platform-Admin-initiated only, following ADR-0030 §2's existing boundary
+
+Consistent with `tenants` already being the one table `platform_admin_role` administers (ADR-0030 §2, ADR-0031), a tenant-deletion action is triggered only through `platform_admin_role`, the same authority that already creates and suspends a tenant. This is not a new authorization decision — it extends an already-locked boundary to one more lifecycle action on the one table Platform Admin already administers, the same category ADR-0031 §3/ADR-0037 §9 already used for `status`/`license_seat_count`/`domain`.
+
+**A tenant cannot self-delete its own account via any self-service mechanism.** This is a deliberate, named limitation: an irreversible, cross-table deletion affecting every tenant-content table is not a self-service action at this project's current scale, consistent with ADR-0030 §3's own "narrowest possible" framing for Platform Admin's other exceptional actions. A future self-service deletion request could route to Platform Admin as a reviewed request (mirroring ADR-0030 §3's break-glass request/execute pattern) — named as a real possible future direction, not designed further here (Open Questions, below).
+
+### 2. Export before deletion — a self-serve data-portability path, not merely a Platform Admin convenience
+
+Before any deletion write occurs, the tenant's own current Tenant-Admin may trigger an export of that tenant's data — `social_posts` (including any still-hot `rawPayload`, and archived `rawPayload` resolved via its blob pointer per ADR-0018), `authors`, `watchlists`, and `ingestion_runs` (including archived rows, resolved from the archival tier) — as a downloadable, structured export (a bundled JSON/CSV export, exact format an implementation-time choice, not decided here). This satisfies GDPR Article 20 (data portability)'s general spirit without this ADR asserting formal legal compliance, which is out of this ADR's own competence to certify (see Open Questions).
+
+**Export is offered, not mandatory** — a tenant that never requests one is not blocked from being deleted once Platform Admin proceeds; a reasonable, configurable notice window (implementation default, not decided here) between a deletion request and its execution gives the tenant a real opportunity to export first, without making export a hard gate that could be used to indefinitely stall a legitimate offboarding.
+
+### 3. What "deleted" means, per table — hard delete where safe, archival-consistent handling where ADR-0018 already committed to non-destructive archival
+
+- **`users`, `watchlists`, `platform_credentials` (hot Postgres rows)** — hard-deleted. These carry no cross-tenant referential role and no other ADR has committed to preserving them past the tenant's own lifetime.
+- **`platform_credentials`' Key-Vault-stored secrets (ADR-0014)** — actively revoked/deleted from Key Vault, not merely dereferenced — leaving an orphaned live credential in Key Vault after its owning tenant is deleted would be a real, avoidable security exposure.
+- **`social_posts`, `authors` (hot Postgres rows)** — hard-deleted from primary storage. Archived `rawPayload` blobs (post-90-days, ADR-0018) belonging to a deleted tenant are also deleted from Blob Storage, not left orphaned — a tenant-deletion action is a real exception to ADR-0018's own "never discarded" guarantee, which that ADR's own Context frames as a default for an *active* tenant's ongoing operation, not a promise surviving the tenant's own deletion.
+- **`ingestion_runs` (including any already archived out of Postgres, per ADR-0018's 2026-07-30 amendment)** — also deleted, both the hot rows and the archival-tier copies. This is a deliberate, named departure from ADR-0018's own "archived, never hard-deleted" framing for `IngestionRun` generally: that framing exists to protect the FK-like reference other tenants'/this same tenant's own still-live `SocialPost` rows hold into it during ordinary operation, not to survive the same tenant's own deletion — once every `social_posts` row that referenced a given `IngestionRun` is itself deleted (this same action, same transaction/batch), the referential reason for `IngestionRun`'s special "archived not deleted" treatment no longer applies for that tenant's own runs specifically. **This does not amend or reopen ADR-0018's own Decision text** — see this ADR's own relation-note framing below; ADR-0018's general rule (archive, don't hard-delete `IngestionRun` for an *active* tenant) is unchanged, this ADR only decides the one case ADR-0018 itself already named as explicitly out of its own scope.
+- **`platform_admin_audit_log` and `domain_signup_attempts` rows referencing the deleted tenant** — retained, not deleted. These are Platform-Admin-owned/administrative audit records of actions that occurred, not the tenant's own content — deleting them would erase the historical record of the tenant's own provisioning/suspension/deletion lifecycle, which is exactly the kind of audit trail ADR-0030 §5 already requires to be durable. `tenants.id` itself is retained as a tombstone reference inside those log rows even after the `tenants` row itself is gone (an unenforced, informational reference only — no FK requiring the `tenants` row to still exist, consistent with `IngestionRun`'s own already-application-enforced-only reference pattern, ADR-0018's 2026-07-30 amendment).
+
+### 4. Deletion is asynchronous and bounded, not a single synchronous transaction
+
+Given the potential row volume (`social_posts`/`authors`/`ingestion_runs` are this project's own largest, unbounded tables per ADR-0018's Context), a single synchronous delete-everything transaction is both operationally risky (long-running locks, the same concern ADR-0018 §Mechanism already named for its own partition-detach approach) and a poor fit for this project's existing partition-based archival mechanism. **Deletion reuses ADR-0018's own partitioning mechanism where possible**: for a deleted tenant's rows within an already-monthly-partitioned table, a background job removes matching rows partition-by-partition (or, for partitions containing only that tenant's data in a future single-tenant-partition scheme — not designed here — a detach), bounded to complete within a stated, configurable SLA window (implementation default, not decided here) — named as required, not designed further, consistent with this project's own "name the mechanism's shape, leave the exact numeric default to implementation" pattern (ADR-0017–0023's own precedent).
+
+### 5. Suspension remains distinct from deletion, unchanged
+
+Story 5.7's existing suspension mechanism (`tenants.status = 'suspended'`... now `access_ends_at`-equivalent framing per whatever the tenant-status model resolves to) is unaffected by this ADR — suspension is reversible, deletion is not, and nothing in this ADR collapses the two into one action or one confirmation step. A deletion action requires its own explicit, distinct confirmation, not a side effect of suspending a tenant.
+
+## Consequences
+
+**Positive**
+- Closes a real, twice-already-named gap (ADR-0018, ADR-0031) with a concrete, buildable design rather than leaving it perpetually deferred.
+- Reuses existing mechanisms wherever possible (ADR-0030's Platform-Admin-only authority, ADR-0018's partitioning) rather than inventing a second, parallel deletion pipeline.
+- Names a real data-portability path (export before deletion) that this project has never designed anywhere before, addressing the general spirit of GDPR Article 20 without overclaiming formal legal certification this ADR is not positioned to give.
+- Explicitly reconciles with ADR-0018's own "archived, never hard-deleted" `IngestionRun` framing rather than silently contradicting it — the departure is scoped and named, not an unstated exception.
+
+**Negative**
+- **This is a real, named departure from ADR-0018's own "never discarded"/"archived, never hard-deleted" language**, even though scoped narrowly to the deleted tenant's own rows only — a future reader of ADR-0018 alone, without also reading this ADR, could reasonably believe `IngestionRun` is never hard-deleted under any circumstance; both ADRs' own cross-reference notes (Amendment Log, below, and a forward-pointer added to ADR-0018) are the mitigation, not a rewrite of either ADR's original text.
+- **This ADR does not itself resolve whether this project's tenant-deletion design satisfies GDPR Article 17 as a matter of law** — that is a legal question beyond what an architecture-decision record can certify; this ADR designs the technical mechanism a legal review would need to exist before any such certification could be made, consistent with how ADR-0018's own Context already scoped itself to a technical retention policy, not a compliance certification.
+- **A real, accepted operational cost:** actively deleting archived `IngestionRun` rows and Blob-Storage-tier `rawPayload` requires the archival mechanism to support targeted deletion by tenant, not only whole-partition export/detach as ADR-0018's own Mechanism section originally described — genuine, if bounded, new implementation surface on top of what Story 3.5 already built.
+- **No self-service tenant-initiated deletion exists** — a real, named limitation (Decision §1), not an oversight; revisit only if a real, demonstrated need for self-service deletion is later identified.
+
+## Alternatives Considered
+
+- **Soft-delete only (a `deleted_at` flag, rows retained indefinitely)** — rejected as insufficient: this does not satisfy the actual data-lifecycle question (GDPR Article 17-adjacent right-to-erasure explicitly names deletion, not merely marking data inactive), and would leave every table's own row-count growth unbounded by tenant churn on top of ADR-0018's already-accepted growth-by-time concern.
+- **Immediate, fully synchronous deletion across every table in one transaction** — rejected (Decision §4): operationally risky at this project's own stated data volumes, and a poor fit for the partition-based archival mechanism this project already committed to and built (Story 3.5).
+- **Preserve `IngestionRun` rows for a deleted tenant indefinitely, exactly as ADR-0018 already does for an active tenant** — considered; rejected because it would mean "delete a tenant" never actually removes a real, potentially-identifying operational record (connector version, trigger type, timestamps) tied to that tenant, undermining the actual purpose of a deletion action; the referential reason ADR-0018 gives for preserving `IngestionRun` (other rows' FK-like references) does not apply once every one of the deleted tenant's own referencing rows is also gone in the same action.
+
+## Open Questions for decision
+
+- **Formal legal review of whether this ADR's own design actually satisfies GDPR Article 17/20 as a matter of law** — out of this ADR's own competence; named as a required follow-up, not resolved here.
+- **The exact export format and delivery mechanism** (a downloadable archive, an emailed link — this project has no outbound-email capability today, per ADR-0037's own already-named gap) — not decided here.
+- **The exact notice-window length between a deletion request and its execution**, and whether export is ever a hard gate rather than an offered opportunity — implementation defaults, not decided here.
+- **Whether a future self-service, Tenant-Admin-initiated deletion request (routed through Platform Admin for review, mirroring ADR-0030 §3's break-glass request/execute shape) is ever built** — named as a real possible future direction (Decision §1), not designed or committed to here.
+- **The exact SLA/completion-time bound for the asynchronous, partition-based deletion job** (Decision §4) — an implementation default, not decided here.
+- **Whether Blob-Storage-tier deletion is itself verifiably complete** (e.g., confirming no soft-delete/versioning retention on the storage account would silently preserve a "deleted" blob) — a real implementation-verification step for whoever builds this, not designed here.
+
+## Note on relation to ADR-0018
+
+This ADR resolves ADR-0018's own explicitly-named "not addressed by this ADR" gap (tenant offboarding/right-to-erasure) and, in doing so, decides one narrow, scoped exception to ADR-0018's own "`IngestionRun` archived, never hard-deleted" Decision text (Decision §3, above) — **for a deleted tenant's own rows only, once every referencing `SocialPost` row is also deleted in the same action.** Per this file's own "Conventions for changing an existing ADR" table (a still-Proposed ADR that would change part of an Accepted ADR's decision, if accepted), a dated "Pending supersession note" has been added to ADR-0018's own Open Questions section pointing here — ADR-0018's own Decision and Consequences text is not edited by this ADR.
+
+## Amendment Log
+
+- 2026-08-05 — Initial proposal, drafted by the AI Business & Requirements Analyst persona, as part of a 16-item story-drafting batch, closing the gap explicitly named by ADR-0018 and ADR-0031 as "not addressed" and "out of scope" respectively. Left **Proposed** — this persona does not hold ADR-acceptance authority.

@@ -194,3 +194,150 @@
 - This story is additive-only: mounted alongside `/posts`, `/topics`, `/connectors`, `/watchlists` in `createV1Router()`, never nested inside any of them; no existing route's behavior, contract, or authorization changes as a result of building it.
 
 **Named as a required follow-up, not this story's own scope:** `social-listening-admin`'s Story 6.1 contract (`social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts`) has its own AC8 assertion, "`fetchResolvedIdentity()` resolves to null rather than throwing while the endpoint does not exist" — written correctly against the gap this story closes. Once this endpoint is real, that assertion describes a state that no longer holds and needs a dated update (the same "don't silently rewrite already-shipped, passing contracts" discipline Story 2.3's AC4 rewrite under Story 2.5 already established in this series) — real, necessary follow-up work in `social-listening-admin`, not built or edited by this story, which is `social-listening-core`-only scope.
+
+---
+
+## Story 5.12 — Platform Admin tenant management REST surface
+
+**Source:** ADR-0030, ADR-0031 (both Accepted) · **Status:** Ready — no new ADR needed. Both governing ADRs already fully locked the authorization boundary (which columns `platform_admin_role` may write, which tables it may touch at all) at the database layer; this story exposes that already-designed boundary over HTTP, the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 5.11 already established when resolving ADR-0036 §5's analogous gap.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap, confirmed directly against `tenants/SKILL.md`'s own "Known gaps" section: "No HTTP/REST surface exists for `tenants` yet."
+
+**As** Platform Admin,
+**I want** REST endpoints to list, create, and administer tenants,
+**so that** I can operate the platform's tenant registry without hand-writing SQL against production.
+
+**Acceptance Criteria**
+- `GET /v1/admin/tenants` lists every tenant (`id`, `name`, `domain`, `status`, `licenseSeatCount`, `activeSeatCount`, `createdAt`) — reachable only through a `platform_admin` resolved identity (Story 5.11's `GET /v1/me` shape); a `tenant_admin`/`tenant_user` identity receives `403`.
+- `POST /v1/admin/tenants` creates a tenant via `tenantStore.ts`'s existing `createTenant()`, running exclusively through `platform_admin_role` — proven by a test confirming the underlying query executes under that role, never `app_user`.
+- `PATCH /v1/admin/tenants/:id` updates `status` and `license_seat_count` only — a request attempting to set `active_seat_count` is rejected (ignored or `400`), proven directly against `tenants/SKILL.md`'s own already-locked column-scoped grant (`platform_admin_role` is DB-level denied from writing `active_seat_count` — this route cannot widen that even if it tried).
+- `PATCH /v1/admin/tenants/:id` may also update `domain`, per ADR-0037 §9's own already-Accepted grant extension — a real, audited recovery path for a wrong or squatted domain value, not new authority this story invents.
+- **A test confirms no `app_user`/tenant-scoped session can reach any of these three endpoints** — the same explicit non-access proof `tenants/SKILL.md`'s own contract already applies at the store layer, re-proven here at the HTTP layer.
+- Every write performed through these endpoints is logged via the existing `platform_admin_audit_log`/`logPlatformAdminAction()` mechanism (ADR-0030 §5) — reusing, not duplicating, Story 5.7's/5.8's own already-shipped audit path.
+
+---
+
+## Story 5.13 — Platform Admin break-glass request/execute REST surface
+
+**Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0030 §3 and its two Clarifications already fully designed the two-phase mechanism this story exposes over HTTP; Story 5.7 already builds and contract-tests the underlying store/mechanism layer.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap: break-glass (Story 5.7) is store/mechanism-level only, confirmed directly against `platform-admin-access/SKILL.md`'s "Known gaps" section — no HTTP surface exists.
+
+**As** Platform Admin,
+**I want** REST endpoints to record a break-glass request and separately execute it,
+**so that** I can recover a locked-out Tenant-Admin's access through the console (Story 6.6), preserving ADR-0030 §3's own two-phase, human-reviewed design — never one automated action.
+
+**Acceptance Criteria**
+- `POST /v1/admin/tenants/:id/break-glass/request` records a pending request (target tenant, who/what reported it, `status: 'requested'`) — performs no Entra-side action at all, per ADR-0030's own Clarification.
+- `POST /v1/admin/tenants/:id/break-glass/requests/:requestId/execute` is a **separate** endpoint from the one above — a request cannot request-and-execute in one call; this story's contract must prove they are two distinct HTTP calls, not two branches of one handler.
+- Executing a request performs the real two-identity JIT grant → password reset + TAP issuance → revoke sequence (Story 5.7's already-shipped mechanism), reachable only through a `platform_admin` resolved identity.
+- **An already-executed request rejects a second execution attempt** — `409` or equivalent, proven directly, the same idempotency guarantee Menno named explicitly for this story.
+- The generated temporary password and TAP code are returned **once**, in the execute response only, to the calling Platform Admin — never logged, never persisted, never returned by any other endpoint (including the list/audit views, Story 5.14) — re-proving Story 5.7's own already-established constraint at the HTTP layer.
+- A test confirms no `app_user`/tenant-scoped session, and no unauthenticated caller, can reach either endpoint.
+- Every request and execution is logged via `platform_admin_audit_log` — the TAP code and password itself never appear in that log entry's own detail, re-proving Story 5.7's own constraint here too.
+
+---
+
+## Story 5.14 — Platform Admin audit-log query REST surface
+
+**Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. `platform_admin_audit_log`'s schema and write path already exist (Story 5.7); this story adds a read-only query endpoint over already-existing, already-Platform-Admin-scoped data.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap: `platform_admin_audit_log` has no query endpoint, confirmed directly — no router file exposes it.
+
+**As** Platform Admin,
+**I want** a read-only REST endpoint to query the audit log,
+**so that** I can review every bypassed write (tenant provisioning/suspension, break-glass executions, self-service-signup provisioning, domain-match escalations) without querying the database directly.
+
+**Acceptance Criteria**
+- `GET /v1/admin/audit-log` returns audit entries (`actorIdentity`, `operation`, `targetTenantId`, `detail`, `createdAt`), reachable only through a `platform_admin` resolved identity.
+- Supports filtering by `tenantId`, a date range (`from`/`to`), and `actorIdentity` (query parameters) — a request with no filters returns the full log, paginated per this project's existing cursor-based pagination convention (ADR-0011).
+- `GET` only — no write verb is accepted at this path; this is a read-only surface over an already-append-only table.
+- A test confirms no `app_user`/tenant-scoped session, and no unauthenticated caller, can reach this endpoint.
+- No entry's `detail` field ever contains a TAP code or temporary password value — re-proving Story 5.7's/5.13's own already-established constraint that these are never logged, at the one endpoint that would otherwise be the easiest place to leak them.
+
+---
+
+## Story 5.15 — Self-service tenant sign-up backend endpoint
+
+**Source:** ADR-0037 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §1–§9 already exhaustively designed this endpoint's own behavior, schema, and role; this story builds directly against an already-Accepted ADR's own "Named as required, not designed here" list, the same relationship Story 6.7 already has to this same ADR for the UI half.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.7's own explicitly-named dependency, verbatim: "a new `POST /v1/tenants/self-service-signup`-shaped `social-listening-core` endpoint... Named as required, not designed here."
+
+**As a** brand-new user who is not yet part of any SocialEngage tenant,
+**I want** a backend endpoint that provisions my own tenant and makes me its first Tenant-Admin,
+**so that** the admin UI's sign-up screen (Story 6.7) has a real endpoint to call.
+
+**Acceptance Criteria**
+- `POST /v1/tenants/self-service-signup` is the **one** route in this project accepting a validly-signed Entra bearer token that resolves to no `users` row and no `platform_admins` row (ADR-0037 §5's own named, narrow exception to ADR-0029 §4) — every other route's existing behavior (reject an unmatched caller) is unaffected, proven by a regression test against at least one existing protected route.
+- Before attempting tenant creation, the endpoint checks for an existing, unlinked `invited` `users` row matching the caller's validated email, in any tenant (ADR-0037 §6) — if found, the caller is routed through the existing invite-link mechanism (ADR-0032 §6) instead; no second tenant is ever created for an already-invited person.
+- A caller whose `sub` already resolves to an existing `users` or `platform_admins` row is rejected (`400`/`409`, "you already belong to a tenant") — never reaches the tenant-creation path (ADR-0037 §7's decided floor).
+- The caller's email domain is checked against the public-email-provider denylist (ADR-0037 §4) before capture; a denylisted domain leaves `tenants.domain` `NULL` on the created tenant.
+- Tenant creation runs through a new, dedicated `tenant_signup_role` (`BYPASSRLS`, `INSERT`-only on `tenants`, `INSERT`-only on `platform_admin_audit_log`) — never `platform_admin_role`, never widening its own already-locked grant (ADR-0037 §1).
+- A domain-match constraint violation (an existing tenant already claims this domain) is caught and translated into ADR-0037 §3's own decided rejection response — vague, never naming the matched organization — and, per §8b, writes a `domain_signup_attempts` row (Story 5.16 reads this data; this story is the sole writer).
+- On success, the first `users` row (`role: 'tenant_admin'`) is inserted via the ordinary `app_user`/`withTenant(newTenantId, ...)` path — never through `tenant_signup_role`, which has no grant on `users` at all.
+- Every `tenant_signup_role` write (the `tenants` INSERT) is logged via the existing `platform_admin_audit_log`/`logPlatformAdminAction()` mechanism, `actorIdentity` set to a clearly self-service-labeled value (e.g. `self-service-signup:<sub>`), never conflated with a real Platform Admin's own identity (ADR-0037 §2).
+- A partial failure (tenant INSERT succeeds, first-user INSERT fails) surfaces a real, actionable error to the caller — the exact recovery mechanics are an open implementation question this story's own AC does not resolve (ADR-0037's own explicit deferral).
+
+**Named as a required follow-up, not this story's own scope:** rate-limiting/abuse prevention (Story 5.18) is a precondition for exposing this endpoint to real, untrusted traffic (ADR-0037 §7) — this story's own Acceptance Criteria do not require it, the same explicit scope split Story 6.7 already names for its own UI half.
+
+---
+
+## Story 5.16 — Same-Domain Invite Assist backend surface and Platform-Admin escalation
+
+**Source:** ADR-0037 §8b/§8c (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §8b/§8c already exhaustively decided the data model, per-domain aggregation, and escalation-logging mechanics this story exposes; only the backend half of `docs/open-decisions.md` §1's own named gap ("has no owning story").
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes half of a real, confirmed gap: ADR-0037 §8b names the Same-Domain Invite Assist as required, admin-UI-facing work "not yet named by any of Epic 6's existing stories." This story is the backend REST surface a Tenant-Admin-facing screen (Story 6.10) needs to consume; Story 5.15 is this table's sole writer.
+
+**As a** Tenant-Admin,
+**I want** to see, and act on, same-domain sign-up attempts against my own tenant,
+**so that** a legitimate not-yet-invited colleague's attempt is visible and actionable, not silently lost, without SocialEngage inventing a request-approval queue.
+
+**Acceptance Criteria**
+- `GET /v1/tenants/domain-signup-attempts` returns the caller's own tenant's `domain_signup_attempts` rows, RLS-scoped exactly like every other tenant-content table (ADR-0015's ordinary policy, never a bypass role) — reachable by `tenant_admin` only, `403` for `tenant_user`.
+- The response aggregates by domain — one item per domain, with a distinct-verified-email count and an escalation flag (crossing ADR-0037 §8b's own template 3-attempts/30-day default) — not one row per individual attempt, per ADR-0037 §8b's own already-decided anti-flooding aggregation.
+- Each domain item expands, on request (a nested field or a second endpoint), to the full list of distinct verified email addresses behind it — the same underlying data surfaced two ways, per ADR-0037 §8b's own decided shape, needed so the one-click invite action (Story 6.10) has a specific address to target.
+- A background/inline check, triggered whenever a domain's attempt count crosses the escalation threshold, writes a distinguishably-labeled entry to the existing `platform_admin_audit_log` (§8c) — including the verified email addresses behind the pattern, per ADR-0037's own post-acceptance decision — reusing, not duplicating, the existing audit mechanism.
+- This story does not implement real-time alerting (Slack/email/on-call) — the escalation write to `platform_admin_audit_log` is durably logged and reviewable, not paged, per ADR-0037 §8c's own explicit scope limit.
+- A test confirms cross-tenant isolation: a Tenant-Admin of tenant A cannot see tenant B's `domain_signup_attempts` rows via this endpoint.
+
+---
+
+## Story 5.17 — Audit trail for `access_ends_at` writes
+
+**Source:** ADR-0032 §9 (Accepted) · **Status:** Ready — no new ADR needed; this story resolves ADR-0032 §9's own named Open Question (the exact audit mechanism) directly, the same way Story 5.8 resolved ADR-0031 §5's `domain`-column details and Story 5.11 resolved ADR-0036 §5's endpoint shape — an implementation-time mechanics question, not a fresh architectural one, since the underlying principle (every `access_ends_at` write is auditable) is already decided.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes ADR-0032 §9's own explicitly-deferred gap: "Auditing of `access_ends_at` writes is explicitly not this story's job... deferred to whoever resolves ADR-0030/ADR-0031's shared audit-log question." Only concrete once Story 1.9 exists to actually write the field.
+
+**Mechanics decided here, directly, rather than left open a second time:** `access_ends_at` writes happen via the ordinary `app_user`/`withTenant()` path (Story 1.9), not through any `BYPASSRLS` role — `platform_admin_audit_log` is granted only to `platform_admin_role`/`tenant_signup_role` and is structurally scoped to Platform-Admin-bypassed writes (ADR-0030 §5's own framing); reusing it for an ordinary tenant-scoped write would either require a new, out-of-category grant on that table for `app_user`, or misrepresent a tenant-initiated action as a Platform-Admin one. **This story instead adds a new, tenant-scoped `user_access_audit_log` table**, RLS-scoped exactly like every other tenant-content table (ADR-0015's ordinary policy) — the same "don't reuse a structurally different actor's audit table" discipline ADR-0032 §3 already applied to keep Platform Admin out of `users`, and ADR-0037 §8b already applied when it created a new `domain_signup_attempts` table rather than reusing `platform_admin_audit_log`.
+
+**As a** Tenant-Admin (or Platform Admin, for the break-glass path),
+**I want** every change to a user's `access_ends_at` durably recorded — who changed it, when, and the before/after value,
+**so that** an offboarding or reactivation decision has a real, queryable history, not just the row's current state.
+
+**Acceptance Criteria**
+- `user_access_audit_log` (new table): `id`, `tenant_id`, `user_id`, `changed_by` (the acting user's own `id`), `previous_value` (nullable timestamptz), `new_value` (nullable timestamptz), `changed_at` — RLS policy identical in shape to every other tenant-scoped table.
+- Every `PATCH /v1/tenants/users/:id` write to `access_ends_at` (Story 1.9) inserts exactly one row here, in the same transaction as the `users` update — proven by a test confirming the audit row and the `users` update either both commit or neither does.
+- Setting `access_ends_at` (immediate or scheduled), and clearing it back to `NULL`, are both captured — a cleared value's `new_value` is `NULL`, proven directly.
+- A Tenant-Admin can query their own tenant's `user_access_audit_log` (`GET /v1/tenants/users/:id/access-history` or equivalent) — RLS-scoped, `tenant_admin` only.
+- The break-glass path (Story 5.13) does not write `access_ends_at` at all (it resets a credential, not access status) — this story's contract confirms the two mechanisms remain independent, not conflated.
+- A test confirms cross-tenant isolation: a Tenant-Admin of tenant A cannot see tenant B's access-history rows.
+
+---
+
+## Story 5.18 — Self-service sign-up rate limiting and abuse prevention
+
+**Source:** ADR-0040 (Proposed, drafted this same batch) · **Status:** Blocked — pending ADR-0040's acceptance. A genuinely undecided, hard-to-reverse new mechanism (a new keying scheme, real DoS/availability stakes if built wrong) — ADR-0037 §7 itself already named this as "not designed here... a precondition, not an optional hardening pass," the same bar that earned ADR-0020 its own ADR for an analogous rate-limit-mechanism decision.
+
+**Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes ADR-0037 §7's own named, undesigned precondition and `docs/open-decisions.md` §1's matching entry. Story 6.7 explicitly disclaims building this on the UI side; this is the backend mechanism gating the one endpoint (Story 5.15) reachable without a resolved identity.
+
+**As a** platform operator exposing the one unauthenticated-until-resolved endpoint in this project,
+**I want** sign-up attempts rate-limited by IP address and by verified email domain,
+**so that** a script or a determined actor cannot cheaply flood tenant creation, without relying solely on ADR-0037 §8a's email-OTP-verification precondition to carry the whole weight of abuse prevention.
+
+**Acceptance Criteria**
+- A new, dedicated rate-limiting mechanism — structurally independent of `RequestGate` (ADR-0003/ADR-0020), which stays scoped to `(tenantId, providerId)` — rejects `POST /v1/tenants/self-service-signup` with `429` once either threshold below is crossed within its own rolling window.
+- Per-IP-address: a configurable default of 10 attempts per rolling 24-hour window (ADR-0040 §3's own template default) — proven by a test that a caller exceeding this threshold receives `429`, and a caller from a different IP is unaffected.
+- Per-verified-email-domain: a configurable default of 5 attempts per rolling 24-hour window, reusing the same `domain_signup_attempts` data Story 5.16 already reads (ADR-0040 §1) — proven by a test that several distinct verified emails at one domain, exceeding this threshold, are rejected, while a different domain is unaffected.
+- A `429` rejection under this mechanism is distinct from ADR-0037 §3's domain-match rejection — it does not itself write a `domain_signup_attempts` row or trigger Story 5.16's own escalation logic (ADR-0040 §4) — proven by a test confirming the two code paths remain independent.
+- Both thresholds and window lengths are read from configuration, not hardcoded, per this project's own established "implementation default, not blocking acceptance" convention (ADR-0017–0023's precedent).
+- Storage for the attempt counters is in-process for a single-instance deployment, consistent with this project's own solo-deployment posture (ADR-0020's own precedent for deferring distributed state) — named explicitly in this story's own `SKILL.md` as a known limitation if this project is ever run as more than one concurrent instance, not silently assumed away.
