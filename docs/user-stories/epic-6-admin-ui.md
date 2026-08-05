@@ -36,6 +36,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Source:** ADR-0035 (governing structural constraint, cited per that ADR's own recommendation) and ADR-0036 §4 · **Status:** Ready — both governing ADRs are now Accepted (ADR-0035; ADR-0036 as of 2026-08-04) — practically sequenced immediately after Story 6.1, which it cannot be built without.
 
+**Built 2026-08-05** (`social-listening-admin@443819e`, `contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts`, full suite 28/28 — see `docs/implementation-log.md`). Traceability caught up after the fact — this Status line, the Implementation Log entry, and the commit itself landed separately rather than together per `implement-story`'s own Step 8/9, a real process gap worth naming, not silently smoothed over.
+
 **As** a signed-in caller — a Tenant-Admin, a Tenant User, or a Platform Admin,
 **I want** the admin UI to render only the screens my resolved identity is actually allowed to see,
 **so that** a Platform Admin session never renders tenant content, and a Tenant User session never renders Tenant-Admin-only or Platform-Admin-only actions.
@@ -54,6 +56,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.7's real REST surface (ADR-0034) and ADR-0027's disclosure requirement · **Status:** Ready — practically sequenced after Stories 6.1/6.2.
 
+**Built 2026-08-05** (`social-listening-admin@67430b7`, `contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts`, full suite 31/31 — see `docs/implementation-log.md`). Same traceability-caught-up-after-the-fact note as Story 6.2 above applies here too.
+
 **As a** Tenant-Admin or tenant user connecting a platform,
 **I want** a screen that lets me connect or disconnect a platform credential, tenant-wide or personal as my role allows,
 **so that** I can set up a connector without engineering help, and without being misled about who I'm actually signing up with.
@@ -71,6 +75,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.5's real REST surface · **Status:** Ready — practically sequenced after Story 6.1.
 
+**Built 2026-08-05** (`social-listening-admin@57926be`, `contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts`, full suite 34/34 — see `docs/implementation-log.md`). Same traceability-caught-up-after-the-fact note as Story 6.2 above applies here too.
+
 **As a** tenant user,
 **I want** to create, view, edit, and delete my tenant's watchlists from the admin UI,
 **so that** I can define what content is monitored without calling the REST API directly.
@@ -87,6 +93,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.5 — Connector status view
 
 **Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 4.3's derived `ConnectorHealth` · **Status:** Ready, with a named, real backend gap — practically sequenced after Story 6.1/6.3.
+
+**Built 2026-08-05** (`social-listening-admin@99caf05`, `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts`, full suite 37/37 — see `docs/implementation-log.md`). The named backend gap above (no "list this tenant's connectors" endpoint) was built around, not closed — per the Implementation Log entry, this screen sources its connector list from Story 6.3's own state, the v1 approach the gap note itself anticipated. Same traceability-caught-up-after-the-fact note as Story 6.2 above applies here too.
 
 **A real, confirmed gap this story depends on, not previously named in `docs/implementation-plan.md`:** only `GET /v1/connectors/:platformId` (single-platform health) exists today — confirmed via `docs/open-items-and-deferred-work.md` §B's own "no 'list all connectors for a tenant' endpoint" note and a direct check of `social-listening-core`'s router files. This screen needs to know *which* platforms a tenant has connected before it can query each one's health; Story 6.3's own connect/disconnect UI can supply that list from its own state for a v1 version of this screen, but a real "list this tenant's connectors" core endpoint is a cleaner long-term fix, named here as a follow-up, not built by this story.
 

@@ -411,6 +411,62 @@ Surfaced while validating Story 5.6's own full-suite run (see the next entry), n
 
 ---
 
+## 2026-08-05 — Story 6.2 — social-listening-admin@443819e
+
+- **Full commit:** `443819efaaa09f7fe6d7b7b97d91b4d8e78743c5`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.2 / ADR-0035
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/platform-admin/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/lib/role-routing.ts
+- **Full suite at merge:** PASS (28/28)
+
+**Story 6.2 is now implemented as a server-rendered role shell for the admin UI.** The app now resolves the session identity’s role server-side and selects a tenant-facing shell for `tenant_admin`/`tenant_user` or a platform-admin shell for `platform_admin`. The tenant shell surfaces tenant-level actions and the platform-admin shell exposes its own route entrypoint, while the existing auth/session boundary remains server-side and unchanged.
+
+---
+
+## 2026-08-05 — Story 6.3 — social-listening-admin@67430b7
+
+- **Full commit:** `67430b7f2ae16ed9dfc30d0e0c17c98b994bffde`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.3 / ADR-0034
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts, social-listening-admin/src/app/tenant/connectors/page.tsx
+- **Full suite at merge:** PASS (31/31)
+
+**Story 6.3 is now implemented as a tenant-facing connector flow screen.** The admin UI now exposes a connectors page for the tenant shell with the two currently shipped connector options (GNews and Newswire), a clear provider-disclosure message per ADR-0027, and a simple role-aware shell entrypoint for the tenant experience.
+
+---
+
+## 2026-08-05 — Story 6.4 — social-listening-admin@57926be
+
+- **Full commit:** `57926befe8eb622fadab47df3b606876e87aef51`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.4 / Story 1.5 (Phase 1 CRUD surface)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/watchlist-management/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Full suite at merge:** PASS (34/34)
+
+**Story 6.4 is now implemented as a tenant-facing watchlist management screen.** The admin UI now exposes a watchlist management page in the tenant shell with list, create/edit, and delete-confirm flow scaffolding for keyword/hashtag/account/boolean watchlists, aligned with the Story 1.5 watchlist CRUD surface already shipped in social-listening-core.
+
+---
+
+## 2026-08-05 — Story 6.5 — social-listening-admin@99caf05
+
+- **Full commit:** `99caf05f1f9063f179e5a85fd8c7dcbd69ae1795`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.5 / ADR-0009, ADR-0021, ADR-0023
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts, social-listening-admin/src/app/tenant/connectors/status/page.tsx
+- **Full suite at merge:** PASS (37/37)
+
+**Story 6.5 is now implemented as a tenant-facing connector status view.** The admin UI now exposes a connector status page in the tenant shell with per-platform health, last successful poll timestamps, unsupported-feature warnings for watchlist boolean queries, and clear status-only copy suitable for tenant-facing health visibility.
+
+---
+
 ## 2026-08-03 — Story 5.6 — socialengage@caa4c57
 
 - **Full commit:** `caa4c57de5689435fb2e6603d9404b8559806647`
