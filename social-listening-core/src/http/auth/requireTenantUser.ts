@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { RequestWithIdentity } from './requestIdentity';
+import { ResolvedIdentity } from '../../identity/identityResolution';
 
 export interface TenantUserIdentity {
   tenantId: string;
@@ -39,4 +40,20 @@ export function requireTenantUser(req: RequestWithIdentity, res: Response): stri
  */
 export function requireTenantUserIdentity(req: RequestWithIdentity, res: Response): TenantUserIdentity | null {
   return requireTenantUserIdentityInternal(req, res);
+}
+
+/**
+ * Story 5.11 (ADR-0036 §5): the one route (GET /v1/me) that needs the
+ * caller's raw resolved identity regardless of shape — tenant_user or
+ * platform_admin alike — rather than requiring one specific kind the way
+ * requireTenantUser()/requireTenantUserIdentity() do. Safe to read
+ * req.identity directly here, in this one centralized accessor, only because
+ * createTenantAuthMiddleware() already guarantees it's set by the time any
+ * route handler runs — a null resolveIdentity() result is already rejected
+ * 403 before next() is ever called. Never re-derives or overrides it; a new
+ * route should call this (or one of the two above), not read req.identity
+ * inline as a shortcut — see .claude/skills/tenant-auth-middleware/SKILL.md.
+ */
+export function getResolvedIdentity(req: RequestWithIdentity): ResolvedIdentity {
+  return req.identity as ResolvedIdentity;
 }

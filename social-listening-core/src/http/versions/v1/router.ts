@@ -3,6 +3,7 @@ import { postsRouter } from './postsRouter';
 import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
 import { watchlistsRouter } from './watchlistsRouter';
+import { meRouter } from './meRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -40,6 +41,9 @@ export function createV1Router(authMiddleware: RequestHandler): Router {
    * See .claude/skills/watchlist-crud/SKILL.md and docs/open-items-and-deferred-work.md §A.
    */
   v1Router.use('/watchlists', authMiddleware, watchlistsRouter);
+
+  /** Story 5.11 (ADR-0036 §5) — see .claude/skills/me-endpoint/SKILL.md. */
+  v1Router.use('/me', authMiddleware, meRouter);
 
   return v1Router;
 }

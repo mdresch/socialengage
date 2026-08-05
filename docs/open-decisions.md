@@ -11,7 +11,7 @@
 
 ## 1. Blocks work already queued next (Phase 6 — Stories 6.2–6.7)
 
-- **[ADR-0036]** No `GET /v1/me`-shaped endpoint exists in `social-listening-core` exposing a signed-in caller's resolved identity/role over HTTP. `fetchResolvedIdentity()` in `social-listening-admin/src/lib/core-client.ts` degrades to `null` while it doesn't exist. **Blocks Story 6.2 (role gating) and Story 6.6 (Platform Admin console)** — both drafted Ready, neither buildable without it.
+- ~~**[ADR-0036]** No `GET /v1/me`-shaped endpoint exists in `social-listening-core`...~~ — **resolved 2026-08-05, Story 5.11:** `GET /v1/me` built and contract-verified (`contracts/epic-5/story-5.11.get-v1-me.contract.test.ts`, 10/10) — see `docs/implementation-log.md`. Story 6.2's and Story 6.6's dependency on this endpoint is satisfied; their own remaining status is about their own not-yet-built UI work, not this gap.
 - **[ADR-0037 §7]** No abuse/rate-limiting mechanism or numeric threshold decided for the self-service tenant sign-up endpoint. The ADR itself: "a real precondition before this endpoint is exposed to real, untrusted traffic, not an optional hardening pass." Story 6.7 is Ready but shouldn't go live without this.
 - **[ADR-0037 / ADR-0029]** ADR-0037 (self-service sign-up) depends on ADR-0029's own still-open "restrict Entra self-service sign-up at IdP level" question staying resolved "no." Flagged in ADR-0037 as needing Menno's "explicit reconciliation, not a silent assumption" — not yet done.
 - **[ADR-0037]** Which of Entra's two local-account methods (email+password vs. email-OTP) `social-listening-admin` actually configures — undecided by any ADR, needed for Story 6.7.

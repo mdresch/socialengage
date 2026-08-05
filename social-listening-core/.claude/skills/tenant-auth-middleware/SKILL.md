@@ -26,6 +26,7 @@ description: The single, top-of-router-stack middleware (createTenantAuthMiddlew
 
 - **A new `/v1` route needing tenant identity:** call `requireTenantUser(req, res)` at the top of the handler — it returns `tenantId` or has already sent a 403 and you should `return`. Never read `req.header('X-Tenant-Id')` or add a new per-route auth check; the middleware is already mounted for the whole `/v1` stack.
 - **A new route needing Platform Admin identity instead** (a future Admin UI backend route): `req.identity` may be `{ type: 'platform_admin', adminId }` — write an equivalent `requirePlatformAdmin()` helper when that need actually exists; don't speculatively build it now.
+- **A route needing the caller's raw identity regardless of shape** (built for real by Story 5.11's `GET /v1/me`): use `getResolvedIdentity()` (also in `requireTenantUser.ts`) rather than reading `req.identity` directly — see `.claude/skills/me-endpoint/SKILL.md`. It's safe only because the middleware already guarantees `req.identity` is set by the time any handler runs; it does not itself re-check that.
 - **A new contract test hitting a `/v1` route:** import `testIdentityHeaderValue()` from `src/testUtils/testIdentityHeader.ts` and `.set('X-Test-Identity', testIdentityHeaderValue(tenantId))` — never reintroduce `X-Tenant-Id` in a new test, even though the header is still accepted-but-ignored at the HTTP layer (see Load-bearing constraints).
 
 ## Load-bearing constraints — do not change casually
