@@ -71,7 +71,11 @@ describe('Story 5.2 — per-tenant event filtering contract', () => {
   it('AC1: a published event carries tenantId as a Service Bus application property', async () => {
     const tenantId = randomUUID();
     const subscriptionName = `test-ac1-${randomUUID()}`;
-    await adminClient.createSubscription(TOPIC_NAME, subscriptionName, { autoDeleteOnIdle: 'PT10M' });
+    // Scoped to this test's own tenantId purely for delivery isolation against
+    // the shared real topic — not testing filtering itself (AC2/AC3 do that).
+    // Without this, a message published by another contract file running
+    // concurrently in a different Jest worker could land here instead.
+    await createTenantFilteredSubscription(subscriptionName, tenantId);
     createdSubscriptions.push(subscriptionName);
 
     await publishEvent(tenantId, { hello: 'world' });

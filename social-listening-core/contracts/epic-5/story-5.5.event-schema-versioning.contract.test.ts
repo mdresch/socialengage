@@ -42,6 +42,26 @@ const credential = new DefaultAzureCredential();
 const adminClient = new ServiceBusAdministrationClient(namespaceHost(), credential);
 const sbClient = new ServiceBusClient(namespaceHost(), credential);
 
+// Scopes a subscription to this test's own randomUUID tenantId, purely for
+// delivery isolation against the shared real topic — not testing tenantId
+// filtering itself (that's Story 5.2's job). Without this, AC1-AC3's
+// subscriptions use Service Bus's default "match everything" rule and can
+// receive a message published by any other contract file running
+// concurrently in a different Jest worker. Same pattern as Story 5.2's own
+// createTenantFilteredSubscription helper.
+async function createIsolatedSubscription(subscriptionName: string, tenantId: string): Promise<void> {
+  await adminClient.createSubscription(TOPIC_NAME, subscriptionName, {
+    defaultRuleOptions: {
+      name: 'tenant-isolation-filter',
+      filter: {
+        sqlExpression: 'tenantId = @tenantId',
+        sqlParameters: { '@tenantId': tenantId },
+      },
+    },
+    autoDeleteOnIdle: 'PT10M',
+  });
+}
+
 describe('Story 5.5 — event schema versioning contract', () => {
   const createdSubscriptions: string[] = [];
 
@@ -59,7 +79,7 @@ describe('Story 5.5 — event schema versioning contract', () => {
   it('AC1: a published event carries schemaVersion=1 by default', async () => {
     const tenantId = randomUUID();
     const subscriptionName = `test-ac1-${randomUUID()}`;
-    await adminClient.createSubscription(TOPIC_NAME, subscriptionName, { autoDeleteOnIdle: 'PT10M' });
+    await createIsolatedSubscription(subscriptionName, tenantId);
     createdSubscriptions.push(subscriptionName);
 
     await publishEvent(tenantId, { hello: 'world' });
@@ -77,7 +97,7 @@ describe('Story 5.5 — event schema versioning contract', () => {
   it('AC2: an additive (differently-shaped) payload body still yields schemaVersion=1', async () => {
     const tenantId = randomUUID();
     const subscriptionName = `test-ac2-${randomUUID()}`;
-    await adminClient.createSubscription(TOPIC_NAME, subscriptionName, { autoDeleteOnIdle: 'PT10M' });
+    await createIsolatedSubscription(subscriptionName, tenantId);
     createdSubscriptions.push(subscriptionName);
 
     // A body shape with an extra field, simulating an additive payload
@@ -97,7 +117,7 @@ describe('Story 5.5 — event schema versioning contract', () => {
   it('AC3: publishEvent() can emit an explicit schemaVersion — the mechanism a future breaking-change cutover would use', async () => {
     const tenantId = randomUUID();
     const subscriptionName = `test-ac3-${randomUUID()}`;
-    await adminClient.createSubscription(TOPIC_NAME, subscriptionName, { autoDeleteOnIdle: 'PT10M' });
+    await createIsolatedSubscription(subscriptionName, tenantId);
     createdSubscriptions.push(subscriptionName);
 
     await publishEvent(tenantId, { hello: 'world' }, { schemaVersion: 2 });
