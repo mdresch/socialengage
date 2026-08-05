@@ -4,6 +4,7 @@ import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
+import { adminTenantsRouter } from './adminTenantsRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -44,6 +45,9 @@ export function createV1Router(authMiddleware: RequestHandler): Router {
 
   /** Story 5.11 (ADR-0036 §5) — see .claude/skills/me-endpoint/SKILL.md. */
   v1Router.use('/me', authMiddleware, meRouter);
+
+  /** Story 5.12 (ADR-0030, ADR-0031) — see .claude/skills/platform-admin-tenant-management/SKILL.md. */
+  v1Router.use('/admin/tenants', authMiddleware, adminTenantsRouter);
 
   return v1Router;
 }

@@ -57,3 +57,25 @@ export function requireTenantUserIdentity(req: RequestWithIdentity, res: Respons
 export function getResolvedIdentity(req: RequestWithIdentity): ResolvedIdentity {
   return req.identity as ResolvedIdentity;
 }
+
+export interface PlatformAdminIdentity {
+  adminId: string;
+}
+
+/**
+ * Story 5.12: the first route family (the admin tenant-management REST
+ * surface) needing exactly a platform_admin identity, the mirror image of
+ * requireTenantUser()/requireTenantUserIdentity() — same 403-on-wrong-shape
+ * pattern, opposite identity type. tenant-auth-middleware/SKILL.md's own
+ * "How to extend this safely" section named this exact helper as the
+ * sanctioned extension point when this need actually arose; it has now
+ * arisen.
+ */
+export function requirePlatformAdmin(req: RequestWithIdentity, res: Response): PlatformAdminIdentity | null {
+  const identity = req.identity;
+  if (!identity || identity.type !== 'platform_admin') {
+    res.status(403).json({ error: 'This route requires a Platform Admin identity.' });
+    return null;
+  }
+  return { adminId: identity.adminId };
+}

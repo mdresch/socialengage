@@ -41,6 +41,8 @@ export interface CreateTenantInput {
 export interface UpdateTenantAdminInput {
   status?: 'active' | 'suspended';
   licenseSeatCount?: number;
+  /** `undefined` = don't touch; `null` = clear it; string = set it (ADR-0037 §9). */
+  domain?: string | null;
 }
 
 function mapRowToTenant(row: TenantRow): Tenant {
@@ -82,11 +84,13 @@ export async function createTenant(actorIdentity: string, input: CreateTenantInp
 }
 
 /**
- * Update a tenant's status and/or license_seat_count — platform_admin_role
- * only. Deliberately cannot touch active_seat_count: the database itself
- * enforces this (migrations/0017's column-scoped GRANT), not just this
- * function's own SQL — see .claude/skills/tenants/SKILL.md's "Load-bearing
- * constraints".
+ * Update a tenant's status, license_seat_count, and/or domain —
+ * platform_admin_role only. Deliberately cannot touch active_seat_count: the
+ * database itself enforces this (migrations/0017's column-scoped GRANT), not
+ * just this function's own SQL — see .claude/skills/tenants/SKILL.md's
+ * "Load-bearing constraints". domain support (migrations/0020) is ADR-0037
+ * §9's own audited recovery path for a wrong/squatted domain value — see
+ * .claude/skills/platform-admin-tenant-management/SKILL.md.
  */
 export async function updateTenantAdmin(
   actorIdentity: string,
@@ -104,6 +108,10 @@ export async function updateTenantAdmin(
   if (input.licenseSeatCount !== undefined) {
     updates.push(`license_seat_count = $${paramIndex++}`);
     params.push(input.licenseSeatCount);
+  }
+  if (input.domain !== undefined) {
+    updates.push(`domain = $${paramIndex++}`);
+    params.push(input.domain);
   }
 
   if (updates.length === 0) {
@@ -130,6 +138,16 @@ export async function updateTenantAdmin(
   });
 
   return tenant;
+}
+
+/**
+ * List every tenant — platform_admin_role only (Story 5.12). No pagination
+ * yet; see .claude/skills/platform-admin-tenant-management/SKILL.md's
+ * "Known gaps" for why that's deferred, not an oversight.
+ */
+export async function listTenants(): Promise<Tenant[]> {
+  const { rows } = await getPlatformAdminPool().query<TenantRow>(`SELECT * FROM tenants ORDER BY created_at`);
+  return rows.map(mapRowToTenant);
 }
 
 /**

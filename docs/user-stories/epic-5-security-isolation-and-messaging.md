@@ -201,6 +201,8 @@
 
 **Source:** ADR-0030, ADR-0031 (both Accepted) · **Status:** Ready — no new ADR needed. Both governing ADRs already fully locked the authorization boundary (which columns `platform_admin_role` may write, which tables it may touch at all) at the database layer; this story exposes that already-designed boundary over HTTP, the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 5.11 already established when resolving ADR-0036 §5's analogous gap.
 
+**Built 2026-08-05** (`social-listening-core`, `contracts/epic-5/story-5.12.platform-admin-tenant-management.contract.test.ts`, full suite 38/38 suites — see `docs/implementation-log.md`). **Also closed a real, confirmed-missing piece of ADR-0037 §9 while building AC4:** that section decided `platform_admin_role` should gain `UPDATE(domain)` on `tenants`, but no migration ever actually granted it — confirmed directly, no prior migration file referenced it. `migrations/0020_grant_platform_admin_domain_update.sql` is that missing grant, not a new decision. This unblocks Story 6.6's own first of three named backend prerequisites.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap, confirmed directly against `tenants/SKILL.md`'s own "Known gaps" section: "No HTTP/REST surface exists for `tenants` yet."
 
 **As** Platform Admin,
