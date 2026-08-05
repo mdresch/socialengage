@@ -587,3 +587,23 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 3. Next.js compiles `proxy.ts`/`middleware.ts` and Route Handlers as separate module bundles even within the same Node.js process — a plain module-level `Map` gave each bundle its own empty store. Fixed by anchoring the store on `globalThis`, and by using Next.js 16's `proxy.ts` convention (Node.js runtime) rather than the deprecated, Edge-runtime-default `middleware.ts`.
 
 **Known, named gap, not silently deferred:** `GET /v1/me` does not exist in `social-listening-core` yet (ADR-0036 §5's own prerequisite, confirmed absent from `src/identity/identityResolution.ts` and every `versions/v1/*Router.ts` there) — `fetchResolvedIdentity()` is built and degrades gracefully to `null`, proven directly, but the full end-to-end identity round trip (and Story 6.2's own role-gating) remains blocked on that endpoint being built.
+
+---
+
+## 2026-08-05 — Healing: intermittent tenantId/schemaVersion mismatch in Story 5.2/5.5 event contracts — social-listening-core@34e2a61
+
+*Not a story; a healing pass per `heal-contract-failure`. Surfaced by re-running the full contract suite after unrelated work — `story-5.2` AC1 and `story-5.5` AC3 intermittently failed with a received `tenantId`/`schemaVersion` that didn't match what that test itself published.*
+
+- **Full commit:** `34e2a619561779ec78cddec13157283c70e60458`
+- **Repo:** social-listening-core
+- **Story / ADR:** 5.2 / ADR-0013; 5.5 / ADR-0019
+- **Contract:** social-listening-core/contracts/epic-5/story-5.2.per-tenant-event-filtering.contract.test.ts; social-listening-core/contracts/epic-5/story-5.5.event-schema-versioning.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/ingestion-events/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/ingestion-events/SKILL.md, social-listening-core/contracts/epic-5/story-5.2.per-tenant-event-filtering.contract.test.ts, social-listening-core/contracts/epic-5/story-5.5.event-schema-versioning.contract.test.ts
+- **Full suite at merge:** PASS (195/195, 36/36 suites)
+
+**Root cause, not a code regression:** `TOPIC_NAME` (`src/events/serviceBusPublisher.ts`) is one fixed real Service Bus topic shared by the whole contract suite, and Jest runs contract files across parallel workers by default (no `maxWorkers` cap in `jest.config.js`). Story 5.5's AC1-AC3 and Story 5.2's AC1 created subscriptions with no SQL filter — Service Bus's default "match everything" rule meant each could receive a message published by *any* other contract file running concurrently, not just its own `publishEvent()` call. `publishEvent()`'s actual logic (default `schemaVersion`, explicit override, `tenantId` property) was never wrong.
+
+**Steps 1-3 (Intent, Contract, SKILL.md) confirmed the target was correct before any change:** both stories' Acceptance Criteria are unchanged and still genuinely encoded by their contracts' assertions; no ADR amendment affects either. The fix (Step 4) touched only test setup, never an assertion: each affected AC's subscription is now scoped with a SQL filter on that test's own randomUUID `tenantId`, mirroring the `createTenantFilteredSubscription` pattern Story 5.2's own AC2/AC3 already used (added as `createIsolatedSubscription` in Story 5.5's contract, since that story isn't itself testing tenant filtering). Documented as a load-bearing constraint in `ingestion-events/SKILL.md` so a future AC doesn't reintroduce the same race.
+
+**One foreign, unrelated failure surfaced during Step 5's full-suite run, not folded into this pass:** `story-2.6` (Newswire connector) failed once with a live `prNewswire.com` RSS feed returning a `404` after a redirect Node's `fetch` followed but `curl` didn't reproduce consistently — attributed as unrelated (different repo area, no plausible connection to this session's changes) per the methodology's "when the failing contract belongs to someone else's scope" section, and confirmed transient: a subsequent full-suite run passed it with no code change.

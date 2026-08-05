@@ -1,205 +1,35 @@
-#!/usr/bin/env node
+#!/usr/bin/env sh
 
-/**
- * Spark Capture Project - Pre-commit Hook
- * Enforces mandatory time tracking entry before commit
- * 
- * This hook prompts the user to enter time tracking information
- * and adds it as a line item to docs/time-tracking.md
- * 
- * INSTALLATION:
- *   This file should be symlinked or copied to .git/hooks/pre-commit
- *   Run: ln -s ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
- *   Or: cp ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
- */
+# Commit-boundary backstop for the same rule .claude/hooks/enforce-contract-first.cjs
+# checks in real time: a commit touching <repo>/src/ must also stage a contract test
+# for that repo. Catches code written outside a Claude Code session, or where the
+# real-time hook was bypassed. See docs/templates/pre-commit-hook.md.
+#
+# Plain git hook rather than Husky: social-listening-core/social-listening-admin are
+# still subdirectories of this single workspace repo (the planned repo split per
+# ADR-0001 hasn't happened yet), so there's one .git to hook, not one per repo -
+# mirrors enforce-contract-first.cjs's own repo-relative path handling.
+#
+# Same limitation as the real-time hook: checks *a* contract file is staged, not that
+# it's *the right* contract for this specific change - not achievable mechanically.
 
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
-const { execSync } = require('child_process');
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+BLOCKED=0
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+for REPO in social-listening-core social-listening-admin; do
+  TOUCHES_SRC=$(echo "$STAGED" | grep -E "^${REPO}/src/" || true)
+  TOUCHES_CONTRACTS=$(echo "$STAGED" | grep -E "^${REPO}/contracts/.*\.contract\.test\.ts$" || true)
+  if [ -n "$TOUCHES_SRC" ] && [ -z "$TOUCHES_CONTRACTS" ]; then
+    echo "Blocked: this commit touches ${REPO}/src/ but no ${REPO}/contracts/*.contract.test.ts file is staged."
+    BLOCKED=1
+  fi
+done
 
-// Get repo root from the hook location
-const HOOK_DIR = path.dirname(__filename);
-const REPO_ROOT = path.resolve(HOOK_DIR, '..', '..', '..');
-const TIME_TRACKING_FILE = path.join(REPO_ROOT, 'docs', 'time-tracking.md');
+if [ "$BLOCKED" -eq 1 ]; then
+  echo "Per docs/implementation-methodology.md, every story's implementation needs a"
+  echo "contract test committed alongside it. If this really is a non-story change"
+  echo "(e.g. a typo fix), commit with --no-verify and note why in the commit message."
+  exit 1
+fi
 
-// Check if we should skip this hook
-function shouldSkipHook() {
-  // Skip for merge commits
-  try {
-    execSync('git rev-parse --verify HEAD^2', { cwd: REPO_ROOT, stdio: 'pipe' });
-    return true;
-  } catch (e) {
-    // Not a merge commit
-  }
-  
-  // Skip for initial commit (no HEAD)
-  try {
-    execSync('git rev-parse --verify HEAD', { cwd: REPO_ROOT, stdio: 'pipe' });
-  } catch (e) {
-    return true; // Initial commit
-  }
-  
-  // Check if only time-tracking.md is staged
-  try {
-    const staged = execSync('git diff --cached --name-only', { 
-      cwd: REPO_ROOT, 
-      encoding: 'utf8' 
-    }).trim();
-    
-    const normalizedStaged = staged.replace(/\\/g, '/');
-    if (normalizedStaged === 'docs/time-tracking.md') {
-      return true; // Only time tracking file is staged
-    }
-  } catch (e) {
-    // No staged files or error
-  }
-  
-  return false;
-}
-
-// Validate time format (HH:MM)
-function validateTime(time) {
-  return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time.trim());
-}
-
-// Parse time to minutes
-function timeToMinutes(time) {
-  const [hours, minutes] = time.trim().split(':').map(Number);
-  return hours * 60 + minutes;
-}
-
-// Escape special characters for markdown table
-function escapeMarkdown(str) {
-  if (!str) return '';
-  return str.replace(/\|/g, '\\|');
-}
-
-// Format entry for markdown table
-function formatEntry(date, startTime, endTime, duration, activity, storyAdr, notes) {
-  return `| ${date} | ${startTime} | ${endTime} | ${duration} | ${escapeMarkdown(activity)} | ${escapeMarkdown(storyAdr)} | ${escapeMarkdown(notes)}`;
-}
-
-// Add entry to time tracking file
-function addTimeEntry(date, startTime, endTime, duration, activity, storyAdr, notes) {
-  // Ensure directory exists
-  const dir = path.dirname(TIME_TRACKING_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  
-  // Create file if it doesn't exist
-  if (!fs.existsSync(TIME_TRACKING_FILE)) {
-    const header = `# Time Tracking\n## Spark Capture Project\n\n**Purpose:** Track time spent on project activities to enable estimation accuracy metrics and capacity planning.\n\n**Approach:** Mandatory time tracking for all project commits (enforced via git pre-commit hook).\n\n---\n\n## \uD83D\uDC6A Time Tracking Log\n\n**Format:** One row per session. Use ISO dates (YYYY-MM-DD).\n\n| Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |\n|------|------------|----------|----------------|----------|-----------|-------|\n`;
-    fs.writeFileSync(TIME_TRACKING_FILE, header, 'utf8');
-    console.log(`\n\u2713 Created ${TIME_TRACKING_FILE}\n`);
-  }
-  
-  let content = fs.readFileSync(TIME_TRACKING_FILE, 'utf8');
-  
-  // Check for duplicate entry for today
-  const dateRegex = new RegExp(`\\| ${date} \\|`);
-  if (dateRegex.test(content)) {
-    console.log(`\n\u2713 Time entry for ${date} already exists in docs/time-tracking.md\n`);
-    return;
-  }
-  
-  // Find the position to insert (before Total Time line or at end of table)
-  const lines = content.split('\n');
-  let insertIndex = lines.length;
-  
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes('**Total Time:')) {
-      insertIndex = i;
-      break;
-    }
-  }
-  
-  // Create the entry
-  const entry = formatEntry(date, startTime, endTime, duration, activity, storyAdr, notes);
-  
-  // Insert the entry
-  lines.splice(insertIndex, 0, entry);
-  
-  // Write back to file
-  fs.writeFileSync(TIME_TRACKING_FILE, lines.join('\n'), 'utf8');
-  
-  console.log(`\n\u2713 Time entry added to docs/time-tracking.md\n`);
-}
-
-// Prompt for input
-async function prompt(question, validateFn = null) {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      const trimmed = answer.trim();
-      if (validateFn && !validateFn(trimmed)) {
-        console.log('Invalid input. Please try again.');
-        resolve(prompt(question, validateFn));
-      } else {
-        resolve(trimmed);
-      }
-    });
-  });
-}
-
-// Main function
-async function main() {
-  if (shouldSkipHook()) {
-    rl.close();
-    process.exit(0);
-  }
-  
-  console.log('=========================================');
-  console.log('  Spark Capture - Time Tracking Required');
-  console.log('=========================================');
-  console.log('');
-  console.log('Please enter your time tracking information for this commit.');
-  console.log('(Press Ctrl+C to abort commit)');
-  console.log('');
-  
-  const currentDate = new Date().toISOString().split('T')[0];
-  const startTime = await prompt('Start Time (HH:MM, e.g., 09:00): ', validateTime);
-  const endTime = await prompt('End Time (HH:MM, e.g., 10:30): ', validateTime);
-  
-  // Calculate duration
-  let startMinutes = timeToMinutes(startTime);
-  let endMinutes = timeToMinutes(endTime);
-  
-  if (endMinutes < startMinutes) {
-    endMinutes += 24 * 60; // Handle overnight
-  }
-  
-  const duration = endMinutes - startMinutes;
-  
-  const activity = await prompt('Activity (e.g., Implement Story 2.7, Debug, Documentation): ');
-  const storyAdr = await prompt('Story/ADR (e.g., Story 2.7 / ADR-0026, or N/A): ');
-  const notes = await prompt('Notes (optional, press Enter to skip): ');
-  
-  addTimeEntry(currentDate, startTime, endTime, duration, activity, storyAdr, notes);
-  
-  console.log('');
-  console.log('Time entry recorded:');
-  console.log(`  Date: ${currentDate}`);
-  console.log(`  Time: ${startTime} - ${endTime} (${duration} min)`);
-  console.log(`  Activity: ${activity}`);
-  console.log(`  Story/ADR: ${storyAdr}`);
-  console.log(`  Notes: ${notes || '(none)'}`);
-  console.log('');
-  console.log('Proceeding with commit...');
-  console.log('');
-  
-  rl.close();
-  process.exit(0);
-}
-
-main().catch(err => {
-  console.error('\nError in pre-commit hook:', err.message);
-  console.error(err.stack);
-  rl.close();
-  process.exit(1);
-});
+exit 0

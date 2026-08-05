@@ -1,23 +1,12 @@
-# Git Hooks for Spark Capture Project
+# Git Hooks for socialengage
 
-This directory contains git hooks used to enforce project discipline, particularly mandatory time tracking.
+This directory contains git hooks used to enforce project discipline, particularly contract-first implementation.
 
 ## Pre-commit Hook
 
-The `pre-commit` hook enforces **mandatory time tracking** for all project commits. When you attempt to commit changes, the hook will:
+The `pre-commit` hook is the commit-boundary backstop for the same rule `.claude/hooks/enforce-contract-first.cjs` checks in real time (see `docs/templates/pre-commit-hook.md`): a commit touching `social-listening-core/src/` or `social-listening-admin/src/` must also stage a `*.contract.test.ts` file under that repo's `contracts/`. It catches code written outside a Claude Code session, or where the real-time hook was bypassed.
 
-1. Prompt you for time tracking information:
-   - Date (auto-filled with current date)
-   - Start Time (HH:MM format)
-   - End Time (HH:MM format)
-   - Duration (auto-calculated)
-   - Activity (what you were doing)
-   - Story/ADR (which story or ADR this relates to)
-   - Notes (optional)
-
-2. Automatically add this entry as a line item to `docs/time-tracking.md`
-
-3. Continue with the commit
+It's a repo-wide check, not per-file — it can confirm *a* contract is staged, not that it's *the right* contract for this specific change (see `docs/implementation-methodology.md`).
 
 ## Installation
 
@@ -50,80 +39,46 @@ cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-On Windows, you may need to:
-1. Copy the file manually
-2. Ensure Node.js is in your PATH
-3. The file should work without explicit execute permissions on Windows
+On Windows, the hook runs via Git Bash's `sh` (bundled with Git for Windows), so no explicit execute bit is required — copying the file is enough.
 
 ## When the Hook Runs
 
-The hook runs on **every git commit** and will prompt for time tracking information.
+The hook runs on **every git commit**. It only blocks the commit when both are true:
+- staged changes include a path under `social-listening-core/src/` or `social-listening-admin/src/`
+- no staged path under that same repo's `contracts/` matches `*.contract.test.ts`
 
-### Skipped Scenarios
-
-The hook automatically skips in these cases:
-- **Merge commits** - Detected automatically, no prompt
-- **Initial commit** - First commit in the repository
-- **Time-tracking only commits** - If you're only committing changes to `docs/time-tracking.md`
+Any other commit (docs-only, config-only, a contract-only commit, etc.) passes through silently.
 
 ### Bypassing the Hook
 
-To bypass the hook (not recommended):
+To bypass the hook for a genuinely non-story change (e.g. a typo fix):
 
 ```bash
 git commit --no-verify -m "Your commit message"
 ```
 
-Use this sparingly, as it defeats the purpose of tracking time spent on the project.
-
-## Time Tracking File Format
-
-The hook adds entries to `docs/time-tracking.md` in the following format:
-
-```markdown
-| Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
-|------|------------|----------|----------------|----------|-----------|-------|
-| 2026-08-01 | 09:00 | 10:30 | 90 | Implement Story 2.7 | Story 2.7 / ADR-0026 | GNews connector |
-| 2026-08-01 | 13:00 | 14:15 | 75 | Debug test failures | Story 2.7 | Contract edge cases |
-```
+Note why in the commit message — see `docs/templates/pre-commit-hook.md`.
 
 ## Requirements
 
-- Node.js must be installed and available in your PATH
-- The hook must be executable (on Unix-like systems)
-- `docs/time-tracking.md` will be created automatically if it doesn't exist
+- A POSIX shell (`sh`) - present via Git Bash on Windows, native elsewhere
+- The hook must be executable (on Unix-like systems); `setup-git-hooks.js` handles this
 
 ## Troubleshooting
-
-### "Error: Cannot find module"
-
-Ensure Node.js is installed and in your PATH. Test with:
-
-```bash
-node --version
-```
 
 ### Hook doesn't run
 
 1. Check that the file is in `.git/hooks/pre-commit`
 2. Check that it's executable: `ls -la .git/hooks/pre-commit`
 3. Check the shebang line is correct: `head -1 .git/hooks/pre-commit`
-4. Try running it manually: `.git/hooks/pre-commit`
-
-### "Time entry already exists"
-
-The hook prevents duplicate entries for the same date. If you've already entered time for today, you can:
-- Amend your previous entry manually in `docs/time-tracking.md`
-- Use `--no-verify` to bypass (not recommended)
-- Wait until tomorrow for a new date
+4. Try running it manually: `sh .git/hooks/pre-commit`
 
 ## Files
 
-- `pre-commit` - The main hook script (Node.js)
+- `pre-commit` - The main hook script (POSIX shell)
 - This README.md - Documentation
 
 ## Related Documentation
 
-- [Project Work Management Plan](../../docs/project%20docs/Project%20Management%20Plans/Project-Work-Management-Plan.md)
-- [Time Tracking Template](../../docs/time-tracking.md)
+- [Pre-commit Hook Template](../../docs/templates/pre-commit-hook.md)
 - [Implementation Methodology](../../docs/implementation-methodology.md)

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Setup Git Hooks for Spark Capture Project
- * 
- * This script installs the pre-commit hook that enforces mandatory time tracking.
+ * Setup Git Hooks for socialengage
+ *
+ * This script installs the pre-commit hook that enforces contract-first commits
+ * (see scripts/git-hooks/README.md).
  * 
  * Usage:
  *   node scripts/setup-git-hooks.js
@@ -21,13 +22,7 @@ const HOOKS_DIR = path.join(REPO_ROOT, '.git', 'hooks');
 const HOOK_SOURCE = path.join(REPO_ROOT, 'scripts', 'git-hooks', 'pre-commit');
 const HOOK_TARGET = path.join(HOOKS_DIR, 'pre-commit');
 
-console.log('Setting up Git hooks for Spark Capture project...\n');
-
-// Check if we're in the right directory
-if (!fs.existsSync(path.join(REPO_ROOT, 'package.json'))) {
-  console.error('Error: This script must be run from the project root directory.');
-  process.exit(1);
-}
+console.log('Setting up Git hooks for socialengage...\n');
 
 // Check if .git directory exists
 if (!fs.existsSync(path.join(REPO_ROOT, '.git'))) {
@@ -80,7 +75,7 @@ try {
   }
   
   console.log('\n✅ Pre-commit hook installed successfully!\n');
-  console.log('The hook will now prompt you for time tracking information on every commit.');
+  console.log('The hook will now block commits that touch src/ without a staged contract test.');
   console.log('\nTo test it, make a change and try to commit:');
   console.log('  git add .');
   console.log('  git commit -m "Test commit"');

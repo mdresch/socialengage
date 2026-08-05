@@ -107,7 +107,9 @@ Grouped by theme. Each component's own `SKILL.md` ("Known gaps / deferred work" 
 
 ## D. Not yet decided (needs a human go/no-go, not just unbuilt)
 
-- **ADR-0004's point-in-time author snapshot** (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) — flagged during review as a genuine trade-off, not a strict improvement (it partially reintroduces the per-post duplication ADR-0004 argued against). Needs an explicit decision before it's even drafted as an ADR, let alone built.
+**2026-08-05: moved to its own file.** This section covered exactly one item for a while (below) while ~30 more open questions accumulated inside individual ADRs' own "Open Question(s)" sections without ever being pulled in here. Rather than let this section and each ADR drift further apart, the full list — including the item below — now lives in [`docs/open-decisions.md`](open-decisions.md), organized by urgency instead of by ADR number. Check there, not here, for the current list.
+
+- **ADR-0004's point-in-time author snapshot** (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) — flagged during review as a genuine trade-off, not a strict improvement (it partially reintroduces the per-post duplication ADR-0004 argued against). Needs an explicit decision before it's even drafted as an ADR, let alone built. **See `docs/open-decisions.md` §3.**
 
 ---
 
