@@ -294,6 +294,8 @@
 
 **Source:** ADR-0037 §8b/§8c (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §8b/§8c already exhaustively decided the data model, per-domain aggregation, and escalation-logging mechanics this story exposes; only the backend half of `docs/open-decisions.md` §1's own named gap ("has no owning story").
 
+**Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts`, full suite 42/42 — see `docs/implementation-log.md`). Closes the backend half of ADR-0037 §8b/§8c's own gap; Story 6.10 (the Tenant-Admin-facing screen) is the remaining piece.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes half of a real, confirmed gap: ADR-0037 §8b names the Same-Domain Invite Assist as required, admin-UI-facing work "not yet named by any of Epic 6's existing stories." This story is the backend REST surface a Tenant-Admin-facing screen (Story 6.10) needs to consume; Story 5.15 is this table's sole writer.
 
 **As a** Tenant-Admin,

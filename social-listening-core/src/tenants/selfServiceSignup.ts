@@ -2,6 +2,7 @@ import { getTenantSignupPool } from '../db/tenantSignupPool';
 import { withTenant } from '../db/withTenant';
 import { logPlatformAdminAction } from '../admin/platformAdminAuditLog';
 import { Tenant, TenantRow, mapRowToTenant } from './tenantStore';
+import { checkAndLogDomainEscalation } from './domainSignupAttempts';
 
 /**
  * Static, maintained list (ADR-0037 §4) — not a database table, not a
@@ -112,8 +113,16 @@ export async function provisionTenantViaSignup(
 
 /**
  * ADR-0037 §8b: the matched tenant's id is looked up via tenant_signup_role's
- * own narrow, column-scoped SELECT(id) grant (migrations/0021) — a
- * unique-violation error doesn't carry the conflicting row's id itself.
+ * own SELECT grant on tenants (migrations/0021 — widened from an initial
+ * column-scoped SELECT(id) draft during this story's own healing pass, see
+ * that migration's own comment) — a unique-violation error doesn't carry the
+ * conflicting row's id itself.
+ *
+ * Story 5.16 (ADR-0037 §8c): checkAndLogDomainEscalation() runs right after
+ * the insert — the only place "whenever a domain's attempt count crosses the
+ * escalation threshold" can be detected inline, since this is the sole
+ * writer of domain_signup_attempts. See
+ * .claude/skills/same-domain-invite-assist/SKILL.md.
  */
 async function recordDomainSignupAttempt(domain: string, email: string): Promise<void> {
   const { rows } = await getTenantSignupPool().query<{ id: string }>(`SELECT id FROM tenants WHERE domain = $1`, [
@@ -125,4 +134,6 @@ async function recordDomainSignupAttempt(domain: string, email: string): Promise
     `INSERT INTO domain_signup_attempts (tenant_id, email) VALUES ($1, $2)`,
     [rows[0].id, email]
   );
+
+  await checkAndLogDomainEscalation(rows[0].id, domain);
 }
