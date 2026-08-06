@@ -223,6 +223,8 @@
 
 **Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0030 §3 and its two Clarifications already fully designed the two-phase mechanism this story exposes over HTTP; Story 5.7 already builds and contract-tests the underlying store/mechanism layer.
 
+**Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts`, full suite 39/39 suites — see `docs/implementation-log.md`). Reused Story 5.7's own real-Entra-tenant test-cost discipline: exactly one real execute call in the whole contract, reused for the 409-on-retry check rather than triggering a second real Entra sequence. `targetUserId` is still caller-supplied — the Tenant-Admin-lookup-by-tenant-name gap (`platform-admin-access/SKILL.md`'s own named "Known gap") is unaffected, still open. This is the second of Story 6.6's three named backend prerequisites to close (after Story 5.12); Story 5.14 (audit-log query) is the last.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap: break-glass (Story 5.7) is store/mechanism-level only, confirmed directly against `platform-admin-access/SKILL.md`'s "Known gaps" section — no HTTP surface exists.
 
 **As** Platform Admin,

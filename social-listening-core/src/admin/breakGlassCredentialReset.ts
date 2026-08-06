@@ -70,6 +70,25 @@ export interface BreakGlassConfig {
   authenticationAdministratorRoleId: string;
 }
 
+/**
+ * Story 5.13: reads real Entra credentials from environment variables at
+ * call time, never cached at module load — mirrors app.ts's own
+ * entraConfigFromEnv() pattern. See
+ * .claude/skills/platform-admin-break-glass-rest/SKILL.md.
+ */
+export function breakGlassConfigFromEnv(): BreakGlassConfig {
+  return {
+    tenantId: process.env.ENTRA_TENANT_ID as string,
+    elevatorClientId: process.env.ENTRA_ELEVATOR_CLIENT_ID as string,
+    elevatorClientSecret: process.env.ENTRA_ELEVATOR_CLIENT_SECRET as string,
+    resetterClientId: process.env.ENTRA_RESETTER_CLIENT_ID as string,
+    resetterClientSecret: process.env.ENTRA_RESETTER_CLIENT_SECRET as string,
+    resetterServicePrincipalId: process.env.ENTRA_RESETTER_SP_OBJECT_ID as string,
+    userAdministratorRoleId: process.env.ENTRA_USER_ADMINISTRATOR_ROLE_ID as string,
+    authenticationAdministratorRoleId: process.env.ENTRA_AUTHENTICATION_ADMINISTRATOR_ROLE_ID as string,
+  };
+}
+
 export interface BreakGlassRequest {
   id: string;
   requestedBy: string;
