@@ -48,6 +48,15 @@
 //                       invocation path — those older vars are left in .env/.env.example
 //                       untouched, not deleted, in case the ephemeral-agent pattern is ever
 //                       useful again.
+//   data-privacy      — S-16, Data Privacy & Sovereignty Reviewer (docs/ai-roles/data-privacy-sovereignty-reviewer.md) —
+//                       added 2026-08-06, replacing invoke-ollama-agent.cjs as this role's
+//                       primary automation path after repeated real "fetch failed" errors under
+//                       load (the local model, not the network — Ollama's own /api/tags health
+//                       check stayed reachable throughout). Agent name confirmed by Menno:
+//                       "data-privacy-sovereignty-reviewer". AGENT_VERSION not yet set.
+//   data-sovereignty  — S-23, Data Sovereignty & Privacy Regulation Reviewer (docs/ai-roles/data-sovereignty-privacy-regulation-reviewer.md) —
+//                       added 2026-08-06, same reason as data-privacy above. AGENT_NAME/
+//                       AGENT_VERSION not yet set.
 //
 // Setup:
 //   1. az login  (once; DefaultAzureCredential reuses this session)
@@ -57,7 +66,7 @@
 //      AZURE_AI_FOUNDRY_<ROLE>_PROJECT_ENDPOINT / _AGENT_NAME / _AGENT_VERSION.
 //
 // Usage:
-//   node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs <path-to-material-file> --role product-market|pragmatism|legal-compliance
+//   node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs <path-to-material-file> --role product-market|pragmatism|legal-compliance|data-privacy|data-sovereignty
 //   git diff | node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs - --role legal-compliance --register
 //     Attaches that role's own register file's current content as extra context (so the
 //     reviewer doesn't repeat an already-logged finding), then appends a dated entry with the
@@ -103,13 +112,25 @@ const ROLES = {
   // the suffixes differ (_PROJECT_ENDPOINT/_AGENT_NAME/_AGENT_VERSION vs. _ENDPOINT/_API_KEY/_MODEL).
   pragmatism: ['AZURE_AI_FOUNDRY_ENGINEERING_PRAGMATISM', null],
   'legal-compliance': ['AZURE_AI_FOUNDRY_LEGAL_COMPLIANCE', path.join('..', '..', 'legal', 'legal-compliance-register.md')],
+  // Added 2026-08-06 — Menno is moving these two off Ollama (invoke-ollama-agent.cjs kept
+  // failing with "TypeError: fetch failed" under real load — likely the local model
+  // crashing/OOMing partway through generation on a large document, not a config error;
+  // Ollama's own /api/tags health check stayed reachable throughout). Menno is building
+  // real Foundry Prompt Agents for both in the portal now — AGENT_NAME/AGENT_VERSION below
+  // are unset placeholders until he confirms the real values, the same as every other role
+  // added to this table before its Prompt Agent existed yet.
+  'data-privacy': ['AZURE_AI_FOUNDRY_DATA_PRIVACY_SOVEREIGNTY', null],
+  'data-sovereignty': [
+    'AZURE_AI_FOUNDRY_DATA_SOVEREIGNTY_PRIVACY_REGULATION',
+    path.join('..', '..', 'privacy', 'data-sovereignty-register.md'),
+  ],
 };
 
 const ROLE = argValue('--role');
 if (!ROLE || !ROLES[ROLE]) {
   fail(
     `Missing or unknown --role "${ROLE}". Known roles: ${Object.keys(ROLES).join(', ')}. ` +
-      'Usage: node invoke-azure-foundry-agent.mjs <path-to-material-file | -> --role product-market|pragmatism|legal-compliance [--register]'
+      'Usage: node invoke-azure-foundry-agent.mjs <path-to-material-file | -> --role product-market|pragmatism|legal-compliance|data-privacy|data-sovereignty [--register]'
   );
 }
 const [ENV_PREFIX, REGISTER_RELATIVE_PATH] = ROLES[ROLE];
