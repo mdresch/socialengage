@@ -806,4 +806,26 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 
 **AC9's partial-failure case (tenant created, first-user insert fails) is reproduced with real infrastructure, not a mock:** a pre-seeded `users` row already holding the target `external_subject` but in a non-`active` status — `resolveIdentity()` correctly returns `null` for it (not currently active), so the signup proceeds, but the second insert then genuinely collides with the real `UNIQUE(external_subject)` constraint after the first (`tenants`) insert has already committed — a legitimately-reachable, if unusual, real database state, not a simulated failure.
 
+---
+
+## 2026-08-06 — Story 5.16 — social-listening-core@a251050
+
+- **Full commit:** `a2510508f543c8c10c12cfc3631675f88839964c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 5.16 / ADR-0037 §8
+- **Contract:** social-listening-core/contracts/epic-5/story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts (AC1, AC2/3/4, AC6)
+- **SKILL.md:** social-listening-core/.claude/skills/same-domain-invite-assist/SKILL.md (new)
+- **Files touched:** docs/implementation-plan.md, docs/open-decisions.md, docs/user-stories/README.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/same-domain-invite-assist/SKILL.md, social-listening-core/contracts/epic-5/story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts, social-listening-core/src/http/versions/v1/domainSignupAttemptsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/tenants/domainSignupAttempts.ts, social-listening-core/src/tenants/selfServiceSignup.ts
+- **Full suite at merge:** PASS (41/42 suites, 246/247 tests) — the one failure (Story 5.7's break-glass JIT role grant contract, real Entra directory conflict on a role-assignment object) has zero file/domain overlap with this story's changes and re-ran clean in isolation (12/12); consistent with this project's documented parallel-test-race pattern (real, shared Azure resources under concurrent Jest workers) rather than a regression introduced here.
+
+**Closes the last named scope gap under ADR-0037's own "Same-Domain Invite Assist" section (§8)** — until this story, no route surfaced a rejected same-domain sign-up attempt to the matching tenant's own Tenant-Admins at all; `docs/open-decisions.md` had explicitly flagged this as "a real scope gap, not just an open design question." This story builds the backend half only (`GET /v1/tenants/domain-signup-attempts`); the Tenant-Admin-facing screen consuming it is Story 6.10's own separate, still-unbuilt UI work.
+
+**Distinct-email counting, not raw attempt counting, chosen as the escalation trigger** — three signup attempts from the same person retrying doesn't indicate a real cluster of colleagues at the same domain the way three *different* people do; `domainSignupAttempts.ts` counts `DISTINCT email` per domain within the fixed 30-day window (`ESCALATION_WINDOW_DAYS`) against the fixed 3-attempt threshold (`ESCALATION_THRESHOLD`), both named in `docs/open-decisions.md` §3 as unanalyzed template defaults still open for revision.
+
+**Escalation fires exactly once per crossing, not once per subsequent attempt** — `checkAndLogDomainEscalation()` only writes the audit-log escalation row when the distinct-email count is `=== ESCALATION_THRESHOLD` (not `>=`), so the 3rd distinct attempt escalates and a 4th, 5th, etc. do not re-fire; verified directly by the contract's own 4th-attempt assertion (exactly one `domain_signup_escalation` row exists after 4 attempts, not two). No new migration was needed — this reuses `tenant_signup_role`'s existing `INSERT` grant on `platform_admin_audit_log` from Story 5.15, via `logPlatformAdminAction(entry, getTenantSignupPool())`.
+
+**Cross-tenant isolation (AC6) enforced the same way every other tenant-scoped read in this codebase is** — `listDomainSignupAttempts()` runs under `requireTenantUserIdentity()` + RLS via `withTenant()`, no bespoke tenant-id filtering logic added; a tenant_user (non-admin) gets 403, unauthenticated gets 401, matching the existing role-gating pattern from Stories 5.12–5.14.
+
+**A known, named gap, not silently accepted:** if a domain's ownership changes hands over time (a distinct real possibility, not covered by any existing constraint), attempts recorded before the change would still attribute to whichever tenant currently matches that domain — documented directly in the new `SKILL.md`'s own Load-bearing constraints rather than left implicit.
+
 **Traceability corrected in three places beyond the story's own canonical two:** `epic-6-admin-ui.md`'s Story 6.7 entry, which had named this endpoint as one of two prerequisites "neither of which exists today," gets a dated correction (both now exist; Story 5.18's rate-limiting precondition is restated, not dropped); `implementation-plan.md` gets a dated note under its own existing Story 5.15/5.18 caution paragraph, left otherwise unchanged.
