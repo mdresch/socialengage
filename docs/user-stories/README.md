@@ -75,6 +75,8 @@ All fourteen stories are drafted with real, checkable Acceptance Criteria per th
 
 **2026-08-06 — ADR-0038 and ADR-0039 both accepted, same day.** ADR-0038 verbatim: *"ADR 0038 is a solid piece of work a perferct ADR that allows us to build the enrichment connectors. Approved."* ADR-0039 verbatim: *"Good news ADR 0039 is approved."* Both accepted as drafted, no revisions — see each ADR's own Acceptance note and Amendment Log. **Story 2.8 and Story 3.7 both move to Ready.** Thirteen of the fourteen stories in this batch are now Ready; only Story 5.18 (ADR-0040, still Proposed) remains Blocked.
 
+**2026-08-06, later the same day — ADR-0040 accepted too, closing out the batch.** Verbatim: *"ADR 0040 also approved."* Accepted as drafted, no revisions. **Story 5.18 moves to Ready — all fourteen stories in this 2026-08-05 batch are now Ready, none Blocked.**
+
 **2026-08-06 — Story 5.13 built** (`social-listening-core`, full suite 39/39 — see `docs/implementation-log.md`). Second of Story 6.6's three named backend prerequisites to close; Story 5.14 (audit-log query) is the last remaining one.
 
 **2026-08-06, later the same day — Story 5.14 built** (`social-listening-core`, full suite 40/40 — see `docs/implementation-log.md`). Third and last of Story 6.6's three named backend prerequisites — 5.12/5.13/5.14 are now all shipped. Story 6.6 (Platform Admin console) is no longer blocked on any `social-listening-core` endpoint gap; its own remaining status is purely about its own not-yet-built UI work.

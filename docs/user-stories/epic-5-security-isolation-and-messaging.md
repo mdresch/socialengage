@@ -332,7 +332,7 @@
 
 ## Story 5.18 — Self-service sign-up rate limiting and abuse prevention
 
-**Source:** ADR-0040 (Proposed, drafted this same batch) · **Status:** Blocked — pending ADR-0040's acceptance. A genuinely undecided, hard-to-reverse new mechanism (a new keying scheme, real DoS/availability stakes if built wrong) — ADR-0037 §7 itself already named this as "not designed here... a precondition, not an optional hardening pass," the same bar that earned ADR-0020 its own ADR for an analogous rate-limit-mechanism decision.
+**Source:** ADR-0040 (Accepted 2026-08-06) · **Status:** Ready. A genuinely undecided, hard-to-reverse new mechanism (a new keying scheme, real DoS/availability stakes if built wrong) — ADR-0037 §7 itself already named this as "not designed here... a precondition, not an optional hardening pass," the same bar that earned ADR-0020 its own ADR for an analogous rate-limit-mechanism decision.
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes ADR-0037 §7's own named, undesigned precondition and `docs/open-decisions.md` §1's matching entry. Story 6.7 explicitly disclaims building this on the UI side; this is the backend mechanism gating the one endpoint (Story 5.15) reachable without a resolved identity.
 

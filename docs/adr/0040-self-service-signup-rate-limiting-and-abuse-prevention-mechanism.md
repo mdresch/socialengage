@@ -1,6 +1,7 @@
 # ADR-0040: Self-service tenant sign-up rate limiting and abuse-prevention mechanism
 
-**Status:** Proposed — drafted by the AI Business & Requirements Analyst persona. This persona does not hold ADR-acceptance authority; awaiting Menno's own review and acceptance before Story 5.18 can move to Ready.
+**Status:** Accepted (2026-08-06) — drafted by the AI Business & Requirements Analyst persona (left Proposed, per its own charter boundary; this persona does not hold ADR-acceptance authority), then accepted by Menno as drafted. Story 5.18 moves to **Ready**.
+**Acceptance note (2026-08-06):** Accepted by Menno, verbatim: *"ADR 0040 also approved."* Accepted as drafted, no revisions. All Open Questions below remain open at acceptance. This closes out the three-ADR batch (0038/0039/0040) drafted 2026-08-05 — all three are now Accepted, the same day this session's own WIP-limit rule (`Development-Approach-and-Life-Cycle-Plan.md`, max 3 ADRs open for review) would otherwise have started constraining new ADR work.
 **Source:** ADR-0037 §7 (Accepted) names this explicitly as a real, undesigned gap and a hard precondition, not an optional hardening pass: "nothing in this Decision bounds how many *distinct* new identities... can each successfully create one new tenant in rapid succession... the exact mechanism and numeric threshold are left as an Open Question... not designed here." ADR-0037's own Consequences section restates it as "a precondition for exposing this endpoint publicly, not an optional hardening pass," and `docs/open-decisions.md` §1 lists it under "Blocks work already queued next." Requested directly by Menno as part of a 16-item story-drafting batch.
 
 ## Context
@@ -57,3 +58,4 @@ A `429` rejection under this ADR's own mechanism is a distinct outcome from ADR-
 ## Amendment Log
 
 - 2026-08-05 — Initial proposal, drafted by the AI Business & Requirements Analyst persona, as part of a 16-item story-drafting batch, resolving ADR-0037 §7's own explicitly-named, undesigned precondition. Left **Proposed** — this persona does not hold ADR-acceptance authority.
+- 2026-08-06 — **Accepted by Menno**, verbatim: *"ADR 0040 also approved."* As drafted, no revisions. Story 5.18 moves to Ready.
