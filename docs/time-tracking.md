@@ -15,8 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-06 | — | — | auto | Documentation | — | Add real, auto-derived commit time-logging to post-commit; fix stale template (cd308eb) |
 
-**Total Time:** 0 minutes
+**Total Time:** Not tracked (see "Metrics Derived from Time Tracking" below) — the log table's own row count is the accurate figure for "commits logged," not a separately-maintained number here that could drift out of sync with it.
 
 ---
 

@@ -60,8 +60,20 @@ if [ "$SKIP_TIME_LOG" -eq 0 ] && [ -f "$TIME_TRACKING_FILE" ]; then
   # No real wall-clock start/end time exists for an auto-derived entry — recorded
   # honestly as "—", never a fabricated plausible-looking number (this project's own
   # "never invent a figure not evidenced by a real source" discipline, applied here).
-  printf '| %s | — | — | auto | %s | %s | %s (%s) |\n' \
-    "$DATE" "$ACTIVITY" "$STORY_ADR" "$SUBJECT" "$SHORT_HASH" >> "$TIME_TRACKING_FILE"
+  NEW_ROW=$(printf '| %s | — | — | auto | %s | %s | %s (%s) |' \
+    "$DATE" "$ACTIVITY" "$STORY_ADR" "$SUBJECT" "$SHORT_HASH")
+
+  # A plain `>>` would append at end-of-file, after every other section and the
+  # footer — the row has to land inside the actual log table, directly under its
+  # own header-separator row, not just anywhere in the file.
+  TMP_FILE="${TIME_TRACKING_FILE}.tmp"
+  awk -v newrow="$NEW_ROW" '
+    { print }
+    /^\|------\|------------\|----------\|----------------\|----------\|-----------\|-------\|$/ && !inserted {
+      print newrow
+      inserted = 1
+    }
+  ' "$TIME_TRACKING_FILE" > "$TMP_FILE" && mv "$TMP_FILE" "$TIME_TRACKING_FILE"
 fi
 
 queue_commit() {
