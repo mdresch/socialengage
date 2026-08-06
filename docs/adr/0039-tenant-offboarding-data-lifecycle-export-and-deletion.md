@@ -1,6 +1,7 @@
 # ADR-0039: Tenant offboarding data lifecycle — export before deletion, retention interaction, and what "deleted" means across primary, archival, and credential storage
 
-**Status:** Proposed — drafted by the AI Business & Requirements Analyst persona. This persona does not hold ADR-acceptance authority; awaiting Menno's own review and acceptance before Story 3.7 can move to Ready.
+**Status:** Accepted (2026-08-06) — drafted by the AI Business & Requirements Analyst persona (left Proposed, per its own charter boundary; this persona does not hold ADR-acceptance authority), then accepted by Menno as drafted. Story 3.7 moves to **Ready**.
+**Acceptance note (2026-08-06):** Accepted by Menno, verbatim: *"Good news ADR 0039 is approved."* Accepted as drafted, no revisions. All Open Questions below remain open at acceptance.
 **Source:** Requested directly by Menno as part of a 16-item story-drafting batch. Confirmed directly against the codebase and prior ADRs that this gap is real and not yet designed anywhere: ADR-0018 (data retention/archival, Accepted) states outright, in its own Decision text, "**Explicitly not addressed by this ADR:** tenant offboarding / right-to-erasure requests (e.g. GDPR Article 17)... a distinct legal/compliance question... that deserves its own decision"; ADR-0031 (`tenants` table shape, Accepted) names "Tenant deletion/offboarding" as its own out-of-scope Open Question, cross-referenced to `docs/open-items-and-deferred-work.md` §C; and `docs/open-items-and-deferred-work.md` §C itself lists "Tenant offboarding / right-to-erasure (GDPR Article 17)" under "Explicitly out of scope (not deferred — a boundary, not a gap)." No ADR, story, or shipped code addresses what happens to a tenant's data once Story 5.7's tenant-suspension write occurs.
 
 ## Context
@@ -80,3 +81,4 @@ This ADR resolves ADR-0018's own explicitly-named "not addressed by this ADR" ga
 ## Amendment Log
 
 - 2026-08-05 — Initial proposal, drafted by the AI Business & Requirements Analyst persona, as part of a 16-item story-drafting batch, closing the gap explicitly named by ADR-0018 and ADR-0031 as "not addressed" and "out of scope" respectively. Left **Proposed** — this persona does not hold ADR-acceptance authority.
+- 2026-08-06 — **Accepted by Menno**, verbatim: *"Good news ADR 0039 is approved."* As drafted, no revisions. Story 3.7 moves to Ready.

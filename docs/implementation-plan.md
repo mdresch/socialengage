@@ -163,9 +163,9 @@ Per Menno's own explicit sign-off (ADR-0033's own flagged Open Question — the 
 |---|---|---|
 | 0 | 1.1, 1.2, 1.3, 1.4, 5.3, 5.4 | — |
 | 1 | 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 4.3, 2.7, 1.5, 1.6, 5.15, 5.16 | 5.18 (ADR-0040) |
-| 2 | 4.1, 4.2 | 2.8 (ADR-0038) |
+| 2 | 4.1, 4.2, 2.8 | — |
 | 3 | 5.1, 5.2, 5.5, 5.12, 5.13, 5.14, 6.8, 6.9, 6.10 | — |
-| 4 | 2.4 (may never trigger — see Phase 4's solo-project note), 2.5, 3.5, 3.6, 4.4, 2.6 | 3.7 (ADR-0039) |
+| 4 | 2.4 (may never trigger — see Phase 4's solo-project note), 2.5, 3.5, 3.6, 4.4, 2.6, 3.7 | — |
 | 4.5 | 5.6, 5.7, 5.8, 5.9, 5.10, 1.7, 5.11, 1.8, 1.9, 5.17 — **all Ready, ADR-0029–ADR-0034 all Accepted 2026-08-03, ADR-0036 (§5) Accepted 2026-08-04; 5.11 built 2026-08-05, same day it was drafted; 1.8/1.9/5.17 added 2026-08-05, a further late continuation — see the dated note below** | — |
 | 5 | — | — |
 
@@ -186,6 +186,8 @@ Every story from the original 23-ADR series appears exactly once, plus Story 2.6
 - **5.15, 5.16 → Phase 1**, closing the gap this phase's own 2026-08-04 dated update already flagged for Story 6.7 ("depends on a new `POST /v1/tenants/self-service-signup`-shaped core endpoint that does not exist yet... not built by this drafting pass"). No new ADR needed for either — both build directly against ADR-0037's own already-exhaustive design.
 - **5.18 → Phase 1**, alongside 5.15/5.16 (the endpoint it rate-limits). **Blocked** — sourced from ADR-0040, still Proposed; ADR-0037 §7 itself already named this as "a precondition for exposing this endpoint publicly, not an optional hardening pass," so Story 5.15 should not be considered safe for real, untrusted traffic until this story is also built, even though 5.15 itself is independently Ready.
 - **6.8, 6.9, 6.10 → Phase 3**, alongside 6.6 — all three continue "finish the admin UI beyond the Phase 1 minimum," this phase's own already-established framing for Epic 6's later screens. No new ADR needed for any of the three.
+
+**2026-08-06 addition — ADR-0038 and ADR-0039 both accepted, same day.** Story 2.8 (Phase 2) and Story 3.7 (Phase 4) both move from Blocked to Ready — the table above reflects this directly. Only Story 5.18 (ADR-0040, Phase 1, still Proposed) remains Blocked in this batch. See `docs/adr/README.md`'s own dated note and `docs/user-stories/README.md`'s own dated note for the full acceptance record.
 
 **2026-08-06 addition — Story 6.6's own named backend REST-surface gap (5.12, 5.13, 5.14) is now fully closed.** `GET/POST/PATCH /v1/admin/tenants` (Story 5.12), the break-glass request/execute surface (Story 5.13), and the audit-log query surface (Story 5.14) are all built and contract-verified in `social-listening-core` — see `docs/implementation-log.md` for the real commit hashes. Phase 3's own row above (5.12, 5.13, 5.14) reflects this without a status-column change, since this table tracks phase placement/ADR-readiness, not build status — see `docs/user-stories/README.md`'s own dated running notes for the fuller account.
 

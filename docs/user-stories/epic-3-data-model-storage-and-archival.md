@@ -94,7 +94,7 @@
 
 ## Story 3.7 — Tenant offboarding data lifecycle: export and deletion
 
-**Source:** ADR-0039 (Proposed, drafted this same batch) · **Status:** Blocked — pending ADR-0039's acceptance. A genuinely undecided, hard-to-reverse data-deletion/compliance-adjacent question — twice already named and twice already declined by an Accepted ADR (ADR-0018, ADR-0031) as needing its own decision, not ordinary CRUD/UI surface.
+**Source:** ADR-0039 (Accepted 2026-08-06) · **Status:** Ready. A genuinely undecided, hard-to-reverse data-deletion/compliance-adjacent question — twice already named and twice already declined by an Accepted ADR (ADR-0018, ADR-0031) as needing its own decision, not ordinary CRUD/UI surface.
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, twice-named gap: ADR-0018's own Decision text states outright "tenant offboarding / right-to-erasure requests... deserves its own decision"; ADR-0031 names "Tenant deletion/offboarding" as its own out-of-scope Open Question. Story 5.7 (built) can suspend a tenant, but nothing addresses what happens to a suspended tenant's data — every table (`social_posts`, `authors`, `ingestion_runs`, `watchlists`, `platform_credentials`, `users`) continues to exist indefinitely.
 
