@@ -22,6 +22,21 @@
 //   node docs/ai-roles/scripts/invoke-mistral-agent.cjs <path-to-material-file> --role product-market
 //   git diff | node docs/ai-roles/scripts/invoke-mistral-agent.cjs - --role pragmatism
 //   node docs/ai-roles/scripts/invoke-mistral-agent.cjs some.md --agent-id ag_...  (bypasses --role entirely)
+//   git diff | node docs/ai-roles/scripts/invoke-mistral-agent.cjs - --role product-market --register
+//     Attaches that role's own register file's current content as extra context (so the
+//     reviewer doesn't repeat an already-logged finding), then appends a dated entry with the
+//     response to that same register file — mirroring invoke-gemini-agent.mjs's own --register
+//     flag. Only product-market has a register configured today
+//     (docs/product/product-market-register.md); pragmatism does not yet — passing --register
+//     with --role pragmatism fails clearly rather than silently no-op'ing.
+//
+// A caveat, stated honestly rather than assumed away: the text-extraction path used for
+// --register's appended entry (extractResponseText(), below) has not yet been empirically
+// verified against a real Mistral Conversations API response in this repo — no prior use of
+// this script has extracted anything from the response, only printed the raw JSON. It tries
+// several plausible response shapes and falls back to the raw JSON (clearly labeled) if none
+// match, logging to stderr which path was used, specifically so the first real --register run
+// makes it obvious whether the extraction worked rather than silently producing garbage.
 
 const fs = require('fs');
 const path = require('path');
@@ -41,17 +56,29 @@ function fail(message) {
   process.exit(1);
 }
 
-// role slug -> [charter file, env var prefix]
+// role slug -> [charter file, env var prefix, register file path relative to docs/ai-roles/scripts/ (or null — no register yet)]
 const ROLES = {
-  pragmatism: ['engineering-pragmatism-reviewer.md', 'MISTRAL_ENGINEERING_PRAGMATISM'],
-  'product-market': ['product-market-reviewer.md', 'MISTRAL_PRODUCT_MARKET_FIT'],
+  pragmatism: ['engineering-pragmatism-reviewer.md', 'MISTRAL_ENGINEERING_PRAGMATISM', null],
+  'product-market': [
+    'product-market-reviewer.md',
+    'MISTRAL_PRODUCT_MARKET_FIT',
+    path.join('..', '..', 'product', 'product-market-register.md'),
+  ],
 };
 
 const ROLE = argValue('--role') || 'pragmatism';
 if (!ROLES[ROLE]) {
   fail(`Unknown --role "${ROLE}". Known roles: ${Object.keys(ROLES).join(', ')}`);
 }
-const [CHARTER_FILE, ENV_PREFIX] = ROLES[ROLE];
+const [CHARTER_FILE, ENV_PREFIX, REGISTER_RELATIVE_PATH] = ROLES[ROLE];
+const REGISTER_PATH = REGISTER_RELATIVE_PATH ? path.join(__dirname, REGISTER_RELATIVE_PATH) : null;
+const USE_REGISTER = process.argv.includes('--register');
+if (USE_REGISTER && !REGISTER_PATH) {
+  fail(`--register given but role "${ROLE}" has no register file configured yet.`);
+}
+if (USE_REGISTER && !fs.existsSync(REGISTER_PATH)) {
+  fail(`--register given but ${REGISTER_PATH} does not exist.`);
+}
 
 const API_KEY = process.env.MISTRAL_API_KEY;
 const AGENT_ID = argValue('--agent-id') || process.env[`${ENV_PREFIX}_AGENT_ID`];
@@ -81,8 +108,47 @@ function readInput() {
   return fs.readFileSync(inputArg, 'utf8');
 }
 
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Best-effort text extraction from a Mistral Conversations API response —
+ * NOT yet empirically verified against a real response in this repo (see
+ * the file-header caveat). Tries a few plausible shapes, in order, and
+ * falls back to the labeled raw JSON if none match, so a mismatch is
+ * visible in the register rather than silently producing garbage.
+ */
+function extractResponseText(data) {
+  const candidates = [
+    () => data.outputs?.find((o) => typeof o.content === 'string')?.content,
+    () => data.outputs?.[0]?.content,
+    () => data.choices?.[0]?.message?.content,
+    () => (typeof data.output_text === 'string' ? data.output_text : undefined),
+  ];
+  for (const candidate of candidates) {
+    const value = candidate();
+    if (typeof value === 'string' && value.trim().length > 0) {
+      console.error('[extractResponseText: matched a known shape]');
+      return value;
+    }
+  }
+  console.error('[extractResponseText: no known shape matched — falling back to raw JSON]');
+  return `\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``;
+}
+
 async function main() {
   const material = readInput();
+
+  let userContent = material;
+  if (USE_REGISTER) {
+    const existingRegister = fs.readFileSync(REGISTER_PATH, 'utf8');
+    userContent =
+      `## Existing Register (context only — do not repeat findings already logged here; ` +
+      `if the material below shows a previously logged finding is now resolved, say so ` +
+      `explicitly, don't just silently omit it)\n\n${existingRegister}\n\n---\n\n` +
+      `## Material under review\n\n${material}`;
+  }
 
   const res = await fetch('https://api.mistral.ai/v1/conversations', {
     method: 'POST',
@@ -93,7 +159,7 @@ async function main() {
     body: JSON.stringify({
       agent_id: AGENT_ID,
       agent_version: AGENT_VERSION,
-      inputs: [{ role: 'user', content: material }],
+      inputs: [{ role: 'user', content: userContent }],
     }),
   });
 
@@ -103,6 +169,14 @@ async function main() {
 
   const data = await res.json();
   console.log(JSON.stringify(data, null, 2));
+
+  if (USE_REGISTER) {
+    const materialLabel = inputArg === '-' ? 'stdin (e.g. git diff)' : inputArg;
+    const text = extractResponseText(data);
+    const entry = `\n## ${todayIso()} — reviewed ${materialLabel}\n\n${text}\n\n---\n`;
+    fs.appendFileSync(REGISTER_PATH, entry, 'utf8');
+    console.error(`\n[appended to ${REGISTER_PATH}]`);
+  }
 }
 
 main().catch((err) => fail(String(err && err.stack ? err.stack : err)));

@@ -4,6 +4,8 @@
   "description": "Standalone invocation scripts for SocialEngage's externally-invoked AI review roles (docs/ai-roles/). Not part of social-listening-core or social-listening-admin, and not subject to their contract-first enforcement — these are review-triage tools, not product code.",
   "type": "module",
   "dependencies": {
-    "@google/genai": "^2.15.0"
+    "@google/genai": "^2.15.0",
+    "@azure/identity": "^4.13.1",
+    "@azure/ai-projects": "^2.4.0"
   }
 }
