@@ -765,3 +765,23 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 **Root-cause fix, not a tolerance loosening (Step 6a's own hard-stop check, confirmed clear):** `before` is now captured via `SELECT now()` on the same `getAdminPool()` connection the refresh itself runs through, putting both timestamps on one clock — eliminating the cross-clock comparison entirely rather than widening the assertion's margin to paper over it. `refresh_author_topic_signals()`'s own logic was never wrong; nothing about AC5b's assertion or intent changed.
 
 **`SKILL.md` gets a new, durable Load-bearing constraint** naming this exact pitfall (never compare a Postgres-side `now()`-derived timestamp against a JS-side `new Date()`) so a future contract in this same file — or a similar refresh-timing contract elsewhere — doesn't reintroduce it.
+
+---
+
+## 2026-08-06 — Healing pass — Story 2.6 AC3 — social-listening-core@cbc8283
+
+- **Full commit:** `cbc828314a622528611657025ed9e2665f123df6`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.6 / ADR-0024 (contract healed, no behavior change)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.6.newswire-connector.contract.test.ts (AC3)
+- **SKILL.md:** social-listening-core/.claude/skills/newswire-connector/SKILL.md (updated — Load-bearing constraint corrected/expanded)
+- **Files touched:** social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.6.newswire-connector.contract.test.ts
+- **Full suite at merge:** PASS (40/40 suites, 233/233 tests)
+
+**A recurring failure this session had repeatedly attributed as "foreign, pre-existing, transient — Cloudflare bot-detection, not something to fix" without ever actually walking `heal-contract-failure`'s own five steps against it.** Menno asked directly for it to be healed properly rather than re-attributed again. This pass did the real investigation the prior attributions skipped: `curl` confirmed PR Newswire's feed is genuinely served through Cloudflare (`Server: cloudflare`, `CF-RAY` present) and can intermittently return a non-200 for a single request — 5 consecutive requests during this investigation all returned 200, and even one transient 301 succeeded on the very next attempt, consistent with real, low-frequency, self-resolving bot-management scoring rather than the feed URL being wrong or requiring a specific header.
+
+**The actual root cause was narrower and entirely fixable: AC3 alone bypassed retry protection the rest of the codebase already has for exactly this failure shape.** `fetchNewswireFeed()` already classifies a non-401/403/5xx `!response.ok` as `'network'` (`errorClassification.ts`), which `isRetryable()` already returns `true` for, and `runIngestionAttempt()` already retries retryable errors with exponential backoff (ADR-0010) — confirmed by reading `runIngestionAttempt.ts` directly. `pollNewswireFeeds()` (used by AC1/AC2/AC4/AC5) routes every fetch through that retry wrapper. AC3 is the one place that calls `fetchNewswireFeed()` directly (it needs the raw parsed items to test `supportedQueryFeatures`/watchlist-dispatch fallback against real content, not a DB-inserting pipeline run), so it alone had zero tolerance for a failure class the codebase's own design already expects and handles.
+
+**Root-cause fix, not a tolerance loosening or a new mechanism (Step 6a's own hard-stop check, confirmed clear):** `fetchNewswireFeedWithRetry()`, local to the contract file, reuses `isRetryable()` and the exact same exponential-backoff shape `runIngestionAttempt()` already uses (`Math.min(1000 * 2 ** attempt, 5000)`), rather than inventing new retry logic or a blind retry loop. AC3 still requires a genuinely successful real fetch and its content-based assertions are unchanged; only the test's own tolerance for a failure shape the rest of the codebase already classifies as retryable changed.
+
+**`newswire-connector/SKILL.md`'s existing "contract test hits real URLs" constraint is corrected and expanded, not just appended to** — it previously only warned against hardcoding live content; it now also names the actual Cloudflare/retry mechanics found here, so a future AC touching this connector's real HTTP calls doesn't rediscover the same gap from scratch.
