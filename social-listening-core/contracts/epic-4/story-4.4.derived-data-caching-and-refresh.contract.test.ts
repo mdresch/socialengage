@@ -206,7 +206,18 @@ describe('Story 4.4 — derived-data caching and refresh strategy contract', () 
       });
     }
 
-    const before = new Date();
+    // Captured via Postgres's own now(), not the test process's Date.now() —
+    // refreshed_at is also set by Postgres's now() (migration 0013), and
+    // comparing across two different clocks (host/test-process vs. the
+    // Dockerized Postgres container) is unsound: Docker Desktop/WSL2 VM
+    // clock drift from the host is real and grows over a session's runtime,
+    // which is what previously made this assertion intermittently fail by a
+    // widening margin (10ms, then 95ms) even under --runInBand (no Jest
+    // parallelism involved at all). See .claude/skills/derived-data-caching-and-refresh/SKILL.md's
+    // matching Load-bearing constraint.
+    const {
+      rows: [{ now: before }],
+    } = await getAdminPool().query<{ now: Date }>('SELECT now()');
     await getAdminPool().query('SELECT refresh_author_topic_signals();');
 
     const { rows } = await withTenant(tenantId, (client) =>
