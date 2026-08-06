@@ -53,7 +53,8 @@
 //                       primary automation path after repeated real "fetch failed" errors under
 //                       load (the local model, not the network — Ollama's own /api/tags health
 //                       check stayed reachable throughout). Agent name confirmed by Menno:
-//                       "data-privacy-sovereignty-reviewer". AGENT_VERSION not yet set.
+//                       "data-privacy-sovereignty-reviewer". AGENT_VERSION not yet set. Register:
+//                       docs/privacy/data-privacy-sovereignty-register.md, added 2026-08-06.
 //   data-sovereignty  — S-23, Data Sovereignty & Privacy Regulation Reviewer (docs/ai-roles/data-sovereignty-privacy-regulation-reviewer.md) —
 //                       added 2026-08-06, same reason as data-privacy above. AGENT_NAME/
 //                       AGENT_VERSION not yet set.
@@ -119,7 +120,10 @@ const ROLES = {
   // real Foundry Prompt Agents for both in the portal now — AGENT_NAME/AGENT_VERSION below
   // are unset placeholders until he confirms the real values, the same as every other role
   // added to this table before its Prompt Agent existed yet.
-  'data-privacy': ['AZURE_AI_FOUNDRY_DATA_PRIVACY_SOVEREIGNTY', null],
+  'data-privacy': [
+    'AZURE_AI_FOUNDRY_DATA_PRIVACY_SOVEREIGNTY',
+    path.join('..', '..', 'privacy', 'data-privacy-sovereignty-register.md'),
+  ],
   'data-sovereignty': [
     'AZURE_AI_FOUNDRY_DATA_SOVEREIGNTY_PRIVACY_REGULATION',
     path.join('..', '..', 'privacy', 'data-sovereignty-register.md'),
