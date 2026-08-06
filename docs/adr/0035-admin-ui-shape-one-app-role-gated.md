@@ -39,6 +39,10 @@ ADR-0001 already decided `social-listening-admin` is one repository, independent
 
 **This is now the third no-story ADR in this series, and per this project's own "rule of three" discipline** (already applied elsewhere — ADR-0004's organization-as-Author question, ADR-0026's own deferral of generalizing it) — **this may be the trigger to formalize an actual "non-story ADR" convention in `docs/user-stories/README.md`, rather than adding a third separately-reasoned, one-off named exception.** This is flagged here as an explicit recommendation for Menno's own acceptance-pass decision, the same way ADR-0026's own "should ADR-0004 generalize" question was decided at acceptance rather than deferred a third time — not decided unilaterally by this drafting pass.
 
+## Note on relation to ADR-0041 (2026-08-06)
+
+**ADR-0041** (Accepted 2026-08-06) formalizes, as a general, project-wide, cross-layer rule, something this ADR already decided locally: the admin UI gates on the fact that a Platform Admin session structurally has no `tenant_id` context at all (it is not a `users` row, per ADR-0032 §3), which naturally separates what it can render from what a Tenant-Admin/Tenant User session can. This already fully satisfies ADR-0041's Decision §1 — this note confirms that, and requires no change to this ADR's own Decision or Consequences text. ADR-0041's Decision §2 does add a durable, cross-layer requirement this ADR's own route-tree split did not itself state explicitly: every route's own page component must actually enforce that separation server-side, not merely rely on which link is shown — the concrete gap the 2026-08-06 healing pass (`social-listening-admin@1f8960e`) found and fixed under Story 6.2.
+
 ## Amendment Log
 
 - 2026-08-03 — Initial proposal, drafted by the AI Business & Requirements Analyst persona.
