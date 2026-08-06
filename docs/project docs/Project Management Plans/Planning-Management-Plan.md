@@ -213,13 +213,15 @@ The project uses a **phase-gated approach** with 6 phases (0-5):
 |----------|---------|-------------|------|
 | Claude Code (Delivery Agent) | Story implementation | Per story | Included in Anthropic subscription |
 | Claude Code (Business Analyst) | Requirements analysis | Episodic | Included |
-| Claude Code (Documentation Steward) | Traceability auditing | Not yet exercised | Included |
+| Claude Code (Documentation Steward) | Traceability auditing | ~~Not yet exercised~~ **corrected 2026-08-06: real, repeated exercise** — see `docs/pending-documentation-steward-reviews.md`'s own dated entries | Included |
 | Claude Code (QA/Contract Author) | Contract writing/review | Not yet exercised | Included |
 | Gemini (Security Reviewer) | Architecture/security review | Episodic | Google API costs |
 | Mistral (Engineering Pragmatism) | Anti-overengineering review | Episodic | Mistral API costs |
 | Mistral (Product/Market-Fit) | User value assessment | Episodic | Mistral API costs |
-| Ollama (Data Privacy) | Local-only review | Episodic | Self-hosted (no cost) |
-| Azure AI Foundry | Model hosting (future) | Not yet used | Azure costs |
+| Ollama (Data Privacy) | Local-only review | Episodic | ~~Self-hosted (no cost)~~ migrating to a Microsoft Foundry Prompt Agent, 2026-08-06 — see `docs/ai-roles/README.md` |
+| Azure AI Foundry | Model hosting ~~(future)~~ | ~~Not yet used~~ **corrected 2026-08-06: real, active** — Product & Market-Fit and Engineering Pragmatism Reviewers each have a live Foundry Prompt Agent (added 2026-08-06), Legal & Compliance Reviewer runs on Foundry-hosted `gpt-5.2` (added 2026-08-05), and Data Privacy/Data Sovereignty Reviewers are migrating there too (see row above) | Azure costs |
+
+**Documentation Steward note, 2026-08-06:** this table is also missing rows for the Legal & Compliance Reviewer, Data Sovereignty & Privacy Regulation Reviewer, Knowledge-Graph & Semantic Data Modeling Reviewer (all added 2026-08-05), the Ideal Manager, and the Learning & Development Writer (added 2026-08-06) — flagged rather than added here, since adding new resource-planning rows (utilization/cost estimates) is planning content this role isn't chartered to originate; `Stakeholder-Register.md` Section 2 is the current, accurate source for all of them.
 
 **AI Resource Constraints:**
 - Free-tier API limits may constrain simultaneous agent usage

@@ -144,8 +144,11 @@ The SocialEngage project uses a **Phased, Dependency-Ordered, Non-Calendar Lifec
 | 2 | Enrichment | AI-powered post understanding | Sentiment, entities, key phrases populated | 4.1-4.2 |
 | 3 | Eventing | Platform for downstream subsystems | Events published, filtering working, test subscriber | 5.1-5.2, 5.5 |
 | 4 | Scale-out | Multi-connector, multi-instance | 2+ connectors, 2+ instances, volume tested | 2.4-2.6, 3.5-3.6, 4.4 |
+| 4.5 | Multi-tenant identity & access foundation | Close the authentication/tenant-identity gap (Risk R-04) | Every `/v1` endpoint derives identity from a validated Entra bearer token under RLS; `X-Tenant-Id` retired as a trust mechanism; R-04 closed, not merely mitigated | 5.6-5.11, 1.7 |
 | 5 | Production Readiness | Hardened for real use | Implemented Entra authentication/identity, security review, operational runbooks, go-live | Not storied |
 | Future | Downstream Subsystems | Brand Reputation, Social Care, Social Selling | Phase 1 validated, separate charters | Deferred |
+
+**Documentation Steward correction, 2026-08-06.** This table was missing the Phase 4.5 row entirely — `docs/implementation-plan.md` inserted a real, fully-built phase between Phase 4 and Phase 5 (2026-08-03, see that document's own "why this is its own phase" section), and this document's own phase table had silently diverged from it ever since, in violation of this plan's own stated intent that `docs/implementation-plan.md` is the phase-structure source of truth. Row added above, matching `docs/implementation-plan.md`'s own Goal/Deliverable/story-list for that phase; no other phase's row content changed.
 
 **2026-08-06 — Phase 5's "go-live" exit criterion is now formally defined, not just named.** `Go-Live-Readiness-Definition.md` (this folder) is the authoritative document: it defines the environment stages between "ephemeral test infrastructure" (today's only mode) and public Go-Live, the narrow Pilot exception, and the gate criteria for each transition. Phase 5's completion is one required input to that decision, not the decision itself.
 

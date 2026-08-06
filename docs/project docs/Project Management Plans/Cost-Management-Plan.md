@@ -131,7 +131,7 @@ Spend Decision (continue, adjust, or stop)
 | C-10 | Claude Code | AI Agent Services | Anthropic subscription | Included | Active |
 | C-11 | Gemini | AI Agent Services | Google API | Pay-per-request | Episodic |
 | C-12 | Mistral | AI Agent Services | Mistral API | Pay-per-request | Episodic |
-| C-13 | Ollama (self-hosted) | AI Agent Services | Local | $0 | Active |
+| C-13 | ~~Ollama (self-hosted)~~ Ollama (self-hosted) / migrating to Azure AI Foundry, 2026-08-06 | AI Agent Services | Local ($0) / Foundry pay-per-request once migrated | $0 (Ollama's own invocation path kept failing under load; the Data Privacy & Sovereignty and Data Sovereignty & Privacy Regulation Reviewers are moving to Foundry Prompt Agents — `docs/ai-roles/README.md`) | Active — migration in progress, not yet a new dollar figure |
 | C-14 | Azure AI Language (future) | Tenant-owned AI service | Tenant pays Microsoft/Azure directly | Not a SocialEngage cost item | Planned — ADR-0028; credential ownership and direct vendor billing are required |
 | C-15 | Azure Service Bus (future) | Cloud Infrastructure | Pay-as-you-go | TBD | Planned |
 
