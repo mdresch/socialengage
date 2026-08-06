@@ -2,7 +2,7 @@
 
 **Audience:** a `platform_admin` identity — the operator of the SocialEngage platform itself, not a member of any tenant.
 
-**Current coverage, as of 2026-08-06:** only sign-in exists. `social-listening-admin`'s Platform-Admin-facing screen tree is routed separately from the tenant-facing one (Story 6.2), but no actual Platform Admin screens live in it yet — Story 6.6 (the Platform Admin console: tenant list, provisioning, break-glass, audit log) is Ready but not yet built. This manual will grow section by section as that story, and others, actually ship — nothing below describes a screen that doesn't exist yet.
+**Current coverage, as of 2026-08-06:** only sign-in exists. `social-listening-admin`'s Platform-Admin-facing screen tree is routed separately from the tenant-facing one (Story 6.2) — a real defect where a Platform Admin session was misrouted into the tenant shell was found and fixed the same day (`social-listening-admin@1f8960e`, see `docs/implementation-log.md`) — but no actual Platform Admin screens live in that tree yet: Story 6.6 (the Platform Admin console: tenant list, provisioning, break-glass, audit log) is Ready but not yet built. This manual will grow section by section as Story 6.6, and others, actually ship — nothing below describes a screen that doesn't exist yet.
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. Go to `social-listening-admin`. If you're not already signed in, you're redirected to a sign-in page automatically — there's no separate "log in" button to find first.
 2. Sign in with your organization's Microsoft Entra identity. This is the same real sign-in flow every SocialEngage identity (System Admin, Tenant Admin, or ordinary user) uses — there's no separate System Admin login path.
-3. Once signed in, SocialEngage recognizes you as a Platform Admin and routes you to the Platform-Admin-facing area of the app, separate from any tenant's own screens (Story 6.2) — a Platform Admin session never renders a tenant's own data.
+3. Once signed in, SocialEngage recognizes you as a Platform Admin and routes you to the Platform-Admin-facing area of the app, separate from any tenant's own screens (Story 6.2) — both directions (a Platform Admin session on a tenant route, and vice versa) are redirected, contract-verified (`social-listening-admin@1f8960e`). A real misrouting bug existed here earlier the same day this manual was first written (a Platform Admin session's resolved-identity shape didn't match what the routing logic checked for, and neither route tree enforced anything server-side at all) — fixed and logged in `docs/implementation-log.md`, named here only so this manual's own history is honest, not as a currently-open caveat.
 4. Your session stays signed in for up to 8 hours, then you'll be asked to sign in again automatically — even if you were actively using the app right up to that point. This is a deliberate security limit, not a bug.
 5. To sign out, use the sign-out action — this ends your session immediately on this device; nothing from it can be reused afterward.
 

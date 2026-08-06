@@ -197,3 +197,21 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
+## 2026-08-06 — 63b5ce1 — Process Ideal Manager, Documentation Steward, and L&D Writer review queues
+
+- **Full commit:** `63b5ce1a1c3b5d74d2fd9e6ff8dca4cee635285a`
+- **Files touched:** docs/ai-roles/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Stakeholder-Register.md
+- **Status:** Pending review
+
+## 2026-08-06 — 1f8960e — Heal Story 6.2: ResolvedIdentity is a discriminated union, not a flat {role}
+
+- **Full commit:** `1f8960ef3058e28a20ddc678c6b202ec71441cd3`
+- **Files touched:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/auth/callback/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/platform-admin/page.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/role-routing.ts, social-listening-admin/src/lib/session.ts
+- **Status:** Pending review
+
+## 2026-08-06 — fb2eabc — Log the Story 6.2 healing pass in the Implementation Log
+
+- **Full commit:** `fb2eabc2c3c69cd88fa489cc4189c3839ee865a8`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+

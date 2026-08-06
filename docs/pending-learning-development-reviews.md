@@ -30,11 +30,32 @@
 
 - **Full commit:** `a2510508f543c8c10c12cfc3631675f88839964c`
 - **Files touched:** docs/implementation-plan.md, docs/open-decisions.md, docs/user-stories/README.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/same-domain-invite-assist/SKILL.md, social-listening-core/contracts/epic-5/story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts, social-listening-core/src/http/versions/v1/domainSignupAttemptsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/tenants/domainSignupAttempts.ts, social-listening-core/src/tenants/selfServiceSignup.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-06 (Learning & Development Writer, whole-project catch-up pass):** No user-facing screen shipped — `GET /v1/tenants/domain-signup-attempts` is real, working `social-listening-core` backend, but Story 6.10 (the Tenant-Admin-facing "Same-Domain Invite Assist" view that would consume it) is Ready but not built in `social-listening-admin`. Named in `docs/manuals/tenant-admin-manual.md`'s "What's not built yet" section (added this same pass) as a backend-exists/no-screen-yet gap, not documented as a usable capability.
 
 ## 2026-08-06 — 29914e2 — Log Story 5.16 in the Implementation Log
 
 - **Full commit:** `29914e2aa914c407cdbd126261ed5dea01b13bed`
+- **Files touched:** docs/implementation-log.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-06 (Learning & Development Writer, whole-project catch-up pass):** No user-facing change — this commit only appends Story 5.16's own Implementation Log entry; the underlying commit (a251050) is reviewed separately above.
+
+## 2026-08-06 — 63b5ce1 — Process Ideal Manager, Documentation Steward, and L&D Writer review queues
+
+- **Full commit:** `63b5ce1a1c3b5d74d2fd9e6ff8dca4cee635285a`
+- **Files touched:** docs/ai-roles/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Stakeholder-Register.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-06 (Learning & Development Writer, whole-project catch-up pass):** No user-facing change — pure AI-role governance queue bookkeeping (Manager/Documentation Steward/L&D review queues, the AI-roles roster, the Stakeholder Register), no product code or UI touched.
+
+## 2026-08-06 — 1f8960e — Heal Story 6.2: ResolvedIdentity is a discriminated union, not a flat {role}
+
+- **Full commit:** `1f8960ef3058e28a20ddc678c6b202ec71441cd3`
+- **Files touched:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/auth/callback/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/platform-admin/page.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/role-routing.ts, social-listening-admin/src/lib/session.ts
+- **Status:** Pending review
+
+## 2026-08-06 — fb2eabc — Log the Story 6.2 healing pass in the Implementation Log
+
+- **Full commit:** `fb2eabc2c3c69cd88fa489cc4189c3839ee865a8`
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
