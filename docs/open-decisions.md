@@ -7,12 +7,14 @@
 - Each item below traces back to a specific ADR's own "Open Question(s)" section, or (for the last few) `docs/adr/README.md`'s own brainstorm/outstanding-items list. Check the cited ADR directly before acting on any of these — this file summarizes, the ADR is the source of truth.
 - Not append-only, not CI-verified. Update in place as items get decided — cite the resolving ADR/Amendment Log/Acceptance note the same way `docs/adr/README.md` itself does, don't just delete the line.
 
+**2026-08-06 — every item below is pre-Go-Live technical debt, not a live production risk.** `docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md` §1 states this explicitly: nothing in this project is reachable by a real end user today, so an open question here has zero current blast radius — it must still get resolved, and several items below are explicit Go-Live gate criteria (§5.3), but none represents an active danger while the system's classification stays at Stage 0.
+
 ---
 
 ## 1. Blocks work already queued next (Phase 6 — Stories 6.2–6.7)
 
 - ~~**[ADR-0036]** No `GET /v1/me`-shaped endpoint exists in `social-listening-core`...~~ — **resolved 2026-08-05, Story 5.11:** `GET /v1/me` built and contract-verified (`contracts/epic-5/story-5.11.get-v1-me.contract.test.ts`, 10/10) — see `docs/implementation-log.md`. Story 6.2's and Story 6.6's dependency on this endpoint is satisfied; their own remaining status is about their own not-yet-built UI work, not this gap.
-- **[ADR-0037 §7]** No abuse/rate-limiting mechanism or numeric threshold decided for the self-service tenant sign-up endpoint. The ADR itself: "a real precondition before this endpoint is exposed to real, untrusted traffic, not an optional hardening pass." Story 6.7 is Ready but shouldn't go live without this.
+- **[ADR-0037 §7]** No abuse/rate-limiting mechanism or numeric threshold decided for the self-service tenant sign-up endpoint. The ADR itself: "a real precondition before this endpoint is exposed to real, untrusted traffic, not an optional hardening pass." Story 6.7 is Ready but shouldn't go live without this. **2026-08-06:** this is now a formal gate criterion, not just a caution — see `docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md` §5.3. The system cannot reach Go-Live (public self-service) without it regardless of whether Story 5.18/ADR-0040 happens to be the last thing built.
 - **[ADR-0037 / ADR-0029]** ADR-0037 (self-service sign-up) depends on ADR-0029's own still-open "restrict Entra self-service sign-up at IdP level" question staying resolved "no." Flagged in ADR-0037 as needing Menno's "explicit reconciliation, not a silent assumption" — not yet done.
 - **[ADR-0037]** Which of Entra's two local-account methods (email+password vs. email-OTP) `social-listening-admin` actually configures — undecided by any ADR, needed for Story 6.7.
 - **[ADR-0037 §8]** The "Same-Domain Invite Assist" feature (surfacing a rejected same-domain sign-up attempt to the matching tenant's Tenant-Admin) has no owning story — none of Stories 6.1–6.6 build it. Real scope gap, not just an open design question.

@@ -6,7 +6,7 @@
 **Owner:** Menno Drescher  
 **Date:** 2026-08-01  
 **Status:** Draft  
-**Version:** 1.1
+**Version:** 1.2
 
 ---
 
@@ -147,6 +147,8 @@ The SocialEngage project uses a **Phased, Dependency-Ordered, Non-Calendar Lifec
 | 5 | Production Readiness | Hardened for real use | Implemented Entra authentication/identity, security review, operational runbooks, go-live | Not storied |
 | Future | Downstream Subsystems | Brand Reputation, Social Care, Social Selling | Phase 1 validated, separate charters | Deferred |
 
+**2026-08-06 — Phase 5's "go-live" exit criterion is now formally defined, not just named.** `Go-Live-Readiness-Definition.md` (this folder) is the authoritative document: it defines the environment stages between "ephemeral test infrastructure" (today's only mode) and public Go-Live, the narrow Pilot exception, and the gate criteria for each transition. Phase 5's completion is one required input to that decision, not the decision itself.
+
 ### Decision Framework: Architecture Decision Records (ADRs)
 
 **ADRs are the primary mechanism for architectural decision-making.**
@@ -195,6 +197,15 @@ The SocialEngage project uses a **Phased, Dependency-Ordered, Non-Calendar Lifec
 - **Core Architecture:** 0017-0023 (Versioning, retention, events, health, error handling, rate limits)
 - **Connectors & credential ownership:** 0024-0028 (Newswire, GNews, connector intermediation, credential ownership tiers)
 - **Identity & administration:** 0029-0035 (Entra External ID, roles, tenant/user data, bearer-token identity, connector authorization, and one role-gated Next.js admin app)
+
+**WIP Limit on Open Governance Work (added 2026-08-05 — dated addition per this project's own convention; does not edit any text above).**
+
+Following the Ideal Manager's 2026-08-05 Decision-Evaluator review of commit `4701eff` (`docs/management/manager-register.md`'s 2026-08-05 entry, per `.claude/agents/ideal-manager.md`'s fourteen-section framework), which found Scope & Expectations "at risk" — "the backlog grew 33% in one session with no stated WIP limit or backlog ceiling anywhere in the commit or surrounding docs," the same already-flagged, unquantified-ceiling gap Business Case §5 ("no formal budget ceiling has been set at this stage") and Charter §6's Assumption A-01 (tracked in `Uncertainty-Management-Plan.md` Appendix D as "never numerically quantified") had already named — Menno set an explicit WIP limit on open governance work. In his own words, verbatim:
+
+- **On ADRs:** *"hard to decide on a day where we only brainstorm ok we can call that not an ADR. We can brainstorm separate keep at 3 at a time for open review."* Unstructured brainstorming/ideation is explicitly exempt from this limit and may continue freely; the limit applies only once something becomes an actual drafted, Proposed ADR under formal review. **Cap: a maximum of 3 Proposed ADRs open for review at any one time.** (Verified against `docs/adr/README.md`'s own "Proposed (not yet decided)" section at the time of this addition: 3 of 40 total ADRs are Proposed — ADR-0038, ADR-0039, ADR-0040 — exactly at this cap, not tightened further.)
+- **On stories:** *"not more then the ADRs stories. 3 ADRs then if that take 10 stories then not more."* There is no independent, fixed story-count ceiling; the story WIP limit is *derived from* whatever the current batch of (at most 3) open Proposed ADRs actually sources — whatever that number turns out to be, not a number fixed in advance. (Not a precedent to reuse literally: the 2026-08-05 batch that prompted this rule sourced 3 Proposed ADRs alongside 14 new stories total, of which only 3 — Stories 2.8, 3.7, and 5.18 — were actually Blocked pending those specific ADRs' acceptance; the other 11 needed no new ADR and were already Ready. Verified against `docs/user-stories/README.md`'s own epic table at the time of this addition: 56 stories total across 6 epics.)
+
+This closes, informally and in its governance-specific form, the gap the Manager review's verdict named directly ("state an explicit backlog ceiling or WIP limit before drafting further stories/ADRs"). It does not resolve Business Case §5's own separate, still-open dollar-budget-ceiling gap, which this rule does not attempt to close. See `docs/project docs/Lessons-Learned-Register.md`'s 2026-08-05 entry for the fuller narrative this rule responds to — not duplicated here.
 
 ---
 
@@ -460,6 +471,7 @@ The SocialEngage project uses a **Phased, Dependency-Ordered, Non-Calendar Lifec
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-03 | Menno Drescher | Re-baselined §7.2 KPIs to 35/35 ADRs, 34/34 stories, 159/159 contracts (32/32 suites), last verified 2026-08-03; confirmed AI-role references in this file already match Stakeholder-Register.md (no OpenAI/Mistral Vibe mismatch found here) | TBD |
+| 1.2 | 2026-08-05 | Menno Drescher (AI Business & Requirements Analyst persona, drafting) | Added the WIP-limit rule on open governance work (§3, Decision Framework section) — 3 Proposed ADRs max, story ceiling derived from that batch, brainstorming exempt — per Menno's own direct instruction, following the Ideal Manager's 2026-08-05 Decision-Evaluator review (`docs/management/manager-register.md`) | TBD |
 
 ---
 

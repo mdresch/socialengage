@@ -153,6 +153,8 @@ Per Menno's own explicit sign-off (ADR-0033's own flagged Open Question — the 
 **Not storied, not phase-specific to any ADR** — this phase exists because "ADR-driven" and "production-ready" aren't the same bar, and nothing above claims otherwise.
 **Authentication itself is no longer this phase's job** — Phase 4.5, above, is where it's built. What remains here is verifying, under load and adversarial conditions, that the isolation properties this whole series argued for actually hold once a real authenticated caller (not a placeholder) is exercising them.
 
+**2026-08-06 — this phase is a precondition for Go-Live, not the same decision.** `docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md` §5.3 names this phase's completion as a required gate criterion, but Go-Live itself is a separate, explicit, dated Sponsor decision recorded there — completing Phase 5 makes Go-Live possible, not automatic. That document also defines the environment stages (ephemeral test infrastructure → persistent development environment → pilot → Go-Live) this phase's own "final go-live checks" line was previously the only place naming.
+
 **Deliverable:** a go-live decision, backed by evidence that the isolation and resilience properties this whole ADR series was built around actually hold under test, not just on paper.
 
 ---

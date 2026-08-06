@@ -440,6 +440,7 @@ This plan is reviewed when:
 | 1.1 | 2026-08-01 | Menno Drescher | Added R-06 (late-stage integration risk) with mitigation strategy, updated status to Active | TBD |
 | 1.2 | 2026-08-03 | Menno Drescher | Reconciled Appendix D's risk IDs against Business-Case-v6.0.md §5/§9 (previously a non-matching independent numbering); annotated A-01 with its "never numerically quantified" status and proxy trigger; re-baselined §7.2 Active Risks to 6 (R-01–R-06) | TBD |
 | 1.3 | 2026-08-03 | Menno Drescher | Canonical ownership of the risk register (R-01–R-06) flipped from Business-Case-v6.0.md §5 to this plan's own Appendix D, per Menno's direction that the risk-management process, not the business case, should own it; Business Case §5 now holds a dated snapshot only | TBD |
+| 1.4 | 2026-08-06 | Menno Drescher (requested), AI Delivery Agent (drafted) | Added R-07 (persistent-development-environment credential exposure), sourced from `Go-Live-Readiness-Definition.md` §3.1; re-baselined §7.2 Active Risks to 7 (R-01–R-07) | TBD |
 
 ---
 
@@ -604,6 +605,7 @@ This plan is reviewed when:
 | R-04 | No authentication mechanism exists; `X-Tenant-Id` is an unauthenticated placeholder (includes the related fact that a live two-tenant isolation proof cannot happen until this closes) | Security | High (certain, if triggered) | High | Open — ADR-0029–0033 accepted, implementation in progress (Phase 4.5) |
 | R-05 | Accepted tenant/admin/user model (ADR-0030–0032) is architecturally decided but not yet implemented | Architecture | Medium | Medium | Open — ADR-0030–0032 accepted |
 | **R-06** | **Late-stage integration issues across Azure services, RLS policy interactions, and OAuth as Phase 4.5's identity work lands** | **Technical** | **Medium** | **High** | **Open** |
+| **R-07** | **Standing up a persistent (non-ephemeral) development environment exposes real, long-lived credentials for the first time — Key Vault soft-delete/purge-protection posture, rotation/expiry monitoring, and access-scoping to that environment are unverified beyond single-test-run ephemeral exposure** | **Security** | **Medium** | **High** | **Open — added 2026-08-06, see `Go-Live-Readiness-Definition.md` §3.1/§5.1** |
 
 **Risk Response Summary:**
 - **R-01:** Mitigated by favoring free/low-cost platforms first; monthly cost cap still outstanding (Business Case §5)
@@ -612,6 +614,7 @@ This plan is reviewed when:
 - **R-04:** Architecture is resolved by ADR-0029–0033; implement bearer-token middleware and Entra integration before exposing tenant operations to any external caller, and before claiming a live two-tenant isolation proof
 - **R-05:** Architecture is resolved by ADR-0030–0032; implement migrations, identity resolution, role checks, and tenant/user contract tests
 - **R-06:** Mitigated by CI/CD and contract testing; keep Entra authentication implementation separate from connector OAuth, which remains deferred until the first OAuth connector
+- **R-07:** Not yet mitigated — no persistent development environment exists today (`Go-Live-Readiness-Definition.md`'s current classification is Stage 0, ephemeral test infrastructure only). Mitigation is the gate criteria that document's own §5.1 names before Stage 1 may be entered: confirmed Key Vault purge-protection posture, a real rotation/expiry monitoring approach, and known/scoped access to the environment's real secrets.
 
 ### Appendix E: Dependency Monitoring Checklist
 
