@@ -246,6 +246,8 @@
 
 **Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. `platform_admin_audit_log`'s schema and write path already exist (Story 5.7); this story adds a read-only query endpoint over already-existing, already-Platform-Admin-scoped data.
 
+**Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.14.platform-admin-audit-log-rest-surface.contract.test.ts`, full suite 40/40 — see `docs/implementation-log.md`). Third and last of Story 6.6's three named backend prerequisites (5.12/5.13/5.14) to close.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap: `platform_admin_audit_log` has no query endpoint, confirmed directly — no router file exposes it.
 
 **As** Platform Admin,

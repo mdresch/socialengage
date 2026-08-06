@@ -6,6 +6,7 @@ import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
 import { adminBreakGlassRouter } from './adminBreakGlassRouter';
+import { adminAuditLogRouter } from './adminAuditLogRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -52,6 +53,9 @@ export function createV1Router(authMiddleware: RequestHandler): Router {
 
   /** Story 5.13 (ADR-0030 §3) — see .claude/skills/platform-admin-break-glass-rest/SKILL.md. */
   v1Router.use('/admin/tenants/:tenantId/break-glass', authMiddleware, adminBreakGlassRouter);
+
+  /** Story 5.14 (ADR-0030 §5) — see .claude/skills/platform-admin-audit-log/SKILL.md. */
+  v1Router.use('/admin/audit-log', authMiddleware, adminAuditLogRouter);
 
   return v1Router;
 }

@@ -130,6 +130,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Named as required, not designed here:** the new core-side endpoints this story depends on (`GET/POST/PATCH /v1/admin/tenants`, break-glass request/execute endpoints, an audit-log query endpoint) are real `social-listening-core` scope, following that project's own contract-first discipline, for the AI Delivery Agent or Menno to build — not designed or implemented by this document.
 
+**2026-08-06 — all three named backend prerequisites are now built.** `GET/POST/PATCH /v1/admin/tenants` (Story 5.12), the break-glass request/execute endpoints (Story 5.13), and the audit-log query endpoint (Story 5.14) all exist, contract-verified, in `social-listening-core` — see `docs/implementation-log.md`. This story's own backend-gap blocker is closed; its remaining Status is purely about this document's own not-yet-built UI work, the same "Ready but practically sequenced later" treatment Story 5.11's resolution already established for Story 6.2/6.6's earlier `GET /v1/me` dependency.
+
 ---
 
 ## Story 6.7 — Self-service sign-up: new user becomes first Tenant-Admin of a new tenant
