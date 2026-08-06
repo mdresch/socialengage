@@ -703,3 +703,25 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 **Unblocks the first of Story 6.6's three named backend prerequisites** (`docs/user-stories/epic-6-admin-ui.md`'s own Story 6.6 entry names all three — tenant management, break-glass REST, audit-log query — as required before that console can be built). Stories 5.13 and 5.14 remain the other two.
 
 **A pre-existing test-teardown issue found and fixed, not specific to this story's own code:** the new contract's `AC6` test queries `platform_admin_audit_log` directly via `getPlatformAdminPool()`, and without an explicit `afterAll(() => closePlatformAdminPool())` the test process crashed *after* all assertions had already passed, when the ephemeral test container's teardown hit an unclosed pool connection with an unhandled `error` event (`57P01`, connection terminated). Fixed by adding the same explicit pool-close `afterAll` Story 5.10's own contract already uses for the same pool — a one-line addition, not a design change.
+
+---
+
+## 2026-08-06 — Story 5.13 — social-listening-core@7b9cee5
+
+- **Full commit:** `7b9cee589161d3bd52501413dda307b9b06934f2`
+- **Repo:** social-listening-core
+- **Story / ADR:** 5.13 / ADR-0030
+- **Contract:** social-listening-core/contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts (9 assertions; two `describe` blocks — cheap checks with no real Entra call, and real-Entra-tenant checks that reuse exactly one real execute call across AC3/AC4/AC5/AC7)
+- **SKILL.md:** social-listening-core/.claude/skills/platform-admin-break-glass-rest/SKILL.md (new); social-listening-core/.claude/skills/platform-admin-access/SKILL.md (updated)
+- **Files touched:** docs/user-stories/README.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/platform-admin-access/SKILL.md, social-listening-core/.claude/skills/platform-admin-break-glass-rest/SKILL.md, social-listening-core/contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts, social-listening-core/src/admin/breakGlassCredentialReset.ts, social-listening-core/src/http/versions/v1/adminBreakGlassRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Full suite at merge:** PASS (39/39 suites, 224/224 tests)
+
+**`POST /v1/admin/tenants/:tenantId/break-glass/request` and `.../requests/:requestId/execute`, the first HTTP surface over `breakGlassCredentialReset.ts`'s already-real two-phase, two-identity mechanism (Story 5.7)** — until this story, mechanism-level only, invoked directly by its own contract, never reachable over HTTP. Gated by the same `requirePlatformAdmin()` helper Story 5.12 introduced; `platform-admin-access/SKILL.md`'s own "How to extend this safely" section is updated to name this router's call as the real request-time authorization gate for break-glass specifically, while the mechanism module itself still doesn't check the caller, by design, the same separation of concerns used everywhere else in this project. Added `breakGlassConfigFromEnv()` to read the mechanism's `BreakGlassConfig` (Entra tenant/elevator/resetter credentials, directory role IDs) from environment variables at the HTTP layer, rather than the route wiring its own ad hoc env-reads.
+
+**Execute route maps the mechanism's plain `Error` messages to HTTP status, not new mechanism-level error types:** a message containing `"not found"` → 404, `"is not pending"` → 409 (an already-executed request re-executed hits the mechanism's own DB-only fast-path check, before any Graph call). This mirrors the existing convention of keeping the mechanism module's own error surface simple and letting the HTTP layer own status-code translation, matching Story 5.12's own AC2 approach to `tenantStore.ts` errors.
+
+**A route-level TypeScript gap fixed, not a design change:** `Router({ mergeParams: true })` is runtime-only — TypeScript doesn't infer the parent router's `:tenantId` param unless told explicitly, so `adminBreakGlassRouter.post('/request', ...)` initially typed `req.params` as `{}`. Fixed with an explicit route-level generic, `adminBreakGlassRouter.post<{ tenantId: string }>('/request', ...)`.
+
+**Same pre-existing test-teardown fix Story 5.12 needed, applied from the start this time:** `afterAll(() => closePlatformAdminPool())`, since the failure mode (an unhandled `57P01` after all assertions already pass) is now a known pattern for any contract touching `platformAdminPool` directly.
+
+**Unblocks the second of Story 6.6's three named backend prerequisites** (tenant management, break-glass REST, audit-log query). Story 5.14 (audit-log query) is the last remaining one.
