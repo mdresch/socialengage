@@ -1,9 +1,11 @@
 # Time Tracking
-## Spark Capture Project
+## SocialEngage
 
-**Purpose:** Track time spent on project activities to enable estimation accuracy metrics and capacity planning.
+**Purpose:** Track commit-level activity to support estimation-accuracy metrics and capacity planning, without requiring session-level time entry.
 
-**Approach:** Mandatory time tracking for all project commits (enforced via git pre-commit hook).
+**Approach, corrected 2026-08-06:** this file previously claimed an interactive pre-commit prompt enforced mandatory time entry — checked directly against the real `scripts/git-hooks/pre-commit`, no such prompt ever existed there (that hook is the contract-first backstop, unrelated to time tracking); this file's own log table had also sat empty since it was first added. Both this file and `docs/templates/time-tracking.md` also still carried "Spark Capture Project" branding, evidence this was copied in from some other project's template and never adapted. An interactive prompt was deliberately not built: most commits in this project are made by Claude Code on Menno's own behalf via tool calls, with no TTY attached — a blocking prompt would hang or fail on exactly those commits, not just skip them.
+
+**What's real now:** `scripts/git-hooks/post-commit` auto-derives one log row per commit from the commit's own message — no prompt, works identically whether Menno or Claude Code committed. It infers an Activity category from the commit subject (Implementation/Debugging/Design/Documentation/Review/Infrastructure — see "Session Types" below) and extracts a Story/ADR reference via pattern match if the subject names one. **Start/End Time and Duration are honestly recorded as unavailable ("—"/"auto"), never fabricated** — this mechanism has no way to know real wall-clock time spent, and inventing a plausible-looking number would violate this project's own "never invent a figure not evidenced by a real source" discipline (the same bar `docs/project docs/Business-Case-v6.0.md` and every ADR in this series already hold themselves to). The "Metrics Derived from Time Tracking" section below is adjusted accordingly — anything requiring real duration data is marked "Not tracked," not "TBD."
 
 ---
 
@@ -20,39 +22,41 @@
 
 ## 📈 Metrics Derived from Time Tracking
 
+**Corrected 2026-08-06:** every metric below requires real wall-clock duration data this mechanism does not collect (see "Approach" above) — marked **Not tracked**, not "TBD," since "TBD" implies data will eventually fill this in through normal use, which it structurally cannot under the auto-derived mechanism. Commit-count-based metrics (activity mix, story/ADR coverage) are derivable from the log table's own rows today and are a more honest near-term substitute — not built here, a real follow-up if capacity planning is ever actually needed at this project's current solo-developer scale.
+
 ### Estimation Accuracy
 | Metric | Calculation | Current Value |
 |--------|-------------|---------------|
-| Avg Estimate vs. Actual | (Estimated Hours - Actual Hours) / Estimated Hours | TBD |
-| Estimation Error % | (Actual - Estimated) / Estimated × 100 | TBD |
+| Avg Estimate vs. Actual | (Estimated Hours - Actual Hours) / Estimated Hours | Not tracked — no duration data collected |
+| Estimation Error % | (Actual - Estimated) / Estimated × 100 | Not tracked — no duration data collected |
 
 ### Velocity
 | Metric | Calculation | Current Value |
 |--------|-------------|---------------|
-| Stories per Hour | Stories Completed / Total Hours | TBD |
-| Points per Hour | Story Points / Total Hours | TBD |
+| Stories per Hour | Stories Completed / Total Hours | Not tracked — no duration data collected |
+| Points per Hour | Story Points / Total Hours | Not tracked — no duration data collected |
 
 ### Capacity
 | Metric | Calculation | Current Value |
 |--------|-------------|---------------|
-| Available Hours/Week | Self-reported capacity | TBD |
-| Utilization % | Actual Hours / Available Hours × 100 | TBD |
+| Available Hours/Week | Self-reported capacity | Not tracked — no duration data collected |
+| Utilization % | Actual Hours / Available Hours × 100 | Not tracked — no duration data collected |
 
 ---
 
 ## 🎯 Usage Instructions
 
-### For Each Work Session:
-1. **Before committing:** The git pre-commit hook will prompt you for time tracking information
-2. **Enter details:** Provide start time, end time, activity, story/ADR, and optional notes
-3. **Automatic entry:** The hook adds your entry to this file
-4. **Proceed with commit:** The commit continues after time is recorded
+### For Each Commit (automatic, since 2026-08-06):
+1. **After committing:** `scripts/git-hooks/post-commit` reads the commit's own hash and message — no prompt, nothing to enter.
+2. **Automatic entry:** the hook infers an Activity category and a Story/ADR reference (if the subject names one) and appends a row to the log table above.
+3. **Honest gaps, not fabrication:** Start Time, End Time, and Duration are recorded as `—`/`auto` — this mechanism cannot know real elapsed time, and does not invent a plausible-looking number to fill the column.
 
-### Manual Entry (if needed):
-Add entries directly to the table above following the format:
+### Manual Entry (if you want real duration data for a specific session):
+Add a row directly to the table above, following the same format the auto-derived rows use:
 ```
 | YYYY-MM-DD | HH:MM | HH:MM | minutes | Activity | Story/ADR | Notes |
 ```
+A manually-entered row with real Start/End times is the only way this file will ever contain real duration data — the automatic mechanism deliberately doesn't attempt to.
 
 ---
 
@@ -72,16 +76,15 @@ Add entries directly to the table above following the format:
 
 ## 🔧 Technical Details
 
-**Hook Location:** `.git/hooks/pre-commit`
+**Hook location:** `scripts/git-hooks/post-commit` (synced to `.git/hooks/post-commit` by `scripts/setup-git-hooks.js`) — corrected 2026-08-06 from this file's own prior, inaccurate claim of a `.git/hooks/pre-commit` Node.js prompt, which never actually existed.
 
-**Hook Type:** Node.js script (requires Node.js to be installed)
+**Hook type:** POSIX `sh`, same file that already queues the Ideal Manager/Documentation Steward/Learning & Development Writer reviews (`docs/management/pending-manager-reviews.md` and siblings) — time-logging is one more thing that same hook does per commit, not a separate mechanism.
 
-**Skipped Scenarios:**
-- Merge commits (automatically detected)
-- Initial commit (first commit in repo)
-- Commits that only modify time-tracking.md itself
+**Skipped scenarios:**
+- A commit whose only changed file is `docs/time-tracking.md` itself (avoids a self-referential logging loop).
+- Non-blocking either way: this runs post-commit, after the commit has already succeeded — it can never fail or delay a commit, unlike a pre-commit hook would.
 
-**Bypass:** To bypass the hook, use `git commit --no-verify` (not recommended)
+**Bypass:** not applicable — there's nothing to bypass; `--no-verify` skips pre-commit/commit-msg hooks, not post-commit.
 
 ---
 
@@ -127,4 +130,4 @@ Add entries directly to the table above following the format:
 
 ---
 
-*This file is automatically maintained by the git pre-commit hook. Manual edits are permitted but should follow the established format.*
+*This file is automatically maintained by `scripts/git-hooks/post-commit`. Manual edits are permitted but should follow the established format.*

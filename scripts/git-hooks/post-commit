@@ -26,6 +26,44 @@ SUBJECT=$(git log -1 --format=%s)
 FILES=$(git diff-tree --no-commit-id --name-only -r "$HASH" | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
 DATE=$(date -u +%Y-%m-%d)
 
+# Skip time-tracking's own maintenance commits (avoid a self-referential loop) and
+# time-tracking.md-only changes, mirroring that file's own documented "skipped
+# scenarios" convention.
+TIME_TRACKING_FILE="docs/time-tracking.md"
+ONLY_TOUCHES_TIME_TRACKING=$(echo "$FILES" | grep -vE "^${TIME_TRACKING_FILE}$" || true)
+if [ -z "$ONLY_TOUCHES_TIME_TRACKING" ] && [ -n "$FILES" ]; then
+  SKIP_TIME_LOG=1
+else
+  SKIP_TIME_LOG=0
+fi
+
+if [ "$SKIP_TIME_LOG" -eq 0 ] && [ -f "$TIME_TRACKING_FILE" ]; then
+  # Auto-derived, never interactive: 2026-08-06 addition, replacing this file's own
+  # stale claim of an interactive pre-commit prompt (never actually built — see
+  # docs/time-tracking.md's own corrected mechanism section). An interactive prompt
+  # in a hook would hang or fail on every commit this session makes on Menno's
+  # behalf via tool calls (no TTY attached) — auto-deriving from the commit's own
+  # message works identically whether a human or Claude Code committed.
+  case "$SUBJECT" in
+    "Implement Story"*) ACTIVITY="Implementation" ;;
+    "Heal "*|"Fix "*) ACTIVITY="Debugging" ;;
+    "Accept ADR"*|"Draft ADR"*|"Update"*ADR*) ACTIVITY="Design" ;;
+    "Log "*) ACTIVITY="Documentation" ;;
+    *[Rr]eview*) ACTIVITY="Review" ;;
+    *hook*|*[Ii]nfrastructure*|*[Ss]cript*) ACTIVITY="Infrastructure" ;;
+    *) ACTIVITY="Documentation" ;;
+  esac
+
+  STORY_ADR=$(echo "$SUBJECT" | grep -oE "(Story [0-9]+\.[0-9]+|ADR-[0-9]+)" | head -1)
+  [ -z "$STORY_ADR" ] && STORY_ADR="—"
+
+  # No real wall-clock start/end time exists for an auto-derived entry — recorded
+  # honestly as "—", never a fabricated plausible-looking number (this project's own
+  # "never invent a figure not evidenced by a real source" discipline, applied here).
+  printf '| %s | — | — | auto | %s | %s | %s (%s) |\n' \
+    "$DATE" "$ACTIVITY" "$STORY_ADR" "$SUBJECT" "$SHORT_HASH" >> "$TIME_TRACKING_FILE"
+fi
+
 queue_commit() {
   QUEUE_FILE="$1"
   BOOTSTRAP_TITLE="$2"

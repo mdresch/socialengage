@@ -1,5 +1,5 @@
 # Time Tracking Template
-## Spark Capture Project
+## SocialEngage
 
 **Purpose:** Track time spent on project activities to enable estimation accuracy metrics and capacity planning.
 
