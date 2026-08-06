@@ -15,6 +15,11 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-06 | — | — | auto | Documentation | — | Documentation Steward: close the Stakeholder Management cross-reference gap (f5e4e41) |
+| 2026-08-06 | — | — | auto | Review | — | Data Privacy & Sovereignty Reviewer: first real review (7dddb56) |
+| 2026-08-06 | — | — | auto | Review | ADR-0038 | Legal & Compliance Reviewer: first real review, ADR-0038 (3a757b7) |
+| 2026-08-06 | — | — | auto | Design | ADR-0042 | Draft ADR-0042: Wikipedia connector (MediaWiki API, article-as-Author) (f932f41) |
+| 2026-08-06 | — | — | auto | Documentation | — | Fix: auto-derived time-log row landed after the file footer, not in the table (406bf2c) |
 | 2026-08-06 | — | — | auto | Documentation | — | Add real, auto-derived commit time-logging to post-commit; fix stale template (cd308eb) |
 
 **Total Time:** Not tracked (see "Metrics Derived from Time Tracking" below) — the log table's own row count is the accurate figure for "commits logged," not a separately-maintained number here that could drift out of sync with it.

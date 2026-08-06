@@ -59,3 +59,87 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
+## 2026-08-06 — 35f056a — Learning & Development Writer: one-time whole-project manual catch-up
+
+- **Full commit:** `35f056a61ca013a7c81955c2198790cd37bb30c3`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
+## 2026-08-06 — 2061e72 — Add a standing author-rights check to the requirements-analyst charter
+
+- **Full commit:** `2061e723e124f3a3b0769c21fb6bb5f7d7aab6f0`
+- **Files touched:** .claude/agents/ba-requirements-analyst.md, docs/future-subsystems.md
+- **Status:** Pending review
+
+## 2026-08-06 — 4f7d9b9 — Write up real connector research: Reddit, X, YouTube, Meta, Wikipedia
+
+- **Full commit:** `4f7d9b9e1848c8a9063f6c8ca5ca0edfb80e30b2`
+- **Files touched:** docs/implementation-plan.md, docs/open-decisions.md
+- **Status:** Pending review
+
+## 2026-08-06 — 82ca1e2 — Accept ADR-0041: Platform Admin is a distinct identity kind
+
+- **Full commit:** `82ca1e219840370ce62e3a586348130502a8e9e9`
+- **Files touched:** docs/adr/0030-admin-tier-design-platform-admin-rls-exception.md, docs/adr/0032-users-table-shape-and-rls.md, docs/adr/0035-admin-ui-shape-one-app-role-gated.md, docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, docs/adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md, docs/adr/README.md
+- **Status:** Pending review
+
+## 2026-08-06 — 6e4321f — Knowledge-graph review: Wikipedia connector authorship modeling
+
+- **Full commit:** `6e4321fd5b08aa078bc1bb8aa0af21842c4e7830`
+- **Files touched:** docs/architecture/knowledge-graph-register.md
+- **Status:** Pending review
+
+## 2026-08-06 — c0179f4 — Migrate Data Privacy/Sovereignty reviewers off Ollama to Foundry
+
+- **Full commit:** `c0179f41db5b7ca9fdd83812897f7c66de28d9d9`
+- **Files touched:** docs/ai-roles/.env.example, docs/ai-roles/README.md, docs/ai-roles/data-privacy-sovereignty-reviewer.md, docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs
+- **Status:** Pending review
+
+## 2026-08-06 — 1187116 — Add stakeholder profiles for 12 personas across current and future scope
+
+- **Full commit:** `11871169a72450e7275635ca2e4e9394ff4f676d`
+- **Files touched:** docs/project docs/Stakeholder Management/Author-of-a-Post-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Data-Subject-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Legal-Advisor-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Platform-Admin-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Social-Selling-Strategist-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Sole-Operator-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-Admin-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-Brand-Reputation-Manager-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-Business-Analyst-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-Reader-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-Social-Care-Agent-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Tenant-User-Stakeholder-Profile.md, docs/project docs/Stakeholder Management/Topic-Center-Analyst-Stakeholder-Profile.md
+- **Status:** Pending review
+
+## 2026-08-06 — 464e05a — Add a findings register for the Data Privacy & Sovereignty Reviewer
+
+- **Full commit:** `464e05a91401c4d263b14a2c35a14fda75758d3f`
+- **Files touched:** docs/ai-roles/README.md, docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs, docs/privacy/data-privacy-sovereignty-register.md
+- **Status:** Pending review
+
+## 2026-08-06 — cd308eb — Add real, auto-derived commit time-logging to post-commit; fix stale template
+
+- **Full commit:** `cd308ebaa482415254a0d3eba62cb6f2ff75ecb1`
+- **Files touched:** docs/templates/time-tracking.md, docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
+## 2026-08-06 — 406bf2c — Fix: auto-derived time-log row landed after the file footer, not in the table
+
+- **Full commit:** `406bf2c327a88b188eb204eef11605acebb235f4`
+- **Files touched:** docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
+## 2026-08-06 — f932f41 — Draft ADR-0042: Wikipedia connector (MediaWiki API, article-as-Author)
+
+- **Full commit:** `f932f4115021702a264f3cb1c2852bb1a09d9280`
+- **Files touched:** docs/adr/0004-author-normalized-separately-from-post.md, docs/adr/0042-wikipedia-connector-mediawiki-api-article-as-author.md, docs/adr/README.md
+- **Status:** Pending review
+
+## 2026-08-06 — 3a757b7 — Legal & Compliance Reviewer: first real review, ADR-0038
+
+- **Full commit:** `3a757b704fb9496a415ec3a8e08c1747c1e4057a`
+- **Files touched:** docs/legal/legal-compliance-register.md
+- **Status:** Pending review
+
+## 2026-08-06 — 7dddb56 — Data Privacy & Sovereignty Reviewer: first real review
+
+- **Full commit:** `7dddb5660e012aab3c3c2d5f02a331ef60df8d54`
+- **Files touched:** docs/privacy/data-privacy-sovereignty-register.md
+- **Status:** Pending review
+
+## 2026-08-06 — f5e4e41 — Documentation Steward: close the Stakeholder Management cross-reference gap
+
+- **Full commit:** `f5e4e41e8cb12e42995398045d945cf038d07071`
+- **Files touched:** docs/pending-documentation-steward-reviews.md, docs/project docs/Project Management Plans/Cost-Management-Plan.md, docs/project docs/Project Management Plans/Development-Approach-and-Life-Cycle-Plan.md, docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md, docs/project docs/Project Management Plans/Planning-Management-Plan.md, docs/project docs/Project Management Plans/Project-Work-Management-Plan.md, docs/project docs/Project Management Plans/Stakeholder-Management-Plan.md, docs/project docs/Project Management Plans/Uncertainty-Management-Plan.md, docs/project docs/Stakeholder-Register.md
+- **Status:** Pending review
+
