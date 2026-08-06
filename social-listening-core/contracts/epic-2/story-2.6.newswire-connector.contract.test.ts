@@ -50,6 +50,7 @@ import {
 import { pollNewswireFeeds, ingestNewswireItems } from '../../src/connectors/newswire/pollNewswireFeeds';
 import { ParsedRssItem } from '../../src/connectors/newswire/rssFeedParser';
 import { runIngestionAttempt } from '../../src/ingestion/runIngestionAttempt';
+import { ClassifiableError, isRetryable } from '../../src/ingestion/errorClassification';
 import { resolveWatchlistAstDispatch, matchPostsForWatchlistAst } from '../../src/watchlists/dispatch';
 import { parseBooleanQuery } from '../../src/watchlists/ast';
 import { MatchablePost } from '../../src/watchlists/matcher';
@@ -69,6 +70,33 @@ async function countSocialPosts(tenantId: string): Promise<number> {
     const { rows } = await client.query(`SELECT count(*)::int AS c FROM social_posts`);
     return rows[0].c;
   });
+}
+
+/**
+ * AC3 calls fetchNewswireFeed() directly (it needs the raw parsed items to
+ * exercise watchlist-dispatch fallback against real content) rather than
+ * through pollNewswireFeeds() -> runIngestionAttempt(), which is the only
+ * reason it lacked the retry-with-backoff tolerance every other AC in this
+ * file already gets for free. PR Newswire's feed sits behind Cloudflare and
+ * intermittently 404s a single request (confirmed directly: 5 consecutive
+ * curl requests all succeeded outside this test run) — runIngestionAttempt()
+ * already classifies that exact failure shape ('network', a non-401/403/5xx
+ * !response.ok) as retryable and retries it in production (ADR-0010); this
+ * helper gives AC3's own direct call the same tolerance, reusing the same
+ * isRetryable() classification and the same exponential-backoff shape
+ * runIngestionAttempt() itself uses, rather than inventing new retry logic
+ * or loosening what AC3 actually proves.
+ */
+async function fetchNewswireFeedWithRetry(feedUrl: string, maxAttempts = 3): Promise<ParsedRssItem[]> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetchNewswireFeed(feedUrl);
+    } catch (err) {
+      const retryable = err instanceof ClassifiableError && isRetryable(err.kind);
+      if (!retryable || attempt >= maxAttempts) throw err;
+      await new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** attempt, 5000)));
+    }
+  }
 }
 
 describe('Story 2.6 — Newswire connector contract', () => {
@@ -125,7 +153,7 @@ describe('Story 2.6 — Newswire connector contract', () => {
   });
 
   it('AC3: supportedQueryFeatures is declared empty, and watchlist matching genuinely falls back rather than silently no-op\'ing', async () => {
-    const items = await fetchNewswireFeed(PRNEWSWIRE_FEED_URL);
+    const items = await fetchNewswireFeedWithRetry(PRNEWSWIRE_FEED_URL);
     expect(items.length).toBeGreaterThan(0);
     expect(newswireConnector.supportedQueryFeatures).toEqual([]);
 
