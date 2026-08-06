@@ -41,11 +41,11 @@ export async function GET(request: Request) {
     throw new Error('Entra token response carried no id_token.');
   }
 
-  // ADR-0036 §5 — resolve the caller's real identity from core, never from the Entra
-  // token's own claims (ADR-0029 §2). GET /v1/me does not exist in social-listening-core
-  // yet (confirmed against src/identity/identityResolution.ts and every
-  // versions/v1/*Router.ts there) — a failure here must not block sign-in itself; see
-  // fetchResolvedIdentity()'s own note in core-client.ts.
+  // ADR-0036 §5 — resolve the caller's real identity from core (GET /v1/me, Story 5.11),
+  // never from the Entra token's own claims (ADR-0029 §2). A failure here must not block
+  // sign-in itself; see fetchResolvedIdentity()'s own note in core-client.ts. The raw
+  // result is validated downstream (role-routing.ts's isResolvedIdentity()), never
+  // trusted as shaped just because this call succeeded.
   const identity = await fetchResolvedIdentity(tokens.access_token);
 
   const issuedAt = Math.floor(Date.now() / 1000);

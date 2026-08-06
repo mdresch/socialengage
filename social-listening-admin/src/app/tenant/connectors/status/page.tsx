@@ -30,7 +30,9 @@ const watchlists = [
 ];
 
 export default function ConnectorStatusPage() {
-  const actions = getTenantShellActions({ role: 'tenant_admin' });
+  // Fixture identity, unchanged behavior — see role-routing-shell/SKILL.md's 2026-08-06
+  // Load-bearing constraint on ResolvedIdentity's real (discriminated, no bare `role`) shape.
+  const actions = getTenantShellActions({ type: 'tenant_user', tenantId: 'fixture-tenant', userId: 'fixture-user', role: 'tenant_admin' });
 
   return (
     <main>

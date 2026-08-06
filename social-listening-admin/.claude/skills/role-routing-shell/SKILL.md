@@ -1,19 +1,34 @@
 # Role-gated routing shell
 
-## Story
-Story 6.2 — Role-gated routing shell (Tenant-Admin/Tenant User vs. Platform Admin)
+## What this is
 
-## Intent
-Provide a server-side role-aware routing shell for social-listening-admin so that tenant-facing routes are separated from Platform-Admin routes and role-appropriate actions are surfaced without relying on client-side only checks.
+Server-side role-aware routing for `social-listening-admin`: two structurally separate route trees (`src/app/tenant/`, `src/app/platform-admin/`), each gated on the caller's real resolved identity from Story 6.1's session, plus role-appropriate action lists within the tenant tree. `src/lib/role-routing.ts` is the single source of truth both the home page and each tree's own route consult — no page decides gating on its own.
 
-## Governing decisions
-- ADR-0035: one admin app with two role-gated route trees, not two deployables.
-- ADR-0036 §4: the coarse-grained auth gate is server-side; role-gating is an additional shell-level concern.
+## Governing ADRs and Stories
 
-## Contract
-- social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts
+| ADR | Decision | Story |
+|---|---|---|
+| ADR-0035 | One admin app with two role-gated route trees, not two deployables | 6.2 |
+| ADR-0036 §4 | Coarse-grained auth gate (`proxy.ts`) is server-side and signed-in-or-not only; role-gating is this component's own, separate concern | 6.2 |
 
-## Notes
-- Tenant-facing shell covers tenant_admin and tenant_user.
-- Platform-admin shell covers platform_admin.
-- Tenant-admin-only actions are a UX convenience only; the real backend enforcement remains in social-listening-core.
+## Contracts that constrain this component
+
+- `contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts` — `getRoleShell()`/`getTenantShellActions()`/`isShellAllowed()`/`isResolvedIdentity()` unit behavior against the real `ResolvedIdentity` union, plus real route-guard integration tests (a real encrypted session, `next/headers`/`next/navigation` mocked the same way Story 6.1's AC7 test does) proving a session of each type is actually redirected off the other tree's route — not just that the right link is shown.
+- `contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts` — the 2026-08-06 `ResolvedIdentity` type migration broke `getTenantShellActions()`'s call sites in three *other* stories' already-shipped screens (`tenant/connectors/page.tsx` — Story 6.3, `tenant/watchlists/page.tsx` — Story 6.4, `tenant/connectors/status/page.tsx` — Story 6.5), each calling it with a hardcoded fixture identity. This contract proves those three screens still render their own correct fixture output under the migrated type — real coverage those stories' own contracts never had (they're source-text checks only, never an import/render).
+
+## How to extend this safely
+
+- A new role-gated screen belongs inside `src/app/tenant/` or `src/app/platform-admin/` and must read its identity the same way `tenant/page.tsx`/`platform-admin/page.tsx` do: `cookies()` → `decryptSession()` → `isResolvedIdentity()` → `isShellAllowed(identity, <this tree's shell>)` → `redirect('/')` if false. Do not invent a second gating mechanism per screen.
+- A new tenant-admin-only *action* (not a route) follows `getTenantShellActions()`'s own pattern — branch on `identity.type === 'tenant_user' && identity.role === 'tenant_admin'`, never on a bare `.role` check, since `platform_admin` has no `role` field.
+- This is still explicitly a UX convenience layer (ADR-0036 §4) — social-listening-core's own 403s remain the real security boundary. Extending this component is about correctly *reflecting* backend authority in the UI, never about relying on it as the enforcement mechanism.
+
+## Load-bearing constraints — do not change casually
+
+- **`ResolvedIdentity` is a discriminated union, never a flat `{role}` shape.** `social-listening-core/src/identity/identityResolution.ts`'s real type is `{type:'tenant_user', tenantId, userId, role} | {type:'platform_admin', adminId}` — a real `platform_admin` identity has **no `role` field at all**. Healed 2026-08-06: the original implementation cast `session.identity` to `{role?: string|null}` and switched on `.role`, so a real Platform Admin's `role` was always `undefined` and silently fell through to the tenant shell. Any future code touching identity here must branch on `.type` first, never assume `.role` exists without narrowing `.type === 'tenant_user'` first.
+- **`session.identity` is `unknown` at the type level and must be validated, never blind-cast.** It crosses a JSON/HTTP boundary (core's `GET /v1/me` response) — `isResolvedIdentity()` is the one sanctioned validation point; a bare `as {...}` cast elsewhere in this codebase is exactly how the 2026-08-06 bug was introduced in the first place.
+- **Every route tree's own page component must call `isShellAllowed()` and redirect itself.** Before the 2026-08-06 healing pass, `tenant/page.tsx` and `platform-admin/page.tsx` had **zero server-side gating at all** — no identity check, no redirect — relying entirely on the home page simply not showing the other tree's link. AC2's own text ("proven directly... not just by the absence of a visible link") was not actually satisfied. Do not remove a route's own `isShellAllowed()`/`redirect()` call on the assumption that "no one would navigate there anyway."
+
+## Known gaps / deferred work
+
+- The route-guard integration tests mock `next/headers`/`next/navigation` rather than driving a real `next dev` server + Playwright browser through a live Platform Admin sign-in (Story 6.1's own AC1–AC12 pattern) — no real Entra test user with a `platform_admin` role is currently provisioned for this repo's contracts. If one is added later, upgrading these tests to a real end-to-end sign-in would close that gap; not done here as it would have required new Entra/infrastructure provisioning outside this healing pass's own scope.
+- Story 6.6 (Platform Admin console, not yet built) must build its own screens under `src/app/platform-admin/` using this same `isShellAllowed()` pattern — it would otherwise be exposed to the identical class of bug this pass just healed.

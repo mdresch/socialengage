@@ -52,19 +52,17 @@ export async function authenticatedCoreFetch(path: string, init?: RequestInit): 
 }
 
 /**
- * Story 6.1 / ADR-0036 §5 — the new core-side identity-exposure endpoint. Takes an
- * explicit access token (rather than reading the session cookie, like
- * authenticatedCoreFetch() above does) because its only caller today is the sign-in
- * callback itself, bootstrapping the session before that cookie is a readable request
- * cookie.
+ * Story 6.1 / ADR-0036 §5 — the core-side identity-exposure endpoint (built 2026-08-05,
+ * Story 5.11, `GET /v1/me`). Takes an explicit access token (rather than reading the
+ * session cookie, like authenticatedCoreFetch() above does) because its only caller today
+ * is the sign-in callback itself, bootstrapping the session before that cookie is a
+ * readable request cookie.
  *
- * Real, named prerequisite: this endpoint does not exist in social-listening-core yet —
- * confirmed directly against src/identity/identityResolution.ts (resolveIdentity() is
- * called only internally by createTenantAuthMiddleware()) and every
- * versions/v1/*Router.ts file there (none expose it over HTTP). A non-2xx response or a
- * network failure here is therefore treated as "identity not yet resolvable," not a
- * fatal sign-in error — callers get `null` and must handle that, not assume core always
- * answers.
+ * Returns `unknown`, not core's real ResolvedIdentity type, deliberately — this is raw
+ * JSON off the wire and must be validated (role-routing.ts's isResolvedIdentity()) before
+ * a caller treats it as a real identity. A non-2xx response or a network failure here is
+ * treated as "identity not yet resolvable," not a fatal sign-in error — callers get `null`
+ * and must handle that, not assume core always answers.
  */
 export async function fetchResolvedIdentity(accessToken: string): Promise<unknown | null> {
   try {

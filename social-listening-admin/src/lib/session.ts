@@ -50,10 +50,14 @@ export interface SessionTokens {
   accessToken: string;
   refreshToken?: string;
   /**
-   * Story 6.1 / ADR-0036 §5 — the resolved { type, tenantId?, userId?, role?, adminId? }
-   * shape from core's GET /v1/me, or null if that endpoint isn't reachable yet (it does
-   * not exist in social-listening-core today — see core-client.ts's own note). Never
-   * derived from any Entra token claim directly (ADR-0029 §2).
+   * Story 6.1 / ADR-0036 §5 — core's GET /v1/me response (built 2026-08-05, Story 5.11),
+   * or null if identity couldn't be resolved at sign-in. Typed `unknown` deliberately: it
+   * crosses an untyped JSON/HTTP boundary and must be validated (role-routing.ts's
+   * isResolvedIdentity()) before use, never blind-cast — see role-routing-shell/SKILL.md's
+   * 2026-08-06 Load-bearing constraint for why. The real shape is a discriminated union,
+   * `{type:'tenant_user', tenantId, userId, role} | {type:'platform_admin', adminId}` —
+   * not a flat object with all-optional fields. Never derived from any Entra token claim
+   * directly (ADR-0029 §2).
    */
   identity: unknown | null;
 }
