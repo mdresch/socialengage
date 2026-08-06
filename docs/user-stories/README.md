@@ -77,6 +77,8 @@ All fourteen stories are drafted with real, checkable Acceptance Criteria per th
 
 **2026-08-06, later the same day — ADR-0040 accepted too, closing out the batch.** Verbatim: *"ADR 0040 also approved."* Accepted as drafted, no revisions. **Story 5.18 moves to Ready — all fourteen stories in this 2026-08-05 batch are now Ready, none Blocked.**
 
+**2026-08-06, later still the same day — Story 5.15 built.** `POST /v1/tenants/self-service-signup` is real: a fifth Postgres role (`tenant_signup_role`), a new `domain_signup_attempts` table, and the one route in this project that accepts a caller `resolveIdentity()` cannot match — see `contracts/epic-5/story-5.15.self-service-tenant-signup.contract.test.ts` (11/11) and `docs/implementation-log.md`. Closes Story 6.7's own named cross-repo dependency; Story 5.16 (the Tenant-Admin-facing read of `domain_signup_attempts`) is next.
+
 **2026-08-06 — Story 5.13 built** (`social-listening-core`, full suite 39/39 — see `docs/implementation-log.md`). Second of Story 6.6's three named backend prerequisites to close; Story 5.14 (audit-log query) is the last remaining one.
 
 **2026-08-06, later the same day — Story 5.14 built** (`social-listening-core`, full suite 40/40 — see `docs/implementation-log.md`). Third and last of Story 6.6's three named backend prerequisites — 5.12/5.13/5.14 are now all shipped. Story 6.6 (Platform Admin console) is no longer blocked on any `social-listening-core` endpoint gap; its own remaining status is purely about its own not-yet-built UI work.

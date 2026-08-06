@@ -2,6 +2,8 @@ import express, { Express } from 'express';
 import { createV1Router } from './versions/v1/router';
 import { createTenantAuthMiddleware } from './auth/tenantAuthMiddleware';
 import { testAuthBypassMiddleware } from './auth/testAuthBypassMiddleware';
+import { createEntraAuthMiddleware } from './auth/entraAuthMiddleware';
+import { testClaimsBypassMiddleware } from './auth/testClaimsBypassMiddleware';
 
 /**
  * Story 5.10 (ADR-0033): resolves the real Entra tenant config from env
@@ -42,6 +44,14 @@ export function createApp(): Express {
   const authMiddleware =
     process.env.NODE_ENV === 'test' ? testAuthBypassMiddleware : createTenantAuthMiddleware(entraConfigFromEnv());
 
-  app.use('/v1', createV1Router(authMiddleware));
+  // Story 5.15 (ADR-0037 §5): self-service-signup's own auth needs token
+  // verification only, never the identity-resolution-and-reject-on-null
+  // step authMiddleware bakes in — that would reject exactly the one
+  // caller this route exists to accept. See
+  // .claude/skills/self-service-tenant-signup/SKILL.md.
+  const claimsAuthMiddleware =
+    process.env.NODE_ENV === 'test' ? testClaimsBypassMiddleware : createEntraAuthMiddleware(entraConfigFromEnv());
+
+  app.use('/v1', createV1Router(authMiddleware, claimsAuthMiddleware));
   return app;
 }

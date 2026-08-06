@@ -7,6 +7,7 @@ import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
 import { adminBreakGlassRouter } from './adminBreakGlassRouter';
 import { adminAuditLogRouter } from './adminAuditLogRouter';
+import { selfServiceSignupRouter } from './selfServiceSignupRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -17,9 +18,11 @@ import { adminAuditLogRouter } from './adminAuditLogRouter';
  * credentials would be unusual and its own contract
  * (contracts/epic-1/story-1.3.api-versioning.contract.test.ts) explicitly
  * requires it reachable unauthenticated. Every substantive route is mounted
- * behind authMiddleware.
+ * behind authMiddleware, except self-service-signup below, which needs its
+ * own, different (claims-level, not identity-level) auth middleware — see
+ * .claude/skills/self-service-tenant-signup/SKILL.md.
  */
-export function createV1Router(authMiddleware: RequestHandler): Router {
+export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddleware: RequestHandler): Router {
   const v1Router = Router();
 
   /**
@@ -56,6 +59,15 @@ export function createV1Router(authMiddleware: RequestHandler): Router {
 
   /** Story 5.14 (ADR-0030 §5) — see .claude/skills/platform-admin-audit-log/SKILL.md. */
   v1Router.use('/admin/audit-log', authMiddleware, adminAuditLogRouter);
+
+  /**
+   * Story 5.15 (ADR-0037 §5) — the one route in this project accepting a
+   * caller resolveIdentity() cannot match. claimsAuthMiddleware verifies
+   * the token but does not itself reject on unresolved identity — the
+   * route handler does that check. See
+   * .claude/skills/self-service-tenant-signup/SKILL.md.
+   */
+  v1Router.use('/tenants/self-service-signup', claimsAuthMiddleware, selfServiceSignupRouter);
 
   return v1Router;
 }

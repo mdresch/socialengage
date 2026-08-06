@@ -267,6 +267,8 @@
 
 **Source:** ADR-0037 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §1–§9 already exhaustively designed this endpoint's own behavior, schema, and role; this story builds directly against an already-Accepted ADR's own "Named as required, not designed here" list, the same relationship Story 6.7 already has to this same ADR for the UI half.
 
+**Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.15.self-service-tenant-signup.contract.test.ts`, full suite 41/41 — see `docs/implementation-log.md`). Closes Story 6.7's own named cross-repo dependency. `domain_signup_attempts` now exists and is being written to (Story 5.15 is its sole writer); Story 5.16's own Tenant-Admin-facing read of that table is the next piece of this same gap.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.7's own explicitly-named dependency, verbatim: "a new `POST /v1/tenants/self-service-signup`-shaped `social-listening-core` endpoint... Named as required, not designed here."
 
 **As a** brand-new user who is not yet part of any SocialEngage tenant,

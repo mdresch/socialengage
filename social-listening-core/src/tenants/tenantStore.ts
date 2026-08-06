@@ -45,7 +45,8 @@ export interface UpdateTenantAdminInput {
   domain?: string | null;
 }
 
-function mapRowToTenant(row: TenantRow): Tenant {
+/** Exported for Story 5.15's selfServiceSignup.ts, which inserts via a different pool but the same Tenant shape. */
+export function mapRowToTenant(row: TenantRow): Tenant {
   return {
     id: row.id,
     name: row.name,
