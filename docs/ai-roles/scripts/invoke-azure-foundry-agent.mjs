@@ -30,15 +30,24 @@
 // response.output_text is a real, confirmed field on a successful response.
 //
 // Currently assigned Foundry Prompt Agent roles (docs/project docs/Stakeholder-Register.md):
-//   product-market — S-14, Product & Market-Fit Reviewer (docs/ai-roles/product-market-reviewer.md) —
-//                    added 2026-08-06 as a second backend alongside Mistral, specifically
-//                    because Mistral has a real, recurring capacity/usage-limit constraint
-//                    under load (see that charter's own "Assigned model" note). Does NOT
-//                    retire the Mistral path — both remain available.
-// legal-compliance is NOT wired here yet: that role has a provisioned Azure AI Foundry model
-// deployment (gpt-5.2, Sweden Central) but no portal-created Prompt Agent object of its own —
-// add its own AGENT_NAME/AGENT_VERSION here once one actually exists, not speculatively ahead
-// of time.
+//   product-market   — S-14, Product & Market-Fit Reviewer (docs/ai-roles/product-market-reviewer.md) —
+//                       added 2026-08-06 as a second backend alongside Mistral, specifically
+//                       because Mistral has a real, recurring capacity/usage-limit constraint
+//                       under load (see that charter's own "Assigned model" note). Does NOT
+//                       retire the Mistral path — both remain available.
+//   pragmatism       — S-15, Engineering Pragmatism Reviewer (docs/ai-roles/engineering-pragmatism-reviewer.md) —
+//                       added 2026-08-06, a real Foundry Prompt Agent Menno built
+//                       ("engineering-pragmatism-reviewer") alongside the Mistral path. No
+//                       register configured yet for this role (docs/ai-roles/README.md's own
+//                       "none yet" note) — add one following the existing template if/when needed.
+//   legal-compliance — S-22, Legal & Compliance Reviewer (docs/ai-roles/legal-compliance-reviewer.md) —
+//                       added 2026-08-06, a real Foundry Prompt Agent Menno built
+//                       ("LegalComplianceReviewer"). Supersedes this role's own earlier
+//                       raw-model-endpoint path (AZURE_AI_FOUNDRY_LEGAL_COMPLIANCE_ENDPOINT/
+//                       _API_KEY/_MODEL, never actually wired to a script) as the real, working
+//                       invocation path — those older vars are left in .env/.env.example
+//                       untouched, not deleted, in case the ephemeral-agent pattern is ever
+//                       useful again.
 //
 // Setup:
 //   1. az login  (once; DefaultAzureCredential reuses this session)
@@ -48,13 +57,14 @@
 //      AZURE_AI_FOUNDRY_<ROLE>_PROJECT_ENDPOINT / _AGENT_NAME / _AGENT_VERSION.
 //
 // Usage:
-//   node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs <path-to-material-file> --role product-market
-//   git diff | node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs - --role product-market --register
+//   node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs <path-to-material-file> --role product-market|pragmatism|legal-compliance
+//   git diff | node docs/ai-roles/scripts/invoke-azure-foundry-agent.mjs - --role legal-compliance --register
 //     Attaches that role's own register file's current content as extra context (so the
 //     reviewer doesn't repeat an already-logged finding), then appends a dated entry with the
 //     response to that same register file — mirroring invoke-gemini-agent.mjs's own --register
-//     flag. Only product-market has a register configured today
-//     (docs/product/product-market-register.md).
+//     flag. product-market and legal-compliance have registers configured today
+//     (docs/product/product-market-register.md, docs/legal/legal-compliance-register.md);
+//     pragmatism does not yet.
 
 import fs from 'fs';
 import path from 'path';
@@ -85,13 +95,21 @@ const ROLES = {
     'AZURE_AI_FOUNDRY_PRODUCT_MARKET_FIT',
     path.join('..', '..', 'product', 'product-market-register.md'),
   ],
+  // Added 2026-08-06 — Menno built both of these as real Foundry Prompt Agents
+  // (engineering-pragmatism-reviewer, LegalComplianceReviewer). Same
+  // AZURE_AI_FOUNDRY_LEGAL_COMPLIANCE_* prefix legal-compliance already uses for the raw
+  // model-endpoint vars (invoke-azure-foundry-agent.mjs's earlier, ephemeral-agent pattern,
+  // no longer this role's primary path now that a real Prompt Agent exists) — no collision,
+  // the suffixes differ (_PROJECT_ENDPOINT/_AGENT_NAME/_AGENT_VERSION vs. _ENDPOINT/_API_KEY/_MODEL).
+  pragmatism: ['AZURE_AI_FOUNDRY_ENGINEERING_PRAGMATISM', null],
+  'legal-compliance': ['AZURE_AI_FOUNDRY_LEGAL_COMPLIANCE', path.join('..', '..', 'legal', 'legal-compliance-register.md')],
 };
 
 const ROLE = argValue('--role');
 if (!ROLE || !ROLES[ROLE]) {
   fail(
     `Missing or unknown --role "${ROLE}". Known roles: ${Object.keys(ROLES).join(', ')}. ` +
-      'Usage: node invoke-azure-foundry-agent.mjs <path-to-material-file | -> --role product-market [--register]'
+      'Usage: node invoke-azure-foundry-agent.mjs <path-to-material-file | -> --role product-market|pragmatism|legal-compliance [--register]'
   );
 }
 const [ENV_PREFIX, REGISTER_RELATIVE_PATH] = ROLES[ROLE];

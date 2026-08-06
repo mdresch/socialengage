@@ -5,8 +5,11 @@
  *
  * Installs every hook in scripts/git-hooks/ (see scripts/git-hooks/README.md):
  *   - pre-commit: enforces contract-first commits
- *   - post-commit: queues each commit for the Ideal Manager's own review
- *     (docs/management/pending-manager-reviews.md)
+ *   - post-commit: queues each commit for three independent reviews —
+ *     the Ideal Manager (docs/management/pending-manager-reviews.md),
+ *     the Documentation Steward (docs/pending-documentation-steward-reviews.md),
+ *     and, added 2026-08-06, the Learning & Development Writer
+ *     (docs/pending-learning-development-reviews.md)
  *
  * Usage:
  *   node scripts/setup-git-hooks.js

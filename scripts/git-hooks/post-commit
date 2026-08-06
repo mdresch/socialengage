@@ -1,30 +1,24 @@
 #!/usr/bin/env sh
 
-# Queues every commit for the Ideal Manager's own review — never blocking (the commit
+# Queues every commit for three separate, independent reviews — never blocking (the commit
 # has already succeeded by the time this runs), never an API call (just a fast local
-# file append). The Ideal Manager (.claude/agents/ideal-manager.md) has no standalone
-# API-invocation script the way the external reviewers do — it's a Claude Code-native
-# subagent, so nothing can actually run the review from a plain shell hook. This hook
-# only leaves a marker; a Claude Code session working in this repo checks
-# docs/management/pending-manager-reviews.md and runs the review when present, per
-# ideal-manager.md's own instructions.
+# file append). None of the Ideal Manager, Documentation Steward, or Learning & Development
+# Writer has a standalone API-invocation script the way the external reviewers do — all three
+# are Claude Code-native subagents, so nothing can actually run any of these reviews from a
+# plain shell hook. This hook only leaves markers; a Claude Code session working in this repo
+# checks each queue file and runs the matching review when an entry is present, per each
+# agent's own instructions (.claude/agents/ideal-manager.md,
+# .claude/agents/documentation-steward.md, .claude/agents/learning-development-writer.md).
+#
+# Three separate queue files, not one shared one: the Manager's job (workload/priority/
+# decision triage), the Steward's job (internal traceability/staleness audit, including the
+# PM docs as of 2026-08-06), and the Writer's job (added 2026-08-06 — keeping the three
+# end-user-facing manuals under docs/manuals/ in sync with what's actually shipped) are
+# different enough that conflating their "Status"/resolution semantics into one file would be
+# more confusing than three small, single-purpose ones.
 #
 # Post-commit, not pre-commit: pre-commit runs before the commit object exists, so
 # there is no stable hash yet to queue a review against.
-
-QUEUE_FILE="docs/management/pending-manager-reviews.md"
-mkdir -p "$(dirname "$QUEUE_FILE")"
-
-if [ ! -f "$QUEUE_FILE" ]; then
-  {
-    echo "# Pending Manager Reviews"
-    echo ""
-    echo "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Ideal Manager (\`.claude/agents/ideal-manager.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note pointing to \`docs/management/manager-register.md\`'s matching finding, never deleted."
-    echo ""
-    echo "---"
-    echo ""
-  } > "$QUEUE_FILE"
-fi
 
 HASH=$(git rev-parse HEAD)
 SHORT_HASH=$(git rev-parse --short HEAD)
@@ -32,13 +26,46 @@ SUBJECT=$(git log -1 --format=%s)
 FILES=$(git diff-tree --no-commit-id --name-only -r "$HASH" | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
 DATE=$(date -u +%Y-%m-%d)
 
-{
-  echo "## ${DATE} — ${SHORT_HASH} — ${SUBJECT}"
-  echo ""
-  echo "- **Full commit:** \`${HASH}\`"
-  echo "- **Files touched:** ${FILES}"
-  echo "- **Status:** Pending review"
-  echo ""
-} >> "$QUEUE_FILE"
+queue_commit() {
+  QUEUE_FILE="$1"
+  BOOTSTRAP_TITLE="$2"
+  BOOTSTRAP_INTRO="$3"
+  mkdir -p "$(dirname "$QUEUE_FILE")"
+
+  if [ ! -f "$QUEUE_FILE" ]; then
+    {
+      echo "# ${BOOTSTRAP_TITLE}"
+      echo ""
+      echo "${BOOTSTRAP_INTRO}"
+      echo ""
+      echo "---"
+      echo ""
+    } > "$QUEUE_FILE"
+  fi
+
+  {
+    echo "## ${DATE} — ${SHORT_HASH} — ${SUBJECT}"
+    echo ""
+    echo "- **Full commit:** \`${HASH}\`"
+    echo "- **Files touched:** ${FILES}"
+    echo "- **Status:** Pending review"
+    echo ""
+  } >> "$QUEUE_FILE"
+}
+
+queue_commit \
+  "docs/management/pending-manager-reviews.md" \
+  "Pending Manager Reviews" \
+  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Ideal Manager (\`.claude/agents/ideal-manager.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note pointing to \`docs/management/manager-register.md\`'s matching finding, never deleted."
+
+queue_commit \
+  "docs/pending-documentation-steward-reviews.md" \
+  "Pending Documentation Steward Reviews" \
+  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Documentation Steward (\`.claude/agents/documentation-steward.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Steward may edit stale docs directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once its corrections are actually committed."
+
+queue_commit \
+  "docs/pending-learning-development-reviews.md" \
+  "Pending Learning & Development Reviews" \
+  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Learning & Development Writer (\`.claude/agents/learning-development-writer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Writer may edit the three manuals under docs/manuals/ directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting manual edit is actually committed. Most commits resolve with 'no user-facing change' — a legitimate outcome, not a non-answer."
 
 exit 0
