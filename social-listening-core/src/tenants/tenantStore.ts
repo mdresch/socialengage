@@ -24,7 +24,7 @@ export interface TenantRow {
 export interface Tenant {
   id: string;
   name: string;
-  status: 'active' | 'suspended';
+  status: 'active' | 'suspended' | 'deleting';
   licenseSeatCount: number;
   activeSeatCount: number;
   domain: string | null;
@@ -39,6 +39,7 @@ export interface CreateTenantInput {
 }
 
 export interface UpdateTenantAdminInput {
+  /** Deliberately excludes 'deleting' (Story 3.7, ADR-0039 §5) — that transition is never a side effect of this ordinary PATCH path; only the dedicated deletion confirmation flow (tenantDeletion.ts) sets it. */
   status?: 'active' | 'suspended';
   licenseSeatCount?: number;
   /** `undefined` = don't touch; `null` = clear it; string = set it (ADR-0037 §9). */
@@ -50,7 +51,7 @@ export function mapRowToTenant(row: TenantRow): Tenant {
   return {
     id: row.id,
     name: row.name,
-    status: row.status as 'active' | 'suspended',
+    status: row.status as 'active' | 'suspended' | 'deleting',
     licenseSeatCount: row.license_seat_count,
     activeSeatCount: row.active_seat_count,
     domain: row.domain,

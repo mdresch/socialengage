@@ -64,3 +64,12 @@ adminTenantsRouter.patch('/:id', async (req, res) => {
   }
   res.json(tenant);
 });
+
+// Story 3.7's export/delete routes (Platform-Admin-gated) lived here briefly
+// the night of 2026-08-06/07 and were retired before ever being committed —
+// ADR-0039 Decision §1 (superseded 2026-08-07) and ADR-0043 (as amended)
+// both record why: platform_admin_role has zero access to any tenant-content
+// table, no exception carved out for deletion. Tenant offboarding is now
+// tenant_admin-initiated, self-service, own-tenant-only — see
+// selfServiceTenantDeletionRouter.ts and
+// .claude/skills/self-service-tenant-deletion/SKILL.md.

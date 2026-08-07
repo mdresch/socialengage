@@ -1,4 +1,4 @@
-import { PoolClient } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { getPool } from './pool';
 
 /**
@@ -11,12 +11,21 @@ import { getPool } from './pool';
  * future code path sets context without this transaction discipline, risks
  * leaking it across reused connections. See
  * .claude/skills/postgres-tenant-db/SKILL.md.
+ *
+ * `pool` defaults to the ordinary app_user pool — every pre-Story-3.8 caller
+ * is unaffected. Story 3.8 (ADR-0043) is the first caller to pass
+ * `getTenantDeletionPool()` explicitly: tenant_deletion_role deliberately
+ * does NOT bypass RLS (unlike every other specialized role in this
+ * project), so it still needs this same session-context mechanism —
+ * defense-in-depth for an irreversible action, not just a narrower set of
+ * GRANTs.
  */
 export async function withTenant<T>(
   tenantId: string,
-  fn: (client: PoolClient) => Promise<T>
+  fn: (client: PoolClient) => Promise<T>,
+  pool: Pool = getPool()
 ): Promise<T> {
-  const client = await getPool().connect();
+  const client = await pool.connect();
   try {
     await client.query('BEGIN');
     await client.query('SELECT set_config($1, $2, true)', ['app.tenant_id', tenantId]);

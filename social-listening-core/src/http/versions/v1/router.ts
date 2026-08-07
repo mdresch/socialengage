@@ -9,6 +9,7 @@ import { adminBreakGlassRouter } from './adminBreakGlassRouter';
 import { adminAuditLogRouter } from './adminAuditLogRouter';
 import { selfServiceSignupRouter } from './selfServiceSignupRouter';
 import { domainSignupAttemptsRouter } from './domainSignupAttemptsRouter';
+import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -72,6 +73,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 5.16 (ADR-0037 §8b) — see .claude/skills/same-domain-invite-assist/SKILL.md. */
   v1Router.use('/tenants/domain-signup-attempts', authMiddleware, domainSignupAttemptsRouter);
+
+  /** Story 3.8 (ADR-0043) — see .claude/skills/self-service-tenant-deletion/SKILL.md. */
+  v1Router.use('/tenants/self-service-deletion', authMiddleware, selfServiceTenantDeletionRouter);
 
   return v1Router;
 }

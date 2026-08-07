@@ -41,3 +41,20 @@ export async function __deleteArchiveBlobForTests(blobPath: string): Promise<voi
   const containerClient = client().getContainerClient(CONTAINER_NAME);
   await containerClient.getBlockBlobClient(blobPath).deleteIfExists();
 }
+
+/**
+ * Story 3.7 (ADR-0039 §3) — the one real, production caller allowed to delete
+ * archived content. ADR-0018's "never discarded" guarantee is a default for
+ * an *active* tenant's ongoing operation, not a promise surviving the
+ * tenant's own deletion (ADR-0039 §3's own framing) — this function is that
+ * named, scoped exception, distinct from `__deleteArchiveBlobForTests()`
+ * above (which exists only to keep contract runs from littering the real
+ * archive container, never called from real deletion logic). `deleteIfExists`
+ * so a blob that was never actually archived (e.g. a post whose rawPayload
+ * never aged out) is a no-op, not an error.
+ */
+export async function deleteArchiveBlob(blobPath: string): Promise<boolean> {
+  const containerClient = client().getContainerClient(CONTAINER_NAME);
+  const result = await containerClient.getBlockBlobClient(blobPath).deleteIfExists();
+  return result.succeeded;
+}

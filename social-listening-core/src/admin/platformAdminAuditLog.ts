@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { getPlatformAdminPool } from '../db/platformAdminPool';
 import { encodeAuditLogCursor, decodeAuditLogCursor } from './auditLogCursor';
 
@@ -19,16 +19,20 @@ export interface PlatformAdminAuditEntry {
 
 /**
  * `pool` defaults to `getPlatformAdminPool()` — every pre-Story-5.15 caller
- * is unaffected. Story 5.15 (ADR-0037 §2) is the first caller to pass
+ * is unaffected. Story 5.15 (ADR-0037 §2) was the first caller to pass
  * `getTenantSignupPool()` explicitly: that write must run under
  * `tenant_signup_role`'s own connection (which has its own, separate
  * `INSERT` grant on this table), not `platform_admin_role`'s — the two
  * roles' blast radii must stay independent even though they share this one
- * audit table.
+ * audit table. Story 3.8 (ADR-0043 §7) is the first caller to pass a
+ * `PoolClient` (from `withTenant()`) rather than a `Pool` — the same
+ * reasoning, one level narrower: that write must run under `app_user`'s own
+ * RLS-scoped connection so it can never be confused with either role's own
+ * bypass.
  */
 export async function logPlatformAdminAction(
   entry: PlatformAdminAuditEntry,
-  pool: Pool = getPlatformAdminPool()
+  pool: Pool | PoolClient = getPlatformAdminPool()
 ): Promise<void> {
   await pool.query(
     `INSERT INTO platform_admin_audit_log (actor_identity, operation, target_tenant_id, detail)

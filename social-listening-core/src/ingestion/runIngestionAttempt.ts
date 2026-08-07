@@ -1,5 +1,6 @@
 import { startIngestionRun, completeIngestionRun, StartIngestionRunInput } from './ingestionRunStore';
 import { ClassifiableError, isCredentialError, isRetryable } from './errorClassification';
+import { withTenant } from '../db/withTenant';
 
 export interface IngestionAttemptResult {
   postsIngested: number;
@@ -52,6 +53,25 @@ export async function runIngestionAttempt(
   for (;;) {
     attemptsMade += 1;
     try {
+      // Story 3.8 (ADR-0043 §3): the one real, shared choke point every
+      // ingestion attempt already funnels through, regardless of which
+      // connector or future scheduler calls it. Checked inside the loop's
+      // own try block, before options.attempt() is ever called, so a
+      // mid-deletion request never lets new data through — the run this
+      // iteration already opened is closed 'failed' via the exact same
+      // ClassifiableError path every other non-retryable outcome below
+      // already uses, not a second, parallel refusal mechanism.
+      const deletionRequested = await withTenant(options.tenantId, async (client) => {
+        const { rows } = await client.query<{ deletion_requested_at: Date | null }>(
+          `SELECT deletion_requested_at FROM tenants WHERE id = $1`,
+          [options.tenantId]
+        );
+        return rows.length > 0 && rows[0].deletion_requested_at !== null;
+      });
+      if (deletionRequested) {
+        throw new ClassifiableError('tenant_deletion_requested', 'Tenant deletion has been requested.');
+      }
+
       const result = await options.attempt(run.id);
       await completeIngestionRun(options.tenantId, run.id, {
         status: 'succeeded',
