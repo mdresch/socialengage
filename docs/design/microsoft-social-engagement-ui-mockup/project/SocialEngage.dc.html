@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#E8EBF0;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:#2563EB;text-decoration:none}
+  a:hover{color:#1D4ED8}
+  *{box-sizing:border-box}
+</style>
+</helmet>
+
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#F3F5F8;display:flex;flex-direction:column;font-size:14px;color:#1B2A41">
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+  <!-- TOP BAR -->
+  <div style="height:56px;flex:0 0 56px;background:#10243E;display:flex;align-items:center;padding:0 20px;gap:18px;color:#fff;position:relative;z-index:40">
+    <div onClick="{{ toggleNav }}" style="width:34px;height:34px;display:flex;flex-direction:column;justify-content:center;gap:4px;cursor:pointer;padding:0 7px;border-radius:4px" style-hover="background:rgba(255,255,255,.12)">
+      <div style="height:2px;background:#fff;border-radius:2px"></div>
+      <div style="height:2px;background:#fff;border-radius:2px"></div>
+      <div style="height:2px;background:#fff;border-radius:2px"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(140deg,#3B82F6,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">S</div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-.2px">SocialEngage</div>
+      <div style="width:1px;height:22px;background:rgba(255,255,255,.22);margin:0 4px"></div>
+      <div style="font-size:15px;font-weight:500;opacity:.85">{{ screenTitle }}</div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:7px 12px;min-width:280px;cursor:pointer">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;opacity:.6">Search topic</div>
+      <div style="font-weight:600">{{ topic }}</div>
+      <div style="flex:1"></div>
+      {{ icoChevron }}
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:7px 12px;cursor:pointer">
+      {{ icoCalendar }}<div style="font-weight:500">Last 30 days</div>{{ icoChevron }}
+    </div>
+    <div style="position:relative;width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px" style-hover="background:rgba(255,255,255,.12)">{{ icoBell }}
+      <div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:8px;background:#EF4444;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center">7</div>
+    </div>
+    <div style="position:relative">
+      <div onClick="{{ toggleUserMenu }}" style="width:34px;height:34px;border-radius:17px;background:#2563EB;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;cursor:pointer">MK</div>
+      <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:44px;right:0;width:220px;background:#fff;border:1px solid var(--slate-200,#E2E8F0);border-radius:10px;box-shadow:0 12px 32px rgba(8,17,30,.22);padding:8px;z-index:60;color:#1B2A41">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--slate-100,#F1F5F9);margin-bottom:6px">
+            <div style="font-size:13px;font-weight:600">Mia Kessler</div>
+            <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">mia.kessler@adpa.io</div>
+          </div>
+          <div style="padding:9px 12px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--slate-50,#F8FAFC)">Account settings</div>
+          <div onClick="{{ signOut }}" style="padding:9px 12px;border-radius:7px;font-size:13px;cursor:pointer;color:#B91C1C;font-weight:500" style-hover="background:#FEF2F2">Sign out</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- FLYOUT NAV -->
+  <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:56px;left:0;bottom:0;width:280px;background:#0B1B2E;z-index:35;padding:18px 0;box-shadow:6px 0 28px rgba(8,17,30,.35);color:#fff">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+        <div onClick="{{ n.go }}" style="display:flex;align-items:center;gap:14px;padding:13px 24px;cursor:pointer;font-size:14px;background:{{ n.bg }};border-left:3px solid {{ n.bar }}" style-hover="background:rgba(255,255,255,.07)">
+          <div style="width:20px;display:flex;align-items:center;justify-content:center;opacity:.9">{{ n.icon }}</div>
+          <div style="font-weight:{{ n.weight }}">{{ n.label }}</div>
+        </div>
+      </sc-for>
+      <div style="height:1px;background:rgba(255,255,255,.10);margin:14px 24px"></div>
+      <div style="padding:0 27px;font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.45;margin-bottom:8px">Adaptive Digital Processing Analytics</div>
+      <div style="padding:0 27px;font-size:12px;opacity:.6;line-height:1.6">Tenant: ADPA Production<br>Data refreshed 4 min ago</div>
+    </div>
+    <div onClick="{{ toggleNav }}" style="position:absolute;inset:56px 0 0 280px;background:rgba(8,17,30,.32);z-index:34"></div>
+  </sc-if>
+
+  <!-- SUB TABS -->
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+  <div style="height:48px;flex:0 0 48px;background:#fff;border-bottom:1px solid #DDE3EC;display:flex;align-items:stretch;padding:0 24px;gap:4px">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+      <div onClick="{{ t.go }}" style="display:flex;align-items:center;padding:0 18px;cursor:pointer;font-size:13.5px;font-weight:{{ t.weight }};color:{{ t.color }};border-bottom:3px solid {{ t.bar }}">{{ t.label }}</div>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div onClick="{{ togglePosts }}" style="display:flex;align-items:center;gap:7px;border:1px solid #CBD5E1;border-radius:6px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:#F1F5F9">{{ icoPosts }}Posts pane</div>
+      <div style="display:flex;align-items:center;gap:7px;border:1px solid #CBD5E1;border-radius:6px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:#F1F5F9">{{ icoExport }}Export</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div style="flex:0 0 auto;background:#fff;border-bottom:1px solid #DDE3EC;padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:#64748B;font-weight:600;margin-right:4px">Add filters</div>
+    <sc-for list="{{ sourceChips }}" as="c" hint-placeholder-count="6">
+      <div onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:8px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:500;cursor:pointer">
+        <div style="width:8px;height:8px;border-radius:4px;background:{{ c.dot }}"></div>{{ c.name }}
+        <span style="opacity:.6;font-variant-numeric:tabular-nums">{{ c.count }}</span>
+      </div>
+    </sc-for>
+    <div style="width:1px;height:22px;background:#E2E8F0;margin:0 4px"></div>
+    <sc-for list="{{ sentChips }}" as="c" hint-placeholder-count="3">
+      <div onClick="{{ c.toggle }}" style="border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:500;cursor:pointer">{{ c.name }}</div>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div onClick="{{ clearFilters }}" style="font-size:12.5px;color:#2563EB;cursor:pointer;font-weight:500">Clear all</div>
+  </div>
+  </sc-if>
+
+  <!-- BODY -->
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="flex:1;overflow:auto;padding:22px 24px 40px">
+
+      <!-- OVERVIEW -->
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:300px 1fr 300px;gap:16px;align-items:start">
+
+          <!-- LEFT COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Sentiment</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="position:relative;width:78px;height:78px;flex:0 0 auto">
+                  <svg viewBox="0 0 100 100" style="width:78px;height:78px;transform:rotate(-90deg)">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--slate-100,#F1F5F9)" stroke-width="11"></circle>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--green-500,#10B981)" stroke-width="11" stroke-dasharray="{{ sentGaugeDash }}" stroke-linecap="round"></circle>
+                  </svg>
+                </div>
+                <div style="display:flex;gap:18px">
+                  <div>
+                    <div style="font-size:22px;font-weight:700;letter-spacing:-.5px">{{ sentIndex }}</div>
+                    <div style="font-size:11px;color:var(--slate-400,#94A3B8)">index</div>
+                  </div>
+                  <div>
+                    <div style="font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--green-600,#059669)">+{{ sentChange }}</div>
+                    <div style="font-size:11px;color:var(--slate-400,#94A3B8)">change ↗</div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <div style="height:8px;border-radius:4px;background:var(--slate-100,#F1F5F9);position:relative;overflow:hidden">
+                  <div style="position:absolute;left:50%;top:0;bottom:0;width:{{ sentBarW }};background:var(--green-500,#10B981);border-radius:4px"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--slate-400,#94A3B8);margin-top:6px">
+                  <div>-10</div><div>0</div><div>+10</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Location insights</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="position:relative;height:150px;border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#EEF2F8,#E4E9F1)">
+                <sc-for list="{{ miniGeo }}" as="g" hint-placeholder-count="6">
+                  <div style="position:absolute;left:{{ g.x }};top:{{ g.y }};width:{{ g.d }};height:{{ g.d }};margin-left:{{ g.off }};margin-top:{{ g.off }};border-radius:50%;background:rgba(37,99,235,.5);border:1px solid #93C5FD"></div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Authors by source</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="position:relative;width:80px;height:80px;flex:0 0 auto">
+                  <svg viewBox="0 0 100 100" style="width:80px;height:80px;transform:rotate(-90deg)">
+                    <sc-for list="{{ authorDonut }}" as="a" hint-placeholder-count="6">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="{{ a.color }}" stroke-width="13" stroke-dasharray="{{ a.dash }}" stroke-dashoffset="{{ a.offset }}"></circle>
+                    </sc-for>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">{{ totalAuthorsShort }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+                  <sc-for list="{{ authorDonut }}" as="a" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:7px;font-size:11.5px">
+                      <div style="width:8px;height:8px;border-radius:2px;background:{{ a.color }}"></div>
+                      <div style="flex:1;color:var(--slate-600,#475569)">{{ a.name }}</div>
+                      <div style="font-weight:600;font-variant-numeric:tabular-nums">{{ a.count }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="font-size:12px;color:var(--slate-400,#94A3B8);margin-top:12px">{{ totalAuthors }} authors</div>
+            </div>
+          </div>
+
+          <!-- MIDDLE COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:18px 20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Volume</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;gap:18px;font-size:12.5px;margin-bottom:12px">
+                <sc-for list="{{ volumeTabs }}" as="v" hint-placeholder-count="2">
+                  <div onClick="{{ v.pick }}" style="font-weight:{{ v.weight }};color:{{ v.color }};border-bottom:2px solid {{ v.bar }};padding-bottom:6px;cursor:pointer">{{ v.label }}</div>
+                </sc-for>
+              </div>
+              <div style="height:260px">
+                <svg viewBox="0 0 900 260" preserveAspectRatio="none" style="width:100%;height:100%">
+                  <defs><linearGradient id="bz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563EB" stop-opacity=".22"></stop><stop offset="1" stop-color="#2563EB" stop-opacity="0"></stop></linearGradient></defs>
+                  <line x1="0" y1="65" x2="900" y2="65" stroke="var(--slate-100,#EEF2F7)"></line>
+                  <line x1="0" y1="130" x2="900" y2="130" stroke="var(--slate-100,#EEF2F7)"></line>
+                  <line x1="0" y1="195" x2="900" y2="195" stroke="var(--slate-100,#EEF2F7)"></line>
+                  <path d="{{ buzzArea }}" fill="url(#bz)"></path>
+                  <polyline points="{{ buzzLine }}" fill="none" stroke="var(--slate-700,#334155)" stroke-width="2"></polyline>
+                  <polyline points="{{ negLine }}" fill="none" stroke="var(--slate-400,#94A3B8)" stroke-width="1.5"></polyline>
+                </svg>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--slate-400,#94A3B8);margin-top:6px">
+                <div>1</div><div>8</div><div>15</div><div>22</div><div>30</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Sources</div>
+                  {{ icoDownloadSmall }}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ sourceBars }}" as="s" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="width:22px;height:22px;border-radius:5px;background:{{ s.color }};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ s.initial }}</div>
+                      <div style="flex:1">
+                        <div style="height:7px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden">
+                          <div style="height:100%;width:{{ s.w }};background:{{ s.color }};border-radius:4px"></div>
+                        </div>
+                      </div>
+                      <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;width:38px;text-align:right">{{ s.count }}</div>
+                      <div style="color:var(--slate-300,#CBD5E1);font-size:12px">→</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Authors</div>
+                  {{ icoDownloadSmall }}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ authorsList }}" as="a" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <div style="width:24px;height:24px;border-radius:12px;background:{{ a.avatarBg }};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ a.initials }}</div>
+                      <div style="flex:1;font-size:12.5px;color:var(--slate-700,#334155);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</div>
+                      <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums">{{ a.count }}</div>
+                      <div style="color:var(--slate-300,#CBD5E1);font-size:12px">→</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Phrases</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:9px 12px;align-items:baseline">
+                <sc-for list="{{ phrases }}" as="p" hint-placeholder-count="14">
+                  <div style="font-size:{{ p.size }};font-weight:{{ p.weight }};color:{{ p.color }};cursor:pointer;line-height:1.2">{{ p.text }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Search topic</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="font-size:12px;color:var(--slate-500,#64748B);margin-bottom:12px">{{ topicShare }}% of posts in your data set</div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="position:relative;width:64px;height:64px;flex:0 0 auto">
+                  <svg viewBox="0 0 100 100" style="width:64px;height:64px;transform:rotate(-90deg)">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--slate-100,#F1F5F9)" stroke-width="13"></circle>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--slate-800,#1B2A41)" stroke-width="13" stroke-dasharray="{{ topicDash }}" stroke-linecap="round"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-size:20px;font-weight:700;letter-spacing:-.4px">{{ topicShare }}%</div>
+                  <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">of posts in {{ topicName }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Languages</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ languages }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:60px;font-size:12.5px;color:var(--slate-600,#475569);flex:0 0 auto">{{ l.name }}</div>
+                    <div style="flex:1;height:7px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden">
+                      <div style="height:100%;width:{{ l.w }};background:var(--slate-700,#334155);border-radius:4px"></div>
+                    </div>
+                    <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;width:34px;text-align:right">{{ l.count }}</div>
+                    <div style="color:var(--slate-300,#CBD5E1);font-size:12px">→</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CONVERSATIONS -->
+      <sc-if value="{{ isConversations }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:300px 1fr 300px;gap:16px;align-items:start">
+
+          <!-- LEFT COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Sentiment</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="position:relative;width:78px;height:78px;flex:0 0 auto">
+                  <svg viewBox="0 0 100 100" style="width:78px;height:78px;transform:rotate(-90deg)">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--slate-100,#F1F5F9)" stroke-width="11"></circle>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--green-500,#10B981)" stroke-width="11" stroke-dasharray="{{ sentGaugeDash }}" stroke-linecap="round"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:700;letter-spacing:-.5px">{{ sentIndex }}</div>
+                  <div style="font-size:11px;color:var(--slate-400,#94A3B8)">index</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Intentions</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ intentions }}" as="i" hint-placeholder-count="5">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px">
+                      <div style="font-weight:500;color:var(--slate-700,#334155)">{{ i.name }}</div>
+                      <div style="color:var(--slate-500,#64748B);font-variant-numeric:tabular-nums">{{ i.count }}</div>
+                    </div>
+                    <div style="height:7px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ i.w }};background:{{ i.color }};border-radius:4px"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Tags</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ convTags }}" as="t" hint-placeholder-count="8">
+                  <div style="border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:500">{{ t.name }} <span style="opacity:.7">{{ t.count }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <!-- MIDDLE COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:18px 20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Phrases</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px 14px;align-items:baseline;min-height:190px">
+                <sc-for list="{{ phrases }}" as="p" hint-placeholder-count="14">
+                  <div style="font-size:{{ p.size }};font-weight:{{ p.weight }};color:{{ p.color }};cursor:pointer;line-height:1.2">{{ p.text }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Sources</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ sourceBars }}" as="s" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:22px;height:22px;border-radius:5px;background:{{ s.color }};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{ s.initial }}</div>
+                    <div style="flex:1">
+                      <div style="height:7px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden">
+                        <div style="height:100%;width:{{ s.w }};background:{{ s.color }};border-radius:4px"></div>
+                      </div>
+                    </div>
+                    <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;width:38px;text-align:right">{{ s.count }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Phrases per platform</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ phrasesPerPlatform }}" as="pp" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:12px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:8px;display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:2px;background:{{ pp.color }}"></div>{{ pp.name }}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px 10px">
+                      <sc-for list="{{ pp.phrases }}" as="w" hint-placeholder-count="4">
+                        <div style="font-size:12px;font-weight:500;color:var(--slate-600,#475569);background:var(--slate-50,#F8FAFC);border:1px solid var(--slate-100,#F1F5F9);border-radius:999px;padding:4px 10px">{{ w }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Phrases history</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="height:120px">
+                <svg viewBox="0 0 260 120" preserveAspectRatio="none" style="width:100%;height:100%">
+                  <polyline points="{{ phraseHistoryLine }}" fill="none" stroke="var(--slate-700,#334155)" stroke-width="2"></polyline>
+                </svg>
+              </div>
+              <div style="font-size:11.5px;color:var(--slate-400,#94A3B8);margin-top:8px">Mentions of "{{ topPhraseName }}" over 30 days</div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Trending phrases</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ trendingPhrases }}" as="t" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <div style="flex:1;font-size:12.5px;color:var(--slate-700,#334155)">{{ t.text }}</div>
+                    <div style="font-size:12px;font-weight:600;color:{{ t.color }}">{{ t.trend }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E3E8F0);border-radius:10px;padding:16px 18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">Languages</div>
+                {{ icoDownloadSmall }}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ languages }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:60px;font-size:12.5px;color:var(--slate-600,#475569);flex:0 0 auto">{{ l.name }}</div>
+                    <div style="flex:1;height:7px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden">
+                      <div style="height:100%;width:{{ l.w }};background:var(--slate-700,#334155);border-radius:4px"></div>
+                    </div>
+                    <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;width:34px;text-align:right">{{ l.count }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SENTIMENT -->
+      <sc-if value="{{ isSentiment }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px">
+            <sc-for list="{{ sentCards }}" as="s" hint-placeholder-count="3">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:18px 20px;border-top:3px solid {{ s.color }}">
+                <div style="font-size:11.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:600">{{ s.label }} posts</div>
+                <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px">
+                  <div style="font-size:32px;font-weight:700;letter-spacing:-1px">{{ s.value }}</div>
+                  <div style="font-size:15px;font-weight:600;color:{{ s.color }}">{{ s.pct }}</div>
+                </div>
+                <div style="font-size:12px;color:var(--slate-400,#94A3B8);margin-top:6px">{{ s.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:15px;font-weight:600">Sentiment over time</div>
+              <div style="display:flex;gap:18px;font-size:12px;color:var(--slate-500,#64748B)">
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:11px;height:11px;border-radius:3px;background:var(--green-500,#10B981)"></div>Positive</div>
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:11px;height:11px;border-radius:3px;background:var(--slate-400,#94A3B8)"></div>Neutral</div>
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:11px;height:11px;border-radius:3px;background:var(--red-500,#EF4444)"></div>Negative</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:230px">
+              <sc-for list="{{ sentBars }}" as="b" hint-placeholder-count="20">
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+                  <div style="height:{{ b.pos }};background:var(--green-500,#10B981);border-radius:3px 3px 0 0"></div>
+                  <div style="height:{{ b.neu }};background:var(--slate-300,#CBD5E1)"></div>
+                  <div style="height:{{ b.neg }};background:var(--red-500,#EF4444);border-radius:0 0 3px 3px"></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--slate-400,#94A3B8);margin-top:10px">
+              <div>1 Jul</div><div>8 Jul</div><div>15 Jul</div><div>22 Jul</div><div>30 Jul</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+              <div style="font-size:15px;font-weight:600;margin-bottom:16px">Sentiment by source</div>
+              <div style="display:flex;flex-direction:column;gap:15px">
+                <sc-for list="{{ sentBySource }}" as="s" hint-placeholder-count="6">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px">
+                      <div style="font-weight:500">{{ s.name }}</div>
+                      <div style="color:var(--slate-500,#64748B);font-variant-numeric:tabular-nums">index {{ s.index }}</div>
+                    </div>
+                    <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--slate-100,#F1F5F9)">
+                      <div style="width:{{ s.pos }};background:var(--green-500,#10B981)"></div>
+                      <div style="width:{{ s.neu }};background:var(--slate-300,#CBD5E1)"></div>
+                      <div style="width:{{ s.neg }};background:var(--red-500,#EF4444)"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+              <div style="font-size:15px;font-weight:600;margin-bottom:16px">Sentiment drivers</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+                <div>
+                  <div style="font-size:11.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--green-600,#059669);font-weight:700;margin-bottom:12px">Praise</div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <sc-for list="{{ praise }}" as="p" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;gap:9px;font-size:13px">
+                        <div style="flex:1">{{ p.text }}</div>
+                        <div style="font-variant-numeric:tabular-nums;color:var(--slate-500,#64748B);font-size:12px">{{ p.count }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--red-600,#DC2626);font-weight:700;margin-bottom:12px">Criticism</div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <sc-for list="{{ criticism }}" as="p" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;gap:9px;font-size:13px">
+                        <div style="flex:1">{{ p.text }}</div>
+                        <div style="font-variant-numeric:tabular-nums;color:var(--slate-500,#64748B);font-size:12px">{{ p.count }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- LOCATION -->
+      <sc-if value="{{ isLocation }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:16px">
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:15px;font-weight:600">Buzz by location</div>
+              <div style="font-size:12px;color:var(--slate-400,#94A3B8)">Bubble size = post volume · {{ activeLabel }}</div>
+            </div>
+            <div style="position:relative;height:600px;border-radius:10px;overflow:hidden;background-color:#0B1B2E;background-image:radial-gradient(120% 120% at 50% 20%,#16304F 0%,#0B1B2E 70%),linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:100% 100%,48px 48px,48px 48px">
+              <sc-for list="{{ geo }}" as="g" hint-placeholder-count="9">
+                <div onClick="{{ g.pick }}" style="position:absolute;left:{{ g.x }};top:{{ g.y }};transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
+                  <div style="width:{{ g.d }};height:{{ g.d }};border-radius:50%;background:{{ g.bg }};border:2px solid {{ g.border }};box-shadow:0 0 26px {{ g.glow }}"></div>
+                  <div style="font-size:11.5px;font-weight:600;color:#DBEAFE;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)">{{ g.name }}</div>
+                </div>
+              </sc-for>
+              <div style="position:absolute;left:20px;bottom:18px;display:flex;align-items:center;gap:14px;color:rgba(219,234,254,.75);font-size:11.5px">
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:10px;height:10px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>Low</div>
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>Medium</div>
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>High</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+              <div style="font-size:15px;font-weight:600;margin-bottom:16px">Top regions</div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ regions }}" as="r" hint-placeholder-count="8">
+                  <div onClick="{{ r.pick }}" style="cursor:pointer">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                      <div style="font-weight:{{ r.weight }}">{{ r.name }}</div>
+                      <div style="color:var(--slate-500,#64748B);font-variant-numeric:tabular-nums">{{ r.count }}</div>
+                    </div>
+                    <div style="height:8px;background:var(--slate-100,#F1F5F9);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ r.w }};background:{{ r.color }};border-radius:4px"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px;flex:1">
+              <div style="font-size:15px;font-weight:600;margin-bottom:6px">{{ selectedRegion }}</div>
+              <div style="font-size:12px;color:var(--slate-400,#94A3B8);margin-bottom:16px">Regional breakdown</div>
+              <div style="display:flex;flex-direction:column;gap:13px">
+                <sc-for list="{{ regionStats }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:11px;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                    <div style="font-size:13px;color:var(--slate-600,#475569)">{{ s.label }}</div>
+                    <div style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.value }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SOURCES -->
+      <sc-if value="{{ isSources }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px">
+            <sc-for list="{{ sourceCards }}" as="s" hint-placeholder-count="6">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
+                  <div style="width:34px;height:34px;border-radius:10px;background:{{ s.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">{{ s.initial }}</div>
+                  <div style="flex:1">
+                    <div style="font-size:14.5px;font-weight:600">{{ s.name }}</div>
+                    <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">{{ s.share }} share of voice</div>
+                  </div>
+                  <div style="font-size:12.5px;font-weight:600;color:{{ s.trendColor }}">{{ s.trend }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:3px;height:60px;margin-bottom:14px">
+                  <sc-for list="{{ s.spark }}" as="v" hint-placeholder-count="14">
+                    <div style="flex:1;height:{{ v.h }};background:{{ v.color }};border-radius:2px 2px 0 0"></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid var(--slate-100,#F1F5F9);padding-top:13px">
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--slate-400,#94A3B8);font-weight:600">Posts</div>
+                    <div style="font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px">{{ s.count }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--slate-400,#94A3B8);font-weight:600">Authors</div>
+                    <div style="font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px">{{ s.authors }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--slate-400,#94A3B8);font-weight:600">Index</div>
+                    <div style="font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px;color:{{ s.indexColor }}">{{ s.index }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;overflow:hidden">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--slate-100,#F1F5F9);font-size:15px;font-weight:600">Source detail</div>
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1.4fr;padding:11px 22px;background:var(--slate-50,#F8FAFC);border-bottom:1px solid var(--slate-100,#F1F5F9);font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700">
+              <div>Source</div><div style="text-align:right">Posts</div><div style="text-align:right">Authors</div><div style="text-align:right">Reach</div><div style="text-align:right">Index</div><div style="padding-left:24px">Sentiment split</div>
+            </div>
+            <sc-for list="{{ sourceRows }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1.4fr;padding:14px 22px;border-bottom:1px solid var(--slate-100,#F1F5F9);align-items:center;font-size:13.5px" style-hover="background:var(--slate-50,#F8FAFC)">
+                <div style="display:flex;align-items:center;gap:10px"><div style="width:9px;height:9px;border-radius:5px;background:{{ r.color }}"></div><div style="font-weight:500">{{ r.name }}</div></div>
+                <div style="text-align:right;font-variant-numeric:tabular-nums">{{ r.count }}</div>
+                <div style="text-align:right;font-variant-numeric:tabular-nums;color:var(--slate-600,#475569)">{{ r.authors }}</div>
+                <div style="text-align:right;font-variant-numeric:tabular-nums;color:var(--slate-600,#475569)">{{ r.reach }}</div>
+                <div style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.indexColor }}">{{ r.index }}</div>
+                <div style="padding-left:24px;display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--slate-100,#F1F5F9)">
+                  <div style="width:{{ r.pos }};background:var(--green-500,#10B981)"></div>
+                  <div style="width:{{ r.neu }};background:var(--slate-300,#CBD5E1)"></div>
+                  <div style="width:{{ r.neg }};background:var(--red-500,#EF4444)"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- POST DETAIL -->
+      <sc-if value="{{ isPostDetail }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div onClick="{{ backFromPost }}" style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--blue-600,#2563EB);cursor:pointer;margin-bottom:16px">← Back to {{ backLabel }}</div>
+          <div style="display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start">
+
+            <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:26px 28px">
+                <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+                  <div style="width:48px;height:48px;border-radius:24px;background:{{ detail.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600">{{ detail.initials }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="font-size:17px;font-weight:600">{{ detail.author }}</div>
+                      <div style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--blue-50,#EFF6FF);color:var(--blue-700,#1D4ED8)">{{ detail.source }}</div>
+                    </div>
+                    <div style="font-size:13px;color:var(--slate-400,#94A3B8);margin-top:3px">{{ detail.handle }} · {{ detail.posted }}</div>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;background:{{ detail.sentBg }};color:{{ detail.sentFg }}">{{ detail.sentiment }}</div>
+                </div>
+                <div style="font-size:17px;line-height:1.65;color:var(--slate-700,#334155);text-wrap:pretty">{{ detail.text }}</div>
+                <div style="display:flex;gap:28px;margin-top:22px;padding-top:18px;border-top:1px solid var(--slate-100,#F1F5F9)">
+                  <sc-for list="{{ detail.metrics }}" as="m" hint-placeholder-count="4">
+                    <div>
+                      <div style="font-size:10.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--slate-400,#94A3B8);font-weight:700">{{ m.label }}</div>
+                      <div style="font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px">{{ m.value }}</div>
+                    </div>
+                  </sc-for>
+                  <div style="flex:1"></div>
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <div style="border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:9px 15px;font-size:13px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:var(--slate-50,#F8FAFC)">Assign</div>
+                    <div style="border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:9px 15px;font-size:13px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:var(--slate-50,#F8FAFC)">Add tag</div>
+                    <div style="border:1px solid var(--blue-600,#2563EB);color:var(--blue-700,#1D4ED8);border-radius:9px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer;background:#fff" style-hover="background:var(--blue-50,#EFF6FF)">Link to CRM</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:22px 26px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <div style="font-size:15px;font-weight:600">Reply</div>
+                  <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--slate-500,#64748B)">
+                    Replying as
+                    <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--slate-300,#CBD5E1);border-radius:8px;padding:6px 11px;background:#fff;cursor:pointer">
+                      <div style="width:20px;height:20px;border-radius:10px;background:var(--blue-600,#2563EB);color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center">SE</div>
+                      <div style="font-weight:600;color:var(--slate-700,#334155)">@socialengage</div>
+                    </div>
+                  </div>
+                </div>
+                <textarea value="{{ replyText }}" onChange="{{ setReply }}" placeholder="Write a reply…" style="width:100%;height:104px;resize:none;border:1px solid var(--slate-300,#CBD5E1);border-radius:10px;padding:14px 16px;font-family:Inter,sans-serif;font-size:14px;line-height:1.6;color:#1B2A41;outline:none" style-focus="border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.16)"></textarea>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
+                  <div style="font-size:12px;color:{{ countColor }};font-variant-numeric:tabular-nums">{{ replyCount }} / 280</div>
+                  <div style="width:1px;height:20px;background:var(--slate-200,#E2E8F0)"></div>
+                  <sc-for list="{{ replyTones }}" as="t" hint-placeholder-count="3">
+                    <div onClick="{{ t.pick }}" style="border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};border-radius:999px;padding:5px 13px;font-size:12px;font-weight:500;cursor:pointer">{{ t.label }}</div>
+                  </sc-for>
+                  <div style="flex:1"></div>
+                  <div style="border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:var(--slate-50,#F8FAFC)">Reply privately</div>
+                  <div onClick="{{ sendReply }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--blue-700,#1D4ED8)">Post reply</div>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:22px 26px">
+                <div style="font-size:15px;font-weight:600;margin-bottom:16px">Thread · {{ threadCount }}</div>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <sc-for list="{{ thread }}" as="t" hint-placeholder-count="2">
+                    <div style="display:flex;gap:12px;padding:14px 16px;background:{{ t.bg }};border:1px solid {{ t.border }};border-radius:10px">
+                      <div style="width:32px;height:32px;border-radius:16px;background:{{ t.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600">{{ t.initials }}</div>
+                      <div style="flex:1;min-width:0">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                          <div style="font-size:13px;font-weight:600">{{ t.author }}</div>
+                          <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">{{ t.time }}</div>
+                        </div>
+                        <div style="font-size:13.5px;line-height:1.6;color:var(--slate-700,#334155)">{{ t.text }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+                <div style="font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700;margin-bottom:16px">Enriched fields</div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ enriched }}" as="e" hint-placeholder-count="10">
+                    <div style="display:flex;align-items:baseline;gap:14px;padding:11px 0;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                      <div style="width:132px;flex:0 0 132px;font-size:12.5px;color:var(--slate-500,#64748B)">{{ e.label }}</div>
+                      <div style="flex:1;font-size:13.5px;font-weight:{{ e.weight }};color:{{ e.color }};text-align:right">{{ e.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+                <div style="font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700;margin-bottom:14px">Matched keywords</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ keywords }}" as="k" hint-placeholder-count="5">
+                    <div style="border:1px solid var(--blue-200,#BFDBFE);background:var(--blue-50,#EFF6FF);color:var(--blue-700,#1D4ED8);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:500">{{ k }}</div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700;margin:20px 0 14px">Tags</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ tags }}" as="t" hint-placeholder-count="3">
+                    <div style="border:1px solid var(--slate-200,#E2E8F0);background:var(--slate-50,#F8FAFC);color:var(--slate-600,#475569);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:500">{{ t }}</div>
+                  </sc-for>
+                  <div style="border:1px dashed var(--slate-300,#CBD5E1);color:var(--slate-400,#94A3B8);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer">+ Add</div>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+                <div style="font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--slate-500,#64748B);font-weight:700;margin-bottom:14px">Author</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                  <div style="width:40px;height:40px;border-radius:20px;background:{{ detail.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600">{{ detail.initials }}</div>
+                  <div style="flex:1">
+                    <div style="font-size:14px;font-weight:600">{{ detail.author }}</div>
+                    <div style="font-size:12px;color:var(--slate-400,#94A3B8)">{{ detail.handle }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ authorStats }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--slate-100,#F1F5F9);font-size:13px">
+                      <div style="color:var(--slate-500,#64748B)">{{ a.label }}</div>
+                      <div style="font-weight:600;font-variant-numeric:tabular-nums">{{ a.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SOCIAL CENTER -->
+      <sc-if value="{{ isSocialCenter }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:14px;height:100%;min-height:760px">
+          <sc-for list="{{ scColumns }}" as="col" hint-placeholder-count="4">
+            <div style="width:320px;flex:0 0 320px;background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;display:flex;flex-direction:column;min-height:0">
+              <div style="padding:14px 16px;border-bottom:1px solid var(--slate-100,#F1F5F9);display:flex;align-items:center;gap:10px">
+                <div style="width:9px;height:9px;border-radius:5px;background:{{ col.color }}"></div>
+                <div style="flex:1;font-size:13.5px;font-weight:600">{{ col.name }}</div>
+                <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">{{ col.count }}</div>
+              </div>
+              <div style="flex:1;overflow:auto">
+                <sc-for list="{{ col.posts }}" as="p" hint-placeholder-count="4">
+                  <div onClick="{{ p.open }}" style="padding:14px 16px;border-bottom:1px solid var(--slate-100,#F1F5F9);cursor:pointer" style-hover="background:var(--slate-50,#F8FAFC)">
+                    <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+                      <div style="width:26px;height:26px;border-radius:13px;background:{{ p.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600">{{ p.initials }}</div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font-size:12.5px;font-weight:600">{{ p.author }}</div>
+                        <div style="font-size:11px;color:var(--slate-400,#94A3B8)">{{ p.time }}</div>
+                      </div>
+                      <div style="width:8px;height:8px;border-radius:4px;background:{{ p.sentDot }}"></div>
+                    </div>
+                    <div style="font-size:12.5px;line-height:1.5;color:var(--slate-700,#334155)">{{ p.text }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="width:320px;flex:0 0 320px;border:1.5px dashed var(--slate-300,#CBD5E1);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--slate-400,#94A3B8);font-size:13px;font-weight:500;cursor:pointer">+ Add stream</div>
+        </div>
+      </sc-if>
+
+      <!-- SEARCH SETUP -->
+      <sc-if value="{{ isSearchSetup }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:340px 1fr;gap:16px">
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;overflow:hidden">
+            <div style="padding:16px 18px;border-bottom:1px solid var(--slate-100,#F1F5F9);display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:13.5px;font-weight:600">Search topics</div>
+              <div style="font-size:12px;color:var(--blue-600,#2563EB);font-weight:600;cursor:pointer">+ New</div>
+            </div>
+            <sc-for list="{{ topics }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.pick }}" style="padding:13px 18px;border-bottom:1px solid var(--slate-100,#F1F5F9);cursor:pointer;background:{{ t.bg }}" style-hover="background:var(--slate-50,#F8FAFC)">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font-size:13.5px;font-weight:{{ t.weight }}">{{ t.name }}</div>
+                  <div style="font-size:11px;color:var(--slate-400,#94A3B8)">{{ t.rules }} rules</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--slate-400,#94A3B8);margin-top:4px">{{ t.volume }} posts/mo</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:22px 26px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div style="font-size:17px;font-weight:600">{{ selectedTopic }}</div>
+              <div onClick="{{ toggleAddRule }}" style="border:1px solid var(--blue-600,#2563EB);color:var(--blue-700,#1D4ED8);border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;background:#fff" style-hover="background:var(--blue-50,#EFF6FF)">+ Add rule</div>
+            </div>
+            <div style="font-size:12.5px;color:var(--slate-400,#94A3B8);margin-bottom:20px">Rules define which posts are matched into this topic</div>
+
+            <sc-if value="{{ addRuleOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px solid var(--blue-200,#BFDBFE);background:var(--blue-50,#EFF6FF);border-radius:10px;padding:18px 20px;margin-bottom:18px">
+                <div style="font-size:13.5px;font-weight:600;margin-bottom:12px">New rule</div>
+                <div style="display:grid;grid-template-columns:120px 1fr;gap:12px 14px;align-items:center">
+                  <div style="font-size:12.5px;color:var(--slate-500,#64748B)">Rule type</div>
+                  <div style="display:flex;gap:8px">
+                    <sc-for list="{{ ruleTypes }}" as="r" hint-placeholder-count="3">
+                      <div onClick="{{ r.pick }}" style="border:1px solid {{ r.border }};background:{{ r.bg }};color:{{ r.fg }};border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer">{{ r.label }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size:12.5px;color:var(--slate-500,#64748B)">Keywords</div>
+                  <input value="{{ ruleKeywords }}" onChange="{{ setRuleKeywords }}" placeholder="e.g. SocialEngage, ADPA, adaptive analytics" style="border:1px solid var(--slate-300,#CBD5E1);border-radius:8px;padding:9px 12px;font-size:13px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+                  <div style="font-size:12.5px;color:var(--slate-500,#64748B)">Sources</div>
+                  <div style="font-size:12.5px;color:var(--slate-600,#475569)">All sources · English, Dutch</div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px">
+                  <div onClick="{{ toggleAddRule }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">Save rule</div>
+                  <div onClick="{{ toggleAddRule }}" style="border:1px solid var(--slate-300,#CBD5E1);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;background:#fff">Cancel</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ ruleList }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                  <div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ r.badgeBg }};color:{{ r.badgeFg }};flex:0 0 auto">{{ r.type }}</div>
+                  <div style="flex:1;font-size:13.5px;color:var(--slate-700,#334155)">{{ r.text }}</div>
+                  <div style="font-size:12px;color:var(--slate-400,#94A3B8)">{{ r.scope }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SETTINGS -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:240px 1fr;gap:16px">
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px;align-self:start">
+            <sc-for list="{{ settingsTabs }}" as="s" hint-placeholder-count="6">
+              <div onClick="{{ s.pick }}" style="padding:11px 14px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:{{ s.weight }};color:{{ s.color }};background:{{ s.bg }}">{{ s.label }}</div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ isProfiles }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;overflow:hidden">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--slate-100,#F1F5F9);font-size:15px;font-weight:600">Social profiles</div>
+                <sc-for list="{{ profiles }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:13px;padding:14px 20px;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                    <div style="width:34px;height:34px;border-radius:9px;background:{{ p.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ p.initial }}</div>
+                    <div style="flex:1">
+                      <div style="font-size:13.5px;font-weight:600">{{ p.name }}</div>
+                      <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">{{ p.handle }} · {{ p.source }}</div>
+                    </div>
+                    <div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ p.statusBg }};color:{{ p.statusFg }}">{{ p.status }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+                <div style="font-size:15px;font-weight:600;margin-bottom:4px">Add profile</div>
+                <div style="font-size:12px;color:var(--slate-400,#94A3B8);margin-bottom:16px">Connect an account to publish and reply from</div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ addableSources }}" as="s" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:12px;border:1px solid var(--slate-200,#E2E8F0);border-radius:9px;padding:11px 14px;cursor:pointer" style-hover="background:var(--slate-50,#F8FAFC)">
+                      <div style="width:28px;height:28px;border-radius:8px;background:{{ s.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ s.initial }}</div>
+                      <div style="flex:1;font-size:13px;font-weight:500">{{ s.name }}</div>
+                      <div style="font-size:12px;color:var(--blue-600,#2563EB);font-weight:600">Connect</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isOtherSettings }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:22px 26px">
+              <div style="font-size:15px;font-weight:600;margin-bottom:16px">{{ settingsTabTitle }}</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ settingsRows }}" as="r" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                    <div>
+                      <div style="font-size:13.5px;font-weight:500">{{ r.label }}</div>
+                      <div style="font-size:12px;color:var(--slate-400,#94A3B8);margin-top:3px">{{ r.sub }}</div>
+                    </div>
+                    <div style="width:40px;height:22px;border-radius:11px;background:{{ r.toggleBg }};position:relative;flex:0 0 auto">
+                      <div style="width:18px;height:18px;border-radius:9px;background:#fff;position:absolute;top:2px;left:{{ r.knobLeft }};box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ALERTS -->
+      <sc-if value="{{ isAlerts }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--slate-100,#F1F5F9);font-size:15px;font-weight:600">Recent alerts</div>
+            <sc-for list="{{ alertFeed }}" as="a" hint-placeholder-count="6">
+              <div style="display:flex;gap:14px;padding:15px 20px;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                <div style="width:9px;height:9px;border-radius:5px;background:{{ a.color }};margin-top:5px;flex:0 0 auto"></div>
+                <div style="flex:1">
+                  <div style="font-size:13.5px;font-weight:600">{{ a.title }}</div>
+                  <div style="font-size:12.5px;color:var(--slate-500,#64748B);margin-top:3px">{{ a.detail }}</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--slate-400,#94A3B8);flex:0 0 auto">{{ a.time }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:var(--surface-card,#fff);border:1px solid var(--slate-200,#E2E8F0);border-radius:12px;padding:20px 22px">
+            <div style="font-size:15px;font-weight:600;margin-bottom:16px">Alert rules</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ alertRules }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--slate-100,#F1F5F9)">
+                  <div style="font-size:13px;font-weight:500">{{ r.label }}</div>
+                  <div style="width:36px;height:20px;border-radius:10px;background:{{ r.toggleBg }};position:relative">
+                    <div style="width:16px;height:16px;border-radius:8px;background:#fff;position:absolute;top:2px;left:{{ r.knobLeft }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ACTIVITY MAP -->
+      <sc-if value="{{ isActivityMap }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;height:820px;border-radius:12px;overflow:hidden;background-color:#0B1B2E;background-image:radial-gradient(120% 120% at 50% 20%,#16304F 0%,#0B1B2E 70%),linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:100% 100%,48px 48px,48px 48px">
+          <div style="position:absolute;top:22px;left:26px;color:#DBEAFE">
+            <div style="font-size:17px;font-weight:600">Live activity map</div>
+            <div style="font-size:12.5px;opacity:.65;margin-top:3px">{{ activeLabel }} · updates every 30s</div>
+          </div>
+          <div style="position:absolute;top:22px;right:26px;display:flex;gap:10px">
+            <sc-for list="{{ mapModes }}" as="m" hint-placeholder-count="3">
+              <div onClick="{{ m.pick }}" style="border:1px solid {{ m.border }};background:{{ m.bg }};color:{{ m.fg }};border-radius:999px;padding:7px 15px;font-size:12.5px;font-weight:500;cursor:pointer">{{ m.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ geo }}" as="g" hint-placeholder-count="9">
+            <div onClick="{{ g.pick }}" style="position:absolute;left:{{ g.x }};top:{{ g.y }};transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
+              <div style="width:{{ g.d }};height:{{ g.d }};border-radius:50%;background:{{ g.bg }};border:2px solid {{ g.border }};box-shadow:0 0 26px {{ g.glow }}"></div>
+              <div style="font-size:12px;font-weight:600;color:#DBEAFE;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)">{{ g.name }}</div>
+            </div>
+          </sc-for>
+          <div style="position:absolute;left:26px;bottom:22px;display:flex;align-items:center;gap:16px;color:rgba(219,234,254,.75);font-size:12px">
+            <div style="display:flex;align-items:center;gap:7px"><div style="width:10px;height:10px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>Low</div>
+            <div style="display:flex;align-items:center;gap:7px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>Medium</div>
+            <div style="display:flex;align-items:center;gap:7px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,.55);border:1px solid #60A5FA"></div>High</div>
+          </div>
+          <div style="position:absolute;right:26px;bottom:22px;background:rgba(11,27,46,.72);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 18px;min-width:220px">
+            <div style="font-size:12.5px;font-weight:600;color:#DBEAFE;margin-bottom:8px">{{ selectedRegion }}</div>
+            <sc-for list="{{ regionStats }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;color:rgba(219,234,254,.75);padding:4px 0">
+                <div>{{ s.label }}</div><div style="font-weight:600;color:#fff">{{ s.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStub }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #E3E8F0;border-radius:10px;padding:60px;text-align:center;color:#64748B">
+          <div style="font-size:17px;font-weight:600;color:#1B2A41;margin-bottom:8px">{{ screenTitle }}</div>
+          <div style="font-size:13.5px">This screen is next in the build queue.</div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- POSTS PANE -->
+    <sc-if value="{{ postsOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="width:420px;flex:0 0 420px;background:#fff;border-left:1px solid #DDE3EC;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:16px 20px;border-bottom:1px solid #E9EDF3;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:700">Posts</div>
+          <div style="font-size:12px;color:#94A3B8">{{ postCount }} matching</div>
+        </div>
+        <div style="flex:1;overflow:auto">
+          <sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+            <div onClick="{{ p.open }}" style="padding:16px 20px;border-bottom:1px solid #F1F5F9;cursor:pointer" style-hover="background:#F8FAFC">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="width:30px;height:30px;border-radius:15px;background:{{ p.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600">{{ p.initials }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600">{{ p.author }}</div>
+                  <div style="font-size:11.5px;color:#94A3B8">{{ p.handle }} · {{ p.time }}</div>
+                </div>
+                <div style="font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ p.sentBg }};color:{{ p.sentFg }}">{{ p.sentiment }}</div>
+              </div>
+              <div style="font-size:13px;line-height:1.55;color:#334155">{{ p.text }}</div>
+              <div style="display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:#94A3B8">
+                <div>{{ p.source }}</div><div>↻ {{ p.shares }}</div><div>♡ {{ p.likes }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<!-- AUTH: LOGIN -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 20% 0%,#16304F 0%,#0B1B2E 62%)">
+    <div style="width:420px;background:#fff;border-radius:16px;padding:38px 36px;box-shadow:0 30px 70px rgba(8,17,30,.4)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,#3B82F6,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff">S</div>
+        <div style="font-size:18px;font-weight:600;letter-spacing:-.2px">SocialEngage</div>
+      </div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Sign in</div>
+      <div style="font-size:13.5px;color:var(--slate-500,#64748B);margin-bottom:26px">Adaptive Digital Processing Analytics · ADPA</div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Work email</div>
+          <input value="{{ loginEmail }}" onChange="{{ setLoginEmail }}" placeholder="you@company.com" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></input>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px">
+            <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569)">Password</div>
+            <div onClick="{{ goForgot }}" style="font-size:12px;color:var(--blue-600,#2563EB);cursor:pointer;font-weight:500">Forgot password?</div>
+          </div>
+          <input type="password" value="{{ loginPassword }}" onChange="{{ setLoginPassword }}" placeholder="••••••••" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></input>
+        </div>
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:9px 12px">{{ loginError }}</div>
+        </sc-if>
+        <div onClick="{{ submitLogin }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px" style-hover="background:var(--blue-700,#1D4ED8)">Sign in</div>
+        <div style="display:flex;align-items:center;gap:10px;margin:6px 0">
+          <div style="flex:1;height:1px;background:var(--slate-200,#E2E8F0)"></div>
+          <div style="font-size:11.5px;color:var(--slate-400,#94A3B8)">or</div>
+          <div style="flex:1;height:1px;background:var(--slate-200,#E2E8F0)"></div>
+        </div>
+        <div style="border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px;text-align:center;font-size:13.5px;font-weight:500;cursor:pointer;background:#fff" style-hover="background:var(--slate-50,#F8FAFC)">Continue with Microsoft Entra ID</div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:var(--slate-500,#64748B);margin-top:22px">No account? <span onClick="{{ goSignup }}" style="color:var(--blue-600,#2563EB);font-weight:600;cursor:pointer">Create one</span></div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- AUTH: SIGN UP -->
+<sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 20% 0%,#16304F 0%,#0B1B2E 62%)">
+    <div style="width:460px;background:#fff;border-radius:16px;padding:38px 36px;box-shadow:0 30px 70px rgba(8,17,30,.4)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,#3B82F6,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff">S</div>
+        <div style="font-size:18px;font-weight:600;letter-spacing:-.2px">SocialEngage</div>
+      </div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Create your account</div>
+      <div style="font-size:13.5px;color:var(--slate-500,#64748B);margin-bottom:24px">Start listening across every channel in minutes</div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">First name</div>
+            <input placeholder="Mia" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+          </div>
+          <div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Last name</div>
+            <input placeholder="Kessler" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Work email</div>
+          <input placeholder="you@company.com" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Organisation</div>
+          <input placeholder="ADPA" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Password</div>
+          <input type="password" placeholder="At least 8 characters" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;margin-top:2px">
+          <input type="checkbox" checked="{{ true }}" style="margin-top:2px"></input>
+          <div style="font-size:12px;color:var(--slate-500,#64748B);line-height:1.5">I agree to the Terms of Service and Privacy Policy</div>
+        </div>
+        <div onClick="{{ goMfa }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:var(--blue-700,#1D4ED8)">Create account</div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:var(--slate-500,#64748B);margin-top:20px">Already have an account? <span onClick="{{ goLogin }}" style="color:var(--blue-600,#2563EB);font-weight:600;cursor:pointer">Sign in</span></div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- AUTH: FORGOT PASSWORD -->
+<sc-if value="{{ isForgot }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 20% 0%,#16304F 0%,#0B1B2E 62%)">
+    <div style="width:420px;background:#fff;border-radius:16px;padding:38px 36px;box-shadow:0 30px 70px rgba(8,17,30,.4)">
+      <sc-if value="{{ forgotNotSent }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Reset your password</div>
+        <div style="font-size:13.5px;color:var(--slate-500,#64748B);margin-bottom:24px">Enter your work email and we'll send a reset link</div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Work email</div>
+        <input value="{{ forgotEmail }}" onChange="{{ setForgotEmail }}" placeholder="you@company.com" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none;margin-bottom:18px" style-focus="border-color:#2563EB"></input>
+        <div onClick="{{ submitForgot }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--blue-700,#1D4ED8)">Send reset link</div>
+      </sc-if>
+      <sc-if value="{{ forgotSent }}" hint-placeholder-val="{{ false }}">
+        <div style="width:44px;height:44px;border-radius:22px;background:#ECFDF5;color:#047857;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;margin-bottom:16px">✓</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:8px">Check your inbox</div>
+        <div style="font-size:13.5px;color:var(--slate-500,#64748B);line-height:1.6;margin-bottom:22px">We sent a password reset link to {{ forgotEmail }}. It expires in 30 minutes.</div>
+        <div onClick="{{ goReset }}" style="border:1px solid var(--blue-600,#2563EB);color:var(--blue-700,#1D4ED8);border-radius:9px;padding:11px;text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;background:#fff">Open reset link (demo)</div>
+      </sc-if>
+      <div style="text-align:center;font-size:13px;color:var(--slate-500,#64748B);margin-top:22px">
+        <span onClick="{{ goLogin }}" style="color:var(--blue-600,#2563EB);font-weight:600;cursor:pointer">← Back to sign in</span>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- AUTH: RESET PASSWORD -->
+<sc-if value="{{ isReset }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 20% 0%,#16304F 0%,#0B1B2E 62%)">
+    <div style="width:420px;background:#fff;border-radius:16px;padding:38px 36px;box-shadow:0 30px 70px rgba(8,17,30,.4)">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Choose a new password</div>
+      <div style="font-size:13.5px;color:var(--slate-500,#64748B);margin-bottom:24px">Must be at least 8 characters</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">New password</div>
+          <input type="password" placeholder="••••••••" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--slate-600,#475569);margin-bottom:7px">Confirm password</div>
+          <input type="password" placeholder="••••••••" style="width:100%;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;padding:11px 13px;font-size:14px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB"></input>
+        </div>
+        <div onClick="{{ goLogin }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:var(--blue-700,#1D4ED8)">Reset password</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- AUTH: MFA -->
+<sc-if value="{{ isMfa }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 20% 0%,#16304F 0%,#0B1B2E 62%)">
+    <div style="width:420px;background:#fff;border-radius:16px;padding:38px 36px;box-shadow:0 30px 70px rgba(8,17,30,.4);text-align:center">
+      <div style="width:48px;height:48px;border-radius:24px;background:var(--blue-50,#EFF6FF);color:var(--blue-600,#2563EB);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;margin:0 auto 16px">🔒</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">Verify your identity</div>
+      <div style="font-size:13.5px;color:var(--slate-500,#64748B);line-height:1.6;margin-bottom:24px">Enter the 6-digit code from your authenticator app</div>
+      <div style="display:flex;gap:9px;justify-content:center;margin-bottom:22px">
+        <sc-for list="{{ mfaDigits }}" as="d" hint-placeholder-count="6">
+          <input value="{{ d.val }}" onChange="{{ d.set }}" maxlength="1" style="width:44px;height:52px;text-align:center;font-size:20px;font-weight:600;border:1px solid var(--slate-300,#CBD5E1);border-radius:9px;font-family:Inter,sans-serif;outline:none" style-focus="border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></input>
+        </sc-for>
+      </div>
+      <div onClick="{{ submitMfa }}" style="background:var(--blue-600,#2563EB);color:#fff;border-radius:9px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--blue-700,#1D4ED8)">Verify</div>
+      <div style="font-size:12.5px;color:var(--slate-400,#94A3B8);margin-top:16px">Didn't get a code? <span style="color:var(--blue-600,#2563EB);font-weight:500;cursor:pointer">Resend</span></div>
+    </div>
+  </div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080}}">
+const SOURCES = [
+  { name: "Twitter/X", color: "#1D9BF0", count: 4820 },
+  { name: "LinkedIn", color: "#0A66C2", count: 2140 },
+  { name: "News", color: "#7C3AED", count: 1310 },
+  { name: "Blogs", color: "#F59E0B", count: 940 },
+  { name: "Forums", color: "#10B981", count: 610 },
+  { name: "YouTube", color: "#EF4444", count: 380 }
+];
+const SENTS = ["Positive", "Neutral", "Negative"];
+const AUTHORS = [
+  { name: "Dana Whitfield", initials: "DW", avatarBg: "#2563EB", count: 412, source: "Twitter/X" },
+  { name: "Elena Sørensen", initials: "ES", avatarBg: "#F59E0B", count: 288, source: "Blogs" },
+  { name: "Aisha Bello", initials: "AB", avatarBg: "#0A66C2", count: 241, source: "LinkedIn" },
+  { name: "Marcus Ilori", initials: "MI", avatarBg: "#7C3AED", count: 196, source: "LinkedIn" },
+  { name: "Jonah Kessler", initials: "JK", avatarBg: "#DC2626", count: 154, source: "YouTube" }
+];
+const LANGUAGES = [
+  { name: "English", count: 6120 },
+  { name: "Dutch", count: 1310 },
+  { name: "German", count: 940 },
+  { name: "French", count: 610 }
+];
+const POSTS = [
+  { author: "Dana Whitfield", handle: "@danabuilds", time: "12m", source: "Twitter/X", sentiment: "Positive", text: "SocialEngage picked up a spike in ADPA mentions three hours before our own dashboards did. Genuinely impressive listening pipeline.", shares: 42, likes: 318, initials: "DW", avatarBg: "#2563EB" },
+  { author: "Marcus Ilori", handle: "@m_ilori", time: "48m", source: "LinkedIn", sentiment: "Neutral", text: "Adaptive Digital Processing Analytics is an odd name but the sentiment scoring model is doing real work here. Writing up a comparison.", shares: 11, likes: 96, initials: "MI", avatarBg: "#7C3AED" },
+  { author: "Tech Ledger", handle: "News", time: "2h", source: "News", sentiment: "Positive", text: "ADPA expands SocialEngage with AI-driven intention detection, targeting teams that lost their social listening stack.", shares: 205, likes: 640, initials: "TL", avatarBg: "#0F172A" },
+  { author: "Priya Raghavan", handle: "@praghavan", time: "3h", source: "Twitter/X", sentiment: "Negative", text: "Onboarding for SocialEngage took longer than advertised — the profile authorisation step timed out twice for us.", shares: 8, likes: 54, initials: "PR", avatarBg: "#EF4444" },
+  { author: "OpsRoom Forum", handle: "thread #4821", time: "5h", source: "Forums", sentiment: "Neutral", text: "Anyone benchmarked SocialEngage's AI topic clustering against the old rules-based setup? Curious about recall on niche keywords.", shares: 3, likes: 27, initials: "OF", avatarBg: "#10B981" },
+  { author: "Elena Sørensen", handle: "@elenasoren", time: "7h", source: "Blogs", sentiment: "Positive", text: "Wrote 2,000 words on why AI-assisted social listening finally works. SocialEngage is the example I keep coming back to.", shares: 61, likes: 412, initials: "ES", avatarBg: "#F59E0B" },
+  { author: "Jonah Kessler", handle: "@jkessler", time: "9h", source: "YouTube", sentiment: "Negative", text: "Walkthrough video up. The analytics are strong, the alert configuration UI still needs work.", shares: 19, likes: 143, initials: "JK", avatarBg: "#DC2626" },
+  { author: "Aisha Bello", handle: "@aishab", time: "11h", source: "LinkedIn", sentiment: "Positive", text: "Our team replaced three tools with SocialEngage. The location view alone justified the switch for regional campaign planning.", shares: 34, likes: 287, initials: "AB", avatarBg: "#0A66C2" }
+];
+const NAV = [
+  { key: "overview", label: "Analytics", icon: "chart" },
+  { key: "social-center", label: "Social Center", icon: "messages" },
+  { key: "activity-map", label: "Activity Map", icon: "map" },
+  { key: "search-setup", label: "Search Setup", icon: "search" },
+  { key: "alerts", label: "Alerts", icon: "bell" },
+  { key: "settings", label: "Settings", icon: "settings" }
+];
+const TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "conversations", label: "Conversations" },
+  { key: "sentiment", label: "Sentiment" },
+  { key: "location", label: "Location" },
+  { key: "sources", label: "Sources" }
+];
+const TITLES = {
+  overview: "Analytics", conversations: "Conversations", sentiment: "Sentiment",
+  location: "Location", sources: "Sources", "social-center": "Social Center",
+  "activity-map": "Activity Map", "search-setup": "Search Setup", alerts: "Alerts", settings: "Settings"
+};
+const BUZZ = [38,44,41,52,49,63,58,71,66,84,79,92,88,74,81,95,103,97,112,106,124,118,131,127,142,136,151,147,158,166];
+
+const ICONS = {
+  chart: ["M3 3v18h18", "M18 17V9", "M13 17V5", "M8 17v-3"],
+  messages: ["M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z", "M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"],
+  map: ["M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z", "M15 5.764v15", "M9 3.236v15"],
+  search: ["M21 21l-4.3-4.3", "M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"],
+  bell: ["M10.268 21a2 2 0 0 0 3.464 0", "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"],
+  settings: ["M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z", "M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"],
+  calendar: ["M8 2v4", "M16 2v4", "M3 10h18", "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"],
+  file: ["M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z", "M14 2v5h5", "M16 13H8", "M16 17H8", "M10 9H8"],
+  download: ["M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "M7 10l5 5 5-5", "M12 15V3"],
+  chevron: ["M6 9l6 6 6-6"]
+};
+function ico(name, size, color) {
+  return React.createElement("svg", {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color,
+    strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", style: { flex: "0 0 auto", display: "block" }
+  }, (ICONS[name] || []).map((d, i) => React.createElement("path", { key: i, d })));
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: "overview",
+    navOpen: false,
+    postsOpen: true,
+    offSources: {},
+    offSents: {},
+    authView: null
+  };
+
+  authVals() {
+    const st = this.state;
+    const go = v => () => this.setState({ authView: v, loginError: "" });
+    const digits = st.mfaDigits || ["", "", "", "", "", ""];
+    return {
+      isApp: !st.authView,
+      isLogin: st.authView === "login",
+      isSignup: st.authView === "signup",
+      isForgot: st.authView === "forgot",
+      isReset: st.authView === "reset",
+      isMfa: st.authView === "mfa",
+      forgotNotSent: !st.forgotSent,
+      userMenuOpen: !!st.userMenuOpen,
+      toggleUserMenu: () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen })),
+      signOut: () => this.setState({ authView: "login", userMenuOpen: false }),
+      goLogin: go("login"), goSignup: go("signup"), goForgot: go("forgot"), goReset: go("reset"), goMfa: go("mfa"),
+      loginEmail: st.loginEmail || "", setLoginEmail: e => this.setState({ loginEmail: e.target.value }),
+      loginPassword: st.loginPassword || "", setLoginPassword: e => this.setState({ loginPassword: e.target.value }),
+      loginError: st.loginError || "",
+      submitLogin: () => {
+        if (!(st.loginEmail || "").trim() || !(st.loginPassword || "").trim()) {
+          this.setState({ loginError: "Enter your email and password to continue." });
+        } else {
+          this.setState({ authView: null, loginError: "" });
+        }
+      },
+      forgotEmail: st.forgotEmail || "", setForgotEmail: e => this.setState({ forgotEmail: e.target.value }),
+      forgotSent: !!st.forgotSent,
+      submitForgot: () => this.setState({ forgotSent: true }),
+      mfaDigits: digits.map((val, i) => ({
+        val, set: e => this.setState(s => { const d = [...(s.mfaDigits || ["", "", "", "", "", ""])]; d[i] = e.target.value.slice(-1); return { mfaDigits: d }; })
+      })),
+      submitMfa: () => this.setState({ authView: null })
+    };
+  }
+
+  activeSources() { return SOURCES.filter(s => !this.state.offSources[s.name]); }
+  activeSents() { return SENTS.filter(s => !this.state.offSents[s]); }
+
+  filteredPosts() {
+    const src = this.activeSources().map(s => s.name);
+    const sen = this.activeSents();
+    return POSTS.filter(p => src.includes(p.source) && sen.includes(p.sentiment));
+  }
+
+  postVals() {
+    const st = this.state;
+    const d = POSTS.find(p => p.handle === st.postId) || POSTS[0];
+    const sc = { Positive: ["#ECFDF5", "#047857", 82], Neutral: ["#F1F5F9", "#475569", 4], Negative: ["#FEF2F2", "#B91C1C", -71] }[d.sentiment];
+    const reach = d.likes * 37 + d.shares * 420;
+    const KW = { Positive: ["SocialEngage", "listening", "sentiment"], Neutral: ["ADPA", "clustering", "benchmark"], Negative: ["SocialEngage", "onboarding", "timeout"] }[d.sentiment];
+    const tones = ["Standard", "Empathetic", "Escalate"];
+    const tone = st.tone || "Standard";
+    return {
+      detail: {
+        author: d.author, handle: d.handle, initials: d.initials, avatarBg: d.avatarBg,
+        source: d.source, text: d.text, sentiment: d.sentiment,
+        sentBg: sc[0], sentFg: sc[1], posted: d.time + " ago · 30 Jul 2026, 09:41 CET",
+        metrics: [
+          { label: "Shares", value: d.shares.toLocaleString() },
+          { label: "Likes", value: d.likes.toLocaleString() },
+          { label: "Replies", value: Math.round(d.likes / 9).toLocaleString() },
+          { label: "Est. reach", value: (reach / 1000).toFixed(1) + "K" }
+        ]
+      },
+      backLabel: TITLES[st.prev] || "Analytics",
+      backFromPost: () => this.setState({ screen: st.prev || "overview" }),
+      replyText: st.reply || "",
+      replyCount: (st.reply || "").length,
+      countColor: (st.reply || "").length > 280 ? "#B91C1C" : "#94A3B8",
+      setReply: e => this.setState({ reply: e.target.value }),
+      sendReply: () => this.setState(s => ({
+        reply: "",
+        sent: { ...(s.sent || {}), [d.handle]: [...(((s.sent || {})[d.handle]) || []), { author: "SocialEngage", initials: "SE", avatarBg: "#2563EB", time: "just now", text: s.reply || "Thanks for the feedback — we're on it." }] }
+      })),
+      replyTones: tones.map(t => ({
+        label: t, pick: () => this.setState({ tone: t }),
+        bg: tone === t ? "#EFF6FF" : "#fff", border: tone === t ? "#BFDBFE" : "#E2E8F0", fg: tone === t ? "#1D4ED8" : "#94A3B8"
+      })),
+      thread: [
+        { author: d.author, initials: d.initials, avatarBg: d.avatarBg, time: d.time + " ago", text: d.text, bg: "#F8FAFC", border: "#F1F5F9" },
+        ...(((st.sent || {})[d.handle]) || []).map(s => ({ ...s, bg: "#EFF6FF", border: "#BFDBFE" }))
+      ],
+      threadCount: (1 + ((((st.sent || {})[d.handle]) || []).length)) + " messages",
+      enriched: [
+        { label: "Sentiment", value: d.sentiment + " (" + (sc[2] > 0 ? "+" : "") + sc[2] + ")", weight: 600, color: sc[1] },
+        { label: "Intention", value: d.sentiment === "Negative" ? "Complaint" : d.sentiment === "Neutral" ? "Information request" : "Praise", weight: 600, color: "#1B2A41" },
+        { label: "Search topic", value: "SocialEngage · AI · ADPA", weight: 500, color: "#1B2A41" },
+        { label: "Source", value: d.source, weight: 500, color: "#1B2A41" },
+        { label: "Language", value: "English (en)", weight: 500, color: "#1B2A41" },
+        { label: "Location", value: d.source === "LinkedIn" ? "Netherlands" : "United States", weight: 500, color: "#1B2A41" },
+        { label: "Author influence", value: d.likes > 300 ? "High" : d.likes > 100 ? "Medium" : "Low", weight: 600, color: "#1B2A41" },
+        { label: "Post type", value: "Original post", weight: 500, color: "#1B2A41" },
+        { label: "Acquired", value: "30 Jul 2026, 09:43 CET", weight: 500, color: "#1B2A41" },
+        { label: "CRM record", value: "Not linked", weight: 500, color: "#94A3B8" }
+      ],
+      keywords: KW,
+      tags: ["Product feedback", d.sentiment === "Negative" ? "Needs response" : "Advocacy"],
+      authorStats: [
+        { label: "Followers", value: (d.likes * 61).toLocaleString() },
+        { label: "Posts on topic", value: (3 + d.shares % 7) },
+        { label: "Avg. sentiment", value: (sc[2] > 0 ? "+" : "") + sc[2] },
+        { label: "First seen", value: "14 Mar 2026" }
+      ]
+    };
+  }
+
+  moreVals(active, total) {
+    const st = this.state;
+    const pick = (k, v) => () => this.setState({ [k]: v });
+    const sentDot = { Positive: "#10B981", Neutral: "#94A3B8", Negative: "#EF4444" };
+
+    // Social Center
+    const scColumns = SOURCES.slice(0, 4).map(s => ({
+      name: s.name, color: s.color, count: POSTS.filter(p => p.source === s.name).length,
+      posts: POSTS.filter(p => p.source === s.name).map(p => ({ ...p, sentDot: sentDot[p.sentiment],
+        open: () => this.setState(prev => ({ screen: "post-detail", postId: p.handle, prev: prev.screen === "post-detail" ? prev.prev : prev.screen })) }))
+    }));
+
+    // Search Setup
+    const TOPICS = [
+      { name: "SocialEngage · AI · ADPA", rules: 6, volume: "9,240" },
+      { name: "Competitor watch", rules: 3, volume: "2,110" },
+      { name: "Brand mentions — EU", rules: 4, volume: "1,480" },
+      { name: "Product launch buzz", rules: 2, volume: "640" }
+    ];
+    const selTopic = st.topic2 || TOPICS[0].name;
+    const topics = TOPICS.map(t => ({ ...t, bg: t.name === selTopic ? "#EFF6FF" : "transparent", weight: t.name === selTopic ? 600 : 500, pick: pick("topic2", t.name) }));
+    const RULE_TYPES = ["Keyword", "Hashtag", "Account", "Boolean"];
+    const ruleType = st.ruleType || "Keyword";
+    const ruleTypes = RULE_TYPES.map(r => ({ label: r, pick: pick("ruleType", r), bg: ruleType === r ? "#DBEAFE" : "#fff", border: ruleType === r ? "#93C5FD" : "#CBD5E1", fg: ruleType === r ? "#1D4ED8" : "#475569" }));
+    const RULES = [
+      { type: "Keyword", text: '"SocialEngage" OR "adaptive analytics"', scope: "All sources" },
+      { type: "Keyword", text: '"ADPA" AND "social listening"', scope: "All sources" },
+      { type: "Hashtag", text: "#SocialEngage", scope: "Twitter/X, LinkedIn" },
+      { type: "Account", text: "@socialengage mentions", scope: "Twitter/X" },
+      { type: "Boolean", text: '"SocialEngage" NOT "job posting"', scope: "News, Blogs" },
+      { type: "Keyword", text: '"AI listening" OR "intention detection"', scope: "All sources" }
+    ];
+    const badge = { Keyword: ["#EFF6FF", "#1D4ED8"], Hashtag: ["#F5F3FF", "#6D28D9"], Account: ["#ECFDF5", "#047857"], Boolean: ["#FFF7ED", "#C2410C"] };
+    const ruleList = RULES.map(r => ({ ...r, badgeBg: badge[r.type][0], badgeFg: badge[r.type][1] }));
+
+    // Settings
+    const SET_TABS = ["Social Profiles", "Personal Settings", "Global Settings", "Users", "Connections", "Automation Rules"];
+    const setTab = st.setTab || "Social Profiles";
+    const settingsTabs = SET_TABS.map(s => ({ label: s, pick: pick("setTab", s), weight: setTab === s ? 600 : 500, color: setTab === s ? "#10243E" : "#475569", bg: setTab === s ? "#EFF6FF" : "transparent" }));
+    const PROFILES = [
+      { name: "SocialEngage HQ", handle: "@socialengage", source: "Twitter/X", color: "#1D9BF0", initial: "T", status: "Connected", statusBg: "#ECFDF5", statusFg: "#047857" },
+      { name: "SocialEngage Company", handle: "linkedin.com/company/socialengage", source: "LinkedIn", color: "#0A66C2", initial: "L", status: "Connected", statusBg: "#ECFDF5", statusFg: "#047857" },
+      { name: "ADPA Support", handle: "@adpasupport", source: "Twitter/X", color: "#1D9BF0", initial: "T", status: "Needs auth", statusBg: "#FEF2F2", statusFg: "#B91C1C" }
+    ];
+    const addableSources = [
+      { name: "Facebook Page", color: "#1877F2", initial: "F" },
+      { name: "Instagram Business", color: "#DD2A7B", initial: "I" },
+      { name: "YouTube Channel", color: "#EF4444", initial: "Y" }
+    ];
+    const OTHER_ROWS = {
+      "Personal Settings": [["Email notifications", "Daily digest of mentions"], ["Time zone", "CET (UTC+1)"], ["Language", "English"]],
+      "Global Settings": [["Default date range", "Last 30 days"], ["Auto-refresh dashboards", "Every 30 seconds"], ["Data retention", "24 months"]],
+      "Users": [["Mia Kessler (you)", "Owner"], ["Dana Whitfield", "Editor"], ["Marcus Ilori", "Viewer"]],
+      "Connections": [["CRM sync", "Dynamics-compatible connector"], ["Webhook alerts", "3 endpoints configured"]],
+      "Automation Rules": [["Auto-tag negative posts", "Applies \"Needs response\""], ["Auto-assign EU mentions", "Routes to regional team"]]
+    };
+    const rows = OTHER_ROWS[setTab] || [];
+    const settingsRows = rows.map((r, i) => ({ label: r[0], sub: r[1], toggleBg: i % 3 !== 1 ? "#2563EB" : "#E2E8F0", knobLeft: i % 3 !== 1 ? "20px" : "2px" }));
+
+    // Alerts
+    const alertFeed = [
+      { title: "Spike in negative sentiment", detail: "Onboarding friction mentions up 41% in the last 6 hours", color: "#EF4444", time: "14m ago" },
+      { title: "New high-influence author", detail: "@techledger (280K followers) posted about SocialEngage", color: "#2563EB", time: "1h ago" },
+      { title: "Volume threshold reached", detail: "SocialEngage · AI · ADPA topic crossed 9,000 posts this period", color: "#F59E0B", time: "3h ago" },
+      { title: "Competitor mention spike", detail: "Comparison thread trending on LinkedIn", color: "#7C3AED", time: "6h ago" },
+      { title: "Positive sentiment milestone", detail: "Sentiment index reached +45 for the week", color: "#10B981", time: "1d ago" }
+    ];
+    const alertRules = [
+      { label: "Negative sentiment spike", toggleBg: "#2563EB", knobLeft: "20px" },
+      { label: "Volume threshold", toggleBg: "#2563EB", knobLeft: "20px" },
+      { label: "High-influence author mention", toggleBg: "#2563EB", knobLeft: "20px" },
+      { label: "Competitor comparison", toggleBg: "#E2E8F0", knobLeft: "2px" }
+    ];
+
+    // Activity map mode toggle
+    const MODES = ["Volume", "Sentiment", "Reach"];
+    const mode = st.mapMode || "Volume";
+    const mapModes = MODES.map(m => ({ label: m, pick: pick("mapMode", m), bg: mode === m ? "rgba(59,130,246,.25)" : "rgba(255,255,255,.06)", border: mode === m ? "#60A5FA" : "rgba(255,255,255,.18)", fg: "#DBEAFE" }));
+
+    return {
+      scColumns, topics, selectedTopic: selTopic, addRuleOpen: !!st.addRuleOpen,
+      toggleAddRule: () => this.setState(s => ({ addRuleOpen: !s.addRuleOpen })),
+      ruleTypes, ruleKeywords: st.ruleKeywords || "", setRuleKeywords: e => this.setState({ ruleKeywords: e.target.value }),
+      ruleList, settingsTabs, isProfiles: setTab === "Social Profiles", isOtherSettings: setTab !== "Social Profiles",
+      settingsTabTitle: setTab, profiles: PROFILES, addableSources, settingsRows,
+      alertFeed, alertRules, mapModes
+    };
+  }
+
+  overviewVals(active, total, maxSrc) {
+    const st = this.state;
+    const sentIndex = 5.1, sentChange = 5.1;
+    const MINI_GEO = [
+      { x: 22, y: 42, v: 3120 }, { x: 45, y: 30, v: 1480 }, { x: 52, y: 20, v: 1240 },
+      { x: 56, y: 34, v: 980 }, { x: 68, y: 52, v: 860 }, { x: 32, y: 70, v: 540 }
+    ];
+    const maxMini = 3120;
+    const miniGeo = MINI_GEO.map(g => {
+      const d = 8 + Math.round(Math.sqrt(g.v / maxMini) * 20);
+      return { x: g.x + "%", y: g.y + "%", d: d + "px", off: (-d / 2) + "px" };
+    });
+
+    const totalAuthorsN = active.reduce((a, s) => a + Math.round(s.count * 0.41), 0) || 1;
+    const C = 2 * Math.PI * 40;
+    let acc = 0;
+    const authorDonut = active.map(s => {
+      const c = Math.round(s.count * 0.41);
+      const frac = c / totalAuthorsN;
+      const seg = { name: s.name, color: s.color, count: c.toLocaleString(), dash: (C * frac).toFixed(1) + " " + C.toFixed(1), offset: (-C * acc).toFixed(1) };
+      acc += frac;
+      return seg;
+    });
+
+    const volMode = st.volumeMode || "Volume";
+    const volumeTabs = ["Volume", "Average"].map(v => ({
+      label: v, pick: () => this.setState({ volumeMode: v }),
+      weight: volMode === v ? 600 : 500, color: volMode === v ? "#10243E" : "#94A3B8", bar: volMode === v ? "#10243E" : "transparent"
+    }));
+
+    const maxLang = Math.max(...LANGUAGES.map(l => l.count));
+
+    return {
+      sentIndex, sentChange,
+      sentGaugeDash: ((sentIndex + 10) / 20 * (2 * Math.PI * 40)).toFixed(1) + " " + (2 * Math.PI * 40).toFixed(1),
+      sentBarW: ((sentIndex / 10) * 50).toFixed(1) + "%",
+      miniGeo,
+      authorDonut,
+      totalAuthors: totalAuthorsN.toLocaleString(),
+      totalAuthorsShort: totalAuthorsN > 999 ? (totalAuthorsN / 1000).toFixed(1) + "k" : totalAuthorsN,
+      volumeTabs,
+      sourceBars: active.map(s => ({ name: s.name, color: s.color, initial: s.name[0], count: s.count.toLocaleString(), w: Math.round((s.count / maxSrc) * 100) + "%" })),
+      authorsList: AUTHORS,
+      topicShare: 96.7,
+      topicName: "SocialEngage · AI · ADPA",
+      topicDash: (0.967 * (2 * Math.PI * 40)).toFixed(1) + " " + (2 * Math.PI * 40).toFixed(1),
+      languages: LANGUAGES.map(l => ({ name: l.name, count: l.count.toLocaleString(), w: Math.round(l.count / maxLang * 100) + "%" }))
+    };
+  }
+
+  convVals(active, maxSrc) {
+    const INTENT = [
+      { name: "Praise", count: 3120, color: "#10B981" },
+      { name: "Question", count: 1840, color: "#2563EB" },
+      { name: "Complaint", count: 980, color: "#EF4444" },
+      { name: "Comparison", count: 640, color: "#7C3AED" },
+      { name: "Recommendation", count: 410, color: "#F59E0B" }
+    ];
+    const maxIntent = Math.max(...INTENT.map(i => i.count));
+    const intentions = INTENT.map(i => ({ name: i.name, count: i.count.toLocaleString(), color: i.color, w: Math.round(i.count / maxIntent * 100) + "%" }));
+
+    const TAGS = [
+      ["Product feedback", 412], ["Needs response", 187], ["Advocacy", 328], ["Feature request", 210],
+      ["Bug report", 96], ["Pricing question", 154], ["Onboarding", 88], ["Partnership", 41]
+    ];
+    const convTags = TAGS.map(t => ({ name: t[0], count: t[1], bg: "#F8FAFC", border: "#E2E8F0", fg: "#475569" }));
+
+    const PPP = [
+      { name: "Twitter/X", color: "#1D9BF0", phrases: ["AI listening", "real-time alerts", "sentiment model"] },
+      { name: "LinkedIn", color: "#0A66C2", phrases: ["social CRM", "brand health", "case study"] },
+      { name: "News", color: "#7C3AED", phrases: ["market expansion", "ADPA", "AI-driven"] },
+      { name: "Forums", color: "#10B981", phrases: ["topic clustering", "API access", "recall"] }
+    ];
+
+    const HIST = [12,14,13,18,22,19,25,28,24,31,29,35,40,37,44,48,42,52,58,55,63,60,68,72,66,74,80,76,84,90];
+    const maxH = Math.max(...HIST);
+    const phraseHistoryLine = HIST.map((v, i) => [(i / (HIST.length - 1)) * 260, 110 - (v / maxH) * 100].map(n => n.toFixed(1)).join(",")).join(" ");
+
+    const TREND = [
+      ["adaptive analytics", "+64%", "#047857"], ["AI listening", "+41%", "#047857"], ["profile auth timeouts", "+38%", "#B91C1C"],
+      ["intention detection", "+22%", "#047857"], ["export limits", "−12%", "#B45309"], ["topic clustering", "+9%", "#047857"]
+    ];
+    const trendingPhrases = TREND.map(t => ({ text: t[0], trend: t[1], color: t[2] }));
+
+    return { intentions, convTags, phrasesPerPlatform: PPP, phraseHistoryLine, topPhraseName: "adaptive analytics", trendingPhrases };
+  }
+
+  tabVals(active, total, scale, maxSrc) {
+    const st = this.state;
+    const pick = (k, v) => () => this.setState({ [k]: v });
+
+    // ---- Conversations
+    const CL = [
+      { label: "AI listening quality", vol: 1840, idx: 46, x: 30, y: 34, d: 168 },
+      { label: "Migration from legacy tools", vol: 1210, idx: 22, x: 62, y: 26, d: 132 },
+      { label: "Pricing & licensing", vol: 890, idx: -18, x: 74, y: 58, d: 112 },
+      { label: "Sentiment accuracy", vol: 760, idx: 34, x: 46, y: 66, d: 104 },
+      { label: "Onboarding friction", vol: 540, idx: -41, x: 20, y: 70, d: 88 },
+      { label: "API & integrations", vol: 470, idx: 51, x: 84, y: 36, d: 82 },
+      { label: "ADPA knowledge graph", vol: 390, idx: 63, x: 52, y: 14, d: 76 },
+      { label: "Alert configuration", vol: 260, idx: -9, x: 12, y: 18, d: 64 }
+    ];
+    const tone = i => i > 25 ? ["rgba(16,185,129,.16)", "#10B981", "#065F46"] : i > 0 ? ["rgba(37,99,235,.14)", "#3B82F6", "#1E3A8A"] : ["rgba(239,68,68,.14)", "#EF4444", "#991B1B"];
+    const sel = st.cluster || CL[0].label;
+    const maxVol = CL[0].vol;
+    const clusters = CL.map(c => {
+      const t = tone(c.idx);
+      return { label: c.label, x: c.x + "%", y: c.y + "%", d: c.d + "px", off: (-c.d / 2) + "px",
+        bg: t[0], border: t[1], fg: t[2], fs: (c.d > 120 ? 13.5 : c.d > 90 ? 12.5 : 11.5) + "px",
+        pick: pick("cluster", c.label) };
+    });
+    const convList = CL.map(c => {
+      const t = tone(c.idx);
+      const on = sel === c.label;
+      return { label: c.label, volume: c.vol.toLocaleString(), w: Math.round(c.vol / maxVol * 100) + "%",
+        color: t[1], trend: (c.idx > 0 ? "+" : "") + c.idx, trendColor: c.idx > 0 ? "#047857" : "#B91C1C",
+        rowBg: on ? "#EFF6FF" : "transparent", rowBorder: on ? "#BFDBFE" : "transparent",
+        pick: pick("cluster", c.label) };
+    });
+    const DRV = { d: ["recall on niche keywords", "clustering precision", "false positives", "language coverage", "latency to alert", "training data freshness", "manual overrides", "confidence scores"] };
+    const drivers = DRV.d.map((text, i) => ({ text, count: (420 - i * 41), w: Math.round((420 - i * 41) / 420 * 100) + "%", color: i < 3 ? "#2563EB" : i < 6 ? "#60A5FA" : "#CBD5E1" }));
+
+    // ---- Sentiment
+    const raw = { Positive: 58, Neutral: 29, Negative: 13 };
+    const sentCards = [
+      { label: "Positive", color: "#10B981", value: Math.round(total * .58).toLocaleString(), pct: "58%", sub: "+4.2 pts vs. prior period" },
+      { label: "Neutral", color: "#94A3B8", value: Math.round(total * .29).toLocaleString(), pct: "29%", sub: "−1.8 pts vs. prior period" },
+      { label: "Negative", color: "#EF4444", value: Math.round(total * .13).toLocaleString(), pct: "13%", sub: "−2.4 pts vs. prior period" }
+    ];
+    const sentBars = Array.from({ length: 22 }, (_, i) => {
+      const p = 46 + Math.round(Math.sin(i / 3.1) * 9) + i * .5;
+      const n = 22 - Math.round(Math.cos(i / 2.4) * 6) - i * .35;
+      const u = 100 - p - n;
+      return { pos: p.toFixed(1) + "%", neu: u.toFixed(1) + "%", neg: n.toFixed(1) + "%" };
+    });
+    const SBS = [["Twitter/X", 54, 30, 16], ["LinkedIn", 71, 24, 5], ["News", 49, 41, 10], ["Blogs", 66, 26, 8], ["Forums", 38, 39, 23], ["YouTube", 44, 28, 28]];
+    const sentBySource = SBS.map(r => ({ name: r[0], pos: r[1] + "%", neu: r[2] + "%", neg: r[3] + "%", index: (r[1] - r[3] > 0 ? "+" : "") + (r[1] - r[3]) }));
+    const praise = [["accurate sentiment scoring", 412], ["fast setup", 288], ["clean analytics", 241], ["responsive support", 196], ["good value", 154]].map(p => ({ text: p[0], count: p[1] }));
+    const criticism = [["profile auth timeouts", 187], ["alert config UI", 142], ["export limits", 118], ["mobile experience", 91], ["docs gaps", 64]].map(p => ({ text: p[0], count: p[1] }));
+
+    // ---- Location
+    const GEO = [
+      { name: "United States", v: 3120, x: 22, y: 40 }, { name: "United Kingdom", x: 43, y: 26, v: 1480 },
+      { name: "Netherlands", x: 52, y: 18, v: 1240 }, { name: "Germany", x: 56, y: 33, v: 980 },
+      { name: "India", x: 68, y: 51, v: 860 }, { name: "Brazil", x: 32, y: 70, v: 540 },
+      { name: "Japan", x: 84, y: 40, v: 420 }, { name: "Australia", x: 84, y: 76, v: 310 },
+      { name: "Canada", x: 21, y: 24, v: 290 }
+    ];
+    const maxGeo = 3120;
+    const selReg = st.region || "United States";
+    const geo = GEO.map(g => {
+      const d = 22 + Math.round(Math.sqrt(g.v / maxGeo) * 62);
+      const on = selReg === g.name;
+      return { name: g.name, x: g.x + "%", y: g.y + "%", d: d + "px",
+        bg: on ? "rgba(96,165,250,.55)" : "rgba(37,99,235,.42)", border: on ? "#BFDBFE" : "#60A5FA",
+        glow: on ? "rgba(147,197,253,.75)" : "rgba(37,99,235,.45)", pick: pick("region", g.name) };
+    });
+    const regions = GEO.map(g => ({ name: g.name, count: g.v.toLocaleString(), w: Math.round(g.v / maxGeo * 100) + "%",
+      color: selReg === g.name ? "#2563EB" : "#93C5FD", weight: selReg === g.name ? 600 : 500, pick: pick("region", g.name) }));
+    const rg = GEO.find(g => g.name === selReg) || GEO[0];
+    const regionStats = [
+      { label: "Posts", value: rg.v.toLocaleString(), color: "#1B2A41" },
+      { label: "Share of total buzz", value: Math.round(rg.v / 9240 * 100) + "%", color: "#1B2A41" },
+      { label: "Sentiment index", value: "+" + (28 + (rg.name.length % 17)), color: "#047857" },
+      { label: "Top source", value: rg.v > 1000 ? "Twitter/X" : "LinkedIn", color: "#1B2A41" }
+    ];
+
+    // ---- Sources
+    const SRC = [
+      { name: "Twitter/X", color: "#1D9BF0", count: 4820, authors: 2140, reach: "1.9M", index: 38, pos: 54, neu: 30, neg: 16, trend: "+21%" },
+      { name: "LinkedIn", color: "#0A66C2", count: 2140, authors: 1180, reach: "820K", index: 66, pos: 71, neu: 24, neg: 5, trend: "+14%" },
+      { name: "News", color: "#7C3AED", count: 1310, authors: 410, reach: "3.4M", index: 39, pos: 49, neu: 41, neg: 10, trend: "+8%" },
+      { name: "Blogs", color: "#F59E0B", count: 940, authors: 360, reach: "610K", index: 58, pos: 66, neu: 26, neg: 8, trend: "−3%" },
+      { name: "Forums", color: "#10B981", count: 610, authors: 290, reach: "140K", index: 15, pos: 38, neu: 39, neg: 23, trend: "+6%" },
+      { name: "YouTube", color: "#EF4444", count: 380, authors: 96, reach: "980K", index: 16, pos: 44, neu: 28, neg: 28, trend: "−9%" }
+    ];
+    const shareTotal = SRC.reduce((a, s) => a + s.count, 0);
+    const sourceCards = SRC.map(s => ({
+      name: s.name, color: s.color, initial: s.name[0], count: s.count.toLocaleString(),
+      authors: s.authors.toLocaleString(), index: "+" + s.index,
+      indexColor: s.index > 30 ? "#047857" : "#B45309",
+      share: Math.round(s.count / shareTotal * 100) + "%",
+      trend: s.trend, trendColor: s.trend.startsWith("−") ? "#B91C1C" : "#047857",
+      spark: Array.from({ length: 14 }, (_, i) => ({
+        h: (28 + Math.abs(Math.sin(i / 2 + s.count / 900)) * 68).toFixed(0) + "%",
+        color: i === 13 ? s.color : "#DBEAFE"
+      }))
+    }));
+    const sourceRows = SRC.map(s => ({
+      name: s.name, color: s.color, count: s.count.toLocaleString(), authors: s.authors.toLocaleString(),
+      reach: s.reach, index: "+" + s.index, indexColor: s.index > 30 ? "#047857" : "#B45309",
+      pos: s.pos + "%", neu: s.neu + "%", neg: s.neg + "%"
+    }));
+
+    return { clusters, convList, drivers, selectedCluster: sel,
+      sentCards, sentBars, sentBySource, praise, criticism,
+      geo, regions, regionStats, selectedRegion: selReg,
+      sourceCards, sourceRows };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const active = this.activeSources();
+    const total = active.reduce((a, s) => a + s.count, 0) || 1;
+    const scale = total / SOURCES.reduce((a, s) => a + s.count, 0);
+    const posts = this.filteredPosts();
+
+    // buzz chart geometry
+    const max = Math.max(...BUZZ) * 1.15;
+    const pt = (v, i) => [(i / (BUZZ.length - 1)) * 900, 250 - (v * scale / max) * 250];
+    const line = BUZZ.map((v, i) => pt(v, i).map(n => n.toFixed(1)).join(",")).join(" ");
+    const negLine = BUZZ.map((v, i) => pt(v * 0.22, i).map(n => n.toFixed(1)).join(" ")).map(s => s.replace(" ", ",")).join(" ");
+    const area = "M0,250 L" + line.split(" ").join(" L") + " L900,250 Z";
+
+    // sentiment donut
+    const raw = { Positive: 58, Neutral: 29, Negative: 13 };
+    const shown = SENTS.filter(s => !st.offSents[s]);
+    const sum = shown.reduce((a, s) => a + raw[s], 0) || 1;
+    const colors = { Positive: "#10B981", Neutral: "#94A3B8", Negative: "#EF4444" };
+    const C = 2 * Math.PI * 76;
+    let acc = 0;
+    const donut = shown.map(s => {
+      const frac = raw[s] / sum;
+      const seg = { label: s, color: colors[s], pct: Math.round(frac * 100) + "%", dash: (C * frac).toFixed(1) + " " + C.toFixed(1), offset: (-C * acc).toFixed(1) };
+      acc += frac;
+      return seg;
+    });
+    const sentIndex = Math.round(((raw.Positive - raw.Negative) / (raw.Positive + raw.Neutral + raw.Negative)) * 100);
+
+    const maxSrc = Math.max(...SOURCES.map(s => s.count));
+    const phraseWords = ["adaptive analytics","AI listening","sentiment model","SocialEngage","ADPA","intention detection","topic clustering","real-time alerts","brand health","social CRM","data pipeline","share of voice","campaign lift","API access"];
+
+    return {
+      icoCalendar: ico("calendar", 15, "rgba(255,255,255,.85)"),
+      icoBell: ico("bell", 17, "#fff"),
+      icoChevron: ico("chevron", 14, "rgba(255,255,255,.7)"),
+      icoPosts: ico("file", 15, "#475569"),
+      icoExport: ico("download", 15, "#475569"),
+      icoDownloadSmall: ico("download", 14, "#94A3B8"),
+      ...this.overviewVals(active, total, maxSrc),
+      ...this.convVals(active, maxSrc),
+      ...this.authVals(),
+      screenTitle: TITLES[st.screen] || "Analytics",
+      topic: "SocialEngage · AI · ADPA",
+      navOpen: st.navOpen,
+      postsOpen: st.postsOpen,
+      toggleNav: () => this.setState(s => ({ navOpen: !s.navOpen })),
+      togglePosts: () => this.setState(s => ({ postsOpen: !s.postsOpen })),
+      isOverview: st.screen === "overview",
+      isConversations: st.screen === "conversations",
+      isSentiment: st.screen === "sentiment",
+      isLocation: st.screen === "location",
+      isSources: st.screen === "sources",
+      isPostDetail: st.screen === "post-detail",
+      isSocialCenter: st.screen === "social-center",
+      isSearchSetup: st.screen === "search-setup",
+      isSettings: st.screen === "settings",
+      isAlerts: st.screen === "alerts",
+      isActivityMap: st.screen === "activity-map",
+      showTabs: !["post-detail","activity-map"].includes(st.screen),
+      isStub: false,
+      ...this.postVals(),
+      ...this.moreVals(active, total),
+      ...this.tabVals(active, total, scale, maxSrc),
+      nav: NAV.map(n => ({
+        label: n.label, key: n.key,
+        icon: ico(n.icon, 17, "#fff"),
+        bg: st.screen === n.key || (n.key === "overview" && TABS.some(t => t.key === st.screen)) ? "rgba(37,99,235,.22)" : "transparent",
+        bar: st.screen === n.key || (n.key === "overview" && TABS.some(t => t.key === st.screen)) ? "#3B82F6" : "transparent",
+        weight: st.screen === n.key ? 600 : 400,
+        go: () => this.setState({ screen: n.key, navOpen: false })
+      })),
+      tabs: TABS.map(t => ({
+        label: t.label,
+        weight: st.screen === t.key ? 600 : 500,
+        color: st.screen === t.key ? "#10243E" : "#64748B",
+        bar: st.screen === t.key ? "#2563EB" : "transparent",
+        go: () => this.setState({ screen: t.key })
+      })),
+      sourceChips: SOURCES.map(s => {
+        const on = !st.offSources[s.name];
+        return {
+          name: s.name, count: s.count.toLocaleString(), dot: s.color,
+          bg: on ? "#EFF6FF" : "#fff", border: on ? "#BFDBFE" : "#E2E8F0", fg: on ? "#1E40AF" : "#94A3B8",
+          toggle: () => this.setState(p => ({ offSources: { ...p.offSources, [s.name]: on } }))
+        };
+      }),
+      sentChips: SENTS.map(s => {
+        const on = !st.offSents[s];
+        const c = { Positive: ["#ECFDF5", "#A7F3D0", "#047857"], Neutral: ["#F8FAFC", "#E2E8F0", "#475569"], Negative: ["#FEF2F2", "#FECACA", "#B91C1C"] }[s];
+        return {
+          name: s,
+          bg: on ? c[0] : "#fff", border: on ? c[1] : "#E2E8F0", fg: on ? c[2] : "#94A3B8",
+          toggle: () => this.setState(p => ({ offSents: { ...p.offSents, [s]: on } }))
+        };
+      }),
+      clearFilters: () => this.setState({ offSources: {}, offSents: {} }),
+      activeLabel: active.length === SOURCES.length ? "all sources" : active.length + " of " + SOURCES.length + " sources",
+      kpis: [
+        { label: "Total buzz", value: Math.round(total).toLocaleString(), delta: "+18.4%", color: "#047857", sub: "vs. previous 30 days" },
+        { label: "Sentiment index", value: sentIndex, delta: "+6", color: "#047857", sub: "scale −100 to +100" },
+        { label: "Unique authors", value: Math.round(total * 0.41).toLocaleString(), delta: "+9.1%", color: "#047857", sub: "distinct accounts" },
+        { label: "Est. reach", value: (total * 412 / 1e6).toFixed(1) + "M", delta: "−2.3%", color: "#B91C1C", sub: "impressions" }
+      ],
+      buzzLine: line,
+      negLine: negLine,
+      buzzArea: area,
+      donut,
+      phrases: phraseWords.map((text, i) => ({
+        text,
+        size: (30 - i * 1.4).toFixed(0) + "px",
+        weight: i < 4 ? 700 : i < 9 ? 600 : 500,
+        color: i < 3 ? "#10243E" : i < 7 ? "#2563EB" : "#64748B"
+      })),
+      posts: posts.map(p => ({ ...p, open: () => this.setState(s => ({ screen: "post-detail", postId: p.handle, prev: s.screen === "post-detail" ? s.prev : s.screen })) })),
+      postCount: posts.length
+    };
+  }
+}
+
+</script>
+</body>
+</html>
