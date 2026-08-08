@@ -9,5 +9,10 @@
 !.env.example
 !.env.*.example
 
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
 # docs/ai-roles/ tooling dependencies (@google/genai etc.) — reinstall via npm install
 node_modules/
