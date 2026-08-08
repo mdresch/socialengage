@@ -12,6 +12,31 @@
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE_NAME, decryptSession } from './session';
 
+export interface AdminTenant {
+  id: string;
+  name: string;
+  status: 'active' | 'suspended';
+  licenseSeatCount: number;
+  activeSeatCount: number;
+  domain: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminAuditLogEntry {
+  id: string;
+  actorIdentity: string;
+  operation: string;
+  targetTenantId: string | null;
+  detail: unknown;
+  createdAt: string;
+}
+
+export interface AdminAuditLogPage {
+  entries: AdminAuditLogEntry[];
+  nextCursor: string | null;
+}
+
 function coreBaseUrl(): string {
   const baseUrl = process.env.CORE_API_BASE_URL;
   if (!baseUrl) {
@@ -74,4 +99,122 @@ export async function fetchResolvedIdentity(accessToken: string): Promise<unknow
   } catch {
     return null;
   }
+}
+
+/**
+ * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
+ */
+export async function listAdminTenants(): Promise<AdminTenant[]> {
+  const response = await authenticatedCoreFetch('/v1/admin/tenants');
+  if (!response.ok) {
+    throw new Error(`Failed to list tenants: ${response.status}`);
+  }
+  const payload = (await response.json()) as { tenants?: AdminTenant[] };
+  return Array.isArray(payload.tenants) ? payload.tenants : [];
+}
+
+/**
+ * Story 6.6 / Story 5.12 — create tenant via Platform Admin endpoint.
+ */
+export async function createAdminTenant(input: {
+  name: string;
+  licenseSeatCount: number;
+  domain?: string | null;
+}): Promise<AdminTenant> {
+  const response = await authenticatedCoreFetch('/v1/admin/tenants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create tenant: ${response.status}`);
+  }
+  return (await response.json()) as AdminTenant;
+}
+
+/**
+ * Story 6.6 / Story 5.12 — update tenant administrative metadata.
+ */
+export async function updateAdminTenant(
+  tenantId: string,
+  input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null }
+): Promise<AdminTenant> {
+  const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update tenant: ${response.status}`);
+  }
+  return (await response.json()) as AdminTenant;
+}
+
+/**
+ * Story 6.6 / Story 5.13 — record a break-glass request.
+ */
+export async function requestBreakGlassReset(input: {
+  tenantId: string;
+  targetUserId: string;
+}): Promise<unknown> {
+  const response = await authenticatedCoreFetch(
+    `/v1/admin/tenants/${encodeURIComponent(input.tenantId)}/break-glass/request`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUserId: input.targetUserId }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to request break-glass reset: ${response.status}`);
+  }
+  return await response.json();
+}
+
+/**
+ * Story 6.6 / Story 5.13 — execute an existing break-glass request.
+ */
+export async function executeBreakGlassRequest(input: {
+  tenantId: string;
+  requestId: string;
+}): Promise<unknown> {
+  const response = await authenticatedCoreFetch(
+    `/v1/admin/tenants/${encodeURIComponent(input.tenantId)}/break-glass/requests/${encodeURIComponent(input.requestId)}/execute`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to execute break-glass request: ${response.status}`);
+  }
+  return await response.json();
+}
+
+/**
+ * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
+ */
+export async function queryAdminAuditLog(input?: {
+  tenantId?: string;
+  actorIdentity?: string;
+  from?: string;
+  to?: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<AdminAuditLogPage> {
+  const params = new URLSearchParams();
+  if (input?.tenantId) params.set('tenantId', input.tenantId);
+  if (input?.actorIdentity) params.set('actorIdentity', input.actorIdentity);
+  if (input?.from) params.set('from', input.from);
+  if (input?.to) params.set('to', input.to);
+  if (input?.cursor) params.set('cursor', input.cursor);
+  if (typeof input?.limit === 'number') params.set('limit', String(input.limit));
+
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  const response = await authenticatedCoreFetch(`/v1/admin/audit-log${suffix}`);
+  if (!response.ok) {
+    throw new Error(`Failed to query audit log: ${response.status}`);
+  }
+  return (await response.json()) as AdminAuditLogPage;
 }
