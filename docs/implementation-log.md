@@ -884,15 +884,34 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 
 ---
 
-## 2026-08-08 — Story 1.1 healing pass — social-listening-core@c33353d
+## 2026-08-08 ï¿½ Story 1.1 healing pass ï¿½ social-listening-core@c33353d
 
 - **Full commit:** c33353df14e4bfdefe3417642946261dc7486653
 - **Repo:** social-listening-core (pre-split convention, touches social-listening-admin/package.json)
 - **Story / ADR:** 1.1 / ADR-0001
 - **Healing what:** Story 1.1's AC3 test (independent-repo-scaffold.contract.test.ts), failing with "Expected: false, Received: true" on assertion expect(fs.existsSync(parentPackageJson)).toBe(false)
-- **Root cause:** A parent package.json was added at workspace root after Story 1.1 shipped, containing Tailwind/PostCSS dev dependencies. This violated ADR-0001's foundational requirement that social-listening-core and social-listening-admin have no shared workspace root — i.e., must remain independently deployable. The contract was correct; the Intent was still valid; the implementation violated the constraint.
+- **Root cause:** A parent package.json was added at workspace root after Story 1.1 shipped, containing Tailwind/PostCSS dev dependencies. This violated ADR-0001's foundational requirement that social-listening-core and social-listening-admin have no shared workspace root ï¿½ i.e., must remain independently deployable. The contract was correct; the Intent was still valid; the implementation violated the constraint.
 - **Healing approach:** Moved utoprefixer, postcss, and 	ailwindcss to social-listening-admin's devDependencies (where they're actually used for Next.js CSS processing), and deleted the parent package.json. Closes the independence-boundary violation without scope creep.
-- **Steps walked:** All five. Step 1 (Intent re-read: ADR-0001 + Story 1.1 still require independent repos — valid). Step 2 (Contract re-read: AC3 correctly asserts no parent package.json — correct). Step 3 (SKILL.md checked: epo-scaffold/SKILL.md explicitly documents this load-bearing constraint — accurate). Step 4 (minimal fix applied: move Tailwind deps to where they're used, delete parent file). Step 5 (single failing contract now passes).
+- **Steps walked:** All five. Step 1 (Intent re-read: ADR-0001 + Story 1.1 still require independent repos ï¿½ valid). Step 2 (Contract re-read: AC3 correctly asserts no parent package.json ï¿½ correct). Step 3 (SKILL.md checked: 
+epo-scaffold/SKILL.md explicitly documents this load-bearing constraint ï¿½ accurate). Step 4 (minimal fix applied: move Tailwind deps to where they're used, delete parent file). Step 5 (single failing contract now passes).
 - **Attempt count:** 1
 - **Files touched:** social-listening-admin/package.json (added Tailwind/PostCSS to devDependencies)
 - **Full suite at merge:** PASS (Story 1.1 AC3 test now passes; full contract suite revalidated)
+
+---
+
+## 2026-08-08 â€” Story 6.6 â€” socialengage@2b2d40b
+
+- **Full commit:** `2b2d40bf77361a8854fbd0c7a2c98c3379aec269`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.6 / ADR-0030, ADR-0031, ADR-0035
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.6.platform-admin-console.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/platform-admin-console/SKILL.md
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/platform-admin-console/SKILL.md, social-listening-admin/contracts/epic-6/story-6.6.platform-admin-console.contract.test.ts, social-listening-admin/src/app/platform-admin/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (8/8 suites, 58/58 tests)
+
+**Platform Admin console UI is now real in `social-listening-admin`, built against already-shipped core surfaces from Stories 5.12, 5.13, and 5.14.** The route at `src/app/platform-admin/page.tsx` now renders concrete sections for tenant registry, tenant provisioning/update flow mapping, break-glass request/execute flow mapping, and audit-log visibility, while explicitly preserving ADR-0030's "no tenant-content data" boundary in copy.
+
+**`core-client.ts` now has dedicated Platform-Admin endpoint helpers rather than ad hoc route calls** (`listAdminTenants`, `createAdminTenant`, `updateAdminTenant`, `requestBreakGlassReset`, `executeBreakGlassRequest`, `queryAdminAuditLog`) so future Epic 6 stories extend one sanctioned API surface.
+
+**Contract-first sequence was followed and validated in full:** the new Story 6.6 contract initially failed against placeholder code, then passed after implementation (6/6), with the full accumulated `social-listening-admin` contracts green afterward (8/8, 58/58), and traceability notes updated in `docs/user-stories/epic-6-admin-ui.md`, `docs/user-stories/README.md`, and `docs/implementation-plan.md` in the same commit.
