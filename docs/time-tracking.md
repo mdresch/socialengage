@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-08 | — | — | auto | Documentation | — | gitignore: exclude Python __pycache__ and bytecode files (bb42281) |
+| 2026-08-08 | — | — | auto | Documentation | — | Add Foundry agent tracing tests (0c3409b) |
+| 2026-08-08 | — | — | auto | Review | — | Setup: Codacy config, VS Code MCP settings, Claude settings, and pending reviews (34b5333) |
 | 2026-08-08 | — | — | auto | Documentation | — | UI mock designs: globals, types, mockData, and Tailwind config (fa7954c) |
 | 2026-08-08 | — | — | auto | Documentation | — | Healing pass: Stories 2.7, 5.7, 5.13 — contract fixes and implementation (488ac49) |
 | 2026-08-08 | — | — | auto | Documentation | — | Add Foundry Toolkit setup and configuration (4ff04cd) |
