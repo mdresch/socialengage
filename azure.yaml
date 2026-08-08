@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: socialengage
+services:
+    socialengage:
+        project: .
+        host: azure.ai.agent
+        language: python
+        codeConfiguration:
+            dependencyResolution: remote
+            entryPoint: main.py
+            runtime: python_3_14
+        container:
+            resources:
+                cpu: "1.0"
+                memory: 2Gi
+        description: Local SocialEngage agent entrypoint for Foundry Toolkit Agent Inspector.
+        kind: hosted
+        name: socialengage
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+        startupCommand: python main.py --server
+        environmentVariables:
+            - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
+              value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+infra:
+    provider: microsoft.foundry
