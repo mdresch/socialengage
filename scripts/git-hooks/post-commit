@@ -57,11 +57,11 @@ if [ "$SKIP_TIME_LOG" -eq 0 ] && [ -f "$TIME_TRACKING_FILE" ]; then
   STORY_ADR=$(echo "$SUBJECT" | grep -oE "(Story [0-9]+\.[0-9]+|ADR-[0-9]+)" | head -1)
   [ -z "$STORY_ADR" ] && STORY_ADR="—"
 
-  # No real wall-clock start/end time exists for an auto-derived entry — recorded
-  # honestly as "—", never a fabricated plausible-looking number (this project's own
-  # "never invent a figure not evidenced by a real source" discipline, applied here).
-  NEW_ROW=$(printf '| %s | — | — | auto | %s | %s | %s (%s) |' \
-    "$DATE" "$ACTIVITY" "$STORY_ADR" "$SUBJECT" "$SHORT_HASH")
+  # Record commit time (HH:MM) as a day-timeline marker — not wall-clock work time.
+  COMMIT_TIME=$(git log -1 --format=%ci HEAD | cut -c12-16)
+
+  NEW_ROW=$(printf '| %s | %s | — | — | %s | %s | %s (%s) |' \
+    "$DATE" "$COMMIT_TIME" "$ACTIVITY" "$STORY_ADR" "$SUBJECT" "$SHORT_HASH")
 
   # A plain `>>` would append at end-of-file, after every other section and the
   # footer — the row has to land inside the actual log table, directly under its
