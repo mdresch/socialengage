@@ -1,0 +1,5 @@
+name: socialengage
+dockerfile_path: Dockerfile
+resources:
+  cpu: '1.0'
+  memory: 2.0Gi
