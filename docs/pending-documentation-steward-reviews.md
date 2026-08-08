@@ -208,3 +208,27 @@
 - **Files touched:** social-listening-admin/package.json
 - **Status:** Pending review
 
+## 2026-08-08 — 5b7a69f — Governance updates: heal-contract-failure SKILL enhancements, new ADRs 0044-0048, and traceability
+
+- **Full commit:** `5b7a69fab8a496644c85ce499c68bfdf9ec91937`
+- **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, docs/adr/0044-watchlist-api-design-and-database-schema-standardization.md, docs/adr/0045-Audit Trail Architecture for Tenant User Access Management.md, docs/adr/0046-Admin UI Authentication and Authorization Architecture.md, docs/adr/0047-standard-pattern-for-cross-story-references-and-supersession-language.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/README.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/platform-admin-access/SKILL.md
+- **Status:** Pending review
+
+## 2026-08-08 — 4ff04cd — Add Foundry Toolkit setup and configuration
+
+- **Full commit:** `4ff04cd8e0edef359e9fd635a39112120589aed5`
+- **Files touched:** .dockerignore, .foundry/.deployment.json, .mcp.json, Dockerfile, agent.yaml, main.py
+- **Status:** Pending review
+
+## 2026-08-08 — 488ac49 — Healing pass: Stories 2.7, 5.7, 5.13 — contract fixes and implementation
+
+- **Full commit:** `488ac49296bbed9a546e116a317f8dcd06d9cf73`
+- **Files touched:** social-listening-core/contracts/epic-2/story-2.7.gnews-connector.contract.test.ts, social-listening-core/contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts, social-listening-core/contracts/epic-5/story-5.7.platform-admin-rls-bypass.contract.test.ts, social-listening-core/src/admin/breakGlassCredentialReset.ts
+- **Status:** Pending review
+
+## 2026-08-08 — fa7954c — UI mock designs: globals, types, mockData, and Tailwind config
+
+- **Full commit:** `fa7954cc7589ab733d232058348a3df86da1d54d`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/lib/mockData.ts, social-listening-admin/src/lib/types.ts, social-listening-admin/tailwind.config.js
+- **Status:** Pending review
+
