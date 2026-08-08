@@ -11,27 +11,39 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 
 **Do not classify the failure and jump to a patch.** Walk all five steps below, in order, every time — including when the cause looks obvious. "Obvious" is exactly the assumption that lets a stale Intent or a wrong Contract slide through while you patch the symptom one step later.
 
-**Retry cap: 3 full walks of Steps 1–5 for this failure, then mandatory escalation — no 4th attempt.** Before starting, check whether a `TodoWrite` entry already exists for this failure from an earlier attempt this session; if so, this is attempt 2 or 3, not attempt 1. Log a fresh `TodoWrite` entry per attempt (`Healing attempt N: <what's failing> — <hypothesis>`) so the count and the reasoning are both visible. Attempt 2 or 3 must be informed by why the previous attempt's Step 5 failed — repeating the same Step 4 change with no new information is not a distinct attempt; treat it as a signal to escalate now rather than spend the remaining budget on a repeat.
+**Retry cap: 3 full walks of Steps 1–5 for this failure, then mandatory escalation — no 4th attempt.** Before starting, check whether a todo item already exists for this failure from an earlier attempt this session (search the todo list via the `manage_todo_list` tool); if so, this is attempt 2 or 3, not attempt 1. Log a fresh todo entry per attempt with title `Healing attempt N: <what's failing> — <hypothesis>` so the count and the reasoning are both visible. Attempt 2 or 3 must be informed by why the previous attempt's Step 5 failed — repeating the same Step 4 change with no new information is not a distinct attempt; treat it as a signal to escalate now rather than spend the remaining budget on a repeat.
 
 ## Steps — fixed order, no skipping
 
 1. **Re-validate Intent.** Open the failing contract's Intent header comment. Re-read its Story in `docs/user-stories/epic-*.md` and its Source ADR in `docs/adr/` *fresh* — including any Amendment Log, Clarification, or Pending-supersession note added since this contract was written. Does the Intent block (scope, contract-to-encode, out-of-scope) still match what the story and ADR say right now? If not, that mismatch is very likely the actual root cause. Say so before continuing.
+   
+   **If the referenced Story file, ADR, or Implementation Log cannot be found:** stop immediately and report the missing file path to the user before proceeding. Do not assume default content or skip the read.
 
 2. **Re-validate the Contract.** Re-read the failing contract test against the Acceptance Criteria you just re-fetched — not against what the test already asserts. Does it genuinely encode the story's *current* promises? If the contract itself looks wrong or stale: do not edit it yourself. That requires a dated note pointing to a specific ADR change, with the user's explicit sign-off — go to Step 6 instead.
+   
+   **If no contract exists yet:** this finding stays here — note it and proceed. (This means Step 1–3 will need to be completed before Step 4 can write code, per the sub-instruction in Step 4 below.)
 
 3. **Re-validate the component `SKILL.md`.** Check it against [`docs/templates/component-skill-template.md`](../../../docs/templates/component-skill-template.md)'s required sections: governing ADRs/Stories, the contract files that constrain it, extension guidance, load-bearing constraints. Update it if stale — this one you're always allowed to fix directly.
 
-4. **Re-validate and fix the implementation.** Only now, after 1–3 confirm the target is actually correct, touch code. Make the minimal change that satisfies the (now-confirmed) contract. No speculative generalization, no scope creep beyond what Step 1 reconfirmed.
+4. **Re-validate and fix the implementation.** Proceed only if Steps 1–3 confirm a contract exists and the target is correct. Touch code to make the minimal change that satisfies that (now-confirmed) contract. No speculative generalization, no scope creep beyond what Step 1 reconfirmed.
+   
+   **If Step 2 found no contract exists yet:** this is the case where a hook blocked a write because no contract was authored before implementation was attempted. This is not a special case — it means the real work of Steps 1–3 must be completed now, in order, before any code can be safely written. Complete them now: finalize the Intent (Step 1), create/finalize the contract (Step 2), update/create the component SKILL.md (Step 3). Only then return to this step and write the implementation to match the (now-existing) contract.
 
-   If you arrived here because a hook blocked a write and no contract exists yet at all: that's not a special case — it means steps 1–3 weren't actually done before implementation was attempted. Go do them now, in order, don't route around the block.
+5. **Validate.** Run the specific contract that was failing. Then run the full accumulated contract suite for the repo. Both must pass. If either still fails, this attempt is done and failed — see Step 6b before starting another. 
+   
+   **If the full-suite run fails a contract you weren't targeting** (from a different story or component), stop before touching it. This is a cross-component regression — do not mix its repair into the current attempt counter. Instead, apply the **Cross-Component Regression Protocol** below, then return to Step 5 to re-validate the full suite.
 
-5. **Validate.** Run the specific contract that was failing. Then run the full accumulated contract suite for the repo. Both must pass. If either still fails, this attempt is done and failed — see Step 6b before starting another.
+## Cross-Component Regression Protocol
 
-5b. **If the full-suite run in Step 5 fails a contract you weren't targeting** (a different story's, a different component's): stop before touching it. This is not the same failure — handle it as its own case, per `docs/implementation-methodology.md`'s "When the failing contract belongs to someone else's scope":
-   - **Attribute first.** Check whether it traces to a change made in *this* session — the far more common case — by comparing what you just modified against what the foreign contract exercises (a shared type, a shared utility, a common pipeline stage). Don't assume; if there's no plausible link, stop and ask rather than guess.
-   - **Default remedy: narrow the new change, not the foreign component.** The foreign contract was already passing and is presumed correct, same as an Accepted ADR — fix it by adjusting what you just changed, back in the current story's own files. Do not touch the foreign component's implementation, and never its contract.
-   - **Give it its own Intent and its own attempt counter** — `Healing attempt N: regression in <foreign story/contract> caused by <this story>'s change` — separate from the original story's counter. A struggling fix here should never look like the original story just needs "one more try."
-   - **If the real fix genuinely requires changing the foreign component too** (a shared interface both must adapt to): that's a scope expansion into another story's territory. Stop and surface it to the user as a named decision, per Step 2's rule. Never decide this yourself just because it seems like the obvious fix.
+When a contract from a different story or component fails after your changes, follow this separately (with its own attempt counter and stop condition) per `docs/implementation-methodology.md`'s "When the failing contract belongs to someone else's scope":
+
+- **Attribute first.** Check whether it traces to a change made in *this* session — the far more common case — by comparing what you just modified against what the foreign contract exercises (a shared type, a shared utility, a common pipeline stage). Don't assume; if there's no plausible link, stop and ask rather than guess.
+- **Default remedy: narrow the new change, not the foreign component.** The foreign contract was already passing and is presumed correct, same as an Accepted ADR — fix it by adjusting what you just changed, back in the current story's own files. Do not touch the foreign component's implementation, and never its contract.
+- **Give it its own Intent and its own attempt counter** — create a separate todo `Healing attempt N: regression in <foreign story/contract> caused by <this story>'s change` — separate from the original story's counter. A struggling fix here should never look like the original story just needs "one more try."
+- **If the real fix genuinely requires changing the foreign component too** (a shared interface both must adapt to): that's a scope expansion into another story's territory. Stop and surface it to the user as a named decision, per Step 2's rule. Never decide this yourself just because it seems like the obvious fix.
+- **When the foreign regression is resolved**, return to Step 5 and re-run the full suite to confirm both the original and the regression contracts now pass.
+
+## Hard Stop Conditions
 
 6a. **Hard stop — cheating, checked at every step above, not just here:** if getting to green at any point would mean weakening, skipping, deleting, or bypassing a contract's assertions, a hook, a lint rule, or a CI gate — stop right there. Do not finish the sequence by force.
 

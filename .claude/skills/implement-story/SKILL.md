@@ -11,7 +11,7 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 
 ## Steps (do these in order; do not skip or reorder)
 
-1. **Locate and read the story.** Find it in `docs/user-stories/epic-*.md` by number. Note its **Status** — if it says `Blocked — pending ADR-XXXX acceptance`, stop and tell the user; do not implement a story whose source ADR isn't Accepted. Read its Source ADR in full (`docs/adr/000X-*.md`), including any Amendment Log, Clarification, or Pending supersession note — those are load-bearing, not footnotes.
+1. **Locate and read the story.** Find it in `docs/user-stories/epic-*.md` by number. Note its **Status** — if it says `Blocked — pending ADR-XXXX acceptance`, stop and tell the user; do not implement a story whose source ADR isn't Accepted. Read its Source ADR in full (`docs/adr/000X-*.md`), including any Amendment Log, Clarification, or Pending supersession note — those are load-bearing, not footnotes. If the Source ADR file cannot be located or contains no recognizable status field, stop and tell the user before proceeding.
 
 2. **Scope.** List the exact files this story's Acceptance Criteria require touching. Nothing else. If you discover mid-implementation that something outside this list genuinely needs to change, stop, surface it to the user as a separate scoped item, and don't fold it in silently.
 
@@ -19,13 +19,15 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
    - Add a `TodoWrite` entry: `Implement Story <X.Y>: <title>`.
    - Draft the Intent block (story, ADR, scope, contract-to-encode, explicitly-out-of-scope) per `docs/implementation-methodology.md` §2. This becomes the header comment of the contract test file in the next step — write it once, reuse it.
 
-4. **Write the contract test first**, in `<repo>/contracts/epic-<N>/story-<X.Y>.<slug>.contract.test.ts`, one test (or small cohesive group) per Acceptance Criterion, with the Intent block as its header comment. It should fail at this point — no implementation exists yet. That failure is expected and correct.
+4. **Write the contract test first**, in `<repo>/contracts/epic-<N>/story-<X.Y>.<slug>.contract.test.ts`, one test per Acceptance Criterion; multiple assertions within a single test are allowed only when they test the same atomic behavior, with the Intent block as its header comment. If a file at that path already exists and belongs to a different story, stop and surface the naming conflict to the user before creating or overwriting any file. It should fail at this point — no implementation exists yet. That failure is expected and correct.
 
 5. **Write or update the component's `SKILL.md`** at `<repo>/.claude/skills/<component-slug>/SKILL.md`, using [`docs/templates/component-skill-template.md`](../../../docs/templates/component-skill-template.md). If a `SKILL.md` for this component already exists (from a prior story), update it — don't create a duplicate. List this story's new contract file in it.
 
 6. **Implement.** Write the minimal code to make the new contract pass. No speculative generalization, no untested branches, no drive-by refactors outside the Step 2 scope list.
 
-7. **Validate.** Run the new contract — it must pass. Then run the full accumulated contract suite for the repo (every `contracts/**/*.contract.test.ts` file, not just the new one). If anything fails — the new contract, an old one, lint, or typecheck — invoke the **`heal-contract-failure`** skill rather than repairing it ad hoc here. Only continue to Step 8 once it reports the failure resolved and the full suite genuinely passes (or, if it hit its hard-stop conditions, once the user has made the decision it was blocked on).
+7. **Validate.**
+   - **7a.** Run the new contract and confirm it passes.
+   - **7b.** Run the full accumulated contract suite for the repo (every `contracts/**/*.contract.test.ts` file, not just the new one). If anything fails — the new contract, an old one, lint, or typecheck — stop and invoke the **`heal-contract-failure`** skill rather than repairing it ad hoc here. Wait for explicit user confirmation before proceeding to Step 8.
 
 8. **Update traceability.** Confirm — and correct if stale — the story's status/references in `docs/user-stories/README.md`, `docs/adr/README.md`, and `docs/implementation-plan.md`'s traceability table. A story isn't done if these three go stale.
 

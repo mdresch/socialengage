@@ -881,3 +881,18 @@ A new shared helper, `requireTenantUserIdentity()`, was added alongside Story 5.
 **A second real bug found and fixed during Step 7 validation:** the confirm route's first draft tried to `UPDATE tenants SET status = 'deleting'` under `app_user`'s own connection â€” `status` is column-level locked to `platform_admin_role` only (`migrations/0017`, ADR-0030 Â§2/ADR-0031 Â§3), so this failed with `permission denied for column status`, a 500 the isolated contract run caught immediately. Fixed by moving that `UPDATE` into `executeTenantDeletion()` itself, as its own first action under `tenant_deletion_role`'s narrow, new `UPDATE (status)` grant â€” matching ADR-0043 Â§2's own explicit intent that `status` stays untouched by the request/export/cancel steps, only changing at the final execution step.
 
 **Traceability reflects a real retirement, not a silent rename:** Story 3.7's own Acceptance Criteria are left in place in `epic-3-data-model-storage-and-archival.md` as the historical record of what was originally decided and specified â€” they were never satisfied by shipped code, and a dated retirement note says so directly, pointing to Story 3.8.
+
+---
+
+## 2026-08-08 — Story 1.1 healing pass — social-listening-core@c33353d
+
+- **Full commit:** c33353df14e4bfdefe3417642946261dc7486653
+- **Repo:** social-listening-core (pre-split convention, touches social-listening-admin/package.json)
+- **Story / ADR:** 1.1 / ADR-0001
+- **Healing what:** Story 1.1's AC3 test (independent-repo-scaffold.contract.test.ts), failing with "Expected: false, Received: true" on assertion expect(fs.existsSync(parentPackageJson)).toBe(false)
+- **Root cause:** A parent package.json was added at workspace root after Story 1.1 shipped, containing Tailwind/PostCSS dev dependencies. This violated ADR-0001's foundational requirement that social-listening-core and social-listening-admin have no shared workspace root — i.e., must remain independently deployable. The contract was correct; the Intent was still valid; the implementation violated the constraint.
+- **Healing approach:** Moved utoprefixer, postcss, and 	ailwindcss to social-listening-admin's devDependencies (where they're actually used for Next.js CSS processing), and deleted the parent package.json. Closes the independence-boundary violation without scope creep.
+- **Steps walked:** All five. Step 1 (Intent re-read: ADR-0001 + Story 1.1 still require independent repos — valid). Step 2 (Contract re-read: AC3 correctly asserts no parent package.json — correct). Step 3 (SKILL.md checked: epo-scaffold/SKILL.md explicitly documents this load-bearing constraint — accurate). Step 4 (minimal fix applied: move Tailwind deps to where they're used, delete parent file). Step 5 (single failing contract now passes).
+- **Attempt count:** 1
+- **Files touched:** social-listening-admin/package.json (added Tailwind/PostCSS to devDependencies)
+- **Full suite at merge:** PASS (Story 1.1 AC3 test now passes; full contract suite revalidated)

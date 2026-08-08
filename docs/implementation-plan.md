@@ -68,9 +68,9 @@ Phase 1 now closes on its own original terms ("one platform, one tenant, one wat
 
 **Goal:** posts get sentiment/entities/key phrases, and the AI provider is proven swappable the same way the social connector was in Phase 1 — not just implemented once and assumed generic.
 
-**Stories:** 4.1 (`AuthorTopicSignal` raw signals), 4.2 (confirm `TopicDailyCount`-supporting fields are captured — this one is largely a verification, not new build).
+**Stories:** 4.1 (`AuthorTopicSignal` raw signals), 4.2 (confirm `TopicDailyCount`-supporting fields are captured — this one is largely a verification, not new build), 2.9 (second `AIProviderConnector` implementation to prove provider swappability with real execution).
 **Also build, not storied:** the first `AIProviderConnector` implementation (Azure AI Language, per spec §2); `POST /ai-providers/:id/connect`, `GET /ai-providers/:id/models`, `POST /ai-providers/:id/select-model`; wiring enrichment into the ingestion pipeline after normalization.
-**Recommended validation, mirroring Phase 1's two-connector proof:** stand up a second `AIProviderConnector` (even a trivial/mock one) specifically to confirm swapping AI providers really does need zero core pipeline changes, the same way Reddit validated the social side in Phase 1.
+**Validation expectation, mirroring Phase 1's two-connector proof:** Story 2.9 provides the second, distinct `AIProviderConnector` and proves swap/removal behavior without core-pipeline edits, the same architectural validation pattern used on the social-connector side.
 
 **Deliverable:** ingested posts carry `sentiment`, `keyPhrases`, `entities`, `detectedLanguage`, and `modelUsed`; `GET /topics/:topic/authors?sortBy=mentionCount` returns real, non-empty results for a topic with enough history.
 

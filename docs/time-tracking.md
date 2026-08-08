@@ -15,6 +15,13 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-08 | — | — | auto | Documentation | Story 1.1 | Story 1.1 healing: restore repo independence by removing parent package.json (c33353d) |
+| 2026-08-08 | — | — | auto | Documentation | — | Designs from converting the HTML to Next js frontend pages (769c28c) |
+| 2026-08-07 | — | — | auto | Documentation | — | Design documents mockup - microsoft-social-engagement-ui-mockup - including images from social engagement for reference - The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit. (c5e1532) |
+| 2026-08-07 | — | — | auto | Documentation | Story 3.8 | Log Story 3.8 in the Implementation Log (b80aa58) |
+| 2026-08-07 | — | — | auto | Implementation | Story 3.8 | Implement Story 3.8: self-service tenant deletion (supersedes Story 3.7) (9a99257) |
+| 2026-08-06 | — | — | auto | Design | ADR-0043 | Draft ADR-0043: self-service, Tenant-Admin-initiated tenant deletion (9bc1a48) |
+| 2026-08-06 | — | — | auto | Documentation | — | Auto-queue bookkeeping for the prior bookkeeping commit (10e310d) |
 | 2026-08-06 | — | — | auto | Documentation | — | Auto-queue bookkeeping and time-log rows for recent commits (3c96b74) |
 | 2026-08-06 | — | — | auto | Documentation | — | Documentation Steward: close the Stakeholder Management cross-reference gap (f5e4e41) |
 | 2026-08-06 | — | — | auto | Review | — | Data Privacy & Sovereignty Reviewer: first real review (7dddb56) |

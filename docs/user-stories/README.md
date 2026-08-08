@@ -51,7 +51,7 @@ This did **not** silently rewrite Stories 2.3/4.3's contracts. Story 4.3's asser
 | Epic | Theme | ADRs | Stories |
 |---|---|---|---|
 | [1](epic-1-repository-and-api-foundation.md) | Repository & API Foundation | 0001, 0016, 0017, 0025, 0031, 0032, 0034 | 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9 |
-| [2](epic-2-ingestion-connectors-and-rate-limits.md) | Ingestion, Connectors & Rate Limits | 0002, 0003, 0010, 0020, 0023, 0024, 0026, 0038 | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8 |
+| [2](epic-2-ingestion-connectors-and-rate-limits.md) | Ingestion, Connectors & Rate Limits | 0002, 0003, 0010, 0020, 0023, 0024, 0026, 0038 | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9 |
 | [3](epic-3-data-model-storage-and-archival.md) | Data Model, Storage & Archival | 0004, 0005, 0006, 0011, 0018, 0021, 0039, 0043 | 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8 |
 | [4](epic-4-derived-data-analytics-and-health.md) | Derived Data, Analytics & Health | 0007, 0008, 0009, 0022 | 4.1, 4.2, 4.3, 4.4 |
 | [5](epic-5-security-isolation-and-messaging.md) | Security, Isolation & Messaging | 0012, 0013, 0014, 0015, 0019, 0029, 0030, 0031, 0032, 0033, 0036 (§5 only — Story 5.11), 0037 (Story 5.15 in full; §8b/§8c — Story 5.16), 0040 | 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 5.13, 5.14, 5.15, 5.16, 5.17, 5.18 |
