@@ -101,7 +101,7 @@ async function fetchGNewsSearchWithRetry(query: string, apiKey: string, maxAttem
     } catch (err) {
       const isRateLimit = err instanceof ClassifiableError && err.kind === 'rate_limit';
       if (!isRateLimit || attempt === maxAttempts) throw err;
-      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+      await new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** attempt, 5000)));
     }
   }
   throw new Error('unreachable');

@@ -155,26 +155,67 @@ function randomTempPassword(): string {
   return `Tmp${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}!9`;
 }
 
+/** Matches revokeRoles()'s own already-documented replication-lag signature — see this module's own doc comment and platform-admin-access/SKILL.md's Load-bearing constraint. */
+function isConflictingObjectError(status: number, bodyText: string): boolean {
+  return status === 400 && /conflicting object/i.test(bodyText);
+}
+
+/**
+ * Retries a "conflicting object... already present in the directory" 400,
+ * mirroring revokeRoles()'s own already-documented handling of the mirror-
+ * image case (a DELETE 404ing immediately after a very recent create) —
+ * both are the same real, observed Entra directory replication lag
+ * (~15s in testing, platform-admin-access/SKILL.md's own Load-bearing
+ * constraint), not a logic error on either side. A conflict here means a
+ * previous run's assignment for this exact (principal, role, scope) triple
+ * hadn't finished propagating its own deletion yet — waiting and retrying
+ * resolves it; treating it as a hard failure does not.
+ */
 async function grantRoles(
   elevatorToken: string,
   resetterServicePrincipalId: string,
-  roleDefinitionIds: string[]
+  roleDefinitionIds: string[],
+  maxAttempts = 8 // With exponential backoff, this provides a generous window.
 ): Promise<string[]> {
   const assignmentIds: string[] = [];
   for (const roleDefinitionId of roleDefinitionIds) {
-    const res = await fetch('https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${elevatorToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        principalId: resetterServicePrincipalId,
-        roleDefinitionId,
-        directoryScopeId: '/',
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`JIT role grant failed (${roleDefinitionId}): ${res.status} ${await res.text()}`);
+    let assignment: { id: string } | undefined
+    let lastError = ''
+    for (let attempt = 1; attempt <= maxAttempts && !assignment; attempt += 1) {
+      if (attempt > 1) {
+        // Exponential backoff with jitter: 2^attempt * 1000ms, with some randomness.
+        const delay = Math.random() * Math.pow(2, attempt) * 1000
+        // Cap delay at 30s to avoid excessively long waits in edge cases.
+        await new Promise((r) => setTimeout(r, Math.min(delay, 30000)))
+      }
+
+      const res = await fetch(
+        'https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments',
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${elevatorToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            principalId: resetterServicePrincipalId,
+            roleDefinitionId,
+            directoryScopeId: '/',
+          }),
+        },
+      )
+
+      if (res.ok) {
+        assignment = (await res.json()) as { id: string }
+      } else {
+        const bodyText = await res.text()
+        if (isConflictingObjectError(res.status, bodyText) && attempt < maxAttempts) {
+          lastError = `${res.status} ${bodyText}`
+        } else {
+          throw new Error(`JIT role grant failed (${roleDefinitionId}): ${res.status} ${bodyText}`)
+        }
+      }
     }
-    const assignment = (await res.json()) as { id: string };
+    if (!assignment) {
+      throw new Error(`JIT role grant failed (${roleDefinitionId}) after retries: ${lastError}`);
+    }
     assignmentIds.push(assignment.id);
   }
   return assignmentIds;
@@ -189,19 +230,24 @@ async function grantRoles(
  * role never leaves a different role silently un-revoked.
  */
 async function revokeRoles(elevatorToken: string, assignmentIds: string[]): Promise<void> {
+  const maxAttempts = 8; // Matches grantRoles's own resilience buffer.
   const errors: string[] = [];
   for (const assignmentId of assignmentIds) {
     let revoked = false;
     let lastError = '';
-    for (let attempt = 0; attempt < 5 && !revoked; attempt += 1) {
-      if (attempt > 0) await new Promise((r) => setTimeout(r, 3000));
+    for (let attempt = 1; attempt <= maxAttempts && !revoked; attempt += 1) {
+      if (attempt > 1) {
+        // Exponential backoff with jitter, matching grantRoles.
+        const delay = Math.random() * Math.pow(2, attempt) * 1000;
+        await new Promise((r) => setTimeout(r, Math.min(delay, 30000)));
+      }
       const res = await fetch(
         `https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments/${assignmentId}`,
         { method: 'DELETE', headers: { Authorization: `Bearer ${elevatorToken}` } }
       );
       if (res.ok) {
         revoked = true;
-      } else if (res.status === 404 && attempt < 4) {
+      } else if (res.status === 404 && attempt < maxAttempts) {
         lastError = `${res.status} ${await res.text()}`;
       } else {
         lastError = `${res.status} ${await res.text()}`;

@@ -52,8 +52,8 @@ afterAll(async () => {
   await closePlatformAdminPool();
 });
 
-function platformAdminHeader(adminId?: string): string {
-  return JSON.stringify({ type: 'platform_admin', adminId: adminId ?? randomUUID() });
+function platformAdminHeader(adminId: string = randomUUID()): string {
+  return JSON.stringify({ type: 'platform_admin', adminId });
 }
 
 describe('Story 5.13 — Platform Admin break-glass REST surface (cheap checks, no real Entra call)', () => {

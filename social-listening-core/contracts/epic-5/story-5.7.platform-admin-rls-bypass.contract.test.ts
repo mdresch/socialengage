@@ -55,9 +55,12 @@ import { logPlatformAdminAction } from '../../src/admin/platformAdminAuditLog';
 import {
   requestBreakGlassCredentialReset,
   executeBreakGlassRequest,
+  type BreakGlassConfig,
+  type BreakGlassRequest,
+  type BreakGlassResult,
 } from '../../src/admin/breakGlassCredentialReset';
 
-jest.setTimeout(30000);
+jest.setTimeout(180000);
 
 const CONTENT_TABLES = [
   'watchlists',
@@ -142,6 +145,23 @@ describe('Story 5.7 — break-glass credential reset (real Entra tenant)', () =>
   const AUTH_ADMIN_ROLE_ID = process.env.ENTRA_AUTHENTICATION_ADMINISTRATOR_ROLE_ID as string;
   const TARGET_USER_ID = process.env.ENTRA_TEST_TARGET_USER_ID as string;
 
+  const breakGlassConfig: BreakGlassConfig = {
+    tenantId: TENANT_ID,
+    elevatorClientId: ELEVATOR_CLIENT_ID,
+    elevatorClientSecret: ELEVATOR_CLIENT_SECRET,
+    resetterClientId: RESETTER_CLIENT_ID,
+    resetterClientSecret: RESETTER_CLIENT_SECRET,
+    resetterServicePrincipalId: RESETTER_SP_ID,
+    userAdministratorRoleId: USER_ADMIN_ROLE_ID,
+    authenticationAdministratorRoleId: AUTH_ADMIN_ROLE_ID,
+  };
+
+  // These are declared here and initialized in the beforeAll() so that all
+  // `it()` blocks in the nested describe() below can share the results of the
+  // single, expensive, real Entra execution.
+  let request: BreakGlassRequest;
+  let result: BreakGlassResult;
+
   if (
     !TENANT_ID ||
     !ELEVATOR_CLIENT_ID ||
@@ -192,86 +212,85 @@ describe('Story 5.7 — break-glass credential reset (real Entra tenant)', () =>
     expect(rows[0].executed_at).toBeNull();
   });
 
-  it('AC-breakglass-execute: picking up a request performs the real reset, logs it, and leaves the resetter de-elevated', async () => {
+  describe('AC-breakglass-execute: picking up a request', () => {
     const requestedBy = `test-tenant-admin-${randomUUID()}`;
     const executedBy = `test-platform-admin-${randomUUID()}`;
     const targetTenantId = randomUUID();
 
-    const request = await requestBreakGlassCredentialReset(requestedBy, targetTenantId, TARGET_USER_ID);
-
-    const result = await executeBreakGlassRequest(
-      {
-        tenantId: TENANT_ID,
-        elevatorClientId: ELEVATOR_CLIENT_ID,
-        elevatorClientSecret: ELEVATOR_CLIENT_SECRET,
-        resetterClientId: RESETTER_CLIENT_ID,
-        resetterClientSecret: RESETTER_CLIENT_SECRET,
-        resetterServicePrincipalId: RESETTER_SP_ID,
-        userAdministratorRoleId: USER_ADMIN_ROLE_ID,
-        authenticationAdministratorRoleId: AUTH_ADMIN_ROLE_ID,
-      },
-      request.id,
-      executedBy
-    );
-
-    expect(result.targetUserId).toBe(TARGET_USER_ID);
-    expect(new Date(result.executedAt).getTime()).not.toBeNaN();
-    // AC-mfa: a real Temporary Access Pass was issued, covering a lost-MFA-
-    // device lockout that the password reset alone cannot solve.
-    expect(typeof result.temporaryAccessPass).toBe('string');
-    expect(result.temporaryAccessPass.length).toBeGreaterThan(0);
-
-    const { rows: requestRows } = await getPlatformAdminPool().query(
-      `SELECT status, executed_by FROM platform_admin_break_glass_requests WHERE id = $1`,
-      [request.id]
-    );
-    expect(requestRows[0].status).toBe('executed');
-    expect(requestRows[0].executed_by).toBe(executedBy);
-
-    // AC2's own audit requirement, re-proven for this specific action. The
-    // TAP code itself must never appear in the audit log — sensitive,
-    // single-disclosure material, returned to the caller only.
-    const { rows } = await getPlatformAdminPool().query(
-      `SELECT operation, target_tenant_id, detail FROM platform_admin_audit_log WHERE actor_identity = $1`,
-      [executedBy]
-    );
-    expect(rows).toHaveLength(1);
-    expect(rows[0].operation).toBe('break_glass_credential_reset');
-    expect(rows[0].target_tenant_id).toBe(targetTenantId);
-    expect(JSON.stringify(rows[0].detail)).not.toContain(result.temporaryAccessPass);
-
-    // Confirm de-elevation genuinely happened — replication lag observed
-    // directly during this story's own build (~15s), so poll briefly rather
-    // than asserting on a single immediate read.
-    const elevatorToken = await getElevatorToken();
-    let stillElevated = true;
-    for (let attempt = 0; attempt < 6 && stillElevated; attempt += 1) {
-      const res = await fetch(
+    beforeAll(async () => {
+      // Proactive cleanup: Before running the test, ensure the resetter
+      // principal has no lingering role assignments from a previous,
+      // possibly failed, test run. This addresses the root cause of the
+      // "conflicting object" error by ensuring a clean state, rather than
+      // reactively waiting for eventual consistency.
+      const elevatorToken = await getElevatorToken();
+      const assignmentsRes = await fetch(
         `https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?$filter=principalId eq '${RESETTER_SP_ID}'`,
         { headers: { Authorization: `Bearer ${elevatorToken}` } }
       );
-      const json = (await res.json()) as { value: unknown[] };
-      stillElevated = json.value.length > 0;
-      if (stillElevated) await new Promise((r) => setTimeout(r, 5000));
-    }
-    expect(stillElevated).toBe(false);
+      if (assignmentsRes.ok) {
+        const { value: existingAssignments } = (await assignmentsRes.json()) as { value: { id: string }[] };
+        if (existingAssignments.length > 0) {
+          const revokeRes = await fetch(`https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments/${existingAssignments[0].id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${elevatorToken}` } });
+          if (revokeRes.ok) await new Promise(r => setTimeout(r, 15000)); // Wait for revoke to propagate
+        }
+      }
 
-    // A request already executed cannot be picked up again.
-    await expect(
-      executeBreakGlassRequest(
-        {
-          tenantId: TENANT_ID,
-          elevatorClientId: ELEVATOR_CLIENT_ID,
-          elevatorClientSecret: ELEVATOR_CLIENT_SECRET,
-          resetterClientId: RESETTER_CLIENT_ID,
-          resetterClientSecret: RESETTER_CLIENT_SECRET,
-          resetterServicePrincipalId: RESETTER_SP_ID,
-          userAdministratorRoleId: USER_ADMIN_ROLE_ID,
-        authenticationAdministratorRoleId: AUTH_ADMIN_ROLE_ID,
-        },
-        request.id,
-        executedBy
-      )
-    ).rejects.toThrow(/not pending/i);
-  }, 60000);
+      request = await requestBreakGlassCredentialReset(requestedBy, targetTenantId, TARGET_USER_ID);
+      result = await executeBreakGlassRequest(breakGlassConfig, request.id, executedBy);
+    });
+
+    it('performs the real reset and issues a Temporary Access Pass', () => {
+      expect(result.targetUserId).toBe(TARGET_USER_ID);
+      expect(new Date(result.executedAt).getTime()).not.toBeNaN();
+      // AC-mfa: a real Temporary Access Pass was issued, covering a lost-MFA-
+      // device lockout that the password reset alone cannot solve.
+      expect(typeof result.temporaryAccessPass).toBe('string');
+      expect(result.temporaryAccessPass.length).toBeGreaterThan(0);
+    });
+
+    it('updates the request status to "executed"', async () => {
+      const { rows: requestRows } = await getPlatformAdminPool().query(
+        `SELECT status, executed_by FROM platform_admin_break_glass_requests WHERE id = $1`,
+        [request.id]
+      );
+      expect(requestRows[0].status).toBe('executed');
+      expect(requestRows[0].executed_by).toBe(executedBy);
+    });
+
+    it('logs the action to the audit log, without the sensitive TAP code', async () => {
+      const { rows } = await getPlatformAdminPool().query(
+        `SELECT operation, target_tenant_id, detail FROM platform_admin_audit_log WHERE actor_identity = $1`,
+        [executedBy]
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0].operation).toBe('break_glass_credential_reset');
+      expect(rows[0].target_tenant_id).toBe(targetTenantId);
+      expect(JSON.stringify(rows[0].detail)).not.toContain(result.temporaryAccessPass);
+    });
+
+    it('leaves the resetter identity de-elevated after execution', async () => {
+      // Confirm de-elevation genuinely happened — replication lag observed
+      // directly during this story's own build (~15s), so poll briefly rather
+      // than asserting on a single immediate read.
+      const elevatorToken = await getElevatorToken();
+      let stillElevated = true;
+      for (let attempt = 0; attempt < 6 && stillElevated; attempt += 1) {
+        const res = await fetch(
+          `https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?$filter=principalId eq '${RESETTER_SP_ID}'`,
+          { headers: { Authorization: `Bearer ${elevatorToken}` } }
+        );
+        const json = (await res.json()) as { value: unknown[] };
+        stillElevated = json.value.length > 0;
+        if (stillElevated) await new Promise((r) => setTimeout(r, 5000));
+      }
+      expect(stillElevated).toBe(false);
+    });
+
+    it('rejects a second attempt to execute the same request', async () => {
+      await expect(executeBreakGlassRequest(breakGlassConfig, request.id, executedBy)).rejects.toThrow(
+        /not pending/i
+      );
+    });
+  });
 });
