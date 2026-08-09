@@ -20,6 +20,7 @@ description: The `tenants` table — the first table in this project whose own p
 ## Contracts that constrain this component
 
 - `contracts/epic-5/story-5.8.tenants-table-rls.contract.test.ts` — RLS enabled/forced with a policy scoped by `id`; a tenant-scoped session sees exactly its own row; `platform_admin_role` can create a tenant and update `status`/`license_seat_count` but is column-level denied from writing `active_seat_count`; the seat-count increment/decrement path runs as `app_user`, is rejected once at capacity, and is DB-atomic (no race window); `domain` is nullable and unique only when non-null.
+- `contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts` — `GET /v1/tenants/me` is mounted behind `authMiddleware`, returns `200` with `{ id, name, status, licenseSeatCount, activeSeatCount, domain, createdAt }` for a tenant-user or tenant-admin identity, returns `403` for a platform_admin identity, is rejected `401` with no/invalid token, and returns only the caller's own tenant (two-tenant isolation). No write methods (POST/PATCH/DELETE) exist at this path.
 
 ## How to extend this safely
 
@@ -40,4 +41,4 @@ description: The `tenants` table — the first table in this project whose own p
 - **`domain`'s public-email-provider exclusion mechanism is not designed or implemented** — ADR-0031 §5's own named Open Question. Today, `domain` will happily accept `gmail.com` etc. as a "unique" tenant domain; nothing prevents it. Whoever builds the sign-up flow must add this before relying on `domain` for real routing.
 - **Tenant deletion/offboarding is out of scope** — ADR-0031's own named Open Question, cross-referenced to `docs/open-items-and-deferred-work.md` §C.
 - **The audit-log schema for Platform-Admin writes to `tenants` is `platform_admin_audit_log`'s existing first-cut shape (Story 5.7)** — not redesigned here; `createTenant`/`updateTenantAdmin` both call `logPlatformAdminAction()`, the same as every other Platform Admin action.
-- **No HTTP/REST surface exists for `tenants` yet** — this story is table/store-level only; a future Admin UI story would add `POST/GET/PATCH` routes calling into `tenantStore.ts`, not reimplement its logic.
+- **Tenant self-view HTTP surface now exists** — `GET /v1/tenants/me` (Story 1.8) is mounted in `createV1Router()` via `tenantSelfViewRouter.ts`, calling `getOwnTenant()` under `app_user`. Platform-Admin write routes (`POST/PATCH /v1/admin/tenants`) exist separately via `adminTenantsRouter.ts` (Story 5.12). No general tenant-write surface exists for tenant-scoped callers by design (ADR-0031).
