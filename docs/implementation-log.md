@@ -900,6 +900,48 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 
 ---
 
+## 2026-08-09 — Story 1.8 — social-listening-core@10fc934
+
+- **Full commit:** `10fc934ac8ba79019d702a966cc942b9ca5f7336`
+- **Repo:** social-listening-core
+- **Story / ADR:** 1.8 / ADR-0031
+- **Contract:** social-listening-core/contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/tenants/SKILL.md (updated — added new contract file reference, closed "No HTTP/REST surface" known gap)
+- **Files touched:** social-listening-core/.claude/skills/tenants/SKILL.md, social-listening-core/contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts
+- **Full suite at merge:** PASS (44/44 suites, 272/272 tests — 1 pre-existing story-3.5 failure in the prior run was caused by a partition-eligibility boundary condition and healed in the same session; see healing entry below)
+
+**`GET /v1/tenants/me` is now a real route.** Mounted in `createV1Router()` behind the shared `authMiddleware`, calls `getOwnTenant(tenantId)` via the ordinary `withTenant()` / `app_user` path (ADR-0015), never `platform_admin_role`. `requireTenantUser()` gates it to tenant-user/tenant-admin identities only — Platform Admin receives `403` (ADR-0030 §2 zero-tenant-content boundary). Closes the gap `tenants/SKILL.md` had flagged as "No HTTP/REST surface exists for `tenants` yet" since Story 5.8. Contract covers: `401` for missing/invalid token (inherited from shared middleware), `403` for platform_admin, `200` with correct `{ id, name, status, licenseSeatCount, activeSeatCount, domain, createdAt }` shape for both `tenant_user` and `tenant_admin` identities, two-tenant isolation (caller sees only their own row), and `404`/`405` for non-existent/write methods at this path.
+
+---
+
+## 2026-08-09 — Healing: Story 3.5 archival partition eligibility boundary — social-listening-core@4de308e
+
+- **Full commit:** `4de308ee4205d22c211d61c6c6ebdfe551be1af8`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.5 / ADR-0018
+- **Contract:** social-listening-core/contracts/epic-3/story-3.5.tiered-retention-and-archival.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/data-retention-and-archival/SKILL.md (updated — added partition-eligibility boundary clarification to load-bearing constraints)
+- **Files touched:** social-listening-core/src/archival/socialPostArchival.ts
+- **Full suite at merge:** PASS (44/44 suites, 272/272 tests)
+
+**Root cause:** `findEligiblePartitions()` used `monthEnd <= cutoff` as its eligibility condition, requiring the entire month to have elapsed before its partition was processed. Rows older than the retention window that landed in the boundary month (the month straddling the cutoff date) were silently skipped. Surfaced when the Docker test container's clock was 1 day ahead of local time, causing a 100-day-old test post to land in May 2026 (boundary month, not yet fully elapsed) rather than April 2026 (fully elapsed), exposing the edge case reproducibly. **Fix:** changed to `monthStart < cutoff` (any partition that started before the cutoff may contain aged rows) plus `AND created_at < $1` in the inner SELECT so rows still within the retention window are never archived even from a partially-aged partition. The durable decision (DETACH/ATTACH PARTITION mechanism, 90-day default, field-level tiering) is unchanged — this is a correction to the partition-selection algorithm. ADR-0018's Amendment Log and `data-retention-and-archival/SKILL.md`'s load-bearing constraints both updated in a follow-on commit (`75cc58d`).
+
+---
+
+## 2026-08-09 — Story 1.9 — social-listening-core@3badf2f
+
+- **Full commit:** `3badf2f61c8da29a80af914be86525d7ea833efa`
+- **Repo:** social-listening-core
+- **Story / ADR:** 1.9 / ADR-0032
+- **Contract:** contracts/epic-1/story-1.9.user-invite-offboard.contract.test.ts
+- **SKILL.md:** .claude/skills/identity-resolution/SKILL.md
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.9.user-invite-offboard.contract.test.ts, social-listening-core/contracts/epic-5/story-5.9.users-table-identity-resolution.contract.test.ts, social-listening-core/migrations/0024_create_user_access_audit_log.sql, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantUsersRouter.ts, social-listening-core/src/identity/identityResolution.ts, social-listening-core/.claude/skills/identity-resolution/SKILL.md
+- **Full suite at merge:** PASS (45/45 suites, 295/295 tests)
+
+**Story 1.9 ships the user invitation and offboarding REST surface for `social-listening-core`, closing the gap Story 5.9's own Acceptance Criteria assumed (`POST /v1/tenants/users` to create an invited user) but no story had built.** Three endpoints on `tenantUsersRouter`: `POST /v1/tenants/users` (invite, tenant_admin only, seat-ceiling check, no seat consumed at invite time), `GET /v1/tenants/users` (both roles, RLS-scoped, includes invited+active), and `PATCH /v1/tenants/users/:id` (set/clear `access_ends_at`, tenant_admin only, immediate decrement vs. future-dated no-op, reactivation re-increments subject to seat ceiling). All endpoints write to `user_access_audit_log` (migration 0024) via `setAccessEndsAt()`, with `actorUserId` now a required parameter — removing the `'system'` default that was invalid UUID syntax and fixing a regression in Story 5.9's three `setAccessEndsAt` call sites.
+
+**Contract covers all 9 ACs (23 tests):** invite creates invited row with correct shape; 403/401/400 gates; seat ceiling 409; no seat increment at invite time; GET for both roles including invited rows; PATCH role gate (403/400/404); immediate offboard decrements seat, future-dated does not; reactivation re-increments and 409 at ceiling; two-tenant RLS isolation on all three endpoints; audit row written with correct `operation` and `new_value` for both set and clear.
+
 ## 2026-08-08 — Story 6.6 — socialengage@2b2d40b
 
 - **Full commit:** `2b2d40bf77361a8854fbd0c7a2c98c3379aec269`
