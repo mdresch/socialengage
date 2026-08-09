@@ -16,7 +16,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE_NAME, decryptSession } from './lib/session';
 
-const PUBLIC_PATHS = ['/sign-in', '/signed-out'];
+const PUBLIC_PATHS = [
+  '/sign-in',
+  '/signed-out',
+  '/sign-up',
+  '/sign-up/domain-taken',
+  '/sign-up/already-have-account',
+  '/sign-up/error',
+];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -101,6 +101,31 @@ export async function fetchResolvedIdentity(accessToken: string): Promise<unknow
   }
 }
 
+export interface SelfServiceSignupOutcome {
+  status: number;
+  body: { error?: string; id?: string; name?: string; userId?: string; [key: string]: unknown };
+}
+
+/**
+ * Story 6.7 / ADR-0037 §5 — calls core's already-built POST
+ * /v1/tenants/self-service-signup with an explicit access token (the caller has
+ * no session cookie yet at this point — same reason fetchResolvedIdentity() above
+ * takes an explicit token rather than reading cookies()). Returns the raw
+ * status/body rather than throwing on a non-2xx: 409 (domain match /
+ * already-belongs) and 5xx are both real, expected outcomes signupFlow.ts must
+ * distinguish and react to, not failures this function should collapse into one
+ * generic error.
+ */
+export async function selfServiceSignup(accessToken: string, name: string): Promise<SelfServiceSignupOutcome> {
+  const response = await fetch(`${coreBaseUrl()}/v1/tenants/self-service-signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ name }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
  */
