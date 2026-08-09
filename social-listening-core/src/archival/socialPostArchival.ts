@@ -12,7 +12,7 @@ interface EligiblePartition {
 
 async function findEligiblePartitions(cutoff: Date): Promise<EligiblePartition[]> {
   const { rows } = await getAdminPool().query<{ table_name: string }>(
-    `SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'social_posts_y%'`
+    `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'social_posts_y%'`
   );
   const eligible: EligiblePartition[] = [];
   for (const { table_name } of rows) {
@@ -21,7 +21,15 @@ async function findEligiblePartitions(cutoff: Date): Promise<EligiblePartition[]
     const [, year, month] = match;
     const monthStartDate = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
     const monthEndDate = new Date(Date.UTC(Number(year), Number(month), 1));
-    if (monthEndDate <= cutoff) {
+    // A partition is eligible if its start date is before the cutoff — meaning
+    // it contains (or may contain) rows that have aged past the retention window.
+    // Checking monthStart < cutoff rather than monthEnd <= cutoff ensures we also
+    // archive aged rows in a partition whose month hasn't fully elapsed yet
+    // (e.g. a partition for the current month can contain rows older than 90 days
+    // if the retention boundary falls mid-month). Per ADR-0018's field-level tiering
+    // decision, the UPDATE targets only unarchived rows within the detached partition —
+    // rows still within the retention window are left untouched.
+    if (monthStartDate < cutoff) {
       eligible.push({
         name: table_name,
         monthStart: monthStartDate.toISOString().slice(0, 10),
@@ -59,7 +67,10 @@ export async function archiveAgedRawPayloads(): Promise<SocialPostArchivalResult
     await getAdminPool().query(`ALTER TABLE social_posts DETACH PARTITION ${partition.name}`);
 
     const { rows } = await getAdminPool().query<{ id: string; raw_payload: unknown }>(
-      `SELECT id, raw_payload FROM ${partition.name} WHERE raw_payload ->> 'archived' IS DISTINCT FROM 'true'`
+      // Filter by created_at < cutoff so rows still within the retention window
+      // are never archived — important for partitions whose month straddles the cutoff.
+      `SELECT id, raw_payload FROM ${partition.name} WHERE raw_payload ->> 'archived' IS DISTINCT FROM 'true' AND created_at < $1`,
+      [cutoff.toISOString()]
     );
     for (const row of rows) {
       const blobPath = `social-posts/${row.id}.json`;
