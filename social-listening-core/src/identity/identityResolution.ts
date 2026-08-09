@@ -98,22 +98,57 @@ export async function createInvitedUser(tenantId: string, input: CreateInvitedUs
 }
 
 /**
+ * List all users for a tenant — RLS-scoped, includes both 'invited' and
+ * 'active' rows, ordered by invited_at descending. Story 1.9 (ADR-0032 §2).
+ */
+export async function listUsers(tenantId: string): Promise<User[]> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<UserRow>(
+      `SELECT * FROM users ORDER BY invited_at DESC`
+    );
+    return rows.map(mapRowToUser);
+  });
+}
+
+/**
  * Set (or clear, with null) a user's access_ends_at — an ordinary
- * tenant-scoped write. Auditing this write is explicitly out of this
- * story's scope (ADR-0032 §9's own deferral) — see
- * .claude/skills/identity-resolution/SKILL.md's "Known gaps".
+ * tenant-scoped write. Writes an audit row to user_access_audit_log per
+ * ADR-0032 §9 (Story 1.9 is the first caller of that table; migration
+ * 0024 creates it). actorUserId is the tenant_admin who made the change.
  */
 export async function setAccessEndsAt(
   tenantId: string,
   userId: string,
-  accessEndsAt: string | null
+  accessEndsAt: string | null,
+  /** The tenant_admin making the change. Story 1.9's HTTP route supplies the real userId
+   *  from the resolved identity. Test callers that manipulate access_ends_at directly
+   *  must pass a valid UUID (e.g. randomUUID()). */
+  actorUserId: string
 ): Promise<User | null> {
   return withTenant(tenantId, async (client) => {
+    // Read the current value for the audit log before/after pair.
+    const { rows: current } = await client.query<Pick<UserRow, 'access_ends_at'>>(
+      `SELECT access_ends_at FROM users WHERE id = $1`,
+      [userId]
+    );
+    if (current.length === 0) return null;
+    const oldValue = current[0].access_ends_at ? current[0].access_ends_at.toISOString() : null;
+
     const { rows } = await client.query<UserRow>(
       `UPDATE users SET access_ends_at = $1 WHERE id = $2 RETURNING *`,
       [accessEndsAt, userId]
     );
-    return rows.length > 0 ? mapRowToUser(rows[0]) : null;
+    if (rows.length === 0) return null;
+
+    const operation = accessEndsAt === null ? 'clear_access_ends_at' : 'set_access_ends_at';
+    await client.query(
+      `INSERT INTO user_access_audit_log
+         (tenant_id, target_user_id, actor_user_id, operation, old_value, new_value)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [tenantId, userId, actorUserId, operation, oldValue, accessEndsAt]
+    );
+
+    return mapRowToUser(rows[0]);
   });
 }
 

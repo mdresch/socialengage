@@ -20,6 +20,7 @@ description: The `users`/`platform_admins` tables, `identity_resolver_role` (a f
 ## Contracts that constrain this component
 
 - `contracts/epic-5/story-5.9.users-table-identity-resolution.contract.test.ts` — `users` RLS scoped by `tenant_id`; `identity_resolver_role` is `BYPASSRLS`, column-scoped `SELECT`-only, no write grant, no access to an ungranted column; an unknown `sub` resolves to `null`; an invited user links at first sign-in and resolves active; Platform Admin is never a `users` row and `platform_admins` returns zero rows under any tenant session; `access_ends_at` past/future/cleared transitions resolve correctly.
+- `contracts/epic-1/story-1.9.user-invite-offboard.contract.test.ts` — `POST /v1/tenants/users` creates invited rows (tenant_admin only, 403 for tenant_user, 409 at seat ceiling, no active_seat_count increment at invite time); `GET /v1/tenants/users` lists all rows for the tenant (both roles, RLS-isolated); `PATCH /v1/tenants/users/:id` sets/clears `access_ends_at` (tenant_admin only, decrements seat on immediate offboard, re-increments on reactivation with ceiling check, future-dated sets no seat change); every `access_ends_at` write produces a row in `user_access_audit_log`.
 
 ## How to extend this safely
 
@@ -40,6 +41,6 @@ description: The `users`/`platform_admins` tables, `identity_resolver_role` (a f
 
 - **Now mounted (Story 5.10)** — see `.claude/skills/tenant-auth-middleware/SKILL.md`. Kept, corrected, not deleted, per this doc series' "don't rewrite history" convention.
 - **No real `platform_admins` provisioning flow** — not designed by ADR-0032, not built here.
-- **`access_ends_at` writes are not audited** — ADR-0032 §9's own named Open Question, deferred to whichever future work resolves ADR-0030 §5/ADR-0031's shared audit-log question.
+- **`access_ends_at` writes ARE now audited (Story 1.9)** — `setAccessEndsAt()` writes a row to `user_access_audit_log` (migration `0024`, created by Story 1.9) with `tenant_id`, `target_user_id`, `actor_user_id`, `operation`, `old_value`, and `new_value`. The `actorUserId` parameter is now required on `setAccessEndsAt()` — callers must supply the resolved tenant_admin's own `userId`, never a client-supplied value.
 - **Tenant Reader / Tenant Business Analyst have no separate `role` value** — both map to `role = 'tenant_user'` in v1, per ADR-0032 §4's own deliberate deferral, not an oversight.
 - **The seat-count race condition inherited from ADR-0031 §3** is not re-resolved here — `createInvitedUser()` does not itself call `tenantStore.ts`'s `incrementActiveSeatCount()`; wiring seat reservation into user creation for real is left for whoever builds the actual invite/onboarding flow, since this story's own ACs don't require it (they test `access_ends_at` and linking, not seat consumption).

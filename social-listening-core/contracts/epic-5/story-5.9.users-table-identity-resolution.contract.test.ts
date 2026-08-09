@@ -224,7 +224,7 @@ describe('Story 5.9 — resolveIdentity()', () => {
     await resolveIdentity({ sub, email }); // link + activate
 
     const past = new Date(Date.now() - 60_000).toISOString();
-    await setAccessEndsAt(tenantId, user.id, past);
+    await setAccessEndsAt(tenantId, user.id, past, randomUUID());
 
     const resolved = await resolveIdentity({ sub, email });
     expect(resolved).toBeNull();
@@ -238,7 +238,7 @@ describe('Story 5.9 — resolveIdentity()', () => {
     await resolveIdentity({ sub, email });
 
     const future = new Date(Date.now() + 60_000 * 60 * 24).toISOString();
-    await setAccessEndsAt(tenantId, user.id, future);
+    await setAccessEndsAt(tenantId, user.id, future, randomUUID());
 
     const resolved = await resolveIdentity({ sub, email });
     expect(resolved).toEqual({ type: 'tenant_user', tenantId, userId: user.id, role: 'tenant_user' });
@@ -252,10 +252,10 @@ describe('Story 5.9 — resolveIdentity()', () => {
     await resolveIdentity({ sub, email });
 
     const past = new Date(Date.now() - 60_000).toISOString();
-    await setAccessEndsAt(tenantId, user.id, past);
+    await setAccessEndsAt(tenantId, user.id, past, randomUUID());
     expect(await resolveIdentity({ sub, email })).toBeNull();
 
-    await setAccessEndsAt(tenantId, user.id, null);
+    await setAccessEndsAt(tenantId, user.id, null, randomUUID());
     const resolved = await resolveIdentity({ sub, email });
     expect(resolved).toEqual({ type: 'tenant_user', tenantId, userId: user.id, role: 'tenant_user' });
   });
