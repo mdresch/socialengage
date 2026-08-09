@@ -2,3 +2,4 @@ debugpy
 agent-dev-cli>=0.0.1b260427
 opentelemetry-exporter-otlp-proto-http
 opentelemetry-sdk
+azure-ai-projects
