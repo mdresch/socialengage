@@ -182,5 +182,26 @@ describe('Story 6.2 — role-gated routing shell', () => {
       await Page();
       expect(redirectMock).not.toHaveBeenCalled();
     });
+
+    /**
+     * Healed 2026-08-10 (Menno's explicit request) — a real, confirmed gap:
+     * a successful platform_admin sign-in landed on `/` showing only a
+     * manual "Open Platform Admin" link, never an automatic forward. No
+     * prior contract asserted this either way. A tenant identity's own
+     * root-page experience is deliberately untouched — narrowly scoped to
+     * exactly what was asked.
+     */
+    it('a platform_admin session requesting / is forwarded straight to /platform-admin, not shown a manual link', async () => {
+      const { Page, redirectMock } = await renderPageWithIdentity('../../src/app/page', PLATFORM_ADMIN);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/platform-admin');
+      expect(redirectMock).toHaveBeenCalledWith('/platform-admin');
+    });
+
+    it('a tenant_admin session requesting / still renders the tenant shell, not redirected — this healing pass leaves tenant root behavior untouched', async () => {
+      const { Page, redirectMock } = await renderPageWithIdentity('../../src/app/page', TENANT_ADMIN);
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      expect(JSON.stringify(element)).toContain('Tenant shell');
+    });
   });
 });
