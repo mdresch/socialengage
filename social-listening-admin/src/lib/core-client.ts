@@ -126,6 +126,22 @@ export async function selfServiceSignup(accessToken: string, name: string): Prom
   return { status: response.status, body };
 }
 
+/**
+ * Story 6.9 / Story 1.8 — reads the caller's own tenant's settings
+ * (GET /v1/tenants/me, ADR-0031). Read-only; writes to
+ * status/licenseSeatCount/domain remain Platform-Admin-only (Story 5.12,
+ * `updateAdminTenant()` above). Throws on a non-2xx rather than returning a
+ * partial/empty tenant — this screen has nothing sensible to render without
+ * a real tenant object.
+ */
+export async function getMyTenant(): Promise<AdminTenant> {
+  const response = await authenticatedCoreFetch('/v1/tenants/me');
+  if (!response.ok) {
+    throw new Error(`Failed to load tenant settings: ${response.status}`);
+  }
+  return (await response.json()) as AdminTenant;
+}
+
 export interface TenantUser {
   id: string;
   tenantId: string;

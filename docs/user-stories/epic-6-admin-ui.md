@@ -203,6 +203,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - Seat counts are shown as "used of licensed" (e.g. "7 of 10 seats used"), not raw numbers alone, so a Tenant-Admin can see at a glance whether they're near their own license ceiling before attempting an invite (Story 6.8).
 - No tenant-content data (posts, watchlists, credentials) is shown on this screen — settings/administrative metadata only, consistent with this project's own "status views show status, not content" principle already applied to Story 6.5.
 
+**2026-08-10 — Story 6.9 built.** `social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts` (10/10 passing), full `social-listening-admin` contract suite green after the change (11/11 suites, 99/99 tests — no regression). A new `/tenant/settings` screen reads `GET /v1/tenants/me` via a new `getMyTenant()` in `core-client.ts` and renders `name`/`status`/`domain`/seat counts (as "N of M seats used")/`createdAt`, read-only, gated only on the ordinary `'tenant'` shell — no additional role check, so both `tenant_admin` and `tenant_user` see the identical screen, per this story's own AC2. See `docs/implementation-log.md`.
+
 ---
 
 ## Story 6.10 — Same-Domain Invite Assist view (Tenant-Admin dashboard)
