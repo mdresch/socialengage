@@ -1,3 +1,5 @@
+const path = require('path');
+const dotenv = require('dotenv');
 const { spawn } = require('child_process');
 
 /**
@@ -19,14 +21,30 @@ const { spawn } = require('child_process');
  * plus an `npx` middle-man left the actual long-running ts-node process
  * unreachable from the wrapper's own env in practice. spawn() with an argv
  * array (no rejoining) plus forwarding its exit code fixes both.
+ *
+ * 2026-08-10 healing (Story 1.4) — a real, discovered gap: this script
+ * never loaded .env at all, only jest.global-setup.js did (test-only).
+ * `npm run dev`'s real server never received ENTRA_*, GNEWS_API_KEY,
+ * AZURE_*, or PORT from .env, only this file's own hardcoded Postgres
+ * vars — found
+ * while actually running `npm run dev` against the persistent dev database
+ * for the first time. Loaded from this file's own directory's parent (the
+ * repo root), not `process.cwd()` — deterministic regardless of the
+ * caller's own working directory, the same principle the forced Postgres
+ * vars below already establish. `WITH_DEV_ENV_DOTENV_PATH` is a test-only
+ * override (story-1.4's own contract points it at a fixture .env) — never
+ * set by any real npm script.
  */
+dotenv.config({ path: process.env.WITH_DEV_ENV_DOTENV_PATH || path.join(__dirname, '..', '.env'), quiet: true });
+
 // Forced, not `process.env.X || default` — the whole point of this wrapper
 // is that `npm run dev`/`db:dev:migrate` deterministically point at the dev
-// database no matter what's already in the caller's shell. A `||` fallback
-// here would mean a stray PGDATABASE/PGUSER/etc. already set globally (a
-// real, easy-to-hit case for anyone with more than one Postgres project)
-// silently overrides the dev target instead of the reverse — caught by
-// story-1.4's own contract test asserting exactly this.
+// database no matter what's already in the caller's shell or .env. A `||`
+// fallback here would mean a stray PGDATABASE/PGUSER/etc. already set
+// globally (a real, easy-to-hit case for anyone with more than one Postgres
+// project) silently overrides the dev target instead of the reverse —
+// caught by story-1.4's own contract test asserting exactly this, now
+// re-proven against a conflicting .env value too, not just a shell one.
 const env = {
   ...process.env,
   PGHOST: 'localhost',

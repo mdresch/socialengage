@@ -8,5 +8,6 @@ console.log(
     PGPORT: process.env.PGPORT,
     PGDATABASE: process.env.PGDATABASE,
     APP_PGUSER: process.env.APP_PGUSER,
+    TEST_ENV_MARKER: process.env.TEST_ENV_MARKER,
   })
 );

@@ -94,6 +94,35 @@ describe('Story 1.4 — persistent local dev database contract', () => {
     expect(output.APP_PGUSER).toBe('app_user');
   });
 
+  it("AC4 (healed 2026-08-10): scripts/withDevEnv.js loads .env from its own repo root, and its forced dev-DB overrides still win over a conflicting .env value", () => {
+    // Real, discovered gap: withDevEnv.js never loaded .env at all — only
+    // jest.global-setup.js did (test-only). npm run dev's real server
+    // (and db:dev:migrate) never received ENTRA_*/GNEWS_API_KEY/AZURE_*/
+    // PORT from .env, only withDevEnv.js's own hardcoded Postgres vars.
+    // Found while actually running `npm run dev` against the persistent
+    // dev database for the first time this session. The fixture .env
+    // below (story-1.4-fixtures/.env) also sets PGPORT=9999, deliberately
+    // conflicting with withDevEnv.js's own forced 5435 — proving the forced
+    // override still wins even against a real .env value, not just a
+    // shell-exported one (the existing test above only proves the latter).
+    // Named test-fixture.env, not .env — a literal .env here would be
+    // caught by the repo's own blanket .env/.env.* .gitignore pattern and
+    // never actually be committed.
+    const fixturesDir = path.join(__dirname, 'story-1.4-fixtures');
+    const fixture = path.join(fixturesDir, 'printEnvAndArgv.js');
+    const result = spawnSync('node', [path.join(CORE_ROOT, 'scripts', 'withDevEnv.js'), 'node', fixture], {
+      cwd: fixturesDir,
+      encoding: 'utf8',
+      env: { ...process.env, WITH_DEV_ENV_DOTENV_PATH: path.join(fixturesDir, 'test-fixture.env') },
+    });
+
+    expect(result.status).toBe(0);
+    const output = JSON.parse(result.stdout.trim());
+    expect(output.TEST_ENV_MARKER).toBe('loaded-from-dotenv');
+    expect(output.PGPORT).toBe('5435');
+    expect(output.PGDATABASE).toBe('social_listening_dev');
+  });
+
   it('AC4: scripts/withDevEnv.js preserves a multi-word argument intact — the exact case the original execSync/rejoined-argv version corrupted', () => {
     const fixture = path.join(__dirname, 'story-1.4-fixtures', 'printEnvAndArgv.js');
     const result = spawnSync(
