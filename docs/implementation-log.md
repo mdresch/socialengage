@@ -1025,3 +1025,17 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 **Explicitly not built by this story, named rather than silently skipped:** the access-history view reading Story 5.17's `user_access_audit_log` — the story's own Acceptance Criteria name this as a natural companion, not required in this pass.
 
 **Contract-first sequence was followed and validated in full, including a real cross-cutting healing pass discovered along the way (see the two entries directly above, `832f7b3`/`c89ee47`):** the new Story 6.8 contract initially failed against no implementation (13 of 14 failed), passed 14/14 after implementation, and the first full-suite validation attempt surfaced the pre-existing Story 6.1/6.7 dev-server race — healed separately, on its own commit and its own Implementation Log entry, before this story's own traceability/commit/log steps resumed. Final full suite: 10/10 suites, 89/89 tests, confirmed reliable across two consecutive parallel runs. Traceability updated in `docs/user-stories/epic-6-admin-ui.md` and `docs/implementation-plan.md` in the same commit.
+
+## 2026-08-10 — Story 6.9 — social-listening-admin@9ec62fa
+
+- **Full commit:** `9ec62fa80123edf68b5f28f3b3877c46f2e2f53a`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.9 / no new ADR (Phase 1/Phase 3 "also build, not storied," against Story 1.8's own real REST surface)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/tenant-settings/SKILL.md
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/tenant-settings/SKILL.md, social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (11/11 suites, 99/99 tests)
+
+**The simplest Epic 6 screen so far: a new `/tenant/settings` reads Story 1.8's already-built `GET /v1/tenants/me` (via a new `getMyTenant()` in `core-client.ts`, reusing the existing `AdminTenant` type from Story 6.6 rather than a second near-identical shape) and renders `name`/`status`/`domain`/`createdAt`, read-only — no form, no input, no edit affordance anywhere.** Seat counts render as "N of M seats used" rather than two bare numbers, per this story's own AC3. Gated only on `isShellAllowed(identity, 'tenant')` — deliberately no additional role check, so `tenant_admin` and `tenant_user` sessions see the identical screen (AC2), the one Epic 6 screen so far with no role-based content difference at all.
+
+**Contract-first sequence was followed and validated in full:** the new Story 6.9 contract initially failed against no implementation (9 of 10 failed), passed 10/10 after implementation, with the full accumulated `social-listening-admin` contracts green afterward (11/11 suites, 99/99 tests, no regression). Traceability updated in `docs/user-stories/epic-6-admin-ui.md` and `docs/implementation-plan.md` in the same commit.
