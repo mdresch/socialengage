@@ -234,6 +234,80 @@ export async function setUserAccessEndsAt(
   return { status: response.status, body };
 }
 
+export interface ConnectorStatus {
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected';
+  lastSuccessfulFetchAt: string | null;
+  lastAttemptAt: string | null;
+  consecutiveFailures: number;
+  credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
+}
+
+export interface ConnectorActionOutcome {
+  status: number;
+  body: { error?: string; id?: string; [key: string]: unknown };
+}
+
+/**
+ * Story 6.3 (healed 2026-08-10) / Story 4.3 (ADR-0022) — reads a platform's
+ * real derived health (`GET /v1/connectors/:platformId`). `connected` is not
+ * a field this endpoint returns directly — callers derive it themselves as
+ * `credentialStatus !== null` (see `tenant/connectors/page.tsx`), the same
+ * derivation `deriveConnectorHealth()` itself uses server-side. Throws on a
+ * non-2xx rather than silently treating a real backend failure as
+ * "not connected" — the caller must distinguish the two.
+ */
+export async function getConnectorStatus(platformId: string): Promise<ConnectorStatus> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load connector status for ${platformId}: ${response.status}`);
+  }
+  return (await response.json()) as ConnectorStatus;
+}
+
+/**
+ * Story 6.3 (healed 2026-08-10) / Story 1.7 (ADR-0034) — stores a credential
+ * for a platform (`POST /v1/connectors/:platformId/connect`). `credential`
+ * is always a single string on the wire — for a multi-part credential (e.g.
+ * Azure AI Language's `{endpoint,key}`), the caller JSON-encodes it first
+ * (see `ConnectForm.tsx`); this function never inspects or reshapes it.
+ * Returns the raw status/body rather than throwing on a non-2xx: 403 (role
+ * gate) is a real, expected outcome the form must react to specifically
+ * (AC3), not collapsed into a generic error.
+ */
+export async function connectPlatform(
+  platformId: string,
+  credential: string,
+  ownerType: 'tenant' | 'user'
+): Promise<ConnectorActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/connect`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential, ownerType }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.3 (healed 2026-08-10) / Story 1.7 (ADR-0034) — removes a
+ * credential (`DELETE /v1/connectors/:platformId/disconnect`), discriminated
+ * by an `ownerType` query parameter (no request body on a DELETE, matching
+ * every other route in this repo). Same raw status/body pattern as
+ * `connectPlatform()`, for the same reason (a 403 here is real and expected,
+ * not exceptional).
+ */
+export async function disconnectPlatform(
+  platformId: string,
+  ownerType: 'tenant' | 'user'
+): Promise<ConnectorActionOutcome> {
+  const response = await authenticatedCoreFetch(
+    `/v1/connectors/${encodeURIComponent(platformId)}/disconnect?ownerType=${encodeURIComponent(ownerType)}`,
+    { method: 'DELETE' }
+  );
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
  */

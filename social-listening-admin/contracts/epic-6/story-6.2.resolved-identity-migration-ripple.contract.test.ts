@@ -38,13 +38,16 @@
  * type migration didn't silently change what's rendered.
  */
 
-import { getTenantShellActions } from '../../src/lib/role-routing';
-import ConnectorsPage from '../../src/app/tenant/connectors/page';
+import { getTenantShellActions, type ResolvedIdentity } from '../../src/lib/role-routing';
 import WatchlistsPage from '../../src/app/tenant/watchlists/page';
 import ConnectorStatusPage from '../../src/app/tenant/connectors/status/page';
 
+const TENANT_USER: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-1', role: 'tenant_user' };
+const TENANT_ADMIN: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-2', role: 'tenant_admin' };
+const PLATFORM_ADMIN: ResolvedIdentity = { type: 'platform_admin', adminId: 'a-1' };
+
 describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stories 6.3/6.4/6.5', () => {
-  it('the real ResolvedIdentity-shaped fixture used by connectors/page.tsx and connectors/status/page.tsx (tenant_admin) still yields the tenant-admin-only action', () => {
+  it('the real ResolvedIdentity-shaped fixture used by connectors/status/page.tsx (tenant_admin) still yields the tenant-admin-only action', () => {
     const actions = getTenantShellActions({
       type: 'tenant_user',
       tenantId: 'fixture-tenant',
@@ -64,13 +67,85 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
     expect(actions).not.toContain('Tenant-wide connect');
   });
 
-  it('Story 6.3 — ConnectorsPage still renders under the migrated call, with its own tenant-admin fixture action visible', () => {
-    const element = ConnectorsPage();
-    const rendered = JSON.stringify(element);
-    expect(rendered).toContain('Tenant-wide connect');
-    expect(rendered).toContain('Connect a platform');
-    expect(rendered).toContain('GNews');
-    expect(rendered).toContain('Newswire');
+  /**
+   * Story 6.3 (upgraded 2026-08-10, Menno's explicit direction) — ConnectorsPage
+   * is no longer a synchronous, fixture-identity component (Story 6.3's own
+   * healing pass replaced that with a real async Server Component reading a
+   * real session and calling the real backend). The old version of this test
+   * called `ConnectorsPage()` synchronously with no session at all — that
+   * execution model no longer exists. Upgraded, not dropped: this now uses the
+   * same real-session-plus-real-fetch-mocking rigor the main Story 6.2
+   * contract (`story-6.2.role-gated-routing-shell...`) already established
+   * for `tenant/page.tsx`/`platform-admin/page.tsx`, proving all three real
+   * roles against the real page — Platform Admin (redirected, AC2), Tenant
+   * Admin (tenant-wide connect option offered), Tenant User (not offered).
+   */
+  describe('Story 6.3 — ConnectorsPage under all three real roles (Platform Admin, Tenant Admin, Tenant User)', () => {
+    afterEach(() => {
+      jest.dontMock('next/headers');
+      jest.dontMock('next/navigation');
+      jest.resetModules();
+      jest.restoreAllMocks();
+    });
+
+    async function renderConnectorsPageAs(identity: ResolvedIdentity | null) {
+      jest.resetModules();
+      const sessionModule = await import('../../src/lib/session');
+      const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
+
+      jest.doMock('next/headers', () => ({
+        cookies: async () => ({
+          get: (name: string) => (name === sessionModule.SESSION_COOKIE_NAME ? { value: encrypted } : undefined),
+        }),
+      }));
+
+      const redirectMock = jest.fn((url: string) => {
+        throw new Error(`NEXT_REDIRECT:${url}`);
+      });
+      jest.doMock('next/navigation', () => ({ redirect: redirectMock }));
+
+      // Every real platform in PLATFORMS is 'not connected' for this
+      // fixture — sufficient to prove role-gated rendering; connection-
+      // state-specific behavior is Story 6.3's own contract's concern, not
+      // this ripple test's.
+      jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+            { status: 200 }
+          )
+        );
+
+      const { default: Page } = await import('../../src/app/tenant/connectors/page');
+      return { Page, redirectMock };
+    }
+
+    it('a platform_admin session requesting /tenant/connectors is redirected, not rendered', async () => {
+      const { Page, redirectMock } = await renderConnectorsPageAs(PLATFORM_ADMIN);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/');
+      expect(redirectMock).toHaveBeenCalledWith('/');
+    });
+
+    it('a tenant_admin session renders with the tenant-wide connect option offered', async () => {
+      const { Page, redirectMock } = await renderConnectorsPageAs(TENANT_ADMIN);
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Connect a platform');
+      expect(rendered).toContain('GNews');
+      expect(rendered).toContain('Newswire');
+      expect(rendered).toContain('"allowTenantWide":true');
+    });
+
+    it('a tenant_user session renders without the tenant-wide connect option', async () => {
+      const { Page, redirectMock } = await renderConnectorsPageAs(TENANT_USER);
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Connect a platform');
+      expect(rendered).toContain('"allowTenantWide":false');
+    });
   });
 
   it('Story 6.4 — WatchlistsPage still renders under the migrated call, correctly omitting the tenant-admin-only action for its own tenant_user fixture', () => {
