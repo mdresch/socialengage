@@ -126,6 +126,72 @@ export async function selfServiceSignup(accessToken: string, name: string): Prom
   return { status: response.status, body };
 }
 
+export interface TenantUser {
+  id: string;
+  tenantId: string;
+  email: string;
+  role: 'tenant_admin' | 'tenant_user';
+  status: 'invited' | 'active';
+  accessEndsAt: string | null;
+}
+
+export interface TenantUserActionOutcome {
+  status: number;
+  body: { error?: string; id?: string; [key: string]: unknown };
+}
+
+/**
+ * Story 6.8 / Story 1.9 — lists every user for the caller's own tenant
+ * (GET /v1/tenants/users, RLS-scoped, no role gate on read).
+ */
+export async function listTenantUsers(): Promise<TenantUser[]> {
+  const response = await authenticatedCoreFetch('/v1/tenants/users');
+  if (!response.ok) {
+    throw new Error(`Failed to list tenant users: ${response.status}`);
+  }
+  const payload = (await response.json()) as { users?: TenantUser[] };
+  return Array.isArray(payload.users) ? payload.users : [];
+}
+
+/**
+ * Story 6.8 / Story 1.9 — invites a new user into the caller's tenant
+ * (POST /v1/tenants/users, tenant_admin only). Returns the raw status/body
+ * rather than throwing on a non-2xx: 403 (role gate) and 409 (seat ceiling)
+ * are both real, expected outcomes the invite form must react to
+ * specifically (Story 6.8's own AC3/AC5), not failures collapsed into one
+ * generic error.
+ */
+export async function inviteTenantUser(input: {
+  email: string;
+  role?: 'tenant_admin' | 'tenant_user';
+}): Promise<TenantUserActionOutcome> {
+  const response = await authenticatedCoreFetch('/v1/tenants/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.8 / Story 1.9 — sets or clears (null) a user's access_ends_at
+ * (PATCH /v1/tenants/users/:id, tenant_admin only). Same raw status/body
+ * pattern as inviteTenantUser() above, for the same reason.
+ */
+export async function setUserAccessEndsAt(
+  userId: string,
+  accessEndsAt: string | null
+): Promise<TenantUserActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/users/${encodeURIComponent(userId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accessEndsAt }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
  */
