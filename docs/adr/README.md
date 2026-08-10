@@ -155,6 +155,8 @@ Third-party review also surfaced a numeric disagreement with ADR-0017's original
 
 **2026-08-10 update:** Drafted as [ADR-0050](0050-tenant-owned-domain-rss-content-feed-connector.md) (Status: Proposed). Primary-source verification of the DNS TXT verification pattern (Google Workspace, Microsoft 365 docs) and RSS 2.0/Autodiscovery specs completed this session. Pending Menno's acceptance.
 
+**A real, named future ADR candidate, not yet scoped or drafted, flagged 2026-08-10:** self-service tenant sign-up (ADR-0037/Story 6.7) collects only a single free-text "tenant name" field today — confirmed directly during this session's first successful live, manual end-to-end sign-up (`tenants.name` ended up literally `menno.drescher@gmail.com`, whatever the caller happened to type). A richer onboarding form (company name, industry, size, and similar business details) was raised by Menno as a real future improvement, deliberately not pursued now (several other ADRs already outstanding for review) — this changes `tenants`' own schema and Story 6.7's UI, not a copy tweak, so it would need its own ADR rather than folding into ADR-0037's already-Accepted Decision text. Not designed further here.
+
 **Multi-tenant Admin/Tenant/User model (brainstormed 2026-07-30, not yet drafted):** no `tenants` table, `users` table, or Admin tier exist anywhere in this series — "tenant" today is purely a `tenant_id` UUID convention (ADR-0015 isolates it; nothing provisions it). A same-day brainstorm settled several shapes without drafting any ADR yet (paused mid-session, to be continued):
 - Three tiers: Platform Admin → Tenant (with its own Tenant-Admin role) → Tenant User.
 - User onboarding: invite-only, gated by a per-tenant license/seat count — no request-then-approve queue.
