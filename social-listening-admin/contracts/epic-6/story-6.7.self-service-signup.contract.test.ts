@@ -145,7 +145,12 @@ describe('Story 6.7 — self-service sign-up', () => {
       const nextBin = path.join(ADMIN_ROOT, 'node_modules', '.bin', isWin ? 'next.cmd' : 'next');
       serverProcess = spawn(nextBin, ['dev', '-p', String(PORT)], {
         cwd: ADMIN_ROOT,
-        env: { ...process.env },
+        // Own distDir — see Story 6.1's own contract test and
+        // next.config.js's header comment for the full explanation (Next's
+        // dev-server lock file is keyed by distDir, not port; two contracts
+        // spawning `next dev` from this same project directory would
+        // otherwise race for it under Jest's default parallel workers).
+        env: { ...process.env, NEXT_DIST_DIR: '.next/test-story-6-7' },
         stdio: ['ignore', 'pipe', 'pipe'],
         shell: isWin,
       });

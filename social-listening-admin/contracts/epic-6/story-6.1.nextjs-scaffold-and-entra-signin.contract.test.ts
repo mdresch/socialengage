@@ -143,7 +143,14 @@ beforeAll(async () => {
   // below, by a non-network unit assertion — provable without standing up real TLS.
   serverProcess = spawn(nextBin, ['dev', '-p', String(PORT)], {
     cwd: ADMIN_ROOT,
-    env: { ...process.env },
+    // Own distDir (see next.config.js's own comment) — Story 6.7's contract
+    // also spawns a real `next dev` from this same project directory, and
+    // Next's dev-server lock file is keyed by distDir, not port. Without
+    // this, the two collide whenever Jest schedules them concurrently
+    // (confirmed directly: intermittent "Another next dev server is
+    // already running" under `npx jest contracts`, gone under
+    // `--runInBand`, healed 2026-08-10 rather than papered over).
+    env: { ...process.env, NEXT_DIST_DIR: '.next/test-story-6-1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: isWin,
   });
