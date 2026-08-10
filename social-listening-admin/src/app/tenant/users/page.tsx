@@ -13,8 +13,21 @@ import { AccessControl } from './AccessControl';
  * controls are additionally gated on tenant_admin below (AC2), the same
  * UX-convenience-only framing Story 6.3 already established — the real
  * boundary stays Story 1.9's own 403.
+ *
+ * Story 6.10 — also reads an optional `?inviteEmail=` search param (set by
+ * the Same-Domain Invite Assist screen's own "invite this person" link) and
+ * passes it down as InviteUserForm's initialEmail — a read-only pre-fill,
+ * never an auto-submit. See .claude/skills/same-domain-invite-assist/SKILL.md.
  */
-export default async function TenantUsersPage() {
+export default async function TenantUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const inviteEmailParam = params.inviteEmail;
+  const initialEmail = typeof inviteEmailParam === 'string' ? inviteEmailParam : '';
+
   const jar = await cookies();
   const raw = jar.get(SESSION_COOKIE_NAME)?.value;
   const session = raw ? await decryptSession(raw) : null;
@@ -72,7 +85,7 @@ export default async function TenantUsersPage() {
       {isTenantAdmin && (
         <section>
           <h2>Invite a user</h2>
-          <InviteUserForm />
+          <InviteUserForm initialEmail={initialEmail} />
         </section>
       )}
     </main>

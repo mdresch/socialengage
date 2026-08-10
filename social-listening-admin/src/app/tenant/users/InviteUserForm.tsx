@@ -7,9 +7,13 @@ import { useState, type FormEvent } from 'react';
  * parent page's own gate). A 409 (seat ceiling) and a 403 (role gate, e.g. a
  * stale session) each get their own specific copy — never a single generic
  * failure message.
+ *
+ * Story 6.10 — `initialEmail` seeds the email field only; it never
+ * auto-submits the form. The Tenant-Admin's own click of "Send invite"
+ * remains the only thing that actually creates an invite (ADR-0037 §8b).
  */
-export function InviteUserForm() {
-  const [email, setEmail] = useState('');
+export function InviteUserForm({ initialEmail = '' }: { initialEmail?: string }) {
+  const [email, setEmail] = useState(initialEmail);
   const [role, setRole] = useState<'tenant_user' | 'tenant_admin'>('tenant_user');
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
 

@@ -142,6 +142,32 @@ export async function getMyTenant(): Promise<AdminTenant> {
   return (await response.json()) as AdminTenant;
 }
 
+export interface DomainSignupAttemptSummary {
+  domain: string;
+  distinctEmailCount: number;
+  escalated: boolean;
+  emails: string[];
+}
+
+/**
+ * Story 6.10 / Story 5.16 (ADR-0037 §8b) — reads the Same-Domain Invite
+ * Assist data for the caller's own tenant (GET
+ * /v1/tenants/domain-signup-attempts, tenant_admin only). All tenant
+ * scoping is the backend's own RLS (Story 5.16) — this function takes no
+ * tenantId parameter and must not gain one; see this component's own
+ * SKILL.md. Throws on a non-2xx (a 403 from a stale/non-admin session is a
+ * real, expected outcome the caller must not silently swallow into an empty
+ * list).
+ */
+export async function listDomainSignupAttempts(): Promise<DomainSignupAttemptSummary[]> {
+  const response = await authenticatedCoreFetch('/v1/tenants/domain-signup-attempts');
+  if (!response.ok) {
+    throw new Error(`Failed to load domain signup attempts: ${response.status}`);
+  }
+  const payload = (await response.json()) as { domains?: DomainSignupAttemptSummary[] };
+  return Array.isArray(payload.domains) ? payload.domains : [];
+}
+
 export interface TenantUser {
   id: string;
   tenantId: string;
