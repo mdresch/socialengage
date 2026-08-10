@@ -50,7 +50,19 @@ export function redirectUri(): string {
   return requireEnv('ENTRA_ADMIN_REDIRECT_URI');
 }
 
-export const ENTRA_SCOPES = 'openid profile email offline_access';
+/**
+ * Healed 2026-08-10 — `api://social-listening-core/access_as_user` added. Without a
+ * resource-scoped delegated permission, Entra never mints an access token audienced for
+ * social-listening-core's API app at all; every authenticated call through
+ * `core-client.ts` (GET /v1/me, POST /v1/tenants/self-service-signup, connector
+ * connect/disconnect, etc.) failed core's own `jwtVerify()` at the signature step,
+ * confirmed directly via diagnostic logging during a live sign-in. The delegated scope
+ * now exists on social-listening-core's app registration (Expose an API →
+ * `access_as_user`) and is granted + admin-consented on social-listening-admin's own
+ * registration — see this component's own SKILL.md Known gaps for the prior state.
+ */
+export const ENTRA_SCOPES =
+  'openid profile email offline_access api://social-listening-core/access_as_user';
 
 /** Short-lived cookie carrying the PKCE code_verifier + CSRF state between login and callback. */
 export const OAUTH_STATE_COOKIE_NAME = 'se_admin_oauth_state';

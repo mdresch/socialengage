@@ -46,16 +46,31 @@
  *
  * Explicitly out of scope for this contract:
  *   - GET /v1/me's own implementation and its own anti-spoofing contract (ADR-0036 §5's
- *     Clarification) — that is social-listening-core's own scope, a real, named
- *     prerequisite this story does not build (confirmed absent from
- *     src/identity/identityResolution.ts and every versions/v1/*Router.ts there). This
- *     contract proves the admin UI attempts the call correctly and degrades gracefully
- *     while the endpoint doesn't exist — not a full end-to-end round trip.
+ *     Clarification) — that is social-listening-core's own scope (built since, by Story
+ *     5.11 — see the healing note below).
  *   - Stories 6.2–6.7's own screens/role-gating/features.
- *   - Any resource-scoped access token for calling core's own API (would need a delegated
- *     permission scope exposed on social-listening-core's app registration, which today
- *     exposes only an Application-type app role for client_credentials use — a separate,
- *     later prerequisite once GET /v1/me actually exists).
+ *
+ * --- Healing pass, 2026-08-10 (Menno's explicit direction, found via live manual sign-in
+ * testing) ---
+ * The bullet above originally deferred "any resource-scoped access token for calling
+ * core's own API" as "a separate, later prerequisite once GET /v1/me actually exists" —
+ * GET /v1/me now exists (Story 5.11), so that deferral is over. Its absence was a real,
+ * live defect: social-listening-admin's OAuth flow requested only
+ * `openid profile email offline_access`, so Entra never minted a token audienced for
+ * social-listening-core's API app at all — every authenticated call through
+ * `core-client.ts` (GET /v1/me, POST /v1/tenants/self-service-signup, connector
+ * connect/disconnect) failed core's own `jwtVerify()` at the signature step. Confirmed
+ * directly via diagnostic logging added to entraAuthMiddleware.ts (core) and
+ * fetchResolvedIdentity()/selfServiceSignup() (admin) during a real interactive sign-in —
+ * zero requests reaching core before the scope fix, `signature verification failed`
+ * after. Fixed by exposing a delegated `access_as_user` scope on social-listening-core's
+ * app registration (Expose an API), granting + admin-consenting it on
+ * social-listening-admin's own registration, and adding
+ * `api://social-listening-core/access_as_user` to `ENTRA_SCOPES` (src/lib/entra.ts). A
+ * full real end-to-end round trip through a live core instance remains out of scope for
+ * this contract (it spawns `next dev` only, never social-listening-core) — AC13 below
+ * proves the scope itself is requested; the real live sign-in already proven by AC3/AC12
+ * combined with this scope fix is what actually closes the loop, confirmed manually.
  */
 
 import { spawn, execSync, type ChildProcess } from 'child_process';
@@ -471,14 +486,14 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
       expect(content).toMatch(/fetchResolvedIdentity/);
     });
 
-    it('fetchResolvedIdentity() resolves to null rather than throwing while the endpoint does not exist', async () => {
+    it('fetchResolvedIdentity() resolves to null rather than throwing on a bad/unreachable call', async () => {
       // Real call against whatever CORE_API_BASE_URL is configured — resolves null
-      // whether core is unreachable (connection refused) or reachable but 404s, since
-      // GET /v1/me does not exist in social-listening-core yet (ADR-0036 §5's own named
-      // prerequisite, confirmed absent from src/identity/identityResolution.ts and every
-      // versions/v1/*Router.ts there). This is the real, named end-to-end gap — full
-      // round-trip proof is blocked on that endpoint being built in social-listening-core,
-      // not on anything in this repo.
+      // whether core is unreachable (connection refused) or reachable but rejects the
+      // garbage token (401, once GET /v1/me — now built, Story 5.11 — runs a real
+      // signature/audience check). Healed 2026-08-10: this test's own comment previously
+      // said "GET /v1/me does not exist yet"; that prerequisite is done, but the
+      // assertion itself was already correct for a bad token either way, so it is
+      // unchanged — only the stale rationale is corrected.
       await expect(fetchResolvedIdentity('contract-test-token')).resolves.toBeNull();
     });
   });
@@ -545,6 +560,28 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
 
       await page.goto(`${BASE_URL}/`);
       await page.waitForURL(`${BASE_URL}/sign-in`, { timeout: 10_000 });
+    });
+  });
+
+  /**
+   * Healed 2026-08-10 — see this file's own header healing note. Guards the exact
+   * regression found live: ENTRA_SCOPES silently reverting to only the bare OIDC scopes
+   * would once again mint a token core's own jwtVerify() rejects at the signature step
+   * for every authenticated call, not just GET /v1/me.
+   */
+  describe('AC13: ENTRA_SCOPES requests a resource-scoped token for social-listening-core, not just bare OIDC scopes', () => {
+    // Read from source rather than a live import: entra.ts pulls in `openid-client`
+    // (ESM-only, `oauth4webapi` underneath) which Jest's default CJS transform can't
+    // load standalone — AC1-AC12 above only ever exercise it indirectly, through the
+    // real `next dev` process. AC8's own "callback route calls fetchResolvedIdentity()"
+    // test already establishes this same source-inspection pattern for the same reason.
+    it('includes the delegated api://social-listening-core/access_as_user scope', () => {
+      const content = fs.readFileSync(path.join(ADMIN_ROOT, 'src', 'lib', 'entra.ts'), 'utf8');
+      const match = content.match(/ENTRA_SCOPES\s*=\s*\n?\s*'([^']+)'/);
+      expect(match).not.toBeNull();
+      const scopes = (match![1] as string).split(' ');
+      expect(scopes).toContain('api://social-listening-core/access_as_user');
+      expect(scopes).toContain('openid');
     });
   });
 });
