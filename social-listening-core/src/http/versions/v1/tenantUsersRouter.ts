@@ -5,6 +5,7 @@ import {
   createInvitedUser,
   listUsers,
   setAccessEndsAt,
+  listAccessHistory,
 } from '../../../identity/identityResolution';
 import {
   incrementActiveSeatCount,
@@ -145,4 +146,24 @@ tenantUsersRouter.patch('/:id', async (req, res) => {
   }
 
   res.json(updated);
+});
+
+/**
+ * GET /v1/tenants/users/:id/access-history (Story 5.17, ADR-0032 §9) —
+ * the audit trail for one user's own access_ends_at writes. tenant_admin
+ * only, RLS-scoped via listAccessHistory()'s own withTenant() call — a
+ * cross-tenant id returns an empty array (RLS-filtered), never another
+ * tenant's rows.
+ */
+tenantUsersRouter.get('/:id/access-history', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  if (identity.role !== 'tenant_admin') {
+    res.status(403).json({ error: 'Only tenant_admin may view access history.' });
+    return;
+  }
+
+  const entries = await listAccessHistory(identity.tenantId, req.params.id);
+  res.json({ entries });
 });

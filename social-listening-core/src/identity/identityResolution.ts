@@ -152,6 +152,54 @@ export async function setAccessEndsAt(
   });
 }
 
+export interface AccessHistoryEntry {
+  id: string;
+  targetUserId: string;
+  actorUserId: string;
+  operation: string;
+  oldValue: string | null;
+  newValue: string | null;
+  occurredAt: string;
+}
+
+/**
+ * Story 5.17 (ADR-0032 §9) — the read side of the audit trail
+ * setAccessEndsAt() (above) already writes. RLS on user_access_audit_log
+ * (migration 0024) scopes this to the caller's own tenant; the
+ * `target_user_id` filter narrows to one user's own history within that
+ * tenant. A cross-tenant guess at targetUserId returns an empty array, not
+ * a 404 — RLS makes the row structurally invisible, not merely
+ * unauthorized, so there is nothing for an application-level check to add.
+ */
+export async function listAccessHistory(tenantId: string, targetUserId: string): Promise<AccessHistoryEntry[]> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{
+      id: string;
+      target_user_id: string;
+      actor_user_id: string;
+      operation: string;
+      old_value: Date | null;
+      new_value: Date | null;
+      occurred_at: Date;
+    }>(
+      `SELECT id, target_user_id, actor_user_id, operation, old_value, new_value, occurred_at
+       FROM user_access_audit_log
+       WHERE target_user_id = $1
+       ORDER BY occurred_at DESC`,
+      [targetUserId]
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      targetUserId: row.target_user_id,
+      actorUserId: row.actor_user_id,
+      operation: row.operation,
+      oldValue: row.old_value ? row.old_value.toISOString() : null,
+      newValue: row.new_value ? row.new_value.toISOString() : null,
+      occurredAt: row.occurred_at.toISOString(),
+    }));
+  });
+}
+
 /**
  * The request-time identity-resolution bootstrap (ADR-0032 §5). Reads
  * exclusively through identity_resolver_role (BYPASSRLS, column-scoped
