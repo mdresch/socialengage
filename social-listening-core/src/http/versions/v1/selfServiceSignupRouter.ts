@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthenticatedRequest } from '../../auth/entraAuthMiddleware';
 import { resolveIdentity } from '../../../identity/identityResolution';
 import { provisionTenantViaSignup, DomainMatchRejectionError } from '../../../tenants/selfServiceSignup';
+import { checkAndRecordSignupAttempt } from '../../../tenants/signupRateLimit';
 
 export const selfServiceSignupRouter = Router();
 
@@ -20,6 +21,17 @@ selfServiceSignupRouter.post('/', async (req, res) => {
   }
   if (!auth.email) {
     res.status(400).json({ error: 'A verified email is required to sign up.' });
+    return;
+  }
+
+  // Story 5.18 (ADR-0040) — a real precondition for exposing this endpoint
+  // to untrusted traffic, checked before any DB work. Keyed on the raw
+  // domain (before selfServiceSignup.ts's own denylist filtering) — see
+  // signupRateLimit.ts's own header comment for why.
+  const emailDomain = auth.email.toLowerCase().split('@')[1] ?? '';
+  const rateLimit = checkAndRecordSignupAttempt(req.ip ?? 'unknown', emailDomain);
+  if (!rateLimit.allowed) {
+    res.status(429).json({ error: 'Too many sign-up attempts. Please try again later.' });
     return;
   }
 
