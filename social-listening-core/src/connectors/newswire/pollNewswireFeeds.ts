@@ -5,6 +5,7 @@ import { upsertAuthor } from '../../authors/authorStore';
 import { insertSocialPost, findSocialPostByExternalId } from '../../posts/socialPostStore';
 import { newswireConnector, fetchNewswireFeed, NEWSWIRE_PROVIDER_ID, DEFAULT_NEWSWIRE_FEED_URLS } from './newswireConnector';
 import { ParsedRssItem } from './rssFeedParser';
+import { enrichPost } from '../azureAiLanguage/enrichPost';
 
 /**
  * acquireForProvider() has no ingestion-domain knowledge of its own (see
@@ -56,12 +57,17 @@ export async function ingestNewswireItems(
       rawProfile: item,
     });
 
+    // Story 2.8 (ADR-0038) — same best-effort, additive enrichment hook as
+    // pollGNewsSearch.ts. See .claude/skills/azure-ai-language-connector/SKILL.md.
+    const enrichment = await enrichPost(tenantId, item.title);
+
     await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
       rawPayload: { providerId: NEWSWIRE_PROVIDER_ID, externalId: normalized.externalId, ...item },
       publishedAt: normalized.publishedAt,
+      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
     });
 
     postsIngested += 1;

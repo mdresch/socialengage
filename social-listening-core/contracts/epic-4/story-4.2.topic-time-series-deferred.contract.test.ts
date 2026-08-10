@@ -31,6 +31,23 @@
 // (named in docs/implementation-plan.md's Phase 2 deliverable but not this
 // story's own Acceptance Criteria — they're additive keys the same
 // `enrichment` JSONB column can hold later, not added here).
+//
+// 2026-08-10 — dated correction, Story 2.8 (ADR-0038), Menno's explicit
+// sign-off. `entities` widened from string[] to
+// {text,category,confidenceScore}[] — this story's own AC3 query
+// (jsonb_array_elements_text) and its own AC1 fixtures/assertions are
+// updated accordingly below. Not a silent rewrite: real Azure AI Language
+// API responses, captured directly against a real resource this session
+// (see contracts/epic-2/story-2.8...'s own header), confirmed the richer
+// shape is what a real AIProviderConnector actually produces — reducing it
+// to bare strings would have thrown away real, useful data (entity
+// category, confidence) with no shipped consumer ever having depended on
+// the narrower shape as a real constraint (this story's own AC3 was the
+// only place it was exercised structurally, and only incidentally, not as
+// its own Acceptance Criterion). This story's own underlying claim —
+// SocialPost captures enrichment.entities/keyPhrases, queryable directly
+// and via listSocialPosts() — is unchanged; only the array's own element
+// type changed.
 
 import { randomUUID } from 'crypto';
 import fs from 'fs';
@@ -55,29 +72,30 @@ describe('Story 4.2 — deferred topic time-series aggregation contract', () => 
       connectorVersion: '1.0.0',
     });
     const publishedAt = new Date('2026-01-15T12:00:00Z');
+    const acmeEntity = { text: 'acme', category: 'Organization', confidenceScore: 0.99 };
     const { id } = await insertSocialPost({
       tenantId,
       authorId: null,
       acquisitionId: run.id,
       rawPayload: { text: 'acme is great' },
       publishedAt,
-      enrichment: { entities: ['acme'], keyPhrases: ['acme is great'] },
+      enrichment: { entities: [acmeEntity], keyPhrases: ['acme is great'] },
     });
 
     const { rows } = await withTenant(tenantId, (client) =>
       client.query<{
         published_at: Date;
-        enrichment: { entities: string[]; keyPhrases: string[] };
+        enrichment: { entities: Array<{ text: string; category: string; confidenceScore: number }>; keyPhrases: string[] };
       }>(`SELECT published_at, enrichment FROM social_posts WHERE id = $1`, [id])
     );
     expect(rows[0].published_at.toISOString()).toBe(publishedAt.toISOString());
-    expect(rows[0].enrichment.entities).toEqual(['acme']);
+    expect(rows[0].enrichment.entities).toEqual([acmeEntity]);
     expect(rows[0].enrichment.keyPhrases).toEqual(['acme is great']);
 
     const page = await listSocialPosts(tenantId, { limit: 10 });
     const post = page.posts.find((p) => p.id === id);
     expect(post?.publishedAt).toBe(publishedAt.toISOString());
-    expect(post?.enrichment).toEqual({ entities: ['acme'], keyPhrases: ['acme is great'] });
+    expect(post?.enrichment).toEqual({ entities: [acmeEntity], keyPhrases: ['acme is great'] });
   });
 
   it('AC2: no topic_daily_count (or similarly named) table/view exists, and no charting route is mounted', async () => {
@@ -101,11 +119,15 @@ describe('Story 4.2 — deferred topic time-series aggregation contract', () => 
       connectorVersion: '1.0.0',
     });
 
-    const fixtures: Array<{ publishedAt: string; entities: string[] }> = [
-      { publishedAt: '2026-02-01T09:00:00Z', entities: ['acme'] },
-      { publishedAt: '2026-02-01T15:00:00Z', entities: ['acme'] },
-      { publishedAt: '2026-02-01T18:00:00Z', entities: ['widgets'] },
-      { publishedAt: '2026-02-02T10:00:00Z', entities: ['acme'] },
+    function entity(text: string) {
+      return { text, category: 'Organization', confidenceScore: 0.9 };
+    }
+
+    const fixtures: Array<{ publishedAt: string; entities: Array<{ text: string; category: string; confidenceScore: number }> }> = [
+      { publishedAt: '2026-02-01T09:00:00Z', entities: [entity('acme')] },
+      { publishedAt: '2026-02-01T15:00:00Z', entities: [entity('acme')] },
+      { publishedAt: '2026-02-01T18:00:00Z', entities: [entity('widgets')] },
+      { publishedAt: '2026-02-02T10:00:00Z', entities: [entity('acme')] },
     ];
     for (const fixture of fixtures) {
       await insertSocialPost({
@@ -124,12 +146,16 @@ describe('Story 4.2 — deferred topic time-series aggregation contract', () => 
       // reading it back as a JS Date shifts by the test machine's UTC offset —
       // a driver quirk, not anything about this story's own data. A TEXT day
       // string sidesteps that entirely.
+      // jsonb_array_elements (not _text, 2026-08-10 — see this file's own
+      // dated correction above): entities is now an array of objects, so
+      // each element is extracted as jsonb and ->>'text' pulls the entity's
+      // own name back out as the "topic" being grouped on.
       client.query<{ day: string; topic: string; post_count: string }>(
-        `SELECT to_char(published_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day, entity AS topic, COUNT(*) AS post_count
-         FROM social_posts, jsonb_array_elements_text(enrichment -> 'entities') AS entity
+        `SELECT to_char(published_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day, entity ->> 'text' AS topic, COUNT(*) AS post_count
+         FROM social_posts, jsonb_array_elements(enrichment -> 'entities') AS entity
          WHERE tenant_id = $1
-         GROUP BY day, entity
-         ORDER BY day, entity`,
+         GROUP BY day, entity ->> 'text'
+         ORDER BY day, entity ->> 'text'`,
         [tenantId]
       )
     );

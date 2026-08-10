@@ -120,7 +120,9 @@
 
 ## Story 2.8 — Concrete AI enrichment provider connector: Azure AI Language
 
-**Source:** ADR-0038 (Accepted 2026-08-06) · **Status:** Ready. Sourced from a new ADR because the concrete provider choice, once Menno's own follow-up widened the comparison to include general-purpose-LLM structured extraction, is a genuine, hard-to-reverse, primary-source-researched selection — the same bar ADR-0024/0026 already established for connector-provider selection, not ordinary CRUD/UI surface.
+**Source:** ADR-0038 (Accepted 2026-08-06) · **Status:** Built 2026-08-10 (`social-listening-core`, real Azure AI Language endpoint — see `docs/implementation-log.md`). Sourced from a new ADR because the concrete provider choice, once Menno's own follow-up widened the comparison to include general-purpose-LLM structured extraction, is a genuine, hard-to-reverse, primary-source-researched selection — the same bar ADR-0024/0026 already established for connector-provider selection, not ordinary CRUD/UI surface.
+
+**2026-08-10 — a real, confirmed AC drift, corrected here rather than silently patched.** AC3 below claims `analyze()` maps into `SocialPost.enrichment`'s "exact existing shape... no reshaping of the already-shipped type." That claim was checked directly against the real, shipped code at implementation time and found false: the only shipped, contract-tested shape before this story was `entities: string[]` (Story 4.2's own fixture), and `AIProviderConnector.analyze()`'s return type (Story 2.1) had no `sentimentScores`, no per-entity `category`/`confidenceScore`, and no `modelUsed` at all. Real calls against the live Azure AI Language endpoint (`AZURE_AI_LANGUAGE_ENDPOINT`/`KEY` in `.env`) confirmed entities are naturally `{text, category, confidenceScore}[]`, not bare strings — this story widened `AnalyzeResult`/`enrichment.entities` to that real shape (additive change to `src/connectors/types.ts`), with Menno's explicit sign-off after reviewing the real API research. Story 4.2's own already-passing contract required a corresponding, dated, explicitly-authorized edit (its AC3 SQL moved from `jsonb_array_elements_text` to `jsonb_array_elements` + `->>'text'`) — see that story's own file and `.claude/skills/provider-connector-framework/SKILL.md`'s Load-bearing constraints for the full account. AC3's bullet text below is left as originally drafted, per this doc series' "don't rewrite history" convention — this note is the correction of record.
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes the single largest functional gap in the product: `AIProviderConnector` (Story 2.1/ADR-0002) defines `analyze()`/`listModels()`/`getModelRateLimit()`/`getModelCapabilities()`, but no story in Epics 1–6 implements it against a real provider — Stories 4.1, 4.2, and 5.1 all assume `enrichment.entities`/`keyPhrases`/`sentiment` are already populated, confirmed directly against the current codebase (no `src/connectors/*` directory targets an AI provider today, only GNews and Newswire).
 
@@ -157,3 +159,23 @@
 - Provider swap and provider removal are both validated by contract/integration tests: enrichment succeeds when either provider is selected, and fails over or skips according to configured behavior without breaking base ingestion.
 - Removing one provider does not degrade tenants using the other provider, proven by tenant-scoped test coverage.
 
+---
+
+## Story 2.10 — Connector Registration Transparantly registration
+
+**Source:** ADR-0048 · **Status:** Blocked — pending ADR-0048 acceptance.
+
+**As a developer integrating new connectors into SocialEngage,**
+**I want robust automated checks ensuring that connector registration does not alter core pipeline paths,**
+**So that the modular architecture of ingestion and orchestration remains intact while accelerating PR approval and compliance verification.**
+
+**Acceptance Criteria:**
+
+- Every connector registration is backed by tests proving untouched core ingestion paths.
+- A CI guardrail runs focused diff checks or contract tests for each PR involving new connectors.
+- Documentation for each connector transparently cites registration location, used extension points, and verification details.
+- Applies uniformly to social and AI connectors.
+
+**Notes:**
+
+- This story's implementation must reference ADR-0048's Consequences and Decision sections explicitly in its Jest contract test.

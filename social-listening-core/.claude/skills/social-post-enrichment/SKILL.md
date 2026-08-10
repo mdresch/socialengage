@@ -7,22 +7,24 @@ description: SocialPost's enrichment JSONB blob and publishedAt column for socia
 
 ## What this is
 
-`social_posts.published_at` (when a post was actually published on-platform, distinct from `created_at`, when this system ingested it) and `social_posts.enrichment` (a single JSONB blob holding `entities`/`keyPhrases` today, additive keys like `sentiment`/`detectedLanguage`/`modelUsed` once the real enrichment pipeline lands later). Together they're what ADR-0008 requires exist and be queryable so a future insights/dashboard subsystem can build topic-volume-over-time aggregation directly from this data — without `social-listening-core` building that aggregation, a table, or any charting UI itself.
+`social_posts.published_at` (when a post was actually published on-platform, distinct from `created_at`, when this system ingested it) and `social_posts.enrichment` (a single JSONB blob). As of Story 2.8, `enrichment` is real, populated data from a live `AIProviderConnector` (Azure AI Language) on every GNews/Newswire post — `entities` (`{text, category, confidenceScore}[]`), `keyPhrases` (`string[]`), `sentiment`/`sentimentScores`, `detectedLanguage`, `modelUsed`. Together `enrichment` and `publishedAt` are what ADR-0008 requires exist and be queryable so a future insights/dashboard subsystem can build topic-volume-over-time aggregation directly from this data — without `social-listening-core` building that aggregation, a table, or any charting UI itself.
 
 ## Governing ADRs and Stories
 
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0008 | Defer `TopicDailyCount` aggregation and all charting to a future subsystem; rely on `enrichment.entities`/`keyPhrases` and `publishedAt` already being captured and queryable on `SocialPost` | 4.2 |
+| ADR-0038 | The real provider whose output actually fills `enrichment` — Azure AI Language, via `enrichPost()` (`.claude/skills/azure-ai-language-connector/SKILL.md`), wired into both GNews's and Newswire's own ingest functions ahead of `insertSocialPost()` | 2.8 |
 
 ## Contracts that constrain this component
 
-- `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — a `SocialPost` carries `publishedAt`/`enrichment.entities`/`enrichment.keyPhrases`, queryable both via a direct SQL read and via `listSocialPosts()`'s existing read path; no `topic_daily_count`-like table/view exists and no charting-style route is mounted; a raw SQL query grouping `social_posts` by `published_at`'s day and each `enrichment.entities` value reconstructs exact per-day-per-topic counts, proving the captured data is sufficient for a future subsystem without this one computing the aggregation itself.
+- `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — a `SocialPost` carries `publishedAt`/`enrichment.entities`/`enrichment.keyPhrases`, queryable both via a direct SQL read and via `listSocialPosts()`'s existing read path; no `topic_daily_count`-like table/view exists and no charting-style route is mounted; a raw SQL query grouping `social_posts` by `published_at`'s day and each entity's own `text` reconstructs exact per-day-per-topic counts, proving the captured data is sufficient for a future subsystem without this one computing the aggregation itself. **Updated 2026-08-10 (Story 2.8, dated note in the contract's own header):** `entities` widened from `string[]` to `{text,category,confidenceScore}[]` — the AC3 query now uses `jsonb_array_elements` + `->>'text'`, not `jsonb_array_elements_text`.
+- `contracts/epic-2/story-2.8.azure-ai-language-connector.contract.test.ts` — the real pipeline that actually populates these fields now. Not re-proven here; this component's own contract only proves the schema/read-path are correct given data that exists.
 
 ## How to extend this safely
 
-- **Adding a new enrichment field** (`sentiment`, `detectedLanguage`, `modelUsed` — named in `docs/implementation-plan.md`'s Phase 2 deliverable, not yet built): add it as another key inside the existing `enrichment` JSONB blob via application code, not a new column and not a new migration — that's the entire point of using one JSONB blob here (see Load-bearing constraints).
-- **Wiring a real enrichment pipeline** (an actual `AIProviderConnector` populating these fields from real analysis output — Phase 2's "also build, not storied" scope): write into `enrichment`/`published_at` via `insertSocialPost()`'s existing optional parameters; don't add a parallel write path.
+- **Adding a new enrichment field**: add it as another key inside the existing `enrichment` JSONB blob via application code, not a new column and not a new migration — that's the entire point of using one JSONB blob here (see Load-bearing constraints). Also update `AnalyzeResult` (`src/connectors/types.ts`) if the new field is something `analyze()` itself should populate.
+- **A new connector's own ingest function wanting enrichment** (a future Story 2.9 LLM-based provider, or a future real social connector beyond GNews/Newswire): call `enrichPost(tenantId, text)` (`.claude/skills/azure-ai-language-connector/SKILL.md`) right before `insertSocialPost()`, passing its result straight into `insertSocialPost()`'s existing `enrichment` parameter — the same pattern `pollGNewsSearch.ts`/`pollNewswireFeeds.ts` both already use. Never write a parallel enrichment path.
 
 ## Load-bearing constraints — do not change casually
 
@@ -32,5 +34,6 @@ description: SocialPost's enrichment JSONB blob and publishedAt column for socia
 
 ## Known gaps / deferred work
 
-- **Nothing populates these fields from real posts yet.** That's the real enrichment pipeline (an actual `AIProviderConnector` + wiring into the ingestion pipeline after normalization) — Phase 2's "also build, not storied" scope, not this story's. This story proves the schema and read path are correct given data that exists (inserted directly by its own contract test), the same pattern Story 4.1 used for `AuthorTopicSignal`.
-- `entities` is modeled as a plain array of topic-identifier strings for this story's minimal proof — the real enrichment pipeline may need a richer shape (confidence scores, entity types); that's a decision for whoever builds the real pipeline, not speculated here.
+- **Enrichment is now real (Story 2.8, 2026-08-10)** — `enrichPost()` populates these fields from a live Azure AI Language call on every GNews/Newswire post. Kept, corrected, not deleted, per this doc series' own "don't rewrite history" convention: this bullet previously said nothing populated these fields yet.
+- **`entities` is now `{text, category, confidenceScore}[]`, not a plain array of strings** — confirmed against real Azure AI Language API output (Story 2.8), not the placeholder shape this story originally used for its own minimal schema-proof fixtures. Story 4.2's own contract was updated accordingly, with a dated note in its own file.
+- **Enrichment is best-effort, never a hard dependency of ingestion succeeding** — a tenant with no Azure AI Language credential, or a persistent enrichment failure after retries, still gets the post ingested with `enrichment` left `undefined`. See `.claude/skills/azure-ai-language-connector/SKILL.md`'s own Load-bearing constraints.

@@ -5,6 +5,7 @@ import { upsertAuthor } from '../../authors/authorStore';
 import { insertSocialPost, findSocialPostByExternalId } from '../../posts/socialPostStore';
 import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
 import { gnewsConnector, fetchGNewsSearch, GNEWS_PROVIDER_ID, GNewsArticle } from './gnewsConnector';
+import { enrichPost } from '../azureAiLanguage/enrichPost';
 
 const DEFAULT_QUERY = 'technology';
 
@@ -75,12 +76,20 @@ export async function ingestGNewsArticles(
       rawProfile: article.source,
     });
 
+    // Story 2.8 (ADR-0038) — best-effort, additive: enrichPost() never
+    // throws, so a tenant with no Azure AI Language credential (or a
+    // failed enrichment call) still gets this post ingested, just without
+    // enrichment populated. See .claude/skills/azure-ai-language-connector/SKILL.md.
+    const enrichmentText = [article.title, article.description].filter(Boolean).join('. ');
+    const enrichment = await enrichPost(tenantId, enrichmentText);
+
     await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
       rawPayload: { providerId: GNEWS_PROVIDER_ID, externalId: normalized.externalId, ...article },
       publishedAt: normalized.publishedAt,
+      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
     });
 
     postsIngested += 1;

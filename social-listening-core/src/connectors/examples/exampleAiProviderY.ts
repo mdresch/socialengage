@@ -27,7 +27,10 @@ export const exampleAiProviderY: AIProviderConnector = {
   }),
 
   analyze: async (_modelId, text) => ({
-    entities: text.split(' ').slice(0, 3),
+    entities: text
+      .split(' ')
+      .slice(0, 3)
+      .map((word) => ({ text: word, category: 'Other', confidenceScore: 0.5 })),
     keyPhrases: [text.slice(0, 10)],
   }),
 };

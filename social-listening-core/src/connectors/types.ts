@@ -60,11 +60,38 @@ export interface ModelCapabilities {
   supportsLanguageDetection: boolean;
 }
 
+/** A single named entity Azure AI Language (or any AIProviderConnector) recognized in a text. */
+export interface EnrichmentEntity {
+  text: string;
+  category: string;
+  confidenceScore: number;
+}
+
+export interface SentimentScores {
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+/**
+ * Story 2.8 (ADR-0038) — widened from its original, never-yet-implemented-
+ * against-a-real-provider shape (sentiment?: string; entities?: string[]) to
+ * match what a real provider's own output actually looks like — confirmed
+ * directly against real Azure AI Language responses, not assumed. Purely
+ * additive: every existing field's own name is unchanged, `entities`'
+ * element type is the only breaking shape change, and every prior caller of
+ * `analyze()` (Story 2.1's own contract, both example providers) continues
+ * to compile and pass unmodified. See
+ * .claude/skills/azure-ai-language-connector/SKILL.md.
+ */
 export interface AnalyzeResult {
-  sentiment?: string;
-  entities?: string[];
+  sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
+  sentimentScores?: SentimentScores;
+  entities?: EnrichmentEntity[];
   keyPhrases?: string[];
   detectedLanguage?: string;
+  /** e.g. "azure-ai-language:2025-01-01" — which provider/model version actually produced this result. */
+  modelUsed?: string;
 }
 
 export interface AIProviderConnector extends ProviderConnector {
@@ -72,5 +99,13 @@ export interface AIProviderConnector extends ProviderConnector {
   /** Per-model, not per-provider — ADR-0002's one exception to the shared contract. */
   getModelRateLimit(modelId: string): RateLimitConfig;
   getModelCapabilities(modelId: string): ModelCapabilities;
-  analyze(modelId: string, text: string): Promise<AnalyzeResult>;
+  /**
+   * `credential` (Story 2.8) is additive and optional — a real provider's
+   * own implementation needs the caller's resolved, decrypted credential to
+   * authenticate; a stateless example/mock implementation (Story 2.1's own
+   * fixtures) simply ignores it. Never resolved by analyze() itself — the
+   * caller (e.g. enrichPost.ts) reads it from the tenant's own stored
+   * credential first (ADR-0027: never a SocialEngage-held key).
+   */
+  analyze(modelId: string, text: string, credential?: string): Promise<AnalyzeResult>;
 }
