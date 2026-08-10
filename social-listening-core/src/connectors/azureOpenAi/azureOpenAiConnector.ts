@@ -103,8 +103,18 @@ const ENRICHMENT_SCHEMA = {
     },
     keyPhrases: { type: 'array', items: { type: 'string' } },
     detectedLanguage: { type: 'string' },
+    // Self-reported, post-self-review confidence in the *whole* answer —
+    // deliberately a distinct field from entities[].confidenceScore, which
+    // is per-entity. Named `overallConfidence` (not `confidenceScore`) so
+    // it's never confused with Azure AI Language's own calibrated-
+    // classifier probabilities — this is the model's own self-assessment,
+    // not a statistically calibrated score. See AnalyzeResult's own doc
+    // comment (types.ts) and ADR-0038's own Open Questions section, which
+    // named exactly this fitness-for-purpose question before this field
+    // existed to answer it.
+    overallConfidence: { type: 'number' },
   },
-  required: ['sentiment', 'sentimentScores', 'entities', 'keyPhrases', 'detectedLanguage'],
+  required: ['sentiment', 'sentimentScores', 'entities', 'keyPhrases', 'detectedLanguage', 'overallConfidence'],
   additionalProperties: false,
 } as const;
 
@@ -119,6 +129,7 @@ interface StructuredEnrichment {
   entities: Array<{ text: string; category: string; confidenceScore: number }>;
   keyPhrases: string[];
   detectedLanguage: string;
+  overallConfidence: number;
 }
 
 async function callChatCompletions(
@@ -139,7 +150,10 @@ async function callChatCompletions(
           {
             role: 'system',
             content:
-              'Extract sentiment, per-class sentiment scores, named entities, key phrases, and the detected ISO 639-1 language code from the given social/news post text. Respond only via the provided JSON schema.',
+              'Extract sentiment, per-class sentiment scores, named entities, key phrases, and the detected ISO 639-1 language code from the given social/news post text. ' +
+              'Before finalizing your answer, review it yourself: check that every entity actually appears in the text with the correct category from the allowed list, that sentimentScores are internally consistent with the chosen sentiment label, and that no key phrase or entity was fabricated or missed. ' +
+              'Silently correct anything you find wrong during this review, then respond only via the provided JSON schema with the corrected, final result. ' +
+              "Also report overallConfidence: your own honest confidence (0.0-1.0) in this final, corrected answer as a whole — 1.0 only if the text was clear and your extraction is unambiguous, lower if the text was short, ambiguous, sarcastic, or you had to guess on any field. Do not default to a high number; this score is used to decide whether to trust or discard your answer.",
           },
           { role: 'user', content: text },
         ],
@@ -231,6 +245,7 @@ export const azureOpenAiConnector: AIProviderConnector = {
       entities,
       keyPhrases: structured.keyPhrases,
       detectedLanguage: structured.detectedLanguage,
+      overallConfidence: structured.overallConfidence,
       modelUsed: `${AZURE_OPENAI_PROVIDER_ID}:${deployment}`,
     };
     return result;

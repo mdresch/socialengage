@@ -176,6 +176,13 @@ describe('Story 2.9 — Second AIProviderConnector (Azure OpenAI, real gpt-5-min
       expect(typeof result.detectedLanguage).toBe('string');
       expect(result.detectedLanguage).toBe('en');
       expect(result.modelUsed).toContain(AZURE_OPENAI_PROVIDER_ID);
+      // Self-reported, post-self-review confidence (added after this story's
+      // own initial build, at Menno's request) — a real, bounded number, not
+      // a calibrated probability like Azure AI Language's own scores. See
+      // AnalyzeResult's own doc comment in types.ts.
+      expect(typeof result.overallConfidence).toBe('number');
+      expect(result.overallConfidence).toBeGreaterThanOrEqual(0);
+      expect(result.overallConfidence).toBeLessThanOrEqual(1);
     });
   });
 

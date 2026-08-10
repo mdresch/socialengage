@@ -92,6 +92,22 @@ export interface AnalyzeResult {
   detectedLanguage?: string;
   /** e.g. "azure-ai-language:2025-01-01" — which provider/model version actually produced this result. */
   modelUsed?: string;
+  /**
+   * Story 2.9 (ADR-0038) — an LLM-based provider's own self-reported
+   * confidence (0.0-1.0) in its complete answer, after an explicit self-
+   * review step (see azureOpenAiConnector.ts's own system prompt).
+   * Deliberately a separate field from entities[].confidenceScore
+   * (per-entity, and — for a calibrated-classifier provider like Azure AI
+   * Language — a real statistical probability, not a self-assessment).
+   * Never populated by azureAiLanguageConnector.ts; this directly answers
+   * (for the LLM side only) the fitness-for-purpose question ADR-0038's
+   * own Open Questions section named before this field existed: whether
+   * self-reported confidence is comparable to a calibrated probability.
+   * It isn't — callers reading this field should treat it as an LLM's own
+   * self-assessment, not interchangeable with sentimentScores'/
+   * confidenceScore's calibrated-probability semantics.
+   */
+  overallConfidence?: number;
 }
 
 export interface AIProviderConnector extends ProviderConnector {
