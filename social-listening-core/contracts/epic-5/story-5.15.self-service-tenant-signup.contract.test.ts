@@ -56,6 +56,29 @@
 // actionable error rather than a silent 200/500 with no trace — reproduced
 // via a real, deterministic external_subject UNIQUE-constraint collision
 // (a pre-seeded, inactive users row already holding that sub), not a mock.
+//
+// --- Healing pass, 2026-08-10 (heal-contract-failure, Menno's explicit
+// sign-off) --- Real, live defect found via manual end-to-end testing of
+// the full sign-up -> invite -> activation loop, not by re-reading this
+// story's own text (which never named this behavior either way — a
+// genuine, previously unencoded gap, not a contradicted assertion). The
+// founding tenant_admin this endpoint creates never incremented
+// tenants.active_seat_count, unlike every other activation path in this
+// codebase (resolveIdentity()'s own invite-link case, Story 1.9's own AC):
+// confirmed directly against a real tenant created via this exact
+// endpoint, then a second real user invited and activated —
+// active_seat_count read back as 1, not 2. Practical consequence: every
+// self-service-created tenant permanently undercounts its own founder by
+// one seat, letting POST /v1/tenants/users's own 409 seat-ceiling check
+// (Story 1.9) admit one more invite than the tenant's real
+// license_seat_count allows. Fixed by calling the same
+// incrementActiveSeatCount() the invite-activation path already uses,
+// right after the founding user's own INSERT succeeds — new assertion
+// (10) below proves it directly against the database.
+// (10) the founding tenant_admin's own creation increments
+// tenants.active_seat_count to 1 — verified directly against the
+// database, the same "not just the HTTP response" discipline (5)/(7)/(8)
+// already use.
 // Explicitly out of scope: §7's rate-limiting/abuse-prevention mechanism
 // (Story 5.18, named as a required follow-up, not this story's own AC);
 // §8c's repeated-domain escalation-threshold detection (ADR-0037's own
@@ -165,6 +188,16 @@ describe('Story 5.15 — Self-service tenant sign-up backend endpoint', () => {
     expect(rows[0].role).toBe('tenant_admin');
     expect(rows[0].status).toBe('active');
     expect(rows[0].external_subject).toBe(sub);
+
+    // (10) Healed 2026-08-10 — the founding tenant_admin's own creation must
+    // consume a seat, the same as any other activation path in this codebase.
+    // Verified directly against the database, not just the HTTP response body.
+    expect(res.body.activeSeatCount).toBe(1);
+    const { rows: tenantRows } = await getAdminPool().query<{ active_seat_count: number }>(
+      `SELECT active_seat_count FROM tenants WHERE id = $1`,
+      [res.body.id]
+    );
+    expect(tenantRows[0].active_seat_count).toBe(1);
   });
 
   it('AC1: mounting this route changes nothing about an existing protected route still rejecting an unauthenticated caller', async () => {

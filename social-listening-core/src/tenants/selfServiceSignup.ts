@@ -1,7 +1,7 @@
 import { getTenantSignupPool } from '../db/tenantSignupPool';
 import { withTenant } from '../db/withTenant';
 import { logPlatformAdminAction } from '../admin/platformAdminAuditLog';
-import { Tenant, TenantRow, mapRowToTenant } from './tenantStore';
+import { Tenant, TenantRow, mapRowToTenant, incrementActiveSeatCount } from './tenantStore';
 import { checkAndLogDomainEscalation } from './domainSignupAttempts';
 
 /**
@@ -108,7 +108,18 @@ export async function provisionTenantViaSignup(
     return rows[0].id;
   });
 
-  return { tenant, userId };
+  // Healed 2026-08-10: the founding tenant_admin consumes a seat too, the
+  // same as resolveIdentity()'s own invite-activation path already does
+  // (identityResolution.ts case 3) — previously only that path incremented
+  // active_seat_count, so every self-service-created tenant permanently
+  // undercounted its own founder by one seat. A freshly-created tenant
+  // always has room (active_seat_count starts at 0, license_seat_count
+  // defaults to DEFAULT_SELF_SERVICE_SEAT_COUNT > 0), so this cannot
+  // realistically return null here; the tenant object returned to the
+  // caller reflects the incremented count when it doesn't.
+  const updatedTenant = await incrementActiveSeatCount(tenant.id);
+
+  return { tenant: updatedTenant ?? tenant, userId };
 }
 
 /**
