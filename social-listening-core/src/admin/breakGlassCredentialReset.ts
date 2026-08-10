@@ -161,6 +161,21 @@ function isConflictingObjectError(status: number, bodyText: string): boolean {
 }
 
 /**
+ * Matches Graph's generic tenant-level throttling/concurrency-conflict
+ * response — "Error due to concurrent requests being made to the tenant" —
+ * distinct from isConflictingObjectError()'s directory-replication-lag
+ * case above, but the same underlying category of real, transient Entra
+ * behavior under load, not a logic error. Observed directly on the
+ * password-reset and Temporary Access Pass calls below; see
+ * platform-admin-access/SKILL.md's own "Known gaps" entry for
+ * grantRoles()'s own 2026-08-07 fix for the mirror-image problem —
+ * this closes the same class of gap for the two calls that never got it.
+ */
+function isConcurrentTenantRequestError(status: number, bodyText: string): boolean {
+  return status === 409 && /concurrent requests/i.test(bodyText);
+}
+
+/**
  * Retries a "conflicting object... already present in the directory" 400,
  * mirroring revokeRoles()'s own already-documented handling of the mirror-
  * image case (a DELETE 404ing immediately after a very recent create) —
@@ -262,6 +277,81 @@ async function revokeRoles(elevatorToken: string, assignmentIds: string[]): Prom
 }
 
 /**
+ * Retries the password-reset PATCH on a real, observed transient Entra
+ * concurrency conflict (isConcurrentTenantRequestError above), mirroring
+ * grantRoles()/revokeRoles()'s own retry-with-backoff shape exactly.
+ */
+async function resetPasswordWithRetry(
+  resetterToken: string,
+  targetUserId: string,
+  maxAttempts = 8
+): Promise<void> {
+  let lastError = '';
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    if (attempt > 1) {
+      const delay = Math.random() * Math.pow(2, attempt) * 1000;
+      await new Promise((r) => setTimeout(r, Math.min(delay, 30000)));
+    }
+    const resetRes = await fetch(`https://graph.microsoft.com/v1.0/users/${targetUserId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${resetterToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        passwordProfile: {
+          forceChangePasswordNextSignIn: true,
+          password: randomTempPassword(),
+        },
+      }),
+    });
+    if (resetRes.ok) return;
+    const bodyText = await resetRes.text();
+    if (isConcurrentTenantRequestError(resetRes.status, bodyText) && attempt < maxAttempts) {
+      lastError = `${resetRes.status} ${bodyText}`;
+      continue;
+    }
+    throw new Error(`Credential reset failed: ${resetRes.status} ${bodyText}`);
+  }
+  throw new Error(`Credential reset failed after retries: ${lastError}`);
+}
+
+/**
+ * Retries Temporary Access Pass creation on the same transient conflict,
+ * for the same reason. Returns the TAP code — never logged or persisted by
+ * this function, same discipline as the rest of this module.
+ */
+async function createTemporaryAccessPassWithRetry(
+  resetterToken: string,
+  targetUserId: string,
+  maxAttempts = 8
+): Promise<string> {
+  let lastError = '';
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    if (attempt > 1) {
+      const delay = Math.random() * Math.pow(2, attempt) * 1000;
+      await new Promise((r) => setTimeout(r, Math.min(delay, 30000)));
+    }
+    const tapRes = await fetch(
+      `https://graph.microsoft.com/v1.0/users/${targetUserId}/authentication/temporaryAccessPassMethods`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resetterToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lifetimeInMinutes: 60, isUsableOnce: true }),
+      }
+    );
+    if (tapRes.ok) {
+      const tap = (await tapRes.json()) as { temporaryAccessPass: string };
+      return tap.temporaryAccessPass;
+    }
+    const bodyText = await tapRes.text();
+    if (isConcurrentTenantRequestError(tapRes.status, bodyText) && attempt < maxAttempts) {
+      lastError = `${tapRes.status} ${bodyText}`;
+      continue;
+    }
+    throw new Error(`Temporary Access Pass creation failed: ${tapRes.status} ${bodyText}`);
+  }
+  throw new Error(`Temporary Access Pass creation failed after retries: ${lastError}`);
+}
+
+/**
  * Phase 2: a Platform Admin explicitly picks up a `requested` request and
  * executes it — the only step that touches Entra. Rejects a request that
  * isn't in `requested` status (no re-executing, no executing a denied
@@ -309,33 +399,8 @@ export async function executeBreakGlassRequest(
       config.tenantId
     );
 
-    const resetRes = await fetch(`https://graph.microsoft.com/v1.0/users/${targetUserId}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${resetterToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        passwordProfile: {
-          forceChangePasswordNextSignIn: true,
-          password: randomTempPassword(),
-        },
-      }),
-    });
-    if (!resetRes.ok) {
-      throw new Error(`Credential reset failed: ${resetRes.status} ${await resetRes.text()}`);
-    }
-
-    const tapRes = await fetch(
-      `https://graph.microsoft.com/v1.0/users/${targetUserId}/authentication/temporaryAccessPassMethods`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${resetterToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lifetimeInMinutes: 60, isUsableOnce: true }),
-      }
-    );
-    if (!tapRes.ok) {
-      throw new Error(`Temporary Access Pass creation failed: ${tapRes.status} ${await tapRes.text()}`);
-    }
-    const tap = (await tapRes.json()) as { temporaryAccessPass: string };
-    temporaryAccessPass = tap.temporaryAccessPass;
+    await resetPasswordWithRetry(resetterToken, targetUserId);
+    temporaryAccessPass = await createTemporaryAccessPassWithRetry(resetterToken, targetUserId);
   } finally {
     // Revoke even if either step above failed — never leave the resetter
     // elevated. Uses the elevator's own token, not the resetter's — the
