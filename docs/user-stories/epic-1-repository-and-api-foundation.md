@@ -61,27 +61,68 @@
 
 ---
 
-## Story 1.5 — Watchlist CRUD REST surface
+## Story 1.5 — Watchlist CRUD REST surface, personal/per-user, with ADR-0044's PATCH/error/locking contract
 
-**Source:** Phase 1 "also build, not storied" work (see `docs/open-items-and-deferred-work.md` §A, `docs/implementation-plan.md` Phase 1) · **Status:** Ready
+**Source:** ADR-0044 (Accepted 2026-08-11) · **Status:** Ready
 
-**As a** user of the social listening platform,
-**I want** to create, read, update, and delete watchlists via REST endpoints,
-**so that** I can define what content I want to monitor and have it persist across sessions.
+**As a** tenant user or Tenant-Admin,
+**I want** to create, read, update, and delete my own watchlists via REST endpoints, using standardized PATCH semantics, error codes, and optimistic locking, with real caller identity (not a self-declared header) determining what I can see,
+**so that** I can define what content I want to monitor, have it persist across sessions, trust that concurrent edits don't silently clobber each other, and know my watchlists are private to me — not visible to other users in my tenant, including my own Tenant-Admin.
+
+**This is a real rework of Story 1.5's pre-existing, already-shipped-ish scope, not net-new work — see the note below.** The prior version of this story's Acceptance Criteria predated ADR-0044 entirely and was stale in a way verified directly against the current codebase, not assumed:
+
+- `social-listening-core/src/http/versions/v1/watchlistsRouter.ts` and `src/http/auth/requireTenantUser.ts` already resolve tenant identity from `req.identity` (the `Authorization: Bearer`-resolved, token-authenticated caller per Story 5.10/ADR-0033) — `X-Tenant-Id` is not read anywhere in this router. The prior AC's "All endpoints require the `X-Tenant-Id` header and return 400 if it is missing" was already false against shipped code before this rewrite; this story corrects it rather than perpetuating it.
+- Migration `migrations/0014_create_watchlists.sql` (confirmed directly) has no `version` column and no `user_id` column — both are new, added by this story's own migration work (see AC1 below). It **already** ships a `before update` trigger named `update_updated_at_column()`, which already matches ADR-0044 §4's decision exactly (function name and behavior) — no change needed there, only continued correctness once new columns are added.
+- The router has no `GET /v1/watchlists/:id` route today — `watchlistStore.ts`'s `getWatchlistById()` function exists but is imported and unused in the router. ADR-0044 Appendix A's worked examples (PATCH with `If-Match`, "requesting another user's watchlist" → 404) all presuppose a single-resource `GET`. This story adds that route; it did not exist before.
+- The existing contract test (`contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts`) already dropped `X-Tenant-Id` in favor of the test-only `X-Test-Identity` bypass (see its own 2026-08-03 header note) but asserts none of ADR-0044's actual contract — no `version`/`If-Match`, no 422/409/428, no RFC 7396 null-deletion/array-replace semantics, no `user_id` ownership check. It needs substantial extension, not just a status-line update — named here as follow-up implementation work for whoever picks up this story via `implement-story`, not performed by this review.
 
 **Acceptance Criteria**
-- `POST /v1/watchlists` creates a watchlist and returns it with a generated id, `createdAt`, and `updatedAt` timestamps.
-- `GET /v1/watchlists` returns all watchlists for the current tenant (filtered by RLS), ordered by `createdAt` descending.
-- `GET /v1/watchlists?matchType=<type>` filters watchlists by their `matchType` field.
-- `PATCH /v1/watchlists/:id` updates a watchlist by id for the current tenant, only modifying fields provided in the request body (PATCH semantics), and updates the `updatedAt` timestamp.
-- `DELETE /v1/watchlists/:id` removes a watchlist by id for the current tenant and returns 204 on success.
-- All endpoints return 404 for non-existent watchlists or watchlists belonging to a different tenant (RLS enforced).
-- All endpoints require the `X-Tenant-Id` header and return 400 if it is missing.
-- The `watchlists` table exists with RLS policy `tenant_isolation` matching the pattern of other tenant-scoped tables.
+
+*Schema (additive migration, new — the next available migration number after `0024`)*
+- `watchlists` gains `version integer not null default 1` (§3, optimistic locking) and `user_id uuid not null references users(id)` (§5c, ownership) via an additive migration; every pre-existing row is not assumed to exist in production data yet, but the migration itself must not break if it does (default `1` for `version`; `user_id` cannot be defaulted — flagged as a real backfill consideration if any watchlist rows already exist outside test databases).
+- The `tenant_isolation` RLS policy is extended with a second predicate on a new `user_id = NULLIF(current_setting('app.user_id', true), '')::uuid` condition (ADR-0044 §5b), alongside the existing `tenant_id` predicate — both in `USING` and `WITH CHECK`.
+- `social-listening-core/src/db/withTenant.ts` (or a new sibling helper) propagates `app.user_id` via `set_config(..., true)` the same transaction-local way `app.tenant_id` already is — `userId` is already produced by identity resolution (ADR-0032 §5) alongside `tenantId`/`role`, so no new resolution step is needed, only wiring the value through.
+- Every `watchlistStore.ts` function (`createWatchlist`, `listWatchlists`, `getWatchlistById`, `updateWatchlist`, `deleteWatchlist`) is re-signed to take `userId` alongside `tenantId`, and the router passes the caller's resolved `userId` (from `requireTenantUserIdentity()`, the same helper Story 1.7 already established for role/userId-dependent routes) instead of the tenant-only `requireTenantUser()`.
+
+*Ownership (§5c)*
+- `POST /v1/watchlists` sets `user_id` to the caller's own resolved identity; no client-supplied `user_id` is ever accepted or trusted, verified by a test that supplies a different user's id in the body and confirms it has no effect.
+- Both `tenant_admin` and `tenant_user` resolved roles may create, list, read, patch, and delete their own watchlists — no role gate on any watchlist operation.
+- `GET /v1/watchlists` (list) and `GET /v1/watchlists/:id` (new, see below) return only the caller's own watchlists — never another user's, even within the same tenant, including when the caller is `tenant_admin`. Proven by a same-tenant, two-user test: user A's watchlist is invisible to user B, and invisible to a `tenant_admin` in the same tenant who did not create it. **There is no Tenant-Admin oversight override, by design (§5c) — this is not a gap to close later.**
+- A request for another user's watchlist — same tenant or a different tenant — returns **404** (`{ "code": "not_found" }`), identically in both cases; ownership is RLS-enforced the same way tenant isolation is, so there is no distinguishable 403 case here (§2's 403 row is reserved for Tenant-Admin role-check failures elsewhere in the project, not for watchlist ownership).
+
+*New route*
+- `GET /v1/watchlists/:id` returns the caller's own watchlist by id (200), or 404 per the ownership/tenant rule above. Wires the already-existing `getWatchlistById()` store function (re-signed for `userId` per above) into the router for the first time.
+
+*PATCH semantics — RFC 7396 JSON Merge Patch (ADR-0044 §1)*
+- A `null` value for a nullable field (e.g. `booleanQuery`) in the PATCH body deletes/clears that field.
+- Fields omitted from the PATCH body are left unchanged — no "absent implies null" inference.
+- Array-valued fields (`terms`, `platformIds`) are replaced in full when present in the body, never merged element-wise.
+- `PATCH /v1/watchlists/:id` updates `updatedAt` via the existing `update_updated_at_column()` trigger (already shipped, migration 0014) — not application-set — and increments `version`.
+
+*Error-code mapping (ADR-0044 §2) — replacing the prior AC's undifferentiated 400/404 usage*
+- 404 (`{ code: "not_found" }`) for: watchlist does not exist in caller's tenant; exists in a different tenant; exists in caller's tenant but belongs to a different user (§5c) — all three cases return the identical body shape, deliberately not distinguishable by the caller.
+- 422 (`{ code: "validation_failed", details: [...] }`) when the body is well-formed JSON but fails a business-validation rule — specifically the §5a `matchType` ↔ `terms`/`booleanQuery` invariant (below) on create or on any PATCH that changes `matchType`, `terms`, or `booleanQuery`.
+- 400 (`{ code: "bad_request" }`) for unparseable JSON or a request body of the wrong shape (e.g. `terms` sent as a string instead of an array).
+- 409 (`{ code: "version_conflict", current_version: <int> }`) when `PATCH` is sent with a stale `If-Match` value (the row's actual `version` has moved since the client last read it).
+- 428 (`{ code: "precondition_required" }`) when `PATCH` is sent with no `If-Match` header at all — `watchlists` requires optimistic locking by default (§3).
+- 403 is **not** used anywhere in this story's contract — reserved by §2 for Tenant-Admin application-layer role-check failures elsewhere in the project; watchlist ownership is an RLS boundary (404), not a role check.
+
+*Optimistic locking (§3)*
+- Every successful `POST`/`PATCH` response includes the current `version` integer.
+- `PATCH /v1/watchlists/:id` requires an `If-Match: "<version>"` header; a mismatch against the row's actual current `version` returns 409 with `current_version` in the body; a missing header returns 428.
+
+*Row-shape validation (§5a, reconciled with ADR-0021)*
+- `matchType = 'boolean'` requires a non-null, non-empty `booleanQuery`; `terms` must be null/absent for that row.
+- `matchType ∈ {'keyword', 'hashtag', 'account'}` requires a non-null, non-empty `terms` array; `booleanQuery` must be null/absent for that row.
+- A create or matchType-affecting PATCH that violates either rule (both populated, or both absent, for the resulting `matchType`) fails 422 — never silently coerced or partially applied. This replaces the prior AC's weaker "`booleanQuery` required when `matchType` is boolean" statement, which never named the inverse rule or the failure code.
+
+*Carried forward, unchanged in substance from the prior AC*
+- `GET /v1/watchlists` returns all of the caller's own watchlists (RLS- and ownership-filtered), ordered by `createdAt` descending; `?matchType=<type>` filters by type.
 - `isActive` defaults to `true` and `platformIds` defaults to an empty array when not provided on creation.
 - Watchlists support all four match types: `keyword`, `hashtag`, `account`, `boolean`.
-- When `matchType` is `boolean`, a `booleanQuery` field is required and carries the boolean query syntax.
-- Tenant isolation is enforced at the database layer: a tenant can only see and modify their own watchlists.
+- `DELETE /v1/watchlists/:id` returns 204 on success, 404 per the ownership/tenant rule above.
+
+**Note on scope, per ADR-0044's own §6 cross-references and this story's own place in the series:** this story does not build watchlist *matching* (ADR-0006/ADR-0021, already decided and separately storied), does not add a per-user watchlist count/complexity cap (ADR-0044's own named Open Question, deliberately left unresolved pending real usage data), and does not add a tenant-mutation audit table (ADR-0044 §6, deliberately deferred — `version` + `updated_at` are this project's current change-tracking mechanism for this table).
 
 ---
 
@@ -127,7 +168,7 @@
 
 ## Story 1.8 — Tenant self-view REST endpoint
 
-**Source:** ADR-0031 (Accepted) · **Status:** Ready — no new ADR needed. `tenants.md`'s own RLS policy (Story 5.8, built) already proves a tenant-scoped session sees exactly its own row at the database layer; this story only adds the HTTP route calling into it, the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+**Source:** ADR-0031 (Accepted) · **Status:** Built 2026-08-09 (`social-listening-core@10fc934`, `contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts`, 8/8, full suite 44/44 suites / 272/272 tests — see `docs/implementation-log.md`). No new ADR needed. `tenants.md`'s own RLS policy (Story 5.8, built) already proves a tenant-scoped session sees exactly its own row at the database layer; this story only adds the HTTP route calling into it, the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: Story 5.8's own stated purpose is "viewing my own tenant's settings needs no special-case authorization path," but its Acceptance Criteria only prove the RLS policy returns one row at the DB layer (`contracts/epic-5/story-5.8.tenants-table-rls.contract.test.ts`) — no route in any `versions/v1/*Router.ts` file exposes it over HTTP, confirmed directly against the current router files.
 
@@ -168,3 +209,25 @@
 - Every write these endpoints perform is durably recorded per Story 5.17's own audit mechanism (`user_access_audit_log`, or equivalent) for `access_ends_at` changes specifically — this story is the first place that table actually gets written to; Story 5.17 designs the table, this story is one of (potentially several) callers of it.
 
 **Named as a required, practical dependency, not a blocker to drafting:** Story 5.17 (audit trail for `access_ends_at` writes) should exist before this story's `PATCH` endpoint ships to production, so every `access_ends_at` change is audited from day one rather than retrofitted — the same "name the dependency, don't silently build past it" discipline this series applies elsewhere (e.g. Story 6.6 naming its own backend REST gap). This story's own Acceptance Criteria can still be written and its contract built independently; the audit call is a real, load-bearing part of AC8 above, not a separate follow-up.
+
+---
+
+## Story 1.10 — Postgres boot-time readiness check and a real `/v1/health`
+
+**Source:** ADR-0016 (Postgres as the database engine, Accepted) · **Status:** Ready — no new ADR needed. ADR-0016 already decided Postgres is this project's database engine; a boot-time connectivity check and a database-aware liveness route are operational implementation detail under that already-decided architecture, the same "ordinary surface work needs no new ADR" category Stories 1.5/1.8/1.9 already established.
+
+**Drafted 2026-08-11, from a direct question during a live session.** Closes a real, confirmed gap: verified directly against `social-listening-core/src/http/server.ts` and `src/db/pool.ts` that the server today calls `createApp().listen(port, ...)` with no database check of any kind beforehand, and that `getPool()` is a lazy singleton — the `pg.Pool` isn't even constructed until the first request that happens to need it. Postgres unavailability is therefore only discovered reactively, on whichever request hits the database first, never proactively at boot. Also verified that `GET /v1/health` (`versions/v1/router.ts`) already exists but is an unconditional `{ status: 'ok' }` placeholder from Story 1.3/ADR-0017, predating any auth mechanism and deliberately public — it does not touch the database at all today.
+
+**As an** operator running `social-listening-core`,
+**I want** the server to refuse to start if Postgres isn't reachable, and `/v1/health` to reflect real, current Postgres connectivity rather than an unconditional "ok,"
+**so that** a misconfigured or unreachable database is caught immediately at boot instead of surfacing as a confusing failure on whichever request happens to touch the database first, and so that infrastructure monitoring an already-running instance can actually detect a database outage that occurs after a successful boot.
+
+**Acceptance Criteria**
+- On startup, before calling `.listen(...)`, the server runs a real connectivity check against Postgres (e.g. `SELECT 1` via `getPool()`) and only proceeds to accept HTTP traffic if it succeeds.
+- If the startup connectivity check fails, the process logs a clear, actionable error identifying Postgres connectivity as the cause and exits non-zero — it never silently starts listening in a state where every tenant-scoped request would fail.
+- The startup check has a bounded timeout and a small number of retries with backoff (exact values are an implementation default, logged in this story's own commit, not hardcoded into this AC) — so a Postgres instance that is merely slow to accept connections at container-cold-start isn't treated identically to one that is genuinely unreachable.
+- `GET /v1/health` is extended to run the same connectivity check on every call: returns `200` with `{ status: 'ok' }` when Postgres answers, and `503` with `{ status: 'unavailable' }` (exact body shape an implementation default) when it doesn't — proven by a contract test that simulates an unreachable database and asserts `503`, not just the existing happy-path `200` assertion.
+- `/v1/health` remains public/unauthenticated, unchanged from Story 1.3/ADR-0017's own precedent — becoming database-aware does not change its auth boundary, only its response.
+- This story does not add or change any Platform-Admin-facing surface. Surfacing this connectivity signal in a Platform Admin Dashboard is explicitly out of scope here — `docs/design/README.md`'s own dated note (lines 40–42) already records Menno's direct decision to defer infrastructure/operational metrics (server health, connectivity, storage) for the Platform Admin console until "the systems limitations and requirements are well known." This story's `/v1/health` response is named as the future data source that deferred screen would eventually read from, once it's actually designed — not new scope to reconcile with that deferral, and not a reason to reopen it now.
+
+**Named as a related, not-yet-scoped future dependency:** whenever the deferred Platform Admin infrastructure-metrics screen (`docs/design/README.md` lines 40–42, Story 6.6's own explicit exclusion) is eventually designed, it has a real, concrete Postgres-connectivity signal to build on as of this story — named here so that future work doesn't have to rediscover it, per this series' own "name the dependency, don't silently build past it" discipline.

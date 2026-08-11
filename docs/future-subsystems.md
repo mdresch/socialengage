@@ -142,6 +142,20 @@ Per this file's own convention (below): named explicitly as unclear rather than 
 
 ---
 
+## Support & QA operations (not an MSE-derived subsystem — internal operational tooling, tracked outside this doc corpus)
+
+**Status, as of 2026-08-11:** not designed as a product feature; no ADR, no story, no charter. Tracked operationally in Jira Service Management (already provisioned, outside this project's git-tracked doc corpus) rather than in this file's usual "parked concept" sense — this isn't a downstream product subsystem waiting for its own future charter the way Brand Reputation & Alerts / Social Care / Social Selling are above; it's how support and QA work actually get done day to day, for a solo, pre-launch project.
+
+**What it covers:**
+- **Tenant support** — how a Tenant-Admin or Tenant-User gets help from SocialEngage (the product/company) when something breaks, confuses them, or needs troubleshooting. Distinct from Social Care (above), which is tenants using SocialEngage to support *their own* customers on social media — this is SocialEngage supporting its own tenants, and nothing in this project's ADRs, stories, or this file covered it before now. No in-product support surface (help widget, ticket-submission form, status page, etc.) exists anywhere in `social-listening-admin` or `social-listening-core` as of this date.
+- **UAT (User Acceptance Testing)** — Menno's own manual acceptance testing of shipped stories, tracked as Jira issues rather than in `docs/implementation-log.md` or any story file. Deliberately separate from the contract-first Jest suite (`docs/implementation-methodology.md`): a passing contract proves an Acceptance Criterion is satisfied programmatically; a UAT pass is Menno's own separate, manual "does this actually work the way I'd want it to" check, and doesn't need to be git-tracked the way a contract result does.
+
+**Why this lives in Jira and not this doc corpus:** neither is an architectural decision or a durable product-scope boundary the way everything else in this file is — both are operational workflow, the same category `docs/adr/README.md` footnote 7 draws around ADR-0025 ("unlike every other ADR in this series — its own subject matter is dev tooling, not production architecture"). This file's own "Convention for adding to this file" section (below) asks that an out-of-scope concept be named here even when its actual home is elsewhere; this entry satisfies that without pretending day-to-day support tickets or manual UAT notes need to be git-tracked ADRs or stories.
+
+**Real, currently unowned product gap, named but not designed:** once SocialEngage has live tenants, "how does a tenant actually reach support" becomes a genuine product-scope question (an in-app contact surface? an email address? a status page?) — not decided here, not urgent while the Admin UI is still mid-build (Phase 6) and no tenant is live, but worth resolving deliberately before general availability rather than discovered as a gap after the fact.
+
+**Noted, 2026-08-11 — support-ticket channel exists:** `secs@cba-hr.atlassian.net` (email intake) and `https://cba-hr.atlassian.net/helpcenter/SECS` (help center). Not yet surfaced anywhere in-product.
+
 ## Open naming gap (unresolved, not just undocumented)
 
 ADR-0008 and spec §4.6/§9 defer `TopicDailyCount` aggregation and all charting UI to **"a future insights/dashboard subsystem"** — that exact phrase, never tied to Brand Reputation & Alerts, Social Care, or Social Selling by name anywhere in the doc corpus. Worth noticing: this subsystem is itself named "Social Listening / **Insights**," so "a future insights subsystem" reads ambiguously — it could mean Brand Reputation & Alerts, a fourth/fifth thing never named in any charter (see Topic Center above), or a later phase of *this* subsystem that just hasn't been scoped. Nothing in this file resolves that ambiguity — Topic Center is deliberately left unassigned above rather than force-fit into one of the three named subsystems, the same way `docs/open-items-and-deferred-work.md` §D tracks other not-yet-decided items.

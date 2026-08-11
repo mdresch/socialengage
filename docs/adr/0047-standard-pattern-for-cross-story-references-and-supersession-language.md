@@ -1,7 +1,8 @@
 # ADR-0047: Standard pattern for cross-story references and supersession language
 
-**Status:** Proposed (revised 2026-08-08 by the AI Business & Requirements Analyst persona in response to a review finding that the prior version risked duplicating `docs/adr/README.md`'s seven-row governance table rather than codifying an existing pattern; awaiting Menno's separate review and acceptance)
+**Status:** Accepted (2026-08-11)
 **Source:** Backlog item (per `docs/open-decisions.md` / the project backlog's 2026-08-08 entry on Epic 2 cross-story dependency clarity — Stories 2.3, 2.4, 2.5; ADR-0009, ADR-0010, ADR-0020, ADR-0023), focused on standardizing the wording pattern used for superseded ACs and cross-story conflict notes after the 2026-07-30 supersession of Story 2.3/4.3's flat-failure threshold by Story 2.5's rate-relative rule.
+**Acceptance note:** Accepted by Menno 2026-08-11, verbatim: *"ADR-0047 is approved."* Accepted as drafted — no revisions at acceptance. This is a no-story ADR (meta-decision about authoring practice, same category as ADR-0027/ADR-0041/ADR-0037-adjacent precedent) — accepting it requires no contract, no implementation, and no user story; it takes effect immediately as the working pattern for future cross-story/cross-ADR references. Its own Open Questions section names a lint/consistency script (flagging unowned TBDs, incomplete cross-dependency notes, and non-conforming obsolete markers) as **explicitly deferred, not decided by this ADR** — noted at acceptance as not yet due for revisiting, per its own stated "likely useful once the series exceeds ~50 ADRs" threshold, which this series has now reached; left deferred rather than decided differently.
 
 ## Context
 

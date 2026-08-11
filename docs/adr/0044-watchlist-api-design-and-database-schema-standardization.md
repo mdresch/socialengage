@@ -1,8 +1,8 @@
 # ADR-0044: Watchlist CRUD contract — PATCH semantics, error mapping, and updated_at policy
 
-**Status:** Proposed (drafted 2026-08-08 by the AI Business & Requirements Analyst persona)
+**Status:** Accepted (2026-08-11)
 **Source:** Story 1.5 (Watchlist Management) needs an explicit decision on (a) PATCH semantics (no prior ADR covers this), (b) HTTP error-code mapping that does not conflict with ADR-0030 §1's role-check boundary, (c) the `updated_at` policy for mutable tenant-scoped tables (named as an Open Question in earlier ADRs, never decided), and (d) reconciliation of the `watchlists` row shape with ADR-0021's boolean-query AST.
-**Acceptance note:** *(to be filled at acceptance — verbatim reviewer quote, per series convention)*
+**Acceptance note:** Accepted by Menno 2026-08-11, verbatim: *"Approve the ADR 0044 Watchlist Crud contract with Personal Watchlist for Admin and Users."* Accepted as revised — both in-place, pre-acceptance revisions are in effect: the 2026-08-08 same-day revision (`terms` as `text[]` not `jsonb`; `update_updated_at_column()` naming correction) and the 2026-08-11 revision adding §5c's ownership/personal-watchlist decision (`user_id` column, both `tenant_admin` and `tenant_user` may create watchlists, fully private to creator, no Tenant-Admin oversight override, RLS-enforced via a new `app.user_id` session predicate) plus Appendices A and B — see this ADR's own Amendment Log for the full record. Story 1.5 (`docs/user-stories/epic-1-repository-and-api-foundation.md`) moves to **Ready**.
 
 ## Context
 
@@ -91,6 +91,7 @@ The `watchlists` table has columns:
 watchlists
   id                uuid primary key default gen_random_uuid()
   tenant_id         uuid not null references tenants(id)
+  user_id           uuid not null references users(id)   -- §5c, ownership
   name              text not null
   match_type        text not null          -- 'keyword' | 'hashtag' | 'account' | 'boolean'
   terms             text[]                 -- for keyword/hashtag/account: a Postgres array of strings; see §5a
@@ -109,7 +110,13 @@ For `match_type = 'boolean'`, `boolean_query` is the source text and is parsed i
 
 This resolves the apparent conflict between "watchlists store filters as a generic JSONB blob" (the initial, now-rejected, draft of this ADR) and "watchlist matching is AST-driven" (ADR-0021): they apply to disjoint `match_type` values. A boolean watchlist has `terms = NULL` and a populated `boolean_query`; a non-boolean watchlist has the inverse.
 
-#### §5b. RLS — the existing project pattern, not a new one
+**Validation invariant, spelled out explicitly for API consumers** (enforced at the application layer on create and on any PATCH that changes `matchType`, `terms`, or `booleanQuery`):
+
+- `matchType = 'boolean'` → `booleanQuery` **required** (non-null, non-empty string); `terms` **must be null**.
+- `matchType ∈ {'keyword', 'hashtag', 'account'}` → `terms` **required** (non-null, non-empty array); `booleanQuery` **must be null**.
+- A request that violates either rule (both populated, or both absent, for the resulting `matchType`) fails with **422** per §2's `validation_failed` row — not silently coerced or partially applied.
+
+#### §5b. RLS — extends the existing project pattern with a second predicate
 
 ```sql
 ALTER TABLE watchlists ENABLE ROW LEVEL SECURITY;
@@ -117,11 +124,30 @@ ALTER TABLE watchlists FORCE ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_isolation ON watchlists
   FOR ALL
-  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
-  WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+  USING (
+    tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
+    AND user_id = NULLIF(current_setting('app.user_id', true), '')::uuid
+  )
+  WITH CHECK (
+    tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
+    AND user_id = NULLIF(current_setting('app.user_id', true), '')::uuid
+  );
 ```
 
-Identical shape to every other tenant-scoped table per ADR-0015 (RLS invariant) and ADR-0032 §2 (the most recent accepted precedent for the `NULLIF(... , '')::uuid` cast on `app.tenant_id`). The session variable is **`app.tenant_id`**, propagated by the single authentication middleware ADR-0033 §1 specifies — `app.current_tenant` (named in the initial draft of this ADR) does not exist anywhere else in this codebase and is a typo, corrected here.
+The tenant predicate is identical to every other tenant-scoped table per ADR-0015 (RLS invariant) and ADR-0032 §2 (the accepted precedent for the `NULLIF(... , '')::uuid` cast). The session variable is **`app.tenant_id`**, propagated by the single authentication middleware ADR-0033 §1 specifies — `app.current_tenant` (named in the initial draft of this ADR) does not exist anywhere else in this codebase and is a typo, corrected here.
+
+The `user_id` predicate is new: `watchlists` is the **first table in this project where RLS enforces ownership, not just tenant membership** (§5c). `app.user_id` is set the same way `app.tenant_id` already is — transaction-locally via `set_config` inside the existing `withTenant`-style helper (`social-listening-core/src/db/withTenant.ts`) — using the `userId` that identity resolution (ADR-0032 §5) already produces alongside `tenantId` and `role` on every request. No new resolution step is needed, only propagating a value that already exists into one more session variable.
+
+#### §5c. Ownership — watchlists are personal, per-user, not tenant-wide shared resources (resolves the creation-authorization Open Question)
+
+A watchlist belongs to the `user_id` who created it, not to the tenant as a whole. This resolves the "which `users.role` may create a watchlist" Open Question left by the prior revision of this ADR:
+
+- **Both `tenant_admin` and `tenant_user` may create watchlists** — no role gate on creation. ADR-0032 §1's two v1 roles are both eligible; there is no third "watchlist-admin" role and none is introduced here.
+- **Watchlists are fully private to their creator.** Per §5b's RLS policy, a user can only ever see, list, patch, or delete their own rows — this is enforced at the database layer, identically for `tenant_user` and `tenant_admin`. **There is no oversight override**: a Tenant-Admin's own watchlists are exactly as private as anyone else's, with zero special read/write path onto another user's watchlists. This deliberately extends ADR-0030 §2's existing "Platform Admin never has a path to query `watchlists` rows" precedent one level further — Tenant-Admin doesn't get a bypass either, for the same reason: personal data should not silently become tenant-wide-visible data because of who happens to hold a role.
+- This is an **RLS-enforced ownership boundary**, not the application-layer role check ADR-0030 §1 uses for the Tenant-Admin-only actions elsewhere in this project (e.g. §2's 403 case in this same ADR). It is closer in kind to ADR-0015's tenant-isolation argument than to a role check: the invariant should hold regardless of which future code path queries the table, not just the paths that remember to add a `WHERE user_id = ...` clause.
+- **Consequence for §2's error mapping:** because ownership is RLS-enforced identically to tenant isolation, a request for another user's watchlist (whether same tenant or not) returns **404**, not 403 — there is no role-check case here to produce a 403. §2's 403 row remains reserved for the Tenant-Admin-only actions it already names elsewhere in this project; watchlist ownership isn't one of them.
+
+**Not decided here — new Open Question below:** whether personal, per-user watchlists need any cap on count or complexity, given the quota interaction with ADR-0003.
 
 ### 6. Cross-references to already-decided ADRs (explicit, not re-decided)
 
@@ -154,9 +180,80 @@ Identical shape to every other tenant-scoped table per ADR-0015 (RLS invariant) 
 - **JSON Patch (RFC 6902) instead of JSON Merge Patch** — rejected for v1: more expressive, but no current endpoint actually needs targeted-array-element updates; rule-of-three trigger noted.
 - **Application-set `updated_at`, no trigger** — rejected: places the invariant on every future write path getting it right, exactly the failure mode ADR-0015 already argues against for RLS.
 
+## Appendix A: PATCH contract examples
+
+Illustrative, not exhaustive — concrete instances of §1's RFC 7396 semantics, §2's error mapping, and §3's optimistic locking, applied to `watchlists`.
+
+**Switching match type — array replace + null-deletion in one request**
+
+```
+PATCH /v1/watchlists/{id}
+If-Match: "3"
+{
+  "matchType": "keyword",
+  "terms": ["acme", "support"],
+  "booleanQuery": null
+}
+```
+Replaces the watchlist's entire `terms` array (not merged with any prior value) and deletes `booleanQuery` — satisfying §5a's invariant for the new `matchType`. Response: `200` with `version: 4`.
+
+**Replacing an array (not merging it)**
+
+```
+PATCH /v1/watchlists/{id}
+If-Match: "4"
+{ "terms": ["newterm"] }
+```
+Result: `terms` becomes `["newterm"]` — the prior `["acme", "support"]` is gone, per §1's "arrays are replaced in full."
+
+**Version conflict — stale `If-Match`**
+
+```
+PATCH /v1/watchlists/{id}
+If-Match: "2"
+{ "name": "Renamed" }
+```
+The row is actually at version 4 (two PATCHes happened since the client last fetched). Response: `409`
+```json
+{ "code": "version_conflict", "current_version": 4 }
+```
+
+**Missing `If-Match` on a resource that requires it**
+
+```
+PATCH /v1/watchlists/{id}
+{ "name": "Renamed" }
+```
+`watchlists` requires optimistic locking (§3) — no `If-Match` header was sent. Response: `428`
+```json
+{ "code": "precondition_required" }
+```
+
+**Requesting another user's watchlist**
+
+```
+GET /v1/watchlists/{someone-elses-id}
+```
+Per §5c, ownership is RLS-enforced identically to tenant isolation — the row is invisible to the caller whether it belongs to another tenant or to another user in the *same* tenant. Response: `404`
+```json
+{ "code": "not_found" }
+```
+
+## Appendix B: PR review checklist
+
+Formalizes what §2, §3, §4, and §5c already state must not be silent. Applies to any new mutable `/v1` resource, not just `watchlists`.
+
+- [ ] PATCH body handling follows RFC 7396 (JSON Merge Patch) — no RFC 6902 (JSON Patch) operations introduced without a logged rule-of-three exception (§1)
+- [ ] `version` column present if concurrent PATCH could silently lose an update; `If-Match` required and checked before applying the patch (§3)
+- [ ] Error mapping follows §2's table as-is, or a per-endpoint deviation is logged in that endpoint's own story with a "deviates from ADR-0044 §2 because…" rationale
+- [ ] `updated_at` is trigger-maintained (`update_updated_at_column()`), not application-set — unless the table is on §4's explicit append-only exempt list
+- [ ] For `watchlists` specifically: the §5a `matchType` ↔ `terms`/`booleanQuery` invariant is enforced server-side, not just assumed from client behavior
+- [ ] RLS policy present and matches the project pattern: tenant predicate always (§5b); for `watchlists`, the `user_id` ownership predicate too (§5c)
+- [ ] No role-check, admin flag, or "oversight" code path added onto another user's `watchlists` rows — ownership is DB-enforced with no bypass, for `tenant_admin` and `tenant_user` alike (§5c)
+
 ## Open Questions for decision
 
-- **Watchlist creation authorization — which `users.role` values may create a watchlist in a tenant.** ADR-0032 §1 establishes `role ∈ {'tenant_admin', 'tenant_user'}` for v1 and ADR-0030 §1 places this as an application-layer role check; whether Tenant-Users may create their *own* watchlists (read-only access model) or only Tenant-Admins may create them is a real product question, not a technical one. Left for whoever drafts the watchlist-creation story to propose with a default.
+- **Whether personal, per-user watchlists need a cap on count or complexity, given the shared per-tenant quota in ADR-0003.** §5c makes watchlists personal and effectively unbounded per user. ADR-0006 translates watchlist terms into native connector queries wherever a platform supports server-side filtering — so for those platforms, watchlist count directly drives outbound API call volume. ADR-0003's `RequestGate` enforces that quota **per `(tenantId, providerId)`** — one shared budget for the whole tenant, not per-user — so a single user creating many watchlists on a connector-side-matched platform could consume a disproportionate share of every other user's shared ingestion budget in the same tenant. Platforms without native filtering (post-fetch matching) aren't affected the same way: the fetch itself doesn't multiply with watchlist count, only local matching compute does. No cap is proposed here — there's no usage data yet to size one, and inventing a number without evidence would be exactly the kind of unjustified precision this project avoids elsewhere (see ADR-0020's deferral of distributed rate-limiting until a real second instance exists). Left for whoever next touches ADR-0003 or the watchlist-creation story, once real per-tenant watchlist counts exist to reason from.
 - **Whether a real compliance need will eventually surface for tenant-mutation audit history** (vs. the current `version`+`updated_at` change-tracking) — if yes, a separate ADR for an `activity_logs` table naming is the right place; this ADR deliberately doesn't pre-decide the schema for a need that hasn't materialized.
 - **Whether the partial-GIN-on-`terms`-where-`match_type!=boolean` (§5a) or a separate-column split is the cleaner migration** — implementation choice; both forms are acceptable under this ADR.
 
@@ -164,6 +261,9 @@ Identical shape to every other tenant-scoped table per ADR-0015 (RLS invariant) 
 
 - 2026-08-08 — Initial proposal (this draft), drafted by the AI Business & Requirements Analyst persona, in response to a review finding that the prior draft of this ADR re-decided ADR-0015/0017/0030/0033 and silently conflicted with ADR-0021. This revision scopes the durable decisions to the four actually unanswered questions and explicitly cross-references the rest.
 - 2026-08-08 — **Revised in place, same day**, after a second review pass against the actual codebase: (a) `terms` is `text[]` (a Postgres array), not `jsonb` as the prior version of this revision proposed — migration `0014_create_watchlists.sql` and `social-listening-core/src/watchlists/watchlistStore.ts`'s `WatchlistRow.terms: string[]` both already use `text[]`, and Postgres array operators are the simpler match primitive for keyword/hashtag/account containment than JSONB containment would be; the JSONB-GIN discussion in §5a is reframed as a deferred optimization, not a default. (b) The `updated_at` trigger function name is corrected to `update_updated_at_column()` (matching what migration 0014 already defines), not `set_updated_at()` (which the prior version illustratively invented). Two `plpgsql` functions doing the same thing under different names would silently drift, so naming consistency with the shipped migration is the right default. Per this project's own in-place-revision-before-acceptance convention (ADR-0030/ADR-0031/ADR-0032's own precedent), this does not reopen this ADR's Status — it remains **Proposed**.
+- 2026-08-11 — **Revised in place** to resolve the "watchlist creation authorization" Open Question, following a product decision that watchlists are personal, per-user preferences rather than tenant-wide shared resources: (a) added `user_id uuid not null references users(id)` to the `watchlists` schema in §5; (b) added §5c deciding both `tenant_admin` and `tenant_user` may create watchlists, that ownership is fully private with **no** Tenant-Admin oversight override — extending ADR-0030 §2's "Platform Admin never touches `watchlists`" precedent one level further to Tenant-Admin — and that this is RLS-enforced (like tenant isolation), not an application-layer role check; (c) extended §5b's RLS policy with a second `user_id` predicate keyed on a new `app.user_id` session variable, propagated the same way `app.tenant_id` already is, via the existing `withTenant`-style transaction-scoped `set_config` mechanism (verified against `social-listening-core/src/db/withTenant.ts`) — no new identity-resolution step needed, since `userId` is already produced alongside `tenantId`/`role` per ADR-0032 §5; (d) noted the consequence for §2: a request for another user's watchlist is 404 (RLS-enforced), never 403, since there is no role-check case in the ownership boundary. Also added a new Open Question — whether per-user watchlist count/complexity needs a cap, given ADR-0006's connector-side query translation draws on ADR-0003's shared per-`(tenantId, providerId)` quota, not a per-user one — deliberately left unresolved (no cap number invented) pending real usage data, consistent with ADR-0020's precedent of not building limits ahead of actual need.
+
+  In the same pass, incorporated three reviewer recommendations (from an external AI-assisted review) judged genuinely cheap and additive, with no new process overhead: explicit `matchType` ↔ `terms`/`booleanQuery` validation rules spelled out in §5a for API consumers; Appendix A (concrete PATCH request/response examples covering array replacement, null-deletion, version conflict, and missing `If-Match`); and Appendix B (a PR review checklist formalizing what §2/§3/§4/§5c already require not be silent). A fourth recommendation — a shared `mapDbResultToHttpError()`-style utility for §2's error mapping — was judged sound but out of scope for this ADR; it's an implementation detail for whoever builds the Story 1.5 router, not a durable decision, so it isn't specified here. Several other recommendations from the same review (a PATCH-shape-enforcing middleware, flipping §3's per-resource opt-in default to versioning-required-by-default with no supporting reasoning, a CI-enforced `append_only_tables.json` registry, and specific GIN-indexing thresholds with no basis in real traffic data) were considered and rejected as process overhead or false precision inconsistent with this project's established lightweight-CI, defer-until-needed conventions (ADR-0020's precedent). Per the same in-place-revision-before-acceptance convention as the two 2026-08-08 entries, this does not reopen this ADR's Status — it remains **Proposed**.
 
 ## Note on relation to ADR-0041 (no relation)
 

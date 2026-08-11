@@ -1,7 +1,8 @@
 # ADR-0049: Retain point-in-time author follower count on `SocialPost` as a scoped exception to normalized `Author` storage
 
-**Status:** Proposed (2026-08-10) — drafted by the AI Business & Requirements Analyst persona, left Proposed per that persona's own charter boundary. Menno (Sponsor) accepted the underlying go/no-go decision (go) but the formal ADR acceptance, verbatim and in Menno's own words, is recorded in the Amendment Log below when it occurs.
+**Status:** Accepted (2026-08-11)
 **Source:** Flagged in `docs/adr/README.md`'s own "Still outstanding, not yet drafted" section (verbatim: "ADR-0004's point-in-time author snapshot (retaining `followerCount`-at-publish-time on `SocialPost` despite `Author` being normalized) was flagged as a genuine trade-off — not a strict improvement — during the same review round") and in `docs/open-decisions.md` §3. Go/no-go confirmed by Menno on 2026-08-10. This ADR does not document a decision the design spec or original design conversation made; it closes a named, flagged gap in this series.
+**Acceptance note:** Accepted by Menno 2026-08-11, verbatim: *"ADR 0048, ADR 0049 and ADR 0050 approved."* Accepted as drafted, no revisions. A new story, **Story 3.9** (`docs/user-stories/epic-3-data-model-storage-and-archival.md`), is added at this acceptance, per the ADR-0024/0026 "no story until acceptance" precedent this ADR's own Status line named ahead of time.
 
 ---
 
@@ -94,3 +95,4 @@ The following are explicitly not resolved by this ADR. They are left for Menno's
 ## Amendment Log
 
 - **2026-08-10** — Drafted by the AI Business & Requirements Analyst persona in response to Menno's confirmed go/no-go decision (go) on the follower-count-at-publish trade-off flagged in `docs/adr/README.md`'s "Still outstanding, not yet drafted" section. The handoff context confirmed: (1) Menno's go decision is documented; (2) this is a narrow scoped exception, not a full re-denormalization; (3) the decision is squarely in the ADR category ("underlying decision itself changes → new ADR"), not an Amendment Log entry to ADR-0004. Left **Proposed**, per this persona's own charter boundary — acceptance authority rests with Menno (Sponsor), recorded verbatim in this Amendment Log when it occurs.
+- **2026-08-11** — **Accepted by Menno**, verbatim: *"ADR 0048, ADR 0049 and ADR 0050 approved."* Accepted as drafted, no revisions. Status changed from Proposed to Accepted. Story 3.9 added to `docs/user-stories/epic-3-data-model-storage-and-archival.md`. ADR-0004's own "Pending supersession note — 2026-08-10 (ADR-0049)" gains its matching "Supersession update" entry, per this series' own governance-table convention (row 6).

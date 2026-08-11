@@ -1,7 +1,8 @@
 # ADR-0048: Explicit policy for "no core pipeline change" verification when registering new connectors
 
-**Status:** Proposed — drafted 2026-08-08 from backlog input; pending review and acceptance.
+**Status:** Accepted (2026-08-11)
 **Source:** Story 2.1 core extensibility contract, Story 2.8 follow-up direction, and downstream connector stories that depend on the same invariants.
+**Acceptance note:** Accepted by Menno 2026-08-11, verbatim: *"ADR 0048, ADR 0049 and ADR 0050 approved."* Accepted as drafted, no revisions. **Story 2.10** (`docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md`), already drafted against this ADR and left **Blocked — pending ADR-0048 acceptance**, moves to **Ready** — see that story's own Source line, updated to cite this acceptance. This ADR's own "Supports" section (Story 2.1, Story 2.8/2.9, "all downstream connector stories") describes the policy's *reach*, not a claim that no dedicated story exists for it: Story 2.10 is that dedicated story — it builds §2's CI guardrail and §3's registration-traceability requirement directly, rather than leaving them as an unowned constraint every future connector story would have to separately reinvent.
 
 ## Context
 
@@ -10,6 +11,8 @@ This project repeatedly states a core architecture promise: adding or swapping a
 Today that promise is asserted in story language and validated by selective story-level tests, but there is no explicit project policy defining mandatory verification evidence for every connector addition. That leaves a gap where accidental coupling, hard-coded provider branching, or undocumented extension-point bypass can creep into the core path over time.
 
 ## Decision
+
+**Durable decision (scope statement):** Connector registration must not require edits outside the designated registration surfaces — the connector implementation itself and the designated connector registry/registration surface. Any edit to core ingestion orchestration for registration purposes is out of policy unless accompanied by a separately approved ADR superseding this rule. The numbered items below are the verification mechanism for this rule, not separate rules of their own.
 
 Adopt an explicit, enforceable verification policy for every new connector registration PR:
 

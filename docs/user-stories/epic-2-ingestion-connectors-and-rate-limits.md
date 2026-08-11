@@ -163,7 +163,7 @@
 
 ## Story 2.10 — Connector Registration Transparantly registration
 
-**Source:** ADR-0048 · **Status:** Blocked — pending ADR-0048 acceptance.
+**Source:** ADR-0048 (Accepted 2026-08-11) · **Status:** Ready.
 
 **As a developer integrating new connectors into SocialEngage,**
 **I want robust automated checks ensuring that connector registration does not alter core pipeline paths,**
@@ -179,3 +179,33 @@
 **Notes:**
 
 - This story's implementation must reference ADR-0048's Consequences and Decision sections explicitly in its Jest contract test.
+
+---
+
+## Story 2.11 — Tenant-owned-domain RSS/content-feed connector with DNS TXT verification
+
+**Source:** ADR-0050 (Accepted 2026-08-11) · **Status:** Ready
+
+**Drafted 2026-08-11, at ADR-0050's acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent this ADR's own Status line named ahead of time. Follows Story 2.6 (Newswire/ADR-0024) and Story 2.7 (GNews/ADR-0026) as the established shape for a connector-selection story sourced from a connector-selection ADR.
+
+**As a** tenant wanting to monitor my own company's blog or newsroom feed,
+**I want** a connector that polls my own domain's RSS/Atom feed only after I've proven — via a DNS TXT record challenge — that I actually control that domain,
+**so that** I can track my own owned publication the same way I already track third-party sources, without SocialEngage or any tenant being able to configure monitoring of a domain they don't control.
+
+**Acceptance Criteria**
+- A registered `SocialConnector` (`providerId` `tenant-owned-feed` or equivalent distinct identifier, `authMode: 'none'`, `deliveryMode: 'poll'`, per ADR-0050 Decision §1/§2) is registered without any change to core ingestion orchestration — proven by the same no-core-path-edit evidence ADR-0048/Story 2.10 requires of every connector registration, not a separately-argued weaker claim.
+- `POST /connectors/tenant-owned-feed/connect` accepts `{ domain, feedUrl }`, generates a unique verification token, and returns TXT record instructions (`txtRecordHost`, `txtRecordValue`, `expiresAt`) per ADR-0050 Decision §3's own sequence — proven by a test asserting the response shape.
+- Polling of the configured `feedUrl` never begins while the domain's verification state is pending — proven by a test confirming a connector activation left in `pending` never triggers a fetch of the configured feed.
+- `POST /connectors/tenant-owned-feed/verify-domain` looks up the TXT record at the designated host and marks the domain verified only when the token matches; a missing or mismatched record returns a pending/retry response, not a hard failure — proven by tests for both outcomes (match; no match/missing).
+- Once verified, polling begins and each new feed item is normalized into a `SocialPost` via the existing ingestion pipeline (`runIngestionAttempt()`) — proven by a poll cycle against a real or fixture RSS/Atom feed producing `SocialPost` rows.
+- Each normalized post's `Author` resolves to the tenant's own verified domain/publication, not an individual: `externalAuthorId` set to the verified domain, `followerCount` left unpopulated — proven by asserting the resolved `Author` row's shape, the same proof pattern as Story 2.6 AC2/Story 2.7 AC2, and citing ADR-0004's own new "organization-as-Author clause" (added at ADR-0050's acceptance) as the governing rule rather than arguing the exception from scratch.
+- No historical backfill: items published before the connector begins polling are not retroactively ingested — proven by a test confirming only items observed after polling starts produce `SocialPost` rows, the same limitation as Newswire (Story 2.6).
+- v1 requires an explicit, tenant-supplied feed URL; no autodiscovery of a feed URL from a homepage — proven by a test confirming the connect endpoint requires `feedUrl` and performs no HTML-fetch/autodiscovery step, per ADR-0050's own v1 scope decision.
+- A verified domain need not match `tenants.domain` (ADR-0031) — proven by a test connecting and verifying a domain different from the tenant's own sign-up email domain, per ADR-0050 Decision §5.
+- `supportedQueryFeatures` (ADR-0021) is declared accurately (expected empty/none at v1) and watchlist matching correctly falls back to whole-query post-fetch matching, the same fallback pattern as Newswire (Story 2.6 AC3).
+- Every outbound feed fetch sets a compliant, self-identifying `User-Agent` header, per the same respectful-polling discipline ADR-0024's own research established.
+- A poll cycle against a verified feed with zero new items since the last check is a correct no-op (no duplicate `SocialPost` rows), proven across two consecutive poll cycles, the same proof pattern as Story 2.6 AC4/Story 2.7 AC4.
+
+**Notes:**
+- Exact TXT record host-level scoping (subdomain- vs. apex-level, ADR-0050 Open Question 1), token TTL, re-check cadence, and poll interval are implementation defaults per ADR-0050's own Amendment Log — this story's contract targets whatever the current implementation defaults are at build time (7-day token TTL; 1-minute-then-15-minute re-check backoff; 30-minute poll interval, respecting a feed's own `<ttl>` hint if larger), not fixed independently by this story.
+- Multiple-domain/multiple-feed support per tenant (ADR-0050 Open Question 2) and third-party CMS hosting-platform terms considerations (ADR-0050 Open Question 3) are named but not resolved by this story — single domain, single feed is the v1 scope this story's contract proves.
