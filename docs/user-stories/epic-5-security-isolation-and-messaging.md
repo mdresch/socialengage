@@ -225,6 +225,8 @@
 
 **Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts`, full suite 39/39 suites — see `docs/implementation-log.md`). Reused Story 5.7's own real-Entra-tenant test-cost discipline: exactly one real execute call in the whole contract, reused for the 409-on-retry check rather than triggering a second real Entra sequence. `targetUserId` is still caller-supplied — the Tenant-Admin-lookup-by-tenant-name gap (`platform-admin-access/SKILL.md`'s own named "Known gap") is unaffected, still open. This is the second of Story 6.6's three named backend prerequisites to close (after Story 5.12); Story 5.14 (audit-log query) is the last.
 
+**Clarified 2026-08-12 — this story's own AC1 scoped the "Request" endpoint to `platform_admin` only, which reads as narrower than ADR-0030 §3's own "the affected Tenant-Admin... submits a request" Decision text.** Resolved directly with Menno, no code change: the intake channel is an external Jira Service Management customer portal (a Tenant-Admin who's actually locked out can't authenticate into the admin UI to use an in-app screen anyway), human-reviewed by the Platform Admin before they submit the request through this story's own already-built endpoint — a deliberate, explicit human-in-the-loop manual trigger, not an automated Jira→API integration. See ADR-0030's own matching 2026-08-12 Clarification for the full account.
+
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes Story 6.6's own named gap: break-glass (Story 5.7) is store/mechanism-level only, confirmed directly against `platform-admin-access/SKILL.md`'s "Known gaps" section — no HTTP surface exists.
 
 **As** Platform Admin,
