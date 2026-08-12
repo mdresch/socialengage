@@ -1,4 +1,5 @@
 import { withTenant } from '../db/withTenant';
+import { isConnectorActive, ConnectorActivationOwnerType } from './connectorActivationStore';
 
 export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected';
 export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
@@ -109,10 +110,24 @@ export async function deriveConnectorHealth(
  * Auto-disable is *behavior*, not stored state (ADR-0009's whole point): the
  * scheduler consults the same derived health this module already computes,
  * rather than a separate "disabled" flag anyone could write independently.
+ *
+ * Story 1.11 (ADR-0051) extends this with a second, independent
+ * requirement: the matching-scope activation row (`connector_activations`
+ * for `ownerType: 'tenant'`, `connector_user_activations` for
+ * `ownerType: 'user'`) must also have `is_active = true`. `ownerType`
+ * defaults to `'tenant'`, backward-compatible with every pre-existing call
+ * site (Stories 2.3/2.4, which only ever checked the tenant-wide scope) --
+ * see .claude/skills/connector-activation/SKILL.md.
  */
-export async function shouldAttemptIngestion(tenantId: string, platformId: string): Promise<boolean> {
+export async function shouldAttemptIngestion(
+  tenantId: string,
+  platformId: string,
+  ownerType: ConnectorActivationOwnerType = 'tenant',
+  userId?: string
+): Promise<boolean> {
   const health = await deriveConnectorHealth(tenantId, platformId);
-  return health.status !== 'failing';
+  if (health.status === 'failing') return false;
+  return isConnectorActive(tenantId, platformId, ownerType, userId);
 }
 
 /** The reason shown to the tenant when auto-disabled — the most recent failure's errorSummary. */

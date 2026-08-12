@@ -34,6 +34,21 @@
 // 50%-rate/5-attempt-floor threshold. AC4 was rewritten to prove the same thing
 // (auto-disable wiring + visible reason) using Story 2.5's now-current threshold,
 // per Story 2.5's own implementation — not a decision this file makes on its own.
+//
+// 2026-08-12 (dated note, ADR-0051/Story 1.11): shouldAttemptIngestion() now
+// additionally requires an active connector_activations row for the scope
+// being checked (tenant-wide by default), alongside the health check this
+// story's own AC4/AC5 exercise — a real, deliberate behavior change, not a
+// weakening of this contract's own intent. AC4's/AC5's own "true" assertions
+// (this file's own before-the-threshold-is-crossed / other-tenant-unaffected
+// cases) now explicitly activate the connector first via
+// setConnectorActivation() — a direct store-level call, the same
+// test-infrastructure style this file already uses for withTenant() — so
+// they keep proving what they always proved (health-driven eligibility),
+// with activation held constant (always on) rather than left as an
+// unrelated, accidental variable. The "false" assertions (already-failing
+// health) are unaffected either way, since a failing health check alone is
+// already sufficient to make shouldAttemptIngestion() return false.
 
 import { randomUUID } from 'crypto';
 import { closePool } from '../../src/db/pool';
@@ -44,6 +59,7 @@ import {
 } from '../../src/ingestion/errorClassification';
 import { runIngestionAttempt } from '../../src/ingestion/runIngestionAttempt';
 import { shouldAttemptIngestion, getAutoDisableReason } from '../../src/connectors/connectorHealth';
+import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 
 jest.setTimeout(20000);
 
@@ -135,6 +151,10 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
     // failing crosses it. 4 pure failures stays under the attempt floor;
     // the 5th crosses both the floor and the rate.
     const tenantId = randomUUID();
+    // 2026-08-12 (ADR-0051/Story 1.11): shouldAttemptIngestion() now also
+    // requires activation — held constant (on) here so this AC keeps
+    // proving what it always proved, health-driven eligibility.
+    await setConnectorActivation(tenantId, connectorInfo.platformId, 'tenant', true);
     for (let i = 0; i < 4; i++) {
       await runIngestionAttempt({
         tenantId,
@@ -163,6 +183,11 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
   it('AC5: a second tenant is provably unaffected by the first tenant\'s auto-disable', async () => {
     const tenantA = randomUUID();
     const tenantB = randomUUID();
+    // 2026-08-12 (ADR-0051/Story 1.11): tenantB's own "true" assertion below
+    // now also needs activation — tenantA's stays "false" regardless (a
+    // failing health check alone already makes shouldAttemptIngestion()
+    // return false), so tenantA is deliberately left unactivated here.
+    await setConnectorActivation(tenantB, connectorInfo.platformId, 'tenant', true);
 
     for (let i = 0; i < 10; i++) {
       await runIngestionAttempt({

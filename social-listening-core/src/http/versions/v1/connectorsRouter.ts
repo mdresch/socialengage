@@ -3,6 +3,8 @@ import { getCachedConnectorHealth } from '../../../connectors/connectorHealthCac
 import { storeCredential, deleteCredential, CredentialOwnerType } from '../../../credentials/credentialStore';
 import { authMethodFor } from '../../../credentials/platformAuth';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
+import { setConnectorActivation, ConnectorActivationOwnerType } from '../../../connectors/connectorActivationStore';
+import { getSocialConnector, getAIProviderConnector } from '../../../connectors/registry';
 
 function parseOwnerType(value: unknown): CredentialOwnerType | null {
   if (value === undefined || value === 'tenant') return 'tenant';
@@ -128,4 +130,125 @@ connectorsRouter.delete('/:platformId/disconnect', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete credential.', details: err instanceof Error ? err.message : String(err) });
   }
+});
+
+/**
+ * `ownerType: 'user'` has no meaning for an `authMode: 'none'` platform --
+ * no personal credential exists to own personally (ADR-0051 Decision
+ * Section 1), so no Tier 3 scope is possible. Determined via the shared
+ * registry, never a hardcoded providerId literal -- this file is one of
+ * Story 2.10/ADR-0048's own CORE_FILES, so a literal providerId string
+ * here would fail that story's own CI guardrail.
+ */
+function authModeForbidsUserScope(platformId: string): boolean {
+  const authMode = getSocialConnector(platformId)?.authMode ?? getAIProviderConnector(platformId)?.authMode;
+  return authMode === 'none';
+}
+
+/**
+ * POST /v1/connectors/:platformId/activate and .../deactivate (Story 1.11,
+ * ADR-0051) -- a real, persisted, credential-independent "is this
+ * connector turned on" signal, deliberately separate from connect/
+ * disconnect's credential storage above. Discriminated by `ownerType` in
+ * the body, the same way connect/disconnect already are. `activate`'s
+ * `ownerType: 'user'` always uses the caller's own resolved identity
+ * (mirrors connect's self-only shape); `deactivate`'s `ownerType: 'user'`
+ * also accepts the owning user OR a tenant_admin of the same tenant
+ * (mirrors disconnect's offboarding-override shape, Story 1.7 AC5) --
+ * deactivating is strictly less destructive than disconnecting, so a
+ * tenant_admin who may already disconnect a user's credential must not be
+ * blocked from pausing it. See
+ * .claude/skills/connector-activation/SKILL.md.
+ */
+connectorsRouter.post('/:platformId/activate', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId, role } = identity;
+
+  const ownerType = parseOwnerType(req.body.ownerType) as ConnectorActivationOwnerType | null;
+  if (!ownerType) {
+    res.status(400).json({ error: "ownerType must be 'tenant' or 'user'." });
+    return;
+  }
+
+  const platformId = req.params.platformId;
+
+  if (ownerType === 'user' && authModeForbidsUserScope(platformId)) {
+    res.status(400).json({
+      error: "ownerType 'user' is not valid for a platform with authMode 'none' — no personal credential exists to scope activation to.",
+    });
+    return;
+  }
+
+  if (ownerType === 'tenant' && role !== 'tenant_admin') {
+    res.status(403).json({ error: 'Only a tenant_admin may activate a tenant-wide connector.' });
+    return;
+  }
+
+  // user_id is always the caller's own resolved identity -- never the
+  // request body's, matching connect's own AC3 precedent.
+  const resolvedUserId = ownerType === 'user' ? userId : undefined;
+
+  const result = await setConnectorActivation(tenantId, platformId, ownerType, true, userId, resolvedUserId);
+  res.status(200).json({
+    platformId,
+    ownerType,
+    isActive: result.isActive,
+    activatedAt: result.activatedAt,
+    deactivatedAt: result.deactivatedAt,
+  });
+});
+
+connectorsRouter.post('/:platformId/deactivate', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId, role } = identity;
+
+  const ownerType = parseOwnerType(req.body.ownerType) as ConnectorActivationOwnerType | null;
+  if (!ownerType) {
+    res.status(400).json({ error: "ownerType must be 'tenant' or 'user'." });
+    return;
+  }
+
+  const platformId = req.params.platformId;
+
+  if (ownerType === 'user' && authModeForbidsUserScope(platformId)) {
+    res.status(400).json({
+      error: "ownerType 'user' is not valid for a platform with authMode 'none' — no personal credential exists to scope activation to.",
+    });
+    return;
+  }
+
+  if (ownerType === 'tenant') {
+    if (role !== 'tenant_admin') {
+      res.status(403).json({ error: 'Only a tenant_admin may deactivate a tenant-wide connector.' });
+      return;
+    }
+    const result = await setConnectorActivation(tenantId, platformId, 'tenant', false, userId);
+    res.status(200).json({
+      platformId,
+      ownerType,
+      isActive: result.isActive,
+      activatedAt: result.activatedAt,
+      deactivatedAt: result.deactivatedAt,
+    });
+    return;
+  }
+
+  // Deactivate's offboarding override (Story 1.7 AC5's disconnect
+  // precedent): the owning user, or a tenant_admin of the same tenant.
+  const targetUserId = typeof req.body.userId === 'string' ? req.body.userId : userId;
+  if (targetUserId !== userId && role !== 'tenant_admin') {
+    res.status(403).json({ error: 'Only the owning user or a tenant_admin may deactivate a user-bound connector.' });
+    return;
+  }
+
+  const result = await setConnectorActivation(tenantId, platformId, 'user', false, userId, targetUserId);
+  res.status(200).json({
+    platformId,
+    ownerType,
+    isActive: result.isActive,
+    activatedAt: result.activatedAt,
+    deactivatedAt: result.deactivatedAt,
+  });
 });

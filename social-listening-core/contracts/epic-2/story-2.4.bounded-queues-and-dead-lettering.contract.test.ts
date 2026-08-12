@@ -37,6 +37,15 @@
 // acquireForProvider()/acquireForAiModel() (no real connector exists yet,
 // per provider-connector-framework's own Known gaps) — this contract proves
 // the mechanism via the same synthetic-attempt() pattern Stories 2.2/2.3 use.
+//
+// 2026-08-12 (dated note, ADR-0051/Story 1.11): shouldAttemptIngestion() now
+// additionally requires an active connector_activations row for the scope
+// being checked, alongside the health check AC3 exercises. AC3's own "true"
+// assertion (dead-lettering one request alone must not cross the
+// connector-level auto-disable threshold) now explicitly activates the
+// connector first via setConnectorActivation() — held constant so this AC
+// keeps proving what it always proved (dead-letter/auto-disable
+// independence), not a weakening of this contract's own intent.
 
 import { randomUUID } from 'crypto';
 import {
@@ -50,6 +59,7 @@ import { runIngestionAttempt } from '../../src/ingestion/runIngestionAttempt';
 import { withTenant } from '../../src/db/withTenant';
 import { closePool } from '../../src/db/pool';
 import { shouldAttemptIngestion } from '../../src/connectors/connectorHealth';
+import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 
 jest.setTimeout(20000);
 
@@ -121,6 +131,10 @@ describe('Story 2.4 — bounded queues and dead-lettering contract', () => {
 
   it('AC3: exhausting retries for a retryable error dead-letters distinctly, independent of connector-level auto-disable', async () => {
     const tenantId = randomUUID();
+    // 2026-08-12 (ADR-0051/Story 1.11): shouldAttemptIngestion() now also
+    // requires activation — held constant (on) so this AC keeps proving
+    // what it always proved, dead-letter/auto-disable independence.
+    await setConnectorActivation(tenantId, connectorInfo.platformId, 'tenant', true);
 
     const result = await runIngestionAttempt({
       tenantId,
