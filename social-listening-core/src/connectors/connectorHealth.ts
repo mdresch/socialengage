@@ -29,6 +29,7 @@ interface IngestionRunRow {
   started_at: Date;
   completed_at: Date | null;
   error_summary: string | null;
+  retryable: boolean | null;
 }
 
 /**
@@ -43,7 +44,7 @@ export async function deriveConnectorHealth(
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
     const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary FROM ingestion_runs
+      `SELECT status, started_at, completed_at, error_summary, retryable FROM ingestion_runs
        WHERE platform_id = $1 ORDER BY started_at DESC`,
       [platformId]
     );
@@ -72,14 +73,22 @@ export async function deriveConnectorHealth(
     let sawSuccess = false;
 
     for (const run of runs) {
+      // Story 2.12 (ADR-0010/ADR-0023 Clarification, 2026-08-12): a
+      // retryable failure (rate-limit/network/5xx) never counts toward
+      // this derivation, on its own — treated as fully invisible here,
+      // the same way runIngestionAttempt() already retries it
+      // automatically rather than surfacing it as a connector-level
+      // problem. A NULL retryable value (an unclassified failure, e.g.
+      // a fixture row) is treated conservatively, as non-retryable.
+      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true;
       const withinWindow = run.started_at.getTime() >= cutoff;
-      if (run.status === 'failed' && withinWindow) recentFailures += 1;
+      if (isNonRetryableFailure && withinWindow) recentFailures += 1;
       if (run.status === 'succeeded' && withinWindow) recentSuccesses += 1;
       if (run.status === 'succeeded' && lastSuccessfulFetchAt === null) {
         lastSuccessfulFetchAt = run.completed_at ? run.completed_at.toISOString() : null;
       }
       if (!sawSuccess) {
-        if (run.status === 'failed') consecutiveFailures += 1;
+        if (isNonRetryableFailure) consecutiveFailures += 1;
         else if (run.status === 'succeeded') sawSuccess = true;
       }
     }
