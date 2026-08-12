@@ -64,6 +64,13 @@
  * (PATCH /v1/admin/tenants/:id accepting name, migration 0029's grant) is
  * social-listening-core's own Story 5.12 contract, not re-proven here.
  *
+ * Enhancement, 2026-08-12 (same session, separately flagged then confirmed):
+ * ProvisionTenantForm.tsx gains an optional `domain` field. createAdminTenant()
+ * and the backend POST /v1/admin/tenants already accept optional `domain` —
+ * only the form itself and the POST /api/admin/tenants proxy route were
+ * missing it. No new backend work needed (Story 5.12's own contract already
+ * proves the POST endpoint accepts domain).
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET/POST/PATCH /v1/admin/tenants', the break-glass
  *     endpoints', or GET /v1/health's own backend behavior — Stories
@@ -121,6 +128,46 @@ describe('Story 6.6 — Platform Admin console, real rework (2026-08-12)', () =>
     it('the page mounts ProvisionTenantForm', () => {
       const source = readSrc(...pagePath);
       expect(source).toContain('ProvisionTenantForm');
+    });
+  });
+
+  describe('enhancement, 2026-08-12: ProvisionTenantForm also collects domain (optional)', () => {
+    afterEach(() => {
+      jest.dontMock('../../src/lib/core-client');
+      jest.resetModules();
+    });
+
+    it('ProvisionTenantForm sends domain in the POST body', () => {
+      const source = readSrc(...provisionPath);
+      expect(source).toMatch(/\bdomain\b/);
+    });
+
+    it('POST /api/admin/tenants forwards domain (when provided) to createAdminTenant()', async () => {
+      const createAdminTenantMock = jest.fn().mockResolvedValue({ status: 201, body: { id: 't-1', name: 'T', domain: 'example.com' } });
+      jest.doMock('../../src/lib/core-client', () => ({ createAdminTenant: createAdminTenantMock }));
+      const { POST } = await import('../../src/app/api/admin/tenants/route');
+      const response = await POST(
+        new Request('http://localhost:3000/api/admin/tenants', {
+          method: 'POST',
+          body: JSON.stringify({ name: 'T', licenseSeatCount: 5, domain: 'example.com' }),
+        })
+      );
+      expect(createAdminTenantMock).toHaveBeenCalledWith({ name: 'T', licenseSeatCount: 5, domain: 'example.com' });
+      expect(response.status).toBe(201);
+    });
+
+    it('POST /api/admin/tenants omits domain from the forwarded input when not provided', async () => {
+      const createAdminTenantMock = jest.fn().mockResolvedValue({ status: 201, body: { id: 't-1', name: 'T', domain: null } });
+      jest.doMock('../../src/lib/core-client', () => ({ createAdminTenant: createAdminTenantMock }));
+      const { POST } = await import('../../src/app/api/admin/tenants/route');
+      const response = await POST(
+        new Request('http://localhost:3000/api/admin/tenants', {
+          method: 'POST',
+          body: JSON.stringify({ name: 'T', licenseSeatCount: 5 }),
+        })
+      );
+      expect(createAdminTenantMock).toHaveBeenCalledWith({ name: 'T', licenseSeatCount: 5 });
+      expect(response.status).toBe(201);
     });
   });
 

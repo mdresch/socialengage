@@ -9,9 +9,14 @@ import { useState, type FormEvent } from 'react';
  * notice it — a refetch/revalidate (here, a real reload, the same pattern
  * every other Epic 6/7 mutation form uses) is sufficient; no optimistic-UI
  * requirement.
+ *
+ * `domain` (enhancement, 2026-08-12, optional) is only included in the
+ * POST body when non-empty — an empty string is not the same as "not
+ * provided" at the backend (createTenant()'s own `input.domain ?? null`).
  */
 export function ProvisionTenantForm() {
   const [name, setName] = useState('');
+  const [domain, setDomain] = useState('');
   const [licenseSeatCount, setLicenseSeatCount] = useState(1);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
 
@@ -22,7 +27,7 @@ export function ProvisionTenantForm() {
     const response = await fetch('/api/admin/tenants', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, licenseSeatCount }),
+      body: JSON.stringify(domain.trim() ? { name, licenseSeatCount, domain: domain.trim() } : { name, licenseSeatCount }),
     });
     const body = await response.json().catch(() => ({}));
 
@@ -38,6 +43,10 @@ export function ProvisionTenantForm() {
       <label>
         Tenant name
         <input required value={name} onChange={(event) => setName(event.target.value)} />
+      </label>
+      <label>
+        Domain (optional)
+        <input value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="example.com" />
       </label>
       <label>
         License seat count
