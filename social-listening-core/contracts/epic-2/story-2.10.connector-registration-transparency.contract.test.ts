@@ -86,6 +86,17 @@ const REAL_CONNECTORS: RealConnector[] = [
     kind: 'ai',
     skillPath: '.claude/skills/azure-openai-connector/SKILL.md',
   },
+  // 2026-08-12 (Story 2.11, ADR-0050) — extended per this file's own
+  // documented convention ("extend CORE_FILES/REAL_CONNECTORS when a new
+  // core file/connector is introduced") and per Story 2.11's own AC1,
+  // which explicitly requires this exact evidence mechanism, not a
+  // separately-argued weaker claim.
+  {
+    name: 'Tenant-owned feed',
+    providerId: 'tenant-owned-feed',
+    kind: 'social',
+    skillPath: '.claude/skills/tenant-owned-feed-connector/SKILL.md',
+  },
 ];
 
 function readCore(relativePath: string): string {

@@ -4,6 +4,7 @@ import { checkPostgresConnectivity } from '../../../db/postgresReadiness';
 import { postsRouter } from './postsRouter';
 import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
+import { tenantOwnedFeedRouter } from './tenantOwnedFeedRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
@@ -52,6 +53,18 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 4.1 (ADR-0007) — see .claude/skills/author-topic-signals/SKILL.md. */
   v1Router.use('/topics', authMiddleware, topicsRouter);
+
+  /**
+   * Story 2.11 (ADR-0050) — mounted BEFORE the generic /connectors router
+   * below, deliberately: its own literal /connectors/tenant-owned-feed/*
+   * paths must be intercepted here, or they'd fall through to
+   * connectorsRouter's generic /:platformId/connect route with
+   * 'tenant-owned-feed' bound as platformId. This is also why
+   * connectorsRouter.ts itself was never touched to add these routes — see
+   * .claude/skills/tenant-owned-feed-connector/SKILL.md and ADR-0048/
+   * Story 2.10's own no-core-path-edit requirement.
+   */
+  v1Router.use('/connectors/tenant-owned-feed', authMiddleware, tenantOwnedFeedRouter);
 
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);
