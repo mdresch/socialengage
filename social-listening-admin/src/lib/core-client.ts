@@ -598,6 +598,60 @@ export async function deleteWatchlist(id: string): Promise<WatchlistActionOutcom
   return { status: response.status, body };
 }
 
+export interface SocialPostSummary {
+  id: string;
+  createdAt: string;
+  rawPayload: unknown;
+  publishedAt: string | null;
+  enrichment: unknown;
+}
+
+export interface SocialPostsPage {
+  posts: SocialPostSummary[];
+  nextCursor: string | null;
+}
+
+export interface SocialPostFull extends SocialPostSummary {
+  authorId: string | null;
+  acquisitionId: string;
+}
+
+/**
+ * Story 6.11 / Story 3.4 (ADR-0011) — the first frontend caller of
+ * `GET /v1/posts` anywhere in this repo (it has existed, real and
+ * contract-verified, since Phase 1 with zero UI surface). `cursor` is
+ * always the exact, untouched `nextCursor` a prior page returned — this
+ * function never constructs or decodes one, per ADR-0011's own
+ * opaque-cursor contract (`posts-api/SKILL.md`'s own "cursor is opaque by
+ * contract" constraint). Throws on a non-2xx — this screen has nothing
+ * sensible to render without a real page of results.
+ */
+export async function listPosts(cursor?: string): Promise<SocialPostsPage> {
+  const suffix = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+  const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list posts: ${response.status}`);
+  }
+  return (await response.json()) as SocialPostsPage;
+}
+
+/**
+ * Story 6.11 / Story 5.1 (ADR-0012) — the REST-fetch-on-demand half of
+ * keeping Service Bus events thin, called from the admin UI for the first
+ * time. Returns `null` on a 404 (an unknown id, or one belonging to
+ * another tenant — RLS makes the two indistinguishable) so the caller can
+ * render a real "not found" state rather than crash; throws on any other
+ * non-2xx, since that's a real backend failure, not an expected outcome.
+ */
+export async function getPost(id: string): Promise<SocialPostFull | null> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}`);
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Failed to load post ${id}: ${response.status}`);
+  }
+  return (await response.json()) as SocialPostFull;
+}
+
 /**
  * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
  */
