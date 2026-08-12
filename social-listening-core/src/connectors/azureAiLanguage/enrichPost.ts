@@ -1,4 +1,5 @@
 import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
+import { isConnectorActive } from '../connectorActivationStore';
 import { acquireForAiModel, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
 import { ClassifiableError, isRetryable } from '../../ingestion/errorClassification';
 import { azureAiLanguageConnector } from './azureAiLanguageConnector';
@@ -25,6 +26,16 @@ registerAIProviderConnector(azureOpenAiConnector);
  * tries. Adding a third provider is additive here (implement + append to
  * this list) — no other change to this function or to any connector's own
  * ingest function is required (Story 2.9 AC2).
+ *
+ * This array's order is a real priority, confirmed as an intentional
+ * default (Menno's own direction, 2026-08-12), not merely an artifact of
+ * build order — when a tenant has both providers credentialed and active,
+ * Azure AI Language always wins. No ADR or story ever actually decided
+ * this as policy before now (checked directly against ADR-0038 and Story
+ * 2.9's own text — "Azure AI Language first" there describes which was
+ * *built* first, not a runtime preference). A per-tenant choice of
+ * preferred provider is real, separate, not-yet-built scope, not this
+ * array's job.
  */
 const PROVIDERS: AIProviderConnector[] = [azureAiLanguageConnector, azureOpenAiConnector];
 
@@ -51,14 +62,21 @@ async function gatedAcquire(tenantId: string, connector: AIProviderConnector, mo
 }
 
 /**
- * One provider's own attempt: resolves the tenant's own credential for
- * this specific provider (returning `undefined` immediately — a "skip" —
- * if the tenant hasn't connected it, Story 2.9 AC4), then retries a
- * retryable failure with backoff up to MAX_ENRICHMENT_ATTEMPTS before
- * giving up on this provider (also `undefined` — enrichPost() then moves
- * on to the next provider in PROVIDERS, Story 2.9's own "fails over").
+ * One provider's own attempt: skips (returns `undefined`) if the tenant
+ * hasn't activated this provider (Story 1.11/ADR-0051 — healed 2026-08-12;
+ * `isConnectorActive()`'s own lazy-creation default means no activation
+ * row at all reads identically to explicitly deactivated) or hasn't
+ * connected a credential for it (Story 2.9 AC4), then retries a retryable
+ * failure with backoff up to MAX_ENRICHMENT_ATTEMPTS before giving up on
+ * this provider (also `undefined` — enrichPost() then moves on to the next
+ * provider in PROVIDERS, Story 2.9's own "fails over"). Activation is
+ * checked first — deliberately no real credential read or API call for a
+ * provider the tenant has turned off.
  */
 async function tryProvider(tenantId: string, connector: AIProviderConnector, text: string): Promise<AnalyzeResult | undefined> {
+  const active = await isConnectorActive(tenantId, connector.providerId, 'tenant');
+  if (!active) return undefined;
+
   const credentialId = await getLatestCredentialId(tenantId, connector.providerId, 'tenant');
   if (!credentialId) return undefined;
 

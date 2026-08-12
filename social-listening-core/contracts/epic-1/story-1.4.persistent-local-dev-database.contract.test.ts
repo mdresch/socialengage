@@ -25,6 +25,17 @@
 // / pg_cron extension both compose files share (already covered by Story
 // 4.4's own contract); social-listening-core's actual server behavior once
 // running (every other contract in this repo already covers that).
+//
+// --- Healing pass, 2026-08-12 (cross-component regression from a same-day
+// migration-check fix, unrelated to this story's own work) ---
+// `dev` was found live to start the real server against a stale schema
+// (a migration left unapplied), with no signal at startup — the server
+// just 500'd on every request touching the missing table. `dev` now runs
+// `db:dev:migrate` first (idempotent, so free when the schema is already
+// current), then a new `dev:server` script carries the exact command `dev`
+// used to run directly. AC4's own assertion is updated to match, with a
+// dated note — the invariant it actually proves (no manual env export,
+// everything reaches scripts/withDevEnv.js) is unchanged.
 
 import fs from 'fs';
 import path from 'path';
@@ -74,8 +85,21 @@ describe('Story 1.4 — persistent local dev database contract', () => {
     expect(pkg.scripts['db:dev:reset']).toBe('docker compose -f docker-compose.dev.yml down -v');
   });
 
-  it('AC4: npm run dev and db:dev:migrate both go through scripts/withDevEnv.js — no manual env export required', () => {
-    expect(pkg.scripts['dev']).toBe('node scripts/withDevEnv.js ts-node src/http/server.ts');
+  /**
+   * Healed 2026-08-12 — `dev` was found live to start the real server against
+   * a schema left behind on an older migration (a real, previously-silent
+   * failure mode: the server started fine, then 500'd on every request
+   * touching the missing table). `dev` now runs `db:dev:migrate` first,
+   * failing fast with a clear signal instead. This assertion is updated with
+   * this dated note, per this project's "regression, not rewrite"
+   * convention — AC4's own actual invariant ("no manual env export
+   * required, everything goes through scripts/withDevEnv.js") is unchanged
+   * and still proven here: `dev` now reaches withDevEnv.js twice (once via
+   * `db:dev:migrate`, once via the new `dev:server`), not once directly.
+   */
+  it('AC4: npm run dev (via db:dev:migrate and dev:server) and db:dev:migrate directly both go through scripts/withDevEnv.js — no manual env export required', () => {
+    expect(pkg.scripts['dev']).toBe('npm run db:dev:migrate && npm run dev:server');
+    expect(pkg.scripts['dev:server']).toBe('node scripts/withDevEnv.js ts-node src/http/server.ts');
     expect(pkg.scripts['db:dev:migrate']).toBe('node scripts/withDevEnv.js ts-node src/db/migrate.ts');
   });
 

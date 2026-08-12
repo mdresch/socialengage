@@ -53,6 +53,40 @@
  * Decision §2): no change to azureAiLanguageConnector.ts's own analyze()
  * logic; no third provider; no cross-provider result-merging (only one
  * provider's result is ever used per post, whichever succeeds first).
+ *
+ * --- Healing pass, 2026-08-12 (Menno's explicit direction, found via a
+ * live question about which provider wins when both are connected) ---
+ * Real, confirmed gap: `tryProvider()` decided purely by stored-credential
+ * presence — it never checked `isConnectorActive()` (Story 1.11/ADR-0051),
+ * even though `social-listening-admin`'s own connectors screen already
+ * renders an Activate/Deactivate control for every `authMode: 'api_key'`
+ * platform, Azure AI Language and Azure OpenAI included (`tenant/
+ * connectors/page.tsx`'s own `platform.authMode === 'api_key'` branch,
+ * with no AI-provider exclusion). Deactivating an AI provider through that
+ * same UI control therefore had zero effect on whether it was actually
+ * used for enrichment — a real inconsistency with how activation already
+ * gates content connectors' own polling. Fixed: `tryProvider()` now also
+ * checks `isConnectorActive(tenantId, connector.providerId, 'tenant')`
+ * and skips (same as no credential) when false. Per ADR-0051 Decision §1's
+ * own lazy-creation rule, no activation row reads identically to
+ * `is_active = false` — so this story's own existing fixture helpers
+ * (`seedAzureAiLanguageCredential`/`seedAzureOpenAiCredential`) now also
+ * activate the provider they credential, since "connected and usable" is
+ * the real precondition these tests were always meant to prove, not
+ * "credentialed" alone. Updated with this dated note per the project's own
+ * "regression, not rewrite" convention (Story 2.5/2.12's own precedent) —
+ * no existing assertion's *meaning* changed, only what counts as a real,
+ * complete setup for it.
+ *
+ * Also resolves a real, previously-undecided question, not silently
+ * assumed: when a tenant has *both* providers credentialed and active,
+ * Azure AI Language still always wins (the fixed order in `PROVIDERS`,
+ * unchanged by this pass) — confirmed directly against ADR-0038/Story 2.9
+ * that this was never actually decided as a priority policy; it was an
+ * accidental consequence of Azure AI Language being built first. Menno's
+ * explicit direction: keep it as the intentional default for now (a tenant
+ * preference mechanism would be new, separate scope) — documented here and
+ * in `enrichPost.ts`'s own comment, not decided unilaterally.
  */
 import { randomUUID } from 'crypto';
 import fs from 'fs';
@@ -62,6 +96,7 @@ import { closeAdminPool } from '../../src/db/adminPool';
 import { closePool } from '../../src/db/pool';
 import { storeCredential } from '../../src/credentials/credentialStore';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
+import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 import { azureAiLanguageConnector, AZURE_AI_LANGUAGE_PROVIDER_ID } from '../../src/connectors/azureAiLanguage/azureAiLanguageConnector';
 import { azureOpenAiConnector, AZURE_OPENAI_PROVIDER_ID } from '../../src/connectors/azureOpenAi/azureOpenAiConnector';
 import { enrichPost } from '../../src/connectors/azureAiLanguage/enrichPost';
@@ -108,6 +143,11 @@ async function createTenantFixture(name: string): Promise<string> {
   return rows[0].id;
 }
 
+/**
+ * Healed 2026-08-12 — "connected and usable" now means credentialed AND
+ * activated, matching how the admin UI's own Activate control already
+ * applies uniformly to every api_key platform, AI providers included.
+ */
 async function seedAzureAiLanguageCredential(tenantId: string): Promise<void> {
   await storeCredential(
     tenantId,
@@ -116,6 +156,7 @@ async function seedAzureAiLanguageCredential(tenantId: string): Promise<void> {
     testKeyId,
     'tenant'
   );
+  await setConnectorActivation(tenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, 'tenant', true);
 }
 
 async function seedAzureOpenAiCredential(tenantId: string): Promise<void> {
@@ -126,6 +167,7 @@ async function seedAzureOpenAiCredential(tenantId: string): Promise<void> {
     testKeyId,
     'tenant'
   );
+  await setConnectorActivation(tenantId, AZURE_OPENAI_PROVIDER_ID, 'tenant', true);
 }
 
 describe('Story 2.9 — Second AIProviderConnector (Azure OpenAI, real gpt-5-mini)', () => {
@@ -231,6 +273,59 @@ describe('Story 2.9 — Second AIProviderConnector (Azure OpenAI, real gpt-5-min
     });
   });
 
+  describe('Healed 2026-08-12: activation (Story 1.11/ADR-0051) now gates AI provider selection, not just credential presence', () => {
+    it('a credentialed but never-activated Azure AI Language provider is skipped — no activation row at all, per ADR-0051 Decision §1\'s own lazy-creation default (no row reads as inactive)', async () => {
+      const tenantId = await createTenantFixture(`CredentialedNotActivatedTenant-${randomUUID()}`);
+      await storeCredential(
+        tenantId,
+        AZURE_AI_LANGUAGE_PROVIDER_ID,
+        JSON.stringify({ endpoint: REAL_LANGUAGE_ENDPOINT, key: REAL_LANGUAGE_KEY }),
+        testKeyId,
+        'tenant'
+      );
+      // Deliberately no setConnectorActivation() call — a real credential with
+      // no activation row at all, the exact "never activated" case.
+
+      await expect(enrichPost(tenantId, 'A post whose only connected provider was never activated.')).resolves.toBeUndefined();
+    });
+
+    it('a credentialed but explicitly deactivated provider is skipped, the same as no credential at all', async () => {
+      const tenantId = await createTenantFixture(`DeactivatedProviderTenant-${randomUUID()}`);
+      await storeCredential(
+        tenantId,
+        AZURE_OPENAI_PROVIDER_ID,
+        JSON.stringify({ endpoint: REAL_OPENAI_ENDPOINT, key: REAL_OPENAI_KEY, deployment: REAL_OPENAI_DEPLOYMENT }),
+        testKeyId,
+        'tenant'
+      );
+      await setConnectorActivation(tenantId, AZURE_OPENAI_PROVIDER_ID, 'tenant', true);
+      await setConnectorActivation(tenantId, AZURE_OPENAI_PROVIDER_ID, 'tenant', false);
+
+      await expect(enrichPost(tenantId, 'A post whose provider was connected, then deactivated.')).resolves.toBeUndefined();
+    });
+
+    it('an active Azure OpenAI provider still enriches normally when Azure AI Language has no credential at all — activation-gating one provider does not block the other', async () => {
+      const tenantId = await createTenantFixture(`ActiveOpenAiOnlyTenant-${randomUUID()}`);
+      await seedAzureOpenAiCredential(tenantId);
+
+      const result = await enrichPost(tenantId, 'A post enriched by the only active, credentialed provider.');
+
+      expect(result).toBeDefined();
+      expect(result?.modelUsed).toContain(AZURE_OPENAI_PROVIDER_ID);
+    });
+
+    it('Azure AI Language still wins when both providers are credentialed and active — the fixed priority order is unchanged by this healing pass, an intentional default per Menno\'s own direction, not a tenant-choosable preference', async () => {
+      const tenantId = await createTenantFixture(`BothActiveTenant-${randomUUID()}`);
+      await seedAzureOpenAiCredential(tenantId);
+      await seedAzureAiLanguageCredential(tenantId);
+
+      const result = await enrichPost(tenantId, 'A post where both providers are connected and active.');
+
+      expect(result).toBeDefined();
+      expect(result?.modelUsed).toContain(AZURE_AI_LANGUAGE_PROVIDER_ID);
+    });
+  });
+
   describe('AC5: removing/breaking one provider does not degrade a tenant using the other provider', () => {
     it('a tenant on Azure OpenAI enriches successfully even though a different tenant\'s Azure AI Language credential is malformed', async () => {
       const brokenTenantId = await createTenantFixture(`BrokenLanguageTenant-${randomUUID()}`);
@@ -241,6 +336,10 @@ describe('Story 2.9 — Second AIProviderConnector (Azure OpenAI, real gpt-5-min
         testKeyId,
         'tenant'
       );
+      // Activated, per this file's own 2026-08-12 healing note — this test proves
+      // a bad *credential* is skipped, not an inactive provider skipped for an
+      // unrelated reason.
+      await setConnectorActivation(brokenTenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, 'tenant', true);
 
       const healthyTenantId = await createTenantFixture(`HealthyOpenAiTenant-${randomUUID()}`);
       await seedAzureOpenAiCredential(healthyTenantId);
@@ -283,6 +382,9 @@ describe('Story 2.9 — Second AIProviderConnector (Azure OpenAI, real gpt-5-min
         testKeyId,
         'tenant'
       );
+      // Activated, per this file's own 2026-08-12 healing note — same reason as
+      // AC5's broken-Language-credential test above.
+      await setConnectorActivation(tenantId, AZURE_OPENAI_PROVIDER_ID, 'tenant', true);
 
       await expect(enrichPost(tenantId, 'A post whose enrichment credential is bad.')).resolves.toBeUndefined();
     });

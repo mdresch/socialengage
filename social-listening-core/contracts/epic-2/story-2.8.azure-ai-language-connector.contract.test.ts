@@ -86,6 +86,18 @@
 //   - The admin UI's own connect flow for this provider (Story 6.3's
 //     existing generic connect/disconnect screen already handles any
 //     api_key-authMode connector without connector-specific UI code).
+//
+// --- Healing pass, 2026-08-12 (cross-component regression from Story 2.9's
+// own same-day activation-gating fix, unrelated to this story's own scope)
+// ---
+// enrichPost.ts's tryProvider() now also requires Story 1.11/ADR-0051
+// activation, not just a stored credential — see
+// story-2.9.second-ai-provider-connector.contract.test.ts's own dated note
+// for the full account. seedRealAzureCredential() (this file's own shared
+// fixture helper) now also activates the connector it credentials, and the
+// standalone "bad credential" test activates explicitly too, so it keeps
+// proving a bad *credential* is skipped, not an inactive provider skipped
+// for an unrelated reason. No existing assertion's own meaning changed.
 
 import { randomUUID } from 'crypto';
 import fs from 'fs';
@@ -96,6 +108,7 @@ import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { storeCredential } from '../../src/credentials/credentialStore';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
+import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 import { insertSocialPost } from '../../src/posts/socialPostStore';
 import { startIngestionRun } from '../../src/ingestion/ingestionRunStore';
 import {
@@ -141,9 +154,17 @@ async function createTenantFixture(name: string): Promise<string> {
   return rows[0].id;
 }
 
+/**
+ * Healed 2026-08-12 (cross-component regression from Story 2.9's own
+ * healing pass, which added an activation check to enrichPost.ts's
+ * tryProvider()) — "connected and usable" now means credentialed AND
+ * activated. See story-2.9...contract.test.ts's own dated note for the
+ * full account of why.
+ */
 async function seedRealAzureCredential(tenantId: string): Promise<void> {
   const plaintext = JSON.stringify({ endpoint: REAL_ENDPOINT, key: REAL_KEY });
   await storeCredential(tenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, plaintext, testKeyId, 'tenant');
+  await setConnectorActivation(tenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, 'tenant', true);
 }
 
 describe('Story 2.8 — Azure AI Language connector', () => {
@@ -305,6 +326,10 @@ describe('Story 2.8 — Azure AI Language connector', () => {
       const tenantId = await createTenantFixture(`BadCred-${randomUUID()}`);
       const plaintext = JSON.stringify({ endpoint: REAL_ENDPOINT, key: 'not-a-real-key' });
       await storeCredential(tenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, plaintext, testKeyId, 'tenant');
+      // Activated (healed 2026-08-12, cross-component regression from Story
+      // 2.9) — this test proves a bad *credential* is skipped, not an
+      // inactive provider skipped for an unrelated reason.
+      await setConnectorActivation(tenantId, AZURE_AI_LANGUAGE_PROVIDER_ID, 'tenant', true);
 
       const result = await enrichPost(tenantId, 'text');
       expect(result).toBeUndefined();
