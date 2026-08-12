@@ -134,6 +134,37 @@ export async function getSocialPostById(tenantId: string, id: string): Promise<S
   });
 }
 
+/**
+ * Story 6.16 — the same enrichment-text rule every real connector's own
+ * ingest function already applies inline (GNews:
+ * `[title, description].filter(Boolean).join('. ')`; Newswire/
+ * tenant-owned-feed: bare `title`, no `description` field). One rule
+ * covers both real shapes without branching on `providerId`: when
+ * `description` is absent, `filter(Boolean)` drops it and only `title`
+ * remains — exactly Newswire's own existing behavior.
+ */
+export function deriveEnrichmentText(rawPayload: unknown): string {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    const title = typeof p.title === 'string' ? p.title : '';
+    const description = typeof p.description === 'string' ? p.description : '';
+    return [title, description].filter(Boolean).join('. ');
+  }
+  return '';
+}
+
+/**
+ * Story 6.16 — persists a manually-triggered enrichment result onto an
+ * already-ingested post. Tenant-scoped (RLS) like every other write here;
+ * the caller (postsRouter.ts) has already confirmed the post exists and
+ * belongs to this tenant via getSocialPostById() before calling this.
+ */
+export async function setPostEnrichment(tenantId: string, id: string, enrichment: Record<string, unknown>): Promise<void> {
+  await withTenant(tenantId, async (client) => {
+    await client.query(`UPDATE social_posts SET enrichment = $1 WHERE id = $2`, [JSON.stringify(enrichment), id]);
+  });
+}
+
 export interface PostIngestionLineage {
   connectorVersion: string;
   triggerType: string;
