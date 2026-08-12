@@ -57,10 +57,14 @@
  * (story-6.4.watchlist-management-screen.contract.test.ts) is untouched by this healing
  * pass — it already independently covers the real behavior in full; this file's only job
  * is proving the shared ResolvedIdentity-shaped call still works for this page too.
+ *
+ * Upgrade, 2026-08-12, later the same day — Story 6.5's own "ConnectorStatusPage" block
+ * upgraded proactively, ahead of a failing run, during Story 6.5's own real rework
+ * (identical category of ripple to the one just fixed above for Story 6.4 — the same
+ * synchronous-fixture-to-real-async-Server-Component migration).
  */
 
 import { getTenantShellActions, type ResolvedIdentity } from '../../src/lib/role-routing';
-import ConnectorStatusPage from '../../src/app/tenant/connectors/status/page';
 
 const TENANT_USER: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-1', role: 'tenant_user' };
 const TENANT_ADMIN: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-2', role: 'tenant_admin' };
@@ -245,11 +249,52 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
     });
   });
 
-  it('Story 6.5 — ConnectorStatusPage still renders under the migrated call, with its own tenant-admin fixture action visible', () => {
-    const element = ConnectorStatusPage();
-    const rendered = JSON.stringify(element);
-    expect(rendered).toContain('Tenant-wide connect');
-    expect(rendered).toContain('Connector status');
-    expect(rendered).toContain('healthy');
+  /**
+   * Story 6.5 (upgraded 2026-08-12, proactively — same category of ripple
+   * Story 6.4's own healing pass just fixed above, applied here ahead of a
+   * failing run since the cause was already known) — ConnectorStatusPage is
+   * no longer a synchronous, fixture-identity component either (Story 6.5's
+   * own real rework replaced that with a real async Server Component). Same
+   * real-session-plus-real-fetch-mocking pattern as the Story 6.3/6.4 blocks
+   * above.
+   */
+  describe('Story 6.5 — ConnectorStatusPage under a real tenant session', () => {
+    afterEach(() => {
+      jest.dontMock('next/headers');
+      jest.dontMock('next/navigation');
+      jest.resetModules();
+      jest.restoreAllMocks();
+    });
+
+    it('a tenant_admin session renders the real connector status screen — no retired fixture text anywhere', async () => {
+      jest.resetModules();
+      const sessionModule = await import('../../src/lib/session');
+      const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity: TENANT_ADMIN });
+
+      jest.doMock('next/headers', () => ({
+        cookies: async () => ({
+          get: (name: string) => (name === sessionModule.SESSION_COOKIE_NAME ? { value: encrypted } : undefined),
+        }),
+      }));
+      const redirectMock = jest.fn((url: string) => {
+        throw new Error(`NEXT_REDIRECT:${url}`);
+      });
+      jest.doMock('next/navigation', () => ({ redirect: redirectMock }));
+
+      jest.spyOn(global, 'fetch').mockResolvedValue(
+        new Response(
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          { status: 200 }
+        )
+      );
+
+      const { default: Page } = await import('../../src/app/tenant/connectors/status/page');
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Connector status');
+      expect(rendered).not.toContain('reddit');
+      expect(rendered).not.toMatch(/"healthy",\s*"lastSuccessfulPoll"/);
+    });
   });
 });
