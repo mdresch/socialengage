@@ -320,50 +320,84 @@ export async function listAdminTenants(): Promise<AdminTenant[]> {
   return Array.isArray(payload.tenants) ? payload.tenants : [];
 }
 
+export interface AdminTenantActionOutcome {
+  status: number;
+  body: { error?: string; [key: string]: unknown };
+}
+
+export interface BreakGlassRequestSummary {
+  id: string;
+  requestedBy: string;
+  targetTenantId: string;
+  targetUserId: string;
+  status: 'requested' | 'executed' | 'denied';
+}
+
+export interface BreakGlassExecutionResult {
+  requestId: string;
+  targetUserId: string;
+  executedAt: string;
+  temporaryAccessPass: string;
+}
+
+export interface BreakGlassActionOutcome {
+  status: number;
+  body: Partial<BreakGlassRequestSummary & BreakGlassExecutionResult> & { error?: string };
+}
+
 /**
- * Story 6.6 / Story 5.12 — create tenant via Platform Admin endpoint.
+ * Story 6.6 (reworked 2026-08-12) / Story 5.12 — create tenant via Platform
+ * Admin endpoint. Returns the raw status/body rather than throwing on a
+ * non-2xx: a 400 (missing name/licenseSeatCount) is a real, expected
+ * outcome ProvisionTenantForm.tsx must react to specifically, not collapsed
+ * into a generic error.
  */
 export async function createAdminTenant(input: {
   name: string;
   licenseSeatCount: number;
   domain?: string | null;
-}): Promise<AdminTenant> {
+}): Promise<AdminTenantActionOutcome> {
   const response = await authenticatedCoreFetch('/v1/admin/tenants', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
-  if (!response.ok) {
-    throw new Error(`Failed to create tenant: ${response.status}`);
-  }
-  return (await response.json()) as AdminTenant;
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
 }
 
 /**
- * Story 6.6 / Story 5.12 — update tenant administrative metadata.
+ * Story 6.6 (reworked 2026-08-12) / Story 5.12 — update tenant
+ * administrative metadata. Same raw status/body pattern as
+ * createAdminTenant(), for the same reason (a 404 — no fields provided, or
+ * not found — is real and expected).
  */
 export async function updateAdminTenant(
   tenantId: string,
   input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null }
-): Promise<AdminTenant> {
+): Promise<AdminTenantActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
-  if (!response.ok) {
-    throw new Error(`Failed to update tenant: ${response.status}`);
-  }
-  return (await response.json()) as AdminTenant;
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
 }
 
 /**
- * Story 6.6 / Story 5.13 — record a break-glass request.
+ * Story 6.6 (reworked 2026-08-12) / Story 5.13 — record a break-glass
+ * request. `targetUserId` is always caller-supplied directly (the Tenant-
+ * Admin-lookup-by-tenant-name gap named in
+ * social-listening-core/.claude/skills/platform-admin-break-glass-rest/
+ * SKILL.md is not built here). Returns the raw status/body — the real
+ * request `id` on success is what BreakGlassPanel.tsx needs before it can
+ * offer the separate execute action at all.
  */
 export async function requestBreakGlassReset(input: {
   tenantId: string;
   targetUserId: string;
-}): Promise<unknown> {
+}): Promise<BreakGlassActionOutcome> {
   const response = await authenticatedCoreFetch(
     `/v1/admin/tenants/${encodeURIComponent(input.tenantId)}/break-glass/request`,
     {
@@ -372,19 +406,22 @@ export async function requestBreakGlassReset(input: {
       body: JSON.stringify({ targetUserId: input.targetUserId }),
     }
   );
-  if (!response.ok) {
-    throw new Error(`Failed to request break-glass reset: ${response.status}`);
-  }
-  return await response.json();
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
 }
 
 /**
- * Story 6.6 / Story 5.13 — execute an existing break-glass request.
+ * Story 6.6 (reworked 2026-08-12) / Story 5.13 — execute an existing
+ * break-glass request. Returns the raw status/body: a 409 (already
+ * executed) and a 404 (unknown request) are both real, expected outcomes;
+ * a 200's own `temporaryAccessPass` is real, single-disclosure material —
+ * BreakGlassPanel.tsx renders it from this return value directly and must
+ * never persist it anywhere.
  */
 export async function executeBreakGlassRequest(input: {
   tenantId: string;
   requestId: string;
-}): Promise<unknown> {
+}): Promise<BreakGlassActionOutcome> {
   const response = await authenticatedCoreFetch(
     `/v1/admin/tenants/${encodeURIComponent(input.tenantId)}/break-glass/requests/${encodeURIComponent(input.requestId)}/execute`,
     {
@@ -393,10 +430,24 @@ export async function executeBreakGlassRequest(input: {
       body: JSON.stringify({}),
     }
   );
-  if (!response.ok) {
-    throw new Error(`Failed to execute break-glass request: ${response.status}`);
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.6 (added 2026-08-12) / Story 1.10 — reads the real, deliberately
+ * unauthenticated GET /v1/health directly (never via authenticatedCoreFetch()
+ * — no bearer token is required or sent for this one call, the same
+ * boundary Story 1.3/1.10 already established). Never throws — a network
+ * failure degrades to 'unavailable', the same signal a real 503 gives.
+ */
+export async function getCoreHealthStatus(): Promise<'ok' | 'unavailable'> {
+  try {
+    const response = await checkCoreHealth();
+    return response.ok ? 'ok' : 'unavailable';
+  } catch {
+    return 'unavailable';
   }
-  return await response.json();
 }
 
 export interface Watchlist {
