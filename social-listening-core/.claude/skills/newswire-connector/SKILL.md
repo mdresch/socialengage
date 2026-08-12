@@ -19,6 +19,13 @@ The first real, non-example `SocialConnector` in this repo (ADR-0024): it polls 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.6.newswire-connector.contract.test.ts` — registered connector shape (authMode/deliveryMode/providerId); real live-feed ingestion from both wires via `runIngestionAttempt()`; Author resolves to the issuing organization with `followerCount` unpopulated; `supportedQueryFeatures` declared empty and watchlist fallback genuinely filters; no-API-key + idempotent re-poll (no duplicate rows across two consecutive cycles); cross-wire duplicates are accepted, not silently dropped, proven via a controlled fixture. This is the first contract in the repo that makes real outbound HTTP calls (to the live GlobeNewswire/PR Newswire feeds) rather than using a synthetic fixture — that's ADR-0024's own explicit bar, not an oversight; running it requires real internet access.
+- `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `NEWSWIRE_PROVIDER_ID` literal (`'newswire'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
+
+## Registration transparency (ADR-0048)
+
+- **Registration location:** `src/connectors/newswire/newswireConnector.ts` (the connector object, `providerId: NEWSWIRE_PROVIDER_ID`) and `src/connectors/newswire/pollNewswireFeeds.ts` (its own poll-mode ingest function, invoked by direct import — never looked up via `registry.ts`'s `getSocialConnector()` in production).
+- **Extension points used:** the `SocialConnector` interface (`src/connectors/types.ts`) and `runIngestionAttempt()`'s generic `attempt()` callback shape — no other core file was touched to add this connector.
+- **No-core-change verification:** `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` mechanically greps every designated core file for the literal string `newswire` and fails if found.
 
 ## How to extend this safely
 

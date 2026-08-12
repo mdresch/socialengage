@@ -20,6 +20,13 @@ The second real, non-example `SocialConnector` in this repo (ADR-0026), and the 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.7.gnews-connector.contract.test.ts` — registered connector shape (authMode `api_key`/deliveryMode `poll`/providerId distinct from Newswire's); real live-GNews ingestion via `runIngestionAttempt()` using a per-tenant stored credential; Author resolves to the source publication with `followerCount` unpopulated; `supportedQueryFeatures` declared as `['AND', 'OR', 'NOT', 'TERM']` and watchlist matching genuinely falls back for node types GNews can't express (HASHTAG/ACCOUNT); rate limit config matches GNews's published 100/day ceiling; idempotent re-poll (no duplicate rows across two consecutive cycles). Like Story 2.6, this makes real outbound HTTP calls to GNews's own live Search endpoint — requires a real `GNEWS_API_KEY` (see `.env.example`) and a real Azure Key Vault reachable via `az login`.
+- `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `GNEWS_PROVIDER_ID` literal (`'gnews'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
+
+## Registration transparency (ADR-0048)
+
+- **Registration location:** `src/connectors/gnews/gnewsConnector.ts` (the connector object, `providerId: GNEWS_PROVIDER_ID`) and `src/connectors/gnews/pollGNewsSearch.ts` (its own poll-mode ingest function, invoked by direct import — this connector is never looked up via `registry.ts`'s `getSocialConnector()` in production; that lookup path is exercised only by Story 2.1's own example fixtures and this connector's own contract test's `registerSocialConnector()` call).
+- **Extension points used:** the `SocialConnector` interface (`src/connectors/types.ts`) and `runIngestionAttempt()`'s generic `attempt()` callback shape — no other core file was touched to add this connector.
+- **No-core-change verification:** `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` mechanically greps every designated core file for the literal string `gnews` and fails if found — see that contract's own file list for exactly which files count as "core" here.
 
 ## How to extend this safely
 

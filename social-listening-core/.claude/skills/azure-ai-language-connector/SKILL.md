@@ -21,6 +21,13 @@ description: The first real AIProviderConnector implementation (Azure AI Languag
 
 - `contracts/epic-2/story-2.8.azure-ai-language-connector.contract.test.ts` — a registered connector with a distinct `providerId`; `analyze()` rejects with no credential, never falling back to a shared key; a real call against the real Azure resource maps into `AnalyzeResult`'s widened shape; `enrichPost()` is called from both `pollGNewsSearch.ts` and `pollNewswireFeeds.ts`, and its result round-trips through `insertSocialPost()` into `SocialPost.enrichment`; two tenants acquire independently via `acquireForAiModel()`; a transient (retryable) failure retries with backoff and eventually succeeds or gives up gracefully; a non-retryable failure (bad credential) gives up immediately; either way, `enrichPost()` never throws.
 - `contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts` — re-proves this connector's own real analyze() call still works unchanged now that `enrichPost()` is provider-agnostic; see `azure-openai-connector/SKILL.md` for the full account of what this contract adds.
+- `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `AZURE_AI_LANGUAGE_PROVIDER_ID` literal (`'azure-ai-language'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1), and that `enrichPost.ts`'s `PROVIDERS` array/`registerAIProviderConnector()` calls are this connector's one documented extension point.
+
+## Registration transparency (ADR-0048)
+
+- **Registration location:** `src/connectors/azureAiLanguage/azureAiLanguageConnector.ts` (the connector object, `providerId: AZURE_AI_LANGUAGE_PROVIDER_ID`), registered into the shared framework registry by a real `registerAIProviderConnector(azureAiLanguageConnector)` call at the top of `src/connectors/azureAiLanguage/enrichPost.ts` (a module-load side effect), and appended to that same file's `PROVIDERS` array — the one list `enrichPost()`'s dispatch loop iterates.
+- **Extension points used:** the `AIProviderConnector` interface (`src/connectors/types.ts`), `registerAIProviderConnector()` (`src/connectors/registry.ts`), and `enrichPost.ts`'s own `PROVIDERS` array — no other core file was touched to add this connector.
+- **No-core-change verification:** `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` mechanically greps every designated core file (deliberately excluding `enrichPost.ts` itself, which *is* the documented extension point) for the literal string `azure-ai-language` and fails if found.
 
 ## How to extend this safely
 

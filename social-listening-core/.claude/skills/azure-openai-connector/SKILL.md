@@ -22,6 +22,13 @@ description: The second real AIProviderConnector (Azure OpenAI Service, gpt-5-mi
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts` — a registered `AIProviderConnector` with a `providerId` distinct from `azure-ai-language`; `analyze()` rejects with no credential; a real call against the real Azure OpenAI resource returns all four enrichment fields plus `overallConfidence` (a real number in `[0,1]`) from one structured-output call; neither `pollGNewsSearch.ts` nor `pollNewswireFeeds.ts` references this connector directly (no core pipeline change); a tenant on either provider enriches successfully (provider swap); a tenant with neither provider connected, or with only the other provider connected, still resolves cleanly (skip); a tenant's broken credential for one provider never affects a different tenant on the other provider; two tenants on different providers gate independently; a malformed Azure OpenAI credential resolves to `undefined`, never throws.
+- `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `AZURE_OPENAI_PROVIDER_ID` literal (`'azure-openai'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
+
+## Registration transparency (ADR-0048)
+
+- **Registration location:** `src/connectors/azureOpenAi/azureOpenAiConnector.ts` (the connector object, `providerId: AZURE_OPENAI_PROVIDER_ID`), registered by a real `registerAIProviderConnector(azureOpenAiConnector)` call at the top of `src/connectors/azureAiLanguage/enrichPost.ts` (a module-load side effect), and appended to that same file's `PROVIDERS` array.
+- **Extension points used:** the `AIProviderConnector` interface (`src/connectors/types.ts`), `registerAIProviderConnector()` (`src/connectors/registry.ts`), and `enrichPost.ts`'s own `PROVIDERS` array — exactly the "implement + register + append" integration surface named in "How to extend this safely" above; no other core file was touched to add this connector.
+- **No-core-change verification:** `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` mechanically greps every designated core file (deliberately excluding `enrichPost.ts` itself, which *is* the documented extension point) for the literal string `azure-openai` and fails if found.
 
 ## How to extend this safely
 

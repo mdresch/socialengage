@@ -161,9 +161,9 @@
 
 ---
 
-## Story 2.10 — Connector Registration Transparantly registration
+## Story 2.10 — Connector Registration Transparency
 
-**Source:** ADR-0048 (Accepted 2026-08-11) · **Status:** Ready.
+**Source:** ADR-0048 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12.
 
 **As a developer integrating new connectors into SocialEngage,**
 **I want robust automated checks ensuring that connector registration does not alter core pipeline paths,**
@@ -179,6 +179,8 @@
 **Notes:**
 
 - This story's implementation must reference ADR-0048's Consequences and Decision sections explicitly in its Jest contract test.
+
+**Built 2026-08-12.** `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` (12/12) mechanically greps a designated `CORE_FILES` set (`runIngestionAttempt.ts`, `ingestionRunStore.ts`, `errorClassification.ts`, `registry.ts`, `requestGate.ts`, `rateLimitResolution.ts`, `connectorHealth.ts`, `connectorHealthCache.ts`, `types.ts`, `connectorsRouter.ts`) for any of the four real connectors' own `providerId` string literals — none found, proving ADR-0048 §1's invariant already held for real, shipped connectors, now durably enforced rather than only narratively asserted. The check itself IS the CI guardrail (§2) — an ordinary Jest contract test under the `npm test` step every PR already runs, not a separate script, per ADR-0048's own left-open "dedicated CI script vs. contract-test gate" question, resolved in favor of this project's established "the accumulated contract suite is the check" convention. Each real connector's own SKILL.md (`gnews-connector`, `newswire-connector`, `azure-ai-language-connector`, `azure-openai-connector`) gained a "Registration transparency (ADR-0048)" section citing its registration location, extension points used, and verification method (§3); `provider-connector-framework/SKILL.md` gained a matching cross-reference and Load-bearing constraint. The check runs identically across both `SocialConnector` (GNews, Newswire) and `AIProviderConnector` (Azure AI Language, Azure OpenAI) instances (§4). No production code changed — this story verifies an already-true invariant and makes it durably, mechanically checked. Full `social-listening-core` suite after: 51/51 suites, 355/355 tests passing.
 
 ---
 
