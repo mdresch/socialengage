@@ -12,6 +12,13 @@ import { getRoleShell, getTenantShellActions, isResolvedIdentity } from '@/lib/r
  * now forwards straight to /platform-admin rather than landing here and requiring a
  * manual click. Narrowly scoped: a tenant identity's own root-page experience
  * (the action list + manual "Open tenant shell" link) is deliberately unchanged.
+ *
+ * Healed 2026-08-12 — a real session (a real Entra sign-in) whose identity never
+ * resolved (no matching users/platform_admins row anywhere) used to fall through to
+ * this same branch as a real tenant_user/tenant_admin, rendering "Tenant shell" content
+ * for a caller getRoleShell() itself now treats as having no shell at all
+ * (see src/lib/role-routing.ts). Sent to /sign-in instead — Menno's explicit sign-off,
+ * see docs/implementation-log.md.
  */
 export default async function HomePage() {
   const jar = await cookies();
@@ -22,6 +29,10 @@ export default async function HomePage() {
 
   if (session && shell === 'platform-admin') {
     redirect('/platform-admin');
+  }
+
+  if (session && shell === null) {
+    redirect('/sign-in');
   }
 
   const tenantActions = getTenantShellActions(identity);

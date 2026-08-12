@@ -33,6 +33,33 @@
  * `ResolvedIdentity` union, and add real route-guard coverage using the same
  * `next/headers`-mocking pattern Story 6.1's own AC7 test already established (a real
  * `encryptSession()`-minted session, decrypted for real, no shape assumed).
+ *
+ * --- Healing pass, 2026-08-12 (heal-contract-failure, Menno's explicit sign-off for this
+ * exact behavior change) ---
+ * Real, live defect found via manual testing: a real Entra sign-in with no matching
+ * `users`/`platform_admins` row anywhere in social-listening-core (a genuinely orphaned/
+ * unlinked identity — resolveIdentity() returns null, so the session's own `identity`
+ * field never validates) still rendered the full tenant shell (/tenant/connectors and
+ * friends), because `getRoleShell(null)` defaulted to `'tenant'`. That default was not an
+ * oversight — the previous version of this file asserted it directly, framed as "unresolved/
+ * unhydrated session." That framing doesn't hold: every page here computes `identity`
+ * synchronously, once per request, straight from the decrypted session cookie (no
+ * client-side hydration step exists in this architecture) — `null` means "nothing
+ * resolvable was ever stored for this session," permanently for that request, not
+ * "still loading." Per ADR-0036 §4 this was never a security incident (core's own
+ * RLS/auth boundary held throughout — the null-identity session only ever saw a shell
+ * with defaulted/degraded data, never real tenant content), but it is a real violation of
+ * Story 6.2's own intent ("the admin UI renders only the screens my resolved identity is
+ * actually allowed to see"). Fixed: `getRoleShell()` now returns `null` for a `null`
+ * identity (a third, explicit "no shell" state, distinct from either real shell);
+ * `isShellAllowed()` needed no code change since `null === 'tenant'`/`'platform-admin'`
+ * is already false. `src/app/tenant/page.tsx` and `src/app/platform-admin/page.tsx`
+ * needed no change either — their existing `isShellAllowed()` + `redirect('/')` guard
+ * already rejects a `null` shell correctly. `src/app/page.tsx` (home) did need a real
+ * fix — its own render branch keyed only on the `session` boolean, not on `shell`, so a
+ * signed-in-but-unresolved session still hit the "Tenant shell" JSX; it now redirects
+ * that case to `/sign-in`, the same target the coarse-grained Middleware already sends a
+ * fully unauthenticated caller to.
  */
 
 import fs from 'fs';
@@ -59,8 +86,16 @@ describe('Story 6.2 — role-gated routing shell', () => {
     expect(getRoleShell(PLATFORM_ADMIN)).toBe('platform-admin');
   });
 
-  it('a null identity (unresolved/unhydrated session) defaults to the tenant shell', () => {
-    expect(getRoleShell(null)).toBe('tenant');
+  /**
+   * Healed 2026-08-12 — this used to assert `getRoleShell(null)` returns `'tenant'`,
+   * framed as "unresolved/unhydrated session." That was the bug: there is no hydration
+   * step in this architecture (identity is computed synchronously, server-side, once per
+   * request), so `null` here means a genuinely, permanently unresolved caller — one with
+   * no matching `users`/`platform_admins` row at all — not a transient loading state.
+   * Menno's explicit sign-off for this exact reversal; see docs/implementation-log.md.
+   */
+  it('a null identity (genuinely unresolved — no matching users/platform_admins row) gets no shell at all', () => {
+    expect(getRoleShell(null)).toBeNull();
   });
 
   it('renders tenant-admin-only actions only for tenant_admin sessions', () => {
@@ -100,6 +135,11 @@ describe('Story 6.2 — role-gated routing shell', () => {
       expect(isShellAllowed(TENANT_USER, 'tenant')).toBe(true);
       expect(isShellAllowed(TENANT_USER, 'platform-admin')).toBe(false);
       expect(isShellAllowed(TENANT_ADMIN, 'tenant')).toBe(true);
+    });
+
+    it('healed 2026-08-12: a null identity is allowed neither shell', () => {
+      expect(isShellAllowed(null, 'tenant')).toBe(false);
+      expect(isShellAllowed(null, 'platform-admin')).toBe(false);
     });
   });
 
@@ -202,6 +242,30 @@ describe('Story 6.2 — role-gated routing shell', () => {
       const element = await Page();
       expect(redirectMock).not.toHaveBeenCalled();
       expect(JSON.stringify(element)).toContain('Tenant shell');
+    });
+
+    /**
+     * Healed 2026-08-12 — reproduces the exact live defect: a real session (a real Entra
+     * sign-in) whose `identity` is `null` (no matching users/platform_admins row) must be
+     * rejected, not rendered. Before this pass, all three of these rendered their
+     * respective shell's real content instead of redirecting.
+     */
+    it('a null identity (real session, unresolved) requesting /tenant is redirected, not rendered', async () => {
+      const { Page, redirectMock } = await renderPageWithIdentity('../../src/app/tenant/page', null);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/');
+      expect(redirectMock).toHaveBeenCalledWith('/');
+    });
+
+    it('a null identity (real session, unresolved) requesting /platform-admin is redirected, not rendered', async () => {
+      const { Page, redirectMock } = await renderPageWithIdentity('../../src/app/platform-admin/page', null);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/');
+      expect(redirectMock).toHaveBeenCalledWith('/');
+    });
+
+    it('a null identity (real session, unresolved) requesting / is sent to /sign-in, never shown "Tenant shell" content', async () => {
+      const { Page, redirectMock } = await renderPageWithIdentity('../../src/app/page', null);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/sign-in');
+      expect(redirectMock).toHaveBeenCalledWith('/sign-in');
     });
   });
 });

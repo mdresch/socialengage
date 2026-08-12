@@ -82,8 +82,10 @@ import { fetchResolvedIdentity } from '../../src/lib/core-client';
 
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(ADMIN_ROOT, '..');
+const CORE_ROOT = path.join(REPO_ROOT, 'social-listening-core');
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}`;
+const CORE_BASE_URL = process.env.CORE_API_BASE_URL || 'http://localhost:3001';
 
 const TEST_EMAIL = process.env.ENTRA_ADMIN_TEST_USER_EMAIL as string;
 const TEST_PASSWORD = process.env.ENTRA_ADMIN_TEST_USER_PASSWORD as string;
@@ -96,7 +98,48 @@ if (!process.env.ENTRA_TENANT_ID || !process.env.ENTRA_ADMIN_CLIENT_ID || !TEST_
 }
 
 let serverProcess: ChildProcess | null = null;
+let coreProcess: ChildProcess | null = null;
 let browser: Browser | null = null;
+
+/**
+ * Healed 2026-08-12 (cross-component regression, role-gating healing pass) — this
+ * contract used to deliberately never start social-listening-core (see this file's own
+ * top-of-file "Explicitly out of scope" note), so TEST_EMAIL's identity was always
+ * unresolved (null) here. That was harmless before role-routing.ts's own getRoleShell()
+ * defaulted a null identity to the tenant shell — AC3/AC4/AC6/AC12 below only cared that
+ * "/" rendered *something* signed-in-looking. Once that default was corrected (a null
+ * identity now redirects to /sign-in, per docs/implementation-log.md), those same
+ * assertions would fail permanently, not flakily, unless TEST_EMAIL actually resolves to
+ * a real identity — which requires a real, running core instance plus a real `users` row.
+ * Both are now provided here: a real core dev server (mirroring `npm run dev`'s own
+ * command) and an idempotent seed (scripts/ensureContractTestIdentity.ts, new) that
+ * finds-or-creates a dedicated tenant and an invited row for TEST_EMAIL. This is squarely
+ * still proving Story 6.1's own AC3/AC4/AC6/AC12 (the real OAuth/session mechanics) — it
+ * now proves them under the real conditions a live deployment would actually have, rather
+ * than under a coincidental gap this contract never meant to rely on.
+ */
+function waitForCoreReady(timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const res = await fetch(`${CORE_BASE_URL}/v1/health`);
+        if (res.status < 500) {
+          resolve();
+          return;
+        }
+      } catch {
+        // not up yet
+      }
+      if (Date.now() > deadline) {
+        reject(new Error(`social-listening-core on ${CORE_BASE_URL} did not become ready in time.`));
+        return;
+      }
+      setTimeout(poll, 1000);
+    };
+    poll();
+  });
+}
 
 /**
  * A plain `fetch()` immediately after a heavy synchronous block in this test process
@@ -143,6 +186,35 @@ function waitForServerReady(timeoutMs: number): Promise<void> {
 
 beforeAll(async () => {
   const isWin = process.platform === 'win32';
+
+  // Seed a real, resolvable identity for TEST_EMAIL before anything signs in — see this
+  // file's own 2026-08-12 healing note above. Talks to the dev DB directly (no server
+  // needs to be up yet for this), idempotent, safe to run every time this contract runs.
+  execSync(`node scripts/withDevEnv.js npx ts-node scripts/ensureContractTestIdentity.ts "${TEST_EMAIL}" tenant_admin`, {
+    cwd: CORE_ROOT,
+    stdio: 'pipe',
+    shell: isWin,
+  });
+
+  // A real social-listening-core instance — see this file's own 2026-08-12 healing note.
+  // NODE_ENV is forced away from 'test' (this Jest process's own inherited value):
+  // core's own app.ts swaps in testAuthBypassMiddleware whenever NODE_ENV==='test'
+  // (reads a JSON X-Test-Identity header, skips real Entra token verification
+  // entirely) — inheriting Jest's NODE_ENV here would silently run the spawned core
+  // instance in bypass mode, rejecting this contract's real Bearer token with a 401
+  // that looks identical to "missing Authorization header." Found via direct
+  // instrumentation of entraAuthMiddleware.ts/core-client.ts during this healing
+  // pass, both reverted after confirming — see docs/implementation-log.md.
+  coreProcess = spawn(isWin ? 'npm.cmd' : 'npm', ['run', 'dev'], {
+    cwd: CORE_ROOT,
+    env: { ...process.env, NODE_ENV: 'development' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: isWin,
+  });
+  coreProcess.stderr?.on('data', (chunk) => process.stderr.write(chunk));
+  coreProcess.stdout?.on('data', (chunk) => process.stderr.write(chunk));
+  await waitForCoreReady(90_000);
+
   const nextBin = path.join(ADMIN_ROOT, 'node_modules', '.bin', isWin ? 'next.cmd' : 'next');
 
   // `next dev` (plain http://localhost) — deliberately not a production build+start. This
@@ -187,10 +259,21 @@ beforeAll(async () => {
   }
 
   browser = await chromium.launch({ headless: true });
-}, 180_000);
+}, 240_000);
 
 afterAll(async () => {
   await browser?.close();
+  if (coreProcess?.pid) {
+    if (process.platform === 'win32') {
+      try {
+        execSync(`taskkill /PID ${coreProcess.pid} /T /F`);
+      } catch {
+        // already gone
+      }
+    } else {
+      coreProcess.kill('SIGKILL');
+    }
+  }
   if (serverProcess?.pid) {
     if (process.platform === 'win32') {
       try {

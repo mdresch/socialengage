@@ -28,8 +28,16 @@ export function isResolvedIdentity(value: unknown): value is ResolvedIdentity {
   return false;
 }
 
-export function getRoleShell(identity: ResolvedIdentity | null): RoleShell {
-  return identity?.type === 'platform_admin' ? 'platform-admin' : 'tenant';
+/**
+ * Returns `null` for a `null` identity — a genuinely unresolved caller (a real Entra
+ * sign-in with no matching `users`/`platform_admins` row anywhere) gets no shell at all,
+ * never a default. See this file's own SKILL.md "Load-bearing constraints" — this used to
+ * default to `'tenant'`, healed 2026-08-12 after live testing found an unresolved identity
+ * could render the full tenant shell (Menno's explicit sign-off; see docs/implementation-log.md).
+ */
+export function getRoleShell(identity: ResolvedIdentity | null): RoleShell | null {
+  if (!identity) return null;
+  return identity.type === 'platform_admin' ? 'platform-admin' : 'tenant';
 }
 
 export function getTenantShellActions(identity: ResolvedIdentity | null): string[] {
