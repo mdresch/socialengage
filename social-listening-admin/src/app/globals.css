@@ -1,3 +1,338 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/**
+ * A single, global, element-selector-only baseline stylesheet — deliberately
+ * no className anywhere in this app (confirmed directly before writing this:
+ * zero existing usage), so this file is the entire styling surface. No page
+ * or component's own JSX needed to change to pick it up.
+ *
+ * Tailwind (installed as a dependency, tailwind.config.js present) was
+ * checked and found never actually wired up — no postcss.config, no
+ * @tailwindcss/postcss, and the old v3-style @tailwind directives are not
+ * valid for the installed v4. Using it here would have meant fixing that
+ * pipeline *and* adding classNames to every page. Plain CSS achieves the
+ * same "one lightweight global pass" goal with neither, and is what's
+ * actually wired in below.
+ */
+
+:root {
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-border: #e2e5ea;
+  --color-text: #1a1d23;
+  --color-text-muted: #5b6472;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-contrast: #ffffff;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.08);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #14161a;
+    --color-surface: #1c1f26;
+    --color-border: #30343d;
+    --color-text: #eef0f3;
+    --color-text-muted: #9aa2b1;
+    --color-accent: #5b8def;
+    --color-accent-hover: #7ea3f4;
+    --color-accent-contrast: #0b1220;
+    --color-danger: #f87171;
+    --color-danger-hover: #fca5a5;
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.45);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every page roots its content in <main> — the one universal container. */
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-5);
+}
+
+h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: var(--space-6) 0 var(--space-3);
+  color: var(--color-text);
+}
+
+p {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+time {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+  margin-top: var(--space-1);
+}
+
+/* A bare, text-only <span> (the posts screens' provider badge) reads as a
+   pill; a <span> wrapping a <button> (every connector action — Connect,
+   Disconnect, Activate, Deactivate, and their own confirm/cancel pairs)
+   needs to drop to its own line with breathing room instead. Both are
+   plain <span>s with no className anywhere in this app, so :has() is what
+   actually distinguishes the two real cases from each other. */
+li > span:not(:has(button)) {
+  display: inline-block;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: var(--space-2);
+}
+
+li > span:has(button) {
+  display: block;
+  margin-top: var(--space-2);
+}
+
+li > span:has(button) button + button {
+  margin-left: var(--space-2);
+}
+
+/* section — a labelled group of content (Available connectors, Database
+   health, etc.) gets a card treatment. */
+section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ul/li — every list-based screen (connectors, watchlists, posts, users,
+   audit log) renders its rows this way. Each <li> reads as its own card;
+   nested lists inside a card (e.g. a details list) fall back to plain
+   spacing via :not(:first-child) below. */
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+li {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+li li {
+  /* A list nested inside a card (rare) shouldn't double up on card chrome. */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: var(--space-1) 0;
+}
+
+li > strong:first-child {
+  font-size: 1.02em;
+}
+
+/* dl/dt/dd — label/value pairs (tenant settings, post detail's Author /
+   Ingestion run). */
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-3) 0;
+}
+
+dt {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+dd {
+  margin: 0;
+}
+
+/* table — the platform-admin tenant registry and similar grids. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+thead th {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Forms — connect/watchlist/invite/provision forms across the app. */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 5em;
+}
+
+/* Buttons — one consistent primary treatment. This app has no className
+   anywhere to distinguish a destructive action (Deactivate/Delete) from a
+   constructive one (Activate/Connect) at the CSS layer without touching
+   every component's own JSX, which this pass deliberately didn't do — a
+   real, named gap for a future pass, not an oversight. */
+button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 120ms ease;
+}
+
+button:hover {
+  background: var(--color-accent-hover);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* role="alert"/role="status" messages (form errors/success, used throughout
+   ConnectForm/WatchlistForm/InviteUserForm/ActivateDeactivateButton/etc). */
+[role='alert'] {
+  color: var(--color-danger);
+  font-weight: 500;
+  margin: var(--space-2) 0 0;
+}
+
+[role='status'] {
+  color: var(--color-success);
+  font-weight: 500;
+  margin: var(--space-2) 0 0;
+}
