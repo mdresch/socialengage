@@ -3,7 +3,11 @@ import { getCachedConnectorHealth } from '../../../connectors/connectorHealthCac
 import { storeCredential, deleteCredential, CredentialOwnerType } from '../../../credentials/credentialStore';
 import { authMethodFor } from '../../../credentials/platformAuth';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
-import { setConnectorActivation, ConnectorActivationOwnerType } from '../../../connectors/connectorActivationStore';
+import {
+  setConnectorActivation,
+  isConnectorActive,
+  ConnectorActivationOwnerType,
+} from '../../../connectors/connectorActivationStore';
 import { getSocialConnector, getAIProviderConnector } from '../../../connectors/registry';
 
 function parseOwnerType(value: unknown): CredentialOwnerType | null {
@@ -20,13 +24,24 @@ export const connectorsRouter = Router();
  * Tenant identity comes from the resolved, token-authenticated caller
  * (Story 5.10) via requireTenantUser(), the same as every other /v1 route.
  * See .claude/skills/derived-data-caching-and-refresh/SKILL.md.
+ *
+ * Story 1.12 (ADR-0051 Open Question 5) — the response also carries
+ * `isActive` (tenant-wide scope, the only scope any current caller means),
+ * read fresh via `isConnectorActive()` on every call, deliberately never
+ * folded into the 60-second health cache above (ADR-0022's own dated note
+ * on this exact question). No change to `ConnectorHealth`'s own four
+ * fields or the cache itself.
  */
 connectorsRouter.get('/:platformId', async (req, res) => {
   const tenantId = requireTenantUser(req, res);
   if (!tenantId) return;
 
-  const health = await getCachedConnectorHealth(tenantId, req.params.platformId);
-  res.json(health);
+  const platformId = req.params.platformId;
+  const [health, isActive] = await Promise.all([
+    getCachedConnectorHealth(tenantId, platformId),
+    isConnectorActive(tenantId, platformId, 'tenant'),
+  ]);
+  res.json({ ...health, isActive });
 });
 
 /**
