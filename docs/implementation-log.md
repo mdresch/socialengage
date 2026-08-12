@@ -1345,3 +1345,21 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 **No API surface change** — `SocialPostFull`/`SocialPostSummary` (and therefore `GET /posts`, `getSocialPostById`) do not expose the new field; proven by asserting the returned objects' own key sets don't contain it, not just by not adding it.
 
 **Traceability:** `docs/user-stories/epic-3-data-model-storage-and-archival.md`'s Story 3.9 entry, `docs/user-stories/README.md`, and `docs/implementation-plan.md`'s Phase 4 dated note all updated in the commit above.
+
+## 2026-08-12, later still the same day — Correction: the 2026-08-01 Story 1.5 entry cites the wrong commit hash — social-listening-core@f317ace
+
+*Correction, not a healing pass or new story work — no code changed by this entry. Per this file's own append-only convention ("corrections get a new dated entry that references the one being corrected"), the original entry below is left exactly as written; this entry is the correction of record.*
+
+- **Full commit:** `f317acea0c2496911a610d94c209e50f52ca2d5e`
+- **Repo:** social-listening-core
+- **Story / ADR:** 1.5 / Phase 1 "also build, not storied" work (correcting the citation only — no change to Story 1.5's own status, scope, or its later 2026-08-12 rework, logged separately above under `social-listening-core@aaf6bd7`)
+- **Contract:** social-listening-core/contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/watchlist-crud/SKILL.md
+- **Files touched:** docs/implementation-log.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/watchlist-crud/SKILL.md, social-listening-core/contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts, social-listening-core/migrations/0014_create_watchlists.sql, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/watchlistStore.ts
+- **Full suite at merge:** N/A — this entry corrects a citation; the original build's own suite result (132/132) is unchanged and already recorded below.
+
+**The entry titled "2026-08-01 — Story 1.5 — social-listening-core@1fb3e55" cites a real but wrong commit.** `1fb3e554607fb419a0ec20176d373117b16e7dd0` exists and is genuine, but it's "Add future-subsystems scope tracking and open-items snapshot" — a separate, unrelated docs commit touching `docs/future-subsystems.md` and `docs/open-items-and-deferred-work.md`, not Story 1.5's actual build. Found by `docs/templates/check-implementation-log.cjs` during this session's own routine verification passes (run repeatedly before appending later, unrelated entries for Stories 1.10/2.10/2.11/3.9 — surfaced each time as `FAIL: entry "2026-08-01 — Story 1.5..." file list doesn't match commit ...`), left uncorrected until Menno directly asked for it to be fixed.
+
+**The real commit, confirmed directly, not assumed:** `git log --follow --diff-filter=A -- social-listening-core/src/watchlists/watchlistStore.ts` finds exactly one commit that ever created that file — `f317acea0c2496911a610d94c209e50f52ca2d5e`, dated 2026-08-01, message "Add Story 1.5: Watchlist CRUD REST surface". Its own real file list (`git show --stat`, cited above) matches the original entry's own claimed list almost exactly. The one discrepancy: the original entry additionally claimed `docs/open-items-and-deferred-work.md`, which `f317ace` does not touch — no commit around that date touches that file in connection with Story 1.5's own work either, so that claim appears to have been a drafting error in the original entry's own text, not evidence of a second missing commit.
+
+**The original entry is unedited** — anyone verifying `## 2026-08-01 — Story 1.5 — social-listening-core@1fb3e55` going forward should cross-reference this entry for the real commit hash, `f317acea0c2496911a610d94c209e50f52ca2d5e`.
