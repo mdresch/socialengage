@@ -1459,3 +1459,17 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 **Two real, self-caught process deviations, corrected before they became a problem:** (1) the store module was initially written before its contract test existed — caught immediately, deleted, and the contract test written and confirmed failing for the right reason (missing module) before any implementation code was restored, per this skill's own hard rule; (2) the contract test's own first draft called `setConnectorActivation()` with a synthetic `randomUUID()` as a Tier-3 `userId` with no real `users` row backing it — `connector_user_activations.user_id`'s real FK caught this immediately as a constraint violation on first run; fixed by using `makeTenantWithUsers()`'s real, resolved user instead, the same pattern Story 1.7's own contract already established for exactly this reason.
 
 **Deliberately out of scope, named, not silently omitted:** `social-listening-admin` UI wiring (the Story 6.3/6.5 screens still render the old hardcoded logic); live credential validation and system-driven auto-deactivation (ADR-0051 Decision §6/§7); the `retryable`/non-retryable auto-disable conflation fix (addressed separately via ADR-0010/0023's own dated Clarification notes, not this story); `GET /v1/connectors/:platformId`'s own response shape combining activation with derived health (ADR-0051 Open Question 5); real production connector-registration bootstrap for `SocialConnector`s (no scheduler exists yet anywhere in this project to need one) — all recorded in `.claude/skills/connector-activation/SKILL.md`'s own "Known gaps" section.
+
+---
+
+## 2026-08-12, later still the same day — Story 1.12 — social-listening-core@c3af2a7
+
+- **Full commit:** `c3af2a7aa5d0ab439773a8edab512c2576737aa0`
+- **Repo:** social-listening-core
+- **Story / ADR:** 1.12 / ADR-0051 Open Question 5 (no new ADR — additive response-shape extension of an already-decided endpoint)
+- **Contract:** social-listening-core/contracts/epic-1/story-1.12.connector-status-includes-activation.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/connector-activation/SKILL.md (updated)
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-activation/SKILL.md, social-listening-core/contracts/epic-1/story-1.12.connector-status-includes-activation.contract.test.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts
+- **Full suite at merge:** PASS (55/55 suites, 394/394 tests)
+
+**Closes Story 6.15's own real, named backend dependency.** `GET /v1/connectors/:platformId`'s handler now runs `getCachedConnectorHealth()` (unchanged, still 60-second-TTL-cached) and `isConnectorActive(tenantId, platformId, 'tenant')` (fresh, uncached) in parallel and spreads both into one response object — `{...health, isActive}`. A never-activated platform reads `isActive: false`, never `null`/`undefined`, per Story 1.11's own lazy-creation rule. The contract's own AC2 proves the cache-independence directly: a GET immediately before activating (populating the 60s health cache) followed by a GET immediately after (still well within that TTL) reflects the new `isActive` value — if it had been folded into the cached value, the second call would have read stale `false`. No change to `deriveConnectorHealth()`, `ConnectorHealth`'s own four original fields, or `ConnectorHealthCache`'s TTL/locality decision (ADR-0022).
