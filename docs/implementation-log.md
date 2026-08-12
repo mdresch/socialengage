@@ -1323,3 +1323,25 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 **The one deliberate seam in this story's own contract, named and scoped narrowly:** this project controls no real domain it could publish an actual TXT record for, so the "record genuinely matches" success path is proven by spying on Node's own `dns.promises.resolveTxt` for exactly one test (restored immediately after via `mockRestore()`). Every other DNS lookup in the contract — the "missing/mismatched record" path — runs against real DNS for a real domain (`example.com`, IANA-reserved, guaranteed to carry no such record). RSS ingestion mechanics (AC5/AC6/AC10/AC12) reuse the same real, already-proven-live GlobeNewswire feed URL Story 2.6's own contract uses, decoupled from domain verification (which is marked verified directly at the store layer for those tests) — avoiding a new external-dependency risk just to prove real feed-parsing mechanics.
 
 **Traceability:** `docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md`'s Story 2.11 entry, `docs/user-stories/README.md`, and `docs/implementation-plan.md`'s Phase 4 dated note all updated in the commit above.
+
+## 2026-08-12, later still the same day — Story 3.9 — social-listening-core@34e9dfb
+
+- **Full commit:** `34e9dfb8ae712a992ae275d6eb82221c64f9a3d8`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.9 / ADR-0049
+- **Contract:** social-listening-core/contracts/epic-3/story-3.9.author-follower-count-at-publish.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-3/story-3.9.author-follower-count-at-publish.contract.test.ts, social-listening-core/migrations/0027_add_social_posts_author_follower_count_at_publish.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Full suite at merge:** PASS (53/53 suites, 379/379 tests, `--runInBand`)
+
+**A single, scoped exception to ADR-0004's normalized `Author` model, added exactly as narrowly as ADR-0049 specifies.** `migrations/0027_add_social_posts_author_follower_count_at_publish.sql` adds one nullable `INTEGER` column, no `DEFAULT`, no backfill `UPDATE` — existing rows read `NULL`, by construction, per ADR-0049's own "does not retroactively populate existing rows" consequence. The column carries a real `COMMENT ON COLUMN` (queryable via `col_description()`, not just prose in the migration file) documenting the three-way `NULL` ambiguity ADR-0049's own Open Question 1 named: connector-type null, platform-omitted null, pre-migration null.
+
+**`Author.followerCount` itself was not touched, and Story 3.1's own contract was not modified** — the full-suite run is what re-proves AC4 on every merge, not a duplicated assertion in this story's own contract.
+
+**Open Question 5 (the connector capability-declaration shape) resolved as `SocialConnector.canProvideFollowerCountAtPublish`** — a boolean, analogous in shape to `supportedQueryFeatures` (the ADR's own suggested precedent), added to `types.ts` alongside `NormalizedPost.authorFollowerCountAtPublish`. Since no real individual-account connector exists yet (Reddit remains unbuilt), the round-trip mechanism — a connector declares the flag, `normalize()` sets the field, it flows through `insertSocialPost()`'s own new parameter into the column — is proven with an inline, test-local connector object rather than a real platform, named explicitly in both the contract and this entry so it isn't mistaken for a real connector capability shipped by this story.
+
+**Newswire and GNews were deliberately left untouched — proving AC5 by omission, not by writing a test that skips real assertions.** Their own real, unmodified poll functions (`pollNewswireFeeds()`, `pollGNewsSearch()`, live network calls, same feeds/credentials already used elsewhere in this suite) were run end to end in this story's own contract, and the resulting `social_posts` rows were queried directly to confirm `author_follower_count_at_publish IS NULL` — since neither connector's `normalize()` was changed to set the new optional field, this is a genuine behavioral proof of the "connector-type null" case, not an assumption.
+
+**No API surface change** — `SocialPostFull`/`SocialPostSummary` (and therefore `GET /posts`, `getSocialPostById`) do not expose the new field; proven by asserting the returned objects' own key sets don't contain it, not just by not adding it.
+
+**Traceability:** `docs/user-stories/epic-3-data-model-storage-and-archival.md`'s Story 3.9 entry, `docs/user-stories/README.md`, and `docs/implementation-plan.md`'s Phase 4 dated note all updated in the commit above.
