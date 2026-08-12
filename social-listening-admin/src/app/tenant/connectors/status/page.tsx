@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { getConnectorStatus, type ConnectorStatus } from '@/lib/core-client';
+import { ActivateDeactivateButton } from '../ActivateDeactivateButton';
 
 interface PlatformDefinition {
   id: string;
@@ -29,27 +30,25 @@ const PLATFORMS: PlatformDefinition[] = [
 
 interface ConnectorStatusRow {
   platform: PlatformDefinition;
-  connected: boolean;
+  isActive: boolean;
   health: ConnectorStatus | null;
 }
 
 /**
- * Story 6.5 (enhanced 2026-08-12, Menno's own direct request) — always
- * keeps the real fetched health, even for an unconnected platform: a
- * successful GET /v1/connectors/:platformId call for a never-connected
- * platform still returns real, honest data (lastSuccessfulFetchAt: null,
- * consecutiveFailures: 0, etc., per deriveConnectorHealth()'s own
- * zero-ingestion-runs branch) — discarding it was wasteful and, once
- * inactive platforms are rendered too, would have thrown that real data
- * away for no reason. `health` is only null on a genuine fetch failure.
+ * Story 6.15 (ADR-0051) — the Active/Inactive signal now comes from real
+ * `health.isActive` (Story 1.12), never `authMode === 'none'` or
+ * `credentialStatus !== null` — closing the actual UI-visible instance of
+ * the bug ADR-0051 was drafted to fix: Newswire is no longer hardcoded
+ * "Active" regardless of whether a Tenant-Admin ever chose to turn it on.
+ * `health` itself is still kept for every platform, connected or not, per
+ * the 2026-08-12 enhancement — see this component's own SKILL.md.
  */
 async function loadConnectorStatusRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {
   try {
     const health = await getConnectorStatus(platform.id);
-    const connected = platform.authMode === 'none' || health.credentialStatus !== null;
-    return { platform, connected, health };
+    return { platform, isActive: health.isActive, health };
   } catch {
-    return { platform, connected: false, health: null };
+    return { platform, isActive: false, health: null };
   }
 }
 
@@ -63,6 +62,8 @@ export default async function ConnectorStatusPage() {
     redirect('/');
   }
 
+  const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
+
   const rows = await Promise.all(PLATFORMS.map(loadConnectorStatusRow));
 
   return (
@@ -73,10 +74,10 @@ export default async function ConnectorStatusPage() {
       <section>
         <h2>Platforms</h2>
         <ul>
-          {rows.map(({ platform, connected, health }) => (
-            <li key={platform.id} data-active={connected} data-status={health?.status ?? 'unknown'}>
+          {rows.map(({ platform, isActive, health }) => (
+            <li key={platform.id} data-active={isActive} data-status={health?.status ?? 'unknown'}>
               <strong>{platform.name}</strong> —{' '}
-              {!connected ? (
+              {!isActive ? (
                 <span>Inactive</span>
               ) : health?.status === 'failing' ? (
                 <strong>⚠ Active — FAILING, needs attention</strong>
@@ -88,6 +89,17 @@ export default async function ConnectorStatusPage() {
               <div>Last successful fetch: {health?.lastSuccessfulFetchAt ?? 'never'}</div>
               <div>Last attempt: {health?.lastAttemptAt ?? 'never'}</div>
               <div>Consecutive failures: {health?.consecutiveFailures ?? 0}</div>
+              {isTenantAdmin && (
+                <ActivateDeactivateButton platformId={platform.id} ownerType="tenant" isActive={isActive} />
+              )}
+              {platform.authMode !== 'none' && (
+                // Story 1.12 only exposes tenant-wide isActive — no
+                // per-user read exists yet (named gap, ADR-0051), so this
+                // control's own initial state is deliberately unknown
+                // (assumed false) rather than reusing the tenant-wide
+                // value, which would be actively misleading.
+                <ActivateDeactivateButton platformId={platform.id} ownerType="user" isActive={false} />
+              )}
             </li>
           ))}
         </ul>

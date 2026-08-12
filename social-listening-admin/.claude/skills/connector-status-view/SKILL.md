@@ -17,17 +17,19 @@ This component renders the tenant-facing connector status screen (`/tenant/conne
 | ADR-0022 | `ConnectorHealth`'s own shape (`status`/`lastSuccessfulFetchAt`/`lastAttemptAt`/`consecutiveFailures`), built by Story 4.3. | 6.5 |
 | ADR-0023 | Failing connectors must be visually distinguished from degraded/healthy ones. | 6.5 |
 | ADR-0021 | Boolean-query AST, `resolveWatchlistAstDispatch()`'s `unsupportedNodeTypes` — see "Known gaps" below. | not yet built |
+| ADR-0051 | Connector activation, decoupled from credential presence — the Active/Inactive indicator is now driven by real `isActive` (Story 1.12), never `authMode`/`credentialStatus`; real activate/deactivate controls added | 6.15 |
 
 ## Correction, 2026-08-12 — this story was never actually built despite being marked "Built"
 Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardcoded `gnews`/`newswire`/`reddit` fixture array — never imported `core-client.ts`, never called `GET /v1/connectors/:platformId`. The original contract only did `fs.readFileSync` + string-literal checks, which could not detect this. Rebuilt for real — see `docs/user-stories/epic-6-tenant-admin-ui.md`'s own Story 6.5 entry and `docs/implementation-log.md` for the rebuild commit.
 
 ## Architecture
-- `page.tsx` (Server Component) — role-gates on the `'tenant'` shell (Story 6.2), derives the connected-platform list the same way `tenant/connectors/page.tsx` (Story 6.3) does — a local `PLATFORMS` array checked per-platform via a real `getConnectorStatus()` call, `credentialStatus !== null` (or `authMode: 'none'`) meaning connected — then renders each connected platform's real `ConnectorHealth`. No mutations/forms on this screen at all (read-only).
+- `page.tsx` (Server Component) — role-gates on the `'tenant'` shell (Story 6.2), derives the platform list the same way `tenant/connectors/page.tsx` (Story 6.3) does — a local `PLATFORMS` array, each checked via a real `getConnectorStatus()` call — then renders each platform's real `ConnectorHealth` plus its real `isActive` (Story 1.12/6.15). **The Active/Inactive label is driven by `isActive`, never `credentialStatus !== null`/`authMode === 'none'`** (that old derivation is exactly the bug ADR-0051 was drafted to fix — Newswire used to render "Active" unconditionally). This screen is no longer purely read-only: `ActivateDeactivateButton` (Story 6.15, `../ActivateDeactivateButton.tsx`, shared with `tenant/connectors/page.tsx`) is rendered per platform, tenant-wide for `tenant_admin` sessions and personal for every `authMode !== 'none'` platform.
 - `PLATFORMS` is deliberately duplicated from `tenant/connectors/page.tsx`'s own array, not imported (a page component exports nothing to import) — the same small, intentional duplication `tenant/watchlists/page.tsx` (Story 6.4) already made and documented for its own narrower purpose. A shared `connectedPlatforms.ts` helper would be a reasonable future refactor once a third or fourth screen needs this same derivation, but building it is out of this story's own Acceptance Criteria.
 
 ## Contracts that constrain this component
 
-- `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` — real behavioral assertions (a real-session-plus-fetch-mocking page render, plus structural source checks), no jsdom in this repo (testEnvironment is `'node'`).
+- `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` — real behavioral assertions (a real-session-plus-fetch-mocking page render, plus structural source checks), no jsdom in this repo (testEnvironment is `'node'`). **Revised 2026-08-12 (Story 6.15, ADR-0051):** the assertion that Newswire "always renders Active, regardless of credentialStatus" was real, deliberate behavior under the old (pre-ADR-0051) model and is now wrong under the current one — rewritten with a dated note, not silently changed, to assert Newswire renders Inactive by default and Active only once `isActive` is true.
+- `contracts/epic-6/story-6.15.connector-activation-controls.contract.test.ts` — the Active/Inactive label is driven by real `isActive`, on both this screen and `tenant/connectors/page.tsx`; `ActivateDeactivateButton` is rendered for every platform; the personal control is hidden for `authMode: 'none'`; the tenant-wide control is gated on `tenant_admin`.
 
 ## How to extend this safely
 
@@ -37,7 +39,9 @@ Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardc
 ## Load-bearing constraints — do not change casually
 
 - Health values are rendered as `healthy`/`degraded`/`failing`/`disconnected`, sourced from the real `GET /v1/connectors/:platformId` response — never a fixture. `failing` gets a materially distinct render (not just the same text in a different color no test can see), per ADR-0023.
-- A platform whose `getConnectorStatus()` call throws (transient core-side issue) degrades to "not connected" for that one platform, the same pattern `tenant/connectors/page.tsx` already established — a single platform's failure must not block the whole screen's render.
+- A platform whose `getConnectorStatus()` call throws (transient core-side issue) degrades to `isActive: false` for that one platform, the same pattern `tenant/connectors/page.tsx` already established — a single platform's failure must not block the whole screen's render.
+- **The Active/Inactive indicator is `isActive`, full stop — never re-derive it from `credentialStatus`/`authMode` again.** This was the exact conflation ADR-0051 exists to fix; reintroducing it anywhere (even as a "fallback" for a failed activation read) would reopen the Newswire always-active bug.
+- **The personal `ActivateDeactivateButton`'s `isActive` prop is always `false` on this screen too** (see `connector-connect-disconnect/SKILL.md`'s matching note) — `GET /v1/connectors/:platformId` only exposes tenant-wide activation.
 
 ## Known gaps / deferred work
 

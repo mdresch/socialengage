@@ -124,16 +124,20 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       expect(source).toMatch(/rows\.map/);
     });
 
-    it("renders 'Inactive' for an unconnected platform and 'Active' for a connected one, not just the raw health.status alone", () => {
+    // 2026-08-12 (Story 6.15, ADR-0051): renamed from `!connected` to
+    // `!isActive` — the label is no longer derived from credential
+    // presence at all, it's the real, persisted activation field
+    // (Story 1.12). Updated with this dated note, not silently changed.
+    it("renders 'Inactive' for an inactive platform and 'Active' for an active one, driven by real isActive, not the raw health.status alone", () => {
       const source = readSrc(...pagePath);
       expect(source).toContain('Inactive');
       expect(source).toContain('Active');
-      expect(source).toMatch(/!connected/);
+      expect(source).toMatch(/!isActive/);
     });
 
-    it("loadConnectorStatusRow() keeps the real fetched health for every platform, never discarding it for an unconnected one", () => {
+    it("loadConnectorStatusRow() keeps the real fetched health for every platform, never discarding it for an inactive one", () => {
       const source = readSrc(...pagePath);
-      expect(source).not.toMatch(/health:\s*connected\s*\?\s*health\s*:\s*null/);
+      expect(source).not.toMatch(/health:\s*isActive\s*\?\s*health\s*:\s*null/);
     });
   });
 
@@ -176,15 +180,20 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
     }
 
     it('renders a real failing status from a real mocked GET /v1/connectors/gnews response, no fixture text', async () => {
+      // 2026-08-12 (Story 6.15): isActive: true added — the failing/⚠
+      // branch only renders when active (health data still shown either
+      // way, but this test's own intent is "an active, failing connector",
+      // a real, meaningful scenario, not an inactive one that happens to
+      // have failing runs in its history).
       const Page = await renderStatusPageAs((url) => {
         if (url.includes('/v1/connectors/gnews')) {
           return new Response(
-            JSON.stringify({ status: 'failing', lastSuccessfulFetchAt: '2026-08-01T00:00:00.000Z', lastAttemptAt: '2026-08-12T00:00:00.000Z', consecutiveFailures: 4, credentialStatus: 'valid' }),
+            JSON.stringify({ status: 'failing', lastSuccessfulFetchAt: '2026-08-01T00:00:00.000Z', lastAttemptAt: '2026-08-12T00:00:00.000Z', consecutiveFailures: 4, credentialStatus: 'valid', isActive: true }),
             { status: 200 }
           );
         }
         return new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
           { status: 200 }
         );
       });
@@ -215,13 +224,42 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       expect(rendered).toContain('Inactive');
     });
 
-    it('newswire (authMode "none") always renders Active, regardless of credentialStatus', async () => {
+    // 2026-08-12 (Story 6.15, ADR-0051): this assertion previously read
+    // "newswire (authMode 'none') always renders Active, regardless of
+    // credentialStatus" — real, deliberate behavior under this story's own
+    // original (pre-ADR-0051) model, where authMode === 'none' alone meant
+    // "always on." ADR-0051 named this exact behavior as Bug 1 (the
+    // Newswire always-active bug) and Story 6.15 replaced the Active/
+    // Inactive derivation with the real, persisted isActive field
+    // (Story 1.12) — so this is now the OPPOSITE of correct behavior, not
+    // a coincidental drift. Rewritten with this dated note per this
+    // project's "regression, not rewrite" convention, not silently changed.
+    it('newswire (authMode "none") renders Inactive by default — isActive drives the label, not authMode alone', async () => {
       const Page = await renderStatusPageAs(() =>
         new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
           { status: 200 }
         )
       );
+
+      const element = await Page();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Inactive');
+    });
+
+    it('newswire (authMode "none") renders Active once isActive is real and true', async () => {
+      const Page = await renderStatusPageAs((url) => {
+        if (url.includes('/v1/connectors/newswire')) {
+          return new Response(
+            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true }),
+            { status: 200 }
+          );
+        }
+        return new Response(
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
+          { status: 200 }
+        );
+      });
 
       const element = await Page();
       const rendered = JSON.stringify(element);
@@ -232,12 +270,12 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       const Page = await renderStatusPageAs((url) => {
         if (url.includes('/v1/connectors/gnews')) {
           return new Response(
-            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: '2026-08-11T09:00:00.000Z', lastAttemptAt: '2026-08-12T09:00:00.000Z', consecutiveFailures: 0, credentialStatus: 'valid' }),
+            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: '2026-08-11T09:00:00.000Z', lastAttemptAt: '2026-08-12T09:00:00.000Z', consecutiveFailures: 0, credentialStatus: 'valid', isActive: true }),
             { status: 200 }
           );
         }
         return new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
           { status: 200 }
         );
       });

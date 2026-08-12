@@ -5,6 +5,7 @@ import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { getConnectorStatus } from '@/lib/core-client';
 import { ConnectForm, type CredentialField } from './ConnectForm';
 import { DisconnectButton } from './DisconnectButton';
+import { ActivateDeactivateButton } from './ActivateDeactivateButton';
 
 interface PlatformDefinition {
   id: string;
@@ -54,16 +55,20 @@ const PLATFORMS: PlatformDefinition[] = [
  * status call degrades to "not connected" for that one platform, not a
  * failed page render — a transient core-side issue on one platform must not
  * block a tenant from seeing or acting on the others.
+ *
+ * Story 6.15 (ADR-0051) — every platform, including `authMode: 'none'`
+ * ones, now calls `getConnectorStatus()` for real, since `isActive`
+ * (Story 1.12) is the sole source of activation state; `authMode: 'none'`
+ * no longer short-circuits to a hardcoded `connected: true` with no real
+ * call at all.
  */
 async function loadConnectorState(platform: PlatformDefinition) {
-  if (platform.authMode === 'none') {
-    return { platform, connected: true, credentialStatus: null as ConnectorState['credentialStatus'] };
-  }
   try {
     const status = await getConnectorStatus(platform.id);
-    return { platform, connected: status.credentialStatus !== null, credentialStatus: status.credentialStatus };
+    const connected = platform.authMode === 'none' || status.credentialStatus !== null;
+    return { platform, connected, credentialStatus: status.credentialStatus, isActive: status.isActive };
   } catch {
-    return { platform, connected: false, credentialStatus: null as ConnectorState['credentialStatus'] };
+    return { platform, connected: false, credentialStatus: null as ConnectorState['credentialStatus'], isActive: false };
   }
 }
 
@@ -71,6 +76,7 @@ interface ConnectorState {
   platform: PlatformDefinition;
   connected: boolean;
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
+  isActive: boolean;
 }
 
 export default async function ConnectorsPage() {
@@ -96,14 +102,16 @@ export default async function ConnectorsPage() {
       <section>
         <h2>Available connectors</h2>
         <ul>
-          {states.map(({ platform, connected, credentialStatus }) => (
+          {states.map(({ platform, connected, credentialStatus, isActive }) => (
             <li key={platform.id}>
               <strong>{platform.name}</strong>{' '}
               {platform.authMode === 'none'
-                ? 'Active (no credential required)'
+                ? 'No credential required'
                 : connected
                   ? `Connected${credentialStatus ? ` (${credentialStatus})` : ''}`
                   : 'Not connected'}
+              {' — '}
+              {isActive ? 'Active' : 'Inactive'}
               {platform.authMode === 'api_key' && !connected && (
                 <ConnectForm
                   platformId={platform.id}
@@ -113,6 +121,17 @@ export default async function ConnectorsPage() {
               )}
               {platform.authMode === 'api_key' && connected && (
                 <DisconnectButton platformId={platform.id} ownerType={isTenantAdmin ? 'tenant' : 'user'} />
+              )}
+              {isTenantAdmin && (
+                <ActivateDeactivateButton platformId={platform.id} ownerType="tenant" isActive={isActive} />
+              )}
+              {platform.authMode !== 'none' && (
+                // Story 1.12 only exposes tenant-wide isActive — no
+                // per-user read exists yet (named gap, ADR-0051), so this
+                // control's own initial state is deliberately unknown
+                // (assumed false) rather than reusing the tenant-wide
+                // value, which would be actively misleading.
+                <ActivateDeactivateButton platformId={platform.id} ownerType="user" isActive={false} />
               )}
             </li>
           ))}

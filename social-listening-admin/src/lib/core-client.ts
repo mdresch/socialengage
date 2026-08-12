@@ -240,6 +240,13 @@ export interface ConnectorStatus {
   lastAttemptAt: string | null;
   consecutiveFailures: number;
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
+  /** Story 1.12 (ADR-0051 Open Question 5) — real activation state, tenant-wide scope, read fresh, never derived from credentialStatus/authMode. */
+  isActive: boolean;
+}
+
+export interface ConnectorActivationOutcome {
+  status: number;
+  body: { error?: string; platformId?: string; ownerType?: string; isActive?: boolean; [key: string]: unknown };
 }
 
 export interface ConnectorActionOutcome {
@@ -304,6 +311,52 @@ export async function disconnectPlatform(
     `/v1/connectors/${encodeURIComponent(platformId)}/disconnect?ownerType=${encodeURIComponent(ownerType)}`,
     { method: 'DELETE' }
   );
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.15 (Story 1.11, ADR-0051) — turns a connector on
+ * (`POST /v1/connectors/:platformId/activate`), independent of whether a
+ * credential is stored. `ownerType: 'user'` always uses the caller's own
+ * resolved identity server-side (Story 1.11 AC4) — this function never
+ * accepts or sends a `userId`. Same raw `{status, body}` outcome pattern as
+ * `connectPlatform()` — a `400`/`403` here is a real, expected outcome the
+ * UI must react to, not an exception.
+ */
+export async function activatePlatform(
+  platformId: string,
+  ownerType: 'tenant' | 'user'
+): Promise<ConnectorActivationOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/activate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ownerType }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.15 (Story 1.11, ADR-0051) — turns a connector off
+ * (`POST /v1/connectors/:platformId/deactivate`) without deleting its
+ * stored credential (`disconnectPlatform()` remains the destructive
+ * action). `userId` is optional and only meaningful for
+ * `ownerType: 'user'` — the offboarding case where a `tenant_admin`
+ * deactivates a different user's own personal connector (Story 1.11 AC5,
+ * mirroring `disconnect`'s own offboarding-override shape); omitted, it
+ * defaults server-side to the caller's own identity.
+ */
+export async function deactivatePlatform(
+  platformId: string,
+  ownerType: 'tenant' | 'user',
+  userId?: string
+): Promise<ConnectorActivationOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/deactivate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userId ? { ownerType, userId } : { ownerType }),
+  });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }
