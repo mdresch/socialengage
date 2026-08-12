@@ -18,7 +18,7 @@ description: The /tenant/posts and /tenant/posts/:id screens — the only place 
 
 ## Contracts that constrain this component
 
-- `contracts/epic-6/story-6.11.post-feed.contract.test.ts` — real Server Component renders (real encrypted session, mocked `next/headers`/`next/navigation`/`fetch`, the same pattern `story-6.5.connector-status-view`'s own corrected contract established) proving per-shape title/text extraction, opaque-cursor "next page" navigation, enrichment shown-when-present/absent-when-null, detail-page authorId/acquisitionId rendering, and a real 404 → "not found" state. Also covers `listPosts()`/`getPost()` in `core-client.ts` directly (bearer-token attachment, throw-on-non-2xx, `getPost()`'s 404-returns-null exception to that rule).
+- `contracts/epic-6/story-6.11.post-feed.contract.test.ts` — real Server Component renders (real encrypted session, mocked `next/headers`/`next/navigation`/`fetch`, the same pattern `story-6.5.connector-status-view`'s own corrected contract established) proving per-shape title/text extraction, opaque-cursor "next page" navigation, enrichment shown-when-present/absent-when-null, detail-page authorId/acquisitionId rendering, and a real 404 → "not found" state. Also covers `listPosts()`/`getPost()` in `core-client.ts` directly (bearer-token attachment, throw-on-non-2xx, `getPost()`'s 404-returns-null exception to that rule). **Enhancement, 2026-08-12** (Menno's own direct request): the detail screen also shows `enrichment.modelUsed` — which of the (possibly multiple) active AI providers actually produced this specific post's enrichment, since `social-listening-core`'s `enrichPost.ts` decides that per-post via a fixed provider order, not a tenant-visible setting.
 
 ## How to extend this safely
 

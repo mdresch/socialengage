@@ -38,6 +38,19 @@
  * checks are used only for things that are genuinely structural (file
  * exists, no OFFSET/page-number control anywhere in the source).
  *
+ * --- Enhancement, 2026-08-12, at Menno's own direct request ("enhance the
+ * post details page with the ai providers enrichment") ---
+ * The detail screen now also shows `enrichment.modelUsed` (e.g.
+ * "azure-ai-language:2025-01-01" or "azure-openai:2025-08-07") — the one
+ * field that answers, per post, which of the two AI providers actually
+ * produced its enrichment. Surfaced directly from a real, related question
+ * Menno asked: `enrichPost.ts` tries providers in a fixed order and a
+ * tenant can have both active at once, so `modelUsed` is the only honest,
+ * after-the-fact answer for a specific post — see
+ * `social-listening-core/contracts/epic-2/story-2.9...contract.test.ts`'s
+ * own same-day dated note for the backend-side finding this surfaced (AI
+ * provider activation wasn't gating enrichment at all before that fix).
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET /v1/posts's / GET /v1/posts/:id's own backend behavior
  *     (cursor pagination correctness, RLS scoping) — Story 3.4's and Story
@@ -110,7 +123,12 @@ const NEWSWIRE_POST = {
   id: 'p-2',
   createdAt: '2026-08-12T09:05:00.000Z',
   publishedAt: '2026-08-12T08:05:00.000Z',
-  enrichment: { sentiment: 'positive', keyPhrases: ['quarterly results'], entities: [{ text: 'Acme Corp', category: 'Organization', confidenceScore: 0.9 }] },
+  enrichment: {
+    sentiment: 'positive',
+    keyPhrases: ['quarterly results'],
+    entities: [{ text: 'Acme Corp', category: 'Organization', confidenceScore: 0.9 }],
+    modelUsed: 'azure-ai-language:2025-01-01',
+  },
   rawPayload: {
     providerId: 'newswire',
     externalId: 'ext-2',
@@ -294,6 +312,19 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(rendered).toContain('Breaking news headline');
       expect(rendered).toContain('author-123');
       expect(rendered).toContain('run-456');
+    });
+
+    it('enhancement, 2026-08-12: shows which AI provider/model actually enriched this post (modelUsed)', async () => {
+      const Page = await renderPageAs('../../src/app/tenant/posts/[id]/page', () =>
+        new Response(
+          JSON.stringify({ ...NEWSWIRE_POST, id: 'p-2', authorId: 'author-123', acquisitionId: 'run-456' }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('azure-ai-language:2025-01-01');
     });
 
     it('a post with no author recorded (authorId null) renders an honest "no author" state, not a blank or a crash', async () => {

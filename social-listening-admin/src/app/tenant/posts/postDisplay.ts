@@ -40,6 +40,7 @@ export interface PostEnrichmentSummary {
   sentiment: string | null;
   entities: string[];
   keyPhrases: string[];
+  modelUsed: string | null;
 }
 
 /**
@@ -47,7 +48,12 @@ export interface PostEnrichmentSummary {
  * (social-listening-core/src/connectors/types.ts) but arrives here as
  * `unknown` — this is the one place that boundary gets read. Returns `null`
  * when there is nothing worth showing (matches AC3's "no enrichment section
- * rather than an empty/placeholder one").
+ * rather than an empty/placeholder one"). `modelUsed` (e.g.
+ * "azure-ai-language:2025-01-01" or "azure-openai:2025-08-07") is the one
+ * field that answers "which of the two active AI providers actually
+ * enriched this specific post" — enrichPost.ts's own PROVIDERS order
+ * decides that at enrichment time, per-post, so this is the only place a
+ * viewer can see the real answer after the fact.
  */
 export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSummary | null {
   if (!enrichment || typeof enrichment !== 'object') return null;
@@ -64,7 +70,8 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
         .filter((text): text is string => text !== null)
     : [];
   const keyPhrases = Array.isArray(e.keyPhrases) ? e.keyPhrases.filter((k): k is string => typeof k === 'string') : [];
+  const modelUsed = typeof e.modelUsed === 'string' ? e.modelUsed : null;
 
-  if (!sentiment && entities.length === 0 && keyPhrases.length === 0) return null;
-  return { sentiment, entities, keyPhrases };
+  if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed) return null;
+  return { sentiment, entities, keyPhrases, modelUsed };
 }
