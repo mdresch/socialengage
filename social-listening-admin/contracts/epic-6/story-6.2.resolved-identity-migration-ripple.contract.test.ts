@@ -36,10 +36,30 @@
  * separate, already-named gap — see role-routing-shell/SKILL.md and the Learning &
  * Development Writer's 2026-08-06 manual catch-up pass) — this contract only proves the
  * type migration didn't silently change what's rendered.
+ *
+ * Healing pass, 2026-08-12 (cross-component regression surfaced mid Story 6.4's own real
+ * rework, healed via heal-contract-failure): Story 6.4's own AC list (revised 2026-08-12,
+ * ADR-0044-aware) required exactly the "wiring this screen to a real session/backend"
+ * change this file's own text above named as a separate, not-yet-done gap — the same
+ * fixture-to-real migration Story 6.3's own block below already underwent on 2026-08-10.
+ * `WatchlistsPage` is no longer a synchronous, fixture-identity component — it's a real
+ * async Server Component reading a real session and calling listWatchlists()/
+ * getConnectorStatus(). The old "Story 6.4" test called `WatchlistsPage()` synchronously
+ * with no session mock at all and asserted on the retired 'Breaking news'/'PR mentions'
+ * fixture text; once the real page started calling cookies() for real, that unmocked call
+ * threw Next.js's own "cookies called outside a request scope" error. Root-caused directly
+ * (not assumed): stashed the Story 6.4 changes, reran this suite on the clean baseline —
+ * passed 23/23; restored the changes — failed with exactly that error, confirming the
+ * direct link before any fix was applied. Upgraded in place, not dropped, to the identical
+ * real-session-plus-real-fetch-mocking pattern the Story 6.3 block already established
+ * below — this file's own documented, once-already-used precedent for this exact category
+ * of change, not a new decision. Story 6.4's own dedicated contract
+ * (story-6.4.watchlist-management-screen.contract.test.ts) is untouched by this healing
+ * pass — it already independently covers the real behavior in full; this file's only job
+ * is proving the shared ResolvedIdentity-shaped call still works for this page too.
  */
 
 import { getTenantShellActions, type ResolvedIdentity } from '../../src/lib/role-routing';
-import WatchlistsPage from '../../src/app/tenant/watchlists/page';
 import ConnectorStatusPage from '../../src/app/tenant/connectors/status/page';
 
 const TENANT_USER: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-1', role: 'tenant_user' };
@@ -148,12 +168,81 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
     });
   });
 
-  it('Story 6.4 — WatchlistsPage still renders under the migrated call, correctly omitting the tenant-admin-only action for its own tenant_user fixture', () => {
-    const element = WatchlistsPage();
-    const rendered = JSON.stringify(element);
-    expect(rendered).not.toContain('Tenant-wide connect');
-    expect(rendered).toContain('Watchlists');
-    expect(rendered).toContain('Breaking news');
+  /**
+   * Story 6.4 (upgraded 2026-08-12, Menno's explicit direction to proceed to
+   * implementation) — WatchlistsPage is no longer a synchronous, fixture-
+   * identity component (Story 6.4's own real rework replaced that with a
+   * real async Server Component reading a real session and calling real
+   * listWatchlists()/getConnectorStatus() backend endpoints). Same treatment
+   * as the Story 6.3 upgrade directly above: real-session-plus-real-fetch-
+   * mocking rigor, proving all three real roles against the real page.
+   */
+  describe('Story 6.4 — WatchlistsPage under all three real roles (Platform Admin, Tenant Admin, Tenant User)', () => {
+    afterEach(() => {
+      jest.dontMock('next/headers');
+      jest.dontMock('next/navigation');
+      jest.resetModules();
+      jest.restoreAllMocks();
+    });
+
+    async function renderWatchlistsPageAs(identity: ResolvedIdentity | null) {
+      jest.resetModules();
+      const sessionModule = await import('../../src/lib/session');
+      const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
+
+      jest.doMock('next/headers', () => ({
+        cookies: async () => ({
+          get: (name: string) => (name === sessionModule.SESSION_COOKIE_NAME ? { value: encrypted } : undefined),
+        }),
+      }));
+
+      const redirectMock = jest.fn((url: string) => {
+        throw new Error(`NEXT_REDIRECT:${url}`);
+      });
+      jest.doMock('next/navigation', () => ({ redirect: redirectMock }));
+
+      // GET /v1/watchlists (empty list) and GET /v1/connectors/gnews
+      // (disconnected) both need distinct response shapes — routed by URL.
+      // newswire is authMode: 'none' and never calls fetch at all.
+      jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/v1/watchlists')) {
+          return new Response(JSON.stringify({ watchlists: [] }), { status: 200 });
+        }
+        return new Response(
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          { status: 200 }
+        );
+      });
+
+      const { default: Page } = await import('../../src/app/tenant/watchlists/page');
+      return { Page, redirectMock };
+    }
+
+    it('a platform_admin session requesting /tenant/watchlists is redirected, not rendered', async () => {
+      const { Page, redirectMock } = await renderWatchlistsPageAs(PLATFORM_ADMIN);
+      await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/');
+      expect(redirectMock).toHaveBeenCalledWith('/');
+    });
+
+    it('a tenant_admin session renders the real watchlists screen — no retired fixture text anywhere', async () => {
+      const { Page, redirectMock } = await renderWatchlistsPageAs(TENANT_ADMIN);
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Watchlists');
+      expect(rendered).not.toContain('Breaking news');
+      expect(rendered).not.toContain('PR mentions');
+    });
+
+    it('a tenant_user session renders the identical real watchlists screen — no admin-only broader view', async () => {
+      const { Page, redirectMock } = await renderWatchlistsPageAs(TENANT_USER);
+      const element = await Page();
+      expect(redirectMock).not.toHaveBeenCalled();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Watchlists');
+      expect(rendered).not.toContain('Breaking news');
+    });
   });
 
   it('Story 6.5 — ConnectorStatusPage still renders under the migrated call, with its own tenant-admin fixture action visible', () => {

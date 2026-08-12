@@ -399,6 +399,101 @@ export async function executeBreakGlassRequest(input: {
   return await response.json();
 }
 
+export interface Watchlist {
+  id: string;
+  name: string;
+  matchType: string;
+  terms: string[] | null;
+  booleanQuery?: string;
+  platformIds: string[];
+  isActive: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WatchlistActionOutcome {
+  status: number;
+  body: { code?: string; details?: string[]; current_version?: number; [key: string]: unknown };
+}
+
+/**
+ * Story 6.4 (reworked 2026-08-12, ADR-0044) — lists the caller's own
+ * watchlists (GET /v1/watchlists). Takes zero parameters, deliberately:
+ * ownership is derived entirely from the bearer token server-side (§5c) —
+ * there is nothing a caller could legitimately supply to see another user's
+ * watchlists, and this function must never grow a parameter that would let
+ * one try. Throws on a non-2xx — this screen has nothing sensible to render
+ * without a real list.
+ */
+export async function listWatchlists(): Promise<Watchlist[]> {
+  const response = await authenticatedCoreFetch('/v1/watchlists');
+  if (!response.ok) {
+    throw new Error(`Failed to list watchlists: ${response.status}`);
+  }
+  const payload = (await response.json()) as { watchlists?: Watchlist[] };
+  return Array.isArray(payload.watchlists) ? payload.watchlists : [];
+}
+
+/**
+ * Story 6.4 (reworked 2026-08-12, ADR-0044) — creates a watchlist (POST
+ * /v1/watchlists). Returns the raw status/body rather than throwing on a
+ * non-2xx: a 422 (the matchType <-> terms/booleanQuery invariant) is a
+ * real, expected outcome the form must react to specifically (its own
+ * `details` array), not collapsed into a generic error.
+ */
+export async function createWatchlist(input: {
+  name: string;
+  matchType: 'keyword' | 'hashtag' | 'account' | 'boolean';
+  terms?: string[] | null;
+  booleanQuery?: string | null;
+  platformIds?: string[];
+}): Promise<WatchlistActionOutcome> {
+  const response = await authenticatedCoreFetch('/v1/watchlists', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.4 (reworked 2026-08-12, ADR-0044) — RFC 7396 merge-patch update
+ * (PATCH /v1/watchlists/:id) with version-based optimistic locking:
+ * `expectedVersion` is always sent as `If-Match`, required by the backend
+ * (missing -> 428). `patch` is sent verbatim — building only-the-changed-
+ * fields is always the caller's job (WatchlistForm.tsx's buildEditPatch(),
+ * WatchlistRow.tsx's own dedicated isActive-only toggle), never this
+ * function's. Returns the raw status/body rather than throwing: 409
+ * (version_conflict, with the real current_version), 422, and 404 are all
+ * real, expected outcomes the caller must react to specifically.
+ */
+export async function updateWatchlist(
+  id: string,
+  patch: Record<string, unknown>,
+  expectedVersion: number
+): Promise<WatchlistActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/watchlists/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'If-Match': String(expectedVersion) },
+    body: JSON.stringify(patch),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.4 (reworked 2026-08-12, ADR-0044) — deletes a watchlist (DELETE
+ * /v1/watchlists/:id, hard delete, no undo). A 204 has no JSON body — parsed
+ * as {} rather than attempting response.json() on an empty stream.
+ */
+export async function deleteWatchlist(id: string): Promise<WatchlistActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/watchlists/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const body = response.status === 204 ? {} : await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
  */
