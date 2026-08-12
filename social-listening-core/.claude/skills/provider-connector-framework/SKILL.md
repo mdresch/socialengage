@@ -20,6 +20,8 @@ The unifying abstraction every social platform integration and every AI enrichme
 | ADR-0038 | Azure AI Language as the first real `AIProviderConnector` — widened `AnalyzeResult`'s own shape (confirmed against real API responses, not assumed) and `analyze()`'s additive, optional `credential` parameter | 2.8 |
 | ADR-0038 §2 | Azure OpenAI Service as the second real `AIProviderConnector`, selected over Claude in Microsoft Foundry via the Amendment Log (2026-08-10) — first story to make `registerAIProviderConnector()` a real production code path, not just a test-only mechanism | 2.9 |
 | ADR-0048 | Explicit, CI-enforced policy: registering a connector must never require editing core ingestion orchestration — only the connector's own files, `registry.ts`, and (for AI connectors) `enrichPost.ts`'s documented `PROVIDERS` array | 2.10 |
+| ADR-0050 | Tenant-owned-domain RSS connector — the first `SocialConnector` with its own dedicated router (`tenantOwnedFeedRouter.ts`), mounted before the generic `/connectors` router rather than adding routes inside it | 2.11 |
+| ADR-0049 | `SocialConnector` gains `canProvideFollowerCountAtPublish` (Open Question 5's capability-declaration shape, resolved as a boolean analogous to `supportedQueryFeatures`); `NormalizedPost` gains the matching `authorFollowerCountAtPublish` — see `.claude/skills/social-post-lineage/SKILL.md` for the storage-layer half | 3.9 |
 
 ## Contracts that constrain this component
 

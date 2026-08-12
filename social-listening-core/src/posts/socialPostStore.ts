@@ -13,6 +13,16 @@ export interface InsertSocialPostInput {
   publishedAt?: string | Date;
   /** entities/keyPhrases (Story 4.2) plus later sentiment/detectedLanguage/modelUsed (Phase 2 enrichment pipeline) — additive keys in one JSONB blob, not separate columns. Only set for enriched posts. See .claude/skills/social-post-enrichment/SKILL.md. */
   enrichment?: Record<string, unknown>;
+  /**
+   * Story 3.9 (ADR-0049): a point-in-time snapshot, set once at insert and
+   * never updated afterward — storage-layer only, deliberately not
+   * surfaced on SocialPostFull/SocialPostSummary below (ADR-0049's own "no
+   * API surface change is mandated" clause). Omit entirely (not `null`) for
+   * a connector that doesn't report it — the column stays NULL either way,
+   * but omission is what proves a caller genuinely never touched this
+   * field, not that it deliberately chose "no value."
+   */
+  authorFollowerCountAtPublish?: number;
 }
 
 export interface InsertedSocialPost {
@@ -32,8 +42,8 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
     // existing caller already only ever provides acquisitionId. See
     // .claude/skills/data-retention-and-archival/SKILL.md.
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, acquisition_started_at, post_geo_location, published_at, enrichment)
-       VALUES ($1, $2, $3, $4, (SELECT started_at FROM ingestion_runs WHERE id = $4), $5, $6, $7)
+      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, acquisition_started_at, post_geo_location, published_at, enrichment, author_follower_count_at_publish)
+       VALUES ($1, $2, $3, $4, (SELECT started_at FROM ingestion_runs WHERE id = $4), $5, $6, $7, $8)
        RETURNING id`,
       [
         input.tenantId,
@@ -43,6 +53,7 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
         input.postGeoLocation ? JSON.stringify(input.postGeoLocation) : null,
         input.publishedAt ?? null,
         input.enrichment ? JSON.stringify(input.enrichment) : null,
+        input.authorFollowerCountAtPublish ?? null,
       ]
     );
     return { id: rows[0].id };

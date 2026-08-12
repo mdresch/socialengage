@@ -27,6 +27,14 @@ export interface NormalizedPost {
   authorExternalId: string;
   publishedAt: string;
   rawPayload: unknown;
+  /**
+   * Story 3.9 (ADR-0049): the author's follower count as reported by the
+   * platform alongside this specific post, at this specific moment —
+   * optional and omitted entirely by connectors that don't report it (see
+   * SocialConnector.canProvideFollowerCountAtPublish below). Never derived
+   * from Author.followerCount; a point-in-time snapshot only.
+   */
+  authorFollowerCountAtPublish?: number;
 }
 
 export interface NativeQueryTranslation {
@@ -51,6 +59,21 @@ export interface SocialConnector extends ProviderConnector {
    * one degrades the whole query to fallback (not just the unsupported
    * clause). See .claude/skills/watchlist-matching/SKILL.md. */
   supportedQueryFeatures?: AstNodeType[];
+  /**
+   * Story 3.9 (ADR-0049 §Implementation defaults, Open Question 5) — the
+   * connector-level capability declaration resolving "how does a connector
+   * signal it provides follower-count-at-publish," analogous in shape to
+   * supportedQueryFeatures above. Missing/omitted/false means the
+   * connector's normalize() output never sets NormalizedPost's own
+   * authorFollowerCountAtPublish field — the same "must opt in explicitly"
+   * discipline supportedQueryFeatures already establishes. Not required to
+   * be true even when set: a connector may declare it and still return
+   * undefined for a specific post whose platform payload omitted the value
+   * (the "platform-omitted null" case named on the migration's own column
+   * comment) — this flag only says the connector *can*, not that it always
+   * *will*.
+   */
+  canProvideFollowerCountAtPublish?: boolean;
 }
 
 export interface ModelCapabilities {

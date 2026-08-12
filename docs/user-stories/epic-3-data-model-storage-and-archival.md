@@ -142,7 +142,7 @@
 
 ## Story 3.9 — Point-in-time author follower count on `SocialPost`
 
-**Source:** ADR-0049 (Accepted 2026-08-11) · **Status:** Ready
+**Source:** ADR-0049 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12
 
 **Drafted 2026-08-11, at ADR-0049's acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent ADR-0049's own Status line named ahead of time. Closes the specific, named gap ADR-0004's own Negative consequences flagged at its 2026-07-28 acceptance ("historical accuracy of 'follower count at time of post' is not preserved") and `docs/adr/README.md`'s "Still outstanding, not yet drafted" section carried until ADR-0049 was drafted 2026-08-10.
 
@@ -162,5 +162,7 @@
 
 **Notes:**
 - This story does not build a connector-level `canProvideFollowerCountAtPublish` capability declaration as a separate, named interface — ADR-0049 Open Question 5 names the exact shape of that declaration (a capability-manifest boolean, a `normalize()` return-value convention, or something else) as an implementation-time task, not fixed by the ADR itself; whoever picks this story up decides it directly and documents the choice in this story's own component `SKILL.md`.
+
+**Built 2026-08-12.** `migrations/0027_add_social_posts_author_follower_count_at_publish.sql` (new — additive `author_follower_count_at_publish INTEGER`, no backfill, plus a real `COMMENT ON COLUMN` documenting the three-way `NULL` interpretation per AC6); `src/connectors/types.ts` (`NormalizedPost.authorFollowerCountAtPublish`, and Open Question 5 resolved as `SocialConnector.canProvideFollowerCountAtPublish`, a boolean analogous to `supportedQueryFeatures`); `src/posts/socialPostStore.ts` (`InsertSocialPostInput` gains the field, written to the new column, deliberately not added to `SocialPostFull`/`SocialPostSummary` — no API surface change). Newswire and GNews were not touched — proving AC5 by running their own real, unmodified poll functions and confirming the column reads `NULL`, exactly the "connector-type null" case the migration's own column comment names. See `contracts/epic-3/story-3.9.author-follower-count-at-publish.contract.test.ts` (9/9, including an inline local connector proving the capability-flag mechanism end to end, since no real individual-account connector exists yet) and `docs/implementation-log.md`. Full `social-listening-core` suite after: 53/53 suites, 379/379 tests passing.
 - `BIGINT` vs. `INTEGER` (ADR-0049 Open Question 2) is not revisited by this story — `INTEGER` is used exactly as ADR-0049's Implementation defaults specify; revisit only if a future connector's platform reports a count that would overflow it (flagged there for Reddit specifically).
 - Historical backfill from platform APIs (ADR-0049 Open Question 4) is out of scope — this story does not attempt to populate the field for any row ingested before it exists.
