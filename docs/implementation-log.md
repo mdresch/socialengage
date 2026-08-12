@@ -1641,3 +1641,19 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 **Directly requested by Menno, found live on his own `/tenant/settings` screen** ("i need to change the name from menno.drescher@gmail.com to CBA") — no path anywhere renamed a tenant after creation. `PATCH /v1/admin/tenants/:id` now also accepts `name`, forwarded through `updateTenantAdmin()`'s `UpdateTenantAdminInput` the same way `status`/`licenseSeatCount`/`domain` already are; `TenantAdminControls.tsx` gained a `name` field, and the `[tenantId]/route.ts` proxy forwards it (still never `domain`, that boundary unchanged).
 
 **A wrong assumption was caught by the contract itself, not by review.** The first pass assumed `platform_admin_role` already had `UPDATE` on the whole `tenants` row (migration 0017) since it clearly owns the table — the new contract test failed with a real Postgres `aclcheck_error` (`routine: 'aclcheck_error'`), confirming migration 0017's grant is column-scoped to `(status, license_seat_count)` only, and migration 0020 had to add `(domain)` separately for the exact same reason. Migration 0029 (`GRANT UPDATE (name) ON tenants TO platform_admin_role`) closes the same gap for `name`. Both `tenants/SKILL.md` and `platform-admin-tenant-management/SKILL.md` were corrected to document the column-scoped grant explicitly, including the now-twice-repeated mistake, so a future new field doesn't repeat it a third time.
+
+---
+
+## 2026-08-12, later still the same day — ProvisionTenantForm gains an optional domain field (Story 6.6) — social-listening-admin@c2aa7b1
+
+- **Full commit:** `c2aa7b121882b97bbc5a6041eb68aa7a2c77d2d2`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.6 — enhancement, no new ADR needed
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.6.platform-admin-console.contract.test.ts (extended, 29/29)
+- **SKILL.md:** social-listening-admin/.claude/skills/platform-admin-console/SKILL.md (updated)
+- **Files touched:** docs/user-stories/epic-7-platform-admin-ui.md, social-listening-admin/.claude/skills/platform-admin-console/SKILL.md, social-listening-admin/contracts/epic-6/story-6.6.platform-admin-console.contract.test.ts, social-listening-admin/src/app/api/admin/tenants/route.ts, social-listening-admin/src/app/platform-admin/ProvisionTenantForm.tsx
+- **Full suite at merge:** PASS (15/15 suites, 240/240 tests)
+
+**Flagged earlier the same session while investigating a separate reported gap ("the tenant creation workflow does not allow for an entry of the tenant name"), then picked up directly on Menno's go-ahead once the tenant-rename work above shipped.** `createAdminTenant()` and the backend `POST /v1/admin/tenants` (Story 5.12) already accepted an optional `domain` — only `ProvisionTenantForm.tsx` and its `POST /api/admin/tenants` proxy were missing it, the same "type already permits it, nothing sends it" shape as the pre-existing `updateAdminTenant()` gap this session found and closed for `name`. `domain` is sent only when the field is non-empty (`domain.trim()`), since an empty string is not the same as "not provided" at `createTenant()`'s own `input.domain ?? null`.
+
+**A real bug in the contract's own test setup was found and fixed before it could mask a false pass.** The first draft of the two new Route Handler tests did inline `jest.dontMock()`/`jest.resetModules()` cleanup at the end of each test body; when the first of the two failed on its own assertion, that cleanup never ran, leaving the module cache poisoned for the next test — its own fresh mock was never called (`Number of calls: 0`), a misleading symptom unrelated to the real gap being tested. Fixed by moving cleanup into `afterEach`, the same pattern already established by the two sibling describe blocks in this same file — a one-off inline-cleanup pattern should not have been introduced when an established convention already existed for exactly this shape.
