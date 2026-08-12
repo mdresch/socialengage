@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "ts-node src/http/server.ts",
-    "dev": "node scripts/withDevEnv.js ts-node src/http/server.ts",
+    "dev": "npm run db:dev:migrate && npm run dev:server",
+    "dev:server": "node scripts/withDevEnv.js ts-node src/http/server.ts",
     "test": "jest",
     "test:contracts": "jest contracts",
     "typecheck": "tsc --noEmit",

@@ -44,11 +44,12 @@ vice versa.
 
 ```sh
 npm run db:dev:up       # start the persistent dev Postgres container (first run builds it)
-npm run db:dev:migrate  # apply pending migrations against it
-npm run dev             # start the real server against the dev database (:3000)
+npm run dev             # applies any pending migrations, then starts the real server against the dev database (:3001)
 npm run db:dev:down     # stop it — data survives in the named volume
 npm run db:dev:reset    # stop it AND delete the volume — genuinely start over
 ```
+
+**`npm run dev` runs `db:dev:migrate` automatically before starting the server (healed 2026-08-12)** — found live: a dev database left behind on an older schema (Story 1.11's `connector_activations` table hadn't been applied) let the server start and accept requests fine, then 500 on every request touching that table, with no obvious signal at startup that the schema was stale. `db:dev:migrate` is idempotent (prints `No pending migrations.` when there's nothing to do), so this adds no real cost on an already-current database — `dev:server` still exists standalone if you ever need the server without the migration check (e.g. a contract's own spawn wanting fine-grained control).
 
 `scripts/withDevEnv.js` sets the dev database's connection env vars (`PGPORT=5435`,
 `PGDATABASE=social_listening_dev`, ...) before running the given command — a plain
