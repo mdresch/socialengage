@@ -16,3 +16,6 @@ __pycache__/
 
 # docs/ai-roles/ tooling dependencies (@google/genai etc.) — reinstall via npm install
 node_modules/
+
+# Claude Code — personal, local permission overrides (not team-wide config)
+.claude/settings.local.json
