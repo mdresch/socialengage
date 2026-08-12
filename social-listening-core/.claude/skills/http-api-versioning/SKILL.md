@@ -14,10 +14,12 @@ The REST API surface for `social-listening-core`: an Express app (`src/http/app.
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0017 | URI path versioning (`/v1/`, `/v2/`, ...), 90-day minimum deprecation window, RFC 8594 `Deprecation`/`Sunset` headers | 1.3 |
+| ADR-0016 | `/v1/health` becomes database-aware (200 when Postgres answers, 503 when it doesn't) — operational detail under the already-decided Postgres architecture | 1.10 |
 
 ## Contracts that constrain this component
 
-- `contracts/epic-1/story-1.3.api-versioning.contract.test.ts` — every route is reachable under `/v1/...` and no unversioned route exists; `deprecateVersion()` emits correct RFC 8594 headers and rejects a `sunsetAt` earlier than the 90-day minimum; `/v1/health` has a fixed, asserted response shape.
+- `contracts/epic-1/story-1.3.api-versioning.contract.test.ts` — every route is reachable under `/v1/...` and no unversioned route exists; `deprecateVersion()` emits correct RFC 8594 headers and rejects a `sunsetAt` earlier than the 90-day minimum; `/v1/health` returns 200 `{status:'ok'}` with a fixed, asserted response shape (still true, and still the only case this story's own contract proves — the 503 case belongs to Story 1.10 below).
+- `contracts/epic-1/story-1.10.postgres-readiness-and-health.contract.test.ts` — `GET /v1/health` returns 503 `{status:'unavailable'}` when Postgres is unreachable, still with no auth required; see `.claude/skills/postgres-tenant-db/SKILL.md` for the `checkPostgresConnectivity()` mechanism this route now calls.
 
 ## How to extend this safely
 
@@ -28,12 +30,12 @@ The REST API surface for `social-listening-core`: an Express app (`src/http/app.
 ## Load-bearing constraints — do not change casually
 
 - **Every router mount in `app.ts` must be under a version prefix.** Mounting anything at the app root (no `/v1` etc.) reintroduces exactly the unversioned-route gap this story's AC1 exists to prevent — the contract test's "no unversioned route exists" check only catches paths it knows to probe, not every possible future mistake, so this is a convention to hold deliberately, not something enforced for all future routes automatically.
-- **`/v1/health` is deliberately unauthenticated — do not wrap it in `authMiddleware`.** `versions/v1/router.ts`'s `createV1Router()` (Story 5.10, ADR-0033) applies the tenant-auth middleware per-sub-router (`/posts`, `/topics`, `/connectors`, `/watchlists`), never at the top of the whole `/v1` mount, specifically so `/health` stays public — this story's own AC1/AC3 require it reachable with no credentials. A regression here was actually caught and fixed once already (Story 5.10's own full-suite validation, `docs/implementation-log.md`'s matching Healing entry) — don't reintroduce it by refactoring back to a single blanket `app.use('/v1', authMiddleware, v1Router)`.
+- **`/v1/health` is deliberately unauthenticated — do not wrap it in `authMiddleware`.** `versions/v1/router.ts`'s `createV1Router()` (Story 5.10, ADR-0033) applies the tenant-auth middleware per-sub-router (`/posts`, `/topics`, `/connectors`, `/watchlists`), never at the top of the whole `/v1` mount, specifically so `/health` stays public — this story's own AC1/AC3 require it reachable with no credentials. A regression here was actually caught and fixed once already (Story 5.10's own full-suite validation, `docs/implementation-log.md`'s matching Healing entry) — don't reintroduce it by refactoring back to a single blanket `app.use('/v1', authMiddleware, v1Router)`. Story 1.10 made the route database-aware without touching this boundary — becoming database-aware changes its response, never its auth requirement.
 - **`deprecateVersion()`'s window check is a hard `throw`, not a lint warning.** A caller passing a `sunsetAt` less than `MIN_DEPRECATION_WINDOW_DAYS` (90, per ADR-0017's Amendment Log — check there before assuming this number is still current) after `successorShippedAt` gets an exception at wiring time, not a silently-too-short deprecation window discovered by a consumer later.
 - **`Deprecation`/`Sunset` header values are `toUTCString()` — RFC 7231 HTTP-date format`, not ISO 8601.** RFC 8594 specifies HTTP-date; consumers parsing these headers will expect that format specifically.
 
 ## Known gaps / deferred work
 
-- Only `/v1/health` exists — a placeholder proving the versioning/deprecation mechanism works, not a real business endpoint. Real endpoints (connectors, watchlists, posts, ...) are Phase 1+ stories, each adding to `src/http/versions/v1/router.ts` and this story's contract-test pattern, not to this file.
+- `/v1/health` started as a placeholder proving the versioning/deprecation mechanism works; Story 1.10 made it a real, database-aware liveness route (still the only endpoint owned directly by this file — every other route is Phase 1+ business work, each adding to `src/http/versions/v1/router.ts` and its own story's contract-test pattern, not to this file).
 - No OpenAPI spec or schema-registry tooling — deferred per `docs/adr/README.md`'s "not captured as ADRs" list, revisited before the first downstream subsystem integrates.
 - `social-listening-admin/src/lib/core-client.ts` was updated in this same pass to call `/v1/health` instead of the unversioned `/health` Story 1.1 originally wrote — see that repo's `.claude/skills/core-api-client/SKILL.md`.

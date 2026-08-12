@@ -1,4 +1,6 @@
 import { Router, RequestHandler } from 'express';
+import { getPool } from '../../../db/pool';
+import { checkPostgresConnectivity } from '../../../db/postgresReadiness';
 import { postsRouter } from './postsRouter';
 import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
@@ -30,11 +32,19 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   const v1Router = Router();
 
   /**
-   * Placeholder proving the versioning mechanism works end to end — see
-   * .claude/skills/http-api-versioning/SKILL.md. Deliberately public.
+   * Story 1.10 (ADR-0016): database-aware liveness route, still
+   * deliberately public/unauthenticated (unchanged from Story 1.3/
+   * ADR-0017's own original placeholder) — see
+   * .claude/skills/http-api-versioning/SKILL.md and
+   * .claude/skills/postgres-tenant-db/SKILL.md.
    */
-  v1Router.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+  v1Router.get('/health', async (_req, res) => {
+    const ok = await checkPostgresConnectivity(getPool());
+    if (ok) {
+      res.json({ status: 'ok' });
+    } else {
+      res.status(503).json({ status: 'unavailable' });
+    }
   });
 
   /** Story 3.4 (ADR-0011) — see .claude/skills/posts-api/SKILL.md. */
