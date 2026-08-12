@@ -1589,3 +1589,39 @@ epo-scaffold/SKILL.md explicitly documents this load-bearing constraint � accu
 - **Full suite at merge:** PASS (14/14 suites, 226/226 tests)
 
 **Directly requested by Menno, from the same live question that surfaced the Story 2.9 activation-gating gap above** ("enhance the post details page with the ai providers enrichment"). `postDisplay.ts`'s `extractEnrichmentSummary()` now also extracts `enrichment.modelUsed` (e.g. `"azure-ai-language:2025-01-01"`); the detail screen renders it as "Enriched by: …" when present. This is the one honest, after-the-fact answer to "which provider enriched this post" a viewer can get — `enrichPost.ts`'s fixed `PROVIDERS` order decides that per-post, server-side, with no tenant-visible setting (see the matching `social-listening-core@99c1dcf` entry above for the backend-side finding this same question surfaced).
+
+---
+
+## 2026-08-12, later still the same day — Story 6.16 (backend) — social-listening-core@51a2b40
+
+- **Full commit:** `51a2b4055acec4a4b07abfcb89e3b0f0f2b25120`
+- **Repo:** social-listening-core
+- **Story / ADR:** 6.16 — no new ADR, exposes the already-built `enrichPost()` (Story 2.8/2.9) over REST, same category as `GET /v1/me`/Story 1.12
+- **Contract:** social-listening-core/contracts/epic-3/story-6.16.post-manual-enrich-endpoint.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/posts-api/SKILL.md (updated)
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-6.16.post-manual-enrich-endpoint.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Full suite at merge:** PASS except 5 confirmed-external, unrelated failures (`GNews returned 403`, real free-tier daily quota exhaustion from this session's own heavy real-API usage — same root cause as the earlier Story 2.9 healing pass entry above, not retried further since it's a real, time-based ceiling)
+
+**Requested directly by Menno while manually testing Story 6.11's own post detail screen live, not drafted speculatively.** A post ingested before either AI provider was credentialed and active stays `enrichment: null` forever — confirmed directly: `enrichPost()` is only ever called inline during ingestion (`pollGNewsSearch.ts`/`pollNewswireFeeds.ts`), nothing else in this codebase ever re-processes an already-stored post. `POST /v1/posts/:id/enrich` closes that gap. `deriveEnrichmentText()` (new, `socialPostStore.ts`) derives the enrichment text by the exact same rule every real connector's own ingest function already applies inline — checked directly against `pollGNewsSearch.ts`'s own `[title, description].filter(Boolean).join('. ')` and `pollNewswireFeeds.ts`'s own bare `title`, not invented fresh for this endpoint. One rule (`title`, plus `description` when present) covers both real shapes without a `providerId` branch, proven by two separate real-Azure-API contract cases, not assumed from the story text alone.
+
+**`enrichPost()` resolving to `undefined` (no AI provider currently connected and active for this tenant) is a real, honest `200` with `enrichment` left `null` — not an error status.** This matters: a tenant clicking "run enrichment now" with nothing connected gets a truthful "nothing to enrich with" response, not a 4xx/5xx that would misrepresent a real, expected outcome as a failure. The route's own 404-on-unknown/cross-tenant behavior (RLS) matches `GET /v1/posts/:id`'s own existing contract exactly, re-proven here rather than assumed to carry over.
+
+**Deliberately, explicitly not restricted at the backend layer:** re-enrichment of an already-enriched post. The admin UI never offers the button for one (Story 6.16's own frontend AC), but the endpoint itself has no such restriction — a tenant calling it directly via the real API to deliberately re-run enrichment on a specific post is a legitimate case the backend has no reason to forbid, the UI-side gate being a UX choice rather than a security boundary, per this project's own already-established ADR-0036 §4/ADR-0041 pattern.
+
+---
+
+## 2026-08-12, later still the same day — Story 6.16 (frontend) — social-listening-admin@21da4f5
+
+- **Full commit:** `21da4f57568300c80047ceaa62e3e091ee7e02ad`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.16 — companion to `social-listening-core@51a2b40`, no new ADR
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.16.manual-enrichment-button.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md (updated)
+- **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.16.manual-enrichment-button.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/enrich/route.ts, social-listening-admin/src/app/tenant/posts/RunEnrichmentButton.tsx, social-listening-admin/src/app/tenant/posts/[id]/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (15/15 suites, 235/235 tests)
+
+**`RunEnrichmentButton` (new, Client Component) mirrors `ActivateDeactivateButton.tsx`'s own established shape exactly** — a same-origin proxy route (`/api/posts/[id]/enrich/route.ts`) forwarding `runPostEnrichment()`'s raw `{status, body}` outcome unchanged, `core-client.ts` staying the sole bearer-token choke point (ADR-0036 §2, re-verified structurally by this story's own contract). Rendered on `/tenant/posts/:id` only when `post.enrichment` is currently `null` — a real, already-enriched post never shows it at all, not merely a disabled state.
+
+**A real, non-obvious testing gap was found and corrected while writing this story's own contract, not silently worked around.** The first draft asserted the button's own literal text ("Run enrichment now") would appear in a `JSON.stringify(Page())` render — it never can: `RunEnrichmentButton` is a Client Component, and a Server Component's own `Page()` call returns an *unrendered* element reference for it, never crossing into its own JSX. Corrected to assert on the actual serializable signal available at that boundary (the real `postId` prop's presence/absence in the tree) — the same category of correction this project's own `code-review`/contract-writing discipline exists to catch before it ships as a false-positive-prone assertion.
+
+**On success with a real, non-null enrichment result, the button reloads the page** (the same `window.location.reload()` pattern `ActivateDeactivateButton`/`DisconnectButton` already established) rather than attempting a partial client-side re-render — consistent with this app's existing "Server Component owns the real data, a full reload is the simplest correct way to reflect a real backend mutation" convention, not a new pattern invented for this one button.
