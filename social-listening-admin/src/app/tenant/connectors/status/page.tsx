@@ -33,11 +33,21 @@ interface ConnectorStatusRow {
   health: ConnectorStatus | null;
 }
 
+/**
+ * Story 6.5 (enhanced 2026-08-12, Menno's own direct request) — always
+ * keeps the real fetched health, even for an unconnected platform: a
+ * successful GET /v1/connectors/:platformId call for a never-connected
+ * platform still returns real, honest data (lastSuccessfulFetchAt: null,
+ * consecutiveFailures: 0, etc., per deriveConnectorHealth()'s own
+ * zero-ingestion-runs branch) — discarding it was wasteful and, once
+ * inactive platforms are rendered too, would have thrown that real data
+ * away for no reason. `health` is only null on a genuine fetch failure.
+ */
 async function loadConnectorStatusRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {
   try {
     const health = await getConnectorStatus(platform.id);
     const connected = platform.authMode === 'none' || health.credentialStatus !== null;
-    return { platform, connected, health: connected ? health : null };
+    return { platform, connected, health };
   } catch {
     return { platform, connected: false, health: null };
   }
@@ -54,9 +64,6 @@ export default async function ConnectorStatusPage() {
   }
 
   const rows = await Promise.all(PLATFORMS.map(loadConnectorStatusRow));
-  const connectedRows = rows.filter(
-    (row): row is ConnectorStatusRow & { health: ConnectorStatus } => row.connected && row.health !== null
-  );
 
   return (
     <main>
@@ -64,26 +71,26 @@ export default async function ConnectorStatusPage() {
       <p>Health and status only — no post content or other tenant data is shown here.</p>
 
       <section>
-        <h2>Connected platforms</h2>
-        {connectedRows.length === 0 ? (
-          <p>No platforms connected yet.</p>
-        ) : (
-          <ul>
-            {connectedRows.map(({ platform, health }) => (
-              <li key={platform.id} data-status={health.status}>
-                <strong>{platform.name}</strong> —{' '}
-                {health.status === 'failing' ? (
-                  <strong>⚠ FAILING — needs attention</strong>
-                ) : (
-                  <span>{health.status}</span>
-                )}
-                <div>Last successful fetch: {health.lastSuccessfulFetchAt ?? 'never'}</div>
-                <div>Last attempt: {health.lastAttemptAt ?? 'never'}</div>
-                <div>Consecutive failures: {health.consecutiveFailures}</div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <h2>Platforms</h2>
+        <ul>
+          {rows.map(({ platform, connected, health }) => (
+            <li key={platform.id} data-active={connected} data-status={health?.status ?? 'unknown'}>
+              <strong>{platform.name}</strong> —{' '}
+              {!connected ? (
+                <span>Inactive</span>
+              ) : health?.status === 'failing' ? (
+                <strong>⚠ Active — FAILING, needs attention</strong>
+              ) : health?.status === 'disconnected' ? (
+                <span>Active — no ingestion runs yet</span>
+              ) : (
+                <span>Active — {health?.status ?? 'status unavailable'}</span>
+              )}
+              <div>Last successful fetch: {health?.lastSuccessfulFetchAt ?? 'never'}</div>
+              <div>Last attempt: {health?.lastAttemptAt ?? 'never'}</div>
+              <div>Consecutive failures: {health?.consecutiveFailures ?? 0}</div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section>

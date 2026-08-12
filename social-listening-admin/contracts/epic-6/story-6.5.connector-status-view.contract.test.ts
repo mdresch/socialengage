@@ -21,6 +21,26 @@
  * visually distinguished from degraded/healthy, and no tenant-content data
  * anywhere on the screen.
  *
+ * Enhancement, 2026-08-12, later the same day — Menno's own direct request
+ * ("could you provide an indicator of inactive or active on the connector
+ * page?"), against the connector status page specifically (confirmed via a
+ * clarifying question). Previously this screen omitted any platform whose
+ * credentialStatus was null (an api_key platform never connected) entirely
+ * — a tenant had no way to see that GNews/Azure AI Language/Azure OpenAI
+ * even existed as options until connecting one. Now every platform in
+ * PLATFORMS is always listed, with a plain "Active"/"Inactive" indicator
+ * (derived from the same `connected` boolean loadConnectorStatusRow()
+ * already computed) as the primary signal, and the finer ConnectorHealth
+ * status (healthy/degraded/failing, or "no ingestion runs yet" for the
+ * connected-but-never-polled case) shown as secondary detail only when
+ * Active. A real, previously-unnoticed bug fixed in the same pass:
+ * loadConnectorStatusRow() discarded the already-fetched ConnectorHealth
+ * object for any unconnected platform (`health: connected ? health : null`)
+ * even though the fetch had already succeeded — wasteful and now actively
+ * wrong once inactive platforms are rendered too, since their real
+ * lastSuccessfulFetchAt/lastAttemptAt/consecutiveFailures fields (all
+ * legitimately null/zero, not fixture data) are worth showing.
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET /v1/connectors/:platformId's own backend behavior
  *     (health derivation, ADR-0009/ADR-0022/ADR-0023) — Story 4.3's own
@@ -58,7 +78,7 @@ function readSrc(...segments: string[]): string {
 }
 
 describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => {
-  describe('AC1: a real GET /v1/connectors/:platformId call per connected platform, no fixture data', () => {
+  describe('AC1: a real GET /v1/connectors/:platformId call per platform (connected or not), no fixture data', () => {
     it('creates the /tenant/connectors/status screen route', () => {
       expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...pagePath))).toBe(true);
     });
@@ -92,6 +112,28 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       // The old fixture rendered every status the same way (`{connector.status}`
       // alone) — assert a real conditional branch exists for the failing case.
       expect(source).toMatch(/status\s*===\s*['"]failing['"]/);
+    });
+  });
+
+  describe('AC6 (added 2026-08-12): every platform is always listed, with a plain Active/Inactive indicator', () => {
+    it('renders every platform, not filtered down to connected-only', () => {
+      const source = readSrc(...pagePath);
+      // The old anti-pattern filtered to a connectedRows subset before
+      // rendering — assert that filter is gone and rows itself is mapped.
+      expect(source).not.toMatch(/connectedRows/);
+      expect(source).toMatch(/rows\.map/);
+    });
+
+    it("renders 'Inactive' for an unconnected platform and 'Active' for a connected one, not just the raw health.status alone", () => {
+      const source = readSrc(...pagePath);
+      expect(source).toContain('Inactive');
+      expect(source).toContain('Active');
+      expect(source).toMatch(/!connected/);
+    });
+
+    it("loadConnectorStatusRow() keeps the real fetched health for every platform, never discarding it for an unconnected one", () => {
+      const source = readSrc(...pagePath);
+      expect(source).not.toMatch(/health:\s*connected\s*\?\s*health\s*:\s*null/);
     });
   });
 
@@ -155,7 +197,7 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       expect(rendered).not.toContain('healthy');
     });
 
-    it('an api_key platform whose credentialStatus is null is treated as not connected, and not listed (newswire, authMode "none", is always listed regardless)', async () => {
+    it('an api_key platform whose credentialStatus is null is still listed, marked Inactive (never omitted)', async () => {
       const Page = await renderStatusPageAs(() =>
         new Response(
           JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
@@ -165,10 +207,45 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
 
       const element = await Page();
       const rendered = JSON.stringify(element);
+      // All four platforms are always listed now — never omitted.
       expect(rendered).toContain('Newswire');
-      expect(rendered).not.toContain('GNews');
-      expect(rendered).not.toContain('Azure AI Language');
-      expect(rendered).not.toContain('Azure OpenAI Service');
+      expect(rendered).toContain('GNews');
+      expect(rendered).toContain('Azure AI Language');
+      expect(rendered).toContain('Azure OpenAI Service');
+      expect(rendered).toContain('Inactive');
+    });
+
+    it('newswire (authMode "none") always renders Active, regardless of credentialStatus', async () => {
+      const Page = await renderStatusPageAs(() =>
+        new Response(
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('Active');
+    });
+
+    it('a connected platform with real lastSuccessfulFetchAt/lastAttemptAt/consecutiveFailures data renders those real values, not discarded (the loadConnectorStatusRow() fix)', async () => {
+      const Page = await renderStatusPageAs((url) => {
+        if (url.includes('/v1/connectors/gnews')) {
+          return new Response(
+            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: '2026-08-11T09:00:00.000Z', lastAttemptAt: '2026-08-12T09:00:00.000Z', consecutiveFailures: 0, credentialStatus: 'valid' }),
+            { status: 200 }
+          );
+        }
+        return new Response(
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          { status: 200 }
+        );
+      });
+
+      const element = await Page();
+      const rendered = JSON.stringify(element);
+      expect(rendered).toContain('2026-08-11T09:00:00.000Z');
+      expect(rendered).toContain('2026-08-12T09:00:00.000Z');
     });
   });
 
