@@ -652,6 +652,26 @@ export async function getPost(id: string): Promise<SocialPostFull | null> {
   return (await response.json()) as SocialPostFull;
 }
 
+export interface PostEnrichOutcome {
+  status: number;
+  body: SocialPostFull | { error?: string };
+}
+
+/**
+ * Story 6.16 / Story 2.8/2.9 — manually (re-)runs enrichment for one
+ * already-ingested post (`POST /v1/posts/:id/enrich`). Returns the raw
+ * status/body rather than throwing on a non-2xx, the same pattern every
+ * other Client-Component-triggered action in this app uses — a `200` with
+ * `enrichment: null` (no AI provider currently connected and active) is a
+ * real, honest outcome the caller must react to specifically, not an
+ * exception.
+ */
+export async function runPostEnrichment(id: string): Promise<PostEnrichOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrich`, { method: 'POST' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
  */

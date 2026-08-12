@@ -4,6 +4,7 @@ import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { getPost } from '@/lib/core-client';
 import { extractDisplayText, extractProviderBadge, extractEnrichmentSummary } from '../postDisplay';
+import { RunEnrichmentButton } from '../RunEnrichmentButton';
 
 /**
  * Story 6.11 — the REST-fetch-on-demand half of ADR-0012 (Story 5.1), given
@@ -60,6 +61,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
           {enrichmentSummary.modelUsed && <p>Enriched by: {enrichmentSummary.modelUsed}</p>}
         </div>
       )}
+      {!post.enrichment && <RunEnrichmentButton postId={post.id} />}
     </main>
   );
 }
