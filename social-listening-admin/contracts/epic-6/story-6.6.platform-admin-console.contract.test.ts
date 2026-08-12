@@ -54,6 +54,16 @@
  * - Carried forward unchanged: no tenant-content table is ever rendered on
  *   this screen (users, watchlists, social_posts, platform_credentials).
  *
+ * Enhancement, 2026-08-12, at Menno's own direct request (found live — no
+ * path anywhere renames a tenant after creation): TenantAdminControls.tsx
+ * gains a `name` field, PATCHing it alongside status/licenseSeatCount.
+ * updateAdminTenant()'s input type gains `name`; the [tenantId]/route.ts
+ * proxy forwards it the same way it already forwards status/licenseSeatCount
+ * (domain stays excluded at this boundary, unchanged — a separate,
+ * already-named gap this enhancement does not touch). Backend support
+ * (PATCH /v1/admin/tenants/:id accepting name, migration 0029's grant) is
+ * social-listening-core's own Story 5.12 contract, not re-proven here.
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET/POST/PATCH /v1/admin/tenants', the break-glass
  *     endpoints', or GET /v1/health's own backend behavior — Stories
@@ -126,6 +136,30 @@ describe('Story 6.6 — Platform Admin console, real rework (2026-08-12)', () =>
     it('the page mounts TenantAdminControls per tenant row', () => {
       const source = readSrc(...pagePath);
       expect(source).toContain('TenantAdminControls');
+    });
+  });
+
+  describe('enhancement, 2026-08-12: TenantAdminControls also PATCHes name', () => {
+    it('TenantAdminControls sends name in the PATCH body', () => {
+      const source = readSrc(...updatePath);
+      expect(source).toMatch(/\bname\b/);
+    });
+
+    it('the [tenantId]/route.ts proxy forwards name to updateAdminTenant(), still never domain', async () => {
+      const updateAdminTenantMock = jest.fn().mockResolvedValue({ status: 200, body: { id: 't-1', name: 'CBA' } });
+      jest.doMock('../../src/lib/core-client', () => ({ updateAdminTenant: updateAdminTenantMock }));
+      const { PATCH } = await import('../../src/app/api/admin/tenants/[tenantId]/route');
+      const response = await PATCH(
+        new Request('http://localhost:3000/api/admin/tenants/t-1', {
+          method: 'PATCH',
+          body: JSON.stringify({ name: 'CBA', domain: 'evil.example.com' }),
+        }),
+        { params: Promise.resolve({ tenantId: 't-1' }) }
+      );
+      expect(updateAdminTenantMock).toHaveBeenCalledWith('t-1', { name: 'CBA' });
+      expect(response.status).toBe(200);
+      jest.dontMock('../../src/lib/core-client');
+      jest.resetModules();
     });
   });
 

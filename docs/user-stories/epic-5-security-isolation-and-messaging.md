@@ -217,6 +217,8 @@
 - **A test confirms no `app_user`/tenant-scoped session can reach any of these three endpoints** — the same explicit non-access proof `tenants/SKILL.md`'s own contract already applies at the store layer, re-proven here at the HTTP layer.
 - Every write performed through these endpoints is logged via the existing `platform_admin_audit_log`/`logPlatformAdminAction()` mechanism (ADR-0030 §5) — reusing, not duplicating, Story 5.7's/5.8's own already-shipped audit path.
 
+**Enhancement, 2026-08-12, at Menno's own direct request** (found live — no path anywhere renames a tenant after creation): `PATCH /v1/admin/tenants/:id` also accepts `name`, the same additive pattern already established for `domain`. Required a new grant migration (0029, `GRANT UPDATE (name) ON tenants TO platform_admin_role`) — migration 0017's original grant is column-scoped to `status`/`license_seat_count` only, confirmed directly via a real `aclcheck_error` while building this, the same gap migration 0020 had already closed for `domain`.
+
 ---
 
 ## Story 5.13 — Platform Admin break-glass request/execute REST surface

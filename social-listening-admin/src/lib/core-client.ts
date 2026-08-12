@@ -427,7 +427,7 @@ export async function createAdminTenant(input: {
  */
 export async function updateAdminTenant(
   tenantId: string,
-  input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null }
+  input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null; name?: string }
 ): Promise<AdminTenantActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}`, {
     method: 'PATCH',

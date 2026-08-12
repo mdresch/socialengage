@@ -34,6 +34,17 @@
 // and gates them to the right caller. Domain-collision (unique constraint)
 // handling on POST — no AC requires it; ordinary 500 propagation, same as
 // every other route's unhandled-DB-error path.
+//
+// --- Enhancement, 2026-08-12, at Menno's own direct request (found live —
+// no path anywhere renames a tenant after creation) ---
+// PATCH /v1/admin/tenants/:id now also accepts `name`, the same additive
+// pattern ADR-0037 §9 already established for `domain` on this exact
+// endpoint — UpdateTenantAdminInput gains an optional `name`, forwarded the
+// same way status/licenseSeatCount/domain already are. Migration 0017's
+// GRANT UPDATE to platform_admin_role is column-scoped (status,
+// license_seat_count only) — confirmed directly via a real aclcheck_error
+// while building this — so a new grant migration (0029) was needed too,
+// same pattern as migration 0020 did for domain.
 
 import { randomUUID } from 'crypto';
 import request from 'supertest';
@@ -153,6 +164,26 @@ describe('Story 5.12 — Platform Admin tenant management REST surface', () => {
       .send({ domain: null });
     expect(clearRes.status).toBe(200);
     expect(clearRes.body.domain).toBeNull();
+  });
+
+  it('enhancement, 2026-08-12: PATCH can rename a tenant', async () => {
+    const created = await request(app)
+      .post('/v1/admin/tenants')
+      .set('X-Test-Identity', platformAdminHeader())
+      .send({ name: `Original-${randomUUID()}`, licenseSeatCount: 5 });
+
+    const newName = `Renamed-${randomUUID()}`;
+    const res = await request(app)
+      .patch(`/v1/admin/tenants/${created.body.id}`)
+      .set('X-Test-Identity', platformAdminHeader())
+      .send({ name: newName });
+
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe(newName);
+
+    const list = await request(app).get('/v1/admin/tenants').set('X-Test-Identity', platformAdminHeader());
+    const row = list.body.tenants.find((t: { id: string }) => t.id === created.body.id);
+    expect(row.name).toBe(newName);
   });
 
   it('AC5: a tenant_admin/tenant_user identity is rejected 403 on PATCH', async () => {

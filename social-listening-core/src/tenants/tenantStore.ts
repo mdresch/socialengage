@@ -44,6 +44,8 @@ export interface UpdateTenantAdminInput {
   licenseSeatCount?: number;
   /** `undefined` = don't touch; `null` = clear it; string = set it (ADR-0037 §9). */
   domain?: string | null;
+  /** Enhancement, 2026-08-12 — migration 0017's GRANT UPDATE to platform_admin_role is column-scoped (status, license_seat_count only), confirmed directly; migration 0029 adds the missing UPDATE(name) grant, same pattern as migration 0020 did for domain. */
+  name?: string;
 }
 
 /** Exported for Story 5.15's selfServiceSignup.ts, which inserts via a different pool but the same Tenant shape. */
@@ -86,13 +88,14 @@ export async function createTenant(actorIdentity: string, input: CreateTenantInp
 }
 
 /**
- * Update a tenant's status, license_seat_count, and/or domain —
+ * Update a tenant's status, license_seat_count, domain, and/or name —
  * platform_admin_role only. Deliberately cannot touch active_seat_count: the
  * database itself enforces this (migrations/0017's column-scoped GRANT), not
  * just this function's own SQL — see .claude/skills/tenants/SKILL.md's
  * "Load-bearing constraints". domain support (migrations/0020) is ADR-0037
- * §9's own audited recovery path for a wrong/squatted domain value — see
- * .claude/skills/platform-admin-tenant-management/SKILL.md.
+ * §9's own audited recovery path for a wrong/squatted domain value; name
+ * support (migrations/0029) is the same category — administrative metadata,
+ * not tenant-content — see .claude/skills/platform-admin-tenant-management/SKILL.md.
  */
 export async function updateTenantAdmin(
   actorIdentity: string,
@@ -114,6 +117,10 @@ export async function updateTenantAdmin(
   if (input.domain !== undefined) {
     updates.push(`domain = $${paramIndex++}`);
     params.push(input.domain);
+  }
+  if (input.name !== undefined) {
+    updates.push(`name = $${paramIndex++}`);
+    params.push(input.name);
   }
 
   if (updates.length === 0) {

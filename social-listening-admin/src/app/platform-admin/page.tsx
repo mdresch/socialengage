@@ -92,6 +92,7 @@ export default async function PlatformAdminShellPage() {
                   <td>
                     <TenantAdminControls
                       tenantId={tenant.id}
+                      currentName={tenant.name}
                       currentStatus={tenant.status}
                       currentLicenseSeatCount={tenant.licenseSeatCount}
                     />

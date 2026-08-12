@@ -42,7 +42,7 @@ adminTenantsRouter.post('/', async (req, res) => {
 });
 
 /**
- * PATCH /v1/admin/tenants/:id (Story 5.12) — status/licenseSeatCount/domain
+ * PATCH /v1/admin/tenants/:id (Story 5.12) — status/licenseSeatCount/domain/name
  * only. activeSeatCount is rejected here as a caller-facing signal;
  * platform_admin_role is DB-level denied from writing it regardless
  * (migrations/0017) — this check is not the real enforcement boundary.
@@ -56,8 +56,8 @@ adminTenantsRouter.patch('/:id', async (req, res) => {
     return;
   }
 
-  const { status, licenseSeatCount, domain } = req.body;
-  const tenant = await updateTenantAdmin(identity.adminId, req.params.id, { status, licenseSeatCount, domain });
+  const { status, licenseSeatCount, domain, name } = req.body;
+  const tenant = await updateTenantAdmin(identity.adminId, req.params.id, { status, licenseSeatCount, domain, name });
   if (!tenant) {
     res.status(404).json({ error: 'Tenant not found, or no fields provided to update.' });
     return;

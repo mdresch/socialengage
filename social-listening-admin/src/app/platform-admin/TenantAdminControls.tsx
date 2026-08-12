@@ -5,19 +5,25 @@ import { useState, type FormEvent } from 'react';
 /**
  * Story 6.6 (reworked 2026-08-12) — a real per-tenant-row control calling
  * updateAdminTenant() -> PATCH /v1/admin/tenants/:id, scoped to exactly
- * `status` and `licenseSeatCount` — no other tenant field is ever sent
- * unless a future story explicitly extends this (tenants/SKILL.md's own
- * column-scoped grant, carried forward unchanged from the original AC).
+ * `status`, `licenseSeatCount`, and (enhancement, 2026-08-12) `name` — no
+ * other tenant field is ever sent unless a future story explicitly extends
+ * this (tenants/SKILL.md's own column-scoped grant, carried forward
+ * unchanged from the original AC; the tenant's routing-relevant address
+ * field stays deliberately excluded here, ADR-0037 §9's own separate,
+ * already-named gap).
  */
 export function TenantAdminControls({
   tenantId,
+  currentName,
   currentStatus,
   currentLicenseSeatCount,
 }: {
   tenantId: string;
+  currentName: string;
   currentStatus: 'active' | 'suspended';
   currentLicenseSeatCount: number;
 }) {
+  const [name, setName] = useState(currentName);
   const [status, setStatus] = useState<'active' | 'suspended'>(currentStatus);
   const [licenseSeatCount, setLicenseSeatCount] = useState(currentLicenseSeatCount);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
@@ -29,7 +35,7 @@ export function TenantAdminControls({
     const response = await fetch(`/api/admin/tenants/${encodeURIComponent(tenantId)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, licenseSeatCount }),
+      body: JSON.stringify({ name, status, licenseSeatCount }),
     });
     const body = await response.json().catch(() => ({}));
 
@@ -42,6 +48,10 @@ export function TenantAdminControls({
 
   return (
     <form onSubmit={handleSubmit}>
+      <label>
+        Name
+        <input type="text" value={name} onChange={(event) => setName(event.target.value)} required />
+      </label>
       <label>
         Status
         <select value={status} onChange={(event) => setStatus(event.target.value as 'active' | 'suspended')}>
