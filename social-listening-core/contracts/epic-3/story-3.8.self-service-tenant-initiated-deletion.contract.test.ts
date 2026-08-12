@@ -244,7 +244,17 @@ describe('Story 3.8 — self-service, tenant_admin-initiated tenant offboarding'
       expect(runArchivalResult.rowsArchived).toBeGreaterThanOrEqual(1);
       blobPathsToClean.push(`social-posts/${archivedPostId}.json`, `ingestion-runs/${archivedIngestionRunId}.json`);
 
-      await createWatchlist(tenantId, { name: 'Test watchlist', matchType: 'keyword', terms: ['acme'] });
+      // 2026-08-12 (Story 1.5/ADR-0044 ripple): watchlists.user_id is now a
+      // real, non-null FK to users(id) — tenantAdminUserId needs a matching
+      // real row before createWatchlist() can reference it as owner.
+      await withTenant(tenantId, (client) =>
+        client.query(`INSERT INTO users (id, tenant_id, email, role, status) VALUES ($1, $2, $3, 'tenant_admin', 'active')`, [
+          tenantAdminUserId,
+          tenantId,
+          `admin-${tenantAdminUserId}@example.com`,
+        ])
+      );
+      await createWatchlist(tenantId, tenantAdminUserId, { name: 'Test watchlist', matchType: 'keyword', terms: ['acme'] });
 
       const stored = await storeCredential(tenantId, 'gnews', 'super-secret-api-key', testKeyId);
       credentialId = stored.id;

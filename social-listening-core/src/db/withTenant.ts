@@ -19,16 +19,27 @@ import { getPool } from './pool';
  * project), so it still needs this same session-context mechanism —
  * defense-in-depth for an irreversible action, not just a narrower set of
  * GRANTs.
+ *
+ * `userId` (Story 1.5, ADR-0044 §5b): optional, transaction-local
+ * `app.user_id`, the same mechanism as `app.tenant_id` above. Only
+ * `watchlists` has a second RLS predicate on it today — every other caller
+ * omits this argument and is unaffected (the session variable is simply
+ * never set, so `NULLIF(current_setting('app.user_id', true), '')::uuid`
+ * evaluates to NULL, which no other table's RLS policy reads).
  */
 export async function withTenant<T>(
   tenantId: string,
   fn: (client: PoolClient) => Promise<T>,
-  pool: Pool = getPool()
+  pool: Pool = getPool(),
+  userId?: string
 ): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     await client.query('SELECT set_config($1, $2, true)', ['app.tenant_id', tenantId]);
+    if (userId !== undefined) {
+      await client.query('SELECT set_config($1, $2, true)', ['app.user_id', userId]);
+    }
     const result = await fn(client);
     await client.query('COMMIT');
     return result;

@@ -1,6 +1,7 @@
 import { PoolClient, QueryResultRow } from 'pg';
 import { withTenant } from '../db/withTenant';
 import { getTenantDeletionPool } from '../db/tenantDeletionPool';
+import { getAdminPool } from '../db/adminPool';
 import { logPlatformAdminAction } from '../admin/platformAdminAuditLog';
 import { deleteArchiveBlob, downloadArchiveBlob } from '../archival/blobArchiveClient';
 
@@ -10,7 +11,23 @@ import { deleteArchiveBlob, downloadArchiveBlob } from '../archival/blobArchiveC
  * 30-day grace period, cancel, confirm. Every step runs under app_user's own
  * RLS-scoped connection (withTenant()) — platform_admin_role is never used
  * here, matching Story 5.7's own "zero access" boundary with no exception.
- * See .claude/skills/self-service-tenant-deletion/SKILL.md.
+ *
+ * 2026-08-12 (Story 1.5/ADR-0044 §5c ripple): `watchlists` gained a
+ * per-user ownership RLS predicate, which this file's own whole-tenant
+ * export/delete steps cannot satisfy — they legitimately need every
+ * watchlist in the tenant, not one caller's own. exportTenantData()'s
+ * watchlists read below is the one narrow exception to the paragraph
+ * above: it uses getAdminPool() (the plain superuser connection this
+ * project's own migration runner already uses — never platform_admin_role,
+ * which still has zero grants on this table and stays untouched), with
+ * `tenant_id` still enforced explicitly in the SQL rather than relied on
+ * via RLS. batchDeleteByTenant('watchlists', ...) further down is
+ * deliberately left unfixed the same way — it now deletes zero watchlist
+ * rows directly (still RLS-blocked), but every watchlist is removed anyway
+ * a few lines later via `ON DELETE CASCADE` on `watchlists.user_id` once
+ * that batch reaches `users` (migration 0025) — this is what actually
+ * closes the FK-violation hang this same investigation found, not a
+ * workaround around it.
  */
 
 export const GRACE_PERIOD_DAYS = 30;
@@ -100,7 +117,10 @@ export async function exportTenantData(tenantId: string): Promise<TenantExport> 
   return withTenant(tenantId, async (client) => {
     const socialPosts = await resolveSocialPostsForExport(client, tenantId);
     const authorsResult = await client.query(`SELECT * FROM authors WHERE tenant_id = $1`, [tenantId]);
-    const watchlistsResult = await client.query(`SELECT * FROM watchlists WHERE tenant_id = $1`, [tenantId]);
+    // See this file's own 2026-08-12 header note — watchlists is
+    // ownership-RLS-scoped now, so a whole-tenant export needs the admin
+    // pool here, with tenant_id still explicitly enforced in the query.
+    const watchlistsResult = await getAdminPool().query(`SELECT * FROM watchlists WHERE tenant_id = $1`, [tenantId]);
     const liveRunsResult = await client.query<{ id: string }>(`SELECT * FROM ingestion_runs WHERE tenant_id = $1`, [
       tenantId,
     ]);

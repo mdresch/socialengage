@@ -63,7 +63,7 @@
 
 ## Story 1.5 — Watchlist CRUD REST surface, personal/per-user, with ADR-0044's PATCH/error/locking contract
 
-**Source:** ADR-0044 (Accepted 2026-08-11) · **Status:** Ready
+**Source:** ADR-0044 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12
 
 **As a** tenant user or Tenant-Admin,
 **I want** to create, read, update, and delete my own watchlists via REST endpoints, using standardized PATCH semantics, error codes, and optimistic locking, with real caller identity (not a self-declared header) determining what I can see,
@@ -121,6 +121,8 @@
 - `isActive` defaults to `true` and `platformIds` defaults to an empty array when not provided on creation.
 - Watchlists support all four match types: `keyword`, `hashtag`, `account`, `boolean`.
 - `DELETE /v1/watchlists/:id` returns 204 on success, 404 per the ownership/tenant rule above.
+
+**Built 2026-08-12.** `migrations/0025_watchlists_ownership_and_versioning.sql` (additive: `version`, `user_id` with `ON DELETE CASCADE`, extended `tenant_isolation` RLS policy), `watchlistStore.ts` (re-signed for `userId`, `WatchlistPatchInput`, `validateWatchlistShape()`, atomic version-checked `updateWatchlist()`), `watchlistsRouter.ts` (new `GET /:id`, RFC 7396 PATCH semantics, ADR-0044 §2 error-code mapping, `If-Match` locking) — see `contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts` (20/20) and `docs/implementation-log.md`. **A real, necessary cross-story ripple, not silently folded in:** `createWatchlist()` gained a required `userId` parameter and `watchlists.user_id` became a hard FK, so `contracts/epic-3/story-3.8...` and `contracts/epic-5/story-5.10...` (both call `createWatchlist()` directly) needed matching real `users` rows and, for 5.10's AC2/AC3, a single consistent caller identity between create and list calls under the new ownership-scoped RLS. **A deeper, genuine architectural collision was found and resolved the same session, not worked around:** `watchlists` becoming the first table with per-user ownership RLS broke Story 3.8's own whole-tenant export (silently returned zero watchlists) and hard-delete pipeline (an FK-violation hang once `users` rows were deleted ahead of un-cascaded watchlist rows) — resolved via `ON DELETE CASCADE` on `watchlists.user_id` plus a narrow, explicitly-tenant-scoped `getAdminPool()` read in `exportTenantData()` (never `platform_admin_role`, which keeps zero access to this table). Full `social-listening-core` suite after: 49/49 suites, 335/335 tests passing.
 
 **Note on scope, per ADR-0044's own §6 cross-references and this story's own place in the series:** this story does not build watchlist *matching* (ADR-0006/ADR-0021, already decided and separately storied), does not add a per-user watchlist count/complexity cap (ADR-0044's own named Open Question, deliberately left unresolved pending real usage data), and does not add a tenant-mutation audit table (ADR-0044 §6, deliberately deferred — `version` + `updated_at` are this project's current change-tracking mechanism for this table).
 
