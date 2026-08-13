@@ -727,6 +727,83 @@ export async function verifyTenantOwnedFeedDomain(connectorActivationId: string)
   return { status: response.status, body };
 }
 
+export interface TenantDeletionRequestOutcome {
+  status: number;
+  body: { tenantId?: string; deletionRequestedAt?: string; graceEndsAt?: string; error?: string };
+}
+
+/**
+ * Story 6.13 / Story 3.8 (ADR-0043) — the soft-delete step
+ * (`POST /v1/tenants/self-service-deletion/request`). Returns the raw
+ * status/body rather than throwing on a non-2xx — a `409` (a request is
+ * already active for this tenant) is a real, expected outcome the panel
+ * must react to specifically, not a generic error.
+ */
+export async function requestTenantSelfServiceDeletion(): Promise<TenantDeletionRequestOutcome> {
+  const response = await authenticatedCoreFetch('/v1/tenants/self-service-deletion/request', { method: 'POST' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface TenantDeletionExportOutcome {
+  status: number;
+  contentType: string;
+  body: string;
+}
+
+/**
+ * Story 6.13 / Story 3.8 (ADR-0043 §4) — re-triggerable export
+ * (`POST /v1/tenants/self-service-deletion/export`), caller's choice of
+ * JSON or CSV. Returns the raw response text and content-type rather than
+ * parsing it — the body may be a large JSON export or a CSV file, neither
+ * of which this function should assume the shape of; the proxy route and
+ * panel component decide how to present it.
+ */
+export async function requestTenantSelfServiceExport(format: 'json' | 'csv'): Promise<TenantDeletionExportOutcome> {
+  const response = await authenticatedCoreFetch('/v1/tenants/self-service-deletion/export', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(format === 'csv' ? { format: 'csv' } : {}),
+  });
+  const text = await response.text();
+  return { status: response.status, contentType: response.headers.get('content-type') ?? 'application/json', body: text };
+}
+
+export interface TenantDeletionCancelOutcome {
+  status: number;
+  body: { tenantId?: string; cancelled?: boolean; error?: string };
+}
+
+/**
+ * Story 6.13 / Story 3.8 (ADR-0043 §5) — cancel
+ * (`DELETE /v1/tenants/self-service-deletion`), available any time from
+ * request until confirmation. A `409` (no active request, or already
+ * confirmed) is a real, expected outcome, not a generic error.
+ */
+export async function cancelTenantSelfServiceDeletion(): Promise<TenantDeletionCancelOutcome> {
+  const response = await authenticatedCoreFetch('/v1/tenants/self-service-deletion', { method: 'DELETE' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface TenantDeletionConfirmOutcome {
+  status: number;
+  body: { tenantId?: string; status?: string; error?: string; graceEndsAt?: string };
+}
+
+/**
+ * Story 6.13 / Story 3.8 (ADR-0043 §6) — the one irreversible action in
+ * this entire admin UI (`POST /v1/tenants/self-service-deletion/confirm`).
+ * A `409 grace_period_not_elapsed` (with the real remaining `graceEndsAt`)
+ * is a real, expected outcome the panel must handle even after its own
+ * client-side timing check — that check is best-effort, not authoritative.
+ */
+export async function confirmTenantSelfServiceDeletion(): Promise<TenantDeletionConfirmOutcome> {
+  const response = await authenticatedCoreFetch('/v1/tenants/self-service-deletion/confirm', { method: 'POST' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
  */
