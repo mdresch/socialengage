@@ -15,6 +15,124 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-13 | — | — | auto | Documentation | — | docs: methodology retrospective — relationship-assertion contracts, story resume, Built field, environment gotchas (e59b2da) |
+| 2026-08-13 | — | — | auto | Documentation | Story 3.10 | docs: implementation log entry for Story 3.10 (social-listening-core@dcec172) (df0c2c3) |
+| 2026-08-13 | — | — | auto | Documentation | Story 3.10 | feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053) (dcec172) |
+| 2026-08-13 | — | — | auto | Review | — | docs: clear review backlog — Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-13) (13f5163) |
+| 2026-08-13 | — | — | auto | Documentation | ADR-0053 | docs: accept ADR-0053, draft Story 3.10 (canonical Markdown post-body normalization) (bd9bbfc) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.17 | docs: implementation log entry for Story 6.17 (social-listening-admin@d0eb088) (780f981) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.17 | feat: tenant-wide activate/deactivate control on tenant-owned-feed screen (Story 6.17, ADR-0051) (d0eb088) |
+| 2026-08-13 | — | — | auto | Documentation | Story 1.13 | docs: implementation log entry for Story 1.13 (social-listening-core@a479383) (9a347c6) |
+| 2026-08-13 | — | — | auto | Documentation | Story 1.13 | feat: live ingestion-polling scheduler (Story 1.13, ADR-0052) (a479383) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.13 | docs: implementation log entry for Story 6.13 (social-listening-admin@500a4b9) (42ff7b5) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.13 | feat: self-service tenant deletion/offboarding UI (Story 6.13, ADR-0043) (500a4b9) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.12 | docs: implementation log entry for Story 6.12 (social-listening-admin@e1e9913) (b155bc5) |
+| 2026-08-13 | — | — | auto | Documentation | Story 6.12 | feat: tenant-owned-feed connector setup UI (Story 6.12, ADR-0050) (e1e9913) |
+| 2026-08-13 | — | — | auto | Documentation | — | docs: correct CLAUDE.md's stale Epic 6 build-status summary (57fe1de) |
+| 2026-08-12 | — | — | auto | Documentation | — | docs: implementation log entry for ProvisionTenantForm domain field (social-listening-admin@c2aa7b1) (8b54aae) |
+| 2026-08-12 | — | — | auto | Documentation | — | feat: ProvisionTenantForm gains an optional domain field (c2aa7b1) |
+| 2026-08-12 | — | — | auto | Documentation | — | docs: implementation log entry for tenant rename enhancement (cross-repo@f5bb2d4) (8905c21) |
+| 2026-08-12 | — | — | auto | Documentation | — | feat: tenant rename (PATCH /v1/admin/tenants/:id gains name) (f5bb2d4) |
+| 2026-08-12 | — | — | auto | Documentation | ADR-0030 | docs: clarify break-glass request intake channel (ADR-0030, Story 5.13) (ab37bf3) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.16 | docs: Story 6.16 traceability and implementation log entries (e5fec8f) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.16 | feat: Story 6.16 (frontend) — manual "run enrichment now" button (21da4f5) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.16 | feat: Story 6.16 (backend) — POST /v1/posts/:id/enrich (51a2b40) |
+| 2026-08-12 | — | — | auto | Documentation | — | docs: name the AI-provider status display gap on the connector status screen (e556c3c) |
+| 2026-08-12 | — | — | auto | Documentation | — | style: global baseline stylesheet for social-listening-admin (216c32a) |
+| 2026-08-12 | — | — | auto | Documentation | — | docs: implementation log entries for the AI provider activation-gating fix and enrichment attribution enhancement (3b5f08b) |
+| 2026-08-12 | — | — | auto | Documentation | — | feat: show which AI provider enriched a post on the detail screen (43d36ca) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.9 | fix: activation now gates AI enrichment provider selection (Story 2.9 healing) (99c1dcf) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.11 | docs: implementation log entry for Story 6.11 (social-listening-admin@d8ba590) (6362dda) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.11 | feat: Story 6.11 — post feed screen in social-listening-admin (d8ba590) |
+| 2026-08-12 | — | — | auto | Documentation | — | fix: run pending migrations automatically before social-listening-core's dev server starts (4801a36) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.2 | docs: implementation log entry for the Story 6.2 role-gating healing pass (eb8b10b) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.2 | fix: reject unresolved identity in admin role-gating (Story 6.2 healing) (6e110aa) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.15 | docs: implementation log entry for Story 6.15 (social-listening-admin@cc7cae2) (62d78ff) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.15 | feat: Story 6.15 — activate/deactivate controls on the connector screens (cc7cae2) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.13 | docs: draft Story 2.13 — closing a real gap, ADR-0042 (Wikipedia) never got a story (8abacce) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.12 | docs: implementation log entry for Story 2.12 (social-listening-core@da102a9) (5adff09) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.12 | feat: Story 2.12 — exclude retryable failures from the failing derivation (da102a9) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.12 | docs: implementation log entry for Story 1.12 (social-listening-core@c3af2a7) (c481e01) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.12 | feat: Story 1.12 — GET /v1/connectors/:platformId includes real isActive (c3af2a7) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.11 | docs: draft Stories 1.12, 2.12, 6.15 — closing three of Story 1.11's own named gaps (f8985b9) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.11 | docs: implementation log entry for Story 1.11 (social-listening-core@703e755) (7ffd477) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.11 | feat: Story 1.11 — connector activation decoupled from credential presence (703e755) |
+| 2026-08-12 | — | — | auto | Documentation | ADR-0051 | docs: companion ADR-0051 cross-reference notes — ADR-0009/0010/0022/0023/0024/0034 (18a0e38) |
+| 2026-08-12 | — | — | auto | Documentation | ADR-0051 | docs: ADR governance pass — accept ADR-0051, add Story 1.11 (e6c0617) |
+| 2026-08-12 | — | — | auto | Documentation | — | docs: implementation log entry for the connector status Active/Inactive indicator (e430a6b) |
+| 2026-08-12 | — | — | auto | Documentation | — | feat(social-listening-admin): show Active/Inactive on every connector, not just connected ones (feae698) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.6 | docs: implementation log entry for Story 6.6 Platform Admin console rebuild (7102011) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.6 | feat(social-listening-admin): rebuild Story 6.6 Platform Admin console for real (51eecf0) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.5 | docs: implementation log entry for Story 6.5 connector status screen rebuild (2e77c17) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.5 | feat(social-listening-admin): rebuild Story 6.5 connector status screen for real (4046e75) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.4 | docs: implementation log entry for Story 6.4 watchlist screen rebuild (d96d782) |
+| 2026-08-12 | — | — | auto | Documentation | Story 6.4 | feat(social-listening-admin): rebuild Story 6.4 watchlist screen for real, against ADR-0044 (fded97b) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.5 | docs: correct wrong commit hash on the 2026-08-01 Story 1.5 implementation-log entry (4cd4ef1) |
+| 2026-08-12 | — | — | auto | Documentation | Story 3.9 | docs: implementation log entry for Story 3.9 author follower count at publish (3d650c8) |
+| 2026-08-12 | — | — | auto | Documentation | Story 3.9 | feat: Story 3.9 -- point-in-time author follower count on SocialPost (ADR-0049) (34e9dfb) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.11 | docs: implementation log entry for Story 2.11 tenant-owned-feed connector (9f09393) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.11 | feat: Story 2.11 -- tenant-owned-domain RSS connector with DNS TXT verification (ADR-0050) (afcb59e) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.10 | docs: implementation log entry for Story 2.10 connector registration transparency (9f90a82) |
+| 2026-08-12 | — | — | auto | Documentation | Story 2.10 | feat: Story 2.10 -- connector registration transparency, mechanically enforced (ADR-0048) (f2c7788) |
+| 2026-08-12 | — | — | auto | Documentation | — | chore: stop tracking .claude/settings.local.json, gitignore it (8cf76a2) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.10 | docs: implementation log entry for Story 1.10 Postgres readiness check (0694d2c) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.10 | feat: Story 1.10 -- Postgres boot-time readiness check and a real /v1/health (63dcbce) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.5 | docs: implementation log entry for Story 1.5 watchlist ownership rebuild (c5fca67) |
+| 2026-08-12 | — | — | auto | Documentation | Story 1.5 | feat: rebuild Story 1.5 watchlist CRUD against ADR-0044 (personal ownership, RFC 7396 PATCH, optimistic locking) (aaf6bd7) |
+| 2026-08-11 | — | — | auto | Documentation | ADR-0044 | docs: ADR governance pass — accept ADR-0044/0047/0048/0049/0050, resolve resulting stories (8dff76b) |
+| 2026-08-10 | — | — | auto | Documentation | — | chore: remove .vscode/tasks.json and launch.json, dead since the Foundry sample's removal (8018de4) |
+| 2026-08-10 | — | — | auto | Documentation | — | chore: remove unrelated Microsoft Foundry Python sample project and stray azd scaffolding (9eef81b) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.15 | docs: implementation log entry for Story 5.15 seat-count healing pass (3ae641e) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.15 | heal: Story 5.15 — self-service tenant founder never consumed a seat (f36d765) |
+| 2026-08-10 | — | — | auto | Documentation | — | docs: backlog missing invite-withdrawal capability, found during live invite testing (4551e26) |
+| 2026-08-10 | — | — | auto | Documentation | — | docs: backlog a future ADR candidate — richer self-service sign-up business-details form (49eaa50) |
+| 2026-08-10 | — | — | auto | Documentation | — | docs: record real Entra tenant-config prerequisites found during live self-service sign-up test (f4c50db) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.2 | docs: implementation log entry for Story 6.2 root-redirect healing pass (596b2c3) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.2 | heal: Story 6.2 — a successful platform_admin sign-in lands on / with only a manual link (35b70a8) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.1 | docs: implementation log entry for Story 6.1 OAuth-scope healing pass (6d08379) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.1 | heal: Story 6.1 — real Platform Admin sign-in blocked by missing OAuth scope and oid-vs-sub seed error (dba9895) |
+| 2026-08-10 | — | — | auto | Documentation | Story 1.4 | docs: implementation log entry for Story 1.4 withDevEnv.js healing pass (de96102) |
+| 2026-08-10 | — | — | auto | Documentation | Story 1.4 | heal: Story 1.4 — withDevEnv.js never loaded .env, only jest's test setup did (15756e0) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.3 | docs: implementation log entry for Story 6.3 healing pass (d545174) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.3 | heal: Story 6.3 — real connector connect/disconnect flow, not a static placeholder (1dbd26a) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.3 | docs: correct overstated Story 6.3 connect-flow claims in AI connector SKILL.mds (7d978e0) |
+| 2026-08-10 | — | — | auto | Documentation | ADR-0049 | docs: draft ADR-0049 and ADR-0050 (Proposed) from Cursor Composer brainstorm session (8e1ac18) |
+| 2026-08-10 | — | — | auto | Review | Story 2.9 | docs: implementation log addendum for Story 2.9 self-review/overallConfidence follow-up (d936082) |
+| 2026-08-10 | — | — | auto | Review | Story 2.9 | feat: Story 2.9 follow-up — self-review + overallConfidence for Azure OpenAI enrichment (292a22a) |
+| 2026-08-10 | — | — | auto | Documentation | Story 2.9 | docs: implementation log entry for Story 2.9 (9007da1) |
+| 2026-08-10 | — | — | auto | Documentation | Story 2.9 | feat: Story 2.9 — second AIProviderConnector, Azure OpenAI (gpt-5-mini), provider swappability (69310ba) |
+| 2026-08-10 | — | — | auto | Documentation | ADR-0038 | docs: ADR-0038 correction — gpt-4o-mini deprecated, gpt-5-mini deployed instead (54b32fa) |
+| 2026-08-10 | — | — | auto | Documentation | ADR-0038 | docs: ADR-0038 amendment — Foundry Local rejected, Azure OpenAI Service selected for Story 2.9 (1e7e9ac) |
+| 2026-08-10 | — | — | auto | Documentation | Story 2.8 | docs: implementation log entry for Story 2.8 (80cc28d) |
+| 2026-08-10 | — | — | auto | Documentation | Story 2.8 | feat: Story 2.8 — Azure AI Language connector, real AIProviderConnector (ADR-0038) (f70b07d) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.18 | docs: implementation log entry for Story 5.18 (d1ad0c6) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.18 | feat: Story 5.18 — self-service sign-up rate limiting (ADR-0040) (7a2466d) |
+| 2026-08-10 | — | — | auto | Documentation | — | docs: implementation log entry for break-glass retry healing pass (d78c598) |
+| 2026-08-10 | — | — | auto | Documentation | — | heal: retry break-glass password-reset/TAP calls on transient Graph 409s (99b58c3) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.17 | docs: implementation log entry for Story 5.17 (f0e3c36) |
+| 2026-08-10 | — | — | auto | Documentation | Story 5.17 | feat: Story 5.17 — access-history read endpoint (ADR-0032 §9) (5fe1999) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.10 | docs: implementation log entry for Story 6.10 (19d50d7) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.10 | feat: Story 6.10 — Same-Domain Invite Assist view, closing out Epic 6 (3661ce9) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.9 | docs: implementation log entry for Story 6.9 (1e18c4b) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.9 | feat: Story 6.9 — tenant settings screen (9ec62fa) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.8 | docs: implementation log entries for Story 6.8 and its healing follow-up (09b626f) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.8 | feat: Story 6.8 — Tenant-Admin user invitation and management screen (6b7fc00) |
+| 2026-08-10 | — | — | auto | Documentation | — | chore: regenerate next-env.d.ts/tsconfig.json for per-test distDir (c89ee47) |
+| 2026-08-10 | — | — | auto | Documentation | — | docs: implementation log entry for healing pass (6.1/6.7 dev-server race) (09160c4) |
+| 2026-08-10 | — | — | auto | Documentation | Story 6.1 | heal: parallel-worker race between Story 6.1/6.7's spawned dev servers (832f7b3) |
+| 2026-08-09 | — | — | auto | Documentation | Story 6.7 | docs: implementation log entry for Story 6.7 (d114c16) |
+| 2026-08-09 | — | — | auto | Documentation | Story 6.7 | feat: Story 6.7 — self-service tenant sign-up UI (ADR-0037) (2b44637) |
+| 2026-08-09 | — | — | auto | Documentation | Story 1.9 | docs: implementation log entry for Story 1.9 (afd270f) |
+| 2026-08-09 | — | — | auto | Documentation | Story 1.9 | feat: Story 1.9 — user invitation and offboarding REST surface (ADR-0032) (3badf2f) |
+| 2026-08-09 | — | — | auto | Documentation | ADR-0018 | docs: ADR-0018 amendment + SKILL.md update for partition eligibility boundary fix (75cc58d) |
+| 2026-08-09 | — | — | auto | Documentation | Story 3.5 | heal: Story 3.5 — fix archival partition eligibility boundary condition (ADR-0018) (4de308e) |
+| 2026-08-09 | — | — | auto | Documentation | Story 1.8 | feat: Story 1.8 — GET /v1/tenants/me tenant self-view endpoint (ADR-0031) (10fc934) |
+| 2026-08-09 | — | — | auto | Documentation | — | update github copilot instructions (11186b7) |
+| 2026-08-09 | — | — | auto | Documentation | — | ADR changes and updates approvals - VSCode Copilot Registration and project optimizations (0b9e1dd) |
+| 2026-08-08 | — | — | auto | Documentation | — | feat: add azd and ai agent deployment config (8abdb48) |
+| 2026-08-08 | — | — | auto | Documentation | Story 6.6 | Log Story 6.6 in the Implementation Log (77e1bfc) |
+| 2026-08-08 | — | — | auto | Implementation | Story 6.6 | Implement Story 6.6 platform admin console (2b2d40b) |
+| 2026-08-08 | — | — | auto | Documentation | — | Time tracking: log commit HH:MM as day-timeline marker (13a909f) |
 | 2026-08-08 | — | — | auto | Documentation | — | gitignore: exclude Python __pycache__ and bytecode files (bb42281) |
 | 2026-08-08 | — | — | auto | Documentation | — | Add Foundry agent tracing tests (0c3409b) |
 | 2026-08-08 | — | — | auto | Review | — | Setup: Codacy config, VS Code MCP settings, Claude settings, and pending reviews (34b5333) |

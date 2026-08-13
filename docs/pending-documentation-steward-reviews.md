@@ -945,3 +945,27 @@
 
 **PM-side project docs (`docs/project docs/`), checked against this entire batch's real git state, per this role's 2026-08-06 scope extension:** no drift found. `Uncertainty-Management-Plan.md`'s risk register (R-04, and the connector-status entries) remains accurate and was not touched by anything in this batch; `Project Management Plans/Go-Live-Readiness-Definition.md`'s Stage 0 classification and its own already-existing 2026-08-06/2026-08-13 Documentation Steward corrections remain accurate and unaffected by this batch (they concern self-service sign-up, Stories 5.15–5.18/6.7, which predate this batch entirely); `Development-Approach-and-Life-Cycle-Plan.md`'s phase table already carries its own 2026-08-06 Phase 4.5 correction and was not further diverged by anything in this batch (this batch added no new phase). **One separate, lower-confidence, out-of-scope observation, not fixed:** `CLAUDE.md` (itself, beyond the specific staleness already corrected under `57fe1de` above) describes `docs/implementation-plan.md` as having "phases (0 through 6, plus an inserted Phase 4.5)," but `implementation-plan.md`'s own real phase headers only go up to Phase 5 (0, 1, 2, 3, 4, 4.5, 5) — "Phase 6" appears to be informal shorthand for "Epic 6/Admin UI" that predates this entire batch and isn't introduced or exposed by any commit reviewed in this pass; flagged here for a future, dedicated look rather than fixed speculatively under this session's time budget.
 
+## 2026-08-13 — 13f5163 — docs: clear review backlog — Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-13)
+
+- **Full commit:** `13f5163e336b549c0bfb573021b6965114d7c578`
+- **Files touched:** docs/adr/0051-connector-activation-decoupled-from-credential.md, docs/adr/feature-coverage-review.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/open-decisions.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Case-v6.0.md, docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md, docs/project docs/Stakeholder-Register.md
+- **Status:** Pending review
+
+## 2026-08-13 — dcec172 — feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053)
+
+- **Full commit:** `dcec172f4f940fa048a3f05a2063e69628af0dc6`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/canonical-markdown-conversion/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.6.newswire-connector.contract.test.ts, social-listening-core/contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts, social-listening-core/migrations/0030_add_social_posts_body_markdown.sql, social-listening-core/package-lock.json, social-listening-core/package.json, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/content/htmlToMarkdown.ts, social-listening-core/src/content/turndown-plugin-gfm.d.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Status:** Pending review
+
+## 2026-08-13 — df0c2c3 — docs: implementation log entry for Story 3.10 (social-listening-core@dcec172)
+
+- **Full commit:** `df0c2c3bbac458a9846e2c26adeb954626fec8e4`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-13 — e59b2da — docs: methodology retrospective — relationship-assertion contracts, story resume, Built field, environment gotchas
+
+- **Full commit:** `e59b2dabf32a9c95529ce6a75e1bdac4e5906dda`
+- **Files touched:** .claude/agents/documentation-steward.md, .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, CLAUDE.md, docs/environment-gotchas.md, docs/implementation-methodology.md, docs/project docs/Lessons-Learned-Register.md, docs/templates/component-skill-template.md, docs/user-stories/README.md
+- **Status:** Pending review
+

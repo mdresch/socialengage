@@ -1,13 +1,14 @@
 {
-    "chat.mcp.autoStart": true,
-    "chat.agentSkillsLocations": {
-        ".agents/skills": true,
-        ".github/skills": true,
-        ".claude/skills": true,
-        "~/.agents/skills": true,
-        "~/.copilot/skills": true,
-        "~/.claude/skills": true,
-        "~/.vscode/extensions/synapsevscode.synapse-1.25.0/copilot/skills": true
+  "jest.virtualFolders": [
+    {
+      "name": "social-listening-core",
+      "rootPath": "social-listening-core",
+      "jestCommandLine": "npx jest"
     },
-    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe"
+    {
+      "name": "social-listening-admin",
+      "rootPath": "social-listening-admin",
+      "jestCommandLine": "npx jest"
+    }
+  ]
 }
