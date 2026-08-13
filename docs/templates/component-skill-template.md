@@ -41,4 +41,8 @@ description: <One line: what this component is and when an agent should read thi
 ## Known gaps / deferred work
 
 <Anything intentionally left undone for this component, with a pointer to why — e.g., "distributed RequestGate state (ADR-0020) not yet built; see its solo-project Amendment Log note in docs/implementation-plan.md Phase 4."
+
+## Relations to other components
+
+<Which other components this one calls into, and which call into it — the real dependency graph, not a conceptual one. Per docs/implementation-methodology.md's relationship-assertion convention (added 2026-08-13): every entry here describing a real call relationship must be backed by at least one contract asserting it at the real production call site, not only the isolated function. If a relationship predates that convention and isn't yet backed, say so explicitly here — "claimed, not yet verified by a real-call-site contract" — rather than letting the omission read as checked.>
 ```
