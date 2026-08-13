@@ -2,7 +2,7 @@
 
 **Audience:** a `platform_admin` identity — the operator of the SocialEngage platform itself, not a member of any tenant.
 
-**Current coverage, as of 2026-08-06:** only sign-in exists. `social-listening-admin`'s Platform-Admin-facing screen tree is routed separately from the tenant-facing one (Story 6.2) — a real defect where a Platform Admin session was misrouted into the tenant shell was found and fixed the same day (`social-listening-admin@1f8960e`, see `docs/implementation-log.md`) — but no actual Platform Admin screens live in that tree yet: Story 6.6 (the Platform Admin console: tenant list, provisioning, break-glass, audit log) is Ready but not yet built. This manual will grow section by section as Story 6.6, and others, actually ship — nothing below describes a screen that doesn't exist yet.
+**Current coverage, as of 2026-08-13:** sign-in, plus the real, working Platform Admin console (Story 6.6, first built 2026-08-08, then substantially rebuilt for real 2026-08-12 after an internal review found the first build's controls were non-interactive placeholders — see "Honest history" at the end of the console section) — a database health indicator, the tenant registry, tenant provisioning, per-tenant editing (name, status, license seats), the two-phase break-glass credential reset flow, and a recent-activity audit log. Nothing below describes a screen that doesn't exist yet; a handful of specific gaps are called out in their own place, and summarized together in "What's not built yet" at the end. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how the console works changed because of it.
 
 ---
 
@@ -14,9 +14,45 @@
 4. Your session stays signed in for up to 8 hours, then you'll be asked to sign in again automatically — even if you were actively using the app right up to that point. This is a deliberate security limit, not a bug.
 5. To sign out, use the sign-out action — this ends your session immediately on this device; nothing from it can be reused afterward.
 
+## The Platform Admin console (Story 6.6)
+
+Once you're signed in, SocialEngage takes you straight to the Platform Admin console — a single screen covering everything below. **This console never shows you any tenant's actual content** — no users, watchlists, social posts, or credentials — only the tenant-management and support data described in each section here.
+
+### Database health
+
+At the top of the console, a plain "Status: ok" or "Status: unavailable" line reports whether the backend's own database is currently reachable (reading the backend's own health check, Story 1.10) — a quick sanity check before you rely on anything else on the page.
+
+### The tenant registry
+
+A table lists every tenant on the platform: name, domain (or "n/a" if none was set), status (active or suspended), and how many of its licensed seats are currently in use out of its total. Each row has its own "Update" controls (see "Editing a tenant" below).
+
+### Provisioning a new tenant
+
+A "Provision tenant" form lets you create a brand-new tenant directly: a tenant name (required), an optional domain, and a license seat count (at least 1). Submitting it creates a real, persisted tenant immediately — the tenant registry above reflects it as soon as the page reloads.
+
+### Editing a tenant
+
+Each row in the tenant registry has its own "Update" form, letting you change that tenant's name, status (active/suspended), and license seat count. Saving takes effect immediately. **A tenant's domain cannot be changed from this form** — domain is only set once, at provisioning time.
+
+### Break-glass credential reset
+
+For a Tenant-Admin who's genuinely locked out, the "Break-glass" section runs a deliberate two-step flow, never a single click:
+1. **Request reset** — choose the affected tenant from a dropdown, enter that person's target user ID, and submit. This only records the request; nothing happens to their credentials yet.
+2. **Execute request** — once a request is recorded, a separate "Execute request" button appears. Clicking it actually performs the reset and returns a one-time Temporary Access Pass.
+
+The Temporary Access Pass is shown **exactly once**, directly on the screen, with a plain instruction to copy it now and hand it to the affected Tenant-Admin through your own out-of-band channel (never through SocialEngage itself). It is never written anywhere else — not logged, not stored in your browser — and once you dismiss it ("I've copied this"), there is no way to see it again from this screen; a new break-glass request would be needed if it's lost before being copied.
+
+### Reviewing the audit log
+
+The console shows your platform's 10 most recent audit log entries — timestamp, operation, and the identity that performed it. **Current limitation:** there is no way yet to see anything older than the 10 most recent entries, or to filter the log by tenant, actor, or date range, from this screen.
+
+**Honest history, not a currently-open caveat:** this console was first marked "Built" on 2026-08-08, but an internal review on 2026-08-12 found that three of its five sections — Provision tenant, Update tenant, and Break-glass — were each rendered as a single descriptive line of text with no actual form or button behind it, even though the backend functions they needed already existed and worked. All three were rebuilt for real the same day; the tenant registry and audit log were already genuine and needed no rework. Named here only so this manual's own history stays honest.
+
 ## What's not built yet
 
-Everything past sign-in — provisioning a tenant, adjusting a tenant's license seats, executing a break-glass credential reset for a locked-out Tenant-Admin, and reviewing the audit log — already exists as real, working backend capability (`social-listening-core`, Stories 5.12–5.14), but has no screen in `social-listening-admin` yet. There is no way to do any of this from the UI today.
+- **Infrastructure and cost metrics** are explicitly out of scope for this console — it covers tenant provisioning, break-glass support, and audit review only.
+- **Older audit log history, or filtering it** by tenant, actor, or date — the console only ever shows the 10 most recent entries.
+- **Changing a tenant's domain after it's been provisioned** — there's no form field for it anywhere in this console.
 
 ## Infrastructure & credential operations (not app usage — the underlying platform)
 

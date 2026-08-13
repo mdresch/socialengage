@@ -31,5 +31,24 @@ This review maps the major features called out in the design specification to th
 | Persistent local development database separate from test DB | [0025](0025-persistent-local-dev-database-separate-from-test-database.md) | Stabilizes local development and avoids test-container churn. |
 | RSS/News connector via GNews and publication-as-author modeling | [0026](0026-rss-news-connector-gnews-api-publication-as-author.md) | Makes the news connector concrete and records its author-modeling exception. |
 | Connector as technical intermediary only | [0027](0027-connector-is-technical-intermediary-not-contracting-party.md) | Formalizes the governance boundary between SocialEngage and data-source relationships. |
+| Credential creation authority scoped by ownership tier | [0028](0028-credential-creation-authority-scoped-by-ownership-tier.md) | Prevents system-wide credentials and aligns creation rights with tenant/user roles. |
+| Entra External ID authentication mechanism | [0029](0029-authentication-mechanism-entra-external-id.md) | Establishes the identity provider and token-issuer boundary. |
+| Platform Admin and Tenant-Admin boundary model | [0030](0030-admin-tier-design-platform-admin-rls-exception.md) | Defines the bypass scope and admin-tier governance rules. |
+| Tenants table shape and admin-only mutations | [0031](0031-tenants-table-shape.md) | Locks tenant metadata and seat/activation behavior. |
+| Users table shape with RLS and access-ends model | [0032](0032-users-table-shape-and-rls.md) | Defines user identity, access lifecycle, and RLS scope. |
+| Retire `X-Tenant-Id` header in favor of bearer identity | [0033](0033-retire-x-tenant-id-header-placeholder.md) | Removes header-based tenant trust in favor of resolved identity. |
+| Connector connect/disconnect CRUD rework | [0034](0034-connector-connect-disconnect-crud-ownership-tier-aware.md) | Aligns connect/disconnect flows with ownership tiers. |
+| Admin UI shape: one app with role-gated routes | [0035](0035-admin-ui-shape-one-app-role-gated.md) | Keeps Platform Admin and tenant UI in one deployable with strict routing. |
+| Admin UI authentication/session and role-gating mechanism | [0036](0036-admin-ui-authentication-session-and-role-gating-mechanism.md) | Establishes the BFF session model and token handling. |
+| Self-service tenant signup and first Tenant-Admin provisioning | [0037](0037-self-service-tenant-signup-and-first-tenant-admin-provisioning.md) | Defines the signup flow and constraints for new tenants. |
+| AI enrichment provider selection (Azure AI Language first) | [0038](0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md) | Names the initial AI enrichment provider and swappability path. |
+| Tenant offboarding export and deletion lifecycle | [0039](0039-tenant-offboarding-data-lifecycle-export-and-deletion.md) | Defines the export window and deletion mechanics. |
+| Self-service signup rate limiting | [0040](0040-self-service-signup-rate-limiting-and-abuse-prevention-mechanism.md) | Protects signup endpoints from abuse and throttling gaps. |
+| Platform Admin as a distinct identity kind | [0041](0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md) | Clarifies identity modeling for admin vs tenant roles. |
+| Wikipedia connector design and article-as-author modeling | [0042](0042-wikipedia-connector-mediawiki-api-article-as-author.md) | Proposes the connector and defines author modeling for revisions. |
+| Self-service tenant-initiated deletion | [0043](0043-self-service-tenant-initiated-deletion.md) | Establishes tenant-driven deletion flow and audit visibility. |
+| Watchlist CRUD contract and PATCH semantics | [0044](0044-watchlist-api-design-and-database-schema-standardization.md) | Standardizes watchlist updates, errors, and row shape. |
+| Cross-story supersession language pattern | [0047](0047-standard-pattern-for-cross-story-references-and-supersession-language.md) | Codifies how supersessions and cross-story references are written. |
+| Connector registration verification guardrails | [0048](0048-no-core-pipeline-change-verification-for-new-connector-registration.md) | Requires evidence and CI checks for no-core-change registrations. |
 
-This set gives the project a decision record for each major feature and policy area described in the design specification.
+This set gives the project a decision record for each major feature and policy area described in the design specification and its later ADR extensions.
