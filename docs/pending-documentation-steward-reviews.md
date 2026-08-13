@@ -376,101 +376,104 @@
 - **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 1e18c4b`, exact match.
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches the real 9ec62fa commit reviewed directly above.
 
-## 2026-08-10 — 3661ce9 — feat: Story 6.10 — Same-Domain Invite Assist view, closing out Epic 6
+## ~~2026-08-10 — 3661ce9 — feat: Story 6.10 — Same-Domain Invite Assist view, closing out Epic 6~~
 
 - **Full commit:** `3661ce90591765bf672b9278bb17fa9f61eb174a`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/same-domain-invite-assist/SKILL.md, social-listening-admin/contracts/epic-6/story-6.10.same-domain-invite-assist-view.contract.test.ts, social-listening-admin/src/app/tenant/invite-assist/page.tsx, social-listening-admin/src/app/tenant/users/InviteUserForm.tsx, social-listening-admin/src/app/tenant/users/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/same-domain-invite-assist/SKILL.md, social-listening-admin/contracts/epic-6/story-6.10.same-domain-invite-assist-view.contract.test.ts, social-listening-admin/src/app/tenant/invite-assist/page.tsx, social-listening-admin/src/app/tenant/users/InviteUserForm.tsx, social-listening-admin/src/app/tenant/users/page.tsx, social-listening-admin/src/lib/core-client.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 3661ce9`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** The "closing out Epic 6" framing was accurate as a dated snapshot at commit time (6.1–6.10 all built that day) and is correctly treated as a point-in-time note, not retroactively wrong just because Epic 6 later grew (6.11–6.17) and was split 2026-08-12 — consistent with every other dated-note entry in this project. `InviteUserForm.tsx`/`tenant/users/page.tsx` cross-touch is correctly attributed to this story's own AC3 text in both `implementation-plan.md` and `epic-6-admin-ui.md`.
 
-## 2026-08-10 — 19d50d7 — docs: implementation log entry for Story 6.10
+## ~~2026-08-10 — 19d50d7 — docs: implementation log entry for Story 6.10~~
 
 - **Full commit:** `19d50d74f254ac4c5e5bcdb2525f635ca10baa75`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 19d50d7`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches the real 3661ce9 commit reviewed directly above.
 
-## 2026-08-10 — 5fe1999 — feat: Story 5.17 — access-history read endpoint (ADR-0032 §9)
+## ~~2026-08-10 — 5fe1999 — feat: Story 5.17 — access-history read endpoint (ADR-0032 §9)~~
 
 - **Full commit:** `5fe1999c67f0d55a3a851788602d86c423347ac1`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/identity-resolution/SKILL.md, social-listening-core/contracts/epic-5/story-5.17.access-history-read-endpoint.contract.test.ts, social-listening-core/src/http/versions/v1/tenantUsersRouter.ts, social-listening-core/src/identity/identityResolution.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/identity-resolution/SKILL.md, social-listening-core/contracts/epic-5/story-5.17.access-history-read-endpoint.contract.test.ts, social-listening-core/src/http/versions/v1/tenantUsersRouter.ts, social-listening-core/src/identity/identityResolution.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 5fe1999`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** This commit itself correctly handles a real AC1/shipped-schema column-naming drift (`user_id`/`changed_by`/`previous_value`/`changed_at` in the story text vs. the real `target_user_id`/`actor_user_id`/`old_value`/`occurred_at` Story 1.9 actually shipped) via a proper dated note in `epic-5-security-isolation-and-messaging.md` rather than silently rewriting the story — exactly the governance-table-consistent correction mechanism this role would otherwise have had to apply itself. `docs/user-stories/README.md` (line 135's own 2026-08-10-adjacent note) and `implementation-plan.md` both correctly reflect it as built.
 
-## 2026-08-10 — f0e3c36 — docs: implementation log entry for Story 5.17
+## ~~2026-08-10 — f0e3c36 — docs: implementation log entry for Story 5.17~~
 
 - **Full commit:** `f0e3c361e7c948e4415a7c0219bba4d0bef0682d`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r f0e3c36`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches the real 5fe1999 commit; also correctly names the break-glass Graph-409 retry gap as a deliberately-scoped-out follow-up, which the next entry (99b58c3) below actually closes.
 
-## 2026-08-10 — 99b58c3 — heal: retry break-glass password-reset/TAP calls on transient Graph 409s
+## ~~2026-08-10 — 99b58c3 — heal: retry break-glass password-reset/TAP calls on transient Graph 409s~~
 
 - **Full commit:** `99b58c31f8b129e85227336cc52bd0aa88b1bba3`
-- **Files touched:** social-listening-core/.claude/skills/platform-admin-access/SKILL.md, social-listening-core/src/admin/breakGlassCredentialReset.ts
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.claude/skills/platform-admin-access/SKILL.md, social-listening-core/src/admin/breakGlassCredentialReset.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 99b58c3`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** This is exactly the follow-up the 5fe1999/f0e3c36 entries above named as deliberately out of scope there — closed here. `SKILL.md`'s new Load-bearing-constraint and Known-gaps bullets correctly append (never rewrite) a dated 2026-08-10 note describing the real fix (`resetPasswordWithRetry()`/`createTemporaryAccessPassWithRetry()`, new `isConcurrentTenantRequestError()` predicate alongside the existing `isConflictingObjectError()`), consistent with the commit's own message and the `--no-verify` rationale (existing Story 5.7 contract already covers this behavior, re-run and passing as direct proof). No traceability-table or story-status change needed since no story/AC boundary moved.
 
-## 2026-08-10 — d78c598 — docs: implementation log entry for break-glass retry healing pass
+## ~~2026-08-10 — d78c598 — docs: implementation log entry for break-glass retry healing pass~~
 
 - **Full commit:** `d78c598861351f6f326918bb9e54e3de3506699e`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d78c598`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches 99b58c3 reviewed above; correctly explains the `--no-verify` exception and correctly states no traceability-table edit was needed since no story/ADR status moved.
 
-## 2026-08-10 — 7a2466d — feat: Story 5.18 — self-service sign-up rate limiting (ADR-0040)
+## ~~2026-08-10 — 7a2466d — feat: Story 5.18 — self-service sign-up rate limiting (ADR-0040)~~
 
 - **Full commit:** `7a2466d27958c1d36a5c02a116130eac1d9064eb`
-- **Files touched:** docs/implementation-plan.md, docs/open-decisions.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/self-service-tenant-signup/SKILL.md, social-listening-core/contracts/epic-5/story-5.18.signup-rate-limiting.contract.test.ts, social-listening-core/src/http/versions/v1/selfServiceSignupRouter.ts, social-listening-core/src/tenants/signupRateLimit.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/open-decisions.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, social-listening-core/.claude/skills/self-service-tenant-signup/SKILL.md, social-listening-core/contracts/epic-5/story-5.18.signup-rate-limiting.contract.test.ts, social-listening-core/src/http/versions/v1/selfServiceSignupRouter.ts, social-listening-core/src/tenants/signupRateLimit.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 7a2466d`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean now; this commit's own self-flagged PM-doc follow-up was already closed by a later, already-committed pass.** `docs/open-decisions.md`'s own §1 entry (struck through and resolved in this same commit) explicitly named `docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md` §5.3 as needing a matching correction and deliberately did not make it, "flagged... for the documentation-steward's own next pass." Verified current state: that file's own dated "Documentation Steward correction, 2026-08-13" note (added by the later commit `13f5163`, itself outside this queue's own 832f7b3–bd9bbfc range) already closes exactly this gap — Story 5.18/Story 6.7 both correctly reflected as shipped, §5.3's gate criterion correctly marked factually satisfied, with the Stage-0 policy classification itself correctly left as Menno's own call, not decided here. Nothing further to do for this entry.
 
-## 2026-08-10 — d1ad0c6 — docs: implementation log entry for Story 5.18
+## ~~2026-08-10 — d1ad0c6 — docs: implementation log entry for Story 5.18~~
 
 - **Full commit:** `d1ad0c6f549e79074052a9a75bb45b1f5ec64889`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d1ad0c6`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches 7a2466d reviewed above; its own explicit pointer to the Go-Live-Readiness-Definition.md follow-up is the same one confirmed already closed there.
 
-## 2026-08-10 — f70b07d — feat: Story 2.8 — Azure AI Language connector, real AIProviderConnector (ADR-0038)
+## ~~2026-08-10 — f70b07d — feat: Story 2.8 — Azure AI Language connector, real AIProviderConnector (ADR-0038)~~
 
 - **Full commit:** `f70b07dacee68d618c2537c705e300a91a6d83a0`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.8.azure-ai-language-connector.contract.test.ts, social-listening-core/contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureAiLanguage/enrichPost.ts, social-listening-core/src/connectors/examples/exampleAiProviderY.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.8.azure-ai-language-connector.contract.test.ts, social-listening-core/contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureAiLanguage/enrichPost.ts, social-listening-core/src/connectors/examples/exampleAiProviderY.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/types.ts — confirmed via `git diff-tree --no-commit-id --name-only -r f70b07d`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, one real (small, long-standing) drift found and corrected in the working tree — plus one non-drift oddity flagged for the record, not fixed.**
+  1. **`docs/user-stories/epic-4-derived-data-analytics-and-health.md`'s Story 4.2 was missing the dated correction note this very commit's own message, and `epic-2-ingestion-connectors-and-rate-limits.md`'s own Story 2.8 note, both said existed "in both files."** The contract test itself (`contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts`) does carry a full, dated header-comment correction (entities widened `string[]` → `{text,category,confidenceScore}[]`, AC3's SQL moved off `jsonb_array_elements_text`) — but the human-readable epic file never got a matching pointer, so a reader of that file alone would still see the original AC1/AC3 text with no indication the shape changed. Corrected: added a dated "Documentation Steward correction, 2026-08-13" note under Story 4.2 in `docs/user-stories/epic-4-derived-data-analytics-and-health.md`, cross-referencing Story 2.8/ADR-0038 and the contract's own already-correct note — original AC text left untouched, per this doc series' own convention.
+  2. **Flagged, not fixed — an odd, unexplained content addition, not itself drift.** This commit's own diff to `epic-2-ingestion-connectors-and-rate-limits.md` also appended a rough, malformed **Story 2.10** draft stub ("Connector Registration Transparantly registration" — a typo in its own heading, no trailing newline, `Status: Blocked — pending ADR-0048 acceptance") that this commit's own message never mentions at all (the message is entirely about Story 2.8). It was factually accurate at commit time (ADR-0048 genuinely existed and was genuinely not yet accepted) and was properly cleaned up and completed by a later, already-committed pass (`8dff76b` accepted ADR-0048 and moved it to Ready; `f2c7788`, 2026-08-12, fixed the typo, built the story for real, and is itself reviewed further down this same queue) — so no drift remains in the current working tree from it. Noting it here only as a commit-hygiene observation (an unrelated, undocumented draft riding along in a feature commit), not something requiring correction.
+  3. Everything else checked clean: `docs/implementation-plan.md`'s own Story 2.8 dated note and `docs/user-stories/README.md`'s matching note both accurately describe what shipped; `docs/adr/README.md` needed no change (ADR-0038 status unaffected by this commit); no PM-doc references this commit's subject matter.
 
-## 2026-08-10 — 80cc28d — docs: implementation log entry for Story 2.8
+## ~~2026-08-10 — 80cc28d — docs: implementation log entry for Story 2.8~~
 
 - **Full commit:** `80cc28d676ad6c4377e0f2f3a626eaaec1a7a0f2`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 80cc28d`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, real drift found and corrected — not in this log entry itself (append-only, matches f70b07d exactly), but in a `SKILL.md` this log entry's own content pointed at.** This entry's own text names a real, separate, latent bug found as a side effect of Story 2.8's validation: neither `archiveAgedRawPayloads()` nor `archiveAgedIngestionRuns()` wraps its detach→process→reattach/drop sequence in `try`/`finally`, so a mid-run blob-upload failure leaves a partition permanently detached — explicitly flagged in this log entry as "worth its own dedicated healing pass given the real production risk," and deliberately not fixed in that commit (out of Story 2.8's own scope). Checked whether it was ever actually fixed later (`git log` on both `social-listening-core/src/archival/socialPostArchival.ts` and `ingestionRunArchival.ts` shows only the original implementation and the unrelated 4de308e partition-boundary healing pass) and whether `social-listening-core/.claude/skills/data-retention-and-archival/SKILL.md`'s own "Known gaps" section carried it forward — it did not, at all, until this pass. Corrected: added a dated "Documentation Steward correction, 2026-08-13" bullet to that `SKILL.md`'s Known gaps section, confirmed directly against current source (both functions still lack the guard), citing this exact log entry. This is squarely the class of drift this role's charter names — a real, known gap in the paper trail's living reference doc, not a hypothetical one.
 
 ## 2026-08-10 — 1e7e9ac — docs: ADR-0038 amendment — Foundry Local rejected, Azure OpenAI Service selected for Story 2.9
 
 - **Full commit:** `1e7e9ac785414a7527298c0188322f369ce6e825`
-- **Files touched:** docs/adr/0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md — confirmed via `git diff-tree --no-commit-id --name-only -r 1e7e9ac`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, correct governance mechanism used.** Both additions (Foundry Local rejected; Azure OpenAI Service selected over Claude-in-Foundry) are real, dated Amendment Log entries, explicitly note "No change to Decision §§1–2's already-Accepted text," and correctly resolve two Open Questions rather than reopening the Decision. `docs/adr/README.md`'s footnote 14 needed no matching update — it documents drafting-phase revisions, not every later Amendment Log entry, consistent with how other ADRs' post-acceptance amendments are handled elsewhere in that file.
 
-## 2026-08-10 — 54b32fa — docs: ADR-0038 correction — gpt-4o-mini deprecated, gpt-5-mini deployed instead
+## ~~2026-08-10 — 54b32fa — docs: ADR-0038 correction — gpt-4o-mini deprecated, gpt-5-mini deployed instead~~
 
 - **Full commit:** `54b32fa5f67ae65d20320e733377945af775b09b`
-- **Files touched:** docs/adr/0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md — confirmed via `git diff-tree --no-commit-id --name-only -r 54b32fa`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, correct governance mechanism (Amendment Log entry, no Decision-text edit), honestly named as a real correction rather than silently substituted.** Minor observation, not treated as drift worth fixing: the new `gpt-5-mini` GlobalStandard-pricing gap is named inline in the Amendment Log rather than also added as its own bullet to the Open Questions list the way the ADR's own cited Azure-AI-Language-S-tier precedent is — a stylistic inconsistency, not a factual one, since the gap is honestly disclosed either way.
 
-## 2026-08-10 — 69310ba — feat: Story 2.9 — second AIProviderConnector, Azure OpenAI (gpt-5-mini), provider swappability
+## ~~2026-08-10 — 69310ba — feat: Story 2.9 — second AIProviderConnector, Azure OpenAI (gpt-5-mini), provider swappability~~
 
 - **Full commit:** `69310ba80ae4be83e51e5cf4f7c7f51063b3cbdd`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/enrichPost.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/enrichPost.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 69310ba`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `implementation-plan.md`/`README.md`/`epic-2-ingestion-connectors-and-rate-limits.md` all correctly and consistently describe the real `gpt-5-mini` connector, provider-agnostic `enrichPost.ts` rewrite, and the real 429/capacity finding, cross-referencing ADR-0038's own Amendment Log (reviewed in the two entries directly above) rather than duplicating it.
 
-## 2026-08-10 — 9007da1 — docs: implementation log entry for Story 2.9
+## ~~2026-08-10 — 9007da1 — docs: implementation log entry for Story 2.9~~
 
 - **Full commit:** `9007da1efbf888cfef55168c6eab6379aca9d558`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 9007da1`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines in the diff). Matches 69310ba reviewed above.
 
-## 2026-08-10 — 292a22a — feat: Story 2.9 follow-up — self-review + overallConfidence for Azure OpenAI enrichment
+## ~~2026-08-10 — 292a22a — feat: Story 2.9 follow-up — self-review + overallConfidence for Azure OpenAI enrichment~~
 
 - **Full commit:** `292a22adcc17be9e3190900618444f240c6ef6ed`
-- **Files touched:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 292a22a`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `azure-openai-connector/SKILL.md`'s new dated note, contract-summary update, and two new Load-bearing-constraint bullets accurately describe the real change (single-call self-review, new `overallConfidence` field, explicitly never populated by the Azure AI Language connector) and correctly distinguish it from calibrated-classifier scores. No traceability-table entry needed — same-day refinement to an already-Built story, consistent with how comparable same-day follow-ups are handled elsewhere.
 
-## 2026-08-10 — d936082 — docs: implementation log addendum for Story 2.9 self-review/overallConfidence follow-up
+## ~~2026-08-10 — d936082 — docs: implementation log addendum for Story 2.9 self-review/overallConfidence follow-up~~
 
 - **Full commit:** `d936082690e4b8da7c23b4e4945aafdcf72d065f`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d936082`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches 292a22a reviewed above.
 
 ## 2026-08-10 — 8e1ac18 — docs: draft ADR-0049 and ADR-0050 (Proposed) from Cursor Composer brainstorm session
 
