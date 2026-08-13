@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { ActivateDeactivateButton } from '../ActivateDeactivateButton';
 
 interface Activation {
   connectorActivationId: string;
@@ -23,7 +24,15 @@ interface Activation {
  * on reload; `activationId` alone survives via the `?activationId=` URL
  * param a returning tenant's page load carries back in.
  */
-export function TenantOwnedFeedSetup({ initialActivationId }: { initialActivationId: string | null }) {
+export function TenantOwnedFeedSetup({
+  initialActivationId,
+  isActive,
+  isTenantAdmin,
+}: {
+  initialActivationId: string | null;
+  isActive: boolean;
+  isTenantAdmin: boolean;
+}) {
   const router = useRouter();
   const [domain, setDomain] = useState('');
   const [feedUrl, setFeedUrl] = useState('');
@@ -72,7 +81,16 @@ export function TenantOwnedFeedSetup({ initialActivationId }: { initialActivatio
   }
 
   if (verified) {
-    return <p role="status">Domain verified — this feed is now connected and active.</p>;
+    return (
+      <section>
+        <p role="status">
+          {isActive
+            ? 'Domain verified — this feed is now connected and active.'
+            : 'Domain verified. Activate this connector below to begin polling.'}
+        </p>
+        {isTenantAdmin && <ActivateDeactivateButton platformId="tenant-owned-feed" ownerType="tenant" isActive={isActive} />}
+      </section>
+    );
   }
 
   if (activationId) {

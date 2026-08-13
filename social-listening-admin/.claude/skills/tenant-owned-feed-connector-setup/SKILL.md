@@ -16,16 +16,19 @@ This is a dedicated screen, not a fifth entry in Story 6.3's `PLATFORMS` array �
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0050 | Tenant-owned-domain RSS/content-feed connector, DNS TXT domain-ownership gate, `authMode: 'none'` | 2.11 (backend), 6.12 (this screen) |
+| ADR-0051 | Tenant-wide connector activation (`connector_activations.is_active`) — a separate, ownership-scoped signal from ADR-0050's own per-domain DNS verification; a poll-mode connector's own scheduler eligibility (Story 1.13/ADR-0052) is gated on this, not on verification state | 1.11 (backend), 6.15 (`ActivateDeactivateButton`, other screens), 6.17 (this screen) |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-6/story-6.12.tenant-owned-feed-connector-setup.contract.test.ts` — the screen is its own dedicated route (not folded into Story 6.3's `PLATFORMS`); the connect form calls the real `POST /connect` via `core-client.ts`'s `connectTenantOwnedFeed()`; a successful response's `txtRecordHost`/`txtRecordValue`/`expiresAt` are rendered as plain instructions with real "up to 72 hours" propagation copy, never under an `alert` role; "Verify now" calls the real `POST /verify-domain` via `verifyTenantOwnedFeedDomain()` and is re-clickable (never disabled after one call); a `pending` response shows retry-later copy, never a hard failure; a `verified` response transitions to an active state; `connectorActivationId` persists via a `?activationId=` URL search param, read back by `page.tsx` on the next render, so the pending "Verify now" state survives a navigate-away-and-back without a fresh connect call; `core-client.ts` stays the sole Bearer-attachment choke point.
+- `contracts/epic-6/story-6.17.tenant-owned-feed-activation-control.contract.test.ts` — `page.tsx` reads real tenant-wide `isActive` via the already-existing `getConnectorStatus()` (degrading to `false` on a failed call, never crashing the page) and computes `isTenantAdmin` from the resolved role, passing both to `TenantOwnedFeedSetup`; the already-existing, unmodified `ActivateDeactivateButton` (Story 6.15) is rendered with `platformId="tenant-owned-feed"`/`ownerType="tenant"` inside the `verified` branch, gated `isTenantAdmin`-only, never an `ownerType="user"` variant; the previously-unconditional "Domain verified — this feed is now connected and active." copy is corrected to depend on real `isActive`.
 
 ## How to extend this safely
 
 - **This is v1: one domain, one feed, per ADR-0050 Open Question 2.** There is no list of a tenant's own past/other activations rendered here, because no `GET`-by-tenant listing endpoint exists for this connector yet (only `connect` and `verify-domain`, both keyed by a single `connectorActivationId`). Adding multi-domain support needs a new backend list endpoint first — a real, named gap, not an oversight.
 - **`activationId` (component state, seeded from the `?activationId=` URL param) is the only state that survives a page reload.** The full TXT-instruction object (`activation`) is populated only by a fresh `connectTenantOwnedFeed()` response and is genuinely lost on reload — there is no `GET /v1/connectors/tenant-owned-feed/:id`-shaped endpoint to re-fetch it. The pending branch must render (and "Verify now" must still work) from `activationId` alone; don't make it depend on `activation` also being present.
 - **Adding automatic re-check polling** (ADR-0050 Decision §3's own 1-minute-then-15-minute cadence) is explicitly named as a future Admin UI concern, not built here — this project has no background-job/timer infrastructure for a Client Component to drive one safely; a manual, re-clickable "Verify now" is the v1 mechanism.
+- **Activation (Story 6.17) reuses `ActivateDeactivateButton` unmodified** — don't fork or reimplement it for this screen. It already handles both the single-click activate and the two-click-confirm deactivate sub-states; this screen only decides *when* to render it (inside the `verified` branch) and *with which props* (`platformId="tenant-owned-feed"`, `ownerType="tenant"`, real `isActive`).
 
 ## Load-bearing constraints — do not change casually
 
@@ -35,6 +38,7 @@ This is a dedicated screen, not a fifth entry in Story 6.3's `PLATFORMS` array �
 
 ## Known gaps / deferred work
 
+- **Closed 2026-08-13 (Story 6.17, ADR-0051):** this screen previously had no path to tenant-wide connector activation at all — a tenant could DNS-verify any number of domains and the Story 1.13 scheduler would still never poll any of them, since `shouldAttemptIngestion()` requires a `connector_activations` row this screen never created. `ActivateDeactivateButton` now renders here once a domain is verified.
 - **No way to re-fetch a lost activation's TXT instructions.** If a tenant reloads the page after connecting but before verifying, `activationId` survives (via the URL) but the displayed `txtRecordHost`/`txtRecordValue` text does not — no backend endpoint exists to re-fetch it by id. A real fix needs a new `GET /v1/connectors/tenant-owned-feed/:id`-shaped endpoint; not built here.
 - **Multi-domain/multi-feed management UI is out of v1 scope** (ADR-0050 Open Question 2) — this screen supports configuring one domain/feed at a time.
 - **No automatic re-check polling** — "Verify now" is manual/re-clickable only (ADR-0050 Decision §3's own named Admin UI deferral).

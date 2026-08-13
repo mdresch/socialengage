@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
+import { getConnectorStatus } from '@/lib/core-client';
 import { TenantOwnedFeedSetup } from './TenantOwnedFeedSetup';
 
 /**
@@ -15,6 +16,14 @@ import { TenantOwnedFeedSetup } from './TenantOwnedFeedSetup';
  * Reads an optional `?activationId=` search param (see this component's own
  * SKILL.md AC4) so a tenant returning after publishing a TXT record can
  * re-click "Verify now" without restarting the whole connect flow.
+ *
+ * Story 6.17 (ADR-0051) — also reads real tenant-wide activation state
+ * (`isActive`, Story 1.12) so `TenantOwnedFeedSetup` can render the same
+ * `ActivateDeactivateButton` (Story 6.15) every other connector already
+ * gets, closing the gap where nothing ever set `connector_activations` for
+ * this platform. A failed status call degrades to `isActive: false`,
+ * mirroring `tenant/connectors/page.tsx`'s own `loadConnectorState()`
+ * precedent — a transient core-side issue here must not crash this screen.
  */
 export default async function TenantOwnedFeedPage({
   searchParams,
@@ -34,6 +43,11 @@ export default async function TenantOwnedFeedPage({
     redirect('/');
   }
 
+  const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
+  const isActive = await getConnectorStatus('tenant-owned-feed')
+    .then((status) => status.isActive)
+    .catch(() => false);
+
   return (
     <main>
       <h1>Monitor your own domain&apos;s content feed</h1>
@@ -41,7 +55,7 @@ export default async function TenantOwnedFeedPage({
         Configure your own company blog or newsroom feed. You&apos;ll need to prove you control the domain by publishing a
         DNS TXT record before SocialEngage begins monitoring it.
       </p>
-      <TenantOwnedFeedSetup initialActivationId={initialActivationId} />
+      <TenantOwnedFeedSetup initialActivationId={initialActivationId} isActive={isActive} isTenantAdmin={isTenantAdmin} />
     </main>
   );
 }
