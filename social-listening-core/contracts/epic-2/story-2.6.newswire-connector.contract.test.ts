@@ -212,6 +212,12 @@ describe('Story 2.6 — Newswire connector contract', () => {
       title: 'Acme Corp announces record results',
       pubDate: 'Thu, 30 Jul 2026 12:00:00 GMT',
       issuer: 'Acme Corp',
+      // Story 3.10 (ADR-0053): ParsedRssItem's own new fields — not this
+      // AC's concern (cross-wire duplicate acceptance), just satisfying the
+      // widened type.
+      description: null,
+      contentEncoded: null,
+      rawXml: '<item/>',
     };
     const gnItem: ParsedRssItem = {
       guid: 'https://www.globenewswire.com/news-release/2026/07/30/example.html',

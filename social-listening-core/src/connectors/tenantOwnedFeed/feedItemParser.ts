@@ -15,6 +15,20 @@ export interface ParsedFeedItem {
   title: string;
   /** Raw <pubDate> (RSS) or <updated>/<published> (Atom) text. */
   publishedAt: string;
+  /** Story 3.10 (ADR-0053) — RSS <description>; null for an Atom item or an RSS item that omits it. */
+  description: string | null;
+  /** Story 3.10 (ADR-0053) — RSS <content:encoded>; the richer RSS body source, preferred over description when present. */
+  contentEncoded: string | null;
+  /** Story 3.10 (ADR-0053) — Atom <summary>; null for an RSS item or an Atom item that omits it. */
+  summary: string | null;
+  /** Story 3.10 (ADR-0053) — Atom <content>; the richer Atom body source, preferred over summary when present. */
+  content: string | null;
+  /**
+   * Story 3.10 (ADR-0053) — the item's entire raw inner XML block,
+   * verbatim. raw_payload-only: never read as a body_markdown source. See
+   * .claude/skills/canonical-markdown-conversion/SKILL.md.
+   */
+  rawXml: string;
 }
 
 const ITEM_RE = /<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi;
@@ -68,6 +82,14 @@ function parseBlocks(xml: string, pattern: RegExp, idTag: string, dateTags: stri
     const link = extractLink(block);
     const title = extractTag(block, 'title');
     const publishedAt = dateTags.map((tag) => extractTag(block, tag)).find((v) => v !== null) ?? null;
+    // Story 3.10 (ADR-0053): try every format's own tag name in one pass,
+    // same "try each, take whichever resolves" shape as dateTags above —
+    // a given block only ever populates one format's own fields, so no
+    // per-format branching is needed here.
+    const description = extractTag(block, 'description');
+    const contentEncoded = extractTag(block, 'content:encoded');
+    const summary = extractTag(block, 'summary');
+    const content = extractTag(block, 'content');
 
     if (!title || !publishedAt || !(id || link)) continue;
 
@@ -76,6 +98,11 @@ function parseBlocks(xml: string, pattern: RegExp, idTag: string, dateTags: stri
       link: link ?? (id as string),
       title,
       publishedAt,
+      description,
+      contentEncoded,
+      summary,
+      content,
+      rawXml: block,
     });
   }
   return items;

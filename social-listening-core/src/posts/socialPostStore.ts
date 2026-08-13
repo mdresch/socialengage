@@ -23,6 +23,16 @@ export interface InsertSocialPostInput {
    * field, not that it deliberately chose "no value."
    */
   authorFollowerCountAtPublish?: number;
+  /**
+   * Story 3.10 (ADR-0053): computed once at ingestion by the shared
+   * htmlToMarkdown() utility, never a follow-up UPDATE — same
+   * enrichment-shaped precedent as `enrichment` above. NULL exactly
+   * together with bodyMarkdownVersion, never independently — see
+   * .claude/skills/canonical-markdown-conversion/SKILL.md.
+   */
+  bodyMarkdown?: string;
+  /** Story 3.10 (ADR-0053): which htmlToMarkdown() pipeline ruleset produced bodyMarkdown. NULL exactly when bodyMarkdown is NULL. */
+  bodyMarkdownVersion?: number;
 }
 
 export interface InsertedSocialPost {
@@ -42,8 +52,8 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
     // existing caller already only ever provides acquisitionId. See
     // .claude/skills/data-retention-and-archival/SKILL.md.
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, acquisition_started_at, post_geo_location, published_at, enrichment, author_follower_count_at_publish)
-       VALUES ($1, $2, $3, $4, (SELECT started_at FROM ingestion_runs WHERE id = $4), $5, $6, $7, $8)
+      `INSERT INTO social_posts (tenant_id, raw_payload, author_id, acquisition_id, acquisition_started_at, post_geo_location, published_at, enrichment, author_follower_count_at_publish, body_markdown, body_markdown_version)
+       VALUES ($1, $2, $3, $4, (SELECT started_at FROM ingestion_runs WHERE id = $4), $5, $6, $7, $8, $9, $10)
        RETURNING id`,
       [
         input.tenantId,
@@ -54,6 +64,8 @@ export async function insertSocialPost(input: InsertSocialPostInput): Promise<In
         input.publishedAt ?? null,
         input.enrichment ? JSON.stringify(input.enrichment) : null,
         input.authorFollowerCountAtPublish ?? null,
+        input.bodyMarkdown ?? null,
+        input.bodyMarkdownVersion ?? null,
       ]
     );
     return { id: rows[0].id };

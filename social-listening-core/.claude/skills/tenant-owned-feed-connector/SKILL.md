@@ -17,11 +17,13 @@ The fourth real, non-example `SocialConnector` (ADR-0050) and the first where th
 | ADR-0004 (Supersession update, 2026-08-11) | The generalized "organization-as-Author" clause this connector cites, rather than arguing the exception from scratch — the third connector (after Newswire/ADR-0024, GNews/ADR-0026) to need it | 2.11 |
 | ADR-0048 | This connector's own registration proof — see Story 2.10's own contract, which greps for `tenant-owned-feed`'s providerId literal same as every other real connector | 2.10 (proves), 2.11 (subject) |
 | ADR-0021 | `supportedQueryFeatures: []` — whole-query post-fetch matching fallback, same as Newswire | 3.6 |
+| ADR-0053 | `ParsedFeedItem` gains RSS-shaped (`description`/`contentEncoded`) and Atom-shaped (`summary`/`content`) body fields plus `rawXml`; `ingestTenantOwnedFeedItems()` populates `body_markdown`/`body_markdown_version` via the shared `htmlToMarkdown()` utility and composes `enrichmentText` as `[title, body_markdown].filter(Boolean).join('. ')`, replacing the previous title-only `enrichPost()` call | 3.10 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.11.tenant-owned-feed-connector.contract.test.ts` — registered connector shape; `POST .../connect` response shape (`txtRecordHost`/`txtRecordValue`/`expiresAt`); polling never begins while `pending`; `POST .../verify-domain` both outcomes (match → verified; no match/missing → pending, not a hard failure); a real poll cycle against a real feed produces `SocialPost` rows once verified; `Author.externalAuthorId` is the verified domain, `followerCount` unpopulated; no historical backfill; `feedUrl` required, no autodiscovery; a verified domain need not match `tenants.domain`; `supportedQueryFeatures` empty + fallback matching; every fetch sets a real, inspectable `User-Agent` header (proven against a real local HTTP server, not assumed); idempotent re-poll across two consecutive cycles.
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — this connector's own `providerId` literal (`'tenant-owned-feed'`) is absent from every designated core file.
+- `contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` — `feedItemParser.ts`'s widened RSS+Atom body fields and `rawXml` (against RSS and Atom fixtures, not a live fetch); `ingestTenantOwnedFeedItems()`'s richest-field precedence (identical to Newswire's own), `body_markdown`/`body_markdown_version` population via `ingestTenantOwnedFeedItems()` directly, `raw_payload.rawXml` propagation, and the new `enrichmentText` composition. See `.claude/skills/canonical-markdown-conversion/SKILL.md` for the shared conversion pipeline itself.
 
 ## Registration transparency (ADR-0048)
 
@@ -61,6 +63,8 @@ RLS tenant-scoped, same pattern as every other tenant table. No uniqueness const
 - **`registry.ts`, `runIngestionAttempt.ts`, and every other file in Story 2.10's own `CORE_FILES` list must never reference `'tenant-owned-feed'` as a literal.** This connector's own two HTTP routes (`connect`, `verify-domain`) are a *separate* router (`tenantOwnedFeedRouter.ts`), mounted at `/connectors/tenant-owned-feed` **before** the generic `/connectors` mount in `router.ts` — never added as routes inside `connectorsRouter.ts` itself, which would both violate ADR-0048 and (since Express resolves `/:platformId/connect` as a wildcard match) never actually be reachable anyway once the generic router's own route claimed the path first.
 - **`Author.externalAuthorId` is the verified `domain`, fixed per activation — never derived from a per-item field.** RSS's own `<author>` element (when present at all) is an individual's email address, not an organization identity; this connector never reads it.
 - **Every outbound feed fetch sets `TENANT_OWNED_FEED_USER_AGENT`.** Unlike Newswire/GNews (which predate this requirement and don't set one — a separate, pre-existing gap, not fixed here), ADR-0050 explicitly names this as an AC for this connector specifically.
+- **`enrichPost()`'s text argument is no longer bare `item.title` (Story 3.10, 2026-08-13)** — it's `[item.title, bodyMarkdown].filter(Boolean).join('. ')`, where `bodyMarkdown` is the richest of `item.contentEncoded`/`item.content`/`item.description`/`item.summary`, converted via `htmlToMarkdown()` and collapsed to `undefined` when empty. Don't revert to bare `title`.
+- **A single `??` precedence chain covers both RSS and Atom shapes for one item** (`contentEncoded ?? content ?? description ?? summary ?? null`) — safe because a given item only ever populates one format's own fields; the "wrong" format's fields stay `null` from `feedItemParser.ts` itself. Don't add per-format branching here; the parser's own shape already makes it unnecessary.
 
 ## Known gaps / deferred work
 
@@ -76,3 +80,4 @@ RLS tenant-scoped, same pattern as every other tenant table. No uniqueness const
 - **`connector-health-and-error-handling`**: `fetchTenantOwnedFeed()`'s `ClassifiableError` reclassification follows the exact pattern that SKILL.md prescribes.
 - **`social-post-lineage`**: `ingestTenantOwnedFeedItems()` calls `upsertAuthor()`/`insertSocialPost()` the same way every other real connector does.
 - **`watchlist-matching`**: `supportedQueryFeatures: []` means every watchlist against this connector falls back to whole-query post-fetch matching (ADR-0021).
+- **`canonical-markdown-conversion`**: `ingestTenantOwnedFeedItems()` calls the shared `htmlToMarkdown()` utility, same as Newswire and GNews.

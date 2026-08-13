@@ -17,6 +17,23 @@ export interface ParsedRssItem {
   pubDate: string;
   /** <dc:contributor> — the issuing organization on both wires; null if a feed item omits it. */
   issuer: string | null;
+  /**
+   * Story 3.10 (ADR-0053) — the item's <description>, CDATA-stripped and
+   * entity-decoded like every other extracted field; null if absent or
+   * empty. Fallback body source when <content:encoded> is absent — see
+   * .claude/skills/canonical-markdown-conversion/SKILL.md for the
+   * precedence rule.
+   */
+  description: string | null;
+  /** Story 3.10 (ADR-0053) — <content:encoded>; the richer body source, preferred over description when present. */
+  contentEncoded: string | null;
+  /**
+   * Story 3.10 (ADR-0053) — the item's entire raw inner XML block,
+   * verbatim. raw_payload-only: never read as a body_markdown source
+   * (the precedence rule above is unchanged). Closes the "second finding"
+   * raw_payload under-capture gap named in ADR-0053's own Context.
+   */
+  rawXml: string;
 }
 
 const ITEM_RE = /<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi;
@@ -65,6 +82,8 @@ export function parseRssItems(xml: string): ParsedRssItem[] {
     const title = extractTag(block, 'title');
     const pubDate = extractTag(block, 'pubDate');
     const issuer = extractTag(block, 'dc:contributor');
+    const description = extractTag(block, 'description');
+    const contentEncoded = extractTag(block, 'content:encoded');
 
     if (!title || !pubDate || !(guid || link)) continue;
 
@@ -74,6 +93,9 @@ export function parseRssItems(xml: string): ParsedRssItem[] {
       title,
       pubDate,
       issuer,
+      description,
+      contentEncoded,
+      rawXml: block,
     });
   }
   return items;

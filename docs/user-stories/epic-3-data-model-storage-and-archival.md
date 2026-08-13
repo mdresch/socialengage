@@ -171,7 +171,7 @@
 
 ## Story 3.10 — Canonical Markdown post-body storage and enrichment input (`body_markdown`, `body_markdown_version`)
 
-**Source:** ADR-0053 (Accepted 2026-08-13) · **Status:** Ready
+**Source:** ADR-0053 (Accepted 2026-08-13) · **Status:** Ready — built 2026-08-13
 
 **Drafted 2026-08-13, at ADR-0053's own acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent. Closes the real, live gap ADR-0053 itself found this session: Newswire and tenant-owned-feed posts enrich on title text alone, and GNews on title+description alone, because none of the three connectors' own parsers ever captured the source's actual body content, and `social_posts` had no column to hold it even if they did.
 

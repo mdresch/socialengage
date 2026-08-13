@@ -6,6 +6,7 @@ import { insertSocialPost, findSocialPostByExternalId } from '../../posts/social
 import { newswireConnector, fetchNewswireFeed, NEWSWIRE_PROVIDER_ID, DEFAULT_NEWSWIRE_FEED_URLS } from './newswireConnector';
 import { ParsedRssItem } from './rssFeedParser';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
+import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 
 /**
  * acquireForProvider() has no ingestion-domain knowledge of its own (see
@@ -57,9 +58,21 @@ export async function ingestNewswireItems(
       rawProfile: item,
     });
 
+    // Story 3.10 (ADR-0053): richest-available body source (content:encoded
+    // over description, null if neither), converted once via the shared
+    // htmlToMarkdown() utility. See
+    // .claude/skills/canonical-markdown-conversion/SKILL.md.
+    const rawBodySource = item.contentEncoded ?? item.description ?? null;
+    const convertedBody = rawBodySource ? htmlToMarkdown(rawBodySource) : '';
+    const bodyMarkdown = convertedBody.length > 0 ? convertedBody : undefined;
+    const bodyMarkdownVersion = bodyMarkdown !== undefined ? BODY_MARKDOWN_VERSION : undefined;
+
     // Story 2.8 (ADR-0038) — same best-effort, additive enrichment hook as
     // pollGNewsSearch.ts. See .claude/skills/azure-ai-language-connector/SKILL.md.
-    const enrichment = await enrichPost(tenantId, item.title);
+    // Story 3.10 (ADR-0053): enrichment input is now title + body_markdown,
+    // not title alone.
+    const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
+    const enrichment = await enrichPost(tenantId, enrichmentText);
 
     await insertSocialPost({
       tenantId,
@@ -68,6 +81,8 @@ export async function ingestNewswireItems(
       rawPayload: { providerId: NEWSWIRE_PROVIDER_ID, externalId: normalized.externalId, ...item },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      bodyMarkdown,
+      bodyMarkdownVersion,
     });
 
     postsIngested += 1;

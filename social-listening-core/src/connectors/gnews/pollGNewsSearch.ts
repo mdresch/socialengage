@@ -4,8 +4,9 @@ import { ClassifiableError } from '../../ingestion/errorClassification';
 import { upsertAuthor } from '../../authors/authorStore';
 import { insertSocialPost, findSocialPostByExternalId } from '../../posts/socialPostStore';
 import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
-import { gnewsConnector, fetchGNewsSearch, GNEWS_PROVIDER_ID, GNewsArticle } from './gnewsConnector';
+import { gnewsConnector, fetchGNewsSearch, GNEWS_PROVIDER_ID, GNewsArticle, stripGNewsTruncationMarker } from './gnewsConnector';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
+import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 
 const DEFAULT_QUERY = 'technology';
 
@@ -76,11 +77,23 @@ export async function ingestGNewsArticles(
       rawProfile: article.source,
     });
 
+    // Story 3.10 (ADR-0053 Decision §5): content (free-tier truncation
+    // marker trimmed) over description, null if neither present. See
+    // .claude/skills/canonical-markdown-conversion/SKILL.md.
+    const trimmedContent = article.content ? stripGNewsTruncationMarker(article.content) : null;
+    const rawBodySource = (trimmedContent && trimmedContent.length > 0 ? trimmedContent : null) ?? article.description ?? null;
+    const convertedBody = rawBodySource ? htmlToMarkdown(rawBodySource) : '';
+    const bodyMarkdown = convertedBody.length > 0 ? convertedBody : undefined;
+    const bodyMarkdownVersion = bodyMarkdown !== undefined ? BODY_MARKDOWN_VERSION : undefined;
+
     // Story 2.8 (ADR-0038) — best-effort, additive: enrichPost() never
     // throws, so a tenant with no Azure AI Language credential (or a
     // failed enrichment call) still gets this post ingested, just without
     // enrichment populated. See .claude/skills/azure-ai-language-connector/SKILL.md.
-    const enrichmentText = [article.title, article.description].filter(Boolean).join('. ');
+    // Story 3.10 (ADR-0053 Decision §6): enrichment input is now title +
+    // body_markdown — description is no longer joined directly, it's
+    // folded into body_markdown's own precedence rule above instead.
+    const enrichmentText = [article.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
     await insertSocialPost({
@@ -90,6 +103,8 @@ export async function ingestGNewsArticles(
       rawPayload: { providerId: GNEWS_PROVIDER_ID, externalId: normalized.externalId, ...article },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      bodyMarkdown,
+      bodyMarkdownVersion,
     });
 
     postsIngested += 1;

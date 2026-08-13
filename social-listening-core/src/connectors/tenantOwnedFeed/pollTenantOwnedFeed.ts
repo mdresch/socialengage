@@ -7,6 +7,7 @@ import { tenantOwnedFeedConnector, fetchTenantOwnedFeed, TENANT_OWNED_FEED_PROVI
 import { getVerifiedActivations, TenantOwnedFeedActivationRow } from './tenantOwnedFeedStore';
 import { ParsedFeedItem } from './feedItemParser';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
+import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
 async function gatedAcquire(tenantId: string): Promise<void> {
@@ -55,7 +56,18 @@ export async function ingestTenantOwnedFeedItems(
       rawProfile: { domain: activation.domain },
     });
 
-    const enrichment = await enrichPost(tenantId, item.title);
+    // Story 3.10 (ADR-0053): one precedence chain covers both RSS
+    // (contentEncoded/description) and Atom (content/summary) shapes — a
+    // given item only ever populates one format's own fields. See
+    // .claude/skills/canonical-markdown-conversion/SKILL.md.
+    const rawBodySource = item.contentEncoded ?? item.content ?? item.description ?? item.summary ?? null;
+    const convertedBody = rawBodySource ? htmlToMarkdown(rawBodySource) : '';
+    const bodyMarkdown = convertedBody.length > 0 ? convertedBody : undefined;
+    const bodyMarkdownVersion = bodyMarkdown !== undefined ? BODY_MARKDOWN_VERSION : undefined;
+
+    // Story 3.10 (ADR-0053): enrichment input is now title + body_markdown, not title alone.
+    const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
+    const enrichment = await enrichPost(tenantId, enrichmentText);
 
     await insertSocialPost({
       tenantId,
@@ -64,6 +76,8 @@ export async function ingestTenantOwnedFeedItems(
       rawPayload: { providerId: TENANT_OWNED_FEED_PROVIDER_ID, externalId: normalized.externalId, ...item },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      bodyMarkdown,
+      bodyMarkdownVersion,
     });
 
     postsIngested += 1;
