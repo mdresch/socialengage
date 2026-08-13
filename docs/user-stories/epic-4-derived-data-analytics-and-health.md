@@ -28,6 +28,8 @@
 - No `TopicDailyCount` table, materialized view, or charting endpoint exists in `social-listening-core`.
 - A query against raw `SocialPost` rows (grouping by day and topic) can reconstruct what `TopicDailyCount` would contain, confirming no data is missing for a future subsystem to build on.
 
+**Documentation Steward correction, 2026-08-13.** This story's own AC1/AC3 text above (drafted before Story 2.8 existed) still describes `enrichment.entities` as if its element shape were never in question — it wasn't specified either way at draft time, but Story 2.8 (ADR-0038, built 2026-08-10, `social-listening-core@f70b07d`) settled it against real, live Azure AI Language API output: `entities` is `{text, category, confidenceScore}[]`, not bare `string[]`, a real, dated, Menno-approved widening of `AnalyzeResult`/`SocialPost.enrichment` (`src/connectors/types.ts`). This story's own contract (`contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts`) already carries the full dated correction in its own header comment and updated AC3 query (`jsonb_array_elements` + `->>'text'`, not `jsonb_array_elements_text`) — this note only closes the gap that this human-readable epic file itself never got a matching pointer, despite `docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md`'s own Story 2.8 dated note saying the correction lived "in both files." AC1/AC3's own original wording is left as drafted, per this doc series' "don't rewrite history" convention — this note is the correction of record for this file.
+
 ---
 
 ## Story 4.3 — Derived connector health from IngestionRun history
