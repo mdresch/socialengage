@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-13 | — | — | auto | Documentation | — | chore: rewrite root README, harden AGENTS.md, wire up VS Code test discovery (6443562) |
 | 2026-08-13 | — | — | auto | Documentation | — | docs: methodology retrospective — relationship-assertion contracts, story resume, Built field, environment gotchas (e59b2da) |
 | 2026-08-13 | — | — | auto | Documentation | Story 3.10 | docs: implementation log entry for Story 3.10 (social-listening-core@dcec172) (df0c2c3) |
 | 2026-08-13 | — | — | auto | Documentation | Story 3.10 | feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053) (dcec172) |
