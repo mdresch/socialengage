@@ -334,47 +334,47 @@
 - **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d114c16`, exact match.
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** (The real drift this story's shipping caused elsewhere is recorded and fixed under the 2b44637 entry directly above, not here.)
 
-## 2026-08-10 — 832f7b3 — heal: parallel-worker race between Story 6.1/6.7's spawned dev servers
+## ~~2026-08-10 — 832f7b3 — heal: parallel-worker race between Story 6.1/6.7's spawned dev servers~~
 
 - **Full commit:** `832f7b3eaadf1a2b6d1e7ebb4cd1e0e92883efe5`
-- **Files touched:** social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/.claude/skills/self-service-signup-ui/SKILL.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.7.self-service-signup.contract.test.ts, social-listening-admin/next.config.js
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/.claude/skills/self-service-signup-ui/SKILL.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.7.self-service-signup.contract.test.ts, social-listening-admin/next.config.js — confirmed via `git diff-tree --no-commit-id --name-only -r 832f7b3`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Pure healing commit (Next 16 dev-server lock keyed by `distDir` not port). Both `SKILL.md`'s new dated notes accurately describe the real fix verified directly against `next.config.js`'s new `NEXT_DIST_DIR` opt-in and both contracts' own `beforeAll` env changes. No ADR, story, traceability, or PM-doc claim references this internal test-infra detail.
 
-## 2026-08-10 — 09160c4 — docs: implementation log entry for healing pass (6.1/6.7 dev-server race)
+## ~~2026-08-10 — 09160c4 — docs: implementation log entry for healing pass (6.1/6.7 dev-server race)~~
 
 - **Full commit:** `09160c43570f3c71095a75dbee641486a2e03107`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 09160c4`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Entry's own file list, commit hash, and contract/SKILL.md references all match the 832f7b3 commit reviewed directly above.
 
-## 2026-08-10 — c89ee47 — chore: regenerate next-env.d.ts/tsconfig.json for per-test distDir
+## ~~2026-08-10 — c89ee47 — chore: regenerate next-env.d.ts/tsconfig.json for per-test distDir~~
 
 - **Full commit:** `c89ee47eadb4c3bffa66d1e19ac37da4dba5df13`
-- **Files touched:** social-listening-admin/next-env.d.ts, social-listening-admin/tsconfig.json
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/next-env.d.ts, social-listening-admin/tsconfig.json — confirmed via `git diff-tree --no-commit-id --name-only -r c89ee47`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Auto-generated Next.js tooling output (own commit message says so, and the diff is exactly the mechanical distDir-path substitution you'd expect from 832f7b3's own fix) — no factual claim in this role's chartered scope.
 
-## 2026-08-10 — 6b7fc00 — feat: Story 6.8 — Tenant-Admin user invitation and management screen
+## ~~2026-08-10 — 6b7fc00 — feat: Story 6.8 — Tenant-Admin user invitation and management screen~~
 
 - **Full commit:** `6b7fc0022b3efc0f7861318033fdeb0ff0831ff1`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/tenant-user-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.8.user-invitation-management-screen.contract.test.ts, social-listening-admin/src/app/api/tenant-users/[id]/route.ts, social-listening-admin/src/app/api/tenant-users/route.ts, social-listening-admin/src/app/tenant/users/AccessControl.tsx, social-listening-admin/src/app/tenant/users/InviteUserForm.tsx, social-listening-admin/src/app/tenant/users/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/tenant-user-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.8.user-invitation-management-screen.contract.test.ts, social-listening-admin/src/app/api/tenant-users/[id]/route.ts, social-listening-admin/src/app/api/tenant-users/route.ts, social-listening-admin/src/app/tenant/users/AccessControl.tsx, social-listening-admin/src/app/tenant/users/InviteUserForm.tsx, social-listening-admin/src/app/tenant/users/page.tsx, social-listening-admin/src/lib/core-client.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 6b7fc00`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Same-commit `implementation-plan.md`/`epic-6-admin-ui.md` (now `epic-6-tenant-admin-ui.md`) dated notes accurately describe what shipped (14/14 contract, 10/10 suites 89/89 tests) and correctly name the still-deferred access-history companion (Story 6.14 later closed this, per README.md's own 2026-08-1x notes). New `tenant-user-management/SKILL.md` cites ADR-0032 §2/§6/§9 and Story 1.9's already-built REST surface accurately; contract path and Load-bearing constraints match the real diff.
 
-## 2026-08-10 — 09b626f — docs: implementation log entries for Story 6.8 and its healing follow-up
+## ~~2026-08-10 — 09b626f — docs: implementation log entries for Story 6.8 and its healing follow-up~~
 
 - **Full commit:** `09b626faf39b7ba370ecaab2fef1db11e2a1ff7e`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 09b626f`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Three entries (c89ee47 regenerated-files bookkeeping, 6b7fc00 Story 6.8) both cross-checked against their own real commits above; file lists and claims match.
 
-## 2026-08-10 — 9ec62fa — feat: Story 6.9 — tenant settings screen
+## ~~2026-08-10 — 9ec62fa — feat: Story 6.9 — tenant settings screen~~
 
 - **Full commit:** `9ec62fa80123edf68b5f28f3b3877c46f2e2f53a`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/tenant-settings/SKILL.md, social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-6-admin-ui.md, social-listening-admin/.claude/skills/tenant-settings/SKILL.md, social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/lib/core-client.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 9ec62fa`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `implementation-plan.md`/`epic-6-admin-ui.md` dated notes accurately describe the read-only `/tenant/settings` screen against Story 1.8's `GET /v1/tenants/me`, correctly note 6.10 as still unbuilt at that point, and match the real 11/11 suites, 99/99 tests claim structurally consistent with prior/next entries' own counts.
 
-## 2026-08-10 — 1e18c4b — docs: implementation log entry for Story 6.9
+## ~~2026-08-10 — 1e18c4b — docs: implementation log entry for Story 6.9~~
 
 - **Full commit:** `1e18c4b6bba373ac526df14cd47c04f4a380ffd3`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 1e18c4b`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only.** Matches the real 9ec62fa commit reviewed directly above.
 
 ## 2026-08-10 — 3661ce9 — feat: Story 6.10 — Same-Domain Invite Assist view, closing out Epic 6
 
