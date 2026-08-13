@@ -1,5 +1,6 @@
 import { WatchlistTerms } from '../watchlists/types';
 import { AstNodeType } from '../watchlists/ast';
+import { RunIngestionAttemptResult } from '../ingestion/runIngestionAttempt';
 
 export type AuthMode = 'oauth' | 'api_key' | 'none';
 
@@ -74,6 +75,25 @@ export interface SocialConnector extends ProviderConnector {
    * *will*.
    */
   canProvideFollowerCountAtPublish?: boolean;
+  /**
+   * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
+   * deliveryMode: 'poll'. The scheduler's one generic invocation surface —
+   * getSocialConnector(platformId)?.poll?.(tenantId), never a hardcoded
+   * per-providerId switch/map (ADR-0048's own "no core pipeline change for
+   * new connector registration" guardrail). Each real poll connector's own
+   * registration (bootstrapConnectors.ts) delegates this unchanged to its
+   * already-existing, already-contract-verified pollX() function — see
+   * .claude/skills/live-ingestion-polling-scheduler/SKILL.md.
+   */
+  poll?(tenantId: string): Promise<RunIngestionAttemptResult>;
+  /**
+   * Story 1.13 (ADR-0052 Decision §4/§5) — this connector's own poll
+   * cadence in milliseconds, the scheduler's sole source for "how often":
+   * never a second, separately-maintained cadence table inside the
+   * scheduler itself, which would drift the moment a connector's own
+   * registration changed its cadence without a matching scheduler edit.
+   */
+  pollCadenceMs?: number;
 }
 
 export interface ModelCapabilities {

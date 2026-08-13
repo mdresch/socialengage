@@ -1,6 +1,8 @@
 import { createApp } from './app';
 import { getPool } from '../db/pool';
 import { waitForPostgresReady } from '../db/postgresReadiness';
+import { bootstrapConnectors } from '../connectors/bootstrapConnectors';
+import { startPollScheduler, isSchedulerEnabled } from '../scheduler/pollScheduler';
 
 const port = Number(process.env.PORT ?? 3000);
 
@@ -15,6 +17,17 @@ async function main(): Promise<void> {
   } catch (err) {
     console.error(`social-listening-core failed to start: ${(err as Error).message}`);
     process.exit(1);
+  }
+
+  // Story 1.13 (ADR-0052 Decision §3): must run before the scheduler's
+  // first tick and before the HTTP listener starts accepting traffic —
+  // otherwise listSocialConnectors() returns [] and the scheduler silently
+  // does nothing. Deliberately never called from createApp() — see
+  // .claude/skills/live-ingestion-polling-scheduler/SKILL.md.
+  bootstrapConnectors();
+
+  if (isSchedulerEnabled()) {
+    startPollScheduler();
   }
 
   createApp().listen(port, () => {

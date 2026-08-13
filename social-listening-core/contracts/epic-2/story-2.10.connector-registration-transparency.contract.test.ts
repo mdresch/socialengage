@@ -62,6 +62,13 @@ const CORE_FILES = [
   'src/connectors/connectorHealthCache.ts',
   'src/connectors/types.ts',
   'src/http/versions/v1/connectorsRouter.ts',
+  // 2026-08-13 (Story 1.13, ADR-0052) — extended per this file's own
+  // documented convention ("Add a new core file here... if one is
+  // introduced"). The scheduler dispatches every poll purely through the
+  // registry (getSocialConnector(platformId)?.poll?.(tenantId)); this
+  // guardrail is the same mechanism Story 1.13's own AC3 cites as proof
+  // it never hardcodes a per-providerId switch.
+  'src/scheduler/pollScheduler.ts',
 ];
 
 interface RealConnector {

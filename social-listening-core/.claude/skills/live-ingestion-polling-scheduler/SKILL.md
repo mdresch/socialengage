@@ -1,0 +1,48 @@
+---
+name: live-ingestion-polling-scheduler
+description: bootstrapConnectors() (registry.ts's one real production call site) and pollScheduler.ts's in-process interval loop — the mechanism that actually invokes a connector's poll() on a real, derived-and-jittered cadence. Read this before touching server.ts's main(), SocialConnector's poll()/pollCadenceMs members, or anything that enumerates tenants x poll-mode connectors.
+---
+
+# Live ingestion-polling scheduler
+
+## What this is
+
+Before this component, a connected, credentialed, activated connector still ingested nothing: nothing in the real running server ever called `pollGNewsSearch()`/`pollNewswireFeeds()`/`pollTenantOwnedFeed()`, and `registry.ts` was never populated outside Jest contract-test setup. Two pieces close this: `bootstrapConnectors.ts` registers every real connector into the shared registry exactly once at startup; `pollScheduler.ts` runs a single in-process `setInterval` loop that, every tick, considers every `(tenant, poll-mode connector)` pair and polls the ones that are eligible (health + activation) and due (derived, jittered cadence against `ingestion_runs` history). Both are wired from `server.ts`'s `main()` only — never from `createApp()`, the construction path every contract test uses.
+
+## Governing ADRs and Stories
+
+| ADR | Decision | Story |
+|---|---|---|
+| ADR-0052 | In-process interval loop (not `pg_cron`, not a separate service); registry bootstrap as a required precondition; generic `poll()`/`pollCadenceMs` on `SocialConnector`, never a hardcoded providerId switch; cadence derived from `ingestion_runs.started_at`, never a new stored field; deterministic ±5% per-pair jitter; tenant-scope-only (`ownerType: 'tenant'`) v1; single-instance, no distributed lock; scheduler-level catch for non-`ClassifiableError` exceptions; started only from `main()`, gated by `SCHEDULER_ENABLED` | 1.13 |
+| ADR-0051 | `shouldAttemptIngestion()` — this scheduler's eligibility gate, named by that ADR's own doc comment as its intended future consumer | 1.11 |
+| ADR-0048 | "No core pipeline change for new connector registration" — `pollScheduler.ts` is added to that story's own `CORE_FILES` allowlist-complement, so a future hardcoded providerId branch there is mechanically caught | 2.10 |
+
+## Contracts that constrain this component
+
+- `contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts` — bootstrap registers every real connector exactly once (previously `[]`); each real connector's `poll()` wrapper delegates unchanged to its own `pollX()` and carries the right `pollCadenceMs`; no providerId literal in `pollScheduler.ts`; one tick considers every `(tenant, poll-connector)` pair exactly once; a pair is polled only when eligible and its jittered cadence has elapsed; `jitterFraction()` is deterministic and spreads pairs apart; a `ClassifiableError`-class poll failure updates `ConnectorHealth` identically whether triggered by the scheduler or called directly; a raw exception from one pair never blocks another pair in the same tick; a user-scoped-only activation is never polled; `createApp()` alone starts no timer; `isSchedulerEnabled()` gates correctly.
+- `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — `CORE_FILES` now includes `src/scheduler/pollScheduler.ts`; this is the CI-enforced proof that the scheduler never hardcodes a providerId branch.
+
+## How to extend this safely
+
+- **Adding a new real poll connector** (e.g. Wikipedia/Story 2.13): implement it, then add one `registerSocialConnector({ ...connector, poll, pollCadenceMs })` block to `bootstrapConnectors.ts`. No edit to `pollScheduler.ts` is required or expected — if you find yourself editing the scheduler to accommodate a new connector, stop; that's exactly what ADR-0048/ADR-0052 forbid.
+- **Changing a cadence number:** edit the `pollCadenceMs` value at the connector's own registration site in `bootstrapConnectors.ts` — never add a second cadence table inside `pollScheduler.ts`.
+- **The `poll`/`pollCadenceMs` wrapper is a spread (`{ ...connector, poll, pollCadenceMs }`), never an in-place mutation of `gnewsConnector`/`newswireConnector`/`tenantOwnedFeedConnector`'s own exported object.** Adding `poll` directly inside those files would require each to import its own `pollX()` sibling — which already imports the connector object back — creating a circular import. Keep the wrapper in `bootstrapConnectors.ts`.
+- **Testing scheduler tick behavior:** never call `runSchedulerTick()` with its real default deps in a test — `listTenants()` enumerates every tenant in the shared contract-test Postgres database across every parallel test file. Always override `listTenants`/`listPollConnectors` (and usually `shouldAttemptIngestion`/`deriveConnectorHealth`/`now`) via `runSchedulerTick(overrides)`'s injectable `SchedulerDeps`. AC6's "only tenant-scope is considered" test is the one deliberate exception — it uses the real `shouldAttemptIngestion`/`deriveConnectorHealth` defaults against a tenant/connector pair it creates itself, specifically to prove the real default ignores a user-scoped activation, not a stubbed assumption of it.
+
+## Load-bearing constraints — do not change casually
+
+- **`bootstrapConnectors()`/`startPollScheduler()` must only ever be called from `server.ts`'s `main()`, never from `createApp()`.** This is the entire mechanism that keeps `npm test` from making real outbound calls to GNews/Newswire/any tenant feed — no contract test calls `main()`. `createApp()` must never import either module, even transitively; AC8's own test asserts this structurally by grepping `app.ts`'s source.
+- **Cadence is derived from `ingestion_runs.started_at`, never a new stored "next poll at" field.** A pair with no prior run is unconditionally due (`-Infinity`), not a special-cased branch.
+- **`jitterFraction(tenantId, platformId)` is a pure, deterministic function of its two string inputs — never `Math.random()`, never recomputed more than once per pair per evaluation.** It only ever shifts *when* a pair first becomes due, never *whether* it does (`now - last_started_at` is monotonic) — don't "improve" this into a per-tick re-roll.
+- **A `poll()` implementation must let `ClassifiableError` propagate to `runIngestionAttempt()` uncaught** — never wrap a connector's own failures in a local `try`/`catch`. `runIngestionAttempt()` already converts a `ClassifiableError` into a recorded, failed `IngestionRun` and *resolves* (never rejects) `poll()`'s promise; only a genuine non-`ClassifiableError` exception (a programming error) rejects it. `runSchedulerTick()`'s own per-pair `try`/`catch` exists only to catch that second case and keep the tick going for every other pair — it is not what makes `ClassifiableError` get recorded.
+- **The scheduler enumerates `ownerType: 'tenant'` pairs only.** It never reads `connector_user_activations` and never calls `shouldAttemptIngestion()` with `ownerType: 'user'` — this is true by construction (no code path touches that table), not an explicit filter that could be accidentally removed.
+- **Single-instance only (ADR-0052 §7).** Two concurrent `social-listening-core` processes would double-poll every eligible pair — no `pg_try_advisory_lock` or other coordination exists. Don't run a second instance against the same tenant set without adding one first.
+
+## Known gaps / deferred work
+
+- **No cost/quota budget ceiling.** This scheduler turns "connected and active" into "actually consuming real API quota, continuously" for the first time in this project — no per-tenant or platform-wide spend ceiling or alerting exists (ADR-0052 Open Question 4, named directly for Menno).
+- **GNews's query is still the hardcoded `'technology'` default**, not a tenant's own watchlist terms (ADR-0052 Open Question 5) — the scheduler makes this pre-existing gap newly visible (continuous polling, not just on-demand) rather than closing it.
+- **No Tier-3 (user-bound) poll scheduling.** No real per-user poll connector exists yet (Reddit unbuilt) — the future shape (`poll(tenantId, userId)`, a `RequestGate` key of `(tenantId, userId, providerId)`) is named in ADR-0052 Decision §6 but not built.
+- **No multi-instance coordination** (ADR-0052 §7) — a Postgres advisory lock per `(tenantId, platformId)` is named as the likely future mechanism, not designed or built here.
+- **No `social-listening-admin` UI surfacing of scheduler activity** — no "last polled at" indicator on the connector status screen. A future, separate UI story's job.
+- **Bootstrap failure is fail-loud, not graceful degradation** — if any single connector module fails to register (a genuine startup-time bug), `bootstrapConnectors()` lets the error propagate and crash `main()`, the same as `waitForPostgresReady()`'s own existing failure handling. ADR-0052 Open Question 6 left this choice to this story; a reduced-connector-set fallback was deliberately not built.
