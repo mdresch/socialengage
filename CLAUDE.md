@@ -1,13 +1,13 @@
 # socialengage — Social Listening / Insights subsystem
 
-Solo-developer, self-funded personal project. Rebuild of the discontinued Microsoft Social Engagement, starting with one subsystem (Social Listening / Insights) of a planned four. **Status, as of 2026-08-04: Phases 0–4.5 fully built and shipped in both repos (95+ story contracts passing); Phase 6 (Admin UI) underway — Story 6.1 (Next.js scaffold + real Entra External ID sign-in) shipped, Stories 6.2–6.7 drafted and Ready but not yet built.** See [`docs/implementation-log.md`](docs/implementation-log.md) for the full, commit-by-commit build record.
+Solo-developer, self-funded personal project. Rebuild of the discontinued Microsoft Social Engagement, starting with one subsystem (Social Listening / Insights) of a planned four. **Status, as of 2026-08-13: Phases 0–4.5 fully built and shipped in both repos; Phase 6 (Admin UI) well underway — Stories 6.1–6.11, 6.15, and 6.16 built and contract-verified (`social-listening-admin`, 15/15 suites, 235/235 tests as of Story 6.16); Stories 6.12, 6.13, and 6.14 remain Ready but not yet built. Epic 6 was split 2026-08-12 into Epic 6 (Tenant Admin UI) and a new Epic 7 (Platform Admin UI, Story 6.6 relocated there under its original ID).** See [`docs/implementation-log.md`](docs/implementation-log.md) for the full, commit-by-commit build record — this file is a snapshot, not re-verified every session, so treat the log as authoritative if the two disagree.
 
 ## Read these before doing anything else
 
 1. [`docs/implementation-methodology.md`](docs/implementation-methodology.md) — **how** work gets done: contract-first TDD, component `SKILL.md`s, permanent regression suite, bounded self-healing, hash-anchored Implementation Log. This is not optional background reading — it's the process this repo enforces.
 2. [`docs/implementation-plan.md`](docs/implementation-plan.md) — **what and when**: phases (0 through 6, plus an inserted Phase 4.5), story-by-story, dependency-ordered. No calendar dates.
 3. [`docs/adr/README.md`](docs/adr/README.md) — 37 ADRs (Accepted decisions + a handful of Proposed policy awaiting acceptance), plus the governance conventions for changing one.
-4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — 41 stories across 6 epics, each carrying its source ADR's status forward (Ready vs. Blocked); a few (1.5, 1.6, 6.2–6.6) are unstoried-ADR CRUD/UI surface instead, per that doc's own "No-story ADR convention."
+4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — stories across 7 epics (Epic 7, Platform Admin UI, split out of Epic 6 on 2026-08-12), each carrying its source ADR's status forward (Ready vs. Blocked); a few (1.5, 1.6, 6.2–6.6) are unstoried-ADR CRUD/UI surface instead, per that doc's own "No-story ADR convention." The story count has grown past the original 41 as new stories were drafted (e.g. 6.8–6.16) — README.md's own listing is authoritative, not a number restated here.
 
 ## Mandatory workflow — do not freelance
 
@@ -20,11 +20,11 @@ Solo-developer, self-funded personal project. Rebuild of the discontinued Micros
 
 - `docs/project docs/` — design spec + business case/charter/stakeholder register (context, not process)
 - `docs/adr/` — 37 ADRs
-- `docs/user-stories/` — 41 stories, 6 epics
+- `docs/user-stories/` — story-per-epic files, 7 epics (Epic 7 added 2026-08-12, Platform Admin UI split out of Epic 6)
 - `docs/implementation-plan.md`, `docs/implementation-methodology.md`, `docs/implementation-log.md`
 - `docs/templates/` — CI workflow, pre-commit hook, traceability/log verification scripts (root `.github/workflows/` now has real CI in place)
 - `social-listening-core/` — backend (Node.js/TypeScript), Phases 0–4.5 built: connectors (GNews, Newswire), watchlists, posts API, connector health, credential storage, Service Bus events, tenants/users + RLS, Entra-based identity resolution
-- `social-listening-admin/` — Next.js UI, Story 6.1 built (scaffold + Entra sign-in + server-side BFF session); Stories 6.2–6.7 (role gating, connect/watchlist/status screens, Platform Admin console, self-service tenant sign-up) not yet built
+- `social-listening-admin/` — Next.js UI. Built: Story 6.1 (scaffold + Entra sign-in + BFF session), 6.2 (role-gated routing shell), 6.3 (connector connect/disconnect), 6.4 (watchlist management), 6.5 (connector status view), 6.6 (Platform Admin console, now in Epic 7), 6.7 (self-service tenant sign-up), 6.8 (user invitation/management), 6.9 (tenant settings), 6.10 (Same-Domain Invite Assist), 6.11 (post feed), 6.15 (connector activate/deactivate), 6.16 (manual enrichment button). Ready but not yet built: 6.12 (tenant-owned-feed connector setup), 6.13 (tenant deletion/offboarding), 6.14 (access-history view)
 - `.claude/skills/implement-story/`, `.claude/skills/heal-contract-failure/` — the two mandatory skills
 - `.claude/hooks/enforce-contract-first.cjs` + `.claude/settings.json` — the real-time enforcement hook
 
@@ -36,4 +36,4 @@ Solo-developer, self-funded personal project. Rebuild of the discontinued Micros
 - Connector order decided: RSS/News first, then Reddit — spec §10, `implementation-plan.md` Phase 1. RSS/News shipped as two connectors (GNews API, Story 2.7; Newswire RSS, Story 2.6); Reddit not yet started.
 - Solo project shapes several decisions directly — lightweight CI (no CODEOWNERS, no OpenAPI governance yet), and ADR-0020's distributed rate-limit gate is explicitly deferred until a second concurrent instance is ever actually run, not built speculatively.
 - Credential/connector authority is ownership-tier-aware (ADR-0028, built by Story 1.7): no system-wide credentials; tenant-wide credentials only by Tenant-Admin; user-bound credentials self-activated by the user.
-- Admin UI's own auth mechanism is a server-side (BFF) session, no bearer token in browser JS, no third-party auth framework adopted at v1 — ADR-0036. Role-gating (Story 6.2) and the Platform Admin console (Story 6.6) are both still blocked in practice on a `GET /v1/me`-shaped identity endpoint that doesn't exist yet in `social-listening-core`.
+- Admin UI's own auth mechanism is a server-side (BFF) session, no bearer token in browser JS, no third-party auth framework adopted at v1 — ADR-0036. `GET /v1/me` (Story 5.11) is now built, so role-gating (Story 6.2) and the Platform Admin console (Story 6.6) both ship against a real resolved identity, not the degrade-to-`null` fallback.
