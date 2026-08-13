@@ -99,6 +99,9 @@ export default async function ConnectorsPage() {
       <p>
         Before you submit a credential, please confirm that you are creating your own account or API key directly with the provider under that provider&apos;s own terms. This is not a SocialEngage-managed signup and SocialEngage is not the billing intermediary for the provider terms.
       </p>
+      <p>
+        Want to monitor your own company blog or newsroom instead? <a href="/tenant/connectors/tenant-owned-feed">Set up your own domain&apos;s content feed</a>.
+      </p>
       <section>
         <h2>Available connectors</h2>
         <ul>

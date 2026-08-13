@@ -672,6 +672,61 @@ export async function runPostEnrichment(id: string): Promise<PostEnrichOutcome> 
   return { status: response.status, body };
 }
 
+export interface TenantOwnedFeedActivation {
+  connectorActivationId: string;
+  txtRecordHost: string;
+  txtRecordValue: string;
+  expiresAt: string;
+  feedUrl: string;
+}
+
+export interface TenantOwnedFeedConnectOutcome {
+  status: number;
+  body: Partial<TenantOwnedFeedActivation> & { error?: string };
+}
+
+export interface TenantOwnedFeedVerifyOutcome {
+  status: number;
+  body: { status?: 'verified' | 'pending'; connectorActivationId?: string; retryAfter?: number; error?: string };
+}
+
+/**
+ * Story 6.12 / Story 2.11 (ADR-0050) — begins the tenant-owned-feed connect
+ * flow (`POST /v1/connectors/tenant-owned-feed/connect`). `domain`/`feedUrl`
+ * are sent as two plain fields, never JSON-encoded into a single opaque
+ * `credential` string the way `connectPlatform()` handles multi-field
+ * credentials — this connector has `authMode: 'none'`, no credential at
+ * all. Returns the raw status/body rather than throwing on a non-2xx: a
+ * `400` (missing domain/feedUrl) is a real, expected outcome the form must
+ * react to specifically, not collapsed into a generic error.
+ */
+export async function connectTenantOwnedFeed(domain: string, feedUrl: string): Promise<TenantOwnedFeedConnectOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/connect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ domain, feedUrl }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.12 / Story 2.11 (ADR-0050) — re-clickable DNS TXT-record check
+ * (`POST /v1/connectors/tenant-owned-feed/verify-domain`). Returns the raw
+ * status/body: a `{status: 'pending'}` 200 is a real, expected, non-error
+ * outcome (DNS propagation can take up to 72 hours) the UI must keep
+ * offering "Verify now" for, never collapsed into a failure.
+ */
+export async function verifyTenantOwnedFeedDomain(connectorActivationId: string): Promise<TenantOwnedFeedVerifyOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/verify-domain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ connectorActivationId }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 /**
  * Story 6.6 / Story 5.14 — query Platform Admin audit-log entries.
  */
