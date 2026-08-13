@@ -475,197 +475,197 @@
 - **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d936082`, exact match.
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches 292a22a reviewed above.
 
-## 2026-08-10 — 8e1ac18 — docs: draft ADR-0049 and ADR-0050 (Proposed) from Cursor Composer brainstorm session
+## ~~2026-08-10 — 8e1ac18 — docs: draft ADR-0049 and ADR-0050 (Proposed) from Cursor Composer brainstorm session~~
 
 - **Full commit:** `8e1ac18a8aade52395a733d430ab4cabfd258b17`
-- **Files touched:** docs/adr/0004-author-normalized-separately-from-post.md, docs/adr/0049-point-in-time-author-follower-count-on-social-post.md, docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/adr/README.md, docs/open-decisions.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/0004-author-normalized-separately-from-post.md, docs/adr/0049-point-in-time-author-follower-count-on-social-post.md, docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/adr/README.md, docs/open-decisions.md — confirmed via `git diff-tree --no-commit-id --name-only -r 8e1ac18`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no residual drift.** At this commit both ADRs were correctly drafted Proposed, with correct "Pending supersession note" additions on ADR-0004 (not edits to its Decision text), correct footnote 20/README index entries, and matching `open-decisions.md` updates — all accurate as of 2026-08-10. Both were subsequently accepted by Menno 2026-08-11 (verbatim "ADR 0048, ADR 0049 and ADR 0050 approved"), and every downstream artifact this commit touched (ADR-0004's own "Supersession update" notes, `docs/adr/README.md`'s footnote 20 and "Still outstanding" history, `docs/open-decisions.md`'s two entries, Stories 3.9/2.11) was correctly updated at that later acceptance — verified directly against current file contents, not assumed. No gap remains attributable to this commit.
 
-## 2026-08-10 — 7d978e0 — docs: correct overstated Story 6.3 connect-flow claims in AI connector SKILL.mds
+## ~~2026-08-10 — 7d978e0 — docs: correct overstated Story 6.3 connect-flow claims in AI connector SKILL.mds~~
 
 - **Full commit:** `7d978e0bd46f8b8823cd4f8d6e74316670bf8900`
-- **Files touched:** social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r 7d978e0`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — accurate as of this commit; superseded by a real later commit reviewed next in this queue.** At commit time this correction was itself correct: `tenant/connectors/page.tsx` genuinely was a static placeholder (verified via this repo's own history — the file didn't exist with real logic until later). The very next commit in this queue, `1dbd26a` (same day), built a real connect/disconnect flow that now covers both `azure-ai-language` and `azure-openai` too — see that entry's own review immediately below for the resulting drift this created in these same two `SKILL.md` files, and the correction made there.
 
-## 2026-08-10 — 1dbd26a — heal: Story 6.3 — real connector connect/disconnect flow, not a static placeholder
+## ~~2026-08-10 — 1dbd26a — heal: Story 6.3 — real connector connect/disconnect flow, not a static placeholder~~
 
 - **Full commit:** `1dbd26a6e8a9f0180d25f8dd22df8fea73b656da`
-- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/connect/route.ts, social-listening-admin/src/app/api/connectors/[platformId]/disconnect/route.ts, social-listening-admin/src/app/tenant/connectors/ConnectForm.tsx, social-listening-admin/src/app/tenant/connectors/DisconnectButton.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/connect/route.ts, social-listening-admin/src/app/api/connectors/[platformId]/disconnect/route.ts, social-listening-admin/src/app/tenant/connectors/ConnectForm.tsx, social-listening-admin/src/app/tenant/connectors/DisconnectButton.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/lib/core-client.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 1dbd26a`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — real drift found and corrected, two SKILL.md files' worth, plus one epic-file gap of the same root cause.** This healing pass (and the same-day `7d978e0` correction just before it) left three artifacts stale: (1) `social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md`'s and (2) `azure-openai-connector/SKILL.md`'s own "Known gaps" bullets both still said, as of this review, "No admin-UI connect flow exists" — true when `7d978e0` wrote that bullet earlier the same day, but false from this commit onward, since this pass's own "Scope expansion" added exactly those two providers to `tenant/connectors/page.tsx`'s real `PLATFORMS` array with a working `ConnectForm`. Corrected both with a dated "Documentation Steward correction, 2026-08-13" note (strikethrough + replacement, matching this project's own established in-place-correction convention for `SKILL.md` bullets, e.g. `connector-connect-disconnect/SKILL.md`'s own activation-table bullet), confirmed directly against current `page.tsx` source before writing either. (3) `docs/user-stories/epic-6-tenant-admin-ui.md`'s own Story 6.3 entry never recorded this healing pass at all — it still just says "Built 2026-08-05... full suite 31/31," with no indication the 2026-08-05 build was a static placeholder or that it was healed 2026-08-10, unlike Stories 6.4/6.5 just below it in the same file, which do carry matching "Correction, 2026-08-12" notes for the identical fixture-only root cause. Added a matching dated correction note there too, cross-referencing this commit and the current `SKILL.md`. `docs/implementation-plan.md` and `docs/user-stories/README.md` needed no equivalent fix — neither makes a standalone build-status claim about Story 6.3 that this commit falsified; both only reference it in passing (e.g. "the identical category of ripple Story 6.3 already caused"), which remains accurate.
 
-## 2026-08-10 — d545174 — docs: implementation log entry for Story 6.3 healing pass
+## ~~2026-08-10 — d545174 — docs: implementation log entry for Story 6.3 healing pass~~
 
 - **Full commit:** `d545174725734e5664bdb733b3e546d7528e042a`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d545174`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines in the diff — confirmed via `git diff d545174^ d545174`). Content matches `1dbd26a` reviewed immediately above; the real drift this log entry's own content pointed at (two stale `SKILL.md` bullets, one stale epic-file entry) was found and corrected under that entry's own review, not here — this entry itself is accurate and unaffected.
 
-## 2026-08-10 — 15756e0 — heal: Story 1.4 — withDevEnv.js never loaded .env, only jest's test setup did
+## ~~2026-08-10 — 15756e0 — heal: Story 1.4 — withDevEnv.js never loaded .env, only jest's test setup did~~
 
 - **Full commit:** `15756e00df0a2a74ee5027f3fe3e35af165070d3`
-- **Files touched:** social-listening-core/.claude/skills/postgres-tenant-db/SKILL.md, social-listening-core/contracts/epic-1/story-1.4-fixtures/printEnvAndArgv.js, social-listening-core/contracts/epic-1/story-1.4-fixtures/test-fixture.env, social-listening-core/contracts/epic-1/story-1.4.persistent-local-dev-database.contract.test.ts, social-listening-core/scripts/withDevEnv.js
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.claude/skills/postgres-tenant-db/SKILL.md, social-listening-core/contracts/epic-1/story-1.4-fixtures/printEnvAndArgv.js, social-listening-core/contracts/epic-1/story-1.4-fixtures/test-fixture.env, social-listening-core/contracts/epic-1/story-1.4.persistent-local-dev-database.contract.test.ts, social-listening-core/scripts/withDevEnv.js — confirmed via `git diff-tree --no-commit-id --name-only -r 15756e0`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, real drift found and corrected — not in the touched files themselves (`postgres-tenant-db/SKILL.md`'s own new dated note is accurate and current), but in ADR-0025, this healing pass's governing ADR, one directory over.** ADR-0025's own Amendment Log already carries two dated entries for prior `withDevEnv.js` correctness bugs (the `execSync`→`spawn` fix and the `PGDATABASE`/etc. fallback-vs-force fix, both 2026-07-30) — this third, same-category bug (never loading `.env` at all) was fixed 2026-08-10 and logged faithfully in `docs/implementation-log.md` and `postgres-tenant-db/SKILL.md`, but never added to ADR-0025's own Amendment Log, breaking that log's own established completeness as this ADR's durable record of `withDevEnv.js` fixes. Corrected: added a dated "Documentation Steward correction, 2026-08-13" Amendment Log entry to `docs/adr/0025-persistent-local-dev-database-separate-from-test-database.md`, matching the existing two entries' own level of technical detail, explicitly not touching the ADR's original Decision/Consequences text.
 
-## 2026-08-10 — de96102 — docs: implementation log entry for Story 1.4 withDevEnv.js healing pass
+## ~~2026-08-10 — de96102 — docs: implementation log entry for Story 1.4 withDevEnv.js healing pass~~
 
 - **Full commit:** `de96102e84c6a9e4b930a4af3fe9c5181dad980b`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r de96102`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `15756e0` reviewed above; the real drift that entry's own content pointed at (ADR-0025's Amendment Log missing this fix) was found and corrected under that entry's own review, not here.
 
-## 2026-08-10 — dba9895 — heal: Story 6.1 — real Platform Admin sign-in blocked by missing OAuth scope and oid-vs-sub seed error
+## ~~2026-08-10 — dba9895 — heal: Story 6.1 — real Platform Admin sign-in blocked by missing OAuth scope and oid-vs-sub seed error~~
 
 - **Full commit:** `dba98958df63edd3e9d2c1ff0bc0dc2d96cdfb2b`
-- **Files touched:** docs/adr/0029-authentication-mechanism-entra-external-id.md, social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/src/lib/entra.ts, social-listening-core/.claude/skills/identity-resolution/SKILL.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/0029-authentication-mechanism-entra-external-id.md, social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/src/lib/entra.ts, social-listening-core/.claude/skills/identity-resolution/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r dba9895`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift; unusually thorough on its own already.** ADR-0029's Open Question on `oid` vs. `sub` is correctly resolved with a struck original bullet, primary evidence (real captured token claims), and a matching dated Amendment Log entry — Decision/Consequences text untouched, correct governance mechanism. `admin-auth-session/SKILL.md` and `identity-resolution/SKILL.md` both carry accurate, appropriately cross-referenced dated notes (AC13, the missing `access_as_user` scope, the `oid`-seeding gotcha). `docs/implementation-log.md`'s matching entry (verified, not part of this commit's own diff) cites the same facts consistently. No traceability-table or epic-file change needed — Story 6.1's own build status is unaffected by a same-story healing pass, consistent with this project's own convention.
 
-## 2026-08-10 — 6d08379 — docs: implementation log entry for Story 6.1 OAuth-scope healing pass
+## ~~2026-08-10 — 6d08379 — docs: implementation log entry for Story 6.1 OAuth-scope healing pass~~
 
 - **Full commit:** `6d08379b3c2439d968fb874576193c35628a95c5`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 6d08379`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `dba9895` reviewed above.
 
-## 2026-08-10 — 35b70a8 — heal: Story 6.2 — a successful platform_admin sign-in lands on / with only a manual link
+## ~~2026-08-10 — 35b70a8 — heal: Story 6.2 — a successful platform_admin sign-in lands on / with only a manual link~~
 
 - **Full commit:** `35b70a822353fc0b5641a8da4007a932aca3d03f`
-- **Files touched:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/src/app/page.tsx
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/src/app/page.tsx — confirmed via `git diff-tree --no-commit-id --name-only -r 35b70a8`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, real drift found and corrected in `social-listening-admin/.claude/skills/role-routing-shell/SKILL.md`.** `docs/implementation-log.md`'s own entry for this commit explicitly notes "`SKILL.md`: unchanged — no new load-bearing constraint introduced" — but that component's `SKILL.md` is exactly the living reference a future developer touching `src/app/page.tsx` would consult, and it never actually documented this real behavior change: a signed-in `platform_admin` now auto-redirects off the home page to `/platform-admin` instead of rendering a page with only a manual link (`src/app/page.tsx`'s own code comment records the fix accurately; the `SKILL.md` didn't). Corrected: added a dated "Documentation Steward correction, 2026-08-13" bullet to that file's Load-bearing constraints section, and extended its "Contracts that constrain this component" bullet to mention the two new AC cases this commit added. Not treated as second-guessing the log entry's own judgment call (not edited, per this role's own append-only rule for the log) — only closing the gap it left in the actual living reference doc.
 
-## 2026-08-10 — 596b2c3 — docs: implementation log entry for Story 6.2 root-redirect healing pass
+## ~~2026-08-10 — 596b2c3 — docs: implementation log entry for Story 6.2 root-redirect healing pass~~
 
 - **Full commit:** `596b2c36900d4c44b5e39a049c1614e4b87e5fec`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 596b2c3`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `35b70a8` reviewed above; the real drift that entry's own "SKILL.md unchanged" note left behind (the `role-routing-shell/SKILL.md` gap) was found and corrected under that entry's own review, not here.
 
-## 2026-08-10 — f4c50db — docs: record real Entra tenant-config prerequisites found during live self-service sign-up test
+## ~~2026-08-10 — f4c50db — docs: record real Entra tenant-config prerequisites found during live self-service sign-up test~~
 
 - **Full commit:** `f4c50dbe3143138d732f23054255a665edbc9fdb`
-- **Files touched:** social-listening-admin/.claude/skills/self-service-signup-ui/SKILL.md
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/.claude/skills/self-service-signup-ui/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r f4c50db`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, real drift found and corrected — not in the touched `SKILL.md` itself (accurate), but in ADR-0037, this finding's own governing ADR.** This commit's content accurately records two real, previously-undocumented Entra tenant-configuration gaps (missing `email` optional claim/OIDC permission; `social-listening-admin` never linked to a "Sign up and sign in" user flow) and the first successful real end-to-end self-service sign-up, which also directly confirms ADR-0037 §8a's own still-open "Named as required... confirming email OTP verification is actually enabled" item. Checked ADR-0037 itself (`docs/adr/0037-self-service-tenant-signup-and-first-tenant-admin-provisioning.md`) — its Amendment Log, which has a dated entry for literally every other post-acceptance finding in this ADR's history (nine entries, all 2026-08-04), never got one for this 2026-08-10 confirmation, and the "Named as required" bullet this finding directly resolves was left unstruck. Corrected: struck that bullet with a dated resolution note, and added a matching dated Amendment Log entry citing this commit and the SKILL.md, naming both newly-found configuration gaps — Decision/Consequences text untouched, per this ADR's own established governance convention.
 
-## 2026-08-10 — 49eaa50 — docs: backlog a future ADR candidate — richer self-service sign-up business-details form
+## ~~2026-08-10 — 49eaa50 — docs: backlog a future ADR candidate — richer self-service sign-up business-details form~~
 
 - **Full commit:** `49eaa5012d60a5d464c3c3b476947f1eb354ca86`
-- **Files touched:** docs/adr/README.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/README.md — confirmed via `git diff-tree --no-commit-id --name-only -r 49eaa50`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, still accurate.** Checked whether a richer self-service sign-up business-details form has since been drafted as its own ADR or story (it would make this backlog note stale) — grepped `docs/adr/README.md`, `docs/open-decisions.md`, and every `docs/adr/00*.md` file for related language; no such ADR exists yet. The note remains an accurate, still-unscoped backlog item.
 
-## 2026-08-10 — 4551e26 — docs: backlog missing invite-withdrawal capability, found during live invite testing
+## ~~2026-08-10 — 4551e26 — docs: backlog missing invite-withdrawal capability, found during live invite testing~~
 
 - **Full commit:** `4551e2672bc6b7d4279837a392f668514b79afd4`
-- **Files touched:** social-listening-admin/.claude/skills/tenant-user-management/SKILL.md, social-listening-core/.claude/skills/identity-resolution/SKILL.md
-- **Status:** Pending review
+- **Files touched:** social-listening-admin/.claude/skills/tenant-user-management/SKILL.md, social-listening-core/.claude/skills/identity-resolution/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r 4551e26`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, still accurate.** Grepped for any later `DELETE /v1/tenants/users`, `cancelInvite`/`withdrawInvite` naming, or a matching story anywhere in `social-listening-core/src`, `docs/user-stories/`, and `docs/implementation-log.md` — none exists. The gap this commit backlogged in both mirrored `SKILL.md` files remains genuinely open and unbuilt; no drift.
 
-## 2026-08-10 — f36d765 — heal: Story 5.15 — self-service tenant founder never consumed a seat
+## ~~2026-08-10 — f36d765 — heal: Story 5.15 — self-service tenant founder never consumed a seat~~
 
 - **Full commit:** `f36d765af41efe84c8c9df6a882a33d5b9ae53a9`
-- **Files touched:** social-listening-core/.claude/skills/self-service-tenant-signup/SKILL.md, social-listening-core/contracts/epic-5/story-5.15.self-service-tenant-signup.contract.test.ts, social-listening-core/src/tenants/selfServiceSignup.ts
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.claude/skills/self-service-tenant-signup/SKILL.md, social-listening-core/contracts/epic-5/story-5.15.self-service-tenant-signup.contract.test.ts, social-listening-core/src/tenants/selfServiceSignup.ts — confirmed via `git diff-tree --no-commit-id --name-only -r f36d765`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `self-service-tenant-signup/SKILL.md`'s new dated notes (contract-summary bullet and Load-bearing constraints bullet) accurately describe the real fix and don't conflict with `identity-resolution/SKILL.md`'s own separate, still-accurate "seat-count race condition inherited from ADR-0031 §3" note (a different code path — invite creation vs. this commit's self-service-founder path). `docs/user-stories/epic-5-security-isolation-and-messaging.md`'s Story 5.15 entry needed no change — same-story healing pass under an already-Built story, this project's own established convention.
 
-## 2026-08-10 — 3ae641e — docs: implementation log entry for Story 5.15 seat-count healing pass
+## ~~2026-08-10 — 3ae641e — docs: implementation log entry for Story 5.15 seat-count healing pass~~
 
 - **Full commit:** `3ae641ecdbbc0420a6fdf5de20f8cd26daa4a2ae`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 3ae641e`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `f36d765` reviewed above.
 
-## 2026-08-10 — 9eef81b — chore: remove unrelated Microsoft Foundry Python sample project and stray azd scaffolding
+## ~~2026-08-10 — 9eef81b — chore: remove unrelated Microsoft Foundry Python sample project and stray azd scaffolding~~
 
 - **Full commit:** `9eef81ba06f7970bb4afccdd15fab531c58aec54`
-- **Files touched:** agent-framework-agent-with-local-tools-responses/.gitignore, agent-framework-agent-with-local-tools-responses/AGENTS.md, agent-framework-agent-with-local-tools-responses/CLAUDE.md, agent-framework-agent-with-local-tools-responses/README.md, agent-framework-agent-with-local-tools-responses/azure.yaml, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.azdignore, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.dockerignore, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.env.example, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/Dockerfile, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/main.py, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/requirements.txt, azd-ai-agents-2026-08-08.log, azure.yaml, main.py, tests/__pycache__/test_tracing.cpython-314.pyc, tests/test_tracing.py
-- **Status:** Pending review
+- **Files touched:** agent-framework-agent-with-local-tools-responses/.gitignore, agent-framework-agent-with-local-tools-responses/AGENTS.md, agent-framework-agent-with-local-tools-responses/CLAUDE.md, agent-framework-agent-with-local-tools-responses/README.md, agent-framework-agent-with-local-tools-responses/azure.yaml, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.azdignore, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.dockerignore, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/.env.example, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/Dockerfile, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/main.py, agent-framework-agent-with-local-tools-responses/src/agent-framework-agent-with-local-tools-responses/requirements.txt, azd-ai-agents-2026-08-08.log, azure.yaml, main.py, tests/__pycache__/test_tracing.cpython-314.pyc, tests/test_tracing.py — confirmed via `git diff-tree --no-commit-id --name-only -r 9eef81b`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Pure removal of an unrelated sample never wired into this project's own architecture, ADRs, stories, or SKILL.md files. Grepped every `docs/` file for the removed paths — only the queue/bookkeeping files that are supposed to reference it (this file, the Ideal Manager's and Learning & Development Writer's own queues/registers) do.
 
-## 2026-08-10 — 8018de4 — chore: remove .vscode/tasks.json and launch.json, dead since the Foundry sample's removal
+## ~~2026-08-10 — 8018de4 — chore: remove .vscode/tasks.json and launch.json, dead since the Foundry sample's removal~~
 
 - **Full commit:** `8018de477a0eb113c088bedbd7159bd5fb92c2c2`
-- **Files touched:** .vscode/launch.json, .vscode/tasks.json
-- **Status:** Pending review
+- **Files touched:** .vscode/launch.json, .vscode/tasks.json — confirmed via `git diff-tree --no-commit-id --name-only -r 8018de4`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Both files referenced only the now-removed Foundry sample's own debug workflow; neither is cited by any doc in this project's chartered scope.
 
-## 2026-08-11 — 8dff76b — docs: ADR governance pass — accept ADR-0044/0047/0048/0049/0050, resolve resulting stories
+## ~~2026-08-11 — 8dff76b — docs: ADR governance pass — accept ADR-0044/0047/0048/0049/0050, resolve resulting stories~~
 
 - **Full commit:** `8dff76ba2186816c7e7d39544a201d6aa75967e1`
-- **Files touched:** docs/adr/0004-author-normalized-separately-from-post.md, docs/adr/0044-watchlist-api-design-and-database-schema-standardization.md, docs/adr/0047-standard-pattern-for-cross-story-references-and-supersession-language.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/0049-point-in-time-author-follower-count-on-social-post.md, docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/adr/README.md, docs/future-subsystems.md, docs/open-decisions.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- **Files touched:** docs/adr/0004-author-normalized-separately-from-post.md, docs/adr/0044-watchlist-api-design-and-database-schema-standardization.md, docs/adr/0047-standard-pattern-for-cross-story-references-and-supersession-language.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/0049-point-in-time-author-follower-count-on-social-post.md, docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/adr/README.md, docs/future-subsystems.md, docs/open-decisions.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md — confirmed via `git diff-tree --no-commit-id --name-only -r 8dff76b`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift; large but internally consistent.** Cross-checked against current file state (already verified in detail while reviewing `8e1ac18` above, since this commit's own "Still outstanding" corrections are the same ones still visible in `docs/adr/README.md`'s dated history today): ADR-0044/0047/0048/0049/0050 all correctly show `Accepted (2026-08-11)`; the self-acknowledged ADR-0042 five-day stale-outstanding-claim bug is honestly dated-corrected, not silently rewritten; `docs/future-subsystems.md`'s new "Support & QA operations" section is still accurate today (no in-product support surface has since shipped, confirmed via a source grep). Story 1.5's status from this commit was itself superseded two commits later in this same queue (`aaf6bd7`, reviewed separately below) — not a defect of this commit, which accurately reflected ADR-0044's state at the time.
 
-## 2026-08-12 — aaf6bd7 — feat: rebuild Story 1.5 watchlist CRUD against ADR-0044 (personal ownership, RFC 7396 PATCH, optimistic locking)
+## ~~2026-08-12 — aaf6bd7 — feat: rebuild Story 1.5 watchlist CRUD against ADR-0044 (personal ownership, RFC 7396 PATCH, optimistic locking)~~
 
 - **Full commit:** `aaf6bd72f312ce7df0dc60a376f2f893f3e1508c`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/watchlist-crud/SKILL.md, social-listening-core/contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/contracts/epic-5/story-5.10.retire-x-tenant-id.contract.test.ts, social-listening-core/migrations/0025_watchlists_ownership_and_versioning.sql, social-listening-core/src/db/withTenant.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts, social-listening-core/src/watchlists/watchlistStore.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/watchlist-crud/SKILL.md, social-listening-core/contracts/epic-1/story-1.5.watchlist-crud.contract.test.ts, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/contracts/epic-5/story-5.10.retire-x-tenant-id.contract.test.ts, social-listening-core/migrations/0025_watchlists_ownership_and_versioning.sql, social-listening-core/src/db/withTenant.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts, social-listening-core/src/watchlists/watchlistStore.ts — confirmed via `git diff-tree --no-commit-id --name-only -r aaf6bd7`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `docs/user-stories/epic-1-repository-and-api-foundation.md`'s Story 1.5 entry, `docs/implementation-plan.md`'s dated note, and `docs/user-stories/README.md` all consistently and accurately describe the real rework (per-user ownership, `If-Match`/optimistic locking, RFC 7396 merge-patch, the 400/404/409/422/428 error mapping) and the real cross-story collision found and fixed (Story 3.8 export/hard-delete pipeline). `watchlist-crud/SKILL.md` reflects the same current, correct contract.
 
-## 2026-08-12 — c5fca67 — docs: implementation log entry for Story 1.5 watchlist ownership rebuild
+## ~~2026-08-12 — c5fca67 — docs: implementation log entry for Story 1.5 watchlist ownership rebuild~~
 
 - **Full commit:** `c5fca6765784532ecb8421b66ec2d980278a9f20`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r c5fca67`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `aaf6bd7` reviewed above.
 
-## 2026-08-12 — 63dcbce — feat: Story 1.10 -- Postgres boot-time readiness check and a real /v1/health
+## ~~2026-08-12 — 63dcbce — feat: Story 1.10 -- Postgres boot-time readiness check and a real /v1/health~~
 
 - **Full commit:** `63dcbced329a86999edbe2889db30f574c8c2dfd`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/http-api-versioning/SKILL.md, social-listening-core/.claude/skills/postgres-tenant-db/SKILL.md, social-listening-core/contracts/epic-1/story-1.10.postgres-readiness-and-health.contract.test.ts, social-listening-core/src/db/postgresReadiness.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/http-api-versioning/SKILL.md, social-listening-core/.claude/skills/postgres-tenant-db/SKILL.md, social-listening-core/contracts/epic-1/story-1.10.postgres-readiness-and-health.contract.test.ts, social-listening-core/src/db/postgresReadiness.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/router.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 63dcbce`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `epic-1-repository-and-api-foundation.md`'s Story 1.10 entry and `implementation-plan.md`'s matching dated note accurately describe the real boot-time readiness gate and database-aware `/v1/health`; `http-api-versioning/SKILL.md`'s own load-bearing note correctly cross-references Story 1.10 without duplicating its content, and correctly preserves the pre-existing "deliberately unauthenticated" boundary. Later same-day work (Story 1.10's database health indicator folded into Story 6.6's own scope, per `implementation-plan.md`'s own dated note reviewed above) is consistent with this commit, not contradicted by it.
 
-## 2026-08-12 — 0694d2c — docs: implementation log entry for Story 1.10 Postgres readiness check
+## ~~2026-08-12 — 0694d2c — docs: implementation log entry for Story 1.10 Postgres readiness check~~
 
 - **Full commit:** `0694d2c07b86ea7d61d5e6c9c0ecbbbb131e814e`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 0694d2c`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `63dcbce` reviewed above.
 
-## 2026-08-12 — 8cf76a2 — chore: stop tracking .claude/settings.local.json, gitignore it
+## ~~2026-08-12 — 8cf76a2 — chore: stop tracking .claude/settings.local.json, gitignore it~~
 
 - **Full commit:** `8cf76a2f3bdfe29a22404d19e92e7735312cff10`
-- **Files touched:** .claude/settings.local.json, .gitignore
-- **Status:** Pending review
+- **Files touched:** .claude/settings.local.json, .gitignore — confirmed via `git diff-tree --no-commit-id --name-only -r 8cf76a2`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** Pure tooling/gitignore housekeeping, nothing in this role's chartered scope.
 
-## 2026-08-12 — f2c7788 — feat: Story 2.10 -- connector registration transparency, mechanically enforced (ADR-0048)
+## ~~2026-08-12 — f2c7788 — feat: Story 2.10 -- connector registration transparency, mechanically enforced (ADR-0048)~~
 
 - **Full commit:** `f2c7788f4d21c971ed93488e5939392bf98504bb`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/azure-ai-language-connector/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts — confirmed via `git diff-tree --no-commit-id --name-only -r f2c7788`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift; also confirms the malformed Story 2.10 stub flagged (not fixed) during the `f70b07d` review earlier in this queue was genuinely cleaned up here.** `epic-2-ingestion-connectors-and-rate-limits.md`'s Story 2.10 heading/Status/AC text is now well-formed (no typo, correct `Source: ADR-0048 (Accepted 2026-08-11) · Status: Ready — built 2026-08-12`). All four connectors' `SKILL.md` files' own "Registration transparency (ADR-0048)" sections are consistent with each other and with the real contract.
 
-## 2026-08-12 — 9f90a82 — docs: implementation log entry for Story 2.10 connector registration transparency
+## ~~2026-08-12 — 9f90a82 — docs: implementation log entry for Story 2.10 connector registration transparency~~
 
 - **Full commit:** `9f90a82063c95f83f3e13523fb63898f72c9ed50`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 9f90a82`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `f2c7788` reviewed above.
 
-## 2026-08-12 — afcb59e — feat: Story 2.11 -- tenant-owned-domain RSS connector with DNS TXT verification (ADR-0050)
+## ~~2026-08-12 — afcb59e — feat: Story 2.11 -- tenant-owned-domain RSS connector with DNS TXT verification (ADR-0050)~~
 
 - **Full commit:** `afcb59ed8e7dee15d261dbee6c5860783f3c6c8b`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.11.tenant-owned-feed-connector.contract.test.ts, social-listening-core/migrations/0026_create_tenant_owned_feed_activations.sql, social-listening-core/src/connectors/tenantOwnedFeed/dnsVerification.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedStore.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantOwnedFeedRouter.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.11.tenant-owned-feed-connector.contract.test.ts, social-listening-core/migrations/0026_create_tenant_owned_feed_activations.sql, social-listening-core/src/connectors/tenantOwnedFeed/dnsVerification.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedStore.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantOwnedFeedRouter.ts — confirmed via `git diff-tree --no-commit-id --name-only -r afcb59e`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, no drift.** `epic-2-ingestion-connectors-and-rate-limits.md`, `implementation-plan.md`, and `docs/user-stories/README.md` all consistently describe the same real build (DNS TXT verification, `authMode: 'none'`, organization-as-Author, the deliberate router-mounting-order choice to satisfy ADR-0048 without editing `connectorsRouter.ts`). Cross-checked forward against later same-queue entries (Story 6.12's UI build) — consistent, no contradiction.
 
-## 2026-08-12 — 9f09393 — docs: implementation log entry for Story 2.11 tenant-owned-feed connector
+## ~~2026-08-12 — 9f09393 — docs: implementation log entry for Story 2.11 tenant-owned-feed connector~~
 
 - **Full commit:** `9f093933e2d7df0eada850f170ebe95fc1850516`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 9f09393`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `afcb59e` reviewed above.
 
-## 2026-08-12 — 34e9dfb — feat: Story 3.9 -- point-in-time author follower count on SocialPost (ADR-0049)
+## ~~2026-08-12 — 34e9dfb — feat: Story 3.9 -- point-in-time author follower count on SocialPost (ADR-0049)~~
 
 - **Full commit:** `34e9dfb8ae712a992ae275d6eb82221c64f9a3d8`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-3/story-3.9.author-follower-count-at-publish.contract.test.ts, social-listening-core/migrations/0027_add_social_posts_author_follower_count_at_publish.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/posts/socialPostStore.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-3/story-3.9.author-follower-count-at-publish.contract.test.ts, social-listening-core/migrations/0027_add_social_posts_author_follower_count_at_publish.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/posts/socialPostStore.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 34e9dfb`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13, real drift found and corrected in ADR-0049 (governing ADR, not among this commit's own touched files).** This story genuinely resolved ADR-0049's own Open Question 5 (connector-capability declaration shape — decided as `SocialConnector.canProvideFollowerCountAtPublish`, modeled on ADR-0021's `supportedQueryFeatures`), and `epic-3-data-model-storage-and-archival.md`'s own Story 3.9 entry records that resolution accurately — but `docs/adr/0049-point-in-time-author-follower-count-on-social-post.md`'s own Open Questions section still listed it as unresolved, with no strikethrough or resolution note, unlike this project's own established pattern for closing an ADR's Open Question at/after implementation (e.g. ADR-0029's `oid`/`sub` resolution, ADR-0037's OTP-verification confirmation, both reviewed earlier in this pass). Corrected: struck the bullet with a dated resolution note and added a matching Amendment Log entry, citing this commit — Decision/Consequences text untouched.
 
-## 2026-08-12 — 3d650c8 — docs: implementation log entry for Story 3.9 author follower count at publish
+## ~~2026-08-12 — 3d650c8 — docs: implementation log entry for Story 3.9 author follower count at publish~~
 
 - **Full commit:** `3d650c8f6deecd8f565f7bdc265eef369eed47a5`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 3d650c8`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `34e9dfb` reviewed above; the real drift that entry's own content pointed at (ADR-0049's unresolved Open Question 5) was found and corrected under that entry's own review, not here.
 
-## 2026-08-12 — 4cd4ef1 — docs: correct wrong commit hash on the 2026-08-01 Story 1.5 implementation-log entry
+## ~~2026-08-12 — 4cd4ef1 — docs: correct wrong commit hash on the 2026-08-01 Story 1.5 implementation-log entry~~
 
 - **Full commit:** `4cd4ef1618971b3e35966a69750cf9d5b9cffb6d`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r 4cd4ef1`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, and independently re-verified rather than trusted.** This entry's own text says it confirmed the real commit's file list via `git show --stat` — exactly the tool this charter warns can truncate — so re-ran `git diff-tree --no-commit-id --name-only -r f317ace` directly: the real, untruncated file list matches this correction's own claimed nine files exactly, and the one named discrepancy (the original entry's stray `docs/open-items-and-deferred-work.md` claim) is correctly identified as a drafting error, not a second missing commit. The original 2026-08-01 entry is left unedited, per this log's own append-only rule; the correction is a proper new, dated, referencing entry.
 
-## 2026-08-12 — fded97b — feat(social-listening-admin): rebuild Story 6.4 watchlist screen for real, against ADR-0044
+## ~~2026-08-12 — fded97b — feat(social-listening-admin): rebuild Story 6.4 watchlist screen for real, against ADR-0044~~
 
 - **Full commit:** `fded97b08813d7ab686582410c7d99668e5d4eac`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-admin-ui.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-7-platform-admin-ui.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts, social-listening-admin/src/app/api/watchlists/[id]/route.ts, social-listening-admin/src/app/api/watchlists/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/app/tenant/watchlists/WatchlistRow.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-admin-ui.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-7-platform-admin-ui.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts, social-listening-admin/src/app/api/watchlists/[id]/route.ts, social-listening-admin/src/app/api/watchlists/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/app/tenant/watchlists/WatchlistRow.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts — confirmed via `git diff-tree --no-commit-id --name-only -r fded97b`, exact match (this is the commit that renamed `epic-6-admin-ui.md` → `epic-6-tenant-admin-ui.md` and split out `epic-7-platform-admin-ui.md`).
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean; one finding considered and deliberately not treated as drift.** The real watchlist rebuild is accurately described in `epic-6-tenant-admin-ui.md`'s own Story 6.4 entry (cross-checked earlier this pass against `aaf6bd7`). Checked whether the `epic-6-admin-ui.md` → `epic-6-tenant-admin-ui.md` rename left any dangling live reference to the old filename: it's cited by name in roughly a dozen places (`docs/adr/README.md`, ADR-0036, ADR-0037, `docs/user-stories/epic-5-security-isolation-and-messaging.md`, `docs/open-items-and-deferred-work.md`, `docs/future-subsystems.md`, `docs/security/security-register.md`, `docs/project docs/Stakeholder-Register.md`) — every one of them is dated prose narrating an event that happened before the 2026-08-12 rename, using the filename that was accurate at the time, the same "don't retroactively rewrite historical narration" discipline this project's own dated-note convention already applies everywhere else (e.g. `docs/implementation-log.md`'s own append-only rule). Not corrected, since correcting them would mean rewriting history to use a filename that didn't exist yet at the point being described.
 
-## 2026-08-12 — d96d782 — docs: implementation log entry for Story 6.4 watchlist screen rebuild
+## ~~2026-08-12 — d96d782 — docs: implementation log entry for Story 6.4 watchlist screen rebuild~~
 
 - **Full commit:** `d96d782380bc109a2f8d718c4f1eaa5e0f99309e`
-- **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r d96d782`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-13 — clean, appended only** (no removed lines). Matches `fded97b` reviewed above.
 
 ## 2026-08-12 — 4046e75 — feat(social-listening-admin): rebuild Story 6.5 connector status screen for real
 
