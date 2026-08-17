@@ -88,9 +88,16 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
 
   const authMethod = authMethodFor(platformId);
 
-  // For Phase 1, we use a placeholder Key Vault key ID
-  // Production will use real Azure Key Vault (Phase 5)
-  const keyVaultKeyId = process.env.KEY_VAULT_KEY_ID || 'placeholder-key-id';
+  // ADR-0014 mandates envelope encryption backed by a real Azure Key Vault
+  // key — there is no valid placeholder for this. Fail clearly here rather
+  // than let an unset KEY_VAULT_KEY_ID reach storeCredential()/wrapDek() as
+  // an invalid key identifier, which CryptographyClient can only reject
+  // with an opaque downstream error (Story 1.7 AC9, healing note 2026-08-17).
+  const keyVaultKeyId = process.env.KEY_VAULT_KEY_ID;
+  if (!keyVaultKeyId) {
+    res.status(500).json({ error: 'Credential storage is not configured (KEY_VAULT_KEY_ID missing).' });
+    return;
+  }
 
   // user_id is always the caller's own resolved identity — never the
   // request body's, which is never read for this purpose (AC3).

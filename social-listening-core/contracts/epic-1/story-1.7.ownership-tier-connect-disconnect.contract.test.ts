@@ -79,6 +79,24 @@
  * AC8: `ownerType: 'user'` is rejected (400) for any real, registered
  *      `AIProviderConnector` (Azure AI Language, Azure OpenAI) — ADR-0028
  *      Tier 2 only, no Tier 3/personal variant exists for these providers.
+ *
+ * Healing note, 2026-08-17 (ADR-0014 Decision — envelope encryption backed
+ * by a real Azure Key Vault key — was never actually enforced at this
+ * route's own configuration boundary; found live: Menno hit "Failed to
+ * store credential" connecting GNews through the real browser UI. Every
+ * test in this file already sets `KEY_VAULT_KEY_ID` itself in `beforeAll()`
+ * (line ~109), so this gap was invisible to the accumulated suite — the
+ * real, non-test `.env` never had it set at all, meaning connectorsRouter.ts's
+ * own `|| 'placeholder-key-id'` fallback (a stale Phase 1 shim its own
+ * comment said Phase 5's real Key Vault would replace) was the only thing
+ * any real request ever used, and `'placeholder-key-id'` is not a valid
+ * `CryptographyClient` key identifier — every real connect attempt always
+ * failed. Not a new decision — ADR-0014's Decision already mandated a real
+ * Key Vault key; this closes a mechanical-enforcement gap against it, the
+ * same character as ADR-0028's own Clarification/AC8 fix above):
+ * AC9: `POST .../connect` fails clearly (500, naming `KEY_VAULT_KEY_ID`) when
+ *      that env var is genuinely unset — never silently attempts the invalid
+ *      literal `'placeholder-key-id'` as a real key identifier.
  */
 
 import { randomUUID } from 'crypto';
@@ -218,6 +236,24 @@ describe('Story 1.7 — POST /v1/connectors/:platformId/connect', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.ownerType).toBe('user');
+  });
+
+  it('AC9 (2026-08-17 healing note): fails clearly (500, naming KEY_VAULT_KEY_ID) when the env var is genuinely unset — never silently tries an invalid literal key identifier', async () => {
+    const { tenantId, adminUserId } = await makeTenantWithUsers();
+    const saved = process.env.KEY_VAULT_KEY_ID;
+    delete process.env.KEY_VAULT_KEY_ID;
+
+    try {
+      const res = await request(app)
+        .post(`/v1/connectors/${platformId}/connect`)
+        .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: adminUserId, role: 'tenant_admin' }))
+        .send({ credential: 'admin-key' });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toMatch(/KEY_VAULT_KEY_ID/);
+    } finally {
+      process.env.KEY_VAULT_KEY_ID = saved;
+    }
   });
 });
 
