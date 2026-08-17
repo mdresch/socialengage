@@ -93,7 +93,12 @@ describe('Story 8.2 — Sentiment tab', () => {
     it('flattenForSentiment() extracts real author/sentiment/keyPhrases/title, lowercases sentiment', async () => {
       const { flattenForSentiment } = await import('../../src/app/tenant/analytics/analyticsData');
       const flat = flattenForSentiment([post('a', 'gnews', '2026-08-01T09:00:00.000Z', 'Positive', 'Acme Corp', ['x'])]);
-      expect(flat).toEqual([{ id: 'a', publishedAt: '2026-08-01T09:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: ['x'], title: 'Post a' }]);
+      // 2026-08-17, Story 8.5: SentimentPost genuinely gained a `language`
+      // field (enrichment.detectedLanguage) — this fixture post has no
+      // enrichment.detectedLanguage, so it's real null, not a foreign
+      // regression. Narrowed to include it, same as Story 8.2/8.3's own
+      // precedent for an anticipated in-epic shape widening.
+      expect(flat).toEqual([{ id: 'a', publishedAt: '2026-08-01T09:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: ['x'], title: 'Post a', language: null }]);
     });
 
     it('computeSentimentHistory() buckets by day across the whole range, including zero-post days, never omitted', async () => {

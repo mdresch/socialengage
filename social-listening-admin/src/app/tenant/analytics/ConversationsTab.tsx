@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { EmptyState, Slideover, RelativeTime } from '@/components/ui';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
-import { computePhraseFrequency, computePhraseHistory, type AnalyticsSummary, type DateRangeFilter } from './analyticsData';
+import { computePhraseFrequency, computePhraseHistory, computeLanguageBreakdown, type AnalyticsSummary, type DateRangeFilter } from './analyticsData';
 
 interface ConversationsTabProps {
   summary: AnalyticsSummary;
@@ -23,39 +23,52 @@ function sizeTier(count: number, maxCount: number): 'an-phrase-cloud-xl' | 'an-p
   return 'an-phrase-cloud-sm';
 }
 
+type ActiveFilter = { type: 'phrase' | 'language'; value: string } | null;
+
 /**
  * Story 8.3 — reuses Story 8.2's own client-side filter-and-recompute
  * pattern: selecting a phrase filters `summary.posts` and recomputes both
  * the word cloud and the history chart from the filtered subset using the
  * same pure functions, fed a filtered slice.
+ *
+ * Story 8.5 — generalized from a phrase-only filter to a
+ * `{ type: 'phrase' | 'language', value }` union, the same shape
+ * SentimentTab.tsx's own author/phrase filter already established, so the
+ * new Languages widget's click-to-filter follows the identical pattern.
  */
 export function ConversationsTab({ summary, range }: ConversationsTabProps) {
-  const [activePhrase, setActivePhrase] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const filteredPosts = useMemo(() => {
-    if (!activePhrase) return summary.posts;
-    return summary.posts.filter((p) => p.keyPhrases.includes(activePhrase));
-  }, [summary.posts, activePhrase]);
+    if (!activeFilter) return summary.posts;
+    return summary.posts.filter((p) =>
+      activeFilter.type === 'phrase' ? p.keyPhrases.includes(activeFilter.value) : p.language === activeFilter.value
+    );
+  }, [summary.posts, activeFilter]);
 
-  const phraseFrequency = activePhrase ? computePhraseFrequency(filteredPosts) : summary.phraseFrequency;
+  const phraseFrequency = activeFilter ? computePhraseFrequency(filteredPosts) : summary.phraseFrequency;
   const topPhrases = useMemo(() => phraseFrequency.slice(0, 5).map((p) => p.phrase), [phraseFrequency]);
-  const phraseHistory = activePhrase ? computePhraseHistory(filteredPosts, range, topPhrases) : summary.phraseHistory;
+  const phraseHistory = activeFilter ? computePhraseHistory(filteredPosts, range, topPhrases) : summary.phraseHistory;
+  const languages = activeFilter ? computeLanguageBreakdown(filteredPosts) : summary.languages;
 
   function togglePhrase(phrase: string) {
-    setActivePhrase((prev) => (prev === phrase ? null : phrase));
+    setActiveFilter((prev) => (prev?.type === 'phrase' && prev.value === phrase ? null : { type: 'phrase', value: phrase }));
+  }
+  function toggleLanguage(code: string) {
+    setActiveFilter((prev) => (prev?.type === 'language' && prev.value === code ? null : { type: 'language', value: code }));
   }
 
   const maxCount = phraseFrequency[0]?.count ?? 0;
 
   return (
     <div className="an-conversations" id="analytics-conversations-tab">
-      {activePhrase && (
+      {activeFilter && (
         <div className="an-filter-banner">
           <span>
-            Filtered by phrase: <strong>{activePhrase}</strong>
+            Filtered by {activeFilter.type}: <strong>{activeFilter.value}</strong>
           </span>
-          <button type="button" onClick={() => setActivePhrase(null)} className="an-filter-clear">
+          <button type="button" onClick={() => setActiveFilter(null)} className="an-filter-clear">
             Clear filter
           </button>
         </div>
@@ -74,7 +87,7 @@ export function ConversationsTab({ summary, range }: ConversationsTabProps) {
                 key={p.phrase}
                 type="button"
                 onClick={() => togglePhrase(p.phrase)}
-                className={`an-phrase-btn ${sizeTier(p.count, maxCount)}${activePhrase === p.phrase ? ' an-phrase-btn-active' : ''}`}
+                className={`an-phrase-btn ${sizeTier(p.count, maxCount)}${activeFilter?.type === 'phrase' && activeFilter.value === p.phrase ? ' an-phrase-btn-active' : ''}`}
               >
                 {p.phrase} <span className="an-phrase-count">{p.count}</span>
               </button>
@@ -110,6 +123,30 @@ export function ConversationsTab({ summary, range }: ConversationsTabProps) {
               </LineChart>
             </ResponsiveContainer>
           </div>
+        )}
+      </div>
+
+      <div className="an-widget" id="widget-languages">
+        <div className="an-widget-header">
+          <span className="an-widget-title">Languages</span>
+        </div>
+        {languages.length === 0 ? (
+          <EmptyState heading="No enriched posts in this range" body="Language appears here once posts have been AI-enriched." />
+        ) : (
+          <ul className="an-source-detail-list">
+            {languages.map((lang) => (
+              <li key={lang.code} className="an-source-detail-row">
+                <button
+                  type="button"
+                  onClick={() => toggleLanguage(lang.code)}
+                  className={`an-author-row${activeFilter?.type === 'language' && activeFilter.value === lang.code ? ' an-author-row-active' : ''}`}
+                >
+                  <span>{lang.label}</span>
+                  <span className="an-author-count">{lang.count}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

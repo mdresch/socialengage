@@ -130,8 +130,13 @@ describe('Story 8.3 — Conversations tab', () => {
 
   describe('AC1: key-phrase word cloud — real frequency, honest empty state, no fallback list', () => {
     it('renders real phrases with real counts', () => {
+      // 2026-08-17, Story 8.5: ConversationsTab now also reads
+      // summary.languages (the new Languages widget) — these fixtures
+      // predate that field, so `languages: []` is added here, same
+      // anticipated in-epic widening precedent as this file's other fixes
+      // above.
       const html = renderComponent('../../src/app/tenant/analytics/ConversationsTab', 'ConversationsTab', {
-        summary: { phraseFrequency: [{ phrase: 'cloud migration', count: 3 }], phraseHistory: [], posts: [] },
+        summary: { phraseFrequency: [{ phrase: 'cloud migration', count: 3 }], phraseHistory: [], posts: [], languages: [] },
         range: RANGE,
       });
       expect(html).toContain('cloud migration');
@@ -140,7 +145,7 @@ describe('Story 8.3 — Conversations tab', () => {
 
     it('renders EmptyState, never a fabricated word list, when there are zero real key phrases', () => {
       const html = renderComponent('../../src/app/tenant/analytics/ConversationsTab', 'ConversationsTab', {
-        summary: { phraseFrequency: [], phraseHistory: [], posts: [] },
+        summary: { phraseFrequency: [], phraseHistory: [], posts: [], languages: [] },
         range: RANGE,
       });
       expect(html).toContain('data-testid="empty-state"');
@@ -160,7 +165,16 @@ describe('Story 8.3 — Conversations tab', () => {
       const source = readSrc(...conversationsTabPath);
       expect(source).toMatch(/useState/);
       expect(source).toMatch(/onClick=\{.*togglePhrase/);
-      expect(source).toMatch(/prev\s*===\s*phrase\s*\?\s*null/);
+      // 2026-08-17, Story 8.5: togglePhrase()'s toggle-to-null pattern is
+      // genuinely still there, just against the generalized
+      // `{ type: 'phrase' | 'language', value }` union (ActiveFilter) this
+      // story introduced for the new Languages widget's toggleLanguage() to
+      // share, rather than the plain `activePhrase: string | null` this
+      // assertion originally checked. Narrowed to the current, structurally
+      // equivalent pattern — same "toggle clears on re-click" behavior, not
+      // weakened. Same anticipated in-epic widening precedent as Story 8.2's
+      // own `flattenForSentiment()` shape check.
+      expect(source).toMatch(/prev\?\.type\s*===\s*['"]phrase['"]\s*&&\s*prev\.value\s*===\s*phrase\s*\?\s*null/);
     });
 
     it('filtering by phrase recomputes phrase frequency from only the matching real posts (unit-level proof of the recomputation the component performs)', async () => {

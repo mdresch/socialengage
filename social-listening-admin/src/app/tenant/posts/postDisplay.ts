@@ -71,6 +71,8 @@ export interface PostEnrichmentSummary {
   entities: string[];
   keyPhrases: string[];
   modelUsed: string | null;
+  /** ISO 639-1 code (e.g. "en"), read from enrichment.detectedLanguage — Story 8.5 (ADR-0055). Both real AIProviderConnectors already compute and persist this on every enrichment; this is the first place it's surfaced. */
+  language: string | null;
 }
 
 /**
@@ -110,7 +112,8 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
     : [];
   const keyPhrases = Array.isArray(e.keyPhrases) ? e.keyPhrases.filter((k): k is string => typeof k === 'string') : [];
   const modelUsed = typeof e.modelUsed === 'string' ? e.modelUsed : null;
+  const language = typeof e.detectedLanguage === 'string' ? e.detectedLanguage : null;
 
   if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed) return null;
-  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed };
+  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed, language };
 }

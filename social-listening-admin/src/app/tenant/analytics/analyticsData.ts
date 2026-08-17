@@ -111,6 +111,8 @@ export interface SentimentPost {
   sentiment: string | null;
   keyPhrases: string[];
   title: string;
+  /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
+  language: string | null;
 }
 
 export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
@@ -124,6 +126,7 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
       keyPhrases: enrichment?.keyPhrases ?? [],
       title,
+      language: enrichment?.language ?? null,
     };
   });
 }
@@ -349,6 +352,48 @@ export function computePercentDelta(current: number, previous: number | null): P
   return { pct, trend };
 }
 
+export interface LanguageBreakdownEntry {
+  code: string;
+  label: string;
+  count: number;
+}
+
+/** Known ISO 639-1 codes this project's real AI providers can plausibly return — falls back to the raw code for anything unmapped, never dropped (Story 8.5, ADR-0055). */
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: 'English',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  it: 'Italian',
+  pt: 'Portuguese',
+  nl: 'Dutch',
+  ja: 'Japanese',
+  zh: 'Chinese',
+  ko: 'Korean',
+  ru: 'Russian',
+  ar: 'Arabic',
+  hi: 'Hindi',
+  pl: 'Polish',
+  sv: 'Swedish',
+};
+
+/**
+ * Story 8.5 (ADR-0055) — real per-language post counts, ranked descending.
+ * A post with no real language reading is excluded entirely — never an
+ * "unknown language" bucket, the same rule computeSentimentSplit() already
+ * applies to un-enriched posts.
+ */
+export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakdownEntry[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    if (!post.language) continue;
+    counts.set(post.language, (counts.get(post.language) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([code, count]) => ({ code, label: LANGUAGE_LABELS[code] ?? code, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export interface AnalyticsSummary {
   totalPosts: number;
   sentimentSplit: SentimentSplit;
@@ -361,6 +406,7 @@ export interface AnalyticsSummary {
   phraseFrequency: PhraseFrequency[];
   phraseHistory: PhraseHistoryPoint[];
   volumeHistory: VolumeHistoryPoint[];
+  languages: LanguageBreakdownEntry[];
   /** The flattened, date-filtered post set — Story 8.2/8.3's own widgets recompute from this client-side when an author/phrase filter is toggled. */
   posts: SentimentPost[];
 }
@@ -387,6 +433,7 @@ export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateR
     phraseFrequency,
     phraseHistory: computePhraseHistory(flat, range, topPhrases),
     volumeHistory: computeVolumeHistory(flat, range),
+    languages: computeLanguageBreakdown(flat),
     posts: flat,
   };
 }
