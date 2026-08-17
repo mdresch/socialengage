@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
 import {
   extractDisplayText,
@@ -119,13 +119,22 @@ function flattenPost(post: SocialPostSummary): FlatPost {
 // Main component
 // ---------------------------------------------------------------------------
 
+const VISIBLE_BATCH_SIZE = 20;
+
 interface PostsFeedClientProps {
   posts: SocialPostSummary[];
-  nextCursor: string | null;
   watchlists: Watchlist[];
 }
 
-export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClientProps) {
+/**
+ * Story 6.18 — `posts` is now the tenant's entire real, fetched set
+ * (page.tsx's own paginated loop), not one default-sized page — search/
+ * filter below already operated over whatever it was given, so widening
+ * that input is the whole fix. Rendering is still batched client-side
+ * (`visibleCount`, "Show more") purely for DOM/perf reasons, never to limit
+ * what search/filter can actually see.
+ */
+export function PostsFeedClient({ posts, watchlists }: PostsFeedClientProps) {
   const flat = useMemo(() => posts.map(flattenPost), [posts]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,6 +143,7 @@ export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClie
   const [selectedWatchlist, setSelectedWatchlist] = useState('ALL');
   const [activePost, setActivePost] = useState<FlatPost | null>(null);
   const [showRawJson, setShowRawJson] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
 
   const filteredPosts = useMemo(() => {
     return flat.filter((post) => {
@@ -156,6 +166,16 @@ export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClie
       return true;
     });
   }, [flat, selectedProvider, selectedSentiment, selectedWatchlist, searchQuery]);
+
+  // Story 6.18 — a filter/search change re-scopes the matched set, so the
+  // visible batch resets too; otherwise a narrower result could leave
+  // "Show more" stuck showing zero new posts, or a wider one could hide
+  // real matches behind a stale, too-small visible count.
+  useEffect(() => {
+    setVisibleCount(VISIBLE_BATCH_SIZE);
+  }, [selectedProvider, selectedSentiment, selectedWatchlist, searchQuery]);
+
+  const visiblePosts = useMemo(() => filteredPosts.slice(0, visibleCount), [filteredPosts, visibleCount]);
 
   function resetFilters() {
     setSearchQuery('');
@@ -198,15 +218,13 @@ export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClie
             if (filtersActive) {
               return (
                 <>
-                  <strong>{filteredPosts.length}</strong> of {flat.length} on this page
-                  {nextCursor && <span className="pf-header-count-more"> · more pages available</span>}
+                  <strong>{filteredPosts.length}</strong> of {flat.length} match
                 </>
               );
             }
             return (
               <>
-                <strong>{flat.length}</strong> post{flat.length !== 1 ? 's' : ''} on this page
-                {nextCursor && <span className="pf-header-count-more"> · more pages available</span>}
+                <strong>{flat.length}</strong> post{flat.length !== 1 ? 's' : ''}
               </>
             );
           })()}
@@ -297,7 +315,7 @@ export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClie
         />
       ) : (
         <div className="pf-list">
-          {filteredPosts.map((post) => (
+          {visiblePosts.map((post) => (
             <article
               key={post.id}
               className="pf-post-card"
@@ -374,18 +392,21 @@ export function PostsFeedClient({ posts, nextCursor, watchlists }: PostsFeedClie
             </article>
           ))}
 
-          {/* Pagination footer */}
+          {/* Pagination footer — Story 6.18: a client-side "Show more" over
+              the already-fetched, already-filtered result set, never a
+              server round trip. */}
           <div className="pf-pagination">
             <span className="pf-pagination-info">
-              {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''} shown
+              {visiblePosts.length} of {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''} shown
             </span>
-            {nextCursor && (
-              <a
-                href={`/tenant/posts?cursor=${encodeURIComponent(nextCursor)}`}
+            {visibleCount < filteredPosts.length && (
+              <button
+                type="button"
+                onClick={() => setVisibleCount((v) => v + VISIBLE_BATCH_SIZE)}
                 className="btn btn-primary btn-sm pf-next-btn"
               >
-                Next page <IconChevronRight />
-              </a>
+                Show more <IconChevronRight />
+              </button>
             )}
           </div>
         </div>

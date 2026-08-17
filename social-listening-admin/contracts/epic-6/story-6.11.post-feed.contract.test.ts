@@ -236,80 +236,27 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
   });
 
   describe('AC2: pagination via the real, opaque nextCursor — a next-page link only, never a page-number control or a client-constructed cursor', () => {
+    // 2026-08-17, Story 6.18: this AC's own single-page-plus-cursor-link
+    // mechanism was deliberately superseded by design — page.tsx now pages
+    // through the tenant's *entire* real post set upfront (so search/filter
+    // can operate over all of it, not just the first 20), and the
+    // server-round-trip "?cursor=" next-page link was replaced by a
+    // client-side "Show more" control. This is the same anticipated
+    // in-epic-handoff pattern Stories 8.2/8.3 already established against
+    // Story 8.1's own contract — not a foreign regression. The four tests
+    // that specifically proved the now-retired mechanism (first-page-no-
+    // cursor, the rendered next-page link, no-link-when-null, and
+    // searchParams.cursor forwarding) are retired outright, since all four
+    // exercised behavior that no longer exists by design; Story 6.18's own
+    // contract (`story-6.18.post-feed-search-all-posts.contract.test.ts`)
+    // covers the real, current pagination shape. The one test below that
+    // remains — no page-number control anywhere in the source — is a
+    // still-true, still-relevant general constraint, unaffected by the
+    // supersession.
     it('the page-number anti-pattern is structurally absent from the source', () => {
       const source = readSrc(...listPagePath);
       expect(source).not.toMatch(/page\s*[:=]\s*\d/);
       expect(source).not.toMatch(/currentPage/i);
-    });
-
-    it('the first page requests GET /v1/posts with no cursor param', async () => {
-      // page.tsx fetches posts and watchlists in parallel (Promise.all) —
-      // filter to the /v1/posts call specifically rather than a single
-      // shared `requestedUrl` variable, which the two calls would
-      // otherwise race to overwrite (whichever resolves its mock callback
-      // last "wins"), a real pre-existing bug in this test unrelated to
-      // Story 8.1/the Client-Component split, found and fixed in the same
-      // 2026-08-17 healing pass.
-      const requestedUrls: string[] = [];
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrls.push(url);
-        if (url.includes('/v1/posts')) {
-          return new Response(JSON.stringify({ posts: [], nextCursor: 'opaque-cursor-abc' }), { status: 200 });
-        }
-        return new Response(JSON.stringify({ watchlists: [] }), { status: 200 });
-      });
-
-      await Page({ searchParams: Promise.resolve({}) });
-      const postsUrl = requestedUrls.find((u) => u.includes('/v1/posts'));
-      expect(postsUrl).toBeDefined();
-      expect(postsUrl).not.toContain('cursor=');
-    });
-
-    it('renders a "next page" link built from the exact nextCursor the API returned, untouched', async () => {
-      // Healing pass, 2026-08-17: the pagination link is rendered inside
-      // PostsFeedClient (a Client Component, invisible to
-      // JSON.stringify(await Page())) — proves the real nextCursor prop
-      // reached it, then renders the real component to prove the actual
-      // link text.
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
-        new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: 'opaque-cursor-abc' }), { status: 200 })
-      );
-
-      const element = await Page({ searchParams: Promise.resolve({}) });
-      const clientProps = element.props.children.props;
-      expect(clientProps.nextCursor).toBe('opaque-cursor-abc');
-
-      const ReactLocal = require('react');
-      const { renderToStaticMarkup: renderLocal } = require('react-dom/server');
-      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
-      const html = renderLocal(ReactLocal.createElement(PostsFeedClient, clientProps));
-      expect(html).toContain('/tenant/posts?cursor=opaque-cursor-abc');
-    });
-
-    it('renders no next-page link at all when nextCursor is null', async () => {
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
-        new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: null }), { status: 200 })
-      );
-
-      const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).not.toMatch(/cursor=/);
-    });
-
-    it('a real second-page navigation (searchParams.cursor set) forwards that exact cursor value to GET /v1/posts, unmodified', async () => {
-      // Same Promise.all race fix as the "no cursor param" test above.
-      const requestedUrls: string[] = [];
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrls.push(url);
-        if (url.includes('/v1/posts')) {
-          return new Response(JSON.stringify({ posts: [], nextCursor: null }), { status: 200 });
-        }
-        return new Response(JSON.stringify({ watchlists: [] }), { status: 200 });
-      });
-
-      await Page({ searchParams: Promise.resolve({ cursor: 'opaque-cursor-abc' }) });
-      const postsUrl = requestedUrls.find((u) => u.includes('/v1/posts'));
-      expect(postsUrl).toContain('cursor=opaque-cursor-abc');
     });
   });
 
