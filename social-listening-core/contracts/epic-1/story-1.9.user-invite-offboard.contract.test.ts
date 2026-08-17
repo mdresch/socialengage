@@ -170,6 +170,40 @@ describe('Story 1.9 � /v1/tenants/users contract', () => {
     expect(res.status).toBe(401);
   });
 
+  // Enhancement, 2026-08-17 (Menno's own direct request, via the /tenant/users
+  // visual-upgrade pass) — GET also returns the caller's own tenant's real
+  // seat counts, so a Tenant-Admin can see utilization on their own screen.
+  // licenseSeatCount/activeSeatCount already existed (Story 1.9's own POST/
+  // PATCH handlers already read/write them) but were Platform-Admin-only via
+  // GET /v1/tenants (Story 5.12) — never exposed to a tenant's own view of
+  // itself. No new ADR: this only widens an already-real, already-tenant-
+  // scoped field onto an endpoint the caller's own tenant already reads.
+  it('enhancement, 2026-08-17: GET also returns the caller tenant\'s own real seat counts', async () => {
+    const tenant = await createTenantFixture(`T-1.9-seats-${randomUUID()}`, 7);
+    await setActiveSeatCount(tenant.id, 3);
+    const res = await request(app).get('/v1/tenants/users')
+      .set('X-Test-Identity', adminHeader(tenant.id));
+    expect(res.status).toBe(200);
+    expect(res.body.seats).toEqual({ licenseSeatCount: 7, activeSeatCount: 3 });
+  });
+
+  it('enhancement, 2026-08-17: seat counts are also returned for a tenant_user caller (same no-role-gate-on-GET rule as the user list itself)', async () => {
+    const tenant = await createTenantFixture(`T-1.9-seats-user-${randomUUID()}`, 4);
+    const res = await request(app).get('/v1/tenants/users')
+      .set('X-Test-Identity', userHeader(tenant.id));
+    expect(res.status).toBe(200);
+    expect(res.body.seats).toEqual({ licenseSeatCount: 4, activeSeatCount: 0 });
+  });
+
+  it('enhancement, 2026-08-17: seat counts are the caller\'s own tenant only, never another tenant\'s (RLS)', async () => {
+    const tenantA = await createTenantFixture(`T-1.9-seats-a-${randomUUID()}`, 9);
+    await createTenantFixture(`T-1.9-seats-b-${randomUUID()}`, 2);
+    const res = await request(app).get('/v1/tenants/users')
+      .set('X-Test-Identity', adminHeader(tenantA.id));
+    expect(res.status).toBe(200);
+    expect(res.body.seats.licenseSeatCount).toBe(9);
+  });
+
   // AC5 � PATCH role gate + validation
 
   it('AC5: PATCH returns 403 for tenant_user caller', async () => {
