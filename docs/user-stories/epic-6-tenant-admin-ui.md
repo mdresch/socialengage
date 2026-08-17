@@ -385,6 +385,28 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ---
 
+## Story 6.19 — Render the post detail body as real, formatted Markdown
+
+**Source:** Story 3.10/ADR-0053's already-built `body_markdown` field, against Story 6.11's own post detail screen · **Status:** Ready — no new ADR needed, exposes an already-real, already-populated column over REST (`SocialPostSummary`/`SocialPostFull`, unmodified queries widened, not a new endpoint), the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 6.16 already established for this exact pair of screens.
+**Built:** 2026-08-17 — social-listening-admin@4f099a6 (core half: social-listening-core@aa4f317)
+
+**Requested directly by Menno** ("could you ensure the body that is presented in the UI is rendered to Markdown language? it now displays raw markdown"), found to be a real, confirmed gap on investigation, not a rendering-only bug: `social_posts.body_markdown` (Story 3.10, all three real connectors' `ingestX()` functions already populate it — clean prose, HTML stripped, converted via the canonical `htmlToMarkdown()` pipeline) has never been exposed by `GET /v1/posts`/`GET /v1/posts/:id` at all — confirmed directly against `socialPostStore.ts`'s `SocialPostSummary`/`SocialPostFull` interfaces and their own SQL queries, neither of which selects `body_markdown`. What the UI shows today is `rawPayload.description` — for Newswire/tenant-owned-feed, confirmed live to still contain raw, un-stripped HTML tags (`<p>...</p>`), rendered as literal escaped text since React never treats a string prop as HTML. No Markdown-rendering library exists anywhere in `social-listening-admin` today either — even once fetched, `body_markdown` would need real rendering, not just display.
+
+**As a** tenant user or Tenant-Admin viewing a post's detail,
+**I want** the ingested article body shown as real, formatted text — real headers, bold, lists, links — not raw HTML tags or unrendered Markdown syntax,
+**so that** I can actually read the content the way it was meant to be read, not decode markup by eye.
+
+**Acceptance Criteria**
+- `SocialPostSummary`/`SocialPostFull` (`socialPostStore.ts`) gain `bodyMarkdown: string | null`, read from the already-populated `social_posts.body_markdown` column — the three existing queries (`queryFirstPage`, `queryAfterCursor`, `getSocialPostById`) widened to select it, no new query, no new endpoint, no migration.
+- `social-listening-admin`'s own `SocialPostSummary` type (`core-client.ts`) gains the matching `bodyMarkdown` field — `SocialPostFull` inherits it automatically (`extends SocialPostSummary`).
+- A real Markdown-rendering dependency is added (renders to real React elements, not `dangerouslySetInnerHTML` — no hand-rolled regex parsing, no raw-HTML injection risk) and used to render `post.bodyMarkdown` on both post-detail surfaces: `PostsFeedClient.tsx`'s Slideover ("Ingested Article Body") and the standalone `/tenant/posts/:id` route, real headers/bold/lists/links rendering as actual formatted HTML.
+- A post with `bodyMarkdown: null` (ingested before Story 3.10 shipped, or a future connector that never populates it) falls back to the existing plain-text `snippet` display — never a blank body, never a crash.
+- The post-card's own short teaser snippet (`PostsFeedClient.tsx`'s list view, not the detail view) is unaffected — this story only changes the fuller detail body, not the compact card preview.
+
+**Explicitly out of scope:** any change to `htmlToMarkdown()`/Story 3.10's own conversion pipeline (already correct, already shipped) — this story only exposes and renders its existing output; any change to `rawPayload`/the card-list snippet extraction; a future connector that doesn't populate `bodyMarkdown` — the honest `null`-falls-back-to-snippet behavior already covers that case without a new decision.
+
+---
+
 ## Story 6.17 — Tenant-wide activate/deactivate control on the tenant-owned-feed connector screen
 
 **Source:** ADR-0051 (Accepted 2026-08-12), extending Story 6.15's own already-built wiring pattern to a screen Story 6.15 never covered · **Status:** Ready — no new ADR needed. This is not a new architectural decision: ADR-0051 already fully decided the two-table, ownership-scoped activation mechanism and its REST surface; ADR-0028/ADR-0034 already decided the `tenant_admin`-only authorization split for the tenant-wide scope. This story wires an already-decided, already-built, already-generic backend mechanism onto one more screen — the identical "expose/wire an already-decided policy over REST, no new decision" category Story 6.16's own text used to justify skipping a new ADR for `POST /v1/posts/:id/enrich`, and the category Story 6.15 itself already established for wiring the same mechanism onto the Story 6.3/6.5 screens.
