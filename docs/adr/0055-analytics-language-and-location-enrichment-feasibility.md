@@ -1,6 +1,12 @@
 # ADR-0055: Language and location enrichment for the Analytics Dashboard — surfacing an already-captured field vs. a still-absent one
 
-**Status:** Proposed
+**Status:** Accepted (2026-08-17)
+
+**Acceptance note (2026-08-17).** Accepted by Menno, via a structured approval decision in the orchestrating session — the orchestrating assistant summarized this ADR's two verdicts (Language: buildable at near-zero cost, admin-only fix; Location: verdict reaffirmed, GNews `source.country` finding named and declined), and Menno replied "yes please extend the language field," directly approving the Language half and moving on to a separate, related question about Location (see this ADR's own new Amendment Log entry). Accepted as drafted, no revisions to the Decision text itself. **Story 8.5** (`docs/user-stories/epic-8-analytics-dashboard.md`) moves from Blocked to **Ready**.
+
+## Amendment Log
+
+- **2026-08-17, same day as acceptance:** Menno asked a follow-up feasibility question this ADR's original Decision did not evaluate — whether the enrichment AI *provider itself* (Azure OpenAI's generative completion, explicitly not Azure AI Language's structured NER/entity-recognition capability) could be asked to infer a likely origin location from a Newswire post's own body text (a wire-service "dateline"), scoped to Newswire only as a starting point, in preparation for eventually revisiting Location. This is a genuinely different data source than anything this ADR's original Location research considered (which was entirely about structured, connector-provided geo-metadata) — tracked as a separate, new candidate ADR rather than folded into this one's already-Accepted Decision text. See `docs/adr/README.md`'s "Candidate future ADRs" list.
 **Source:** Not specified in the design spec or any prior ADR. Requested directly by Menno, 2026-08-17, the same day ADR-0054/Epic 8 shipped, after a structured comparison between the real, built Analytics Dashboard (`social-listening-admin/src/app/tenant/analytics/`) and the earlier Google AI Studio design reference found two categories of widget "NOT BUILDABLE" for lack of a real field: a Languages breakdown (Sources/Conversations tabs in the reference) and everything Location-related (world map, region filters, geo-density). Menno's own words: *"could we add an ADR to build the missing fields in the backend the language and the revisit of the location as it brings many graphical datapoints in the dashboards?"* — this ADR investigates both independently rather than assuming a shared answer.
 
 ## Context
