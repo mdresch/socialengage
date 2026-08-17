@@ -16,7 +16,20 @@ import {
   WikipediaRevision,
 } from './wikipediaConnector';
 
-const DEFAULT_QUERY = 'Anthropic';
+/**
+ * Story 2.14 (ADR-0042 §5) — one discovery query per active watchlist
+ * targeting 'wikipedia' whose matchType is keyword/hashtag/account, built
+ * from that watchlist's own terms (space-joined). boolean-typed watchlists
+ * are skipped here (real AST-to-CirrusSearch translation is still ADR-0042's
+ * own unverified open question, see wikipedia-connector/SKILL.md) — they
+ * remain fully evaluated for event-matching once content is discovered by
+ * some other watchlist's own query.
+ */
+function buildDiscoveryQueries(watchlists: Watchlist[]): string[] {
+  return watchlists
+    .filter((w) => w.matchType !== 'boolean' && w.terms && w.terms.length > 0)
+    .map((w) => (w.terms as string[]).join(' '));
+}
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
 async function gatedAcquire(tenantId: string): Promise<void> {
@@ -105,18 +118,21 @@ export async function ingestWikipediaRevisions(
 }
 
 /**
- * One poll cycle: discovery (search for articles matching `query`, ingest
- * any genuinely new pageid's current revision) followed by re-poll (fetch
- * recentchanges for every already-tracked article's own current title,
- * ingest any qualifying revision not already stored) — ADR-0042 Decision
- * §2's own re-poll-on-edit cadence, never a one-shot snapshot. `query`
- * defaults to one representative term, the same "no real per-watchlist
- * native query translation yet" limitation pollGNewsSearch() already has —
- * see .claude/skills/wikipedia-connector/SKILL.md.
+ * One poll cycle: discovery (search for articles matching one or more
+ * queries, ingest any genuinely new pageid's current revision) followed by
+ * re-poll (fetch recentchanges for every already-tracked article's own
+ * current title, ingest any qualifying revision not already stored) —
+ * ADR-0042 Decision §2's own re-poll-on-edit cadence, never a one-shot
+ * snapshot. `query`, when explicitly supplied, runs exactly one search for
+ * that literal (Story 2.13's own original shape, unchanged). When omitted —
+ * the real production call site, bootstrapConnectors.ts, never supplies one
+ * — discovery is derived from the tenant's own active watchlists targeting
+ * 'wikipedia' instead (Story 2.14, ADR-0042 §5) — see
+ * .claude/skills/wikipedia-connector/SKILL.md.
  */
 export async function pollWikipedia(
   tenantId: string,
-  query: string = DEFAULT_QUERY
+  query?: string
 ): Promise<RunIngestionAttemptResult> {
   return runIngestionAttempt({
     tenantId,
@@ -137,18 +153,21 @@ export async function pollWikipedia(
       const alreadyTracked = await listAuthorsByPlatform(tenantId, WIKIPEDIA_PROVIDER_ID);
       const trackedPageIds = new Set(alreadyTracked.map((a) => a.externalAuthorId));
 
-      await gatedAcquire(tenantId);
-      const searchResults = await fetchWikipediaSearch(query);
-      for (const result of searchResults) {
-        const pageIdStr = String(result.pageid);
-        if (trackedPageIds.has(pageIdStr)) continue;
-
+      const discoveryQueries = query !== undefined ? [query] : buildDiscoveryQueries(watchlists);
+      for (const discoveryQuery of discoveryQueries) {
         await gatedAcquire(tenantId);
-        const revision = await fetchWikipediaRevision(result.title);
-        const discovered = await ingestWikipediaRevisions(tenantId, runId, [revision], watchlists);
-        postsIngested += discovered.postsIngested;
-        postsSkipped += discovered.postsSkipped;
-        trackedPageIds.add(pageIdStr);
+        const searchResults = await fetchWikipediaSearch(discoveryQuery);
+        for (const result of searchResults) {
+          const pageIdStr = String(result.pageid);
+          if (trackedPageIds.has(pageIdStr)) continue;
+
+          await gatedAcquire(tenantId);
+          const revision = await fetchWikipediaRevision(result.title);
+          const discovered = await ingestWikipediaRevisions(tenantId, runId, [revision], watchlists);
+          postsIngested += discovered.postsIngested;
+          postsSkipped += discovered.postsSkipped;
+          trackedPageIds.add(pageIdStr);
+        }
       }
 
       // Phase 2: re-poll every already-tracked article for new revisions.
