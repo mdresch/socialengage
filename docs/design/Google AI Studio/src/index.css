@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-accent: #2563EB;
+    --color-accent-hover: #1D4ED8;
+    --color-accent-contrast: #FFFFFF;
+    --color-surface-bar: #0F172A;
+    --color-surface-sidebar: #1E293B;
+    --color-surface-page: #F8FAFC;
+    --color-surface-card: #FFFFFF;
+    --color-border: #E2E8F0;
+    --color-text-primary: #0F172A;
+    --color-text-secondary: #64748B;
+    --color-text-disabled: #94A3B8;
+    --color-text-on-dark: #F1F5F9;
+    --color-status-healthy: #16A34A;
+    --color-status-degraded: #D97706;
+    --color-status-failing: #DC2626;
+    --color-status-inactive: #94A3B8;
+    --color-destructive: #DC2626;
+    --color-destructive-hover: #B91C1C;
+    
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom utility classes */
+.focus-ring {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbars for data-dense tables and drawers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
