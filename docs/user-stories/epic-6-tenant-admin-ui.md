@@ -311,6 +311,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.14 — Access-history view (extends Story 6.8's user management screen)
 
 **Source:** ADR-0032 §9 (Accepted), against Story 5.17's real REST surface · **Status:** Ready — no new ADR needed. Already named as a real, deliberate gap in Story 6.8's own text ("a natural companion, not required by this story's own Acceptance Criteria to ship in the same pass") and its own 2026-08-10 build note ("remains unbuilt, per this story's own named scope limit") — this story closes that named gap, it doesn't discover a new one.
+**Built:** 2026-08-17 — social-listening-admin@a27aa10
 
 **Drafted 2026-08-12**, same exhaustive sweep as Story 6.13 above. `GET /v1/tenants/users/:id/access-history` (Story 5.17) is real, `tenant_admin`-scoped, RLS-filtered, and has no frontend caller anywhere.
 
