@@ -8,6 +8,8 @@ import { getVerifiedActivations, TenantOwnedFeedActivationRow } from './tenantOw
 import { ParsedFeedItem } from './feedItemParser';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
+import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
+import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
 async function gatedAcquire(tenantId: string): Promise<void> {
@@ -40,6 +42,11 @@ export async function ingestTenantOwnedFeedItems(
   let postsIngested = 0;
   let postsSkipped = 0;
 
+  // ADR-0058 Decision §6 — loaded once per poll batch, never once per post.
+  const watchlists = (await listActiveWatchlistsForTenant(tenantId)).filter((w) =>
+    w.platformIds.includes(TENANT_OWNED_FEED_PROVIDER_ID)
+  );
+
   for (const item of items) {
     const normalized = tenantOwnedFeedConnector.normalize({ item, verifiedDomain: activation.domain });
 
@@ -69,7 +76,7 @@ export async function ingestTenantOwnedFeedItems(
     const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
-    await insertSocialPost({
+    const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
@@ -78,6 +85,14 @@ export async function ingestTenantOwnedFeedItems(
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
+    });
+
+    // ADR-0058 Decision §1/§6 — post-commit, same as pollGNewsSearch.ts.
+    await publishSocialPostIngestedEvents(tenantId, TENANT_OWNED_FEED_PROVIDER_ID, watchlists, {
+      postId: inserted.id,
+      text: enrichmentText,
+      authorExternalId: normalized.authorExternalId,
+      publishedAt: normalized.publishedAt,
     });
 
     postsIngested += 1;

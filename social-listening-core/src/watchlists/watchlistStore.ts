@@ -1,4 +1,5 @@
 import { withTenant } from '../db/withTenant';
+import { listUsers } from '../identity/identityResolution';
 
 /**
  * Database row shape for the watchlists table — matches
@@ -312,6 +313,26 @@ export async function updateWatchlist(
     undefined,
     userId
   );
+}
+
+/**
+ * ADR-0058 Decision §3 — every active watchlist across every owning user in
+ * a tenant, for the ingestion pipeline's own watchlist-match event
+ * publishing (Story 5.19). Deliberately distinct from the owner-scoped
+ * listWatchlists() above — that function's RLS predicate (migrations/0025)
+ * requires app.user_id to match a real owner, with no "see every user"
+ * fallback, so it structurally cannot answer "every watchlist in this
+ * tenant." Rather than mint a new, standing elevated-privilege Postgres
+ * role for this one read (considered and rejected — see ADR-0058's own
+ * Amendment Log), this iterates the tenant's own users (listUsers()) and
+ * reuses listWatchlists() once per user, unmodified — a real but small
+ * cost (once per poll batch, not once per post) at this project's actual
+ * scale. See .claude/skills/ingestion-events/SKILL.md.
+ */
+export async function listActiveWatchlistsForTenant(tenantId: string): Promise<Watchlist[]> {
+  const users = await listUsers(tenantId);
+  const pages = await Promise.all(users.map((user) => listWatchlists(tenantId, user.id)));
+  return pages.flatMap((page) => page.watchlists).filter((watchlist) => watchlist.isActive);
 }
 
 /**
