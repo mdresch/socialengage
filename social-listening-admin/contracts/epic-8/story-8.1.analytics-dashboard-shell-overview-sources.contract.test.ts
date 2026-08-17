@@ -303,17 +303,17 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       expect(source).toContain('/api/analytics/summary');
     });
 
-    // 2026-08-17 (Story 8.2 built): the Sentiment stub this test originally
-    // asserted was correct only until Story 8.2 shipped — this epic's own
-    // text always scoped Sentiment tab content out of Story 8.1
-    // specifically because it belonged to Story 8.2 (docs/user-stories/
-    // epic-8-analytics-dashboard.md), an anticipated in-epic handoff, not a
-    // foreign regression. Narrowed to the one stub still real: Conversations
-    // (Story 8.3), not yet built.
-    it('renders an honest "not built yet" notice for Conversations, never a fabricated widget', () => {
-      const source = readSrc(...clientPath);
-      expect(source).toMatch(/not built yet.*Story 8\.3/);
-    });
+    // 2026-08-17 (Story 8.2, then Story 8.3, both built same day): this
+    // test originally asserted "not built yet" stub text for Sentiment and
+    // Conversations — this epic's own text always scoped both tabs' real
+    // content out of Story 8.1 specifically because they belonged to
+    // Stories 8.2/8.3 (docs/user-stories/epic-8-analytics-dashboard.md), an
+    // anticipated in-epic handoff, not a foreign regression each time. Both
+    // stubs are now correctly gone — see each story's own dated note in
+    // docs/implementation-log.md. Retired: this test has no remaining stub
+    // to check; AnalyticsClient.tsx's real wiring of all four tabs is
+    // proven directly by each tab's own contract (story-8.1's own Overview/
+    // Sources checks above, story-8.2.sentiment-tab, story-8.3.conversations-tab).
 
     it('the sidebar gains a real Analytics nav item', () => {
       const React = require('react');

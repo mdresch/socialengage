@@ -8,6 +8,7 @@ import type { AnalyticsSummary, DateRangeFilter } from './analyticsData';
 import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
 import { SentimentTab } from './SentimentTab';
+import { ConversationsTab } from './ConversationsTab';
 import type { AnalyticsTab } from './page';
 
 const TABS: { id: AnalyticsTab; label: string }[] = [
@@ -94,9 +95,7 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
         {activeTab === 'overview' && <OverviewTab summary={summary} />}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
-        {activeTab === 'conversations' && (
-          <p className="an-coming-soon">The Conversations tab is not built yet (Story 8.3).</p>
-        )}
+        {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
       </div>
     </div>
   );

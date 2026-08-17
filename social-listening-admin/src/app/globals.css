@@ -3490,3 +3490,33 @@ button:disabled {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
+
+/* ---------------------------------------------------------------------- */
+/* Conversations tab (Story 8.3, ADR-0054)                                 */
+/* ---------------------------------------------------------------------- */
+
+.an-conversations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Word-cloud size tiers — font-size only varies, relative to the top real count (never a fabricated/absolute scale). */
+.an-phrase-cloud-sm {
+  font-size: 0.6875rem;
+}
+
+.an-phrase-cloud-md {
+  font-size: 0.8125rem;
+}
+
+.an-phrase-cloud-lg {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.an-phrase-cloud-xl {
+  font-size: 1.125rem;
+  font-weight: 650;
+}

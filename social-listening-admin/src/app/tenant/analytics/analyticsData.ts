@@ -147,7 +147,8 @@ export interface SentimentHistoryPoint {
   negative: number;
 }
 
-function enumerateDays(range: DateRangeFilter): string[] {
+/** Every day in the range, inclusive, 'YYYY-MM-DD' — shared by the sentiment-history and phrase-history bucketing (Stories 8.2/8.3 both need the identical day-enumeration rule). */
+export function enumerateDays(range: DateRangeFilter): string[] {
   const days: string[] = [];
   let cursor = new Date(`${range.startDate}T00:00:00.000Z`);
   const end = new Date(`${range.endDate}T00:00:00.000Z`);
@@ -232,6 +233,57 @@ export function computePhrasesBySentiment(
     .slice(0, limit);
 }
 
+/**
+ * Story 8.3 — real `enrichment.keyPhrases` frequency across *every* post
+ * (not bucketed by sentiment, unlike Story 8.2's phrase clouds) — the
+ * Conversations tab's own word cloud. Ranked descending; an empty real
+ * result returns an empty array, never a fallback (AC1, closing the
+ * uncommitted prototype's `MAIN_PHRASES` fabricated fallback).
+ */
+export function computePhraseFrequency(posts: SentimentPost[], limit = 20): PhraseFrequency[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const phrase of post.keyPhrases) {
+      counts.set(phrase, (counts.get(phrase) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([phrase, count]) => ({ phrase, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+/** One point per day in range; one numeric key per phrase in `topPhrases`, real per-day count, zero when that phrase didn't appear that day. */
+export interface PhraseHistoryPoint {
+  date: string;
+  [phrase: string]: number | string;
+}
+
+/**
+ * Bucketed by day (ADR-0054 Open Question 7), tracking only `topPhrases`
+ * (the word cloud's own top entries) so the chart stays a real, readable
+ * trend line per phrase rather than one line per every phrase ever seen
+ * (AC2, replacing the prototype's fully-static, sine-wave `PHRASES_HISTORY`).
+ */
+export function computePhraseHistory(posts: SentimentPost[], range: DateRangeFilter, topPhrases: string[]): PhraseHistoryPoint[] {
+  const byDay = new Map<string, Record<string, number>>();
+  for (const day of enumerateDays(range)) {
+    byDay.set(day, Object.fromEntries(topPhrases.map((phrase) => [phrase, 0])));
+  }
+  for (const post of posts) {
+    if (!post.publishedAt) continue;
+    const day = post.publishedAt.slice(0, 10);
+    const bucket = byDay.get(day);
+    if (!bucket) continue;
+    for (const phrase of post.keyPhrases) {
+      if (Object.prototype.hasOwnProperty.call(bucket, phrase)) {
+        bucket[phrase] += 1;
+      }
+    }
+  }
+  return Array.from(byDay.entries()).map(([date, counts]) => ({ date, ...counts }));
+}
+
 export interface AnalyticsSummary {
   totalPosts: number;
   sentimentSplit: SentimentSplit;
@@ -241,18 +293,22 @@ export interface AnalyticsSummary {
   topCritics: AuthorRanking[];
   positivePhrases: PhraseFrequency[];
   negativePhrases: PhraseFrequency[];
-  /** The flattened, date-filtered post set — Story 8.2's own widgets recompute from this client-side when an author/phrase filter is toggled. */
+  phraseFrequency: PhraseFrequency[];
+  phraseHistory: PhraseHistoryPoint[];
+  /** The flattened, date-filtered post set — Story 8.2/8.3's own widgets recompute from this client-side when an author/phrase filter is toggled. */
   posts: SentimentPost[];
 }
 
 /**
- * The one aggregation Story 8.1's Overview and Sources tabs, and Story
- * 8.2's Sentiment tab, all read from — Overview never computes anything of
- * its own beyond this (AC7).
+ * The one aggregation Story 8.1's Overview and Sources tabs, Story 8.2's
+ * Sentiment tab, and Story 8.3's Conversations tab all read from —
+ * Overview never computes anything of its own beyond this (AC7).
  */
 export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateRangeFilter): AnalyticsSummary {
   const filtered = filterPostsByDateRange(posts, range);
   const flat = flattenForSentiment(filtered);
+  const phraseFrequency = computePhraseFrequency(flat);
+  const topPhrases = phraseFrequency.slice(0, 5).map((p) => p.phrase);
   return {
     totalPosts: filtered.length,
     sentimentSplit: computeSentimentSplit(filtered),
@@ -262,6 +318,8 @@ export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateR
     topCritics: computeTopAuthorsBySentiment(flat, 'negative'),
     positivePhrases: computePhrasesBySentiment(flat, 'positive'),
     negativePhrases: computePhrasesBySentiment(flat, 'negative'),
+    phraseFrequency,
+    phraseHistory: computePhraseHistory(flat, range, topPhrases),
     posts: flat,
   };
 }
