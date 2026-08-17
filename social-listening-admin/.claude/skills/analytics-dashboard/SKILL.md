@@ -57,7 +57,7 @@ A Tenant User/Tenant-Admin-facing screen (`/tenant/analytics`) that aggregates a
 - Client-side aggregation over paginated `GET /v1/posts` does not scale indefinitely (ADR-0054 Decision §3, Open Question 2) — no specific tenant post-volume threshold is decided as "too slow," left to real usage to surface.
 - Per-widget CSV/JSON export: not built, not decided (ADR-0054 Open Question 3).
 - Sources tab has no per-source sentiment score or per-source volume-over-time chart — real, buildable gaps (the exact data `computeSourceBreakdown()` already returns per `providerId`) named during a 2026-08-17 retrospective comparison against the Google AI Studio design reference, not built by Story 8.4 (Overview-only scope) — a real candidate for a future story.
-- `src/lib/mockData.ts`/`src/lib/types.ts` remain dead, already-committed, generically-themed demo data unrelated to this component (ADR-0054 Open Question 4) — this component's own contract explicitly asserts nothing here imports either file, but removing them entirely is a separate, still-open cleanup item.
+- **Closed, 2026-08-17** — `src/lib/mockData.ts`/`src/lib/types.ts` (dead, already-committed, generically-themed demo data, ADR-0054 Open Question 4) and the two other untracked prototype siblings `LocationDashboardTab.tsx` was already deleted alongside (`SentimentDashboardTab.tsx`, `ConversationsDashboardTab.tsx` — kept at the time in case Stories 8.2/8.3 wanted to reuse them; neither real story did) are all now actually deleted, not just unreferenced. Requested directly by Menno. See this component's own contract, `story-8.1...contract.test.ts`'s matching dated describe block.
 
 ## Relations to other components
 

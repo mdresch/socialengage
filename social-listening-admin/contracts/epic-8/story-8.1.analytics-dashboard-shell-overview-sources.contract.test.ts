@@ -85,6 +85,15 @@ const fetchSummaryPath = ['app', 'tenant', 'analytics', 'fetchAnalyticsSummary.t
 const summaryRoutePath = ['app', 'api', 'analytics', 'summary', 'route.ts'];
 const sidebarPath = ['components', 'shell', 'AppSidebar.tsx'];
 const locationTabPath = ['app', 'tenant', 'analytics', 'LocationDashboardTab.tsx'];
+// Dated addition, 2026-08-17 (cleanup pass, ADR-0054 Open Question 4
+// finally closed — requested directly by Menno): the other two untracked
+// analytics prototype files, and the dead-since-before-this-ADR
+// src/lib/mockData.ts/types.ts, all now actually deleted rather than just
+// unreferenced.
+const sentimentDashboardTabPath = ['app', 'tenant', 'analytics', 'SentimentDashboardTab.tsx'];
+const conversationsDashboardTabPath = ['app', 'tenant', 'analytics', 'ConversationsDashboardTab.tsx'];
+const mockDataPath = ['lib', 'mockData.ts'];
+const libTypesPath = ['lib', 'types.ts'];
 
 function readSrc(...segments: string[]): string {
   return fs.readFileSync(path.join(ADMIN_ROOT, 'src', ...segments), 'utf8');
@@ -460,6 +469,18 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
   describe('ADR-0054 Decision §4: the Location tab is not built, its dead prototype file is gone', () => {
     it('LocationDashboardTab.tsx no longer exists — nothing owns fixing a permanently-unused, non-compiling file', () => {
       expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...locationTabPath))).toBe(false);
+    });
+  });
+
+  describe('ADR-0054 Open Question 4, closed 2026-08-17 — the dead prototype/demo files are actually deleted, not just unreferenced', () => {
+    it('SentimentDashboardTab.tsx and ConversationsDashboardTab.tsx (the two untracked prototype siblings LocationDashboardTab.tsx was deleted alongside, at the time deliberately kept in case Stories 8.2/8.3 wanted to reuse them) no longer exist — both real Stories 8.2/8.3 shipped their own SentimentTab.tsx/ConversationsTab.tsx instead, so nothing ever needed them', () => {
+      expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...sentimentDashboardTabPath))).toBe(false);
+      expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...conversationsDashboardTabPath))).toBe(false);
+    });
+
+    it('src/lib/mockData.ts and src/lib/types.ts no longer exist — the dead, already-committed, generically-themed demo data this ADR named as a standing cleanup item', () => {
+      expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...mockDataPath))).toBe(false);
+      expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...libTypesPath))).toBe(false);
     });
   });
 
