@@ -461,3 +461,27 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - Zero regressions to Story 6.11's own existing behavior (post detail Slideover, raw-JSON inspection, `RunEnrichmentButton`, empty states) — this story only changes the fetch/pagination shape feeding `PostsFeedClient`.
 
 **Explicitly out of scope:** any change to `GET /v1/posts` itself or `social-listening-core` (matches ADR-0054 Decision §3's own precedent — no new query params, no server-side search); the client-side aggregation scale ceiling this pattern inherits (named, not resolved, the same way ADR-0054 Open Question 2 already named it for Analytics — a tenant with a very large post volume faces the same real cost); any new filter dimension beyond the four (search/Provider/Sentiment/Watchlist) already built.
+
+---
+
+## Story 6.20 — Multi-feed administration for the tenant-owned-feed connector (list, edit, remove)
+
+**Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Ready
+
+**Requested directly by Menno** ("what needs to change to enable the feeds to be administered?", then "let's build the new ADR"). The storage/polling layers already supported multiple feeds per tenant (`tenant_owned_feed_activations` has no uniqueness constraint; `getVerifiedActivations()`/`pollTenantOwnedFeed()` already iterate every verified row) — but nothing above them exposed it: `tenantOwnedFeedRouter.ts` had exactly two routes (`connect`, `verify-domain`), and `TenantOwnedFeedSetup.tsx` was a single-activation state machine with no path to a second feed once one was verified.
+
+**As a** Tenant-Admin who wants to monitor more than one of my own domains/feeds,
+**I want** to see, add, edit, and remove every feed I've configured, not just the one I set up first,
+**so that** I'm not limited to a single tenant-owned feed for lack of any way to reach a second one through the product.
+
+**Acceptance Criteria**
+- `GET /v1/connectors/tenant-owned-feed/activations` (new, `tenant_admin` only) lists every activation for the caller's tenant regardless of status (`pending`/`verified`/`expired`/`removed`): `{ id, domain, feedUrl, status, txtRecordHost, txtRecordValue, tokenExpiresAt, verifiedAt, createdAt }`. `txtRecordValue` is recomputed via the already-existing `expectedTxtRecordValue()`, never separately persisted.
+- `PATCH /v1/connectors/tenant-owned-feed/:id` (new, `tenant_admin` only) accepts `{ feedUrl }` only — a request that includes `domain` is a `400`. Editable regardless of the activation's current status (`pending` or `verified`).
+- `DELETE /v1/connectors/tenant-owned-feed/:id` (new, `tenant_admin` only) is a soft removal — transitions `status` to a new `'removed'` value (migration widens the existing `CHECK` constraint via `DROP CONSTRAINT`/`ADD CONSTRAINT`, since PostgreSQL cannot alter a `CHECK` constraint in place; no new `GRANT` needed). `getVerifiedActivations()` already filters on `status = 'verified'`, so a removed row stops being polled with zero poller change. Already-ingested `SocialPost`/`Author` rows are never touched.
+- `connect` and `verify-domain` both gain the same `tenant_admin` role check every other tenant-wide connector action in this codebase already uses (they previously had none) — a `tenant_user` calling either now receives `403`.
+- `connect` auto-verifies a new activation server-side, skipping DNS TXT verification entirely, when the caller's tenant already holds a `status = 'verified'` activation for the same `domain` — domain ownership doesn't need re-proving per feed URL. Two feeds under one already-verified domain is explicitly a supported, intended shape.
+- `tenantOwnedFeedStore.ts` gains `listActivations(tenantId)`, `updateFeedUrl(tenantId, id, feedUrl)`, `removeActivation(tenantId, id)` — each `withTenant()`-scoped like every existing function in this file.
+- Admin UI: `TenantOwnedFeedSetup.tsx`'s single-activation state machine is replaced by a real per-tenant feed list (domain, feed URL, status, verified/expiry date), with per-row actions — "Verify now" (`pending` only), "Edit feed URL" (any status), "Remove" (any status, behind a `ConfirmModal`, per Design Spec §2's "Confirmed irreversibility" principle) — plus a persistent "Connect another feed" action reusing the existing connect → publish-TXT-record → verify flow unconditionally, never gated on "only if none exist yet."
+- The list screen visually distinguishes per-feed verification status from the separate, tenant-wide `ActivateDeactivateButton` (ADR-0051) state — a tenant must be able to tell, without guessing, that a verified feed still isn't being polled while the connector-wide switch is off.
+
+**Explicitly out of scope:** any cap on feed count per tenant (left unbounded, ADR-0057's own named Open Question); a scheduled cleanup job for stale `pending` or `removed` rows (pre-existing gap, not closed by this story); a token-regenerate/retry endpoint for an expired `pending` activation (remove-and-reconnect is the sanctioned path); Platform-Admin cross-tenant feed visibility (a real, separate gap ADR-0057 named as a candidate future ADR, not this story's scope); any change to Newswire's own hardcoded, non-tenant-configurable feed set.
