@@ -173,6 +173,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.8 — Tenant-Admin: user invitation and management screen
 
 **Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.9's real REST surface · **Status:** Ready — no new ADR needed, Story 1.5/6.3/6.4's own precedent for ordinary CRUD/UI surface against an already-real REST surface. Practically sequenced after Stories 1.9 and 6.2 (role-gating) both existing.
+**Built:** 2026-08-10 — social-listening-admin@6b7fc00 (backfilled 2026-08-17, per the Built convention's forward-only rule, while touching this story again — the field records the original build commit only, per its own fixed two-shape format; this screen has since been extended multiple times, most recently a 2026-08-17 visual redesign — see `docs/implementation-log.md` for the full commit history, not this single field)
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: no Epic 6 screen lets a Tenant-Admin invite anyone, despite the flow being designed at ADR level (ADR-0032 §6) and referenced as already-working in Story 5.9's own Acceptance Criteria — no screen exists to actually drive it.
 
