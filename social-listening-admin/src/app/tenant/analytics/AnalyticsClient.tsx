@@ -7,6 +7,7 @@ import { GlobalDateRangePicker, type DateRangeValue } from './GlobalDateRangePic
 import type { AnalyticsSummary, DateRangeFilter } from './analyticsData';
 import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
+import { SentimentTab } from './SentimentTab';
 import type { AnalyticsTab } from './page';
 
 const TABS: { id: AnalyticsTab; label: string }[] = [
@@ -92,9 +93,7 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
       <div className="an-tab-panel" role="tabpanel">
         {activeTab === 'overview' && <OverviewTab summary={summary} />}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}
-        {activeTab === 'sentiment' && (
-          <p className="an-coming-soon">The Sentiment tab is not built yet (Story 8.2).</p>
-        )}
+        {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && (
           <p className="an-coming-soon">The Conversations tab is not built yet (Story 8.3).</p>
         )}

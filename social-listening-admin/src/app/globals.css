@@ -3309,3 +3309,184 @@ button:disabled {
   gap: var(--space-3);
   font-size: 0.8125rem;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Sentiment tab (Story 8.2, ADR-0054)                                     */
+/* ---------------------------------------------------------------------- */
+
+.an-sentiment {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.an-filter-banner {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+}
+
+.an-filter-clear {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.an-sent-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.an-sent-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+}
+
+.an-sent-donut-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.an-list-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.an-sent-donut-count {
+  font-weight: 600;
+  margin-left: auto;
+  padding-left: var(--space-3);
+}
+
+.an-author-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.an-author-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.an-author-row:hover {
+  background: var(--color-surface-page);
+}
+
+.an-author-row-active {
+  border-color: var(--color-accent);
+  background: var(--color-surface-page);
+}
+
+.an-author-count {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.an-phrase-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.an-phrase-btn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-page);
+  font-size: 0.75rem;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.an-phrase-btn-positive {
+  border-color: var(--color-status-healthy);
+}
+
+.an-phrase-btn-negative {
+  border-color: var(--color-status-failing);
+}
+
+.an-phrase-btn-active {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border-color: var(--color-accent);
+}
+
+.an-phrase-count {
+  opacity: 0.7;
+  margin-left: var(--space-1);
+}
+
+.an-drawer-trigger {
+  grid-column: 1 / -1;
+  justify-self: start;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--space-1) 0;
+}
+
+.an-drawer-post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.an-drawer-post-row {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.an-drawer-post-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.an-drawer-post-meta {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}

@@ -6,7 +6,7 @@
  * without any React or Next.js machinery involved.
  */
 
-import { extractProviderBadge, extractEnrichmentSummary } from '../posts/postDisplay';
+import { extractProviderBadge, extractEnrichmentSummary, extractAuthor, extractDisplayText } from '../posts/postDisplay';
 import type { SocialPostSummary } from '@/lib/core-client';
 
 export interface DateRangeFilter {
@@ -95,21 +95,173 @@ export function computeSourceBreakdown(posts: SocialPostSummary[]): SourceBreakd
     .sort((a, b) => b.count - a.count);
 }
 
+/**
+ * Story 8.2 — a lightweight, already-extracted post shape for the Sentiment
+ * tab: enough to compute the history chart, top fans/critics, phrase
+ * clouds, and the posts-drawer list, without shipping every post's full
+ * rawPayload/enrichment blob to the browser a second time (the aggregates
+ * above already summarize that). Derived once via `flattenForSentiment()`
+ * (`postDisplay.ts`'s same extraction functions Story 6.11 already
+ * established — not reimplemented here).
+ */
+export interface SentimentPost {
+  id: string;
+  publishedAt: string | null;
+  author: string | null;
+  sentiment: string | null;
+  keyPhrases: string[];
+  title: string;
+}
+
+export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
+  return posts.map((post) => {
+    const enrichment = extractEnrichmentSummary(post.enrichment);
+    const { title } = extractDisplayText(post.rawPayload);
+    return {
+      id: post.id,
+      publishedAt: post.publishedAt,
+      author: extractAuthor(post.rawPayload),
+      sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
+      keyPhrases: enrichment?.keyPhrases ?? [],
+      title,
+    };
+  });
+}
+
+/** Same counting rule as `computeSentimentSplit()`, over the already-flattened shape (used when a client-side author/phrase filter is applied). */
+export function computeSentimentSplitFromFlat(posts: SentimentPost[]): SentimentSplit {
+  const split: SentimentSplit = { positive: 0, neutral: 0, negative: 0 };
+  for (const post of posts) {
+    if (post.sentiment && RECOGNIZED_SENTIMENTS.has(post.sentiment)) {
+      split[post.sentiment as keyof SentimentSplit] += 1;
+    }
+  }
+  return split;
+}
+
+export interface SentimentHistoryPoint {
+  /** 'YYYY-MM-DD' */
+  date: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+function enumerateDays(range: DateRangeFilter): string[] {
+  const days: string[] = [];
+  let cursor = new Date(`${range.startDate}T00:00:00.000Z`);
+  const end = new Date(`${range.endDate}T00:00:00.000Z`);
+  while (cursor.getTime() <= end.getTime()) {
+    days.push(cursor.toISOString().slice(0, 10));
+    cursor = new Date(cursor.getTime() + 86_400_000);
+  }
+  return days;
+}
+
+/**
+ * Bucketed by day (ADR-0054 Open Question 7) across every day in the
+ * range, inclusive — a day with zero matching posts renders as a real
+ * zero, never omitted or interpolated (AC2).
+ */
+export function computeSentimentHistory(posts: SentimentPost[], range: DateRangeFilter): SentimentHistoryPoint[] {
+  const byDay = new Map<string, SentimentSplit>();
+  for (const day of enumerateDays(range)) {
+    byDay.set(day, { positive: 0, neutral: 0, negative: 0 });
+  }
+  for (const post of posts) {
+    if (!post.publishedAt) continue;
+    const day = post.publishedAt.slice(0, 10);
+    const bucket = byDay.get(day);
+    if (!bucket) continue;
+    if (post.sentiment && RECOGNIZED_SENTIMENTS.has(post.sentiment)) {
+      bucket[post.sentiment as keyof SentimentSplit] += 1;
+    }
+  }
+  return Array.from(byDay.entries()).map(([date, split]) => ({ date, ...split }));
+}
+
+export interface AuthorRanking {
+  author: string;
+  count: number;
+}
+
+/**
+ * Real author + sentiment count, ranked descending — no fallback to a
+ * hardcoded name list when the real result is small or empty (AC3, closing
+ * the exact defect ADR-0054 found in the uncommitted prototype). A caller
+ * with fewer than `limit` real entries gets fewer than `limit` rows back,
+ * never padded.
+ */
+export function computeTopAuthorsBySentiment(
+  posts: SentimentPost[],
+  sentiment: 'positive' | 'negative',
+  limit = 5
+): AuthorRanking[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    if (post.sentiment !== sentiment || !post.author) continue;
+    counts.set(post.author, (counts.get(post.author) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([author, count]) => ({ author, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+export interface PhraseFrequency {
+  phrase: string;
+  count: number;
+}
+
+/** Real `enrichment.keyPhrases`, bucketed by the sentiment of the post(s) each phrase appears on (AC4). */
+export function computePhrasesBySentiment(
+  posts: SentimentPost[],
+  sentiment: 'positive' | 'negative',
+  limit = 15
+): PhraseFrequency[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    if (post.sentiment !== sentiment) continue;
+    for (const phrase of post.keyPhrases) {
+      counts.set(phrase, (counts.get(phrase) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([phrase, count]) => ({ phrase, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
 export interface AnalyticsSummary {
   totalPosts: number;
   sentimentSplit: SentimentSplit;
   sources: SourceBreakdownEntry[];
+  sentimentHistory: SentimentHistoryPoint[];
+  topFans: AuthorRanking[];
+  topCritics: AuthorRanking[];
+  positivePhrases: PhraseFrequency[];
+  negativePhrases: PhraseFrequency[];
+  /** The flattened, date-filtered post set — Story 8.2's own widgets recompute from this client-side when an author/phrase filter is toggled. */
+  posts: SentimentPost[];
 }
 
 /**
- * The one aggregation Story 8.1's Overview and Sources tabs both read from —
- * Overview never computes anything of its own beyond this (AC7).
+ * The one aggregation Story 8.1's Overview and Sources tabs, and Story
+ * 8.2's Sentiment tab, all read from — Overview never computes anything of
+ * its own beyond this (AC7).
  */
 export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateRangeFilter): AnalyticsSummary {
   const filtered = filterPostsByDateRange(posts, range);
+  const flat = flattenForSentiment(filtered);
   return {
     totalPosts: filtered.length,
     sentimentSplit: computeSentimentSplit(filtered),
     sources: computeSourceBreakdown(filtered),
+    sentimentHistory: computeSentimentHistory(flat, range),
+    topFans: computeTopAuthorsBySentiment(flat, 'positive'),
+    topCritics: computeTopAuthorsBySentiment(flat, 'negative'),
+    positivePhrases: computePhrasesBySentiment(flat, 'positive'),
+    negativePhrases: computePhrasesBySentiment(flat, 'negative'),
+    posts: flat,
   };
 }

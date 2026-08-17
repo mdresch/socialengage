@@ -303,9 +303,15 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       expect(source).toContain('/api/analytics/summary');
     });
 
-    it('renders honest "not built yet" notices for Sentiment/Conversations, never a fabricated widget', () => {
+    // 2026-08-17 (Story 8.2 built): the Sentiment stub this test originally
+    // asserted was correct only until Story 8.2 shipped — this epic's own
+    // text always scoped Sentiment tab content out of Story 8.1
+    // specifically because it belonged to Story 8.2 (docs/user-stories/
+    // epic-8-analytics-dashboard.md), an anticipated in-epic handoff, not a
+    // foreign regression. Narrowed to the one stub still real: Conversations
+    // (Story 8.3), not yet built.
+    it('renders an honest "not built yet" notice for Conversations, never a fabricated widget', () => {
       const source = readSrc(...clientPath);
-      expect(source).toMatch(/not built yet.*Story 8\.2/);
       expect(source).toMatch(/not built yet.*Story 8\.3/);
     });
 
