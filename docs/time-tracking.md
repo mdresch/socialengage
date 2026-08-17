@@ -15,6 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-17 | — | — | auto | Documentation | Story 8.1 | feat: Story 8.1 — Analytics dashboard shell, date-range filter, Overview and Sources tabs (5558e11) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: log the 2026-08-17 healing pass for Stories 6.1/6.2/6.3/6.5/6.11/6.12/6.15 (30816ad) |
+| 2026-08-17 | — | — | auto | Documentation | — | fix: heal contract staleness from an uncommitted Server/Client component split (ea9d9fe) |
+| 2026-08-13 | — | — | auto | Infrastructure | — | chore: post-commit hook queue entries for 6443562 (8d210af) |
 | 2026-08-13 | — | — | auto | Documentation | — | chore: rewrite root README, harden AGENTS.md, wire up VS Code test discovery (6443562) |
 | 2026-08-13 | — | — | auto | Documentation | — | docs: methodology retrospective — relationship-assertion contracts, story resume, Built field, environment gotchas (e59b2da) |
 | 2026-08-13 | — | — | auto | Documentation | Story 3.10 | docs: implementation log entry for Story 3.10 (social-listening-core@dcec172) (df0c2c3) |
