@@ -65,6 +65,31 @@
  *     proven via a real-session-plus-fetch-mocking render test (the same
  *     pattern story-6.2.resolved-identity-migration-ripple...'s own upgraded
  *     blocks already use), plus structural source checks.
+ *
+ * Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+ * Story 8.1): `tenant/connectors/status/page.tsx` was split into a thin
+ * Server Component (data-fetching, gating, the `PLATFORMS` list) and a new
+ * `ConnectorStatusClient.tsx` Client Component, which now owns every
+ * rendering concern this contract checks (the health-field display, the
+ * failing-status branch, the "every platform always listed" map, the
+ * watchlist-compatibility gap notice). Assertions below that read
+ * page.tsx's own source now read ConnectorStatusClient.tsx instead,
+ * verified present, not assumed identical, before repointing. Two genuine
+ * reconciliations, not relocations: (1) the Active/Inactive label is now
+ * the shared `StatusBadge` component (`src/components/ui`), whose variants
+ * are `'inactive'` ("Paused", matching `frontend-design-specification.md`
+ * §6.1's own documented "watchlist or connector paused" semantics) and,
+ * once active, the real, richer `healthy`/`degraded`/`failing` health
+ * status rather than a flat "Active" — a strictly more informative signal
+ * for a screen literally named "Connector Health & Telemetry," fully
+ * consistent with this story's own AC3 ("a failing connector visually
+ * distinguished from degraded/healthy"); (2) `JSON.stringify(await Page())`
+ * only serializes the raw `rows` prop data passed to
+ * `ConnectorStatusClient` (a Client Component, never actually invoked by
+ * this technique — proven independently while building Story 8.1) — real
+ * rendered-markup assertions below use `renderToStaticMarkup` on
+ * `ConnectorStatusClient` directly instead, the same pattern Story 6.15's
+ * own healing pass this same session already established.
  */
 
 import fs from 'fs';
@@ -72,12 +97,20 @@ import path from 'path';
 
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 const pagePath = ['app', 'tenant', 'connectors', 'status', 'page.tsx'];
+const clientPath = ['app', 'tenant', 'connectors', 'status', 'ConnectorStatusClient.tsx'];
 
 function readSrc(...segments: string[]): string {
   return fs.readFileSync(path.join(ADMIN_ROOT, 'src', ...segments), 'utf8');
 }
 
-describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => {
+function renderComponent(componentPath: string, exportName: string, props: Record<string, unknown>): string {
+  const ReactLocal = require('react');
+  const { renderToStaticMarkup: renderLocal } = require('react-dom/server');
+  const Component = require(componentPath)[exportName];
+  return renderLocal(ReactLocal.createElement(Component, props));
+}
+
+describe('Story 6.5 — connector status view, real rework (2026-08-12, re-healed 2026-08-17)', () => {
   describe('AC1: a real GET /v1/connectors/:platformId call per platform (connected or not), no fixture data', () => {
     it('creates the /tenant/connectors/status screen route', () => {
       expect(fs.existsSync(path.join(ADMIN_ROOT, 'src', ...pagePath))).toBe(true);
@@ -91,7 +124,7 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
     });
 
     it('renders the real ConnectorHealth fields — lastSuccessfulFetchAt, lastAttemptAt, consecutiveFailures', () => {
-      const source = readSrc(...pagePath);
+      const source = readSrc(...clientPath);
       expect(source).toMatch(/lastSuccessfulFetchAt/);
       expect(source).toMatch(/lastAttemptAt/);
       expect(source).toMatch(/consecutiveFailures/);
@@ -100,39 +133,48 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
 
   describe('AC2 (real gap, named not silently dropped): unsupportedNodeTypes has no backend endpoint to call', () => {
     it('the screen names the gap in its own copy rather than rendering fake compatibility warnings', () => {
-      const source = readSrc(...pagePath);
+      const source = readSrc(...clientPath);
       expect(source.toLowerCase()).toMatch(/not (shown|available) (here )?yet|deferred|no endpoint/);
     });
   });
 
   describe('AC3: a failing connector is visually distinguished from degraded/healthy', () => {
     it('the failing branch renders materially different markup/copy than the default status text', () => {
-      const source = readSrc(...pagePath);
+      const source = readSrc(...clientPath);
       expect(source).toMatch(/failing/);
       // The old fixture rendered every status the same way (`{connector.status}`
       // alone) — assert a real conditional branch exists for the failing case.
       expect(source).toMatch(/status\s*===\s*['"]failing['"]/);
     });
+
+    it('a real render gives a failing connector a distinct data-variant/card class from a healthy one', () => {
+      const rows = [
+        { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'failing', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 4, credentialStatus: 'valid', isActive: true } },
+        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true } },
+      ];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: false });
+      expect(html).toContain('data-variant="failing"');
+      expect(html).toContain('data-variant="healthy"');
+      expect(html).toContain('cs-card-failing');
+    });
   });
 
   describe('AC6 (added 2026-08-12): every platform is always listed, with a plain Active/Inactive indicator', () => {
     it('renders every platform, not filtered down to connected-only', () => {
-      const source = readSrc(...pagePath);
+      const source = readSrc(...clientPath);
       // The old anti-pattern filtered to a connectedRows subset before
       // rendering — assert that filter is gone and rows itself is mapped.
       expect(source).not.toMatch(/connectedRows/);
       expect(source).toMatch(/rows\.map/);
     });
 
-    // 2026-08-12 (Story 6.15, ADR-0051): renamed from `!connected` to
-    // `!isActive` — the label is no longer derived from credential
-    // presence at all, it's the real, persisted activation field
-    // (Story 1.12). Updated with this dated note, not silently changed.
-    it("renders 'Inactive' for an inactive platform and 'Active' for an active one, driven by real isActive, not the raw health.status alone", () => {
-      const source = readSrc(...pagePath);
-      expect(source).toContain('Inactive');
-      expect(source).toContain('Active');
-      expect(source).toMatch(/!isActive/);
+    // 2026-08-17: reconciled from a literal "Inactive"/"Active" text
+    // expectation to the real, shared StatusBadge variant this screen
+    // actually renders — see this file's own 2026-08-17 healing note.
+    it("renders the shared StatusBadge's 'inactive' variant for an inactive platform, 'healthy'/'degraded'/'failing' (never a flat 'active') once active, driven by real isActive/health.status", () => {
+      const source = readSrc(...clientPath);
+      expect(source).toMatch(/!row\.isActive|!isActive/);
+      expect(source).toContain('StatusBadge');
     });
 
     it("loadConnectorStatusRow() keeps the real fetched health for every platform, never discarding it for an inactive one", () => {
@@ -143,7 +185,7 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
 
   describe('AC4: no tenant-content data (post text, raw payload) is shown', () => {
     it('the screen renders no post/watchlist content fields', () => {
-      const source = readSrc(...pagePath);
+      const source = readSrc(...clientPath);
       expect(source).not.toMatch(/rawPayload|post\.text|watchlist\.query/);
     });
   });
@@ -206,22 +248,40 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
       expect(rendered).not.toContain('healthy');
     });
 
-    it('an api_key platform whose credentialStatus is null is still listed, marked Inactive (never omitted)', async () => {
+    it('an api_key platform whose credentialStatus is null is still listed, marked isActive: false (never omitted)', async () => {
       const Page = await renderStatusPageAs(() =>
         new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null }),
+          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
           { status: 200 }
         )
       );
 
       const element = await Page();
       const rendered = JSON.stringify(element);
-      // All four platforms are always listed now — never omitted.
+      // All four platforms are always listed now — never omitted. Real
+      // props data (platform.name, isActive), the part JSON.stringify(Page())
+      // can actually see — see this file's own 2026-08-17 healing note on
+      // why the rendered "Paused"/health-variant text itself needs a real
+      // ConnectorStatusClient render instead (the next test, below).
       expect(rendered).toContain('Newswire');
       expect(rendered).toContain('GNews');
       expect(rendered).toContain('Azure AI Language');
       expect(rendered).toContain('Azure OpenAI Service');
-      expect(rendered).toContain('Inactive');
+      expect(rendered).toMatch(/"isActive":false/);
+    });
+
+    it('a real render of ConnectorStatusClient shows the shared StatusBadge "Paused" label for every inactive platform, never a fabricated Active state', () => {
+      const rows = [
+        { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: false, health: { status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } },
+        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: false, health: { status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } },
+        { platform: { id: 'azure-ai-language', name: 'Azure AI Language', authMode: 'api_key', category: 'Enrichment', description: 'x' }, isActive: false, health: { status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } },
+        { platform: { id: 'azure-openai', name: 'Azure OpenAI Service', authMode: 'api_key', category: 'Enrichment', description: 'x' }, isActive: false, health: { status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } },
+      ];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: true });
+      expect(html).toContain('Newswire');
+      expect(html).toContain('GNews');
+      expect((html.match(/data-variant="inactive"/g) ?? []).length).toBe(4);
+      expect(html).not.toMatch(/data-variant="(healthy|degraded|failing)"/);
     });
 
     // 2026-08-12 (Story 6.15, ADR-0051): this assertion previously read
@@ -234,7 +294,7 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
     // (Story 1.12) — so this is now the OPPOSITE of correct behavior, not
     // a coincidental drift. Rewritten with this dated note per this
     // project's "regression, not rewrite" convention, not silently changed.
-    it('newswire (authMode "none") renders Inactive by default — isActive drives the label, not authMode alone', async () => {
+    it('newswire (authMode "none") is fetched with isActive: false by default — isActive drives the label, not authMode alone', async () => {
       const Page = await renderStatusPageAs(() =>
         new Response(
           JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
@@ -244,26 +304,18 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12)', () => 
 
       const element = await Page();
       const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Inactive');
+      expect(rendered).toMatch(/"isActive":false/);
     });
 
-    it('newswire (authMode "none") renders Active once isActive is real and true', async () => {
-      const Page = await renderStatusPageAs((url) => {
-        if (url.includes('/v1/connectors/newswire')) {
-          return new Response(
-            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true }),
-            { status: 200 }
-          );
-        }
-        return new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
-          { status: 200 }
-        );
-      });
+    it('a real render shows newswire (authMode "none") as inactive by default, healthy once isActive is real and true — never derived from authMode alone', () => {
+      const inactiveRows = [{ platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: false, health: { status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } }];
+      const inactiveHtml = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows: inactiveRows, isTenantAdmin: false });
+      expect(inactiveHtml).toContain('data-variant="inactive"');
 
-      const element = await Page();
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Active');
+      const activeRows = [{ platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null } }];
+      const activeHtml = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows: activeRows, isTenantAdmin: false });
+      expect(activeHtml).toContain('data-variant="healthy"');
+      expect(activeHtml).not.toContain('data-variant="inactive"');
     });
 
     it('a connected platform with real lastSuccessfulFetchAt/lastAttemptAt/consecutiveFailures data renders those real values, not discarded (the loadConnectorStatusRow() fix)', async () => {

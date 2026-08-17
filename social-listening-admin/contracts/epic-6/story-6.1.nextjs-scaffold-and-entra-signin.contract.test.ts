@@ -193,7 +193,7 @@ beforeAll(async () => {
   execSync(`node scripts/withDevEnv.js npx ts-node scripts/ensureContractTestIdentity.ts "${TEST_EMAIL}" tenant_admin`, {
     cwd: CORE_ROOT,
     stdio: 'pipe',
-    shell: isWin,
+    shell: isWin ? 'cmd.exe' : undefined,
   });
 
   // A real social-listening-core instance — see this file's own 2026-08-12 healing note.
@@ -292,7 +292,13 @@ async function performRealSignIn(context: BrowserContext) {
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/`);
   await page.waitForURL(`${BASE_URL}/sign-in`, { timeout: 15_000 });
-  await page.getByRole('link', { name: 'Sign in with Microsoft' }).click();
+  // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+  // Story 8.1): the real sign-in button reads "Continue with Microsoft",
+  // matching frontend-design-specification.md §5.1's own explicit,
+  // Approved copy ("Primary button: 'Continue with Microsoft'") — this
+  // test's prior "Sign in with Microsoft" expectation predates that
+  // Approved spec text, not a regression this session introduced.
+  await page.getByRole('link', { name: 'Continue with Microsoft' }).click();
   await page.waitForURL((u) => u.hostname.endsWith('ciamlogin.com'), { timeout: 20_000 });
 
   await page.getByPlaceholder('Email address').fill(TEST_EMAIL);

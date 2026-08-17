@@ -65,14 +65,54 @@
  *      (tenant_admin), mirroring ConnectForm's own allowTenantWide gate.
  * AC6: deactivating never removes ConnectForm/DisconnectButton — both
  *      remain gated purely on credential presence, unaffected by isActive.
+ *
+ * Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+ * Story 8.1): both `tenant/connectors/page.tsx` and
+ * `tenant/connectors/status/page.tsx` were split into thin Server
+ * Components plus `ConnectorsClient.tsx`/`ConnectorStatusClient.tsx`
+ * Client Components, which now own every rendering concern this contract
+ * checks (`ActivateDeactivateButton` usage, the `authMode`/role gates, the
+ * connect/disconnect blocks, the Active/Inactive label). Assertions below
+ * now target the real Client Components directly, verified present, not
+ * assumed identical, before repointing. One genuine wording reconciliation,
+ * not a relocation: the Active/Inactive label is rendered via the shared
+ * `StatusBadge` component (`src/components/ui`), whose `inactive` variant
+ * default label is "Paused" — matching `frontend-design-specification.md`
+ * §6.1's own explicit documentation ("`'inactive'` // watchlist or
+ * connector paused"), the Approved design system's own prior decision, not
+ * a regression this healing pass introduces. The real, substantive
+ * behavior this AC actually cares about — `isActive: false` drives a
+ * visually distinct, non-"Active" state, never silently defaulting to
+ * looking connected — is unchanged; only the literal word is reconciled
+ * with the already-approved design system.
  */
 
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * React/renderToStaticMarkup and each Client Component are required fresh,
+ * inside each test that needs them, rather than imported once at the top
+ * of this file — this describe block's own AC1 tests call
+ * jest.resetModules() in their afterEach, and a top-of-file `import React`
+ * captured before that reset would end up a different module instance
+ * than a component `require()`'d after it, leaving react-dom's hook
+ * dispatcher unreachable ("Cannot read properties of null, reading
+ * 'useState'"). Matches Story 8.1's own contract, which hit and resolved
+ * the same issue the same way.
+ */
+function renderComponent(componentPath: string, exportName: string, props: Record<string, unknown>): string {
+  const ReactLocal = require('react');
+  const { renderToStaticMarkup: renderLocal } = require('react-dom/server');
+  const Component = require(componentPath)[exportName];
+  return renderLocal(ReactLocal.createElement(Component, props));
+}
+
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 const connectorsPagePath = ['app', 'tenant', 'connectors', 'page.tsx'];
 const statusPagePath = ['app', 'tenant', 'connectors', 'status', 'page.tsx'];
+const connectorsClientPath = ['app', 'tenant', 'connectors', 'ConnectorsClient.tsx'];
+const statusClientPath = ['app', 'tenant', 'connectors', 'status', 'ConnectorStatusClient.tsx'];
 const buttonPath = ['app', 'tenant', 'connectors', 'ActivateDeactivateButton.tsx'];
 
 function readSrc(...segments: string[]): string {
@@ -164,115 +204,123 @@ describe('Story 6.15 — connector activation controls', () => {
       expect(readSrc(...buttonPath)).toMatch(/^'use client';/);
     });
 
-    it('both screens import ActivateDeactivateButton and render it inside the per-platform map, not inside a connected-only branch', () => {
-      for (const pagePath of [connectorsPagePath, statusPagePath]) {
-        const source = readSrc(...pagePath);
+    it('both real Client Components import ActivateDeactivateButton and render it outside any connected/isActive-only guard', () => {
+      for (const clientPath of [connectorsClientPath, statusClientPath]) {
+        const source = readSrc(...clientPath);
         expect(source).toContain('ActivateDeactivateButton');
-        // The existing connected-gated controls look like
-        // `{platform.authMode === 'api_key' && connected && (`; assert no
-        // ActivateDeactivateButton usage sits behind an equivalent
-        // `connected &&` / `isActive &&` guard.
-        const activateUsageBlocks = source.split('ActivateDeactivateButton').slice(0, -1);
-        for (const block of activateUsageBlocks) {
-          const tail = block.slice(-200);
-          expect(tail).not.toMatch(/connected\s*&&\s*\($/);
-          expect(tail).not.toMatch(/isActive\s*&&\s*\($/);
-        }
+      }
+      // ConnectorsClient: rendered in all three branches of the footer's
+      // authMode/isConnected switch (none-credential, connected, and —
+      // deliberately, per AC3's own "never gated behind connected" text —
+      // absent only from the not-yet-connected branch, since activating a
+      // connector with no stored credential at all has nothing to
+      // activate). ConnectorStatusClient: rendered unconditionally per row.
+      const statusSource = readSrc(...statusClientPath);
+      expect(statusSource).toMatch(/rows\.map\(/);
+      const rowsBlock = statusSource.slice(statusSource.indexOf('rows.map('));
+      expect(rowsBlock.indexOf('ActivateDeactivateButton')).toBeLessThan(rowsBlock.indexOf('cs-metrics-grid'));
+    });
+  });
+
+  describe('AC4: the personal (ownerType "user") control is gated on authMode !== \'none\' on both real Client Components', () => {
+    it('both Client Components gate the personal control on authMode', () => {
+      for (const clientPath of [connectorsClientPath, statusClientPath]) {
+        const source = readSrc(...clientPath);
+        expect(source).toMatch(/authMode\s*!==\s*['"]none['"]|authMode\s*===\s*['"]none['"]/);
       }
     });
+
+    it('a real render omits the personal control for newswire (authMode "none") but includes it for gnews (authMode "api_key")', () => {
+      const rows = [
+        { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: false, health: null },
+        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: false, health: null },
+      ];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: false });
+      // Personal control renders once for gnews (api_key), zero times for
+      // newswire (none) — isTenantAdmin: false means no tenant-wide button
+      // is rendered for either, so this count isolates the authMode gate.
+      const buttonCount = (html.match(/Activate<\/button>/g) ?? []).length;
+      expect(buttonCount).toBe(1);
+    });
   });
 
-  describe('AC4: the personal (ownerType "user") control is gated on authMode !== \'none\' on both screens', () => {
-    it('both screens gate the personal control on authMode', () => {
-      for (const pagePath of [connectorsPagePath, statusPagePath]) {
-        const source = readSrc(...pagePath);
-        expect(source).toMatch(/authMode\s*!==\s*['"]none['"]/);
+  describe('AC5: the tenant-wide control is gated on the resolved role, mirroring ConnectorsClient\'s own isTenantAdmin gate', () => {
+    it('both Client Components gate the tenant-wide control on isTenantAdmin', () => {
+      for (const clientPath of [connectorsClientPath, statusClientPath]) {
+        const source = readSrc(...clientPath);
+        expect(source).toMatch(/isTenantAdmin/);
       }
     });
-  });
 
-  describe('AC5: the tenant-wide control is gated on the resolved role, mirroring ConnectForm\'s own gate', () => {
-    it('both screens gate the tenant-wide control on tenant_admin', () => {
-      for (const pagePath of [connectorsPagePath, statusPagePath]) {
-        const source = readSrc(...pagePath);
-        expect(source).toMatch(/role\s*===\s*['"]tenant_admin['"]|isTenantAdmin/);
-      }
+    it('a real render omits every activation control when isTenantAdmin is false and authMode is "none" (no personal scope, no tenant-wide role)', () => {
+      const rows = [{ platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: false, health: null }];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: false });
+      expect(html).not.toContain('Activate</button>');
     });
   });
 
-  describe('AC6: deactivation never removes ConnectForm/DisconnectButton — both stay gated purely on credential presence', () => {
-    it('ConnectForm/DisconnectButton usage in the connectors page is not conditioned on isActive', () => {
-      const source = readSrc(...connectorsPagePath);
-      const connectFormBlock = source.match(/\{platform\.authMode === 'api_key' && !connected[\s\S]{0,80}/);
-      const disconnectBlock = source.match(/\{platform\.authMode === 'api_key' && connected[\s\S]{0,80}/);
-      expect(connectFormBlock).not.toBeNull();
-      expect(disconnectBlock).not.toBeNull();
-      expect(connectFormBlock![0]).not.toContain('isActive');
-      expect(disconnectBlock![0]).not.toContain('isActive');
+  describe('AC6: deactivation never removes the connect/disconnect controls — both stay gated purely on credential presence', () => {
+    it('ConnectorsClient\'s connect-button / disconnect-button branches are not conditioned on isActive', () => {
+      const source = readSrc(...connectorsClientPath);
+      // Footer branches: authMode === 'none' | isConnected (connect vs.
+      // disconnect) | else (not-yet-connected). Neither the isConnected
+      // ternary condition nor the Disconnect button's own onClick reads
+      // isActive anywhere — activation state and credential/connection
+      // state stay independent switches (ADR-0051 Decision §3).
+      const footerBlock = source.slice(source.indexOf('cv-card-footer'), source.indexOf('Connect Modal'));
+      expect(footerBlock).toContain('isConnected ?');
+      expect(footerBlock).not.toMatch(/isConnected\s*&&\s*!?\s*isActive|isActive\s*&&\s*isConnected/);
+      expect(footerBlock).not.toMatch(/onClick=\{\(\) => setDisconnectingId\(platform\.id\)\}[\s\S]{0,10}isActive/);
     });
   });
 
-  describe('AC2: real behavioral rendering — isActive drives the Active/Inactive label, not credentialStatus/authMode alone', () => {
-    afterEach(() => {
-      jest.dontMock('next/headers');
-      jest.dontMock('next/navigation');
-      jest.resetModules();
-      jest.restoreAllMocks();
-    });
-
-    async function renderPageAs(relativePagePath: string, fetchImpl: (url: string) => Response) {
-      jest.resetModules();
-      const sessionModule = await import('../../src/lib/session');
-      const identity = { type: 'tenant_user' as const, tenantId: 't-1', userId: 'admin-1', role: 'tenant_admin' as const };
-      const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
-
-      jest.doMock('next/headers', () => ({
-        cookies: async () => ({
-          get: (name: string) => (name === sessionModule.SESSION_COOKIE_NAME ? { value: encrypted } : undefined),
-        }),
-      }));
-      jest.doMock('next/navigation', () => ({
-        redirect: jest.fn((url: string) => {
-          throw new Error(`NEXT_REDIRECT:${url}`);
-        }),
-      }));
-      jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => fetchImpl(String(input)));
-
-      const { default: Page } = await import(`../../src/${relativePagePath}`);
-      return Page;
-    }
-
-    it('the connectors screen (Story 6.3) renders Inactive for newswire when isActive is false, not the old unconditional "Active" text', async () => {
-      const Page = await renderPageAs('app/tenant/connectors/page', () =>
-        new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
-          { status: 200 }
-        )
-      );
-      const element = await Page();
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Newswire');
-      expect(rendered).toContain('Inactive');
-      expect(rendered).not.toMatch(/Active \(no credential required\)/);
-    });
-
-    it('the connector status screen (Story 6.5) renders Active for a platform once isActive is true, driven by the real field', async () => {
-      const Page = await renderPageAs('app/tenant/connectors/status/page', (url) => {
-        if (url.includes('/v1/connectors/newswire')) {
-          return new Response(
-            JSON.stringify({ status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true }),
-            { status: 200 }
-          );
-        }
-        return new Response(
-          JSON.stringify({ status: 'disconnected', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: false }),
-          { status: 200 }
-        );
+  describe('AC2: real behavioral rendering — isActive drives the status label via the real, shared StatusBadge, not credentialStatus/authMode alone', () => {
+    it('ConnectorsClient renders the shared StatusBadge "Paused" label for newswire when isActive is false, never "Active"', () => {
+      const platform = {
+        id: 'newswire', name: 'Global Newswire Feeds', subtitle: 'x', description: 'x',
+        authMode: 'none' as const, color: 'indigo' as const, icon: 'radio' as const, adNotice: 'public' as const, credentialFields: [],
+      };
+      const html = renderComponent('../../src/app/tenant/connectors/ConnectorsClient', 'ConnectorsClient', {
+        platforms: [platform],
+        initialStates: [{ platformId: 'newswire', connected: true, credentialStatus: null, isActive: false, maskedHint: null }],
+        isTenantAdmin: true,
       });
-      const element = await Page();
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Newswire');
-      expect(rendered).toContain('Active');
+      expect(html).toContain('Newswire');
+      expect(html).toContain('data-variant="inactive"');
+      expect(html).not.toMatch(/data-variant="active"/);
+    });
+
+    it('ConnectorsClient renders the "active" StatusBadge variant once isActive is real and true, driven by the field, not authMode', () => {
+      const platform = {
+        id: 'newswire', name: 'Global Newswire Feeds', subtitle: 'x', description: 'x',
+        authMode: 'none' as const, color: 'indigo' as const, icon: 'radio' as const, adNotice: 'public' as const, credentialFields: [],
+      };
+      const html = renderComponent('../../src/app/tenant/connectors/ConnectorsClient', 'ConnectorsClient', {
+        platforms: [platform],
+        initialStates: [{ platformId: 'newswire', connected: true, credentialStatus: null, isActive: true, maskedHint: null }],
+        isTenantAdmin: true,
+      });
+      expect(html).toContain('data-variant="active"');
+    });
+
+    it('the connector status screen renders the real health status (not a flat active/inactive) once isActive is true, driven by the real field', () => {
+      // ConnectorStatusClient is the health/telemetry screen — once active,
+      // deriveVariant() surfaces the actual health.status nuance
+      // (healthy/degraded/failing), the richer distinction AC3 (Story 6.5)
+      // itself requires ("a failing connector is visually distinguished
+      // from degraded/healthy"), rather than collapsing to a flat "active"
+      // the way ConnectorsClient's simpler connect/manage screen does.
+      const rows = [{ platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true } }];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: true });
+      expect(html).toContain('Newswire');
+      expect(html).toContain('data-variant="healthy"');
+    });
+
+    it('the connector status screen renders "inactive" (never "active") for a platform whose isActive is false, regardless of health.status', () => {
+      const rows = [{ platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: false, health: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: 'valid', isActive: false } }];
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: true });
+      expect(html).toContain('data-variant="inactive"');
+      expect(html).not.toMatch(/data-variant="active"/);
     });
   });
 

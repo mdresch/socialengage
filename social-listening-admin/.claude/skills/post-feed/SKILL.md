@@ -33,6 +33,10 @@ description: The /tenant/posts and /tenant/posts/:id screens — the only place 
 - **`getPost()` returns `null` specifically on a 404 — every other non-2xx still throws.** A 404 is a real, expected outcome (unknown id, or another tenant's id — RLS makes the two indistinguishable, per `posts-api/SKILL.md`) the detail page must render as "not found," not crash on; any other failure (5xx, network) is a genuine backend problem the caller should not silently swallow into the same "not found" state.
 - **`postDisplay.ts` is pure — no JSX, no `next/*` imports.** Both the list and detail pages import the same extraction functions; keeping them JSX-free is what lets both screens share them without either page depending on the other's rendering.
 
+## Healing note, 2026-08-17
+
+`app/tenant/posts/page.tsx` is now a thin Server Component (data-fetching, gating) — the actual list rendering (search/filter bar, post cards, pagination link) lives in **`PostsFeedClient.tsx`** now, a Client Component. Post selection no longer navigates to a separate route at all: **`PostsFeedClient.tsx` opens the selected post in its own in-page `Slideover` (`activePost` state), not a link to `/tenant/posts/:id`.** The standalone `/tenant/posts/[id]/page.tsx` detail route (this file's own "What this is" section above) still exists and is still real, contract-verified, reachable by direct URL — it is simply no longer linked to from the feed. Treated as an intentional design choice (Menno's explicit call, healing-pass session), not a regression to reverse.
+
 ## Known gaps / deferred work
 
 - No filters (`watchlistId`, `platformId`, date range) — named as a real backend dependency in this story's own text, not built here. See `posts-api/SKILL.md`'s "Known gaps."

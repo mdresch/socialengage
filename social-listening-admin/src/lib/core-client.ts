@@ -625,9 +625,19 @@ export interface SocialPostFull extends SocialPostSummary {
  * opaque-cursor contract (`posts-api/SKILL.md`'s own "cursor is opaque by
  * contract" constraint). Throws on a non-2xx — this screen has nothing
  * sensible to render without a real page of results.
+ *
+ * `limit` (Story 8.1, ADR-0054 Decision §3) is optional and forwarded
+ * as-is — the real, already-supported `GET /v1/posts?limit=` query param
+ * (`postsRouter.ts`, capped server-side at `MAX_PAGE_LIMIT=100`), not a new
+ * backend capability. Analytics' own paginate-everything-and-aggregate
+ * loop uses this to fetch in bigger pages (fewer round trips); every other
+ * existing caller keeps the server's own default page size by omitting it.
  */
-export async function listPosts(cursor?: string): Promise<SocialPostsPage> {
-  const suffix = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+export async function listPosts(cursor?: string, limit?: number): Promise<SocialPostsPage> {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', cursor);
+  if (typeof limit === 'number') params.set('limit', String(limit));
+  const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
     throw new Error(`Failed to list posts: ${response.status}`);

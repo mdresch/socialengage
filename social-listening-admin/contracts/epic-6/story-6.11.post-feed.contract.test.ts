@@ -206,14 +206,32 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(rendered).toContain('no title here');
     });
 
-    it('links each post through to its own /tenant/posts/:id detail page', async () => {
+    it('opens a post in the in-page Slideover, not a navigation to a separate /tenant/posts/:id route', async () => {
+      // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session
+      // as Story 8.1): this project's real post feed now opens a post's
+      // detail via PostsFeedClient's own Slideover (activePost state),
+      // never a navigation href — confirmed by reading PostsFeedClient.tsx
+      // in full: no `/tenant/posts/${id}` href is constructed anywhere in
+      // it. Treated as intentional, not a regression to restore, per
+      // Menno's explicit choice this session. The standalone
+      // /tenant/posts/[id]/page.tsx detail route itself still exists and
+      // is still covered by AC4's own tests below — it's simply no longer
+      // linked to from the feed.
       const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
         new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: null }), { status: 200 })
       );
 
       const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('/tenant/posts/p-1');
+      const clientProps = element.props.children.props;
+      expect(clientProps.posts).toEqual([GNEWS_POST]);
+
+      const clientSource = fs.readFileSync(
+        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'posts', 'PostsFeedClient.tsx'),
+        'utf8'
+      );
+      expect(clientSource).not.toMatch(/\/tenant\/posts\/\$\{/);
+      expect(clientSource).toMatch(/setActivePost/);
+      expect(clientSource).toContain('Slideover');
     });
   });
 
@@ -225,25 +243,47 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
     });
 
     it('the first page requests GET /v1/posts with no cursor param', async () => {
-      let requestedUrl = '';
+      // page.tsx fetches posts and watchlists in parallel (Promise.all) —
+      // filter to the /v1/posts call specifically rather than a single
+      // shared `requestedUrl` variable, which the two calls would
+      // otherwise race to overwrite (whichever resolves its mock callback
+      // last "wins"), a real pre-existing bug in this test unrelated to
+      // Story 8.1/the Client-Component split, found and fixed in the same
+      // 2026-08-17 healing pass.
+      const requestedUrls: string[] = [];
       const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrl = url;
-        return new Response(JSON.stringify({ posts: [], nextCursor: 'opaque-cursor-abc' }), { status: 200 });
+        requestedUrls.push(url);
+        if (url.includes('/v1/posts')) {
+          return new Response(JSON.stringify({ posts: [], nextCursor: 'opaque-cursor-abc' }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ watchlists: [] }), { status: 200 });
       });
 
       await Page({ searchParams: Promise.resolve({}) });
-      expect(requestedUrl).toContain('/v1/posts');
-      expect(requestedUrl).not.toContain('cursor=');
+      const postsUrl = requestedUrls.find((u) => u.includes('/v1/posts'));
+      expect(postsUrl).toBeDefined();
+      expect(postsUrl).not.toContain('cursor=');
     });
 
     it('renders a "next page" link built from the exact nextCursor the API returned, untouched', async () => {
+      // Healing pass, 2026-08-17: the pagination link is rendered inside
+      // PostsFeedClient (a Client Component, invisible to
+      // JSON.stringify(await Page())) — proves the real nextCursor prop
+      // reached it, then renders the real component to prove the actual
+      // link text.
       const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
         new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: 'opaque-cursor-abc' }), { status: 200 })
       );
 
       const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('/tenant/posts?cursor=opaque-cursor-abc');
+      const clientProps = element.props.children.props;
+      expect(clientProps.nextCursor).toBe('opaque-cursor-abc');
+
+      const ReactLocal = require('react');
+      const { renderToStaticMarkup: renderLocal } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+      const html = renderLocal(ReactLocal.createElement(PostsFeedClient, clientProps));
+      expect(html).toContain('/tenant/posts?cursor=opaque-cursor-abc');
     });
 
     it('renders no next-page link at all when nextCursor is null', async () => {
@@ -257,14 +297,19 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
     });
 
     it('a real second-page navigation (searchParams.cursor set) forwards that exact cursor value to GET /v1/posts, unmodified', async () => {
-      let requestedUrl = '';
+      // Same Promise.all race fix as the "no cursor param" test above.
+      const requestedUrls: string[] = [];
       const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrl = url;
-        return new Response(JSON.stringify({ posts: [], nextCursor: null }), { status: 200 });
+        requestedUrls.push(url);
+        if (url.includes('/v1/posts')) {
+          return new Response(JSON.stringify({ posts: [], nextCursor: null }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ watchlists: [] }), { status: 200 });
       });
 
       await Page({ searchParams: Promise.resolve({ cursor: 'opaque-cursor-abc' }) });
-      expect(requestedUrl).toContain('cursor=opaque-cursor-abc');
+      const postsUrl = requestedUrls.find((u) => u.includes('/v1/posts'));
+      expect(postsUrl).toContain('cursor=opaque-cursor-abc');
     });
   });
 

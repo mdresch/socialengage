@@ -62,9 +62,35 @@
  * upgraded proactively, ahead of a failing run, during Story 6.5's own real rework
  * (identical category of ripple to the one just fixed above for Story 6.4 — the same
  * synchronous-fixture-to-real-async-Server-Component migration).
+ *
+ * Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+ * Story 8.1): `tenant/connectors/page.tsx` and
+ * `tenant/connectors/status/page.tsx` were each split into a thin Server
+ * Component + a new Client Component (`ConnectorsClient.tsx`/
+ * `ConnectorStatusClient.tsx`) — the rendered heading text
+ * ("Connect a platform" / "Connector status") this file's Story 6.3/6.5
+ * blocks checked via `JSON.stringify(await Page())` now lives inside those
+ * Client Components, invisible to that technique (a Client Component
+ * element is inert props data until something actually renders it —
+ * proven independently while building Story 8.1). The old `allowTenantWide`
+ * prop this file's Story 6.3 block also checked no longer exists at all —
+ * `ConnectorsClient` takes `isTenantAdmin` directly instead. Each affected
+ * test below still proves the real data flow via `JSON.stringify` (which
+ * props/platforms/state reached the Client Component, real session/role
+ * gating, real fetch calls) and adds a real `renderToStaticMarkup` render
+ * of the actual Client Component for the rendered-text assertion, the same
+ * split Story 6.15's own healing pass this same session already
+ * established.
  */
 
 import { getTenantShellActions, type ResolvedIdentity } from '../../src/lib/role-routing';
+
+function renderComponent(componentPath: string, exportName: string, props: Record<string, unknown>): string {
+  const ReactLocal = require('react');
+  const { renderToStaticMarkup: renderLocal } = require('react-dom/server');
+  const Component = require(componentPath)[exportName];
+  return renderLocal(ReactLocal.createElement(Component, props));
+}
 
 const TENANT_USER: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-1', role: 'tenant_user' };
 const TENANT_ADMIN: ResolvedIdentity = { type: 'tenant_user', tenantId: 't-1', userId: 'u-2', role: 'tenant_admin' };
@@ -156,10 +182,13 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
       const element = await Page();
       expect(redirectMock).not.toHaveBeenCalled();
       const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Connect a platform');
       expect(rendered).toContain('GNews');
       expect(rendered).toContain('Newswire');
-      expect(rendered).toContain('"allowTenantWide":true');
+      expect(rendered).toContain('"isTenantAdmin":true');
+
+      const clientProps = element.props.children.props;
+      const html = renderComponent('../../src/app/tenant/connectors/ConnectorsClient', 'ConnectorsClient', clientProps);
+      expect(html).toContain('Connect a Platform');
     });
 
     it('a tenant_user session renders without the tenant-wide connect option', async () => {
@@ -167,8 +196,14 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
       const element = await Page();
       expect(redirectMock).not.toHaveBeenCalled();
       const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Connect a platform');
-      expect(rendered).toContain('"allowTenantWide":false');
+      expect(rendered).toContain('"isTenantAdmin":false');
+
+      const clientProps = element.props.children.props;
+      const html = renderComponent('../../src/app/tenant/connectors/ConnectorsClient', 'ConnectorsClient', clientProps);
+      expect(html).toContain('Connect a Platform');
+      // isTenantAdmin: false — the Scope selector (which offers the
+      // tenant-wide option) never renders for this session.
+      expect(html).not.toContain('Scope</label>');
     });
   });
 
@@ -292,9 +327,12 @@ describe('Story 6.2 healing pass — ResolvedIdentity migration ripple into Stor
       const element = await Page();
       expect(redirectMock).not.toHaveBeenCalled();
       const rendered = JSON.stringify(element);
-      expect(rendered).toContain('Connector status');
       expect(rendered).not.toContain('reddit');
       expect(rendered).not.toMatch(/"healthy",\s*"lastSuccessfulPoll"/);
+
+      const clientProps = element.props.children.props;
+      const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', clientProps);
+      expect(html).toContain('Connector Health');
     });
   });
 });

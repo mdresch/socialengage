@@ -10,6 +10,29 @@ export interface DisplayText {
   snippet: string | null;
 }
 
+/** Extracts `url` (or `link`) from rawPayload, best-effort. */
+export function extractUrl(rawPayload: unknown): string | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    if (typeof p.url === 'string') return p.url;
+    if (typeof p.link === 'string') return p.link;
+  }
+  return null;
+}
+
+/** Extracts `author` (or `source.name`) from rawPayload, best-effort. */
+export function extractAuthor(rawPayload: unknown): string | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    if (typeof p.author === 'string') return p.author;
+    if (p.source && typeof p.source === 'object') {
+      const src = p.source as Record<string, unknown>;
+      if (typeof src.name === 'string') return src.name;
+    }
+  }
+  return null;
+}
+
 /**
  * `rawPayload` is heterogeneous per connector (GNews: title+description;
  * Newswire/tenant-owned-feed: title+link) — this only ever looks for a
@@ -36,8 +59,15 @@ export function extractProviderBadge(rawPayload: unknown): string {
   return 'unknown';
 }
 
+export interface SentimentScores {
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
 export interface PostEnrichmentSummary {
   sentiment: string | null;
+  sentimentScores: SentimentScores | null;
   entities: string[];
   keyPhrases: string[];
   modelUsed: string | null;
@@ -60,6 +90,15 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   const e = enrichment as Record<string, unknown>;
 
   const sentiment = typeof e.sentiment === 'string' ? e.sentiment : null;
+
+  let sentimentScores: SentimentScores | null = null;
+  if (e.sentimentScores && typeof e.sentimentScores === 'object') {
+    const sc = e.sentimentScores as Record<string, unknown>;
+    if (typeof sc.positive === 'number' && typeof sc.neutral === 'number' && typeof sc.negative === 'number') {
+      sentimentScores = { positive: sc.positive, neutral: sc.neutral, negative: sc.negative };
+    }
+  }
+
   const entities = Array.isArray(e.entities)
     ? e.entities
         .map((entity) =>
@@ -73,5 +112,5 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   const modelUsed = typeof e.modelUsed === 'string' ? e.modelUsed : null;
 
   if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed) return null;
-  return { sentiment, entities, keyPhrases, modelUsed };
+  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed };
 }

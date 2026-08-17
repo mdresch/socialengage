@@ -2,15 +2,13 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
-import { listPosts } from '@/lib/core-client';
-import { extractDisplayText, extractProviderBadge, extractEnrichmentSummary } from './postDisplay';
+import { listPosts, listWatchlists } from '@/lib/core-client';
+import { PostsFeedClient } from './PostsFeedClient';
 
 /**
- * Story 6.11 — the first frontend surface for GET /v1/posts anywhere in
- * this project. Pagination is the real, opaque nextCursor via a "next
- * page" link (?cursor=<exact value>, next/navigation's own searchParams
- * handling) — never a page-number control, never a client-constructed
- * cursor. See this component's own SKILL.md.
+ * Story 6.11 — Post Feed page (upgraded design, Story 6.11+).
+ * Pagination uses real opaque nextCursor via ?cursor= param (ADR-0011).
+ * Interactive filter/search/slideover is delegated to PostsFeedClient.
  */
 export default async function PostFeedPage({
   searchParams,
@@ -27,37 +25,20 @@ export default async function PostFeedPage({
   }
 
   const { cursor } = await searchParams;
-  const page = await listPosts(cursor);
+
+  // Fetch posts and watchlists in parallel; watchlists failing is non-fatal.
+  const [page, watchlists] = await Promise.all([
+    listPosts(cursor),
+    listWatchlists().catch(() => []),
+  ]);
 
   return (
     <main>
-      <h1>Posts</h1>
-      <ul>
-        {page.posts.map((post) => {
-          const { title, snippet } = extractDisplayText(post.rawPayload);
-          const provider = extractProviderBadge(post.rawPayload);
-          const enrichmentSummary = post.enrichment ? extractEnrichmentSummary(post.enrichment) : null;
-
-          return (
-            <li key={post.id}>
-              <span>{provider}</span>{' '}
-              <a href={`/tenant/posts/${post.id}`}>{title}</a>
-              {snippet && <p>{snippet}</p>}
-              <time>{post.publishedAt ?? 'unknown'}</time>
-              {enrichmentSummary && (
-                <div>
-                  {enrichmentSummary.sentiment && <p>Sentiment: {enrichmentSummary.sentiment}</p>}
-                  {enrichmentSummary.keyPhrases.length > 0 && (
-                    <p>Key phrases: {enrichmentSummary.keyPhrases.join(', ')}</p>
-                  )}
-                  {enrichmentSummary.entities.length > 0 && <p>Entities: {enrichmentSummary.entities.join(', ')}</p>}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      {page.nextCursor && <a href={`/tenant/posts?cursor=${encodeURIComponent(page.nextCursor)}`}>Next page</a>}
+      <PostsFeedClient
+        posts={page.posts}
+        nextCursor={page.nextCursor}
+        watchlists={watchlists}
+      />
     </main>
   );
 }

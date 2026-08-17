@@ -103,7 +103,11 @@ describe('Story 6.12 — Tenant-owned-feed connector setup UI', () => {
     });
 
     it('links to the new screen from the main connectors page, so it is reachable', () => {
-      const source = readSrc(...connectorsPagePath);
+      // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+      // Story 8.1): tenant/connectors/page.tsx was split into a thin Server
+      // Component + ConnectorsClient.tsx — the Tenant-Owned Feed banner
+      // link now lives in the latter. Verified present, not assumed.
+      const source = readSrc('app', 'tenant', 'connectors', 'ConnectorsClient.tsx');
       expect(source).toContain('/tenant/connectors/tenant-owned-feed');
     });
 
