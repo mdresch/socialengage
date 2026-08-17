@@ -234,6 +234,33 @@ export async function setUserAccessEndsAt(
   return { status: response.status, body };
 }
 
+export interface AccessHistoryEntry {
+  id: string;
+  targetUserId: string;
+  actorUserId: string;
+  operation: string;
+  oldValue: string | null;
+  newValue: string | null;
+  occurredAt: string;
+}
+
+/**
+ * Story 6.14 / Story 5.17 — the audit trail for one user's own
+ * access_ends_at writes (GET /v1/tenants/users/:id/access-history,
+ * tenant_admin only, RLS-scoped server-side). Throws on a non-2xx, the same
+ * convention listTenantUsers() already uses — unlike inviteTenantUser()/
+ * setUserAccessEndsAt() above, there's no documented non-2xx outcome this
+ * screen needs to react to differently; a 403/404 here is a genuine failure.
+ */
+export async function getUserAccessHistory(userId: string): Promise<AccessHistoryEntry[]> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/users/${encodeURIComponent(userId)}/access-history`);
+  if (!response.ok) {
+    throw new Error(`Failed to load access history: ${response.status}`);
+  }
+  const payload = (await response.json()) as { entries?: AccessHistoryEntry[] };
+  return Array.isArray(payload.entries) ? payload.entries : [];
+}
+
 export interface ConnectorStatus {
   status: 'healthy' | 'degraded' | 'failing' | 'disconnected';
   lastSuccessfulFetchAt: string | null;

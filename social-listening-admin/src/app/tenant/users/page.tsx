@@ -5,6 +5,7 @@ import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { listTenantUsers } from '@/lib/core-client';
 import { InviteUserForm } from './InviteUserForm';
 import { AccessControl } from './AccessControl';
+import { AccessHistoryButton } from './AccessHistoryButton';
 
 /**
  * Story 6.8 — visible to both tenant_user and tenant_admin resolved
@@ -46,6 +47,11 @@ export default async function TenantUsersPage({
     users = [];
   }
 
+  // Story 6.14 — resolves an access-history entry's actorUserId to a real
+  // email without a new endpoint; an actor no longer in this tenant falls
+  // back to the raw id (AccessHistoryButton's own honest default).
+  const actorLookup = Object.fromEntries(users.map((user) => [user.id, user.email]));
+
   return (
     <main>
       <h1>Tenant users</h1>
@@ -74,6 +80,7 @@ export default async function TenantUsersPage({
                 {isTenantAdmin && (
                   <td>
                     <AccessControl userId={user.id} currentValue={user.accessEndsAt} />
+                    <AccessHistoryButton userId={user.id} userEmail={user.email} actorLookup={actorLookup} />
                   </td>
                 )}
               </tr>
