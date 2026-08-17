@@ -18,6 +18,7 @@ This component renders the tenant-facing connector status screen (`/tenant/conne
 | ADR-0023 | Failing connectors must be visually distinguished from degraded/healthy ones. | 6.5 |
 | ADR-0021 | Boolean-query AST, `resolveWatchlistAstDispatch()`'s `unsupportedNodeTypes` — see "Known gaps" below. | not yet built |
 | ADR-0051 | Connector activation, decoupled from credential presence — the Active/Inactive indicator is now driven by real `isActive` (Story 1.12), never `authMode`/`credentialStatus`; real activate/deactivate controls added | 6.15 |
+| ADR-0042 | Wikipedia connector (`social-listening-core`) — added as a fifth `PLATFORMS` entry here too (no icon/color fields on this screen's own, plainer `PlatformDefinition` shape) | 6.21 |
 
 ## Correction, 2026-08-12 — this story was never actually built despite being marked "Built"
 Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardcoded `gnews`/`newswire`/`reddit` fixture array — never imported `core-client.ts`, never called `GET /v1/connectors/:platformId`. The original contract only did `fs.readFileSync` + string-literal checks, which could not detect this. Rebuilt for real — see `docs/user-stories/epic-6-tenant-admin-ui.md`'s own Story 6.5 entry and `docs/implementation-log.md` for the rebuild commit.
@@ -30,11 +31,12 @@ Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardc
 
 - `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` — real behavioral assertions (a real-session-plus-fetch-mocking page render, plus structural source checks), no jsdom in this repo (testEnvironment is `'node'`). **Revised 2026-08-12 (Story 6.15, ADR-0051):** the assertion that Newswire "always renders Active, regardless of credentialStatus" was real, deliberate behavior under the old (pre-ADR-0051) model and is now wrong under the current one — rewritten with a dated note, not silently changed, to assert Newswire renders Inactive by default and Active only once `isActive` is true.
 - `contracts/epic-6/story-6.15.connector-activation-controls.contract.test.ts` — the Active/Inactive label is driven by real `isActive`, on both this screen and `tenant/connectors/page.tsx`; `ActivateDeactivateButton` is rendered for every platform; the personal control is hidden for `authMode: 'none'`; the tenant-wide control is gated on `tenant_admin`.
+- `contracts/epic-6/story-6.21.wikipedia-connector-ui.contract.test.ts` — this screen's own `PLATFORMS` array gains a `wikipedia` entry (`authMode: 'none'`, `category: 'Ingestion'`).
 
 ## How to extend this safely
 
 - Keep the screen focused on health/status data only — never render `rawPayload`, post text, or watchlist query content (ADR-0030 §2's Platform Admin analogue, applied here as a general "status views show status, not content" principle, per Story 6.9's own restatement).
-- Adding a fifth platform: add one entry to `PLATFORMS` here — no other change needed, same as `tenant/connectors/page.tsx`'s own equivalent note.
+- Adding a platform: add one entry to `PLATFORMS` here — this screen's own `PlatformDefinition` has no `icon`/`color` fields, so no matching visual-identity work is ever needed here even when `tenant/connectors/page.tsx`'s own richer `PlatformDef` needs a new one (Story 6.21).
 
 ## Load-bearing constraints — do not change casually
 

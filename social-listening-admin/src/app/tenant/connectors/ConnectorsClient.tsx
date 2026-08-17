@@ -36,6 +36,16 @@ function IconSparkles() {
   );
 }
 
+/** Story 6.21 — Wikipedia's own icon, distinct from GNews's globe so the two connectors are never visually identical on the same screen. */
+function IconBookOpen() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 7v14" />
+      <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+    </svg>
+  );
+}
+
 function IconShieldCheck() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -82,8 +92,8 @@ export interface PlatformDef {
   subtitle: string;
   description: string;
   authMode: 'api_key' | 'none';
-  color: 'blue' | 'indigo' | 'purple' | 'emerald';
-  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald';
+  color: 'blue' | 'indigo' | 'purple' | 'emerald' | 'amber';
+  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open';
   adNotice: 'billing' | 'public' | null;
   credentialFields: CredentialFieldDef[];
   /**
@@ -133,6 +143,7 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
     case 'radio':            return <IconRadio />;
     case 'sparkles-purple':
     case 'sparkles-emerald': return <IconSparkles />;
+    case 'book-open':        return <IconBookOpen />;
   }
 }
 

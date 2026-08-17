@@ -56,6 +56,14 @@ const PLATFORMS: PlatformDefinition[] = [
     // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
     personalScopeAllowed: false,
   },
+  {
+    id: 'wikipedia',
+    name: 'Wikipedia',
+    authMode: 'none',
+    category: 'Ingestion',
+    description: 'Tracks edits to a tracked Wikipedia article via the MediaWiki Action API. No credential required.',
+    personalScopeAllowed: false,
+  },
 ];
 
 async function loadRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {

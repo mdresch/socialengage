@@ -2941,6 +2941,7 @@ button:disabled {
 .cv-platform-icon-indigo  { background: #eef2ff; border: 1px solid #c7d2fe; color: #4338ca; }
 .cv-platform-icon-purple  { background: #faf5ff; border: 1px solid #e9d5ff; color: #7c3aed; }
 .cv-platform-icon-emerald { background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; }
+.cv-platform-icon-amber   { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
 
 .cv-card-name {
   font-size: 0.9375rem;
@@ -2959,6 +2960,7 @@ button:disabled {
 .cv-card-subtitle-indigo  { color: #4338ca; }
 .cv-card-subtitle-purple  { color: #7c3aed; }
 .cv-card-subtitle-emerald { color: #059669; }
+.cv-card-subtitle-amber   { color: #b45309; }
 
 .cv-card-description {
   font-size: 0.8125rem;

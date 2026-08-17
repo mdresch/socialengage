@@ -486,3 +486,24 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - The list screen visually distinguishes per-feed verification status from the separate, tenant-wide `ActivateDeactivateButton` (ADR-0051) state — a tenant must be able to tell, without guessing, that a verified feed still isn't being polled while the connector-wide switch is off.
 
 **Explicitly out of scope:** any cap on feed count per tenant (left unbounded, ADR-0057's own named Open Question); a scheduled cleanup job for stale `pending` or `removed` rows (pre-existing gap, not closed by this story); a token-regenerate/retry endpoint for an expired `pending` activation (remove-and-reconnect is the sanctioned path); Platform-Admin cross-tenant feed visibility (a real, separate gap ADR-0057 named as a candidate future ADR, not this story's scope); any change to Newswire's own hardcoded, non-tenant-configurable feed set.
+
+---
+
+## Story 6.21 — Expose the Wikipedia connector in the Tenant Admin UI
+
+**Source:** Story 2.13's own real, generic `POST/DELETE /v1/connectors/:platformId/activate|deactivate` surface (ADR-0051), against a connector that already exists (`wikipedia`, `authMode: 'none'`) · **Status:** Ready · **Built:** not yet — no new ADR needed, the same "ordinary UI/CRUD surface, exposes an already-built, already-generic mechanism" category Stories 6.15/6.16/6.18/6.19/6.20 already established.
+
+**Drafted and requested directly by Menno, 2026-08-17/18, immediately after Story 2.13 (Wikipedia connector) was built** — confirmed directly, not assumed: `tenant/connectors/page.tsx`'s and `tenant/connectors/status/page.tsx`'s own hand-curated `PLATFORMS` arrays (Stories 6.3/6.5/6.15) list `gnews`/`newswire`/`azure-ai-language`/`azure-openai` only. Neither array has a `wikipedia` entry, so a Tenant-Admin has no way to see the connector exists or activate it — even though the backend's own connect/activate/deactivate REST surface is already fully generic on `platformId` (ADR-0051) and needs no change at all. This is the exact, already-named limitation both components' own SKILL.mds state plainly: "there is no 'list all registered connectors' backend endpoint... a new core connector must be added here by hand."
+
+**As a** Tenant-Admin,
+**I want** to see Wikipedia listed alongside my other connectors and be able to activate it,
+**so that** a connector that's real and fully built on the backend isn't invisible in the product.
+
+**Acceptance Criteria**
+- `tenant/connectors/page.tsx`'s `PLATFORMS` array gains a `wikipedia` entry: `authMode: 'none'`, `credentialFields: []`, `personalScopeAllowed: false` — the identical shape Newswire's own entry already uses, since both are public, no-account, tenant-wide-only connectors.
+- Because Wikipedia will render on the same screen as the four existing connectors, it needs its own visually distinct `icon`/`color` pair, not a reused one — reusing `globe`/`blue` (GNews's own pair) would make the two connectors indistinguishable at a glance on the same list. `PlatformDef['icon']`/`['color']` (`ConnectorsClient.tsx`) each gain one new value (an encyclopedia/book glyph, a fifth distinct color), with matching CSS added to `globals.css` following the existing `cv-platform-icon-<color>`/`cv-card-subtitle-<color>` pattern exactly (background/border/text triple, same pastel style as the existing four).
+- `tenant/connectors/status/page.tsx`'s own separately-duplicated `PLATFORMS` array (no icon/color fields — a plainer shape) also gains a `wikipedia` entry: `authMode: 'none'`, `category: 'Ingestion'`, `personalScopeAllowed: false`.
+- Both screens' existing, already-generic rendering logic — `ActivateDeactivateButton` (tenant-wide only, since `authMode: 'none'` and `personalScopeAllowed: false`), `StatusBadge`, real `getConnectorStatus('wikipedia')` calls — require zero further change; adding the `PLATFORMS` entries alone is sufficient, per both components' own "adding a fifth platform" extension-point documentation.
+- Both components' own SKILL.mds are updated to note this is now a fifth, not fourth, connector, and that a new icon/color pair was needed (a real, small exception to the previously-documented "no other file needs to change" claim, which held for four same-shaped credentialed/no-credential connectors but not for one needing its own visual identity).
+
+**Explicitly out of scope:** any change to `core-client.ts`, the connect/disconnect/activate/deactivate REST endpoints, or `social-listening-core` at all (Story 2.13's own backend work is already complete and fully generic); a "list all registered connectors" backend endpoint closing the manually-maintained-`PLATFORMS` gap for good (both SKILL.mds' own already-named, not-yet-built future fix, unaffected by this story); any credential form for Wikipedia (`authMode: 'none'`, same as Newswire — nothing to submit).

@@ -115,6 +115,18 @@ const PLATFORMS: PlatformDef[] = [
     // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
     personalScopeAllowed: false,
   },
+  {
+    id: 'wikipedia',
+    name: 'Wikipedia',
+    subtitle: 'Public Ingestion Source',
+    description: 'Tracks edits to a tracked Wikipedia article via the MediaWiki Action API (zero credential required).',
+    authMode: 'none',
+    color: 'amber',
+    icon: 'book-open',
+    adNotice: 'public',
+    credentialFields: [],
+    personalScopeAllowed: false,
+  },
 ];
 
 /**
