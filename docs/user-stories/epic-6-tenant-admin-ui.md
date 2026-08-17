@@ -405,6 +405,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** any change to `htmlToMarkdown()`/Story 3.10's own conversion pipeline (already correct, already shipped) — this story only exposes and renders its existing output; any change to `rawPayload`/the card-list snippet extraction; a future connector that doesn't populate `bodyMarkdown` — the honest `null`-falls-back-to-snippet behavior already covers that case without a new decision.
 
+**Dated correction, 2026-08-17, same day — AC5 above superseded.** Requested directly by Menno after using the `/tenant/posts` list view live: the card-list snippet's own out-of-scope status (AC5) meant it kept reading raw `rawPayload.description` unchanged, which for Newswire/tenant-owned-feed posts is un-stripped HTML (`<p>...</p>`) — the same class of defect this story already fixed on the detail view, just never propagated to the card. The card-list snippet now also prefers a bounded prefix of `bodyMarkdown` when present, flattened to plain text via `react-markdown`'s own `allowedElements={[]}`/`unwrapDisallowed` (a real parse-then-strip, not hand-rolled regex — same standard as AC3's rendering path), falling back to the original `rawPayload`-derived snippet when `bodyMarkdown` is `null`. Deliberately still flattened, not block-rendered, on the card: headings/lists would break the existing 3-line CSS clamp — full, block-formatted Markdown remains a Slideover/detail-route-only behavior. See `post-feed/SKILL.md`'s own matching dated entry and `story-6.19.post-body-markdown-rendering.contract.test.ts`'s own dated AC5 correction for the details.
+
 ---
 
 ## Story 6.17 — Tenant-wide activate/deactivate control on the tenant-owned-feed connector screen

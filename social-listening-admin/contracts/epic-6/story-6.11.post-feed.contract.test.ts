@@ -51,6 +51,20 @@
  * own same-day dated note for the backend-side finding this surfaced (AI
  * provider activation wasn't gating enrichment at all before that fix).
  *
+ * --- Enhancement, 2026-08-17, at Menno's own direct request ("could you
+ * include the language in the post output slide window?") ---
+ * Both post-detail surfaces (the `[id]/page.tsx` standalone route and
+ * `PostsFeedClient.tsx`'s own Slideover, extended by Story 6.19 with an
+ * `initialActivePostId` testability seam) now also show
+ * `enrichment.detectedLanguage` (`PostEnrichmentSummary.language`,
+ * `postDisplay.ts` — already extracted since Story 8.5/ADR-0055 for the
+ * Analytics Dashboard's language-breakdown widget, but never rendered on
+ * either post-detail surface until now). No new extraction logic — this
+ * only wires an already-derived field into two more places it was
+ * previously missing from. Absent (`language: null`, e.g. a post enriched
+ * before Story 8.5 shipped) renders nothing, the same convention every
+ * other enrichment field in this panel already follows.
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET /v1/posts's / GET /v1/posts/:id's own backend behavior
  *     (cursor pagination correctness, RLS scoping) — Story 3.4's and Story
@@ -326,6 +340,57 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
       const rendered = JSON.stringify(element);
       expect(rendered).toContain('azure-ai-language:2025-01-01');
+    });
+
+    it('enhancement, 2026-08-17: shows the post\'s detected language on the standalone detail route', async () => {
+      const Page = await renderPageAs('../../src/app/tenant/posts/[id]/page', () =>
+        new Response(
+          JSON.stringify({
+            ...NEWSWIRE_POST,
+            id: 'p-2',
+            authorId: 'author-123',
+            acquisitionId: 'run-456',
+            enrichment: { ...NEWSWIRE_POST.enrichment, detectedLanguage: 'en' },
+          }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
+      const rendered = JSON.stringify(element);
+      expect(rendered).toMatch(/Language[^a-zA-Z][\s\S]{0,20}\ben\b/);
+    });
+
+    it('enhancement, 2026-08-17: renders no language line when detectedLanguage is absent', async () => {
+      const Page = await renderPageAs('../../src/app/tenant/posts/[id]/page', () =>
+        new Response(
+          JSON.stringify({ ...NEWSWIRE_POST, id: 'p-2', authorId: 'author-123', acquisitionId: 'run-456' }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
+      const rendered = JSON.stringify(element);
+      // Case-sensitive, colon-anchored: modelUsed's own value
+      // ("azure-ai-language:2025-01-01") legitimately contains the
+      // substring "language" and must not trip this assertion.
+      expect(rendered).not.toMatch(/Language: /);
+    });
+
+    it('enhancement, 2026-08-17: PostsFeedClient\'s own Slideover shows the detected language too', () => {
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const withLanguage = {
+        ...NEWSWIRE_POST,
+        id: 'p-2',
+        enrichment: { ...NEWSWIRE_POST.enrichment, detectedLanguage: 'fr' },
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [withLanguage], watchlists: [], initialActivePostId: 'p-2' })
+      );
+      expect(html).toMatch(/Language[^a-zA-Z][\s\S]{0,20}\bfr\b/i);
     });
 
     it('a post with no author recorded (authorId null) renders an honest "no author" state, not a blank or a crash', async () => {

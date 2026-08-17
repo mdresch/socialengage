@@ -60,6 +60,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
           {enrichmentSummary.keyPhrases.length > 0 && <p>Key phrases: {enrichmentSummary.keyPhrases.join(', ')}</p>}
           {enrichmentSummary.entities.length > 0 && <p>Entities: {enrichmentSummary.entities.join(', ')}</p>}
           {enrichmentSummary.modelUsed && <p>Enriched by: {enrichmentSummary.modelUsed}</p>}
+          {enrichmentSummary.language && <p>Language: {enrichmentSummary.language}</p>}
         </div>
       )}
       {!post.enrichment && <RunEnrichmentButton postId={post.id} />}

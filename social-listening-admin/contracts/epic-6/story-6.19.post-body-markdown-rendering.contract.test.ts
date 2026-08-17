@@ -193,8 +193,27 @@ describe('Story 6.19 — post detail body renders real, formatted Markdown', () 
     });
   });
 
-  describe('AC5: the compact post-card list-view snippet is unaffected', () => {
-    it('the card-list snippet still renders plain text (extractDisplayText), unrelated to bodyMarkdown', () => {
+  describe('AC5, superseded 2026-08-17 — the compact post-card list-view snippet now also sources from bodyMarkdown when present', () => {
+    // Dated correction: this story's own original AC5 declared the card-list
+    // snippet out of scope ("this story only changes the fuller detail body,
+    // not the compact card preview"), and the test below originally asserted
+    // exactly that — the card always showed raw rawPayload.description,
+    // untouched by bodyMarkdown. Requested directly by Menno the same day,
+    // after noticing Newswire's raw, un-stripped `<p>...</p>` HTML tags still
+    // leaking through as literal text on the /tenant/posts list view (the
+    // exact defect this story already fixed on the detail view, but the card
+    // list reads rawPayload.description directly and was never touched).
+    // Superseded, not silently rewritten — the card now prefers a bounded
+    // prefix of bodyMarkdown, flattened to plain text via react-markdown's
+    // own `allowedElements={[]}`/`unwrapDisallowed` (a real parse-then-strip,
+    // never hand-rolled regex, per this story's own no-`dangerouslySetInnerHTML`
+    // precedent), falling back to the original rawPayload-derived snippet
+    // when bodyMarkdown is null. See PostsFeedClient.tsx's own
+    // CARD_SNIPPET_SOURCE_LENGTH comment for why the card still never
+    // block-renders full Markdown (headings/lists would break the existing
+    // 3-line CSS clamp) — only the detail Slideover/route render full,
+    // block-formatted Markdown.
+    it('renders a flattened, plain-text prefix of bodyMarkdown when present — no raw syntax, no block elements', () => {
       const React = require('react');
       const { renderToStaticMarkup } = require('react-dom/server');
       const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
@@ -203,10 +222,42 @@ describe('Story 6.19 — post detail body renders real, formatted Markdown', () 
         React.createElement(PostsFeedClient, { posts: [post('p-1')], watchlists: [] })
       );
 
-      expect(html).toContain('Short teaser.');
-      // The card list itself (no post open) must never render the fuller
-      // Markdown body — that only appears once a post is selected.
+      expect(html).toContain('Trust is the real issue');
+      expect(html).toContain('Dario Amodei');
+      // Flattened to plain text: no raw Markdown syntax, no block tags.
+      expect(html).not.toContain('## Trust is the real issue');
+      expect(html).not.toContain('**Dario Amodei**');
       expect(html).not.toContain('<h2>Trust is the real issue</h2>');
+      expect(html).not.toContain('<strong>Dario Amodei</strong>');
+    });
+
+    it('falls back to the original rawPayload-derived snippet when bodyMarkdown is null', () => {
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [post('p-1', { bodyMarkdown: null })], watchlists: [] })
+      );
+
+      expect(html).toContain('Short teaser.');
+    });
+
+    it('never leaks raw, un-stripped HTML tags (the real Newswire defect this fix closes) into the card snippet', () => {
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const newswirePost = post('p-1', {
+        rawPayload: { providerId: 'newswire', title: 'Press release headline', description: '<p>Raw HTML paragraph text.</p>' },
+        bodyMarkdown: 'Clean, already-stripped press release body text.',
+      });
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [newswirePost], watchlists: [] })
+      );
+
+      expect(html).toContain('Clean, already-stripped press release body text.');
+      expect(html).not.toMatch(/&lt;p&gt;|<p>Raw HTML/);
     });
   });
 

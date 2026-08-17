@@ -123,6 +123,16 @@ function flattenPost(post: SocialPostSummary): FlatPost {
 
 const VISIBLE_BATCH_SIZE = 20;
 
+/**
+ * Story 6.11 enhancement, 2026-08-17 — a defensive prefix length for the
+ * card-list teaser's Markdown source, matching ADR-0053's own
+ * MAX_BODY_SOURCE_LENGTH-shaped precedent: the CSS `-webkit-line-clamp: 3`
+ * on `.pf-post-card-snippet` already visually truncates to 3 lines
+ * regardless of source length, so this only bounds DOM/parse cost across a
+ * page of many cards, not visible truncation.
+ */
+const CARD_SNIPPET_SOURCE_LENGTH = 500;
+
 interface PostsFeedClientProps {
   posts: SocialPostSummary[];
   watchlists: Watchlist[];
@@ -368,8 +378,16 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
 
               {/* Title & snippet */}
               <h2 className="pf-post-card-title">{post.title}</h2>
-              {post.snippet && (
-                <p className="pf-post-card-snippet">{post.snippet}</p>
+              {(post.bodyMarkdown || post.snippet) && (
+                <p className="pf-post-card-snippet">
+                  {post.bodyMarkdown ? (
+                    <ReactMarkdown allowedElements={[]} unwrapDisallowed>
+                      {post.bodyMarkdown.slice(0, CARD_SNIPPET_SOURCE_LENGTH)}
+                    </ReactMarkdown>
+                  ) : (
+                    post.snippet
+                  )}
+                </p>
               )}
 
               {/* Enrichment chips */}
@@ -479,6 +497,9 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                   </div>
                   {activePost.enrichmentSummary.modelUsed && (
                     <span className="pf-enrichment-model">{activePost.enrichmentSummary.modelUsed}</span>
+                  )}
+                  {activePost.enrichmentSummary.language && (
+                    <span className="pf-enrichment-language">Language: {activePost.enrichmentSummary.language}</span>
                   )}
                 </div>
 
