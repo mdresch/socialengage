@@ -413,3 +413,25 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - No `story-6.2.resolved-identity-migration-ripple.contract.test.ts` block exists yet for the `tenant-owned-feed` screen (confirmed: Story 6.12 did not add one) — this story is not required to add one either, since it changes markup on a page that contract doesn't yet cover; named here as a pre-existing gap, not created or required to be closed by this story.
 
 **Explicitly out of scope:** any change to per-domain verification state (`tenant_owned_feed_activations`, ADR-0050) — this story is only about the tenant-wide `connector_activations` switch, orthogonal to which domains are DNS-verified; multi-domain activation nuance (ADR-0050 Open Question 2 remains open — this story's single tenant-wide `is_active` flag covers/gates every verified domain for this tenant identically, the same all-or-nothing scope Story 6.15 already established for every other connector); correcting ADR-0051's own Context-section claim about ADR-0050 (named above, left for a separate dated-note pass, not this persona's authority to accept); any change to `pollTenantOwnedFeed()`, `shouldAttemptIngestion()`, or the Story 1.13 scheduler itself (all working exactly as designed — this story closes the missing *human action* that was never wired to trigger them, not a defect in any of the three).
+
+---
+
+## Story 6.18 — Post feed search/filter operates over all matched posts, not just the current page
+
+**Source:** ADR-0011 (cursor pagination, Accepted) — no new ADR needed; `GET /v1/posts` itself is unchanged, this is purely a client-side data-fetching pattern change, the same "page through everything client-side, no new backend endpoint" shape ADR-0054 Decision §3 already established for the Analytics Dashboard (Story 8.1's `fetchAnalyticsSummary.ts`) · **Status:** Ready
+**Built:** 2026-08-17 — social-listening-admin@a97cf30
+
+**Context found while scoping this story, at Menno's own direct request:** `PostsFeedClient.tsx`'s search box and Provider/Sentiment/Watchlist filters (added during this session's earlier healing pass, not part of Story 6.11's own original Acceptance Criteria — that story explicitly named "filtering... full-text or date-range search" as out of scope, since no such filter exists on `GET /v1/posts` itself) operate entirely client-side over whatever `page.tsx` fetches — a single, default-sized page (20 posts) via `listPosts(cursor)`. The header text is honest about this today ("X of Y **on this page**... more pages available") but that's exactly the gap Menno flagged: search/filter only ever sees the current page, not the tenant's full matched post set.
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the search box and Provider/Sentiment/Watchlist filters on `/tenant/posts` to search and filter across everything my tenant has ingested, not just the 20 most recent posts,
+**so that** searching for an older post or a less-common provider/sentiment combination actually finds it, instead of silently missing anything not on the first page.
+
+**Acceptance Criteria**
+- `page.tsx` fetches the tenant's full post set via a real, paginated loop (reusing `listPosts(cursor, limit)`'s already-extended `limit` param, the identical `fetchAllPosts()`-shaped pattern `fetchAnalyticsSummary.ts` (Story 8.1) already established, including its `MAX_PAGES` defensive circuit breaker — not an approximation ceiling) — never a single-page fetch presented as if it were the whole set.
+- `PostsFeedClient.tsx`'s existing search/filter logic is otherwise unchanged (same fields searched, same filter predicates) — this story widens what data it operates *over*, not how it matches.
+- The server-round-trip `?cursor=` "Next page" link is replaced with a client-side "Show more" control revealing more of the already-fetched, already-filtered result set in batches (implementation's own reasonable batch size, e.g. 20) — never eagerly rendering thousands of post cards into the DOM at once just because they were all fetched upfront.
+- The header count text is corrected to match the new reality — no more "on this page" / "more pages available" framing once the full set is loaded; reflects real total-matched vs. real total-fetched counts.
+- Zero regressions to Story 6.11's own existing behavior (post detail Slideover, raw-JSON inspection, `RunEnrichmentButton`, empty states) — this story only changes the fetch/pagination shape feeding `PostsFeedClient`.
+
+**Explicitly out of scope:** any change to `GET /v1/posts` itself or `social-listening-core` (matches ADR-0054 Decision §3's own precedent — no new query params, no server-side search); the client-side aggregation scale ceiling this pattern inherits (named, not resolved, the same way ADR-0054 Open Question 2 already named it for Analytics — a tenant with a very large post volume faces the same real cost); any new filter dimension beyond the four (search/Provider/Sentiment/Watchlist) already built.
