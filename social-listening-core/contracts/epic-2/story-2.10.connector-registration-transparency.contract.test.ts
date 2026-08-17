@@ -104,6 +104,16 @@ const REAL_CONNECTORS: RealConnector[] = [
     kind: 'social',
     skillPath: '.claude/skills/tenant-owned-feed-connector/SKILL.md',
   },
+  // 2026-08-17 (Story 2.13, ADR-0042) — extended per this file's own
+  // documented convention ("extend CORE_FILES/REAL_CONNECTORS when a new
+  // core file/connector is introduced") and per Story 2.13's own AC1,
+  // which explicitly requires this exact evidence mechanism.
+  {
+    name: 'Wikipedia',
+    providerId: 'wikipedia',
+    kind: 'social',
+    skillPath: '.claude/skills/wikipedia-connector/SKILL.md',
+  },
 ];
 
 function readCore(relativePath: string): string {

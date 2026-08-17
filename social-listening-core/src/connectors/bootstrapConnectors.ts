@@ -4,6 +4,8 @@ import { newswireConnector } from './newswire/newswireConnector';
 import { pollNewswireFeeds } from './newswire/pollNewswireFeeds';
 import { tenantOwnedFeedConnector } from './tenantOwnedFeed/tenantOwnedFeedConnector';
 import { pollTenantOwnedFeed } from './tenantOwnedFeed/pollTenantOwnedFeed';
+import { wikipediaConnector } from './wikipedia/wikipediaConnector';
+import { pollWikipedia } from './wikipedia/pollWikipedia';
 import { azureAiLanguageConnector } from './azureAiLanguage/azureAiLanguageConnector';
 import { azureOpenAiConnector } from './azureOpenAi/azureOpenAiConnector';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
@@ -57,6 +59,17 @@ export function bootstrapConnectors(): void {
   registerSocialConnector({
     ...tenantOwnedFeedConnector,
     poll: (tenantId: string) => pollTenantOwnedFeed(tenantId),
+    pollCadenceMs: THIRTY_MINUTES_MS,
+  });
+
+  // Story 2.13 (ADR-0042) — no confirmed real-world edit-frequency
+  // constraint drives this number; matches tenant-owned-feed's own
+  // "not urgent breaking news" cadence rather than GNews/Newswire's
+  // 15-minute one. A real, revisable implementation default, not a
+  // Wikimedia-mandated value.
+  registerSocialConnector({
+    ...wikipediaConnector,
+    poll: (tenantId: string) => pollWikipedia(tenantId),
     pollCadenceMs: THIRTY_MINUTES_MS,
   });
 

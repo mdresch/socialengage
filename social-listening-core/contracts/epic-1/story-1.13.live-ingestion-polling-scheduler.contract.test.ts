@@ -59,6 +59,7 @@ import { NEWSWIRE_PROVIDER_ID } from '../../src/connectors/newswire/newswireConn
 import { pollNewswireFeeds } from '../../src/connectors/newswire/pollNewswireFeeds';
 import { TENANT_OWNED_FEED_PROVIDER_ID } from '../../src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector';
 import { pollTenantOwnedFeed } from '../../src/connectors/tenantOwnedFeed/pollTenantOwnedFeed';
+import { WIKIPEDIA_PROVIDER_ID } from '../../src/connectors/wikipedia/wikipediaConnector';
 import { bootstrapConnectors } from '../../src/connectors/bootstrapConnectors';
 import { SocialConnector } from '../../src/connectors/types';
 import {
@@ -123,7 +124,14 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
 
       const registered = listSocialConnectors();
       const providerIds = registered.map((c) => c.providerId).sort();
-      expect(providerIds).toEqual([GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID].sort());
+      // 2026-08-17 (Story 2.13, ADR-0042): a fourth real connector
+      // (Wikipedia) was registered — extended here per this test's own
+      // stated purpose ("registers every real connector exactly once"),
+      // not weakened. Every other assertion in this file targets a
+      // specific connector by id and is unaffected by a new one existing.
+      expect(providerIds).toEqual(
+        [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID].sort()
+      );
       for (const connector of registered) {
         expect(connector.deliveryMode).toBe('poll');
         expect(typeof connector.poll).toBe('function');

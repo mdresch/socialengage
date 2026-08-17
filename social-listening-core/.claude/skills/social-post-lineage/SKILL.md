@@ -9,6 +9,8 @@ description: Author normalization and IngestionRun audit anchoring for SocialPos
 
 The two provenance facts every real `SocialPost` carries: who wrote it (`author_id` → `authors`, Story 3.1/ADR-0004) and which process acquired it (`acquisition_id` → `ingestion_runs`, Story 3.2/ADR-0005). `src/authors/authorStore.ts` upserts authors by `(tenantId, platformId, externalAuthorId)`; `src/ingestion/ingestionRunStore.ts` opens/closes audit-trail runs; `src/posts/socialPostStore.ts` is the sanctioned way to insert a post, requiring both as parameters. Together they're what lets a support engineer trace any post back to exactly who posted it and exactly which run brought it in.
 
+`authorStore.ts` also exposes `listAuthorsByPlatform(tenantId, platformId)` (Story 2.13, ADR-0042) — every already-known `Author` for one platform, as a lightweight `AuthorSummary` (`externalAuthorId`/`handle`/`displayName`). This is not a general-purpose author-listing endpoint; it exists specifically for a connector whose own "is this already tracked" or "re-poll by this external id/name" decision needs the full set of already-discovered externals for one platform — the Wikipedia connector's own two-phase discovery/re-poll design (`.claude/skills/wikipedia-connector/SKILL.md`) is its first and, as of this story, only real caller.
+
 ## Governing ADRs and Stories
 
 | ADR | Decision | Story |
@@ -17,6 +19,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 | ADR-0005 | Every `SocialPost` carries `acquisitionId` → an immutable `IngestionRun` audit record | 3.2 |
 | ADR-0049 | `SocialPost` gains exactly one scoped exception to ADR-0004's normalized model — `author_follower_count_at_publish`, a point-in-time snapshot, never derived from/reconciled against `Author.followerCount`, no other author field | 3.9 |
 | ADR-0053 | `SocialPost` gains `body_markdown`/`body_markdown_version` — computed once at insert by the shared `htmlToMarkdown()` utility, same `enrichment`-shaped (compute once, persist, never re-derive) precedent as `enrichment` itself. See `.claude/skills/canonical-markdown-conversion/SKILL.md` for the conversion pipeline. | 3.10 |
+| ADR-0042 | `listAuthorsByPlatform()` added — a connector-facing "already discovered" membership read, not a new schema decision | 2.13 |
 
 ## Contracts that constrain this component
 
@@ -27,6 +30,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 - `contracts/epic-3/story-3.5.tiered-retention-and-archival.contract.test.ts` — constrains `insertSocialPost()`'s `acquisition_started_at` population and both tables' composite-PK/partitioned shape; see `.claude/skills/data-retention-and-archival/SKILL.md` for what that story actually owns.
 - `contracts/epic-2/story-2.6.newswire-connector.contract.test.ts` — the first contract exercising `upsertAuthor()` and `insertSocialPost()` together inside one real, live-fetched poll cycle (not in isolation) — see `.claude/skills/newswire-connector/SKILL.md`.
 - `contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` — constrains `insertSocialPost()`'s two new `bodyMarkdown`/`bodyMarkdownVersion` input fields (nullable, `NULL` exactly together, never independently); see `.claude/skills/canonical-markdown-conversion/SKILL.md` for what that story actually owns.
+- `contracts/epic-2/story-2.13.wikipedia-connector.contract.test.ts` — constrains `listAuthorsByPlatform()`'s own shape and real behavior (indirectly, via the Wikipedia connector's own discovery/re-poll logic that depends on it); see `.claude/skills/wikipedia-connector/SKILL.md` for what that story actually owns.
 
 ## How to extend this safely
 
