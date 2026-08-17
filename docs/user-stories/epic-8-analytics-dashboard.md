@@ -112,7 +112,7 @@
 ## Story 8.5 — Languages breakdown widget
 
 **Source:** ADR-0055 (Accepted 2026-08-17) · **Status:** Ready — ADR-0055 accepted 2026-08-17, via a structured approval decision in the orchestrating session (Menno: "yes please extend the language field" — see ADR-0055's own Acceptance note), accepted as drafted, no revisions.
-**Built:** not yet
+**Built:** 2026-08-17 — social-listening-admin@8b8bb14
 
 **As a** Tenant User or Tenant-Admin,
 **I want** to see which languages my monitored content is actually written in,
