@@ -284,6 +284,71 @@ export function computePhraseHistory(posts: SentimentPost[], range: DateRangeFil
   return Array.from(byDay.entries()).map(([date, counts]) => ({ date, ...counts }));
 }
 
+export interface VolumeHistoryPoint {
+  date: string;
+  count: number;
+}
+
+/**
+ * Story 8.4 — real day-bucketed post-volume series for Overview's chart,
+ * reusing the exact enumerateDays() rule computeSentimentHistory()/
+ * computePhraseHistory() already established. A post with no publishedAt
+ * cannot be honestly placed in the series — excluded, the same rule
+ * computeSentimentHistory() already applies.
+ */
+export function computeVolumeHistory(posts: SentimentPost[], range: DateRangeFilter): VolumeHistoryPoint[] {
+  const byDay = new Map<string, number>();
+  for (const day of enumerateDays(range)) {
+    byDay.set(day, 0);
+  }
+  for (const post of posts) {
+    if (!post.publishedAt) continue;
+    const day = post.publishedAt.slice(0, 10);
+    if (byDay.has(day)) {
+      byDay.set(day, (byDay.get(day) ?? 0) + 1);
+    }
+  }
+  return Array.from(byDay.entries()).map(([date, count]) => ({ date, count }));
+}
+
+/**
+ * Story 8.4 — the immediately preceding period of equal length (inclusive
+ * day count), for the date picker's "Compare to previous period" toggle.
+ * A 14-day range ending yesterday compares against the 14 days immediately
+ * before that — never an arbitrary or estimated prior window.
+ */
+export function computePreviousRange(range: DateRangeFilter): DateRangeFilter {
+  const start = new Date(`${range.startDate}T00:00:00.000Z`);
+  const end = new Date(`${range.endDate}T00:00:00.000Z`);
+  const durationMs = end.getTime() - start.getTime();
+  const prevEnd = new Date(start.getTime() - 86_400_000);
+  const prevStart = new Date(prevEnd.getTime() - durationMs);
+  return { startDate: prevStart.toISOString().slice(0, 10), endDate: prevEnd.toISOString().slice(0, 10) };
+}
+
+export interface PercentDelta {
+  /** null means "no prior data to compare" — a null or zero previous value, never a fabricated/estimated number. */
+  pct: number | null;
+  trend: 'up' | 'down' | 'flat' | 'none';
+}
+
+/**
+ * Story 8.4 — a real percentage delta between a current and prior-period
+ * count. Division by zero (or no prior period at all) is not fabricated
+ * into a 0%/∞ figure — it reports pct: null, trend: 'none', an honest "no
+ * comparison possible" signal (closing the exact defect the Google AI
+ * Studio reference committed with its hardcoded '+18%'/'∞' strings, none
+ * derived from a real prior-period fetch).
+ */
+export function computePercentDelta(current: number, previous: number | null): PercentDelta {
+  if (previous === null || previous === 0) {
+    return { pct: null, trend: 'none' };
+  }
+  const pct = Math.round(((current - previous) / previous) * 100);
+  const trend = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+  return { pct, trend };
+}
+
 export interface AnalyticsSummary {
   totalPosts: number;
   sentimentSplit: SentimentSplit;
@@ -295,6 +360,7 @@ export interface AnalyticsSummary {
   negativePhrases: PhraseFrequency[];
   phraseFrequency: PhraseFrequency[];
   phraseHistory: PhraseHistoryPoint[];
+  volumeHistory: VolumeHistoryPoint[];
   /** The flattened, date-filtered post set — Story 8.2/8.3's own widgets recompute from this client-side when an author/phrase filter is toggled. */
   posts: SentimentPost[];
 }
@@ -320,6 +386,7 @@ export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateR
     negativePhrases: computePhrasesBySentiment(flat, 'negative'),
     phraseFrequency,
     phraseHistory: computePhraseHistory(flat, range, topPhrases),
+    volumeHistory: computeVolumeHistory(flat, range),
     posts: flat,
   };
 }

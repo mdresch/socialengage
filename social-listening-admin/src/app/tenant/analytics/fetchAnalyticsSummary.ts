@@ -23,7 +23,7 @@ const PAGE_LIMIT = 100;
  */
 const MAX_PAGES = 500;
 
-export async function fetchAnalyticsSummary(range: DateRangeFilter): Promise<AnalyticsSummary> {
+async function fetchAllPosts(): Promise<SocialPostSummary[]> {
   const posts: SocialPostSummary[] = [];
   let cursor: string | undefined;
   let pages = 0;
@@ -35,5 +35,35 @@ export async function fetchAnalyticsSummary(range: DateRangeFilter): Promise<Ana
     pages += 1;
   } while (cursor && pages < MAX_PAGES);
 
+  return posts;
+}
+
+export async function fetchAnalyticsSummary(range: DateRangeFilter): Promise<AnalyticsSummary> {
+  const posts = await fetchAllPosts();
   return computeAnalyticsSummary(posts, range);
+}
+
+export interface AnalyticsComparison {
+  current: AnalyticsSummary;
+  previous: AnalyticsSummary | null;
+}
+
+/**
+ * Story 8.4 — fetches the full post set exactly once, then computes two
+ * real AnalyticsSummary aggregates from it (current range + an equal-length
+ * prior range, when requested). Never a second GET /v1/posts paging loop —
+ * doubling the network cost just to support comparison would double exactly
+ * the round-trip cost ADR-0054 Open Question 2 already names as a real
+ * scale concern. previousRange: null means comparison is genuinely off —
+ * `previous` is null, never silently computed anyway.
+ */
+export async function fetchAnalyticsComparison(
+  range: DateRangeFilter,
+  previousRange: DateRangeFilter | null
+): Promise<AnalyticsComparison> {
+  const posts = await fetchAllPosts();
+  return {
+    current: computeAnalyticsSummary(posts, range),
+    previous: previousRange ? computeAnalyticsSummary(posts, previousRange) : null,
+  };
 }

@@ -3219,6 +3219,26 @@ button:disabled {
   font-size: 0.875rem;
 }
 
+.an-delta {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.an-delta-up {
+  color: var(--color-status-healthy);
+}
+
+.an-delta-down {
+  color: var(--color-status-failing);
+}
+
+.an-delta-flat,
+.an-delta-none {
+  color: var(--color-text-disabled);
+}
+
 .an-sentiment-mini {
   display: flex;
   flex-direction: column;

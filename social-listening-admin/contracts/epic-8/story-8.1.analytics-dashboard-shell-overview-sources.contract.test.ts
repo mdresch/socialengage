@@ -414,8 +414,16 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       );
       expect(response.status).toBe(200);
       const body = await response.json();
-      expect(body.totalPosts).toBe(1);
-      expect(body.sources[0].providerId).toBe('gnews');
+      // 2026-08-17, Story 8.4: the route's response shape genuinely changed
+      // from a bare AnalyticsSummary to { current, previous } (previous:
+      // null unless ?compare=true is passed) — a deliberate, in-scope change
+      // documented in Story 8.4's own AC and analytics-dashboard/SKILL.md,
+      // not a foreign regression. Narrowed to read body.current, same as
+      // Story 8.2/8.3's own precedent for an anticipated in-epic handoff
+      // against this same contract.
+      expect(body.current.totalPosts).toBe(1);
+      expect(body.current.sources[0].providerId).toBe('gnews');
+      expect(body.previous).toBeNull();
     });
 
     it('degrades to a real 502, not a crash, when GET /v1/posts itself fails', async () => {

@@ -30,6 +30,7 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
   const [range, setRange] = useState<DateRangeFilter>(initialRange);
   const [rangeKey, setRangeKey] = useState<string>('last_30_days');
   const [summary, setSummary] = useState<AnalyticsSummary>(initialSummary);
+  const [previousSummary, setPreviousSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,21 +39,31 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
     router.replace(`?tab=${tab}`);
   }
 
+  /**
+   * Story 8.4 — reads DateRangeValue.compareWithPrevious for the first time
+   * (the picker has set it on every onChange since Story 8.1; it was simply
+   * never read). When true, /api/analytics/summary is asked for a real
+   * comparison; previousSummary is set from whatever it genuinely returns
+   * (including null when the prior period has no data), never estimated
+   * client-side.
+   */
   async function handleRangeChange(value: DateRangeValue) {
     setRangeKey(value.key);
     const nextRange: DateRangeFilter = { startDate: value.startDate, endDate: value.endDate };
     setRange(nextRange);
     setLoading(true);
     setError(null);
+    const compareParam = value.compareWithPrevious ? '&compare=true' : '';
     try {
       const response = await fetch(
-        `/api/analytics/summary?startDate=${encodeURIComponent(nextRange.startDate)}&endDate=${encodeURIComponent(nextRange.endDate)}`
+        `/api/analytics/summary?startDate=${encodeURIComponent(nextRange.startDate)}&endDate=${encodeURIComponent(nextRange.endDate)}${compareParam}`
       );
       if (!response.ok) {
         throw new Error('Failed to load analytics data.');
       }
-      const nextSummary = (await response.json()) as AnalyticsSummary;
-      setSummary(nextSummary);
+      const result = (await response.json()) as { current: AnalyticsSummary; previous: AnalyticsSummary | null };
+      setSummary(result.current);
+      setPreviousSummary(result.previous);
     } catch {
       setError('Could not load analytics for this date range. Try again.');
     } finally {
@@ -92,7 +103,7 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
       {loading && <p className="an-loading">Updating…</p>}
 
       <div className="an-tab-panel" role="tabpanel">
-        {activeTab === 'overview' && <OverviewTab summary={summary} />}
+        {activeTab === 'overview' && <OverviewTab summary={summary} previousSummary={previousSummary} />}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
