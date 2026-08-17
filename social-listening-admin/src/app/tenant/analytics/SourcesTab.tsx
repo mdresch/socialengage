@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { EmptyState } from '@/components/ui';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
 import type { AnalyticsSummary } from './analyticsData';
@@ -8,6 +8,8 @@ import type { AnalyticsSummary } from './analyticsData';
 interface SourcesTabProps {
   summary: AnalyticsSummary;
 }
+
+const LINE_COLORS = ['#2563eb', '#15803d', '#d97706', '#7c3aed', '#dc2626'];
 
 /**
  * Story 8.1 (ADR-0054 Decision §2) — per real-`providerId` volume and
@@ -71,9 +73,46 @@ export function SourcesTab({ summary }: SourcesTabProps) {
                 <span className="an-sentiment-mini-neutral">{source.sentiment.neutral} neu</span>
                 <span className="an-sentiment-mini-negative">{source.sentiment.negative} neg</span>
               </span>
+              <span className="an-source-detail-index">
+                {source.sentimentIndex === null ? 'No sentiment data' : `${source.sentimentIndex.toFixed(1)} / 10`}
+              </span>
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className="an-widget" id="widget-sources-volume-history">
+        <div className="an-widget-header">
+          <span className="an-widget-title">Source volume over time</span>
+        </div>
+        <div className="an-chart-wrap" style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={summary.sourceVolumeHistory} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <Tooltip
+                content={({ active, payload, label }) => (
+                  <AnimatedChartTooltip
+                    active={active}
+                    title={String(label)}
+                    items={payload?.map((p) => ({ name: String(p.name), value: p.value as number, color: p.color as string })) ?? []}
+                  />
+                )}
+              />
+              {summary.sources.map((source, i) => (
+                <Line
+                  key={source.providerId}
+                  type="monotone"
+                  dataKey={source.providerId}
+                  name={source.label}
+                  stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                  strokeWidth={2}
+                  dot={false}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

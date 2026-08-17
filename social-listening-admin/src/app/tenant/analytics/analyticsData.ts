@@ -69,6 +69,22 @@ export interface SourceBreakdownEntry {
   label: string;
   count: number;
   sentiment: SentimentSplit;
+  /** Real 0-10 weighted score (computeSentimentIndex()) — null when this source has zero enriched posts (Story 8.6). */
+  sentimentIndex: number | null;
+}
+
+/**
+ * Story 8.6 — a real, transparent 0-10 weighted sentiment score:
+ * positive=10, neutral=5, negative=0, averaged over the enriched total.
+ * Honestly null (never a fabricated default) when there's nothing enriched
+ * to score — the same anti-fabrication rule this epic applies everywhere
+ * else, closing the exact defect the Google AI Studio reference committed
+ * with its own hardcoded 7.6/68% sentiment-gauge fallback.
+ */
+export function computeSentimentIndex(split: SentimentSplit): number | null {
+  const total = split.positive + split.neutral + split.negative;
+  if (total === 0) return null;
+  return (split.positive * 10 + split.neutral * 5) / total;
 }
 
 /**
@@ -86,12 +102,16 @@ export function computeSourceBreakdown(posts: SocialPostSummary[]): SourceBreakd
   }
 
   return Array.from(byProvider.entries())
-    .map(([providerId, providerPosts]) => ({
-      providerId,
-      label: PROVIDER_LABELS[providerId] ?? providerId,
-      count: providerPosts.length,
-      sentiment: computeSentimentSplit(providerPosts),
-    }))
+    .map(([providerId, providerPosts]) => {
+      const sentiment = computeSentimentSplit(providerPosts);
+      return {
+        providerId,
+        label: PROVIDER_LABELS[providerId] ?? providerId,
+        count: providerPosts.length,
+        sentiment,
+        sentimentIndex: computeSentimentIndex(sentiment),
+      };
+    })
     .sort((a, b) => b.count - a.count);
 }
 
@@ -113,6 +133,8 @@ export interface SentimentPost {
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
   language: string | null;
+  /** Real providerId (e.g. "gnews") — Story 8.6, needed to bucket by source and day simultaneously. */
+  providerId: string;
 }
 
 export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
@@ -127,6 +149,7 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       keyPhrases: enrichment?.keyPhrases ?? [],
       title,
       language: enrichment?.language ?? null,
+      providerId: extractProviderBadge(post.rawPayload),
     };
   });
 }
@@ -394,6 +417,34 @@ export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakd
     .sort((a, b) => b.count - a.count);
 }
 
+export interface SourceVolumeHistoryPoint {
+  date: string;
+  [providerId: string]: number | string;
+}
+
+/**
+ * Story 8.6 — real day-and-source-bucketed post counts, the same
+ * multi-key-per-day shape computePhraseHistory() already established for
+ * its own top-phrases. A source/day combination with zero posts is a real
+ * zero, never omitted.
+ */
+export function computeSourceVolumeHistory(posts: SentimentPost[], range: DateRangeFilter, providerIds: string[]): SourceVolumeHistoryPoint[] {
+  const byDay = new Map<string, Record<string, number>>();
+  for (const day of enumerateDays(range)) {
+    byDay.set(day, Object.fromEntries(providerIds.map((id) => [id, 0])));
+  }
+  for (const post of posts) {
+    if (!post.publishedAt) continue;
+    const day = post.publishedAt.slice(0, 10);
+    const bucket = byDay.get(day);
+    if (!bucket) continue;
+    if (Object.prototype.hasOwnProperty.call(bucket, post.providerId)) {
+      bucket[post.providerId] += 1;
+    }
+  }
+  return Array.from(byDay.entries()).map(([date, counts]) => ({ date, ...counts }));
+}
+
 export interface AnalyticsSummary {
   totalPosts: number;
   sentimentSplit: SentimentSplit;
@@ -407,6 +458,7 @@ export interface AnalyticsSummary {
   phraseHistory: PhraseHistoryPoint[];
   volumeHistory: VolumeHistoryPoint[];
   languages: LanguageBreakdownEntry[];
+  sourceVolumeHistory: SourceVolumeHistoryPoint[];
   /** The flattened, date-filtered post set — Story 8.2/8.3's own widgets recompute from this client-side when an author/phrase filter is toggled. */
   posts: SentimentPost[];
 }
@@ -421,10 +473,11 @@ export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateR
   const flat = flattenForSentiment(filtered);
   const phraseFrequency = computePhraseFrequency(flat);
   const topPhrases = phraseFrequency.slice(0, 5).map((p) => p.phrase);
+  const sources = computeSourceBreakdown(filtered);
   return {
     totalPosts: filtered.length,
     sentimentSplit: computeSentimentSplit(filtered),
-    sources: computeSourceBreakdown(filtered),
+    sources,
     sentimentHistory: computeSentimentHistory(flat, range),
     topFans: computeTopAuthorsBySentiment(flat, 'positive'),
     topCritics: computeTopAuthorsBySentiment(flat, 'negative'),
@@ -434,6 +487,7 @@ export function computeAnalyticsSummary(posts: SocialPostSummary[], range: DateR
     phraseHistory: computePhraseHistory(flat, range, topPhrases),
     volumeHistory: computeVolumeHistory(flat, range),
     languages: computeLanguageBreakdown(flat),
+    sourceVolumeHistory: computeSourceVolumeHistory(flat, range, sources.map((s) => s.providerId)),
     posts: flat,
   };
 }

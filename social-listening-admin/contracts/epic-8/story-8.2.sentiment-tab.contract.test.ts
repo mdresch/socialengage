@@ -98,7 +98,10 @@ describe('Story 8.2 — Sentiment tab', () => {
       // enrichment.detectedLanguage, so it's real null, not a foreign
       // regression. Narrowed to include it, same as Story 8.2/8.3's own
       // precedent for an anticipated in-epic shape widening.
-      expect(flat).toEqual([{ id: 'a', publishedAt: '2026-08-01T09:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: ['x'], title: 'Post a', language: null }]);
+      // 2026-08-17, Story 8.6: SentimentPost also gained a real providerId
+      // (extractProviderBadge()) — this fixture post uses 'gnews', same
+      // anticipated in-epic widening precedent as the language fix above.
+      expect(flat).toEqual([{ id: 'a', publishedAt: '2026-08-01T09:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: ['x'], title: 'Post a', language: null, providerId: 'gnews' }]);
     });
 
     it('computeSentimentHistory() buckets by day across the whole range, including zero-post days, never omitted', async () => {

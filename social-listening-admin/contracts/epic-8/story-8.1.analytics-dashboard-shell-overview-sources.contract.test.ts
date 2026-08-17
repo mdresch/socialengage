@@ -180,7 +180,12 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       const summary = computeAnalyticsSummary(posts, { startDate: '2026-08-01', endDate: '2026-08-31' });
       expect(summary.totalPosts).toBe(1);
       expect(summary.sentimentSplit).toEqual({ positive: 1, neutral: 0, negative: 0 });
-      expect(summary.sources).toEqual([{ providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 } }]);
+      // 2026-08-17, Story 8.6: SourceBreakdownEntry genuinely gained
+      // sentimentIndex (computeSentimentIndex()) — 1 positive post, no
+      // neutral/negative, is a real 10, not a foreign regression. Narrowed
+      // to include it, same anticipated in-epic widening precedent as
+      // Stories 8.2/8.3/8.4's own fixes to this file.
+      expect(summary.sources).toEqual([{ providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 }, sentimentIndex: 10 }]);
     });
   });
 
@@ -270,8 +275,9 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       const clientElement = element.props.children;
       expect(clientElement.props.initialTab).toBe('sources');
       expect(clientElement.props.initialSummary.totalPosts).toBe(1);
+      // 2026-08-17, Story 8.6: same real sentimentIndex widening as above.
       expect(clientElement.props.initialSummary.sources).toEqual([
-        { providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 } },
+        { providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 }, sentimentIndex: 10 },
       ]);
     });
 
@@ -359,13 +365,19 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       const React = require('react');
       const { renderToStaticMarkup } = require('react-dom/server');
       const { SourcesTab } = require('../../src/app/tenant/analytics/SourcesTab');
+      // 2026-08-17, Story 8.6: SourcesTab now also reads sentimentIndex
+      // (real) and summary.sourceVolumeHistory (its new chart) — this
+      // fixture predates both fields, added here with real, correctly-
+      // computed values, same anticipated in-epic widening precedent as
+      // this file's other fixes above.
       const summary = {
         totalPosts: 2,
         sentimentSplit: { positive: 1, neutral: 0, negative: 1 },
         sources: [
-          { providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 } },
-          { providerId: 'newswire', label: 'Newswire', count: 1, sentiment: { positive: 0, neutral: 0, negative: 1 } },
+          { providerId: 'gnews', label: 'GNews', count: 1, sentiment: { positive: 1, neutral: 0, negative: 0 }, sentimentIndex: 10 },
+          { providerId: 'newswire', label: 'Newswire', count: 1, sentiment: { positive: 0, neutral: 0, negative: 1 }, sentimentIndex: 0 },
         ],
+        sourceVolumeHistory: [],
       };
       const html = renderToStaticMarkup(React.createElement(SourcesTab, { summary }));
       expect(html).toContain('GNews');
