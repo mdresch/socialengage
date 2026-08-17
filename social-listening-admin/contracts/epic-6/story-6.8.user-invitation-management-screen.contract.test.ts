@@ -139,23 +139,34 @@ describe('Story 6.8 — Tenant-Admin user invitation and management screen', () 
       }
     }
 
-    it('listTenantUsers() GETs /v1/tenants/users with the session bearer token and returns the users array', async () => {
-      const users = await withAuthenticatedFetch(async (fetchSpy) => {
+    // Dated correction, 2026-08-17: listTenantUsers() originally returned a
+    // bare TenantUser[]. Widened to { users, seats } once GET /v1/tenants/users
+    // itself started also returning the caller tenant's own real seat counts
+    // (social-listening-core@556bb65) — a real, deliberate shape change, not
+    // a silent rewrite. The one real caller (page.tsx) was updated in the
+    // same pass.
+    it('listTenantUsers() GETs /v1/tenants/users with the session bearer token and returns { users, seats }', async () => {
+      const result = await withAuthenticatedFetch(async (fetchSpy) => {
         fetchSpy.mockResolvedValue(
-          new Response(JSON.stringify({ users: [{ id: 'u1', email: 'a@b.com', role: 'tenant_user', status: 'active', accessEndsAt: null }] }), {
-            status: 200,
-          })
+          new Response(
+            JSON.stringify({
+              users: [{ id: 'u1', email: 'a@b.com', role: 'tenant_user', status: 'active', accessEndsAt: null }],
+              seats: { licenseSeatCount: 10, activeSeatCount: 4 },
+            }),
+            { status: 200 }
+          )
         );
         const { listTenantUsers } = await import('../../src/lib/core-client');
-        const result = await listTenantUsers();
+        const outcome = await listTenantUsers();
         expect(fetchSpy).toHaveBeenCalledWith(
           expect.stringContaining('/v1/tenants/users'),
           expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer contract-test-access-token' }) })
         );
-        return result;
+        return outcome;
       });
-      expect(users).toHaveLength(1);
-      expect(users[0].email).toBe('a@b.com');
+      expect(result.users).toHaveLength(1);
+      expect(result.users[0].email).toBe('a@b.com');
+      expect(result.seats).toEqual({ licenseSeatCount: 10, activeSeatCount: 4 });
     });
 
     it('inviteTenantUser() POSTs {email, role} and returns the raw status/body (a 409 is not thrown, but returned)', async () => {

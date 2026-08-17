@@ -407,12 +407,14 @@ Unified operational console consisting of five discrete, structured sections:
 ### 5.10 Team Members & Access Management (Story 6.8, 6.14)
 
 **Route:** `/tenant/users`  
-**Role:** Tenant Admin
+**Role:** visible to `tenant_user`/`tenant_admin` alike; invite/access controls gated `tenant_admin`-only
 
-- User list with role indicators (`tenant_admin`, `tenant_user`) and access status
-- Invite new team member form (`InviteUserForm`): email address, role selection (`tenant_user` / `tenant_admin`)
-- Time-bounded access control (`AccessControl.tsx`): setting or clearing `access_ends_at` datetime per ADR-0032 §9
-- Access history log (`Story 6.14`): review historical invite and session events for tenant members
+**Visual redesign, 2026-08-17:**
+- Seat-utilization card: real `licenseSeatCount`/`activeSeatCount` (widened onto `GET /v1/tenants/users`, the caller's own tenant only) with a progress meter — never a fabricated number.
+- Styled user table: initial-letter avatar, role pill (`Tenant Admin`/`Tenant User`), `StatusBadge` (§6.1) for `active`/`invited`, an expiry pill for a scheduled `access_ends_at` or "active indefinitely".
+- `InviteUserForm` and `AccessControl` (time-bounded access window) both open in a `Modal` (§6.8) rather than always-inline — same underlying fetch/state logic as before, restyled container.
+- `AccessHistoryButton` (Story 6.14) stays per-user, opened from each row — a tenant-wide aggregate view was considered and deliberately not built (Menno's own scoping call).
+- No hard-delete-a-user action exists (no `DELETE /v1/tenants/users/:id` anywhere) — the destructive action here is "End access now" (`AccessControl`), immediate `accessEndsAt`, not removal.
 
 ---
 
@@ -556,6 +558,19 @@ interface RunEnrichmentButtonProps {
 - `EmptyState`: centered callout with heading, body, and CTA button when lists/tables are empty.
 - `InlineError`: accessible error message rendered with `role="alert"` for form validation.
 - `RelativeTime`: renders human relative time string ("5 minutes ago") with ISO timestamp tooltip in `title`.
+
+### 6.8 `Modal` (added 2026-08-17, Team & Access redesign)
+
+Generic dialog shell — the same `.modal-backdrop`/`.modal-dialog` classes `ConfirmModal` (§6.2) uses, but with a plain `children` slot instead of a baked-in confirm/cancel footer. For a form or multi-action flow with its own internal state and buttons (inviting a user, configuring a time-bounded access window) — `ConfirmModal` stays the right choice for a genuine irreversible-action confirmation (§2's "Confirmed irreversibility" principle); `Modal` is for everything else that still warrants a modal over an inline panel.
+
+```tsx
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+```
 
 ---
 

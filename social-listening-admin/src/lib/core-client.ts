@@ -182,17 +182,37 @@ export interface TenantUserActionOutcome {
   body: { error?: string; id?: string; [key: string]: unknown };
 }
 
+/** Enhancement, 2026-08-17 — the caller's own tenant's real seat counts, now returned alongside the user list (GET /v1/tenants/users). */
+export interface TenantSeatInfo {
+  licenseSeatCount: number;
+  activeSeatCount: number;
+}
+
+export interface TenantUsersResult {
+  users: TenantUser[];
+  seats: TenantSeatInfo;
+}
+
 /**
  * Story 6.8 / Story 1.9 — lists every user for the caller's own tenant
  * (GET /v1/tenants/users, RLS-scoped, no role gate on read).
+ *
+ * Enhancement, 2026-08-17 (dated correction — widened return shape, see
+ * this repo's own story-6.8 contract for the matching dated note): now
+ * returns `{ users, seats }` rather than a bare array, since the same
+ * response now also carries the caller tenant's own real
+ * licenseSeatCount/activeSeatCount (social-listening-core@556bb65).
  */
-export async function listTenantUsers(): Promise<TenantUser[]> {
+export async function listTenantUsers(): Promise<TenantUsersResult> {
   const response = await authenticatedCoreFetch('/v1/tenants/users');
   if (!response.ok) {
     throw new Error(`Failed to list tenant users: ${response.status}`);
   }
-  const payload = (await response.json()) as { users?: TenantUser[] };
-  return Array.isArray(payload.users) ? payload.users : [];
+  const payload = (await response.json()) as { users?: TenantUser[]; seats?: TenantSeatInfo };
+  return {
+    users: Array.isArray(payload.users) ? payload.users : [],
+    seats: payload.seats ?? { licenseSeatCount: 0, activeSeatCount: 0 },
+  };
 }
 
 /**

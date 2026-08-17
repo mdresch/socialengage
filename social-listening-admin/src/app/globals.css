@@ -3598,3 +3598,288 @@ button:disabled {
   font-size: 1.125rem;
   font-weight: 650;
 }
+
+/* =========================================================================
+   Team & Access screen (/tenant/users) — Story 6.8/6.10/6.14, visual
+   redesign 2026-08-17
+   ========================================================================= */
+
+.tu-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.tu-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tu-seat-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.tu-seat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.tu-seat-count {
+  font-size: 1.125rem;
+  font-weight: 650;
+  color: var(--color-text-primary);
+  margin-top: var(--space-1);
+}
+
+.tu-seat-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 16rem;
+}
+
+.tu-seat-meter-track {
+  flex: 1;
+  background: var(--color-surface-page);
+  border-radius: 999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.tu-seat-meter-fill {
+  background: var(--color-accent);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+.tu-seat-meter-pct {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.tu-table-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.tu-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.tu-table thead tr {
+  background: var(--color-surface-page);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tu-table th {
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.tu-table-actions-header {
+  text-align: right;
+}
+
+.tu-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tu-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tu-table tbody tr:hover {
+  background: var(--color-surface-page);
+}
+
+.tu-table td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: middle;
+}
+
+.tu-user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tu-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 650;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.tu-user-email {
+  font-weight: 550;
+  color: var(--color-text-primary);
+}
+
+.tu-role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15em 0.65em;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-surface-page);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.tu-role-pill-admin {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.tu-expiry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.65em;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 550;
+  background: color-mix(in srgb, var(--color-status-degraded) 15%, transparent);
+  color: var(--color-status-degraded);
+  border: 1px solid color-mix(in srgb, var(--color-status-degraded) 35%, transparent);
+}
+
+.tu-expiry-indefinite {
+  color: var(--color-text-disabled);
+  font-size: 0.8125rem;
+}
+
+.tu-table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tu-table-actions > * + * {
+  margin-left: var(--space-2);
+}
+
+.tu-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tu-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tu-field-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tu-input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.tu-form-message {
+  font-size: 0.8125rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
+.tu-form-message-error {
+  background: color-mix(in srgb, var(--color-status-failing) 12%, transparent);
+  color: var(--color-status-failing);
+}
+
+.tu-form-message-success {
+  background: color-mix(in srgb, var(--color-status-healthy) 12%, transparent);
+  color: var(--color-status-healthy);
+}
+
+.tu-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tu-history-entry {
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.tu-history-entry-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.tu-history-entry-actor {
+  font-family: var(--font-mono);
+}
+
+.tu-history-entry-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+}
+
+.tu-history-entry-op {
+  font-weight: 600;
+  margin-right: var(--space-2);
+}

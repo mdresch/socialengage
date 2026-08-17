@@ -3,6 +3,7 @@ import React from 'react';
 import {
   StatusBadge,
   ConfirmModal,
+  Modal,
   Slideover,
   TagInput,
   EmptyState,
@@ -80,6 +81,37 @@ describe('UI Component Primitives (Design Spec §6)', () => {
       expect(html).toContain('Delete Watchlist');
       expect(html).toContain('This action is irreversible.');
       expect(html).toContain('modal-btn-destructive');
+    });
+  });
+
+  describe('Modal (§6.8)', () => {
+    it('returns null when isOpen is false', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(Modal, {
+          isOpen: false,
+          title: 'Invite Team Member',
+          onClose: () => {},
+          children: React.createElement('p', null, 'Form content'),
+        })
+      );
+      expect(html).toBe('');
+    });
+
+    it('renders accessible dialog structure with the given title and children when isOpen is true', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(Modal, {
+          isOpen: true,
+          title: 'Invite Team Member',
+          onClose: () => {},
+          children: React.createElement('p', null, 'Form content'),
+        })
+      );
+      expect(html).toContain('role="dialog"');
+      expect(html).toContain('aria-modal="true"');
+      expect(html).toContain('Invite Team Member');
+      expect(html).toContain('Form content');
+      // No baked-in confirm/cancel footer — that stays ConfirmModal's job.
+      expect(html).not.toContain('modal-footer');
     });
   });
 

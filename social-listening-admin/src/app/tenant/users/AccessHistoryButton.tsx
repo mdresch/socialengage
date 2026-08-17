@@ -60,7 +60,7 @@ export function AccessHistoryButton({ userId, userEmail, actorLookup, initialEnt
 
   return (
     <>
-      <button type="button" onClick={openHistory}>
+      <button type="button" className="btn btn-secondary btn-sm" onClick={openHistory}>
         View access history
       </button>
       <Slideover title={`Access history — ${userEmail}`} isOpen={open} onClose={() => setOpen(false)}>
@@ -70,13 +70,17 @@ export function AccessHistoryButton({ userId, userEmail, actorLookup, initialEnt
           <EmptyState heading="No access changes recorded" body="This user's access has never been modified." />
         )}
         {entries !== null && entries.length > 0 && (
-          <ul>
+          <ul className="tu-history-list">
             {entries.map((entry) => (
-              <li key={entry.id}>
-                <span>{resolveActor(entry.actorUserId)}</span>
-                <span> {entry.operation} </span>
-                <span>{formatValue(entry.oldValue)} → {formatValue(entry.newValue)}</span>
-                <RelativeTime timestamp={entry.occurredAt} />
+              <li key={entry.id} className="tu-history-entry">
+                <div className="tu-history-entry-meta">
+                  <span className="tu-history-entry-actor">{resolveActor(entry.actorUserId)}</span>
+                  <RelativeTime timestamp={entry.occurredAt} />
+                </div>
+                <div className="tu-history-entry-detail">
+                  <span className="tu-history-entry-op">{entry.operation}</span>
+                  <span>{formatValue(entry.oldValue)} → {formatValue(entry.newValue)}</span>
+                </div>
               </li>
             ))}
           </ul>
