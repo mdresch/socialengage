@@ -258,7 +258,7 @@ export function PostsFeedClient({ posts, watchlists }: PostsFeedClientProps) {
               <option value="ALL">All Providers</option>
               <option value="gnews">GNews</option>
               <option value="newswire">Newswire</option>
-              <option value="tenant_owned_feed">Tenant Feed</option>
+              <option value="tenant-owned-feed">Tenant Feed</option>
             </select>
           </div>
 

@@ -233,6 +233,15 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(clientSource).toMatch(/setActivePost/);
       expect(clientSource).toContain('Slideover');
     });
+
+    it('healing note, 2026-08-17: the Provider filter\'s tenant-owned-feed option value matches the real, hyphenated providerId (never the underscored form), found live — selecting it returned zero posts despite real ones existing', async () => {
+      const source = fs.readFileSync(
+        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'posts', 'PostsFeedClient.tsx'),
+        'utf8'
+      );
+      expect(source).toMatch(/<option value=["']tenant-owned-feed["']/);
+      expect(source).not.toMatch(/<option value=["']tenant_owned_feed["']/);
+    });
   });
 
   describe('AC2: pagination via the real, opaque nextCursor — a next-page link only, never a page-number control or a client-constructed cursor', () => {
