@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-17 | — | — | auto | Documentation | Story 8.3 | feat: Story 8.3 — Conversations tab, closing out Epic 8 (5fed9dd) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.2 | docs: log Story 8.2 (Sentiment tab) traceability (05cc132) |
 | 2026-08-17 | — | — | auto | Documentation | Story 8.2 | feat: Story 8.2 — Sentiment tab (a54bf05) |
 | 2026-08-17 | — | — | auto | Documentation | ADR-0054 | docs: ADR-0054 (Analytics Dashboard), Epic 8, and Story 8.1 traceability (87e8cf4) |
 | 2026-08-17 | — | — | auto | Documentation | Story 8.1 | feat: Story 8.1 — Analytics dashboard shell, date-range filter, Overview and Sources tabs (5558e11) |
