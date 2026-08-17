@@ -77,7 +77,9 @@ function readSrc(...segments: string[]): string {
 const TENANT_ADMIN = { type: 'tenant_user' as const, tenantId: 't-1', userId: 'admin-1', role: 'tenant_admin' as const };
 const TENANT_USER = { type: 'tenant_user' as const, tenantId: 't-1', userId: 'u-1', role: 'tenant_user' as const };
 
-async function renderPageAs(identity: unknown, isActive: boolean, searchParams: Record<string, string> = {}) {
+// Dated correction, 2026-08-17 (Story 6.20/ADR-0057): page.tsx no longer
+// takes a searchParams prop — see story-6.12's own matching dated note.
+async function renderPageAs(identity: unknown, isActive: boolean) {
   jest.resetModules();
   const sessionModule = await import('../../src/lib/session');
   const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
@@ -107,7 +109,7 @@ async function renderPageAs(identity: unknown, isActive: boolean, searchParams: 
   );
 
   const { default: Page } = await import('../../src/app/tenant/connectors/tenant-owned-feed/page');
-  return Page({ searchParams: Promise.resolve(searchParams) });
+  return Page();
 }
 
 afterEach(() => {
@@ -145,7 +147,7 @@ describe('Story 6.17 — tenant-owned-feed connector activation control', () => 
       jest.spyOn(global, 'fetch').mockResolvedValue(new Response(JSON.stringify({ error: 'boom' }), { status: 500 }));
 
       const { default: Page } = await import('../../src/app/tenant/connectors/tenant-owned-feed/page');
-      const element = await Page({ searchParams: Promise.resolve({}) });
+      const element = await Page();
       expect(JSON.stringify(element)).toContain('"isActive":false');
     });
   });
@@ -199,21 +201,28 @@ describe('Story 6.17 — tenant-owned-feed connector activation control', () => 
       expect(source).not.toMatch(unconditional);
     });
 
-    it('a not-yet-active, verified domain gets its own honest copy, distinct from the active copy', () => {
+    // Dated correction, 2026-08-17 (Story 6.20/ADR-0057): the single-
+    // activation state machine (a top-level `verified`/`activationId`
+    // boolean pair, one unconditional "Domain verified..." sentence) is
+    // gone by design — replaced by a real per-feed list, each row carrying
+    // its own real status pill (StatusBadge). The honest, isActive-
+    // conditional copy this AC actually cares about now lives at the list
+    // level, not per-row: a banner (`tof-banner-inactive`) that only
+    // renders when real feeds exist AND the tenant-wide switch is off —
+    // literally the "distinct copy for not-yet-active vs. active" this AC
+    // originally proved, just relocated to match the new information
+    // architecture ADR-0057 Decision §6 requires. See story-6.20's own
+    // contract for full behavioral proof (renderToStaticMarkup, real props).
+    it('a real, honest banner distinguishes "feeds exist but connector is off" from the active state — conditional on real isActive, not a bare unconditional string', () => {
       const source = readSrc(...setupPath);
-      expect(source.toLowerCase()).toMatch(/domain verified/);
-      expect(source.toLowerCase()).toMatch(/activate/);
-      expect(source).toContain('isActive');
+      expect(source).toContain('tof-banner-inactive');
+      expect(source.toLowerCase()).toMatch(/currently\s+deactivated/);
+      expect(source).toMatch(/!isActive/);
     });
 
-    it('ActivateDeactivateButton is rendered inside the same verified-state branch as the corrected copy, not only reachable from a separate screen', () => {
+    it('ActivateDeactivateButton is rendered on this same screen, gated tenant_admin-only, not only reachable from a separate screen', () => {
       const source = readSrc(...setupPath);
-      const verifiedBranchStart = source.indexOf('if (verified)');
-      expect(verifiedBranchStart).toBeGreaterThan(-1);
-      const nextBranchStart = source.indexOf('if (activationId)');
-      expect(nextBranchStart).toBeGreaterThan(verifiedBranchStart);
-      const verifiedBranch = source.slice(verifiedBranchStart, nextBranchStart);
-      expect(verifiedBranch).toContain('ActivateDeactivateButton');
+      expect(source).toMatch(/isTenantAdmin\s*&&[\s\S]{0,200}ActivateDeactivateButton/);
     });
   });
 

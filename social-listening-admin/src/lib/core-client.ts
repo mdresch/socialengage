@@ -737,11 +737,31 @@ export interface TenantOwnedFeedActivation {
   txtRecordValue: string;
   expiresAt: string;
   feedUrl: string;
+  /** Story 6.20 (ADR-0057 Decision §1a) — 'verified' when this call auto-verified a second feed on an already-verified domain, skipping the DNS TXT step entirely; 'pending' for the ordinary new-domain path. */
+  status?: 'pending' | 'verified';
 }
 
 export interface TenantOwnedFeedConnectOutcome {
   status: number;
   body: Partial<TenantOwnedFeedActivation> & { error?: string };
+}
+
+/** Story 6.20 (ADR-0057) — one row from GET /v1/connectors/tenant-owned-feed/activations. */
+export interface TenantOwnedFeedActivationDetail {
+  id: string;
+  domain: string;
+  feedUrl: string;
+  status: 'pending' | 'verified' | 'expired' | 'removed';
+  txtRecordHost: string;
+  txtRecordValue: string;
+  tokenExpiresAt: string;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
+export interface TenantOwnedFeedActionOutcome {
+  status: number;
+  body: Partial<TenantOwnedFeedActivationDetail> & { error?: string };
 }
 
 export interface TenantOwnedFeedVerifyOutcome {
@@ -781,6 +801,54 @@ export async function verifyTenantOwnedFeedDomain(connectorActivationId: string)
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ connectorActivationId }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.20 (ADR-0057) — lists every tenant-owned-feed activation for the
+ * caller's tenant (`GET /v1/connectors/tenant-owned-feed/activations`,
+ * `tenant_admin` only), any status. Called server-side from page.tsx, the
+ * same pattern `listTenantUsers()` already established — no proxy route
+ * needed for a read a Server Component can make directly.
+ */
+export async function listTenantOwnedFeedActivations(): Promise<TenantOwnedFeedActivationDetail[]> {
+  const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/activations');
+  if (!response.ok) {
+    throw new Error(`Failed to list tenant-owned feed activations: ${response.status}`);
+  }
+  const payload = (await response.json()) as { activations?: TenantOwnedFeedActivationDetail[] };
+  return Array.isArray(payload.activations) ? payload.activations : [];
+}
+
+/**
+ * Story 6.20 (ADR-0057) — updates `feedUrl` only on an activation
+ * (`PATCH /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
+ * Returns the raw status/body: a `400` (a request that tried to also send
+ * `domain`) and a `404` (unknown id) are both real, expected outcomes the
+ * UI must react to specifically, not collapsed into a generic error.
+ */
+export async function updateTenantOwnedFeedActivation(id: string, feedUrl: string): Promise<TenantOwnedFeedActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feedUrl }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.20 (ADR-0057) — soft-removes an activation
+ * (`DELETE /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
+ * The backend transitions `status` to `'removed'`, never a hard delete;
+ * this function's own outcome shape mirrors that — a real, non-error
+ * response, not a thrown exception.
+ */
+export async function removeTenantOwnedFeedActivation(id: string): Promise<TenantOwnedFeedActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
