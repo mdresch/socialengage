@@ -78,6 +78,14 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
   }
 
   const platformId = req.params.platformId;
+
+  if (ownerType === 'user' && forbidsUserScope(platformId)) {
+    res.status(400).json({
+      error: "ownerType 'user' is not valid for this platform — no personal credential is possible (ADR-0028).",
+    });
+    return;
+  }
+
   const authMethod = authMethodFor(platformId);
 
   // For Phase 1, we use a placeholder Key Vault key ID
@@ -148,15 +156,30 @@ connectorsRouter.delete('/:platformId/disconnect', async (req, res) => {
 });
 
 /**
- * `ownerType: 'user'` has no meaning for an `authMode: 'none'` platform --
- * no personal credential exists to own personally (ADR-0051 Decision
- * Section 1), so no Tier 3 scope is possible. Determined via the shared
- * registry, never a hardcoded providerId literal -- this file is one of
- * Story 2.10/ADR-0048's own CORE_FILES, so a literal providerId string
- * here would fail that story's own CI guardrail.
+ * `ownerType: 'user'` is invalid in two distinct cases, both determined via
+ * the shared registry, never a hardcoded providerId literal (this file is
+ * one of Story 2.10/ADR-0048's own CORE_FILES, so a literal providerId
+ * string here would fail that story's own CI guardrail):
+ *
+ * 1. `authMode: 'none'` — no credential of any kind exists to own
+ *    personally (ADR-0051 Decision Section 1).
+ * 2. Any `AIProviderConnector` — ADR-0028 Decision §1 settles Azure AI
+ *    Language/Azure OpenAI as tenant-owned, Tier 2 credentials with no
+ *    Tier 3/personal variant (Clarification, 2026-08-17): an AI provider's
+ *    API key authenticates an Azure subscription/resource, an
+ *    organizational asset by the same "operative test" the Decision
+ *    already applies to Reddit's app-only grant — not an individual's
+ *    personal account the way a Tier 3 credential requires. `enrichPost.ts`
+ *    already only ever reads a tenant-wide credential/activation for any
+ *    `AIProviderConnector` (`tryProvider()`'s own hardcoded `'tenant'`
+ *    scope) — this closes the previously-unenforced gap at the surface
+ *    (connect/activate) to match the behavior that already existed at the
+ *    point of use, rather than silently accepting a personal credential or
+ *    activation that enrichment would never read.
  */
-function authModeForbidsUserScope(platformId: string): boolean {
-  const authMode = getSocialConnector(platformId)?.authMode ?? getAIProviderConnector(platformId)?.authMode;
+function forbidsUserScope(platformId: string): boolean {
+  if (getAIProviderConnector(platformId)) return true;
+  const authMode = getSocialConnector(platformId)?.authMode;
   return authMode === 'none';
 }
 
@@ -188,7 +211,7 @@ connectorsRouter.post('/:platformId/activate', async (req, res) => {
 
   const platformId = req.params.platformId;
 
-  if (ownerType === 'user' && authModeForbidsUserScope(platformId)) {
+  if (ownerType === 'user' && forbidsUserScope(platformId)) {
     res.status(400).json({
       error: "ownerType 'user' is not valid for a platform with authMode 'none' — no personal credential exists to scope activation to.",
     });
@@ -227,7 +250,7 @@ connectorsRouter.post('/:platformId/deactivate', async (req, res) => {
 
   const platformId = req.params.platformId;
 
-  if (ownerType === 'user' && authModeForbidsUserScope(platformId)) {
+  if (ownerType === 'user' && forbidsUserScope(platformId)) {
     res.status(400).json({
       error: "ownerType 'user' is not valid for a platform with authMode 'none' — no personal credential exists to scope activation to.",
     });

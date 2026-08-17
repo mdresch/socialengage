@@ -69,6 +69,16 @@
  *      userId?)` — disconnecting a tenant-wide credential never removes a
  *      coexisting user-bound one for the same platform, and vice versa.
  * AC7: `X-Tenant-Id` is no longer read or trusted by these endpoints.
+ *
+ * Clarification, 2026-08-17 (ADR-0028 Decision §1, found live: a real
+ * tenant activated Azure AI Language via the personal/user-scope control,
+ * which silently succeeded but had no effect, since enrichPost.ts only
+ * ever reads a tenant-wide credential for any AIProviderConnector — see
+ * ADR-0028's own dated Clarification and connector-connect-disconnect/
+ * SKILL.md for the full account):
+ * AC8: `ownerType: 'user'` is rejected (400) for any real, registered
+ *      `AIProviderConnector` (Azure AI Language, Azure OpenAI) — ADR-0028
+ *      Tier 2 only, no Tier 3/personal variant exists for these providers.
  */
 
 import { randomUUID } from 'crypto';
@@ -184,6 +194,30 @@ describe('Story 1.7 — POST /v1/connectors/:platformId/connect', () => {
     );
     expect(rows[0].user_id).toBe(memberUserId);
     expect(rows[0].user_id).not.toBe(someoneElsesId);
+  });
+
+  it('AC8 (2026-08-17 Clarification): ownerType "user" is rejected for a real AIProviderConnector (azure-ai-language) — Tier 2 only, no personal variant', async () => {
+    const { tenantId, memberUserId } = await makeTenantWithUsers();
+
+    const res = await request(app)
+      .post('/v1/connectors/azure-ai-language/connect')
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: memberUserId, role: 'tenant_user' }))
+      .send({ credential: 'personal-key', ownerType: 'user' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/not valid|ownerType/i);
+  });
+
+  it("AC8: a real, non-AI social connector (gnews, authMode 'api_key') is unaffected — ownerType \"user\" still succeeds", async () => {
+    const { tenantId, memberUserId } = await makeTenantWithUsers();
+
+    const res = await request(app)
+      .post('/v1/connectors/gnews/connect')
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: memberUserId, role: 'tenant_user' }))
+      .send({ credential: 'personal-gnews-key', ownerType: 'user' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.ownerType).toBe('user');
   });
 });
 
