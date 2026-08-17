@@ -126,8 +126,9 @@ export async function getSocialPostById(tenantId: string, id: string): Promise<S
       author_id: string | null;
       acquisition_id: string;
       post_geo_location: unknown;
+      body_markdown: string | null;
     }>(
-      `SELECT id, created_at, raw_payload, published_at, enrichment, author_id, acquisition_id, post_geo_location
+      `SELECT id, created_at, raw_payload, published_at, enrichment, author_id, acquisition_id, post_geo_location, body_markdown
        FROM social_posts WHERE id = $1`,
       [id]
     );
@@ -142,6 +143,7 @@ export async function getSocialPostById(tenantId: string, id: string): Promise<S
       authorId: row.author_id,
       acquisitionId: row.acquisition_id,
       postGeoLocation: row.post_geo_location,
+      bodyMarkdown: row.body_markdown,
     };
   });
 }
@@ -211,6 +213,8 @@ export interface SocialPostSummary {
   rawPayload: unknown;
   publishedAt: string | null;
   enrichment: unknown;
+  /** Story 6.19 (Story 3.10/ADR-0053) — real, canonical Markdown body, already populated by every real connector's own ingestX(). null when never populated (pre-Story-3.10 posts), never omitted. */
+  bodyMarkdown: string | null;
 }
 
 export interface SocialPostsPage {
@@ -249,6 +253,7 @@ export async function listSocialPosts(
         rawPayload: row.raw_payload,
         publishedAt: row.published_at ? row.published_at.toISOString() : null,
         enrichment: row.enrichment,
+        bodyMarkdown: row.body_markdown,
       })),
       nextCursor: hasMore && last ? encodeCursor({ seq: last.seq }) : null,
     };
@@ -262,6 +267,7 @@ interface PostRow {
   raw_payload: unknown;
   published_at: Date | null;
   enrichment: unknown;
+  body_markdown: string | null;
 }
 
 async function queryFirstPage(
@@ -269,7 +275,7 @@ async function queryFirstPage(
   limit: number
 ): Promise<PostRow[]> {
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload, published_at, enrichment FROM social_posts
+    `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
      ORDER BY seq ASC
      LIMIT $1`,
     [limit + 1]
@@ -284,7 +290,7 @@ async function queryAfterCursor(
 ): Promise<PostRow[]> {
   const { seq } = decodeCursor(cursorToken);
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload, published_at, enrichment FROM social_posts
+    `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
      WHERE seq > $1
      ORDER BY seq ASC
      LIMIT $2`,
