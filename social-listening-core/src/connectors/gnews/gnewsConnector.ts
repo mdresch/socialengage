@@ -24,14 +24,15 @@ interface GNewsSearchResponse {
 }
 
 /**
- * Story 3.10 (ADR-0053 Decision §5) — GNews's free-tier content truncation
- * appends a literal marker (commonly "[+N chars]") to the plain-text
- * `content` value itself. A best-current-understanding pattern, not
- * confirmed against a real truncated response (ADR-0053 Open Question 11)
- * — revisit if a real GNews credential ever surfaces a differently-shaped
- * marker.
+ * Story 3.10 (ADR-0053 Decision §5), confirmed 2026-08-17 against a real,
+ * live GNews response (Open Question 11, previously unconfirmed — no
+ * credential was available at drafting time): the real marker has no `+`
+ * sign — `"... [1966 chars]"`, not `"[+1966 chars]"` as originally assumed
+ * from commonly-reported (but unverified) GNews behavior. The `+` is kept
+ * optional here rather than removed outright, defensively, in case GNews
+ * varies the format across plans/responses — either shape strips cleanly.
  */
-const GNEWS_TRUNCATION_MARKER_RE = /\s*\[\+\d+(?:,\d+)? chars\]$/;
+const GNEWS_TRUNCATION_MARKER_RE = /\s*\[\+?\d+(?:,\d+)? chars\]$/;
 
 /** Strips GNews's own free-tier truncation marker from `content`, if present, before it reaches htmlToMarkdown(). */
 export function stripGNewsTruncationMarker(content: string): string {
