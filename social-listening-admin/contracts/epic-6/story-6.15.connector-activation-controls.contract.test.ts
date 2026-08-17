@@ -222,23 +222,34 @@ describe('Story 6.15 — connector activation controls', () => {
     });
   });
 
-  describe('AC4: the personal (ownerType "user") control is gated on authMode !== \'none\' on both real Client Components', () => {
-    it('both Client Components gate the personal control on authMode', () => {
+  describe('AC4: the personal (ownerType "user") control is gated on real personal-scope eligibility on both real Client Components', () => {
+    // 2026-08-17 (ADR-0028 Decision §1 Clarification, found live): the
+    // personal control's gate widened from a pure authMode check to
+    // `platform.personalScopeAllowed` — still false for authMode:'none'
+    // (Newswire), but now also false for any AIProviderConnector
+    // (azure-ai-language/azure-openai — Tier 2 only, no personal credential
+    // possible), closing a real gap where a personal "Activate" click for
+    // an AI provider silently succeeded but had no effect. See this same
+    // date's dated note in story-6.3's own contract for the connect-side
+    // half of this same fix.
+    it('both Client Components gate the personal control on the real personalScopeAllowed flag', () => {
       for (const clientPath of [connectorsClientPath, statusClientPath]) {
         const source = readSrc(...clientPath);
-        expect(source).toMatch(/authMode\s*!==\s*['"]none['"]|authMode\s*===\s*['"]none['"]/);
+        expect(source).toMatch(/personalScopeAllowed/);
       }
     });
 
-    it('a real render omits the personal control for newswire (authMode "none") but includes it for gnews (authMode "api_key")', () => {
+    it('a real render omits the personal control for newswire (authMode "none") and for azure-ai-language (Tier 2 only), includes it for gnews', () => {
       const rows = [
-        { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: false, health: null },
-        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: false, health: null },
+        { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x', personalScopeAllowed: true }, isActive: false, health: null },
+        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x', personalScopeAllowed: false }, isActive: false, health: null },
+        { platform: { id: 'azure-ai-language', name: 'Azure AI Language', authMode: 'api_key', category: 'Enrichment', description: 'x', personalScopeAllowed: false }, isActive: false, health: null },
       ];
       const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: false });
-      // Personal control renders once for gnews (api_key), zero times for
-      // newswire (none) — isTenantAdmin: false means no tenant-wide button
-      // is rendered for either, so this count isolates the authMode gate.
+      // Personal control renders once for gnews (personalScopeAllowed:
+      // true), zero times for newswire or azure-ai-language (both false) —
+      // isTenantAdmin: false means no tenant-wide button is rendered for
+      // any of them, so this count isolates the personal-scope gate alone.
       const buttonCount = (html.match(/Activate<\/button>/g) ?? []).length;
       expect(buttonCount).toBe(1);
     });

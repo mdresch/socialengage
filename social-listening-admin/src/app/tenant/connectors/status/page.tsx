@@ -11,6 +11,8 @@ interface PlatformDefinition {
   authMode: 'api_key' | 'none';
   category: string;
   description: string;
+  /** ADR-0028 Decision §1 (Clarification, 2026-08-17) — false for any AIProviderConnector; mirrors ConnectorsClient.tsx's own PlatformDef field. */
+  personalScopeAllowed: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ const PLATFORMS: PlatformDefinition[] = [
     authMode: 'api_key',
     category: 'Ingestion',
     description: 'Real-time global news monitoring with keyword, headline, and topic filtering across 60,000+ publishers.',
+    personalScopeAllowed: true,
   },
   {
     id: 'newswire',
@@ -33,6 +36,7 @@ const PLATFORMS: PlatformDefinition[] = [
     authMode: 'none',
     category: 'Ingestion',
     description: 'Syndicated public corporate press releases and regulatory disclosures. No credential required.',
+    personalScopeAllowed: false,
   },
   {
     id: 'azure-ai-language',
@@ -40,6 +44,8 @@ const PLATFORMS: PlatformDefinition[] = [
     authMode: 'api_key',
     category: 'Enrichment',
     description: 'Named Entity Recognition, fine-grained multi-class sentiment analysis, and key phrase extraction.',
+    // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
+    personalScopeAllowed: false,
   },
   {
     id: 'azure-openai',
@@ -47,6 +53,8 @@ const PLATFORMS: PlatformDefinition[] = [
     authMode: 'api_key',
     category: 'Enrichment',
     description: 'Contextual brand reputation synthesis, executive summaries, and intent classification via private Azure OpenAI deployments.',
+    // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
+    personalScopeAllowed: false,
   },
 ];
 

@@ -47,6 +47,10 @@ Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardc
 
 `page.tsx` is now a thin Server Component (data-fetching, gating, the local `PLATFORMS` list) — every rendering concern this doc's "Architecture" section above attributes to it (the health metrics, the failing/degraded distinction, `ActivateDeactivateButton` usage, the watchlist-compatibility gap notice) actually lives in **`ConnectorStatusClient.tsx`** now. The Active/Inactive indicator is the shared `StatusBadge` component (`src/components/ui`): **once active, `deriveVariant()` surfaces the real `health.status` (`healthy`/`degraded`/`failing`) rather than a flat "active"** — a genuinely richer, more correct signal for a screen literally named "Connector Health & Telemetry" than a binary Active/Inactive, and fully consistent with this file's own ADR-0023 requirement ("failing... visually distinguished from degraded/healthy"); only the *inactive* case renders the literal `inactive` variant, whose `StatusBadge` default label is "Paused" (`frontend-design-specification.md` §6.1), not "Inactive."
 
+## Fix, 2026-08-17 — personal-scope activation for AI providers had no effect (see connector-connect-disconnect/SKILL.md's matching note for the full account)
+
+`ConnectorStatusRow.platform` gains `personalScopeAllowed: boolean` (mirroring `ConnectorsClient.tsx`'s `PlatformDef`) — the personal `ActivateDeactivateButton` here now gates on it instead of a plain `authMode !== 'none'` check, so `azure-ai-language`/`azure-openai` (ADR-0028 Tier 2 only) no longer offer a personal activation control that `enrichPost.ts` would never actually read.
+
 ## Known gaps / deferred work
 
 - **A real tenant-wide "list this tenant's connectors" endpoint still does not exist** (`docs/open-items-and-deferred-work.md` §B) — this screen derives the connected-platform list from a locally duplicated, hardcoded `PLATFORMS` array checked one at a time, the same v1 workaround Story 6.3's own screen already uses. Unchanged by the 2026-08-12 rework — this was never the reason the screen didn't work; the fixture-data problem was orthogonal.

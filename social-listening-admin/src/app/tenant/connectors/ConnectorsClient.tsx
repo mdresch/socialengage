@@ -86,6 +86,17 @@ export interface PlatformDef {
   icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald';
   adNotice: 'billing' | 'public' | null;
   credentialFields: CredentialFieldDef[];
+  /**
+   * ADR-0028 Decision §1 (Clarification, 2026-08-17) — false for any
+   * AIProviderConnector (Azure AI Language, Azure OpenAI): Tier 2 only, no
+   * personal/Tier 3 credential or activation is possible. The backend
+   * already rejects `ownerType: 'user'` for these (`connectorsRouter.ts`'s
+   * `forbidsUserScope()`) — this flag keeps the UI from ever offering the
+   * choice in the first place, closing the exact live gap that surfaced:
+   * a personal "Activate" click silently succeeding but having no effect,
+   * since enrichPost.ts only ever reads the tenant-wide scope.
+   */
+  personalScopeAllowed: boolean;
 }
 
 export interface CredentialFieldDef {
@@ -160,7 +171,9 @@ function ConnectModal({
     }
     return init;
   });
-  const [ownerType, setOwnerType] = useState<'tenant' | 'user'>(isTenantAdmin ? 'tenant' : 'user');
+  const [ownerType, setOwnerType] = useState<'tenant' | 'user'>(
+    platform.personalScopeAllowed && !isTenantAdmin ? 'user' : 'tenant'
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -232,7 +245,7 @@ function ConnectModal({
             </div>
           ))}
 
-          {isTenantAdmin && (
+          {isTenantAdmin && platform.personalScopeAllowed && (
             <div className="form-group">
               <label className="form-label" htmlFor={`cv-scope-${platform.id}`}>Scope</label>
               <select
@@ -245,6 +258,11 @@ function ConnectModal({
                 <option value="user">Just for me</option>
               </select>
             </div>
+          )}
+          {!platform.personalScopeAllowed && (
+            <p className="form-hint">
+              {platform.name} is always connected tenant-wide — no personal, per-user connection is possible.
+            </p>
           )}
 
           <div className="cv-billing-notice cv-billing-notice-amber">
@@ -415,11 +433,13 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
                           isActive={state.isActive}
                         />
                       )}
-                      <ActivateDeactivateButton
-                        platformId={platform.id}
-                        ownerType="user"
-                        isActive={false}
-                      />
+                      {platform.personalScopeAllowed && (
+                        <ActivateDeactivateButton
+                          platformId={platform.id}
+                          ownerType="user"
+                          isActive={false}
+                        />
+                      )}
                     </div>
                     {isTenantAdmin && (
                       <button
@@ -431,6 +451,11 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
                       </button>
                     )}
                   </>
+                ) : !platform.personalScopeAllowed && !isTenantAdmin ? (
+                  /* Tenant-only platform, non-admin caller: no working
+                     connect action exists for them (ADR-0028 Tier 2 only) —
+                     an honest note, not a button that would just 403. */
+                  <span className="cv-public-label">Ask your Tenant-Admin to connect this platform</span>
                 ) : (
                   /* Not connected: full-width connect button */
                   <button

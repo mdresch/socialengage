@@ -97,7 +97,15 @@ function IconArrowRight() {
 // ---------------------------------------------------------------------------
 
 export interface ConnectorStatusRow {
-  platform: { id: string; name: string; authMode: 'api_key' | 'none'; category: string; description: string };
+  platform: {
+    id: string;
+    name: string;
+    authMode: 'api_key' | 'none';
+    category: string;
+    description: string;
+    /** ADR-0028 Decision §1 (Clarification, 2026-08-17) — false for any AIProviderConnector. */
+    personalScopeAllowed: boolean;
+  };
   isActive: boolean;
   health: ConnectorStatus | null;
 }
@@ -236,7 +244,7 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
                       isActive={isActive}
                     />
                   )}
-                  {platform.authMode !== 'none' && (
+                  {platform.personalScopeAllowed && (
                     <ActivateDeactivateButton
                       platformId={platform.id}
                       ownerType="user"

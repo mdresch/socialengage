@@ -133,17 +133,41 @@ describe('Story 6.3 — connector connect/disconnect flow (healed 2026-08-10, re
     });
   });
 
-  describe('AC2: ownerType — tenant-wide offered only to tenant_admin, personal always offered', () => {
-    it('ConnectorsClient always allows ownerType user, tenant only when isTenantAdmin', () => {
+  describe('AC2: ownerType — tenant-wide offered only to tenant_admin, personal always offered (for platforms where personal scope is possible)', () => {
+    // 2026-08-17 (ADR-0028 Decision §1 Clarification, found live — see this
+    // file's own AC8 below): "personal always offered" was never literally
+    // true for azure-ai-language/azure-openai (ADR-0028 Tier 2 only, no
+    // personal credential is possible for either) — the old
+    // `useState(isTenantAdmin ? 'tenant' : 'user')` default has been
+    // corrected to also check the new `platform.personalScopeAllowed` flag,
+    // closing a real gap this same finding surfaced (a tenant_user
+    // connecting an AI provider previously defaulted to creating an inert
+    // personal credential nothing would ever read).
+    it('ConnectorsClient allows ownerType user only when the platform allows personal scope, tenant only when isTenantAdmin', () => {
       const source = readSrc(...clientPath);
       expect(source).toMatch(/ownerType/);
-      expect(source).toMatch(/isTenantAdmin\s*&&\s*\(/);
+      expect(source).toMatch(/isTenantAdmin\s*&&\s*platform\.personalScopeAllowed\s*&&\s*\(/);
       expect(source).toContain('Scope</label>');
-      // Scope selector offers both options only when isTenantAdmin — a
-      // tenant_user's ConnectModal renders no Scope selector at all, so
-      // ownerType always defaults to 'user' for them (useState(isTenantAdmin
-      // ? 'tenant' : 'user')).
-      expect(source).toMatch(/useState<'tenant' \| 'user'>\(isTenantAdmin \? 'tenant' : 'user'\)/);
+      expect(source).toMatch(/platform\.personalScopeAllowed\s*&&\s*!isTenantAdmin\s*\?\s*'user'\s*:\s*'tenant'/);
+    });
+
+    it('a tenant_user viewing an unconnected, personalScopeAllowed:false platform sees an honest note, never a connect button that would just 403', () => {
+      const { ConnectorsClient } = require('../../src/app/tenant/connectors/ConnectorsClient');
+      const platform = {
+        id: 'azure-ai-language', name: 'Azure AI Language', subtitle: 'x', description: 'x',
+        authMode: 'api_key' as const, color: 'purple' as const, icon: 'sparkles-purple' as const,
+        adNotice: 'billing' as const, credentialFields: [{ key: 'key', label: 'Key', type: 'password' as const }],
+        personalScopeAllowed: false,
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(ConnectorsClient, {
+          platforms: [platform],
+          initialStates: [{ platformId: 'azure-ai-language', connected: false, credentialStatus: null, isActive: false, maskedHint: null }],
+          isTenantAdmin: false,
+        })
+      );
+      expect(html).toContain('Ask your Tenant-Admin');
+      expect(html).not.toContain('Connect Azure AI Language');
     });
   });
 

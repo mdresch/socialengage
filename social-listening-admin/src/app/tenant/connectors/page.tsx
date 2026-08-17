@@ -32,6 +32,7 @@ const PLATFORMS: PlatformDef[] = [
         hint: 'Obtained from your GNews.io account dashboard.',
       },
     ],
+    personalScopeAllowed: true,
   },
   {
     id: 'newswire',
@@ -43,6 +44,7 @@ const PLATFORMS: PlatformDef[] = [
     icon: 'radio',
     adNotice: 'public',
     credentialFields: [],
+    personalScopeAllowed: false,
   },
   {
     id: 'azure-ai-language',
@@ -78,6 +80,8 @@ const PLATFORMS: PlatformDef[] = [
         ],
       },
     ],
+    // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
+    personalScopeAllowed: false,
   },
   {
     id: 'azure-openai',
@@ -108,6 +112,8 @@ const PLATFORMS: PlatformDef[] = [
         placeholder: '32-character hexadecimal key',
       },
     ],
+    // ADR-0028 Decision §1 (Clarification, 2026-08-17) — Tier 2 only.
+    personalScopeAllowed: false,
   },
 ];
 
