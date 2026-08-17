@@ -467,6 +467,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.20 — Multi-feed administration for the tenant-owned-feed connector (list, edit, remove)
 
 **Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Ready
+**Built:** 2026-08-17 — social-listening-admin@be1764d (core half: social-listening-core@e9d797f)
 
 **Requested directly by Menno** ("what needs to change to enable the feeds to be administered?", then "let's build the new ADR"). The storage/polling layers already supported multiple feeds per tenant (`tenant_owned_feed_activations` has no uniqueness constraint; `getVerifiedActivations()`/`pollTenantOwnedFeed()` already iterate every verified row) — but nothing above them exposed it: `tenantOwnedFeedRouter.ts` had exactly two routes (`connect`, `verify-domain`), and `TenantOwnedFeedSetup.tsx` was a single-activation state machine with no path to a second feed once one was verified.
 
