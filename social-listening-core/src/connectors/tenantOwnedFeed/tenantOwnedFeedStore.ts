@@ -8,7 +8,8 @@ export interface TenantOwnedFeedActivationRow {
   feed_url: string;
   verification_token: string;
   txt_record_host: string;
-  status: 'pending' | 'verified' | 'expired';
+  /** Story 6.20 (ADR-0057) added 'removed' — a soft-removal state, never a deleted row. */
+  status: 'pending' | 'verified' | 'expired' | 'removed';
   token_expires_at: Date;
   verified_at: Date | null;
   created_at: Date;
@@ -67,13 +68,86 @@ export async function markVerified(tenantId: string, id: string): Promise<Tenant
   });
 }
 
-/** Every verified, still-active activation for a tenant — what pollTenantOwnedFeed() actually polls. */
+/**
+ * Every verified, still-active activation for a tenant — what
+ * pollTenantOwnedFeed() actually polls. Story 6.20 (ADR-0057 Decision §5):
+ * this is the ONLY function any poller/health/metrics consumer should ever
+ * read from — listActivations() below is deliberately unfiltered (includes
+ * 'removed'/'expired' rows for Admin UI history) and must never be used to
+ * decide what's actually active.
+ */
 export async function getVerifiedActivations(tenantId: string): Promise<TenantOwnedFeedActivationRow[]> {
   return withTenant(tenantId, async (client) => {
     const { rows } = await client.query<TenantOwnedFeedActivationRow>(
       `SELECT * FROM tenant_owned_feed_activations WHERE status = 'verified'`
     );
     return rows;
+  });
+}
+
+/**
+ * Story 6.20 (ADR-0057 Decision §1a) — true when the tenant already holds a
+ * verified activation for this exact domain. `connect()`'s own router
+ * handler calls this before inserting a new row: domain ownership is a
+ * property of the domain, not of any one feed URL beneath it, so a second
+ * feed under an already-proven domain never needs a second DNS TXT cycle.
+ */
+export async function hasVerifiedDomain(tenantId: string, domain: string): Promise<boolean> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query(
+      `SELECT 1 FROM tenant_owned_feed_activations WHERE status = 'verified' AND domain = $1 LIMIT 1`,
+      [domain]
+    );
+    return rows.length > 0;
+  });
+}
+
+/**
+ * Story 6.20 (ADR-0057 Decision §5) — every activation for a tenant,
+ * regardless of status ('pending'/'verified'/'expired'/'removed'). Backs
+ * the Admin UI's list screen, which needs to show history too, not just
+ * what's currently active. Never use this to decide what to poll or count
+ * as active — that's getVerifiedActivations()'s job, always.
+ */
+export async function listActivations(tenantId: string): Promise<TenantOwnedFeedActivationRow[]> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<TenantOwnedFeedActivationRow>(
+      `SELECT * FROM tenant_owned_feed_activations ORDER BY created_at DESC`
+    );
+    return rows;
+  });
+}
+
+/**
+ * Story 6.20 (ADR-0057 Decision §1) — updates feedUrl only; domain is never
+ * accepted here (the router rejects a request containing it before this is
+ * ever called) since it's the exact claim DNS TXT verification proves.
+ * Works regardless of the activation's current status.
+ */
+export async function updateFeedUrl(tenantId: string, id: string, feedUrl: string): Promise<TenantOwnedFeedActivationRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<TenantOwnedFeedActivationRow>(
+      `UPDATE tenant_owned_feed_activations SET feed_url = $1 WHERE id = $2 RETURNING *`,
+      [feedUrl, id]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  });
+}
+
+/**
+ * Story 6.20 (ADR-0057 Decision §1) — soft removal: transitions status to
+ * 'removed', never a hard SQL DELETE (no DELETE grant exists on this
+ * table, and a hard delete would erase the domain-verification audit
+ * trail). getVerifiedActivations() already filters on status = 'verified',
+ * so a removed row stops being polled with zero poller change.
+ */
+export async function removeActivation(tenantId: string, id: string): Promise<TenantOwnedFeedActivationRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<TenantOwnedFeedActivationRow>(
+      `UPDATE tenant_owned_feed_activations SET status = 'removed' WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    return rows.length > 0 ? rows[0] : null;
   });
 }
 
