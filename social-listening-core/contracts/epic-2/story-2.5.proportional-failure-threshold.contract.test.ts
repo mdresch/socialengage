@@ -30,12 +30,26 @@
 // files, with dated notes citing this same ADR, not duplicated here; the
 // `deliveryMode`-based variation ADR-0023 explicitly deferred (not this
 // story's scope, still an open question per the ADR's Acceptance note).
+//
+// Healing pass, 2026-08-17 (ADR-0023's own new Clarification, same date):
+// the absolute ceiling (AC3 above) had no recovery path once tripped —
+// shouldAttemptIngestion() checked health.status === 'failing' and blocked
+// unconditionally, forever, since the very poll attempt that would record a
+// fresh success and clear the streak was itself what was blocked. Found
+// live: a real tenant's GNews connector legitimately hit the ceiling (a
+// real credential-storage bug, since fixed), then remained permanently
+// stuck even after the credential existed and the connector was
+// reactivated. AC5/AC6 below prove the fix — a bounded circuit-breaker
+// "half-open" probe, PROBE_COOLDOWN_MS in connectorHealth.ts — without
+// changing deriveConnectorHealth()'s own `failing` derivation at all (AC1-
+// AC4 above are unaffected, unmodified).
 
 import { randomUUID } from 'crypto';
 import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
-import { deriveConnectorHealth } from '../../src/connectors/connectorHealth';
+import { deriveConnectorHealth, shouldAttemptIngestion } from '../../src/connectors/connectorHealth';
 import { startIngestionRun, completeIngestionRun } from '../../src/ingestion/ingestionRunStore';
+import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 
 jest.setTimeout(20000);
 
@@ -130,5 +144,33 @@ describe('Story 2.5 — proportional failure threshold contract', () => {
     // the absolute ceiling, not the rate rule.
     const lowFreqHealth = await deriveConnectorHealth(tenantId, lowFreqPlatform);
     expect(lowFreqHealth.status).toBe('failing');
+  });
+
+  it('AC5 (healing pass, 2026-08-17): a ceiling-triggered failing connector still blocks polling within the probe cooldown', async () => {
+    const tenantId = randomUUID();
+    const platformId = 'ceiling-recent';
+    await setConnectorActivation(tenantId, platformId, 'tenant', true);
+    // 20 consecutive failures, all "just now" — well within any reasonable
+    // cooldown, the same immediacy AC4/AC5 in Story 2.3 already rely on.
+    for (let i = 0; i < 20; i++) await recordRun(tenantId, platformId, 'failed');
+
+    const health = await deriveConnectorHealth(tenantId, platformId);
+    expect(health.status).toBe('failing');
+    expect(await shouldAttemptIngestion(tenantId, platformId)).toBe(false);
+  });
+
+  it('AC6 (healing pass, 2026-08-17): a ceiling-triggered failing connector allows exactly one probe attempt once the cooldown has elapsed — the real fix for the deadlock this pass closes', async () => {
+    const tenantId = randomUUID();
+    const platformId = 'ceiling-stale';
+    await setConnectorActivation(tenantId, platformId, 'tenant', true);
+    // Reuses AC3's own fixture shape (20 failures, 2h apart) — the most
+    // recent failure lands 2 hours ago, well past PROBE_COOLDOWN_MS (15
+    // minutes), proving the probe allowance is real, not just "not yet
+    // expired" in this test's own short runtime.
+    await recordSpreadOutFailures(tenantId, platformId, 20, 2);
+
+    const health = await deriveConnectorHealth(tenantId, platformId);
+    expect(health.status).toBe('failing');
+    expect(await shouldAttemptIngestion(tenantId, platformId)).toBe(true);
   });
 });

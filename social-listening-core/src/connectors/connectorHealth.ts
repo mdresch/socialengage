@@ -24,6 +24,18 @@ const RATE_ATTEMPT_FLOOR = 5;
 const CONSECUTIVE_FAILURE_CEILING = 20;
 const RECENT_WINDOW_MS = 60 * 60 * 1000;
 
+/**
+ * ADR-0023 Clarification (2026-08-17) — the rate rule already self-heals as
+ * its 1-hour window ages; the absolute ceiling had no equivalent, since it
+ * scans unboundedly backward for an unbroken failure streak with no time
+ * dimension to decay through. Once `failing`, shouldAttemptIngestion() now
+ * allows exactly one probe attempt through once the last attempt is older
+ * than this cooldown — a standard circuit-breaker "half-open" allowance,
+ * not a change to the 50%/5-attempt-floor/20-consecutive numbers
+ * themselves. See connector-health-and-error-handling/SKILL.md.
+ */
+const PROBE_COOLDOWN_MS = 15 * 60 * 1000;
+
 interface IngestionRunRow {
   status: 'running' | 'succeeded' | 'failed';
   started_at: Date;
@@ -135,7 +147,16 @@ export async function shouldAttemptIngestion(
   userId?: string
 ): Promise<boolean> {
   const health = await deriveConnectorHealth(tenantId, platformId);
-  if (health.status === 'failing') return false;
+  if (health.status === 'failing') {
+    const withinProbeCooldown =
+      health.lastAttemptAt !== null && Date.now() - new Date(health.lastAttemptAt).getTime() < PROBE_COOLDOWN_MS;
+    if (withinProbeCooldown) return false;
+    // Cooldown elapsed: fall through to the normal activation check below,
+    // allowing exactly one probe attempt. A success clears the streak via
+    // deriveConnectorHealth()'s own existing scan-until-a-success logic,
+    // unmodified; a failure just restarts the cooldown (lastAttemptAt
+    // updates either way).
+  }
   return isConnectorActive(tenantId, platformId, ownerType, userId);
 }
 
