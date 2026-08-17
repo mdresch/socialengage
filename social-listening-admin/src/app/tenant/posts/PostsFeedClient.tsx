@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
 import {
   extractDisplayText,
@@ -93,6 +94,7 @@ interface FlatPost {
   publishedAt: string | null;
   rawPayload: unknown;
   enrichment: unknown;
+  bodyMarkdown: string | null;
   // derived
   title: string;
   snippet: string | null;
@@ -124,6 +126,14 @@ const VISIBLE_BATCH_SIZE = 20;
 interface PostsFeedClientProps {
   posts: SocialPostSummary[];
   watchlists: Watchlist[];
+  /**
+   * Story 6.19 testability seam only — same precedent as Story 6.14's
+   * `initialEntries`. Seeds the Slideover open with a matching post's id so
+   * its Markdown-rendered body can be proven under `renderToStaticMarkup()`
+   * (this repo has no DOM-interaction test runner). Real usage (page.tsx)
+   * never passes it.
+   */
+  initialActivePostId?: string;
 }
 
 /**
@@ -134,14 +144,16 @@ interface PostsFeedClientProps {
  * (`visibleCount`, "Show more") purely for DOM/perf reasons, never to limit
  * what search/filter can actually see.
  */
-export function PostsFeedClient({ posts, watchlists }: PostsFeedClientProps) {
+export function PostsFeedClient({ posts, watchlists, initialActivePostId }: PostsFeedClientProps) {
   const flat = useMemo(() => posts.map(flattenPost), [posts]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('ALL');
   const [selectedSentiment, setSelectedSentiment] = useState('ALL');
   const [selectedWatchlist, setSelectedWatchlist] = useState('ALL');
-  const [activePost, setActivePost] = useState<FlatPost | null>(null);
+  const [activePost, setActivePost] = useState<FlatPost | null>(
+    () => (initialActivePostId && flat.find((p) => p.id === initialActivePostId)) || null
+  );
   const [showRawJson, setShowRawJson] = useState(false);
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
 
@@ -444,10 +456,16 @@ export function PostsFeedClient({ posts, watchlists }: PostsFeedClientProps) {
         >
           <div className="pf-detail-body">
             {/* Full body */}
-            {activePost.snippet && (
+            {(activePost.bodyMarkdown || activePost.snippet) && (
               <div>
                 <h3 className="pf-detail-section-title">Ingested Article Body</h3>
-                <div className="pf-detail-body-text">{activePost.snippet}</div>
+                {activePost.bodyMarkdown ? (
+                  <div className="pf-detail-body-markdown">
+                    <ReactMarkdown>{activePost.bodyMarkdown}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="pf-detail-body-text">{activePost.snippet}</div>
+                )}
               </div>
             )}
 

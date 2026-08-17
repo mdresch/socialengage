@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { getPost } from '@/lib/core-client';
@@ -44,7 +45,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     <main>
       <h1>{title}</h1>
       <p>Provider: {provider}</p>
-      {snippet && <p>{snippet}</p>}
+      {post.bodyMarkdown ? <ReactMarkdown>{post.bodyMarkdown}</ReactMarkdown> : snippet && <p>{snippet}</p>}
       <time>{post.publishedAt ?? 'unknown'}</time>
       <dl>
         <dt>Author</dt>

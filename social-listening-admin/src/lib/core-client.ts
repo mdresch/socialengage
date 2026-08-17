@@ -631,6 +631,8 @@ export interface SocialPostSummary {
   rawPayload: unknown;
   publishedAt: string | null;
   enrichment: unknown;
+  /** Story 6.19 (Story 3.10/ADR-0053) — real, canonical Markdown body. null when never populated (pre-Story-3.10 posts), never omitted. */
+  bodyMarkdown: string | null;
 }
 
 export interface SocialPostsPage {
