@@ -5,6 +5,7 @@ import { storeCredential } from '../../../credentials/credentialStore';
 import { setConnectorActivation } from '../../../connectors/connectorActivationStore';
 import { FACEBOOK_PROVIDER_ID } from '../../../connectors/facebook/facebookConnector';
 import { ClassifiableError } from '../../../ingestion/errorClassification';
+import { markMissingPagesOrphaned, upsertConnectedPage } from '../../../connectors/facebook/facebookConnectedPagesStore';
 
 const GRAPH_API_VERSION = 'v21.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
@@ -119,6 +120,18 @@ facebookOAuthRouter.post('/exchange', async (req, res) => {
     const longLivedToken = await exchangeForLongLivedUserToken(shortLivedToken);
     const pages = await listAccessiblePages(longLivedToken);
 
+    // ADR-0060 Decision §1, added at review — a full re-consent whose
+    // returned Page list no longer includes a previously status='connected'
+    // page_id means Meta's own access grant for that Page ended without
+    // anyone here clicking "disconnect." Best-effort, opportunistic only
+    // (detected only when /exchange happens to run for this user again) —
+    // never blocks or fails this response either way.
+    try {
+      await markMissingPagesOrphaned(identity.tenantId, identity.userId, pages.map((p) => p.id));
+    } catch (err) {
+      console.error(`[facebook-oauth] Failed to mark missing Pages orphaned (tenant=${identity.tenantId} user=${identity.userId}):`, err);
+    }
+
     pruneExpired();
     const sessionToken = randomUUID();
     sessions.set(sessionToken, { pages, expiresAt: Date.now() + SESSION_TTL_MS });
@@ -133,22 +146,35 @@ facebookOAuthRouter.post('/exchange', async (req, res) => {
 });
 
 /**
- * POST /v1/connectors/facebook/oauth/select-page — stores the chosen
+ * POST /v1/connectors/facebook/oauth/select-page — stores each selected
  * Page's own access token as a real Tier 3 (user-bound) credential
- * (ADR-0059 Decision §4/ADR-0028 §3) — userId is always the caller's own
- * resolved identity, never a request-body value, the same "never trust a
- * client-supplied userId" rule connectorsRouter.ts's own /connect already
- * establishes. Single-use: the session entry is deleted after a
- * successful selection (or a not-found pageId), never re-readable.
+ * (ADR-0059 Decision §4/ADR-0028 §3) and an upserted
+ * `facebook_connected_pages` row (ADR-0060 Decision §1) — userId is always
+ * the caller's own resolved identity, never a request-body value, the same
+ * "never trust a client-supplied userId" rule connectorsRouter.ts's own
+ * /connect already establishes. Single-use: the session entry is deleted
+ * once, after every selection in this one request has been processed —
+ * never re-readable.
+ *
+ * ADR-0060 Decision §5 (plural, added at review) — `pageIds: string[]`,
+ * each processed independently: one Page's write failure never aborts or
+ * rolls back another Page's already-succeeded write. No shared database
+ * transaction wraps the batch — each Page's storeCredential() +
+ * facebook_connected_pages upsert is already atomic at the single-row
+ * level, and there is no correctness requirement for all-or-nothing across
+ * different Pages' independent credentials. This is a breaking change to
+ * this endpoint's own request shape (the prior single-pageId form is not
+ * preserved as a fallback) — acceptable because its sole caller is
+ * social-listening-admin, under this project's own control.
  */
 facebookOAuthRouter.post('/select-page', async (req, res) => {
   const identity = requireTenantUserIdentity(req, res);
   if (!identity) return;
   const { tenantId, userId } = identity;
 
-  const { sessionToken, pageId } = req.body;
-  if (!sessionToken || typeof sessionToken !== 'string' || !pageId || typeof pageId !== 'string') {
-    res.status(400).json({ error: 'sessionToken and pageId (both strings) are required in request body.' });
+  const { sessionToken, pageIds } = req.body;
+  if (!sessionToken || typeof sessionToken !== 'string' || !Array.isArray(pageIds) || pageIds.length === 0 || !pageIds.every((id) => typeof id === 'string')) {
+    res.status(400).json({ error: 'sessionToken (string) and pageIds (a non-empty array of strings) are required in request body.' });
     return;
   }
 
@@ -159,27 +185,36 @@ facebookOAuthRouter.post('/select-page', async (req, res) => {
     return;
   }
 
-  const page = entry.pages.find((p) => p.id === pageId);
-  if (!page) {
-    sessions.delete(sessionToken);
-    res.status(400).json({ error: 'No Page with that id was found in this OAuth session\'s own account list.' });
-    return;
-  }
-
   const keyVaultKeyId = process.env.KEY_VAULT_KEY_ID;
   if (!keyVaultKeyId) {
     res.status(500).json({ error: 'Credential storage is not configured (KEY_VAULT_KEY_ID missing).' });
     return;
   }
 
-  const credentialPlaintext = JSON.stringify({ pageId: page.id, pageAccessToken: page.accessToken, pageName: page.name });
+  const connected: { pageId: string; pageName: string }[] = [];
+  const errors: { pageId: string; reason: string }[] = [];
 
-  try {
-    await storeCredential(tenantId, FACEBOOK_PROVIDER_ID, credentialPlaintext, keyVaultKeyId, 'user', userId);
-    await setConnectorActivation(tenantId, FACEBOOK_PROVIDER_ID, 'user', true, userId, userId);
-    sessions.delete(sessionToken);
-    res.status(201).json({ platformId: FACEBOOK_PROVIDER_ID, ownerType: 'user', page: { id: page.id, name: page.name } });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to store Facebook credential.', details: err instanceof Error ? err.message : String(err) });
+  for (const pageId of pageIds) {
+    const page = entry.pages.find((p) => p.id === pageId);
+    if (!page) {
+      errors.push({ pageId, reason: 'No Page with that id was found in this OAuth session\'s own account list.' });
+      continue;
+    }
+    try {
+      const credentialPlaintext = JSON.stringify({ pageId: page.id, pageAccessToken: page.accessToken, pageName: page.name });
+      const credential = await storeCredential(tenantId, FACEBOOK_PROVIDER_ID, credentialPlaintext, keyVaultKeyId, 'user', userId);
+      await upsertConnectedPage(tenantId, userId, { pageId: page.id, pageName: page.name, credentialId: credential.id });
+      connected.push({ pageId: page.id, pageName: page.name });
+    } catch {
+      // Never echo a raw internal exception message to the client — this
+      // project's own established error-response discipline.
+      errors.push({ pageId, reason: 'Failed to store credential.' });
+    }
   }
+
+  if (connected.length > 0) {
+    await setConnectorActivation(tenantId, FACEBOOK_PROVIDER_ID, 'user', true, userId, userId);
+  }
+  sessions.delete(sessionToken);
+  res.status(201).json({ connected, errors });
 });

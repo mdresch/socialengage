@@ -49,7 +49,14 @@ export async function runIngestionAttempt(
   // ADR-0058 Decision §2 — the "before" health snapshot, taken ahead of
   // startIngestionRun() so it genuinely reflects state prior to this
   // attempt, not including the just-opened 'running' row.
-  const previousHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId);
+  //
+  // Story 6.27 (ADR-0060 Decision §4) — options.connectorInfo.pageId is
+  // passed through when present, so ConnectorHealthChangedEvent publishing
+  // (ADR-0058) becomes per-Page for Facebook specifically. Every other
+  // connector's own connectorInfo never sets pageId, so this argument is
+  // always undefined for them — zero behavior change to any other
+  // connector's event-publishing.
+  const previousHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId, options.connectorInfo.pageId);
 
   /**
    * ADR-0058 Decision §2 — the one, shared exit point every return below
@@ -59,7 +66,7 @@ export async function runIngestionAttempt(
    * precedent, same as publishSocialPostIngestedEvents()).
    */
   async function finish(result: RunIngestionAttemptResult): Promise<RunIngestionAttemptResult> {
-    const newHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId);
+    const newHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId, options.connectorInfo.pageId);
     if (newHealth.status !== previousHealth.status) {
       const event = buildConnectorHealthChangedEvent({
         tenantId: options.tenantId,

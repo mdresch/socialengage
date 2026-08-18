@@ -61,15 +61,22 @@ interface IngestionRunRow {
  * credentialStatus) at read time. See
  * .claude/skills/connector-health-and-error-handling/SKILL.md.
  *
- * `pageId` (ADR-0060 Decision §4) is reserved/unused until Story 6.27
- * (multi-Page Facebook) actually builds Facebook per-Page health — accepted
- * here as a structurally-present 3rd param now so `userId`'s own 4th
- * position stays stable.
+ * `pageId` (ADR-0060 Decision §4, Story 6.27) — omitted, behavior is
+ * byte-for-byte unchanged for every existing caller and every existing
+ * connector (the query stays `WHERE platform_id = $1`, exactly as before
+ * this story). Supplied, the `ingestion_runs` query additionally filters to
+ * that Page's own rows only (populated by Facebook's own per-Page poll
+ * fan-out, `pollFacebook.ts`) — a real, independent health signal per
+ * connected Page, distinct from the platform-level rollup every other
+ * caller still gets.
  *
  * `userId` (ADR-0061 Decision §2/§3, Story 1.15) scopes BOTH sub-queries —
  * ingestion_runs and platform_credentials — to that one user's own rows, so
  * a Tier-3 user's health/credentialStatus is never blended with the
  * tenant-wide (or another user's) rows on the same (tenantId, platformId).
+ * `platform_credentials` has no `page_id` column, so `pageId` never filters
+ * the credentialStatus sub-query — only `userId` does, unchanged from
+ * Story 1.15.
  */
 export async function deriveConnectorHealth(
   tenantId: string,
@@ -78,17 +85,21 @@ export async function deriveConnectorHealth(
   userId?: string
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
-    const { rows: runs } = userId
-      ? await client.query<IngestionRunRow>(
-          `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
-           WHERE platform_id = $1 AND user_id = $2 ORDER BY started_at DESC`,
-          [platformId, userId]
-        )
-      : await client.query<IngestionRunRow>(
-          `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
-           WHERE platform_id = $1 ORDER BY started_at DESC`,
-          [platformId]
-        );
+    const runConditions = ['platform_id = $1'];
+    const runParams: unknown[] = [platformId];
+    if (pageId) {
+      runParams.push(pageId);
+      runConditions.push(`page_id = $${runParams.length}`);
+    }
+    if (userId) {
+      runParams.push(userId);
+      runConditions.push(`user_id = $${runParams.length}`);
+    }
+    const { rows: runs } = await client.query<IngestionRunRow>(
+      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
+       WHERE ${runConditions.join(' AND ')} ORDER BY started_at DESC`,
+      runParams
+    );
 
     const { rows: credentialRows } = userId
       ? await client.query<{ status: CredentialStatus }>(

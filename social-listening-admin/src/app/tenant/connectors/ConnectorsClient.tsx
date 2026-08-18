@@ -155,12 +155,30 @@ export interface FacebookPendingPage {
   category?: string;
 }
 
+/** Story 6.27 (ADR-0060 Decision §5) — one row of the caller's own connected Facebook Pages list (core-client.ts's FacebookConnectedPageRow). */
+export interface FacebookConnectedPageRow {
+  id: string;
+  pageId: string;
+  pageName: string;
+  status: 'connected' | 'removed' | 'orphaned';
+  connectorHealth: {
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+    lastSuccessfulFetchAt: string | null;
+    lastAttemptAt: string | null;
+    consecutiveFailures: number;
+    credentialStatus: string | null;
+  };
+}
+
+export interface FacebookPagesResponse {
+  parentConnectionActive: boolean;
+  pages: FacebookConnectedPageRow[];
+}
+
 interface ConnectorsClientProps {
   platforms: PlatformDef[];
   initialStates: ConnectorInitialState[];
   isTenantAdmin: boolean;
-  /** Story 6.23 — the cached, connected Facebook Page's own name (se_fb_connected_page cookie, read server-side by page.tsx), or null if never connected/cache cleared. */
-  facebookConnectedPageName?: string | null;
   /**
    * Story 6.23 — a real, minimal testability seam (the same pattern
    * PostsFeedClient.tsx's own initialActivePostId already establishes for
@@ -170,6 +188,13 @@ interface ConnectorsClientProps {
    * /api/connectors/facebook/oauth/pending, guarded on ?fbConnect=1.
    */
   initialFacebookPending?: { sessionToken: string; pages: FacebookPendingPage[] } | null;
+  /**
+   * Story 6.27 — the same testability seam shape, for the real per-Page
+   * connected list (GET /api/connectors/facebook/pages). In the real app
+   * this is left undefined and populated client-side by
+   * FacebookConnectedPagesList's own mount effect.
+   */
+  initialFacebookPages?: FacebookPagesResponse | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -348,7 +373,7 @@ function ConnectModal({
 }
 
 // ---------------------------------------------------------------------------
-// Facebook Page picker (Story 6.23, ADR-0059 Decision §3/§4)
+// Facebook Page picker (Story 6.23/6.27, ADR-0059 Decision §3/§4, ADR-0060 Decision §5/§6)
 // ---------------------------------------------------------------------------
 
 /**
@@ -356,41 +381,87 @@ function ConnectModal({
  * {sessionToken, pages} pending result (see the mount effect in the main
  * component below). A real, named edge case (AC6): zero returned Pages
  * shows a specific message, never a blank list or a generic error.
+ *
+ * Story 6.27 (ADR-0060 Decision §5/§6) — multi-select: checkboxes replace
+ * the original radiogroup, submitting the plural `pageIds` array
+ * `selectFacebookPages()`/the revised select-page proxy now expect. A
+ * successful (or partially successful) submission shows a confirmation
+ * step rendering both the `connected` and `errors` arrays from the
+ * backend's own structured partial-failure response — never collapsed
+ * into one opaque pass/fail state.
  */
 function FacebookPagePickerModal({
   platformName,
   pending,
   onClose,
-  onConnected,
+  onDone,
 }: {
   platformName: string;
   pending: { sessionToken: string; pages: FacebookPendingPage[] };
   onClose: () => void;
-  onConnected: (page: { id: string; name: string }) => void;
+  onDone: () => void;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ connected: { pageId: string; pageName: string }[]; errors: { pageId: string; reason: string }[] } | null>(null);
+
+  function toggle(id: string) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   async function handleConfirm() {
-    if (!selectedId) return;
+    if (selectedIds.length === 0) return;
     setError(null);
     setSubmitting(true);
     try {
       const response = await fetch('/api/connectors/facebook/oauth/select-page', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionToken: pending.sessionToken, pageId: selectedId }),
+        body: JSON.stringify({ sessionToken: pending.sessionToken, pageIds: selectedIds }),
       });
       const body = await response.json().catch(() => ({}));
-      if (response.status === 201 && body.page) {
-        onConnected(body.page);
+      if (response.status === 201) {
+        setResult({ connected: body.connected ?? [], errors: body.errors ?? [] });
         return;
       }
-      setError(body.error ?? 'Something went wrong while connecting this Page.');
+      setError(body.error ?? 'Something went wrong while connecting these Pages.');
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (result) {
+    return (
+      <div className="modal-backdrop" role="presentation">
+        <div className="modal-dialog cv-connect-modal" role="dialog" aria-modal="true" aria-labelledby="cv-fb-result-title">
+          <div className="cv-modal-header">
+            <h3 id="cv-fb-result-title">
+              Connected {result.connected.length} of {result.connected.length + result.errors.length} Page{result.connected.length + result.errors.length === 1 ? '' : 's'}
+            </h3>
+          </div>
+          {result.connected.length > 0 && (
+            <ul className="cv-fb-result-list cv-fb-result-connected">
+              {result.connected.map((c) => (
+                <li key={c.pageId}>{c.pageName}</li>
+              ))}
+            </ul>
+          )}
+          {result.errors.length > 0 && (
+            <ul className="cv-fb-result-list cv-fb-result-errors">
+              {result.errors.map((e) => (
+                <li key={e.pageId}>{e.reason}</li>
+              ))}
+            </ul>
+          )}
+          <div className="form-actions cv-modal-actions">
+            <button type="button" className="btn btn-primary" onClick={onDone}>
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -398,7 +469,7 @@ function FacebookPagePickerModal({
       <div className="modal-dialog cv-connect-modal" role="dialog" aria-modal="true" aria-labelledby="cv-fb-picker-title">
         <div className="cv-modal-header">
           <h3 id="cv-fb-picker-title">
-            {pending.pages.length === 0 ? `Connect ${platformName}` : 'Choose a Facebook Page'}
+            {pending.pages.length === 0 ? `Connect ${platformName}` : 'Choose Facebook Pages'}
           </h3>
           <button type="button" className="slideover-close-btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
@@ -409,15 +480,14 @@ function FacebookPagePickerModal({
           </p>
         ) : (
           <>
-            <div className="cv-page-picker-list" role="radiogroup" aria-label="Facebook Pages">
+            <div className="cv-page-picker-list" role="group" aria-label="Facebook Pages">
               {pending.pages.map((page) => (
                 <label key={page.id} className="cv-page-picker-row">
                   <input
-                    type="radio"
-                    name="fb-page"
+                    type="checkbox"
                     value={page.id}
-                    checked={selectedId === page.id}
-                    onChange={() => setSelectedId(page.id)}
+                    checked={selectedIds.includes(page.id)}
+                    onChange={() => toggle(page.id)}
                   />
                   <span className="cv-page-picker-name">{page.name}</span>
                   {page.category && <span className="cv-page-picker-category">{page.category}</span>}
@@ -431,13 +501,109 @@ function FacebookPagePickerModal({
               <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
-              <button type="button" className="btn btn-primary" onClick={handleConfirm} disabled={submitting || !selectedId}>
-                {submitting ? 'Connecting…' : 'Connect this Page'}
+              <button type="button" className="btn btn-primary" onClick={handleConfirm} disabled={submitting || selectedIds.length === 0}>
+                {submitting ? 'Connecting…' : `Connect ${selectedIds.length || ''} selected Page${selectedIds.length === 1 ? '' : 's'}`}
               </button>
             </div>
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Facebook connected-Pages list (Story 6.27, ADR-0060 Decision §4/§6)
+// ---------------------------------------------------------------------------
+
+/** Mirrors connector-status-view's own deriveVariant() precedent — 'disconnected' reads as 'inactive', every other status passes through unchanged. */
+function derivePageVariant(health: FacebookConnectedPageRow['connectorHealth']): StatusBadgeVariant {
+  if (health.status === 'reconnect_required') return 'reconnect_required';
+  switch (health.status) {
+    case 'healthy':      return 'healthy';
+    case 'degraded':     return 'degraded';
+    case 'failing':      return 'failing';
+    case 'disconnected': return 'inactive';
+    default:              return 'inactive';
+  }
+}
+
+/**
+ * One connected/orphaned Page's own row — name, health (or, for an
+ * orphaned row, its own distinct honestly-labeled state, never the
+ * ordinary health badge), and per-row actions. `orphaned` and a
+ * `reconnect_required` health both get a real "Reconnect" action here —
+ * the row-level remediation ADR-0060 Decision §6's own last bullet calls
+ * for, replacing the card-level "Reconnect Facebook" link that used to
+ * restart the whole multi-Page flow (see the card footer below).
+ */
+function FacebookPageRow({ page, onDisconnect }: { page: FacebookConnectedPageRow; onDisconnect: (id: string) => void }) {
+  const isOrphaned = page.status === 'orphaned';
+  const needsReconnect = isOrphaned || page.connectorHealth.status === 'reconnect_required';
+
+  return (
+    <div className="cv-fb-page-row">
+      <span className="cv-fb-page-name">{page.pageName}</span>
+      {isOrphaned ? (
+        <span className="cv-fb-page-orphaned">Access lost — reconnect to restore this Page</span>
+      ) : (
+        <StatusBadge variant={derivePageVariant(page.connectorHealth)} />
+      )}
+      {needsReconnect && (
+        <a href="/api/connectors/facebook/oauth/start" className="cv-fb-page-reconnect">
+          Reconnect
+        </a>
+      )}
+      <button type="button" className="cv-fb-page-disconnect" onClick={() => onDisconnect(page.id)}>
+        Disconnect this Page
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The real per-Page list replacing Story 6.23's single cached
+ * `facebookConnectedPage` name + one `ActivateDeactivateButton` footer
+ * (ADR-0060 Decision §6). `removed` rows are never shown here (the list is
+ * "one row per connected or orphaned Page," per that decision's own text)
+ * — a soft-removed Page survives as backend history only.
+ * `parentConnectionActive === false` renders an explicit banner rather
+ * than showing every row as if it were actively polling.
+ */
+function FacebookConnectedPagesList({ initialPages }: { initialPages?: FacebookPagesResponse | null }) {
+  const [data, setData] = useState<FacebookPagesResponse | null>(initialPages ?? null);
+
+  async function refresh() {
+    const res = await fetch('/api/connectors/facebook/pages');
+    const body = await res.json().catch(() => null);
+    if (body) setData(body);
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleDisconnect(id: string) {
+    await fetch(`/api/connectors/facebook/pages/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    await refresh();
+  }
+
+  if (!data) return null;
+  const visiblePages = data.pages.filter((p) => p.status !== 'removed');
+  if (visiblePages.length === 0) return null;
+
+  return (
+    <div className="cv-fb-pages-list">
+      {!data.parentConnectionActive && (
+        <p className="cv-fb-deactivated-banner">
+          {visiblePages.length} Page{visiblePages.length === 1 ? '' : 's'} connected, but your personal Facebook connection is currently deactivated — none of them are being polled.
+        </p>
+      )}
+      {visiblePages.map((page) => (
+        <FacebookPageRow key={page.id} page={page} onDisconnect={handleDisconnect} />
+      ))}
     </div>
   );
 }
@@ -450,8 +616,8 @@ export function ConnectorsClient({
   platforms,
   initialStates,
   isTenantAdmin,
-  facebookConnectedPageName = null,
   initialFacebookPending = null,
+  initialFacebookPages = null,
 }: ConnectorsClientProps) {
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
@@ -459,7 +625,6 @@ export function ConnectorsClient({
   const [facebookPending, setFacebookPending] = useState<{ sessionToken: string; pages: FacebookPendingPage[] } | null>(
     initialFacebookPending
   );
-  const [facebookConnectedPage, setFacebookConnectedPage] = useState<string | null>(facebookConnectedPageName);
 
   const stateMap = new Map(initialStates.map((s) => [s.platformId, s]));
 
@@ -599,21 +764,24 @@ export function ConnectorsClient({
               {/* Footer actions */}
               <div className="cv-card-footer">
                 {platform.authMode === 'oauth' ? (
-                  /* Story 6.23 (ADR-0059 Decision §3/§4) — Facebook: a real
-                     browser redirect, never a ConnectModal credential-field
-                     submission. reconnect_required takes priority: the
-                     action is always "re-enter the same OAuth flow from the
-                     top" (Story 2.15 AC7), whether never-connected or
-                     credential-invalidated. */
-                  variant === 'reconnect_required' ? (
-                    <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary cv-connect-btn">
-                      Reconnect {platform.name}
-                    </a>
-                  ) : isConnected ? (
-                    <div className="cv-card-footer-left">
-                      {facebookConnectedPage && (
-                        <span className="cv-connected-page-name">Connected: {facebookConnectedPage}</span>
+                  /* Story 6.23/6.27 (ADR-0059 Decision §3/§4, ADR-0060
+                     Decision §6) — Facebook: a real browser redirect, never
+                     a ConnectModal credential-field submission. The
+                     card-level badge stays a pure rollup signal once
+                     connected — reconnect_required no longer renders a
+                     single "Reconnect Facebook" link that would restart the
+                     whole multi-Page flow (ADR-0060 Decision §6's own last
+                     bullet); the real per-Page remediation lives in the
+                     connected-Pages list's own row-level actions below. */
+                  isConnected ? (
+                    <div className="cv-card-footer-left cv-fb-footer">
+                      {variant === 'reconnect_required' && (
+                        <span className="cv-fb-rollup-note">One or more Pages need attention — see your Page list below.</span>
                       )}
+                      <FacebookConnectedPagesList initialPages={initialFacebookPages} />
+                      <a href="/api/connectors/facebook/oauth/start" className="btn btn-secondary btn-sm">
+                        Connect another Page
+                      </a>
                       <ActivateDeactivateButton
                         platformId={platform.id}
                         ownerType="user"
@@ -734,16 +902,13 @@ export function ConnectorsClient({
         />
       )}
 
-      {/* Facebook Page Picker (Story 6.23) */}
+      {/* Facebook Page Picker (Story 6.23/6.27) */}
       {facebookPending && (
         <FacebookPagePickerModal
           platformName={platforms.find((p) => p.id === 'facebook')?.name ?? 'Facebook Page (Owned Feed)'}
           pending={facebookPending}
           onClose={() => setFacebookPending(null)}
-          onConnected={(page) => {
-            setFacebookConnectedPage(page.name);
-            setFacebookPending(null);
-          }}
+          onDone={() => window.location.reload()}
         />
       )}
     </div>

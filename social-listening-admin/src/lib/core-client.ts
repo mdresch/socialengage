@@ -442,29 +442,80 @@ export async function exchangeFacebookOAuthCode(
 export interface FacebookSelectPageOutcome {
   status: number;
   body: {
-    platformId?: string;
-    ownerType?: string;
-    page?: { id: string; name: string };
+    connected?: { pageId: string; pageName: string }[];
+    errors?: { pageId: string; reason: string }[];
     error?: string;
     [key: string]: unknown;
   };
 }
 
 /**
- * Story 6.23 (ADR-0059 Decision §4) — completes the Page-picker step
- * (`POST /v1/connectors/facebook/oauth/select-page`, Story 2.15). Always
- * Tier 3/personal scope on the backend — there is no `ownerType` parameter
- * here to choose, unlike `connectPlatform()`.
+ * Story 6.27 (ADR-0060 Decision §5) — completes the Page-picker step
+ * (`POST /v1/connectors/facebook/oauth/select-page`, Story 2.15/6.27).
+ * Always Tier 3/personal scope on the backend — there is no `ownerType`
+ * parameter here to choose, unlike `connectPlatform()`. `pageIds` is a
+ * plural array (breaking change from Story 6.23's own singular `pageId`
+ * shape) — each Page is processed independently server-side, so the
+ * response is a structured `{connected, errors}` partial-failure shape,
+ * never a single opaque pass/fail.
  */
-export async function selectFacebookPage(
+export async function selectFacebookPages(
   sessionToken: string,
-  pageId: string
+  pageIds: string[]
 ): Promise<FacebookSelectPageOutcome> {
   const response = await authenticatedCoreFetch('/v1/connectors/facebook/oauth/select-page', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionToken, pageId }),
+    body: JSON.stringify({ sessionToken, pageIds }),
   });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookConnectedPageRow {
+  id: string;
+  pageId: string;
+  pageName: string;
+  status: 'connected' | 'removed' | 'orphaned';
+  connectorHealth: {
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+    lastSuccessfulFetchAt: string | null;
+    lastAttemptAt: string | null;
+    consecutiveFailures: number;
+    credentialStatus: string | null;
+  };
+}
+
+export interface FacebookPagesOutcome {
+  status: number;
+  body: {
+    parentConnectionActive?: boolean;
+    pages?: FacebookConnectedPageRow[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.27 (ADR-0060 Decision §5) — the caller's own connected Facebook
+ * Pages (`GET /v1/connectors/facebook/pages`), replacing Story 6.23's own
+ * single-cookie-cached Page name with the real, per-Page list this screen
+ * now renders.
+ */
+export async function listFacebookPages(): Promise<FacebookPagesOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/facebook/pages', { method: 'GET' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookDisconnectPageOutcome {
+  status: number;
+  body: { id?: string; pageId?: string; status?: string; error?: string; [key: string]: unknown };
+}
+
+/** Story 6.27 (ADR-0060 Decision §5) — soft-removes one of the caller's own connected Pages (`DELETE /v1/connectors/facebook/pages/:id`). */
+export async function disconnectFacebookPage(id: string): Promise<FacebookDisconnectPageOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/facebook/pages/${encodeURIComponent(id)}`, { method: 'DELETE' });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }

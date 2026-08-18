@@ -239,8 +239,8 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
     });
   });
 
-  describe('AC5: selecting a Page submits exactly that Page\'s id to select-page', () => {
-    it('core-client.ts\'s selectFacebookPage() posts the given sessionToken/pageId to the real endpoint', async () => {
+  describe('AC5: selecting Pages submits their ids to select-page (2026-08-18, dated note — Story 6.27/ADR-0060 Decision §5 revised this to a plural, multi-select shape; see that story\'s own contract for the new multi-select picker UI itself)', () => {
+    it('core-client.ts\'s selectFacebookPages() posts the given sessionToken/pageIds to the real endpoint', async () => {
       const sessionModule = await import('../../src/lib/session');
       const identity = { type: 'tenant_user' as const, tenantId: 't-1', userId: 'u-1', role: 'tenant_user' as const };
       const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
@@ -248,37 +248,37 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
         cookies: async () => ({ get: (name: string) => (name === sessionModule.SESSION_COOKIE_NAME ? { value: encrypted } : undefined) }),
       }));
       const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({ platformId: 'facebook', ownerType: 'user', page: { id: 'p2', name: 'Second Test Page' } }), { status: 201 })
+        new Response(JSON.stringify({ connected: [{ pageId: 'p2', pageName: 'Second Test Page' }], errors: [] }), { status: 201 })
       );
-      const { selectFacebookPage } = await import('../../src/lib/core-client');
-      const outcome = await selectFacebookPage('sess-1', 'p2');
+      const { selectFacebookPages } = await import('../../src/lib/core-client');
+      const outcome = await selectFacebookPages('sess-1', ['p2']);
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringContaining('/v1/connectors/facebook/oauth/select-page'),
-        expect.objectContaining({ method: 'POST', body: JSON.stringify({ sessionToken: 'sess-1', pageId: 'p2' }) })
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ sessionToken: 'sess-1', pageIds: ['p2'] }) })
       );
       expect(outcome.status).toBe(201);
-      expect(outcome.body.page).toEqual({ id: 'p2', name: 'Second Test Page' });
+      expect(outcome.body.connected).toEqual([{ pageId: 'p2', pageName: 'Second Test Page' }]);
     });
 
-    it('the select-page proxy route forwards the given sessionToken/pageId unchanged and caches the returned Page name for future page loads', async () => {
+    it('the select-page proxy route forwards the given sessionToken/pageIds unchanged and returns the structured connected/errors response — no cosmetic Page-name cookie anymore (Story 6.27 retired it in favor of the real GET /v1/connectors/facebook/pages list)', async () => {
       jest.doMock('../../src/lib/core-client', () => ({
-        selectFacebookPage: jest.fn().mockResolvedValue({
+        selectFacebookPages: jest.fn().mockResolvedValue({
           status: 201,
-          body: { platformId: 'facebook', ownerType: 'user', page: { id: 'p2', name: 'Second Test Page' } },
+          body: { connected: [{ pageId: 'p2', pageName: 'Second Test Page' }], errors: [] },
         }),
       }));
       const { POST } = await import('../../src/app/api/connectors/facebook/oauth/select-page/route');
       const request = new Request('http://localhost:3000/api/connectors/facebook/oauth/select-page', {
         method: 'POST',
-        body: JSON.stringify({ sessionToken: 'sess-1', pageId: 'p2' }),
+        body: JSON.stringify({ sessionToken: 'sess-1', pageIds: ['p2'] }),
       });
       const response = await POST(request);
-      const { selectFacebookPage } = await import('../../src/lib/core-client');
-      expect(selectFacebookPage).toHaveBeenCalledWith('sess-1', 'p2');
+      const { selectFacebookPages } = await import('../../src/lib/core-client');
+      expect(selectFacebookPages).toHaveBeenCalledWith('sess-1', ['p2']);
       expect(response.status).toBe(201);
-      const setCookie = response.headers.get('set-cookie') ?? '';
-      expect(setCookie).toContain('se_fb_connected_page=');
-      expect(decodeURIComponent(setCookie)).toContain('Second Test Page');
+      const body = await response.json();
+      expect(body.connected).toEqual([{ pageId: 'p2', pageName: 'Second Test Page' }]);
+      expect(response.headers.get('set-cookie') ?? '').not.toContain('se_fb_connected_page=');
     });
   });
 
@@ -299,8 +299,8 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
     });
   });
 
-  describe('AC7: the connected state shows the connected Page\'s own name', () => {
-    it('a real render with a cached connected-page name shows it, not just the generic platform label alone', () => {
+  describe('AC7: the connected state shows the connected Page\'s own name (2026-08-18, dated note — Story 6.27/ADR-0060 Decision §6 replaced the single cached-name footer with a real per-Page list; see that story\'s own contract for the fuller per-Page list behavior)', () => {
+    it('a real render with a real connected-Pages list (the initialFacebookPages testability seam) shows the connected Page\'s own name, not just the generic platform label alone', () => {
       const markup = renderComponent(
         path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'connectors', 'ConnectorsClient.tsx'),
         'ConnectorsClient',
@@ -308,7 +308,18 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
           platforms: [FACEBOOK_PLATFORM],
           initialStates: [{ platformId: 'facebook', connected: true, credentialStatus: 'valid', isActive: true, status: 'healthy', maskedHint: null }],
           isTenantAdmin: false,
-          facebookConnectedPageName: 'My Real Connected Page',
+          initialFacebookPages: {
+            parentConnectionActive: true,
+            pages: [
+              {
+                id: 'row-1',
+                pageId: 'p2',
+                pageName: 'My Real Connected Page',
+                status: 'connected',
+                connectorHealth: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: 'valid' },
+              },
+            ],
+          },
         }
       );
       expect(markup).toContain('My Real Connected Page');

@@ -22,6 +22,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 | ADR-0042 | `listAuthorsByPlatform()` added — a connector-facing "already discovered" membership read, not a new schema decision | 2.13 |
 | ADR-0052 Decision §5b (Clarification, 2026-08-18) | `getMostRecentRunStatus()` added — a scheduler-facing "is this pair's most recent run still in flight" read, not a new schema decision | 1.14 |
 | ADR-0061 Decision §2 | `ingestion_runs` gains a nullable `user_id UUID REFERENCES users(id)` column (migration `0033`); `startIngestionRun()`'s input gains an optional `userId`; new `getMostRecentRunStatusForUser(tenantId, platformId, userId)` mirrors `getMostRecentRunStatus()`'s own shape but scoped to one user's own runs — the Tier-3 scheduler's in-flight guard | 1.15 |
+| ADR-0060 Decision §3 | `ingestion_runs` gains a nullable `page_id TEXT` column (migration `0035`), mirroring migration `0032`'s `is_credential_failure` precedent — populated only by Facebook's own per-Page poll fan-out, `NULL` for every other connector/run. `StartIngestionRunInput` gains an optional `pageId`. Load-bearing for `deriveConnectorHealth()`'s per-Page filtering (Decision §4) — without this column there is no data to derive per-Page health from. | 6.27 |
 
 ## Contracts that constrain this component
 
@@ -35,6 +36,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 - `contracts/epic-2/story-2.13.wikipedia-connector.contract.test.ts` — constrains `listAuthorsByPlatform()`'s own shape and real behavior (indirectly, via the Wikipedia connector's own discovery/re-poll logic that depends on it); see `.claude/skills/wikipedia-connector/SKILL.md` for what that story actually owns.
 - `contracts/epic-1/story-1.14.poll-scheduler-skip-in-flight.contract.test.ts` — constrains `getMostRecentRunStatus()`'s own shape and real behavior (indirectly, via the poll scheduler's eligibility check that depends on it); see `.claude/skills/live-ingestion-polling-scheduler/SKILL.md` for what that story actually owns.
 - `contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts` — `ingestion_runs.user_id` is populated when `startIngestionRun()` is given a `userId` and stays `NULL` for every existing tenant-wide call site (backward-compatible, additive column); `getMostRecentRunStatusForUser(tenantId, platformId, userId)` returns the most recent run for that specific user only, never blended with the tenant-wide run history or another user's own runs on the same `(tenantId, platformId)`.
+- `contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts` — `ingestion_runs.page_id` stays `NULL` for a non-Facebook tenant-wide run; three connected Pages each produce their own `IngestionRun` row with their own distinct `page_id`, via `pollFacebook()`'s real per-Page fan-out.
 
 ## How to extend this safely
 

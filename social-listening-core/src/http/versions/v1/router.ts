@@ -6,6 +6,7 @@ import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
 import { tenantOwnedFeedRouter } from './tenantOwnedFeedRouter';
 import { facebookOAuthRouter } from './facebookOAuthRouter';
+import { facebookPagesRouter } from './facebookPagesRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
@@ -76,6 +77,13 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
    * rejects it outright — see that router's own authMode:'oauth' guard).
    */
   v1Router.use('/connectors/facebook/oauth', authMiddleware, facebookOAuthRouter);
+
+  /**
+   * Story 6.27 (ADR-0060 Decision §5) — mounted BEFORE the generic
+   * /connectors router below, the same "more specific path first" reason
+   * as tenant-owned-feed/facebook/oauth above.
+   */
+  v1Router.use('/connectors/facebook/pages', authMiddleware, facebookPagesRouter);
 
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);

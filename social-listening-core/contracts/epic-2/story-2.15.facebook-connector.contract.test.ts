@@ -111,6 +111,7 @@ import { getAdminPool, closeAdminPool } from '../../src/db/adminPool';
 import { closePool } from '../../src/db/pool';
 import { withTenant } from '../../src/db/withTenant';
 import { storeCredential, readCredential, getLatestCredentialId } from '../../src/credentials/credentialStore';
+import { upsertConnectedPage } from '../../src/connectors/facebook/facebookConnectedPagesStore';
 import { getKeyClient } from '../../src/credentials/keyVaultProvider';
 import { setConnectorActivation } from '../../src/connectors/connectorActivationStore';
 import { findSocialPostByExternalId } from '../../src/posts/socialPostStore';
@@ -182,8 +183,18 @@ function realCredential(): string {
   return JSON.stringify({ pageId: REAL_PAGE_ID, pageAccessToken: REAL_PAGE_TOKEN, pageName: 'Test Page' });
 }
 
+// 2026-08-18, dated note (Story 6.27, ADR-0060 Decision §1/§3): pollFacebook()
+// was rewritten from a single getLatestCredentialId()/readCredential() read
+// to a per-user fan-out over facebook_connected_pages rows — this fixture
+// now also upserts one, or pollFacebook() would take the (correct, new)
+// "no connected Pages" fast path and fail instead of actually polling. This
+// is not a weakening of AC4/AC8 below — both still exercise the real Page
+// via a real pollFacebook() call end to end; only the credential-discovery
+// mechanism this fixture sets up changed, matching pollFacebook.ts's own
+// real, current implementation.
 async function seedRealFacebookCredential(tenantId: string, userId: string): Promise<void> {
-  await storeCredential(tenantId, FACEBOOK_PROVIDER_ID, realCredential(), testKeyId, 'user', userId);
+  const credential = await storeCredential(tenantId, FACEBOOK_PROVIDER_ID, realCredential(), testKeyId, 'user', userId);
+  await upsertConnectedPage(tenantId, userId, { pageId: REAL_PAGE_ID, pageName: 'Test Page', credentialId: credential.id });
   await setConnectorActivation(tenantId, FACEBOOK_PROVIDER_ID, 'user', true, userId, userId);
 }
 

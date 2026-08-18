@@ -9,6 +9,8 @@ export interface StartIngestionRunInput {
   connectorVersion: string;
   /** Story 1.15 (ADR-0061 Decision §2) — set for a Tier-3 (user-bound) poll's own run; omitted/undefined for a tenant-wide run. */
   userId?: string;
+  /** Story 6.27 (ADR-0060 Decision §3) — set for Facebook's own per-Page poll fan-out; NULL for every other connector and every pre-existing Facebook row. */
+  pageId?: string;
 }
 
 export interface CompleteIngestionRunInput {
@@ -38,10 +40,10 @@ export async function startIngestionRun(
 ): Promise<IngestionRunRef> {
   return withTenant(tenantId, async (client) => {
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO ingestion_runs (tenant_id, platform_id, trigger_type, connector_version, user_id)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO ingestion_runs (tenant_id, platform_id, trigger_type, connector_version, user_id, page_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [tenantId, input.platformId, input.triggerType, input.connectorVersion, input.userId ?? null]
+      [tenantId, input.platformId, input.triggerType, input.connectorVersion, input.userId ?? null, input.pageId ?? null]
     );
     return { id: rows[0].id };
   });
