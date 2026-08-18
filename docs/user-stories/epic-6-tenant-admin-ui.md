@@ -532,7 +532,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.23 — Facebook connector: OAuth connect flow with Page selection
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-admin@535338f
 
 **Source:** ADR-0059 (Accepted 2026-08-18), against Story 2.15's real backend surface · **Status:** Ready, with the same precondition Story 2.15 itself carries, inherited rather than repeated in full: this story's own OAuth flow and Page picker can be built and proven against a Menno-administered test Page under Meta's Standard Access (no App Review needed for that degenerate case, per ADR-0059 Decision §3) — onboarding any real, unaffiliated tenant's Page still requires SocialEngage's own Meta App to separately clear Business Verification and App Review first. Not blocked on Story 2.15 being fully built first — both can be developed in parallel against the same ADR, but this story's own end-to-end proof needs Story 2.15's OAuth exchange/token storage to exist.
 
