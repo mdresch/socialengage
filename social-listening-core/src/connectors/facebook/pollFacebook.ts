@@ -50,6 +50,7 @@ export async function pollFacebook(tenantId: string, userId: string): Promise<Ru
       platformId: FACEBOOK_PROVIDER_ID,
       triggerType: 'poll',
       connectorVersion: '1.0.0',
+      userId,
     },
     attempt: async (runId) => {
       const credentialId = await getLatestCredentialId(tenantId, FACEBOOK_PROVIDER_ID, 'user', userId);

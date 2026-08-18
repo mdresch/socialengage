@@ -60,22 +60,46 @@ interface IngestionRunRow {
  * derived by querying ingestion_runs (and platform_credentials for
  * credentialStatus) at read time. See
  * .claude/skills/connector-health-and-error-handling/SKILL.md.
+ *
+ * `pageId` (ADR-0060 Decision §4) is reserved/unused until Story 6.27
+ * (multi-Page Facebook) actually builds Facebook per-Page health — accepted
+ * here as a structurally-present 3rd param now so `userId`'s own 4th
+ * position stays stable.
+ *
+ * `userId` (ADR-0061 Decision §2/§3, Story 1.15) scopes BOTH sub-queries —
+ * ingestion_runs and platform_credentials — to that one user's own rows, so
+ * a Tier-3 user's health/credentialStatus is never blended with the
+ * tenant-wide (or another user's) rows on the same (tenantId, platformId).
  */
 export async function deriveConnectorHealth(
   tenantId: string,
-  platformId: string
+  platformId: string,
+  pageId?: string,
+  userId?: string
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
-    const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
-       WHERE platform_id = $1 ORDER BY started_at DESC`,
-      [platformId]
-    );
+    const { rows: runs } = userId
+      ? await client.query<IngestionRunRow>(
+          `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
+           WHERE platform_id = $1 AND user_id = $2 ORDER BY started_at DESC`,
+          [platformId, userId]
+        )
+      : await client.query<IngestionRunRow>(
+          `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
+           WHERE platform_id = $1 ORDER BY started_at DESC`,
+          [platformId]
+        );
 
-    const { rows: credentialRows } = await client.query<{ status: CredentialStatus }>(
-      `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
-      [platformId]
-    );
+    const { rows: credentialRows } = userId
+      ? await client.query<{ status: CredentialStatus }>(
+          `SELECT status FROM platform_credentials
+           WHERE platform_id = $1 AND owner_type = 'user' AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
+          [platformId, userId]
+        )
+      : await client.query<{ status: CredentialStatus }>(
+          `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+          [platformId]
+        );
     const credentialStatus = credentialRows.length > 0 ? credentialRows[0].status : null;
 
     if (runs.length === 0) {
@@ -174,7 +198,16 @@ export async function shouldAttemptIngestion(
   ownerType: ConnectorActivationOwnerType = 'tenant',
   userId?: string
 ): Promise<boolean> {
-  const health = await deriveConnectorHealth(tenantId, platformId);
+  // Story 1.15: forward ownerType/userId into deriveConnectorHealth() so a
+  // Tier-3 user's eligibility check reads that user's own health, not the
+  // tenant-wide (or another user's) health — a real, previously-silent
+  // Story 1.11 bug (this call used to ignore both arguments entirely).
+  const health = await deriveConnectorHealth(
+    tenantId,
+    platformId,
+    undefined,
+    ownerType === 'user' ? userId : undefined
+  );
   if (health.status === 'failing') {
     const withinProbeCooldown =
       health.lastAttemptAt !== null && Date.now() - new Date(health.lastAttemptAt).getTime() < PROBE_COOLDOWN_MS;

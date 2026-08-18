@@ -77,6 +77,24 @@ export async function isConnectorActive(
 }
 
 /**
+ * Story 1.15 (ADR-0061 Decision §2) -- every userId with a real, currently
+ * active connector_user_activations row for this (tenantId, platformId).
+ * The Tier-3 scheduler's own per-user enumeration -- the only reader in
+ * this file that lists everyone rather than checking one specific target;
+ * see .claude/skills/connector-activation/SKILL.md.
+ */
+export async function listActiveUserActivations(tenantId: string, platformId: string): Promise<string[]> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ user_id: string }>(
+      `SELECT user_id FROM connector_user_activations
+       WHERE tenant_id = $1 AND platform_id = $2 AND is_active = true`,
+      [tenantId, platformId]
+    );
+    return rows.map((row) => row.user_id);
+  });
+}
+
+/**
  * Sets activation state. Idempotent: if the target state already matches,
  * this is a genuine no-op -- no row is inserted just to record an
  * updated_by touch, and activated_at/deactivated_at are never bumped for a

@@ -145,22 +145,27 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
       //
       // 2026-08-18 (Story 2.15, ADR-0059): a fifth real connector
       // (Facebook) was registered — extended the same way. Facebook is
-      // Tier-3-only (no tenant-wide credential path), so its own
-      // registered poll() wrapper is structurally unreachable via this
-      // scheduler today (shouldAttemptIngestion(tenantId, platformId)
-      // defaults to ownerType:'tenant', which this connector can never
-      // satisfy) — it still gets a real poll()/pollCadenceMs pair, per
-      // this test's own next assertion below, which every registered
-      // poll-mode connector must satisfy regardless of whether the
-      // scheduler can currently reach it. See
-      // .claude/skills/facebook-connector/SKILL.md's own Load-bearing
-      // constraints for why this is honest, not a workaround.
+      // Tier-3-only (no tenant-wide credential path).
+      //
+      // 2026-08-18 (Story 1.15, ADR-0061 Decision §3, dated-note fix,
+      // anticipated by that ADR's own Alternatives Considered — "keep the
+      // throwing-placeholder poll... rejected"): Facebook's own
+      // registration no longer has a poll()/pollCadenceMs-with-throwing-poll
+      // pair at all — it is registered with pollUser only (real Tier-3
+      // scheduler support now exists, see .claude/skills/
+      // live-ingestion-polling-scheduler/SKILL.md and
+      // .claude/skills/facebook-connector/SKILL.md). The per-connector
+      // invariant below is narrowed from "every registered connector has a
+      // real poll()" to "poll or pollUser," since a connector may now
+      // legitimately have only the latter — this is not a weakening of the
+      // check, it is the same invariant restated to admit the new,
+      // ADR-0061-sanctioned shape.
       expect(providerIds).toEqual(
         [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID, FACEBOOK_PROVIDER_ID].sort()
       );
       for (const connector of registered) {
         expect(connector.deliveryMode).toBe('poll');
-        expect(typeof connector.poll).toBe('function');
+        expect(typeof connector.poll === 'function' || typeof connector.pollUser === 'function').toBe(true);
         expect(typeof connector.pollCadenceMs).toBe('number');
       }
     });

@@ -2,7 +2,8 @@ import { createHash } from 'crypto';
 import { listTenants } from '../tenants/tenantStore';
 import { listSocialConnectors } from '../connectors/registry';
 import { shouldAttemptIngestion, deriveConnectorHealth } from '../connectors/connectorHealth';
-import { getMostRecentRunStatus, IngestionRunStatus } from '../ingestion/ingestionRunStore';
+import { listActiveUserActivations } from '../connectors/connectorActivationStore';
+import { getMostRecentRunStatus, getMostRecentRunStatusForUser, IngestionRunStatus } from '../ingestion/ingestionRunStore';
 import { SocialConnector } from '../connectors/types';
 
 /** Implementation default (ADR-0052 §9) — a real guess, revisable via Amendment Log. */
@@ -12,15 +13,21 @@ export const DEFAULT_TICK_INTERVAL_MS = 60 * 1000;
 const JITTER_BOUND = 0.05;
 
 /**
- * Deterministic, per-(tenantId, platformId) offset in [-0.05, +0.05)
- * (ADR-0052 Decision §5) — never Math.random(), never recomputed per tick.
- * Spreads simultaneous-due pairs apart across tenants/restarts without ever
- * changing *whether* a pair is due, only *when it first becomes* due (see
- * ADR-0052 Decision §5's own monotonicity argument). A cryptographic hash is
+ * Deterministic, per-(tenantId, platformId[, userId]) offset in
+ * [-0.05, +0.05) (ADR-0052 Decision §5, extended by ADR-0061 Decision §5 for
+ * the Tier-3 per-user case) — never Math.random(), never recomputed per
+ * tick. Spreads simultaneous-due pairs apart across tenants/restarts
+ * without ever changing *whether* a pair is due, only *when it first
+ * becomes* due (see ADR-0052 Decision §5's own monotonicity argument). The
+ * optional `userId` segment additionally spreads different users under the
+ * same tenant/connector apart from each other, preventing a per-user
+ * thundering herd. Omitting `userId` is byte-for-byte identical to the
+ * original two-argument call (backward compatible). A cryptographic hash is
  * used only for its even bit distribution, not for any security property.
  */
-export function jitterFraction(tenantId: string, platformId: string): number {
-  const digest = createHash('sha256').update(`${tenantId}:${platformId}`).digest();
+export function jitterFraction(tenantId: string, platformId: string, userId?: string): number {
+  const key = userId ? `${tenantId}:${platformId}:${userId}` : `${tenantId}:${platformId}`;
+  const digest = createHash('sha256').update(key).digest();
   const bucket = digest.readUInt32BE(0) % 1000;
   return (bucket / 1000) * (2 * JITTER_BOUND) - JITTER_BOUND;
 }
@@ -36,10 +43,23 @@ export function jitterFraction(tenantId: string, platformId: string): number {
 export interface SchedulerDeps {
   listTenants: () => Promise<Array<{ id: string }>>;
   listPollConnectors: () => SocialConnector[];
-  shouldAttemptIngestion: (tenantId: string, platformId: string) => Promise<boolean>;
-  deriveConnectorHealth: (tenantId: string, platformId: string) => Promise<{ lastAttemptAt: string | null }>;
+  shouldAttemptIngestion: (
+    tenantId: string,
+    platformId: string,
+    ownerType?: 'tenant' | 'user',
+    userId?: string
+  ) => Promise<boolean>;
+  deriveConnectorHealth: (
+    tenantId: string,
+    platformId: string,
+    userId?: string
+  ) => Promise<{ lastAttemptAt: string | null }>;
   /** Story 1.14 (ADR-0052 Decision §5b) — status of the pair's single most recent ingestion_runs row, or null if none exists. */
   getMostRecentRunStatus: (tenantId: string, platformId: string) => Promise<IngestionRunStatus | null>;
+  /** Story 1.15 (ADR-0061 Decision §2) — every userId with a real, active connector_user_activations row for this (tenant, platform). */
+  listActiveUserActivations: (tenantId: string, platformId: string) => Promise<string[]>;
+  /** Story 1.15 (ADR-0061 Decision §2) — the Tier-3 in-flight guard, scoped to one user's own runs (Story 1.14's tenant-wide parity). */
+  getMostRecentRunStatusForUser: (tenantId: string, platformId: string, userId: string) => Promise<IngestionRunStatus | null>;
   now: () => number;
   onPollError: (err: unknown, tenantId: string, platformId: string) => void;
 }
@@ -47,9 +67,13 @@ export interface SchedulerDeps {
 const defaultDeps: SchedulerDeps = {
   listTenants: async () => (await listTenants()).map((tenant) => ({ id: tenant.id })),
   listPollConnectors: () => listSocialConnectors().filter((connector) => connector.deliveryMode === 'poll'),
-  shouldAttemptIngestion: (tenantId, platformId) => shouldAttemptIngestion(tenantId, platformId),
-  deriveConnectorHealth: (tenantId, platformId) => deriveConnectorHealth(tenantId, platformId),
+  shouldAttemptIngestion: (tenantId, platformId, ownerType, userId) =>
+    shouldAttemptIngestion(tenantId, platformId, ownerType, userId),
+  deriveConnectorHealth: (tenantId, platformId, userId) => deriveConnectorHealth(tenantId, platformId, undefined, userId),
   getMostRecentRunStatus: (tenantId, platformId) => getMostRecentRunStatus(tenantId, platformId),
+  listActiveUserActivations: (tenantId, platformId) => listActiveUserActivations(tenantId, platformId),
+  getMostRecentRunStatusForUser: (tenantId, platformId, userId) =>
+    getMostRecentRunStatusForUser(tenantId, platformId, userId),
   now: () => Date.now(),
   onPollError: (err, tenantId, platformId) => {
     // eslint-disable-next-line no-console
@@ -61,6 +85,8 @@ export interface SchedulerPairOutcome {
   tenantId: string;
   platformId: string;
   polled: boolean;
+  /** Story 1.15 — present only for a Tier-3 (per-user) outcome; absent for a tenant-wide one. */
+  userId?: string;
 }
 
 /**
@@ -72,6 +98,13 @@ export interface SchedulerPairOutcome {
  * runIngestionAttempt() inside connector.poll() itself, or a genuine raw
  * exception — is caught here and never halts evaluation of any other pair
  * in the same tick.
+ *
+ * Story 1.15 (ADR-0061 Decision §4) adds a third, independent enumeration
+ * level: for every connector exposing `pollUser`, every user with a real,
+ * active `connector_user_activations` row for that (tenant, platform) is
+ * separately considered on their own due check and health, isolated from
+ * both the tenant-wide loop and every other user — see
+ * .claude/skills/live-ingestion-polling-scheduler/SKILL.md.
  */
 export async function runSchedulerTick(overrides: Partial<SchedulerDeps> = {}): Promise<SchedulerPairOutcome[]> {
   const deps: SchedulerDeps = { ...defaultDeps, ...overrides };
@@ -108,6 +141,44 @@ export async function runSchedulerTick(overrides: Partial<SchedulerDeps> = {}): 
         deps.onPollError(err, tenant.id, platformId);
       }
       outcomes.push({ tenantId: tenant.id, platformId, polled });
+
+      // Story 1.15 (ADR-0061 Decision §4) — a third, independent enumeration
+      // level: every user with a real, active connector_user_activations
+      // row for this (tenant, platform) is considered on their own due
+      // check, composing with (never duplicating) the tenant-wide loop
+      // above. Only connectors with pollUser participate — a connector
+      // with only `poll` (tenant-wide) is never looked up here at all.
+      if (connector.pollUser && connector.pollCadenceMs !== undefined) {
+        const userIds = await deps.listActiveUserActivations(tenant.id, platformId);
+        for (const userId of userIds) {
+          let userPolled = false;
+          try {
+            const eligible = await deps.shouldAttemptIngestion(tenant.id, platformId, 'user', userId);
+            if (eligible) {
+              const health = await deps.deriveConnectorHealth(tenant.id, platformId, userId);
+              const lastStartedAt = health.lastAttemptAt ? new Date(health.lastAttemptAt).getTime() : -Infinity;
+              const jitter = jitterFraction(tenant.id, platformId, userId);
+              const due = now - lastStartedAt >= connector.pollCadenceMs * (1 + jitter);
+              if (due) {
+                // Story 1.14 parity, scoped per user (ADR-0061 Decision §2):
+                // a user's own most recent run must have actually finished
+                // before their next cadence-elapsed poll is allowed.
+                const mostRecentStatus = await deps.getMostRecentRunStatusForUser(tenant.id, platformId, userId);
+                if (mostRecentStatus !== 'running') {
+                  await connector.pollUser(tenant.id, userId);
+                  userPolled = true;
+                }
+              }
+            }
+          } catch (err) {
+            // A raw exception for one user must never block another due
+            // user, or the tenant-wide pair, in the same tick (ADR-0061
+            // Decision §4, mirroring the tenant-wide isolation above).
+            deps.onPollError(err, tenant.id, platformId);
+          }
+          outcomes.push({ tenantId: tenant.id, platformId, polled: userPolled, userId });
+        }
+      }
     }
   }
 
