@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBadge, type StatusBadgeVariant, ConfirmModal } from '@/components/ui';
 import { ActivateDeactivateButton } from './ActivateDeactivateButton';
 
@@ -42,6 +42,15 @@ function IconBookOpen() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 7v14" />
       <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+    </svg>
+  );
+}
+
+/** Story 6.23 — Facebook's own icon (the platform's own lowercase-f glyph shape), distinct from GNews's globe even though both share the "blue" colour family. */
+function IconFacebookF() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z" />
     </svg>
   );
 }
@@ -91,9 +100,10 @@ export interface PlatformDef {
   name: string;
   subtitle: string;
   description: string;
-  authMode: 'api_key' | 'none';
+  /** Story 6.23 (ADR-0059) — 'oauth' added for Facebook, this project's first redirect-based connector. */
+  authMode: 'api_key' | 'none' | 'oauth';
   color: 'blue' | 'indigo' | 'purple' | 'emerald' | 'amber';
-  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open';
+  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open' | 'facebook';
   adNotice: 'billing' | 'public' | null;
   credentialFields: CredentialFieldDef[];
   /**
@@ -107,6 +117,15 @@ export interface PlatformDef {
    * since enrichPost.ts only ever reads the tenant-wide scope.
    */
   personalScopeAllowed: boolean;
+  /**
+   * Story 6.23 (ADR-0059 Decision §4) — false suppresses every tenant-wide
+   * connect/activate/disconnect control unconditionally, even for a
+   * tenant_admin session. Optional, defaulting to true (unchanged
+   * behavior) for every existing platform — only Facebook sets this
+   * false, since the backend has no tenant-wide credential path for it
+   * at all (Tier 3-only).
+   */
+  tenantScopeAllowed?: boolean;
 }
 
 export interface CredentialFieldDef {
@@ -123,14 +142,34 @@ export interface ConnectorInitialState {
   connected: boolean;
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
   isActive: boolean;
+  /** Story 6.23 — raw ConnectorStatus.status, so the UI can detect 'reconnect_required' distinctly from ordinary credentialStatus-derived states. */
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | null;
   /** Masked credential hint shown after connection (e.g. first 4 chars) */
   maskedHint: string | null;
+}
+
+/** Story 6.23 — one row of the Facebook OAuth exchange's own returned Page list (core-client.ts's FacebookOAuthExchangeOutcome). */
+export interface FacebookPendingPage {
+  id: string;
+  name: string;
+  category?: string;
 }
 
 interface ConnectorsClientProps {
   platforms: PlatformDef[];
   initialStates: ConnectorInitialState[];
   isTenantAdmin: boolean;
+  /** Story 6.23 — the cached, connected Facebook Page's own name (se_fb_connected_page cookie, read server-side by page.tsx), or null if never connected/cache cleared. */
+  facebookConnectedPageName?: string | null;
+  /**
+   * Story 6.23 — a real, minimal testability seam (the same pattern
+   * PostsFeedClient.tsx's own initialActivePostId already establishes for
+   * this repo's lack of a DOM-interaction test runner): seeds the picker
+   * state directly for a static render. In the real app this is left
+   * undefined and populated client-side by the mount effect's own fetch of
+   * /api/connectors/facebook/oauth/pending, guarded on ?fbConnect=1.
+   */
+  initialFacebookPending?: { sessionToken: string; pages: FacebookPendingPage[] } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,6 +183,7 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
     case 'sparkles-purple':
     case 'sparkles-emerald': return <IconSparkles />;
     case 'book-open':        return <IconBookOpen />;
+    case 'facebook':         return <IconFacebookF />;
   }
 }
 
@@ -151,7 +191,15 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
 // Status badge variant
 // ---------------------------------------------------------------------------
 
+/**
+ * Story 6.23 (Story 2.15 AC7) — 'reconnect_required' takes priority over
+ * every other derivation: a credential-invalidation failure is a distinct
+ * problem from ordinary expiring_soon/expired/revoked credentialStatus
+ * states, and must render its own distinct badge, never fall through to
+ * 'failing'/'inactive'.
+ */
 function platformVariant(state: ConnectorInitialState, platform: PlatformDef): StatusBadgeVariant {
+  if (state.status === 'reconnect_required') return 'reconnect_required';
   if (!state.connected && platform.authMode !== 'none') return 'inactive';
   if (!state.isActive) return 'inactive';
   switch (state.credentialStatus) {
@@ -300,13 +348,118 @@ function ConnectModal({
 }
 
 // ---------------------------------------------------------------------------
+// Facebook Page picker (Story 6.23, ADR-0059 Decision §3/§4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders the Page picker once the OAuth exchange has returned a real
+ * {sessionToken, pages} pending result (see the mount effect in the main
+ * component below). A real, named edge case (AC6): zero returned Pages
+ * shows a specific message, never a blank list or a generic error.
+ */
+function FacebookPagePickerModal({
+  platformName,
+  pending,
+  onClose,
+  onConnected,
+}: {
+  platformName: string;
+  pending: { sessionToken: string; pages: FacebookPendingPage[] };
+  onClose: () => void;
+  onConnected: (page: { id: string; name: string }) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleConfirm() {
+    if (!selectedId) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/connectors/facebook/oauth/select-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: pending.sessionToken, pageId: selectedId }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (response.status === 201 && body.page) {
+        onConnected(body.page);
+        return;
+      }
+      setError(body.error ?? 'Something went wrong while connecting this Page.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-dialog cv-connect-modal" role="dialog" aria-modal="true" aria-labelledby="cv-fb-picker-title">
+        <div className="cv-modal-header">
+          <h3 id="cv-fb-picker-title">
+            {pending.pages.length === 0 ? `Connect ${platformName}` : 'Choose a Facebook Page'}
+          </h3>
+          <button type="button" className="slideover-close-btn" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {pending.pages.length === 0 ? (
+          <p className="cv-modal-empty-state">
+            No Facebook Pages found for this account — you need to be an admin of a Page to connect it.
+          </p>
+        ) : (
+          <>
+            <div className="cv-page-picker-list" role="radiogroup" aria-label="Facebook Pages">
+              {pending.pages.map((page) => (
+                <label key={page.id} className="cv-page-picker-row">
+                  <input
+                    type="radio"
+                    name="fb-page"
+                    value={page.id}
+                    checked={selectedId === page.id}
+                    onChange={() => setSelectedId(page.id)}
+                  />
+                  <span className="cv-page-picker-name">{page.name}</span>
+                  {page.category && <span className="cv-page-picker-category">{page.category}</span>}
+                </label>
+              ))}
+            </div>
+
+            {error && <p role="alert" className="cv-modal-error">{error}</p>}
+
+            <div className="form-actions cv-modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
+                Cancel
+              </button>
+              <button type="button" className="btn btn-primary" onClick={handleConfirm} disabled={submitting || !selectedId}>
+                {submitting ? 'Connecting…' : 'Connect this Page'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
-export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: ConnectorsClientProps) {
+export function ConnectorsClient({
+  platforms,
+  initialStates,
+  isTenantAdmin,
+  facebookConnectedPageName = null,
+  initialFacebookPending = null,
+}: ConnectorsClientProps) {
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [facebookPending, setFacebookPending] = useState<{ sessionToken: string; pages: FacebookPendingPage[] } | null>(
+    initialFacebookPending
+  );
+  const [facebookConnectedPage, setFacebookConnectedPage] = useState<string | null>(facebookConnectedPageName);
 
   const stateMap = new Map(initialStates.map((s) => [s.platformId, s]));
 
@@ -314,10 +467,32 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
   const disconnectingPlatform = disconnectingId ? platforms.find((p) => p.id === disconnectingId) ?? null : null;
   const disconnectingState = disconnectingId ? stateMap.get(disconnectingId) ?? null : null;
 
+  // Story 6.23 — real production path for the picker: the callback route
+  // redirects here with ?fbConnect=1 once it has stashed the OAuth
+  // exchange's own result; this fetches and clears it (pending/route.ts is
+  // single-use by construction). initialFacebookPending (above) is a
+  // static-render testability seam only — this effect never runs under
+  // renderToStaticMarkup, matching PostsFeedClient.tsx's own precedent.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('fbConnect') !== '1') return;
+    fetch('/api/connectors/facebook/oauth/pending')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data) setFacebookPending(data);
+      })
+      .catch(() => undefined);
+  }, []);
+
   async function handleDisconnectConfirm() {
     if (!disconnectingId) return;
     setDisconnecting(true);
-    const ownerType = isTenantAdmin ? 'tenant' : 'user';
+    // Story 6.23 — a tenantScopeAllowed:false platform (Facebook) has no
+    // tenant-wide credential to disconnect at all; defensive even though
+    // no UI path currently offers a Disconnect control for it (see
+    // connector-connect-disconnect/SKILL.md's Known gaps).
+    const ownerType = isTenantAdmin && disconnectingPlatform?.tenantScopeAllowed !== false ? 'tenant' : 'user';
     await fetch(
       `/api/connectors/${encodeURIComponent(disconnectingId)}/disconnect?ownerType=${encodeURIComponent(ownerType)}`,
       { method: 'DELETE' }
@@ -355,7 +530,7 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
       <div className="cv-grid">
         {gridPlatforms.map((platform) => {
           const state = stateMap.get(platform.id) ?? {
-            platformId: platform.id, connected: false, credentialStatus: null, isActive: false, maskedHint: null,
+            platformId: platform.id, connected: false, credentialStatus: null, isActive: false, status: null, maskedHint: null,
           };
           const variant = platformVariant(state, platform);
           const isConnected = platform.authMode === 'none' || state.connected;
@@ -423,7 +598,34 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
 
               {/* Footer actions */}
               <div className="cv-card-footer">
-                {platform.authMode === 'none' ? (
+                {platform.authMode === 'oauth' ? (
+                  /* Story 6.23 (ADR-0059 Decision §3/§4) — Facebook: a real
+                     browser redirect, never a ConnectModal credential-field
+                     submission. reconnect_required takes priority: the
+                     action is always "re-enter the same OAuth flow from the
+                     top" (Story 2.15 AC7), whether never-connected or
+                     credential-invalidated. */
+                  variant === 'reconnect_required' ? (
+                    <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary cv-connect-btn">
+                      Reconnect {platform.name}
+                    </a>
+                  ) : isConnected ? (
+                    <div className="cv-card-footer-left">
+                      {facebookConnectedPage && (
+                        <span className="cv-connected-page-name">Connected: {facebookConnectedPage}</span>
+                      )}
+                      <ActivateDeactivateButton
+                        platformId={platform.id}
+                        ownerType="user"
+                        isActive={false}
+                      />
+                    </div>
+                  ) : (
+                    <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary cv-connect-btn">
+                      Connect {platform.name}
+                    </a>
+                  )
+                ) : platform.authMode === 'none' ? (
                   /* Newswire: no credential, just activation */
                   <>
                     <ActivateDeactivateButton
@@ -437,7 +639,7 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
                   /* Connected: activate/deactivate + disconnect */
                   <>
                     <div className="cv-card-footer-left">
-                      {isTenantAdmin && (
+                      {isTenantAdmin && platform.tenantScopeAllowed !== false && (
                         <ActivateDeactivateButton
                           platformId={platform.id}
                           ownerType="tenant"
@@ -529,6 +731,19 @@ export function ConnectorsClient({ platforms, initialStates, isTenantAdmin }: Co
           confirmVariant="destructive"
           onConfirm={handleDisconnectConfirm}
           onCancel={() => setDisconnectingId(null)}
+        />
+      )}
+
+      {/* Facebook Page Picker (Story 6.23) */}
+      {facebookPending && (
+        <FacebookPagePickerModal
+          platformName={platforms.find((p) => p.id === 'facebook')?.name ?? 'Facebook Page (Owned Feed)'}
+          pending={facebookPending}
+          onClose={() => setFacebookPending(null)}
+          onConnected={(page) => {
+            setFacebookConnectedPage(page.name);
+            setFacebookPending(null);
+          }}
         />
       )}
     </div>

@@ -8,11 +8,13 @@ import { ConnectorStatusClient, type ConnectorStatusRow } from './ConnectorStatu
 interface PlatformDefinition {
   id: string;
   name: string;
-  authMode: 'api_key' | 'none';
+  authMode: 'api_key' | 'none' | 'oauth';
   category: string;
   description: string;
   /** ADR-0028 Decision §1 (Clarification, 2026-08-17) — false for any AIProviderConnector; mirrors ConnectorsClient.tsx's own PlatformDef field. */
   personalScopeAllowed: boolean;
+  /** Story 6.23 (ADR-0059 Decision §4) — false suppresses the tenant-wide ActivateDeactivateButton unconditionally; mirrors ConnectorsClient.tsx's own PlatformDef field. Optional, defaults true. */
+  tenantScopeAllowed?: boolean;
 }
 
 /**
@@ -63,6 +65,16 @@ const PLATFORMS: PlatformDefinition[] = [
     category: 'Ingestion',
     description: 'Tracks edits to a tracked Wikipedia article via the MediaWiki Action API. No credential required.',
     personalScopeAllowed: false,
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook Page (Owned Feed)',
+    authMode: 'oauth',
+    category: 'Ingestion',
+    description: "Ingests your own connected Facebook Page's own posts and engagement (ADR-0059).",
+    // ADR-0059 Decision §4 — Tier 3 (personal) only, no tenant-wide credential path exists on the backend at all.
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
   },
 ];
 

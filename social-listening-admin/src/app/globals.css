@@ -411,7 +411,8 @@ button:disabled {
 }
 
 .status-badge-failing .status-badge-dot,
-.status-badge-suspended .status-badge-dot {
+.status-badge-suspended .status-badge-dot,
+.status-badge-reconnect_required .status-badge-dot {
   background-color: var(--color-status-failing);
 }
 

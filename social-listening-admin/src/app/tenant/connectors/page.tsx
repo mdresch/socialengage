@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { getConnectorStatus } from '@/lib/core-client';
+import { FACEBOOK_CONNECTED_PAGE_COOKIE_NAME } from '@/lib/facebookOAuth';
 import { ConnectorsClient, type PlatformDef, type ConnectorInitialState } from './ConnectorsClient';
 
 /**
@@ -127,6 +128,21 @@ const PLATFORMS: PlatformDef[] = [
     credentialFields: [],
     personalScopeAllowed: false,
   },
+  {
+    id: 'facebook',
+    name: 'Facebook Page (Owned Feed)',
+    subtitle: 'OAuth Ingestion Source',
+    description: "Ingests your own connected Facebook Page's own posts and engagement — not public listening (ADR-0059).",
+    authMode: 'oauth',
+    color: 'blue',
+    icon: 'facebook',
+    adNotice: null,
+    credentialFields: [],
+    // ADR-0059 Decision §4 — Tier 3 (personal, self-activated) only, no
+    // tenant-wide credential path exists on the backend at all.
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
+  },
 ];
 
 /**
@@ -144,6 +160,8 @@ async function loadState(platform: PlatformDef): Promise<ConnectorInitialState> 
       connected,
       credentialStatus: status.credentialStatus,
       isActive: status.isActive,
+      // Story 6.23 — the raw status, so platformVariant() can detect 'reconnect_required' distinctly.
+      status: status.status,
       // maskedHint — core doesn't return the masked key today; placeholder for future.
       maskedHint: null,
     };
@@ -153,6 +171,7 @@ async function loadState(platform: PlatformDef): Promise<ConnectorInitialState> 
       connected: false,
       credentialStatus: null,
       isActive: false,
+      status: null,
       maskedHint: null,
     };
   }
@@ -171,12 +190,28 @@ export default async function ConnectorsPage() {
   const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
   const initialStates = await Promise.all(PLATFORMS.map(loadState));
 
+  // Story 6.23 — a purely cosmetic, admin-side-only cache of the connected
+  // Facebook Page's own name (GET /v1/connectors/:platformId has no field
+  // for this today — see connector-connect-disconnect/SKILL.md's Known
+  // gaps). A read-only cookie parse here; the cookie itself is set by the
+  // select-page proxy route, never by this Server Component.
+  let facebookConnectedPageName: string | null = null;
+  const cachedPageRaw = jar.get(FACEBOOK_CONNECTED_PAGE_COOKIE_NAME)?.value;
+  if (cachedPageRaw) {
+    try {
+      facebookConnectedPageName = (JSON.parse(cachedPageRaw) as { name?: string }).name ?? null;
+    } catch {
+      facebookConnectedPageName = null;
+    }
+  }
+
   return (
     <main>
       <ConnectorsClient
         platforms={PLATFORMS}
         initialStates={initialStates}
         isTenantAdmin={isTenantAdmin}
+        facebookConnectedPageName={facebookConnectedPageName}
       />
     </main>
   );

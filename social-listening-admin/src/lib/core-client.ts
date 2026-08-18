@@ -282,7 +282,8 @@ export async function getUserAccessHistory(userId: string): Promise<AccessHistor
 }
 
 export interface ConnectorStatus {
-  status: 'healthy' | 'degraded' | 'failing' | 'disconnected';
+  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a credential-invalidation failure, distinct from ordinary rate-limit/network 'failing'. */
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
   lastSuccessfulFetchAt: string | null;
   lastAttemptAt: string | null;
   consecutiveFailures: number;
@@ -403,6 +404,66 @@ export async function deactivatePlatform(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userId ? { ownerType, userId } : { ownerType }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookOAuthExchangeOutcome {
+  status: number;
+  body: {
+    sessionToken?: string;
+    pages?: { id: string; name: string; category?: string }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.23 (ADR-0059 Decision §3/§4) — forwards the code Facebook's own
+ * redirect handed to our callback route to social-listening-core's real
+ * OAuth-exchange endpoint (Story 2.15), which does the actual Meta token
+ * exchange and /me/accounts call server-side. This function never talks to
+ * Meta directly — Meta itself is core's own boundary, not this repo's.
+ */
+export async function exchangeFacebookOAuthCode(
+  code: string,
+  redirectUri: string
+): Promise<FacebookOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/facebook/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookSelectPageOutcome {
+  status: number;
+  body: {
+    platformId?: string;
+    ownerType?: string;
+    page?: { id: string; name: string };
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.23 (ADR-0059 Decision §4) — completes the Page-picker step
+ * (`POST /v1/connectors/facebook/oauth/select-page`, Story 2.15). Always
+ * Tier 3/personal scope on the backend — there is no `ownerType` parameter
+ * here to choose, unlike `connectPlatform()`.
+ */
+export async function selectFacebookPage(
+  sessionToken: string,
+  pageId: string
+): Promise<FacebookSelectPageOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/facebook/oauth/select-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionToken, pageId }),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };

@@ -8,7 +8,9 @@ export type StatusBadgeVariant =
   | 'suspended'
   | 'inactive'
   | 'verified'
-  | 'pending';
+  | 'pending'
+  /** Story 6.23 (Story 2.15 AC7, ADR-0059 Decision §4) — a credential-invalidation failure, distinct from ordinary 'failing' (rate-limit/network). */
+  | 'reconnect_required';
 
 export interface StatusBadgeProps {
   variant: StatusBadgeVariant;
@@ -25,6 +27,7 @@ const DEFAULT_LABELS: Record<StatusBadgeVariant, string> = {
   inactive: 'Paused',
   verified: 'Verified',
   pending: 'Pending',
+  reconnect_required: 'Reconnect Required',
 };
 
 /**

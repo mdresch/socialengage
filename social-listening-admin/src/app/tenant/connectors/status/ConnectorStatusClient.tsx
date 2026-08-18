@@ -100,11 +100,13 @@ export interface ConnectorStatusRow {
   platform: {
     id: string;
     name: string;
-    authMode: 'api_key' | 'none';
+    authMode: 'api_key' | 'none' | 'oauth';
     category: string;
     description: string;
     /** ADR-0028 Decision §1 (Clarification, 2026-08-17) — false for any AIProviderConnector. */
     personalScopeAllowed: boolean;
+    /** Story 6.23 (ADR-0059 Decision §4) — false suppresses the tenant-wide ActivateDeactivateButton unconditionally. Optional, defaults true. */
+    tenantScopeAllowed?: boolean;
   };
   isActive: boolean;
   health: ConnectorStatus | null;
@@ -119,7 +121,15 @@ interface ConnectorStatusClientProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Story 6.23 (Story 2.15 AC7, ADR-0059 Decision §4) — 'reconnect_required'
+ * takes priority over the isActive check: a credential-invalidation
+ * failure is real signal worth surfacing distinctly even while the
+ * connector is still nominally "active," never silently swallowed into
+ * 'inactive' the way an unhandled default case would.
+ */
 function deriveVariant(row: ConnectorStatusRow): StatusBadgeVariant {
+  if (row.health?.status === 'reconnect_required') return 'reconnect_required';
   if (!row.isActive) return 'inactive';
   switch (row.health?.status) {
     case 'healthy':     return 'healthy';
@@ -132,6 +142,7 @@ function deriveVariant(row: ConnectorStatusRow): StatusBadgeVariant {
 
 function cardBorderClass(row: ConnectorStatusRow): string {
   if (!row.health) return 'cs-card';
+  if (row.health.status === 'reconnect_required') return 'cs-card cs-card-failing';
   if (row.health.status === 'failing')  return 'cs-card cs-card-failing';
   if (row.health.status === 'degraded') return 'cs-card cs-card-degraded';
   return 'cs-card';
@@ -226,6 +237,16 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
                 </div>
 
                 <div className="cs-card-actions">
+                  {/* Story 6.23 (Story 2.15 AC7) — reconnect_required's own
+                     action targets the same real OAuth entry point as the
+                     connect screen's own Reconnect control, re-entering
+                     the flow from the top rather than a dead end. */}
+                  {variant === 'reconnect_required' && (
+                    <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary btn-sm cs-reconnect-btn">
+                      Reconnect
+                    </a>
+                  )}
+
                   <button
                     type="button"
                     disabled={isPinging || !isActive}
@@ -237,7 +258,7 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
                     {isPinging ? 'Pinging…' : 'Test Ping'}
                   </button>
 
-                  {isTenantAdmin && (
+                  {isTenantAdmin && platform.tenantScopeAllowed !== false && (
                     <ActivateDeactivateButton
                       platformId={platform.id}
                       ownerType="tenant"

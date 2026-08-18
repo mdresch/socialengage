@@ -82,22 +82,26 @@ describe('Story 6.21 — Wikipedia connector exposed in the Tenant Admin UI', ()
   });
 
   describe('AC2: ConnectorsClient.tsx gains a new, distinct icon/color pair', () => {
-    it('PlatformDef icon/color unions each gain exactly one new value beyond the existing four', () => {
+    it('PlatformDef icon union gains a new, distinct value; color union is unaffected (Wikipedia reused no existing color)', () => {
       const source = readSrc('app', 'tenant', 'connectors', 'ConnectorsClient.tsx');
       const colorMatch = source.match(/color:\s*'blue'\s*\|\s*'indigo'\s*\|\s*'purple'\s*\|\s*'emerald'\s*\|\s*'(\w+)';/);
       expect(colorMatch).not.toBeNull();
       const newColor = colorMatch![1];
       expect(['blue', 'indigo', 'purple', 'emerald']).not.toContain(newColor);
 
-      const iconMatch = source.match(/icon:\s*'globe'\s*\|\s*'radio'\s*\|\s*'sparkles-purple'\s*\|\s*'sparkles-emerald'\s*\|\s*'([\w-]+)';/);
-      expect(iconMatch).not.toBeNull();
-      const newIcon = iconMatch![1];
-      expect(['globe', 'radio', 'sparkles-purple', 'sparkles-emerald']).not.toContain(newIcon);
-
-      // The switch in PlatformIcon() must actually handle the new value —
-      // TypeScript's own exhaustiveness check on the switch already
-      // enforces this at compile time, but confirmed structurally too.
-      expect(source).toContain(`case '${newIcon}':`);
+      // 2026-08-18 (Story 6.23, ADR-0059): the icon union's own trailing-
+      // single-new-value regex is now stale — Facebook added a sixth icon
+      // value ('facebook') after this story's own 'book-open', so the
+      // union no longer ends in exactly one new member past the original
+      // four. Extended, not weakened: this still proves the union contains
+      // this story's own real 'book-open' value, distinct from the
+      // original four, and that PlatformIcon()'s switch actually handles
+      // it — the same two things the original assertion proved, just no
+      // longer assuming 'book-open' is the union's own final member.
+      expect(source).toMatch(
+        /icon:\s*'globe'\s*\|\s*'radio'\s*\|\s*'sparkles-purple'\s*\|\s*'sparkles-emerald'\s*\|\s*'book-open'\s*\|/
+      );
+      expect(source).toContain(`case 'book-open':`);
     });
 
     it('globals.css defines matching icon-background and subtitle-color rules for the new color', () => {
