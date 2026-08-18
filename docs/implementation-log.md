@@ -2292,6 +2292,26 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 **A deliberately minimal fix, not a pagination redesign**: rather than reversing the backend's own `ORDER BY seq ASC` to `DESC` (which would flip the cursor's own keyset comparison direction — a real, non-trivial change to ADR-0011's already-contract-verified mechanism), `fetchAllPosts()` reverses the already-fully-fetched, in-memory array once, client-side, after paging completes. The backend's pagination mechanism, cursor encoding, and `seq ASC` ordering are all completely unchanged. `PostsFeedClient.tsx` has no `.sort()` of its own (confirmed directly, not assumed) — order is preserved end to end through its existing `.filter()`/`.slice()` derivation, proven by a test showing a filtered/searched result set keeps the same relative newest-first order as the input.
 
+---
+
+## 2026-08-18, later the same day — Story 6.26 — social-listening-admin@03c37c9
+
+- **Full commit:** `03c37c91c3ffabfd69c15bb7339abf9b2e77d8fd`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.26 / No new ADR — ordinary CRUD/UI-surface fix, same category Story 6.21/6.22 already established for the identical bug on two other screens
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts (new, 6/6)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md (updated)
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.25.post-feed-newest-first.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx
+- **Full suite at merge:** PASS (34/34 suites, 499/499 tests)
+
+**Requested directly by Menno, 2026-08-18**, after real Wikipedia posts started landing in the feed (following this session's credential fix) but had no way to be selected in the Provider filter. Confirmed directly: the filter was three hardcoded `<option>` elements (`gnews`/`newswire`/`tenant-owned-feed`) — the third real instance of the identical hardcoded-platform-list bug this project has now found (Story 6.21's `PLATFORMS` array, Story 6.22's `SOCIAL_PLATFORMS` list). Menno's own framing ("I would expect the connector to become available automatically") named the actual fix directly.
+
+`providerOptions` now derives from the distinct `provider` values present in `flat` (the already-fetched full post set, `extractProviderBadge()`'s own existing output) — a small `PROVIDER_LABELS` lookup supplies a nicer display label where known, falling back to the raw `providerId` for anything unmapped, so a future connector is never silently hidden for lack of a label entry. Sorted alphabetically by label for a stable render order.
+
+**Two existing contracts needed a justified, dated rewrite (regression, not rewrite), both found during this story's own full-suite validation, not assumed clean:**
+- Story 6.11's 2026-08-17 healing-note test grepped source for a literal `<option value="tenant-owned-feed">` string — gone once options are generated from data, not hardcoded. Rewritten to render the component with a real tenant-owned-feed-sourced post and assert the real rendered option, preserving the original intent (the hyphenated id, never the underscored form).
+- Story 6.25's "no `.sort()` anywhere in this file" check was too broad — this story adds a real, legitimate `.sort()` of `providerOptions` (alphabetizing filter labels), unrelated to the post-list ordering that story actually cares about. Narrowed to check `filteredPosts`'s own derivation specifically.
+
 **Also found live, both traceability files were already stale before this story touched them**: `docs/implementation-plan.md`'s Phase 3 row never listed Story 6.21 at all despite it being built the day before; corrected in the same pass alongside adding 6.22, per this project's own "correct staleness found along the way, don't leave it for later" convention.
 
 **Explicitly out of scope, named not solved**: `tenant-owned-feed` (Story 2.11, also a real `SocialConnector` missing from this same `SOCIAL_PLATFORMS` list) — its "connected" state is per-domain/multi-feed (Story 6.20), a materially different shape than the simple credential-or-none boolean this list already handles for the other three platforms; a real, separate, still-open gap.

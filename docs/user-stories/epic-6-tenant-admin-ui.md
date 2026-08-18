@@ -604,7 +604,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.26 — Post feed's Provider filter derives its options from real data, not a hardcoded list
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-admin@03c37c9
 
 **Source:** No new ADR needed — an ordinary CRUD/UI-surface fix, the same category Story 6.21/6.22 already established for the identical bug on two other screens. **Status:** Ready.
 
