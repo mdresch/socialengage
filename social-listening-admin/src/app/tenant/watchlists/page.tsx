@@ -26,6 +26,7 @@ import { WatchlistsClient } from './WatchlistsClient';
 const SOCIAL_PLATFORMS: { id: string; name: string; authMode: 'api_key' | 'none' }[] = [
   { id: 'gnews', name: 'GNews', authMode: 'api_key' },
   { id: 'newswire', name: 'Newswire', authMode: 'none' },
+  { id: 'wikipedia', name: 'Wikipedia', authMode: 'none' },
 ];
 
 async function loadConnectedPlatforms(): Promise<{ id: string; name: string }[]> {
