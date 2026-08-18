@@ -2221,3 +2221,23 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 **A real, discovered constraint shaped the design, not a fresh choice**: Story 2.13's own passing contract calls `pollWikipedia(tenantId, TEST_ARTICLE)` with an explicit query — removing the parameter would have rewritten a passing contract, forbidden by this project's own "regression, not rewrite" hard rule. `query` is therefore kept as an *optional* override (unchanged behavior when supplied); only the **omitted-query path** — the one real production call site has always taken — now derives discovery from the tenant's own active watchlists targeting `wikipedia` instead of falling back to any shared literal. A new, unexported `buildDiscoveryQueries()` helper builds one query per `keyword`/`hashtag`/`account`-typed watchlist from its own `terms` (space-joined); `boolean`-typed watchlists are deliberately skipped for discovery (real AST-to-CirrusSearch operator translation remains ADR-0042's own unverified open question) but stay fully evaluated for event-matching once content is discovered another way. A tenant with zero matching watchlists now performs zero discovery searches, rather than silently searching someone else's topic.
 
 **GNews's identical, separately-tracked `DEFAULT_QUERY` gap (`pollGNewsSearch.ts`) is untouched by this story** — named explicitly as out of scope in Story 2.14's own text, not silently left unmentioned.
+
+---
+
+## 2026-08-18, later the same day — Story 6.22 — social-listening-admin@8182706
+
+- **Full commit:** `8182706d5f57a8fcc9ad8f5d680ec4c6e9fbc402`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.22 / Story 2.13's own real, generic `SocialConnector` (no new ADR — same category Story 6.21 already established)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.22.wikipedia-watchlist-platform-source.contract.test.ts (new, 5/5)
+- **SKILL.md:** social-listening-admin/.claude/skills/watchlist-management/SKILL.md (updated)
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.22.wikipedia-watchlist-platform-source.contract.test.ts, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Full suite at merge:** PASS (32/32 suites, 488/488 tests)
+
+**Found live immediately after Story 2.14 shipped, when Menno tried to actually point a watchlist at the Wikipedia connector and couldn't.** Confirmed directly: `tenant/watchlists/page.tsx`'s own `SOCIAL_PLATFORMS` constant is a separate, independently-maintained hardcoded list from `tenant/connectors/page.tsx`'s `PLATFORMS` array (`watchlist-management/SKILL.md`'s own "Governing decisions" — deliberately narrower, real `SocialConnector` platforms only, not AI enrichment providers). It still read `gnews`/`newswire` only — correct on 2026-08-12 when Story 6.4 was rebuilt, the day before Wikipedia existed as a real `SocialConnector` at all (Story 2.13, built 2026-08-17), and never updated since. Story 6.21 (2026-08-18) had already added Wikipedia to the *connectors* screen's own separate `PLATFORMS` array, but that's a different file entirely — this was the second, still-missing half of the same underlying gap.
+
+**One-line fix, proven structurally rather than assumed safe**: `SOCIAL_PLATFORMS` gains a `{ id: 'wikipedia', name: 'Wikipedia', authMode: 'none' }` entry, identically shaped to the existing `newswire` entry. `WatchlistForm.tsx` and `WatchlistRow.tsx` needed zero code change — both already render every `connectedPlatforms` entry generically (no per-platform-id branch anywhere in either file) — the contract proves this directly rather than trusting it, asserting no `platform.id === 'wikipedia'`-shaped branch was added to either file.
+
+**Also found live, both traceability files were already stale before this story touched them**: `docs/implementation-plan.md`'s Phase 3 row never listed Story 6.21 at all despite it being built the day before; corrected in the same pass alongside adding 6.22, per this project's own "correct staleness found along the way, don't leave it for later" convention.
+
+**Explicitly out of scope, named not solved**: `tenant-owned-feed` (Story 2.11, also a real `SocialConnector` missing from this same `SOCIAL_PLATFORMS` list) — its "connected" state is per-domain/multi-feed (Story 6.20), a materially different shape than the simple credential-or-none boolean this list already handles for the other three platforms; a real, separate, still-open gap.
