@@ -631,7 +631,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Source:** ADR-0060 (Accepted 2026-08-18) · **Status:** Ready.
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-admin@b58b323 (core half: social-listening-core@b58b323)
 
 **Named directly by Menno, 2026-08-18**, while live-testing Story 6.23's real Page picker: he administers many real Facebook Pages, but the tenant's own license seat count (max 5) makes "have a different team member connect each Page" — the only path Story 6.23 currently supports — impractical at his actual scale, verbatim: *"I truly have many many pages i just dont have the seat count max 5 to load all the pages by a different user. Leave it for now and a new story to follow."* ADR-0060 was then drafted at his direct request ("could you please draft the ADR for multiple Facebook Pages"), revised in place once against a four-point external-review pass, and accepted the same day, verbatim: *"yes and i can now Approve the ADR 00060"*. This story expands ADR-0060's own Decision §1–§6 into real, buildable Acceptance Criteria — it does not decide anything ADR-0060 itself left undecided (see "Explicitly out of scope" below).
 
