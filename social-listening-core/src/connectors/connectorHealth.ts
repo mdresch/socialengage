@@ -1,7 +1,17 @@
 import { withTenant } from '../db/withTenant';
 import { isConnectorActive, ConnectorActivationOwnerType } from './connectorActivationStore';
 
-export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected';
+/**
+ * Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a
+ * credential-class failure (password change, admin removal, grant
+ * revocation — anything Meta returns as a 401/403 for) on the most recent
+ * run. Distinct from 'failing': a rate-limit/network blip is something the
+ * connector will recover from on its own; a revoked OAuth grant will not,
+ * no matter how many times it's retried, and needs the connecting
+ * individual to actually reconnect (ADR-0059 Decision §4's own named silent-
+ * failure problem this status exists to surface honestly).
+ */
+export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
 export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
 
 export interface ConnectorHealth {
@@ -42,6 +52,7 @@ interface IngestionRunRow {
   completed_at: Date | null;
   error_summary: string | null;
   retryable: boolean | null;
+  is_credential_failure: boolean | null;
 }
 
 /**
@@ -56,7 +67,7 @@ export async function deriveConnectorHealth(
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
     const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary, retryable FROM ingestion_runs
+      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
        WHERE platform_id = $1 ORDER BY started_at DESC`,
       [platformId]
     );
@@ -110,12 +121,29 @@ export async function deriveConnectorHealth(
       recentAttempts >= RATE_ATTEMPT_FLOOR && recentFailures / recentAttempts >= RATE_FAILURE_THRESHOLD;
     const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
 
+    /**
+     * Story 2.15 (ADR-0059 Decision §4) — 'reconnect_required' overrides
+     * the ordinary rate/ceiling-derived status when the single most recent
+     * run (runs[0], already ordered DESC) was a credential-class failure —
+     * but every other field (consecutiveFailures, recentFailures/Successes,
+     * lastSuccessfulFetchAt) is still computed by the exact same loop
+     * above, unchanged. A prior version of this derivation short-circuited
+     * before that loop ran at all, hardcoding consecutiveFailures to 0 —
+     * a real, found-live regression (Story 1.13's own GNews credential-
+     * failure test, whose missing-credential path is *also* http_401,
+     * expects consecutiveFailures to still increment normally). Overriding
+     * only the label, never bypassing the counting, is what keeps that
+     * already-established behavior intact for every connector, Facebook
+     * included.
+     */
     const status: ConnectorHealthStatus =
-      rateFailing || ceilingFailing
-        ? 'failing'
-        : recentFailures > 0 && recentSuccesses > 0
-          ? 'degraded'
-          : 'healthy';
+      runs[0].status === 'failed' && runs[0].is_credential_failure === true
+        ? 'reconnect_required'
+        : rateFailing || ceilingFailing
+          ? 'failing'
+          : recentFailures > 0 && recentSuccesses > 0
+            ? 'degraded'
+            : 'healthy';
 
     return {
       status,

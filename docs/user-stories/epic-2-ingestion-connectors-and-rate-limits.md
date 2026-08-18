@@ -291,6 +291,8 @@
 
 ## Story 2.15 — Facebook connector: tenant's own connected Page, posts only, Tier 3 credential
 
+**Built:** not yet
+
 **Source:** ADR-0059 (Accepted 2026-08-18) · **Status:** Ready — a real, unresolved precondition named up front, not a formality: ADR-0059 Decision §3 found that onboarding any real, unaffiliated tenant's Page requires SocialEngage's own registered Meta App to clear Business Verification and pass permission-by-permission App Review (`pages_show_list`, `pages_read_engagement`), neither of which is confirmed achievable for a solo-developer project — App Review approval is a discretionary human review, not a mechanical check (ADR-0059's own review-round addition). This story's own contract can be built and proven against a Menno-administered test Page under Standard Access (the degenerate, no-App-Review case ADR-0059 Decision §3 itself names) without either gate being cleared first; **onboarding any real tenant's Page beyond that test case is blocked on Business Verification/App Review succeeding, separately from this story's own build-and-test completion.** Named here rather than silently assumed resolved.
 
 **As a** Tenant-Admin or Tenant User who personally administers a Facebook Page,

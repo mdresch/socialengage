@@ -1,0 +1,176 @@
+import { SocialConnector } from '../types';
+import { ClassifiableError } from '../../ingestion/errorClassification';
+
+export const FACEBOOK_PROVIDER_ID = 'facebook';
+
+/**
+ * ADR-0059 Decision §4 — verified directly against developers.facebook.com's
+ * own Access Token Guide. v21.0 confirmed current/stable at drafting time
+ * (2026-08-18); bump alongside a real API-version deprecation notice, not
+ * speculatively.
+ */
+const GRAPH_API_VERSION = 'v21.0';
+const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
+
+export interface FacebookPagePost {
+  id: string;
+  message?: string;
+  created_time: string;
+  permalink_url?: string;
+}
+
+interface FacebookCredential {
+  pageId: string;
+  pageAccessToken: string;
+  pageName: string;
+}
+
+/**
+ * ADR-0059 Decision §4 — the stored credential is a JSON string
+ * {pageId, pageAccessToken, pageName}, the same "opaque single string,
+ * multi-part JSON inside it" pattern azureAiLanguageConnector.ts/
+ * azureOpenAiConnector.ts already established (ADR-0014, no new storage
+ * pattern). A malformed/incomplete credential is a credential-class
+ * failure (http_401), matching every other connector's own treatment.
+ */
+export function parseFacebookCredential(credential: string): FacebookCredential {
+  let parsed: Partial<FacebookCredential>;
+  try {
+    parsed = JSON.parse(credential) as Partial<FacebookCredential>;
+  } catch {
+    throw new ClassifiableError(
+      'http_401',
+      'Facebook credential is not valid JSON (expected {pageId, pageAccessToken, pageName}).'
+    );
+  }
+  if (!parsed.pageId || !parsed.pageAccessToken) {
+    throw new ClassifiableError('http_401', 'Facebook credential is missing pageId or pageAccessToken.');
+  }
+  return parsed as FacebookCredential;
+}
+
+function classifyResponse(response: Response, context: string): void {
+  if (response.status === 401) throw new ClassifiableError('http_401', `Facebook returned 401 (${context})`);
+  if (response.status === 403) throw new ClassifiableError('http_403', `Facebook returned 403 (${context})`);
+  if (response.status === 429) throw new ClassifiableError('rate_limit', `Facebook returned 429 (${context})`);
+  if (response.status >= 500) throw new ClassifiableError('http_5xx', `Facebook returned ${response.status} (${context})`);
+  // Reuses 'network' for the same reason every other connector's own
+  // adjacent generic-4xx branch does (project-wide convention for "a
+  // generic rejection from a real provider", confirmed via direct grep
+  // across gnewsConnector.ts/newswireConnector.ts/azureOpenAiConnector.ts/
+  // tenantOwnedFeedConnector.ts/wikipediaConnector.ts/azureAiLanguageConnector.ts
+  // — Story 2.16's own corrected doc comment) — not because 'network' is
+  // non-retryable (it is retryable; this does not change that).
+  if (!response.ok) throw new ClassifiableError('network', `Facebook returned ${response.status} (${context})`);
+}
+
+interface FacebookApiError {
+  error?: { code: number; type: string; message: string };
+}
+
+/**
+ * Graph API's own convention (verified directly, developers.facebook.com):
+ * an invalid/expired token can return a real HTTP 200 with an {error:{...}}
+ * body for some error classes — checked explicitly, the same "can't be
+ * caught by status code alone" treatment wikipediaConnector.ts's own
+ * mediaWikiFetch() already established for MediaWiki's equivalent case.
+ */
+async function graphApiFetch(url: string, context: string): Promise<Record<string, unknown>> {
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (err) {
+    throw new ClassifiableError('network', `Failed to reach Facebook Graph API (${context}): ${(err as Error).message}`);
+  }
+
+  classifyResponse(response, context);
+
+  const body = (await response.json()) as FacebookApiError;
+  if (body.error) {
+    const code = body.error.code;
+    if (code === 190) throw new ClassifiableError('http_401', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
+    throw new ClassifiableError('network', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
+  }
+  return body as Record<string, unknown>;
+}
+
+/**
+ * ADR-0059 Decision §2 — the Page's own published posts only, no comments,
+ * no mentions (Decision §5's deferred third-party author-rights question).
+ * `fields` deliberately requests only what normalize()/Author-modeling
+ * actually consume — never a broader field set that could pull in
+ * comment-shaped data incidentally.
+ */
+export async function fetchFacebookPagePosts(pageId: string, pageAccessToken: string, limit = 25): Promise<FacebookPagePost[]> {
+  const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=id,message,created_time,permalink_url&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
+  const body = await graphApiFetch(url, 'feed');
+  const data = (body as { data?: FacebookPagePost[] }).data;
+  return Array.isArray(data) ? data : [];
+}
+
+export interface FacebookPageMetadata {
+  id: string;
+  name: string;
+  fan_count?: number;
+}
+
+/** ADR-0059 Decision §5 — the Page's own name/fan count, for Author.displayName/followerCount. */
+export async function fetchFacebookPageMetadata(pageId: string, pageAccessToken: string): Promise<FacebookPageMetadata> {
+  const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}?fields=id,name,fan_count&access_token=${encodeURIComponent(pageAccessToken)}`;
+  const body = await graphApiFetch(url, 'page metadata');
+  return body as unknown as FacebookPageMetadata;
+}
+
+/**
+ * ADR-0059 (Story 2.15) — Facebook connector: a tenant's own connected
+ * Page's own posts only, Tier 3 (user-bound) credential. See
+ * .claude/skills/facebook-connector/SKILL.md.
+ *
+ * Deliberately has no `.poll`/`.pollCadenceMs` properties — the live
+ * ingestion-polling scheduler (ADR-0052) only enumerates ownerType:'tenant'
+ * activations, and this connector is Tier-3-only by design (ADR-0059
+ * Decision §4), so it can never have one. Real Tier-3 scheduler support
+ * (ADR-0052 Decision §6's own already-named, not-yet-built future shape —
+ * poll(tenantId, userId), a RequestGate key of (tenantId, userId,
+ * providerId)) is a real, separate gap this story does not close — see
+ * this connector's own SKILL.md Known gaps. `deliveryMode: 'poll'` still
+ * describes this connector's real transport shape (it fetches on request,
+ * not push); pollScheduler.ts's own `if (connector.poll && ...)` guard
+ * safely skips any connector with no `.poll` property, so registering
+ * this connector without one is not a latent crash risk.
+ */
+export const facebookConnector: SocialConnector = {
+  providerId: FACEBOOK_PROVIDER_ID,
+  authMode: 'oauth',
+  deliveryMode: 'poll',
+
+  /**
+   * ADR-0059 Decision §4 — the real, confirmed ceiling (4,800 x the Page's
+   * own Engaged Users, per rolling 24-hour window) is per-Page dynamic;
+   * ProviderConnector.getRateLimitConfig() is synchronous/zero-arg, with no
+   * credential/tenant context to resolve a specific Page's own Engaged
+   * Users at this call site. This is an explicit, conservative, flat
+   * placeholder — not the real per-Page number — sized for a small
+   * business Page rather than a drop-in reuse of any other connector's own
+   * flat ceiling. Revisit once a real per-connector-instance rate-limit
+   * shape exists (named, not designed, in this ADR's own Open Questions).
+   */
+  getRateLimitConfig: () => ({ requestsPerWindow: 200, windowSeconds: 24 * 60 * 60 }),
+
+  normalize: (rawItem) => {
+    const post = rawItem as FacebookPagePost & { pageId: string };
+    return {
+      externalId: post.id,
+      authorExternalId: post.pageId,
+      publishedAt: post.created_time,
+      rawPayload: post,
+    };
+  },
+
+  // ADR-0059 Decision §1/§6 — no native search/query surface exists on
+  // Facebook's current Graph API (the load-bearing finding this ADR's own
+  // feasibility research made) — declared empty, matching, watchlist
+  // matching falls back to whole-post-fetch matching, the same fallback
+  // every connector to date uses for anything unsupported.
+  supportedQueryFeatures: [],
+};

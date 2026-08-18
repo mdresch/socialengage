@@ -133,6 +133,7 @@ export async function runIngestionAttempt(
             postsSkipped: 0,
             errorSummary,
             retryable: isRetryable(err.kind),
+            isCredentialFailure: isCredentialError(err.kind),
           });
           return finish({ runId: run.id, status: 'failed', errorSummary });
         }
@@ -154,6 +155,7 @@ export async function runIngestionAttempt(
           postsSkipped: 0,
           errorSummary,
           retryable: isRetryable(err.kind),
+          isCredentialFailure: isCredentialError(err.kind),
         });
         return finish({ runId: run.id, status: 'failed', errorSummary });
       }

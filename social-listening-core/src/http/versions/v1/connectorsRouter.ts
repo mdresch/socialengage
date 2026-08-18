@@ -79,6 +79,22 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
 
   const platformId = req.params.platformId;
 
+  // Story 2.15 (ADR-0059 Decision §4) — an authMode:'oauth' platform has
+  // no valid client-supplied "credential" string this generic endpoint
+  // could accept (its credential is assembled server-side from a real
+  // OAuth token exchange, never handed to us directly) — and, for
+  // Facebook specifically, this is also what actually prevents a Tier-2
+  // bypass of its Tier-3-only rule, since this endpoint has no other
+  // mechanism to enforce that. Rejected for both ownerType values, not
+  // just 'tenant' — there is no generic-connect path for this auth mode
+  // at all; use the platform's own dedicated OAuth router instead.
+  if (getSocialConnector(platformId)?.authMode === 'oauth') {
+    res.status(400).json({
+      error: 'This platform uses OAuth and must be connected via its own dedicated OAuth flow, not this generic endpoint.',
+    });
+    return;
+  }
+
   if (ownerType === 'user' && forbidsUserScope(platformId)) {
     res.status(400).json({
       error: "ownerType 'user' is not valid for this platform — no personal credential is possible (ADR-0028).",

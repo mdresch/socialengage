@@ -5,6 +5,7 @@ import { postsRouter } from './postsRouter';
 import { topicsRouter } from './topicsRouter';
 import { connectorsRouter } from './connectorsRouter';
 import { tenantOwnedFeedRouter } from './tenantOwnedFeedRouter';
+import { facebookOAuthRouter } from './facebookOAuthRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
@@ -65,6 +66,16 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
    * Story 2.10's own no-core-path-edit requirement.
    */
   v1Router.use('/connectors/tenant-owned-feed', authMiddleware, tenantOwnedFeedRouter);
+
+  /**
+   * Story 2.15 (ADR-0059) — mounted BEFORE the generic /connectors router
+   * below, the same "more specific path first" reason as tenant-owned-feed
+   * above: its own /connectors/facebook/oauth/* paths must be intercepted
+   * here, not fall through to connectorsRouter's generic
+   * /:platformId/connect with 'facebook' bound as platformId (which
+   * rejects it outright — see that router's own authMode:'oauth' guard).
+   */
+  v1Router.use('/connectors/facebook/oauth', authMiddleware, facebookOAuthRouter);
 
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);

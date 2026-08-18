@@ -60,6 +60,7 @@ import { pollNewswireFeeds } from '../../src/connectors/newswire/pollNewswireFee
 import { TENANT_OWNED_FEED_PROVIDER_ID } from '../../src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector';
 import { pollTenantOwnedFeed } from '../../src/connectors/tenantOwnedFeed/pollTenantOwnedFeed';
 import { WIKIPEDIA_PROVIDER_ID } from '../../src/connectors/wikipedia/wikipediaConnector';
+import { FACEBOOK_PROVIDER_ID } from '../../src/connectors/facebook/facebookConnector';
 import { bootstrapConnectors } from '../../src/connectors/bootstrapConnectors';
 import { SocialConnector } from '../../src/connectors/types';
 import {
@@ -129,8 +130,21 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
       // stated purpose ("registers every real connector exactly once"),
       // not weakened. Every other assertion in this file targets a
       // specific connector by id and is unaffected by a new one existing.
+      //
+      // 2026-08-18 (Story 2.15, ADR-0059): a fifth real connector
+      // (Facebook) was registered — extended the same way. Facebook is
+      // Tier-3-only (no tenant-wide credential path), so its own
+      // registered poll() wrapper is structurally unreachable via this
+      // scheduler today (shouldAttemptIngestion(tenantId, platformId)
+      // defaults to ownerType:'tenant', which this connector can never
+      // satisfy) — it still gets a real poll()/pollCadenceMs pair, per
+      // this test's own next assertion below, which every registered
+      // poll-mode connector must satisfy regardless of whether the
+      // scheduler can currently reach it. See
+      // .claude/skills/facebook-connector/SKILL.md's own Load-bearing
+      // constraints for why this is honest, not a workaround.
       expect(providerIds).toEqual(
-        [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID].sort()
+        [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID, FACEBOOK_PROVIDER_ID].sort()
       );
       for (const connector of registered) {
         expect(connector.deliveryMode).toBe('poll');
