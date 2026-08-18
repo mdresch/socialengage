@@ -112,6 +112,18 @@ function fixtureConnector(providerId: string, overrides: Partial<SocialConnector
 function baseDeps(overrides: Partial<SchedulerDeps> = {}): Partial<SchedulerDeps> {
   return {
     onPollError: () => undefined,
+    // 2026-08-18 (Story 1.14, ADR-0052 Decision §5b): SchedulerDeps gained a
+    // new required member, getMostRecentRunStatus(). Without an override
+    // here, the merged defaultDeps falls back to the real, DB-backed
+    // implementation, which throws against this file's synthetic,
+    // non-UUID fixture tenant/platform ids — a real cross-component
+    // regression found and healed via heal-contract-failure, not silently
+    // patched. null ("no prior run known") is a safe, non-blocking default
+    // for every test in this file that doesn't itself care about this
+    // dependency; the 3 tests that do (Story 1.14's own contract file)
+    // override it explicitly per case, the same pattern this file already
+    // uses for deriveConnectorHealth.
+    getMostRecentRunStatus: async () => null,
     ...overrides,
   };
 }

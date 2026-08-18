@@ -45,6 +45,26 @@ export async function startIngestionRun(
   });
 }
 
+/**
+ * Story 1.14 (ADR-0052 Decision §5b) — the status of a (tenantId,
+ * platformId) pair's single most recent ingestion_runs row, or null if none
+ * exists. Lets the poll scheduler tell "cadence has elapsed" apart from
+ * "and the prior run has actually finished" — see
+ * .claude/skills/live-ingestion-polling-scheduler/SKILL.md.
+ */
+export async function getMostRecentRunStatus(
+  tenantId: string,
+  platformId: string
+): Promise<IngestionRunStatus | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ status: IngestionRunStatus }>(
+      `SELECT status FROM ingestion_runs WHERE platform_id = $1 ORDER BY started_at DESC LIMIT 1`,
+      [platformId]
+    );
+    return rows.length > 0 ? rows[0].status : null;
+  });
+}
+
 /** Closes an IngestionRun opened by startIngestionRun(). */
 export async function completeIngestionRun(
   tenantId: string,

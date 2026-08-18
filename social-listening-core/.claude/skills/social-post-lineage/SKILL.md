@@ -20,6 +20,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 | ADR-0049 | `SocialPost` gains exactly one scoped exception to ADR-0004's normalized model — `author_follower_count_at_publish`, a point-in-time snapshot, never derived from/reconciled against `Author.followerCount`, no other author field | 3.9 |
 | ADR-0053 | `SocialPost` gains `body_markdown`/`body_markdown_version` — computed once at insert by the shared `htmlToMarkdown()` utility, same `enrichment`-shaped (compute once, persist, never re-derive) precedent as `enrichment` itself. See `.claude/skills/canonical-markdown-conversion/SKILL.md` for the conversion pipeline. | 3.10 |
 | ADR-0042 | `listAuthorsByPlatform()` added — a connector-facing "already discovered" membership read, not a new schema decision | 2.13 |
+| ADR-0052 Decision §5b (Clarification, 2026-08-18) | `getMostRecentRunStatus()` added — a scheduler-facing "is this pair's most recent run still in flight" read, not a new schema decision | 1.14 |
 
 ## Contracts that constrain this component
 
@@ -31,6 +32,7 @@ The two provenance facts every real `SocialPost` carries: who wrote it (`author_
 - `contracts/epic-2/story-2.6.newswire-connector.contract.test.ts` — the first contract exercising `upsertAuthor()` and `insertSocialPost()` together inside one real, live-fetched poll cycle (not in isolation) — see `.claude/skills/newswire-connector/SKILL.md`.
 - `contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` — constrains `insertSocialPost()`'s two new `bodyMarkdown`/`bodyMarkdownVersion` input fields (nullable, `NULL` exactly together, never independently); see `.claude/skills/canonical-markdown-conversion/SKILL.md` for what that story actually owns.
 - `contracts/epic-2/story-2.13.wikipedia-connector.contract.test.ts` — constrains `listAuthorsByPlatform()`'s own shape and real behavior (indirectly, via the Wikipedia connector's own discovery/re-poll logic that depends on it); see `.claude/skills/wikipedia-connector/SKILL.md` for what that story actually owns.
+- `contracts/epic-1/story-1.14.poll-scheduler-skip-in-flight.contract.test.ts` — constrains `getMostRecentRunStatus()`'s own shape and real behavior (indirectly, via the poll scheduler's eligibility check that depends on it); see `.claude/skills/live-ingestion-polling-scheduler/SKILL.md` for what that story actually owns.
 
 ## How to extend this safely
 

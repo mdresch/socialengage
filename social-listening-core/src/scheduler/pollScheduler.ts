@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { listTenants } from '../tenants/tenantStore';
 import { listSocialConnectors } from '../connectors/registry';
 import { shouldAttemptIngestion, deriveConnectorHealth } from '../connectors/connectorHealth';
+import { getMostRecentRunStatus, IngestionRunStatus } from '../ingestion/ingestionRunStore';
 import { SocialConnector } from '../connectors/types';
 
 /** Implementation default (ADR-0052 §9) — a real guess, revisable via Amendment Log. */
@@ -37,6 +38,8 @@ export interface SchedulerDeps {
   listPollConnectors: () => SocialConnector[];
   shouldAttemptIngestion: (tenantId: string, platformId: string) => Promise<boolean>;
   deriveConnectorHealth: (tenantId: string, platformId: string) => Promise<{ lastAttemptAt: string | null }>;
+  /** Story 1.14 (ADR-0052 Decision §5b) — status of the pair's single most recent ingestion_runs row, or null if none exists. */
+  getMostRecentRunStatus: (tenantId: string, platformId: string) => Promise<IngestionRunStatus | null>;
   now: () => number;
   onPollError: (err: unknown, tenantId: string, platformId: string) => void;
 }
@@ -46,6 +49,7 @@ const defaultDeps: SchedulerDeps = {
   listPollConnectors: () => listSocialConnectors().filter((connector) => connector.deliveryMode === 'poll'),
   shouldAttemptIngestion: (tenantId, platformId) => shouldAttemptIngestion(tenantId, platformId),
   deriveConnectorHealth: (tenantId, platformId) => deriveConnectorHealth(tenantId, platformId),
+  getMostRecentRunStatus: (tenantId, platformId) => getMostRecentRunStatus(tenantId, platformId),
   now: () => Date.now(),
   onPollError: (err, tenantId, platformId) => {
     // eslint-disable-next-line no-console
@@ -89,8 +93,14 @@ export async function runSchedulerTick(overrides: Partial<SchedulerDeps> = {}): 
             const jitter = jitterFraction(tenant.id, platformId);
             const due = now - lastStartedAt >= connector.pollCadenceMs * (1 + jitter);
             if (due) {
-              await connector.poll(tenant.id);
-              polled = true;
+              // Story 1.14 (ADR-0052 Decision §5b) — elapsed time alone
+              // isn't enough: a pair whose most recent run hasn't finished
+              // must not be re-polled, even once its cadence has elapsed.
+              const mostRecentStatus = await deps.getMostRecentRunStatus(tenant.id, platformId);
+              if (mostRecentStatus !== 'running') {
+                await connector.poll(tenant.id);
+                polled = true;
+              }
             }
           }
         }
