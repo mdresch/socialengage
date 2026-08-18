@@ -147,9 +147,19 @@ describe('Story 6.25 — Post feed shows most-recently-ingested posts first', ()
       expect(newestIdx).toBeLessThan(oldestIdx);
     });
 
-    it('PostsFeedClient itself contains no .sort() call — order is inherited entirely from its posts prop', () => {
+    it('rewritten 2026-08-18 (Story 6.26 — see that story\'s own dated note): the post list itself is never re-sorted — order is inherited entirely from the posts prop', () => {
+      // Story 6.26 added a real, legitimate .sort() to this file — but it
+      // sorts providerOptions (the Provider filter's own dropdown entries,
+      // alphabetically by label), a completely different array from the
+      // post list this AC actually cares about. The original blanket "no
+      // .sort() anywhere in this file" check was too broad; narrowed here
+      // to what this story's own intent actually is — filteredPosts/
+      // visiblePosts (the post-list derivation) contains no .sort() call of
+      // its own, checked by name rather than forbidding the token globally.
       const source = readSrc(...clientPath);
-      expect(source).not.toMatch(/\.sort\(/);
+      const filteredPostsBlock = source.match(/const filteredPosts = useMemo\(\(\) => \{[\s\S]*?\n {2}\}, \[[^\]]*\]\);/);
+      expect(filteredPostsBlock).not.toBeNull();
+      expect(filteredPostsBlock![0]).not.toMatch(/\.sort\(/);
     });
   });
 

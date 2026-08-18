@@ -124,6 +124,27 @@ function flattenPost(post: SocialPostSummary): FlatPost {
 const VISIBLE_BATCH_SIZE = 20;
 
 /**
+ * Story 6.26 — display labels for the Provider filter's dynamically-derived
+ * options (see providerOptions below). This table only affects label text,
+ * never which providers are selectable — a providerId with no entry here
+ * still renders as an option, using its own raw id as the label. Keep this
+ * in sync with real connectors as a courtesy for a nicer label, but never
+ * as a gate on whether a provider is filterable at all; that would silently
+ * reintroduce the exact bug (Story 6.21/6.22/6.26's own hardcoded-list
+ * drift) this story exists to close.
+ */
+const PROVIDER_LABELS: Record<string, string> = {
+  gnews: 'GNews',
+  newswire: 'Newswire',
+  'tenant-owned-feed': 'Tenant Feed',
+  wikipedia: 'Wikipedia',
+};
+
+function providerLabel(providerId: string): string {
+  return PROVIDER_LABELS[providerId] ?? providerId;
+}
+
+/**
  * Story 6.11 enhancement, 2026-08-17 — a defensive prefix length for the
  * card-list teaser's Markdown source, matching ADR-0053's own
  * MAX_BODY_SOURCE_LENGTH-shaped precedent: the CSS `-webkit-line-clamp: 3`
@@ -156,6 +177,20 @@ interface PostsFeedClientProps {
  */
 export function PostsFeedClient({ posts, watchlists, initialActivePostId }: PostsFeedClientProps) {
   const flat = useMemo(() => posts.map(flattenPost), [posts]);
+
+  /**
+   * Story 6.26 — derived from the real, already-fetched post set (Story
+   * 6.18), not a hardcoded list. Every provider actually present in the
+   * tenant's own data is selectable, automatically, the moment a post from
+   * it exists — closing the same hardcoded-platform-list bug Story 6.21/
+   * 6.22 already found and fixed on two other screens.
+   */
+  const providerOptions = useMemo(() => {
+    const ids = Array.from(new Set(flat.map((p) => p.provider)));
+    return ids
+      .map((id) => ({ value: id, label: providerLabel(id) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [flat]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('ALL');
@@ -278,9 +313,9 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
               className="pf-filter-select"
             >
               <option value="ALL">All Providers</option>
-              <option value="gnews">GNews</option>
-              <option value="newswire">Newswire</option>
-              <option value="tenant-owned-feed">Tenant Feed</option>
+              {providerOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
 

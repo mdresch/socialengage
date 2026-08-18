@@ -599,3 +599,26 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - Regression: Story 6.18's own existing contract (full-set search/filter over the complete fetched array) continues to pass unmodified — this story does not change *which* posts are fetched or filtered, only the order they arrive and render in.
 
 **Explicitly out of scope:** changing `GET /v1/posts`'s own backend `ORDER BY seq ASC` or cursor keyset direction (a separate, higher-risk change to an already-contract-verified mechanism, not needed since the admin UI already fetches the complete set before rendering); any change to how `visibleCount`/"Show more" reveals results (unchanged mechanism, now just revealing in the corrected order); sorting by `publishedAt` instead of ingestion order (`seq`) — Menno's own request specifically named "most recent ingested," matching `seq`'s real semantics, not the original post's own publish timestamp, which can differ (e.g. a backfilled or re-polled older article).
+
+---
+
+## Story 6.26 — Post feed's Provider filter derives its options from real data, not a hardcoded list
+
+**Built:** not yet
+
+**Source:** No new ADR needed — an ordinary CRUD/UI-surface fix, the same category Story 6.21/6.22 already established for the identical bug on two other screens. **Status:** Ready.
+
+**Requested directly by Menno, 2026-08-18**, after real Wikipedia posts started landing in the feed (following this session's Story 2.16/2.17 fixes and a stale-credential correction) but Wikipedia had no way to be selected in the post feed's own Provider filter. Confirmed directly against the real code: `PostsFeedClient.tsx`'s Provider `<select>` is three static `<option>` elements — `gnews`, `newswire`, `tenant-owned-feed` — Wikipedia was never added, and no future connector will appear either unless someone remembers to hardcode it in yet again. **This is the third real instance of the identical bug category**, not a one-off: Story 6.21 found the same drift in `tenant/connectors/page.tsx`'s `PLATFORMS` array, Story 6.22 found it again in `tenant/watchlists/page.tsx`'s separately-maintained `SOCIAL_PLATFORMS` list. A third hand-maintained list on a third screen is the pattern itself being the problem, not a missing entry — Menno's own framing ("I would expect the connector [to] become available automatically") names the actual fix directly: derive the filter's own options from the real, already-fetched post data, not a list that has to be remembered.
+
+**As a** Tenant-Admin filtering the post feed,
+**I want** the Provider filter to always list every platform actually present in my own ingested posts,
+**so that** a newly-ingesting connector (Wikipedia today, whatever comes next) is filterable immediately, without needing its own follow-up "add it to the list" story every time.
+
+**Acceptance Criteria**
+- The Provider `<select>`'s options (beyond the fixed "All Providers" entry) are computed from the distinct `provider` values actually present in `flat` (the already-extracted, already-fetched full post set, Story 6.18) — via `extractProviderBadge()`'s own existing output, not a new extraction path — proven by a test confirming a fetched set containing a `wikipedia`-sourced post renders a "Wikipedia"-labeled option with no code change beyond this story's own fix, and a set with no such post renders none.
+- Each dynamically-derived option's **display label** uses a small, explicitly-named lookup table (`gnews` → "GNews", `newswire` → "Newswire", `tenant-owned-feed` → "Tenant Feed", `wikipedia` → "Wikipedia") for the platforms already known today, falling back to the raw `providerId` string itself for any value not in that table — proven by a test confirming an unmapped/future `providerId` still renders as a selectable option (using its raw id as the label), never silently hidden the way today's hardcoded list hides Wikipedia entirely. This keeps the fix's core guarantee (every real provider is always selectable) independent of whether anyone remembers to add a pretty label for it.
+- Options render in a stable, deterministic order (alphabetical by label) — proven by a test with providers supplied out of order confirming sorted render order.
+- Existing filter behavior (`selectedProvider !== 'ALL' && post.provider.toLowerCase() !== selectedProvider.toLowerCase()`) is unchanged — this story changes only which options are offered, never the matching logic itself, proven by re-running Story 6.11's own existing Provider-filter assertions unmodified.
+- Regression: Story 6.18's full-set fetch/filter behavior and Story 6.25's newest-first ordering are both unaffected — proven by confirming their own existing contracts still pass unmodified.
+
+**Explicitly out of scope:** applying the same dynamic-derivation fix to `tenant/connectors/page.tsx`'s `PLATFORMS` array or `tenant/watchlists/page.tsx`'s `SOCIAL_PLATFORMS` list — those two screens list *connectable* platforms (including ones with zero posts yet), a genuinely different derivation (registered connectors, not observed post data) than this filter's "what's actually in my data" question; named as a related, plausible future follow-on, not solved here; any change to the Sentiment/Watchlist filters' own option lists (unaffected, out of this story's scope).

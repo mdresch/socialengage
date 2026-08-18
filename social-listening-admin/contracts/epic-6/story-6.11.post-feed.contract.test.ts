@@ -248,13 +248,34 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(clientSource).toContain('Slideover');
     });
 
-    it('healing note, 2026-08-17: the Provider filter\'s tenant-owned-feed option value matches the real, hyphenated providerId (never the underscored form), found live — selecting it returned zero posts despite real ones existing', async () => {
-      const source = fs.readFileSync(
-        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'posts', 'PostsFeedClient.tsx'),
-        'utf8'
+    it('healing note, 2026-08-17, rewritten 2026-08-18 (Story 6.26 — see that story\'s own dated note below): the Provider filter\'s tenant-owned-feed option value matches the real, hyphenated providerId (never the underscored form), found live — selecting it returned zero posts despite real ones existing', async () => {
+      // Story 6.26 rewrote the Provider filter's options from three
+      // hardcoded <option> elements into ones derived from the real,
+      // already-fetched post set (see that story's own contract file) — the
+      // literal source string this test originally grepped for
+      // (`<option value="tenant-owned-feed"`) no longer appears anywhere in
+      // source, since no option is hardcoded any more. Per this project's
+      // "regression, not rewrite" convention, the original *intent*
+      // (the hyphenated id is used, never the underscored form) is
+      // preserved here under the new mechanism: render the component with a
+      // real tenant-owned-feed-sourced post and assert the real rendered
+      // option's own value, rather than grepping static source text.
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const tenantOwnedFeedPost = {
+        id: 'p-tof',
+        createdAt: '2026-08-18T09:00:00.000Z',
+        publishedAt: '2026-08-18T08:00:00.000Z',
+        enrichment: null,
+        rawPayload: { providerId: 'tenant-owned-feed', title: 'A tenant-owned-feed post' },
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [tenantOwnedFeedPost], watchlists: [] })
       );
-      expect(source).toMatch(/<option value=["']tenant-owned-feed["']/);
-      expect(source).not.toMatch(/<option value=["']tenant_owned_feed["']/);
+      expect(html).toMatch(/<option value="tenant-owned-feed">/);
+      expect(html).not.toMatch(/<option value="tenant_owned_feed"/);
     });
   });
 
