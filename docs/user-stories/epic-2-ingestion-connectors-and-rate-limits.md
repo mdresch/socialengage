@@ -337,7 +337,7 @@
 
 ## Story 2.17 — Azure OpenAI's structured enrichment call also returns a stored `summary` field
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-core@6a9b628
 
 **Source:** No new ADR needed — additive widening of `AnalyzeResult` (ADR-0002/ADR-0038's own already-Accepted `AIProviderConnector` interface), the same "widen the interface, existing callers unaffected" pattern Story 2.8/2.9 already established for `sentimentScores`/`entities`/`overallConfidence`. **Status:** Ready.
 
