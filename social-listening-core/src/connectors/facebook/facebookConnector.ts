@@ -17,6 +17,18 @@ export interface FacebookPagePost {
   message?: string;
   created_time: string;
   permalink_url?: string;
+  /**
+   * Story 2.18 (ADR-0059 Decision §2) — aggregate engagement counts only,
+   * never individual comment/reaction content (ADR-0059 Decision §5's own
+   * author-rights boundary). All three optional: `shares` is confirmed,
+   * live, to be omitted entirely at zero (never `{ count: 0 }`) — see
+   * facebook-connector/SKILL.md's own Load-bearing constraints. `reactions`/
+   * `comments` are typed optional defensively, even though observed present
+   * at zero in the same live check.
+   */
+  reactions?: { summary: { total_count: number } };
+  comments?: { summary: { total_count: number } };
+  shares?: { count: number };
 }
 
 interface FacebookCredential {
@@ -95,14 +107,20 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
 }
 
 /**
- * ADR-0059 Decision §2 — the Page's own published posts only, no comments,
- * no mentions (Decision §5's deferred third-party author-rights question).
- * `fields` deliberately requests only what normalize()/Author-modeling
- * actually consume — never a broader field set that could pull in
- * comment-shaped data incidentally.
+ * ADR-0059 Decision §2 — the Page's own published posts only, no comment/
+ * mention *content* (Decision §5's deferred third-party author-rights
+ * question). `fields` deliberately requests only what normalize()/
+ * Author-modeling/Decision §2's own named engagement-count scope actually
+ * consume — never a broader field set that could pull in comment-shaped
+ * data incidentally. `reactions.summary(total_count)`/
+ * `comments.summary(total_count)`/`shares` (Story 2.18) request aggregate
+ * counts only, via Graph API's own summary-aggregation syntax — never the
+ * underlying `reactions`/`comments` edges' own per-item data, which would
+ * pull in individual identifiable people.
  */
 export async function fetchFacebookPagePosts(pageId: string, pageAccessToken: string, limit = 25): Promise<FacebookPagePost[]> {
-  const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=id,message,created_time,permalink_url&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
+  const fields = 'id,message,created_time,permalink_url,reactions.summary(total_count),comments.summary(total_count),shares';
+  const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=${fields}&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
   const body = await graphApiFetch(url, 'feed');
   const data = (body as { data?: FacebookPagePost[] }).data;
   return Array.isArray(data) ? data : [];
