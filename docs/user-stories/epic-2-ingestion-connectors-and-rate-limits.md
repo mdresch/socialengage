@@ -315,7 +315,7 @@
 
 ## Story 2.16 — `azureAiLanguageConnector.analyze()` throws a classified error instead of crashing on a rejected document
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-core@3fedac3
 
 **Source:** No new ADR needed — this corrects an implementation gap against ADR-0038's own already-Accepted Decision text (enrichment is best-effort, additive, never a hard dependency of ingestion succeeding) and `enrichPost.ts`'s own already-stated contract ("Never throws... a programming error... all resolve to `undefined`"), the same "implementation catches up to an already-stated policy" category Story 2.12 already used for `deriveConnectorHealth()`. **Status:** Ready.
 
