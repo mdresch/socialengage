@@ -26,7 +26,12 @@ async function fetchAllPosts(): Promise<SocialPostSummary[]> {
     pages += 1;
   } while (cursor && pages < MAX_PAGES);
 
-  return posts;
+  // Story 6.25 — GET /v1/posts orders every page ORDER BY seq ASC (ADR-0011's
+  // keyset pagination, oldest-ingested first), unchanged here. This reverses
+  // the already-fully-fetched array once, client-side, so the feed shows
+  // most-recently-ingested first — a deliberately minimal display-order fix,
+  // not a change to the backend's own pagination/cursor mechanism.
+  return posts.reverse();
 }
 
 /**
