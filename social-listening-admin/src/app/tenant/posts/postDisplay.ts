@@ -40,12 +40,28 @@ export function extractAuthor(rawPayload: unknown): string | null {
  * so any current or future connector whose posts have a title "just works"
  * without a new case here. Anything without a recognizable title falls back
  * to the raw JSON rather than rendering nothing.
+ *
+ * Found live 2026-08-18 (real, confirmed regression, not previously caught
+ * by any contract): Facebook (Story 2.15/ADR-0059, shipped after this
+ * function was written) has no `title` field at all — its own posts carry
+ * `message` (the Page post's own text). Every real Facebook post in the
+ * feed was silently falling all the way through to the raw-JSON fallback
+ * — a genuinely new *shape* per this doc's own "how to extend this safely"
+ * rule, not the "no recognizable title, degrade honestly" case the
+ * fallback exists for. `permalink_url` (Facebook's own post URL) covers
+ * the media-only-post edge case where `message` is empty/absent.
  */
 export function extractDisplayText(rawPayload: unknown): DisplayText {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.title === 'string') {
       return { title: p.title, snippet: typeof p.description === 'string' ? p.description : null };
+    }
+    if (typeof p.message === 'string' && p.message.length > 0) {
+      return { title: p.message, snippet: null };
+    }
+    if (typeof p.permalink_url === 'string') {
+      return { title: p.permalink_url, snippet: null };
     }
   }
   return { title: JSON.stringify(rawPayload), snippet: null };

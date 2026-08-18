@@ -162,6 +162,27 @@ const UNKNOWN_SHAPE_POST = {
   rawPayload: { providerId: 'mystery-connector', someField: 'no title here' },
 };
 
+// 2026-08-18, dated note: Facebook (Story 2.15/ADR-0059) shipped after this
+// story, with no `title` field on its own rawPayload shape at all — a real,
+// found-live regression (extractDisplayText() fell through to raw JSON for
+// every real Facebook post) fixed in postDisplay.ts, not a weakening of
+// this story's own contract. This fixture and its own test below are new
+// coverage, not a rewrite of any existing assertion.
+const FACEBOOK_POST = {
+  id: 'p-4',
+  createdAt: '2026-08-12T09:15:00.000Z',
+  publishedAt: '2026-08-12T08:15:00.000Z',
+  enrichment: null,
+  rawPayload: {
+    providerId: 'facebook',
+    externalId: 'ext-4',
+    id: 'ext-4',
+    message: 'Excited to announce our new product launch next week!',
+    created_time: '2026-08-12T08:15:00.000Z',
+    permalink_url: 'https://facebook.com/1/posts/ext-4',
+  },
+};
+
 afterEach(() => {
   jest.dontMock('next/headers');
   jest.dontMock('next/navigation');
@@ -218,6 +239,36 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       const rendered = JSON.stringify(element);
       expect(rendered).toContain('mystery-connector');
       expect(rendered).toContain('no title here');
+    });
+
+    // 2026-08-18: the three tests immediately above render Page() and
+    // JSON.stringify() its return value — but Page() only ever returns
+    // `<PostsFeedClient posts={posts} .../>` (PostsFeedClient itself is a
+    // Client Component, never invoked here), so that JSON.stringify()
+    // output is just the raw `posts` prop data round-tripping through,
+    // never anything extractDisplayText() actually produced. Those three
+    // tests would pass identically even with extractDisplayText() fully
+    // broken — confirmed directly by tracing what JSON.stringify(element)
+    // actually serializes for a Server Component that renders one Client
+    // Component element. Found while adding real coverage for the
+    // Facebook regression below, flagged here rather than silently
+    // rewriting those three pre-existing assertions (out of this fix's own
+    // scope) — a real Page()-level behavioral proof for extraction would
+    // need an actual DOM/markup render of PostsFeedClient itself, which
+    // this repo's own established testing approach doesn't do. This new
+    // test calls extractDisplayText() directly instead, which is what
+    // actually proves the fix.
+    it('extractDisplayText() renders a real Facebook-shaped rawPayload (message, no title field) as its own message text, never raw JSON (found-live regression, dated note above)', async () => {
+      const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
+      const result = extractDisplayText(FACEBOOK_POST.rawPayload);
+      expect(result.title).toBe('Excited to announce our new product launch next week!');
+      expect(result.title).not.toContain('"providerId"');
+    });
+
+    it('extractDisplayText() falls back to permalink_url for a Facebook post with no message text (media-only post)', async () => {
+      const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
+      const result = extractDisplayText({ providerId: 'facebook', id: 'ext-5', permalink_url: 'https://facebook.com/1/posts/ext-5', created_time: '2026-08-12T08:20:00.000Z' });
+      expect(result.title).toBe('https://facebook.com/1/posts/ext-5');
     });
 
     it('opens a post in the in-page Slideover, not a navigation to a separate /tenant/posts/:id route', async () => {
