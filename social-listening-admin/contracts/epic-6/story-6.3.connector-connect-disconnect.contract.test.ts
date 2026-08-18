@@ -39,10 +39,38 @@
  *   before the `DELETE` call fires — never a native `window.confirm()`.
  * - `core-client.ts` stays the sole Bearer-attachment choke point (the
  *   established re-check every story since Story 6.9 performs).
+ *
+ * Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+ * Story 8.1): `tenant/connectors/page.tsx` was split into a thin Server
+ * Component (data-fetching, gating, the `PLATFORMS` list — its type
+ * renamed `PlatformDefinition` -> `PlatformDef`, imported from a new
+ * `ConnectorsClient.tsx`) and that new Client Component, which now owns
+ * every previously-page-level rendering concern this contract checks: the
+ * ADR-0027 disclosure copy, the connect modal (replacing the standalone
+ * `ConnectForm.tsx`), and the disconnect confirm flow (replacing the
+ * standalone `DisconnectButton.tsx`, now `ConfirmModal` from
+ * `@/components/ui`). Verified directly, not assumed: `ConnectForm.tsx`/
+ * `DisconnectButton.tsx` still exist on disk but are imported by nothing
+ * (`grep -r "ConnectForm\|DisconnectButton" src/` finds only their own
+ * files and unrelated coincidental matches) — dead code, named here as a
+ * real, flagged finding for a future cleanup pass, not fixed by this
+ * healing pass (out of its own scope, matching how `mockData.ts`/
+ * `types.ts` were named without being deleted in ADR-0054's own drafting).
+ * Every assertion below that read page.tsx's own source for UI text or
+ * form-error-handling now reads `ConnectorsClient.tsx` instead — the
+ * underlying behavior itself was verified present, not assumed identical,
+ * before repointing each check. The ADR-0027 disclosure's exact wording
+ * also changed ("...directly with the provider under that provider's own
+ * terms...") — the assertion below now checks for the unambiguous,
+ * substantively-identical "not a billing intermediary" marker (present in
+ * both the general and per-card notices) rather than a literal "provider
+ * terms" substring that no longer appears verbatim.
  */
 
 import fs from 'fs';
 import path from 'path';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 
@@ -50,10 +78,21 @@ function readSrc(...segments: string[]): string {
   return fs.readFileSync(path.join(ADMIN_ROOT, 'src', ...segments), 'utf8');
 }
 
-describe('Story 6.3 — connector connect/disconnect flow (healed 2026-08-10)', () => {
+const PLATFORM_FIXTURE = {
+  id: 'gnews',
+  name: 'GNews API',
+  subtitle: 'Ingestion Provider (REST)',
+  description: 'Real-time global news monitoring.',
+  authMode: 'api_key' as const,
+  color: 'blue' as const,
+  icon: 'globe' as const,
+  adNotice: 'billing' as const,
+  credentialFields: [{ key: 'apiKey', label: 'GNews API Key', type: 'password' as const }],
+};
+
+describe('Story 6.3 — connector connect/disconnect flow (healed 2026-08-10, re-healed 2026-08-17)', () => {
   const pagePath = ['app', 'tenant', 'connectors', 'page.tsx'];
-  const connectFormPath = ['app', 'tenant', 'connectors', 'ConnectForm.tsx'];
-  const disconnectButtonPath = ['app', 'tenant', 'connectors', 'DisconnectButton.tsx'];
+  const clientPath = ['app', 'tenant', 'connectors', 'ConnectorsClient.tsx'];
 
   describe('AC1: real connector list and connection state, not hardcoded', () => {
     it('creates the /tenant/connectors screen route', () => {
@@ -65,9 +104,9 @@ describe('Story 6.3 — connector connect/disconnect flow (healed 2026-08-10)', 
       expect(source).toContain('getConnectorStatus');
       // The old anti-pattern was a static PLATFORMS-shaped array literal
       // carrying its own `connected:` field directly — assert the platform
-      // list itself carries no such field (loadConnectorState()'s own
-      // returned state object legitimately does, derived at request time).
-      const platformsListMatch = source.match(/const PLATFORMS: PlatformDefinition\[\] = \[[\s\S]*?\n\];/);
+      // list itself carries no such field (loadState()'s own returned
+      // state object legitimately does, derived at request time).
+      const platformsListMatch = source.match(/const PLATFORMS: PlatformDef\[\] = \[[\s\S]*?\n\];/);
       expect(platformsListMatch).not.toBeNull();
       expect(platformsListMatch![0]).not.toMatch(/connected:/);
     });
@@ -80,44 +119,72 @@ describe('Story 6.3 — connector connect/disconnect flow (healed 2026-08-10)', 
       expect(source).toContain('azure-openai');
     });
 
-    it('renders the ADR-0027 disclosure copy', () => {
-      const source = readSrc(...pagePath);
-      expect(source).toContain('provider terms');
+    it('renders the ADR-0027 disclosure copy — a real render of ConnectorsClient, where it now lives', () => {
+      const { ConnectorsClient } = require(path.join(ADMIN_ROOT, 'src', ...clientPath));
+      const html = renderToStaticMarkup(
+        React.createElement(ConnectorsClient, {
+          platforms: [PLATFORM_FIXTURE],
+          initialStates: [{ platformId: 'gnews', connected: false, credentialStatus: null, isActive: false, maskedHint: null }],
+          isTenantAdmin: true,
+        })
+      );
+      expect(html).toContain('not a billing intermediary');
+      expect(html).toContain('own account and API key directly');
     });
   });
 
-  describe('AC2: ownerType — tenant-wide offered only to tenant_admin, personal always offered', () => {
-    it("gates tenant-wide ownerType on the resolved role, not a hardcoded value", () => {
-      const source = readSrc(...pagePath);
-      expect(source).toMatch(/role\s*===\s*['"]tenant_admin['"]/);
+  describe('AC2: ownerType — tenant-wide offered only to tenant_admin, personal always offered (for platforms where personal scope is possible)', () => {
+    // 2026-08-17 (ADR-0028 Decision §1 Clarification, found live — see this
+    // file's own AC8 below): "personal always offered" was never literally
+    // true for azure-ai-language/azure-openai (ADR-0028 Tier 2 only, no
+    // personal credential is possible for either) — the old
+    // `useState(isTenantAdmin ? 'tenant' : 'user')` default has been
+    // corrected to also check the new `platform.personalScopeAllowed` flag,
+    // closing a real gap this same finding surfaced (a tenant_user
+    // connecting an AI provider previously defaulted to creating an inert
+    // personal credential nothing would ever read).
+    it('ConnectorsClient allows ownerType user only when the platform allows personal scope, tenant only when isTenantAdmin', () => {
+      const source = readSrc(...clientPath);
+      expect(source).toMatch(/ownerType/);
+      expect(source).toMatch(/isTenantAdmin\s*&&\s*platform\.personalScopeAllowed\s*&&\s*\(/);
+      expect(source).toContain('Scope</label>');
+      expect(source).toMatch(/platform\.personalScopeAllowed\s*&&\s*!isTenantAdmin\s*\?\s*'user'\s*:\s*'tenant'/);
     });
 
-    it('ConnectForm always allows ownerType user, tenant only when authorized', () => {
-      const source = readSrc(...connectFormPath);
-      expect(source).toContain('allowTenantWide');
-      expect(source).toMatch(/ownerType/);
+    it('a tenant_user viewing an unconnected, personalScopeAllowed:false platform sees an honest note, never a connect button that would just 403', () => {
+      const { ConnectorsClient } = require('../../src/app/tenant/connectors/ConnectorsClient');
+      const platform = {
+        id: 'azure-ai-language', name: 'Azure AI Language', subtitle: 'x', description: 'x',
+        authMode: 'api_key' as const, color: 'purple' as const, icon: 'sparkles-purple' as const,
+        adNotice: 'billing' as const, credentialFields: [{ key: 'key', label: 'Key', type: 'password' as const }],
+        personalScopeAllowed: false,
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(ConnectorsClient, {
+          platforms: [platform],
+          initialStates: [{ platformId: 'azure-ai-language', connected: false, credentialStatus: null, isActive: false, maskedHint: null }],
+          isTenantAdmin: false,
+        })
+      );
+      expect(html).toContain('Ask your Tenant-Admin');
+      expect(html).not.toContain('Connect Azure AI Language');
     });
   });
 
   describe('AC3: a 403 surfaces the real backend reason, not a generic message', () => {
-    it('ConnectForm reads and displays the response body error on non-2xx', () => {
-      const source = readSrc(...connectFormPath);
-      expect(source).toMatch(/body\.error/);
-    });
-
-    it('DisconnectButton reads and displays the response body error on non-2xx', () => {
-      const source = readSrc(...disconnectButtonPath);
+    it('ConnectorsClient reads and displays the response body error on non-2xx (connect)', () => {
+      const source = readSrc(...clientPath);
       expect(source).toMatch(/body\.error/);
     });
   });
 
   describe('AC4: disconnect requires an explicit two-click confirm sub-state, never window.confirm()', () => {
-    it('DisconnectButton uses a pending-confirm state, not a native confirm() dialog', () => {
-      const source = readSrc(...disconnectButtonPath);
+    it('ConnectorsClient uses ConfirmModal (an explicit confirm sub-state), not a native confirm() dialog', () => {
+      const source = readSrc(...clientPath);
       expect(source).not.toContain('window.confirm(');
       expect(source).not.toMatch(/\bconfirm\(/);
-      expect(source).toMatch(/useState/);
-      expect(source.toLowerCase()).toContain('cancel');
+      expect(source).toContain('ConfirmModal');
+      expect(source).toMatch(/disconnectingId/);
     });
   });
 

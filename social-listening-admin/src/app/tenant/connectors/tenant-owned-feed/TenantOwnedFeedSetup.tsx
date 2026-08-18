@@ -1,138 +1,242 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { Modal, ConfirmModal, EmptyState, StatusBadge } from '@/components/ui';
 import { ActivateDeactivateButton } from '../ActivateDeactivateButton';
-
-interface Activation {
-  connectorActivationId: string;
-  txtRecordHost: string;
-  txtRecordValue: string;
-  expiresAt: string;
-  feedUrl: string;
-}
+import type { TenantOwnedFeedActivationDetail } from '@/lib/core-client';
 
 /**
- * Story 6.12 (ADR-0050) — the real, two-step connect flow: submit
- * domain/feedUrl, publish the returned DNS TXT record at the tenant's own
- * registrar, then re-click "Verify now" until the backend confirms it.
+ * Story 6.20 (ADR-0057) — replaces the previous single-activation state
+ * machine with a real per-tenant feed list. `activations` is fetched
+ * server-side by page.tsx (`listTenantOwnedFeedActivations()`, the same
+ * "Server Component fetches, Client Component only mutates" pattern
+ * `/tenant/users` already established) — no client-side list fetch, no
+ * `?activationId=` URL-persistence trick needed anymore: every page load
+ * already carries full data for every activation, pending or verified,
+ * closing the "TXT instructions lost on reload" gap this story's own
+ * ADR named as a direct side effect of the new list endpoint.
  *
- * `activationId` (not `activation`) is the state that must drive whether the
- * pending "Verify now" branch renders — see this component's own SKILL.md
- * "Load-bearing constraints." `activation` (the full TXT-instruction object)
- * is only ever populated by a fresh connect response and is genuinely lost
- * on reload; `activationId` alone survives via the `?activationId=` URL
- * param a returning tenant's page load carries back in.
+ * Every mutating action (connect, verify, edit, remove) reloads the page
+ * on success — the same `window.location.reload()` pattern `AccessControl`
+ * already established on the Team & Access screen, rather than inventing
+ * client-side state sync for a screen with a handful of rows.
  */
 export function TenantOwnedFeedSetup({
-  initialActivationId,
+  activations,
   isActive,
   isTenantAdmin,
 }: {
-  initialActivationId: string | null;
+  activations: TenantOwnedFeedActivationDetail[];
   isActive: boolean;
   isTenantAdmin: boolean;
 }) {
-  const router = useRouter();
+  const [connectOpen, setConnectOpen] = useState(false);
   const [domain, setDomain] = useState('');
   const [feedUrl, setFeedUrl] = useState('');
-  const [activation, setActivation] = useState<Activation | null>(null);
-  const [activationId, setActivationId] = useState<string | null>(initialActivationId);
   const [connectError, setConnectError] = useState<string | null>(null);
+
+  const [editTarget, setEditTarget] = useState<TenantOwnedFeedActivationDetail | null>(null);
+  const [editFeedUrl, setEditFeedUrl] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const [removeTarget, setRemoveTarget] = useState<TenantOwnedFeedActivationDetail | null>(null);
+
+  const [verifyMessageId, setVerifyMessageId] = useState<string | null>(null);
   const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
-  const [verified, setVerified] = useState(false);
 
   async function handleConnect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setConnectError(null);
-
     const response = await fetch('/api/connectors/tenant-owned-feed/connect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ domain, feedUrl }),
     });
     const body = await response.json().catch(() => ({}));
-
     if (response.status === 201) {
-      setActivation(body as Activation);
-      setActivationId(body.connectorActivationId);
-      router.replace(`?activationId=${encodeURIComponent(body.connectorActivationId)}`);
+      window.location.reload();
       return;
     }
     setConnectError(body.error ?? 'Something went wrong while connecting this feed. Please check the domain and feed URL and try again.');
   }
 
-  async function handleVerify() {
-    if (!activationId) return;
+  async function handleVerify(activationId: string) {
+    setVerifyMessageId(null);
     setVerifyMessage(null);
-
     const response = await fetch('/api/connectors/tenant-owned-feed/verify-domain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ connectorActivationId: activationId }),
     });
     const body = await response.json().catch(() => ({}));
-
     if (body.status === 'verified') {
-      setVerified(true);
+      window.location.reload();
       return;
     }
+    setVerifyMessageId(activationId);
     setVerifyMessage('Not yet verified — DNS propagation can take a while, try again shortly.');
   }
 
-  if (verified) {
-    return (
-      <section>
-        <p role="status">
-          {isActive
-            ? 'Domain verified — this feed is now connected and active.'
-            : 'Domain verified. Activate this connector below to begin polling.'}
-        </p>
-        {isTenantAdmin && <ActivateDeactivateButton platformId="tenant-owned-feed" ownerType="tenant" isActive={isActive} />}
-      </section>
-    );
+  async function handleEditSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editTarget) return;
+    setEditError(null);
+    const response = await fetch(`/api/connectors/tenant-owned-feed/${editTarget.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedUrl: editFeedUrl }),
+    });
+    const body = await response.json().catch(() => ({}));
+    if (response.ok) {
+      window.location.reload();
+      return;
+    }
+    setEditError(body.error ?? 'Could not update this feed.');
   }
 
-  if (activationId) {
-    return (
-      <section>
-        {activation && (
-          <>
-            <p>Publish this TXT record at your DNS registrar, then return here to verify:</p>
-            <dl>
-              <dt>Host</dt>
-              <dd>{activation.txtRecordHost}</dd>
-              <dt>Value</dt>
-              <dd>{activation.txtRecordValue}</dd>
-              <dt>Expires</dt>
-              <dd>{activation.expiresAt}</dd>
-            </dl>
-            <p>
-              DNS propagation can take anywhere from a few minutes to 72 hours — this is normal, not an error or a stuck
-              state.
-            </p>
-          </>
-        )}
-        <button type="button" onClick={handleVerify}>
-          Verify now
-        </button>
-        {verifyMessage && <p role="status">{verifyMessage}</p>}
-      </section>
-    );
+  async function handleRemoveConfirm() {
+    if (!removeTarget) return;
+    await fetch(`/api/connectors/tenant-owned-feed/${removeTarget.id}`, { method: 'DELETE' });
+    window.location.reload();
   }
 
   return (
-    <form onSubmit={handleConnect}>
-      <label>
-        Domain
-        <input type="text" required value={domain} onChange={(event) => setDomain(event.target.value)} />
-      </label>
-      <label>
-        Feed URL
-        <input type="text" required value={feedUrl} onChange={(event) => setFeedUrl(event.target.value)} />
-      </label>
-      <button type="submit">Connect</button>
-      {connectError && <p role="alert">{connectError}</p>}
-    </form>
+    <div className="tof-page">
+      {activations.length > 0 && !isActive && (
+        <p role="status" className="tof-banner-inactive">
+          {activations.length} feed{activations.length === 1 ? '' : 's'} configured, but this connector is currently
+          deactivated — none of them are being polled.
+        </p>
+      )}
+
+      {activations.length === 0 ? (
+        <EmptyState heading="No feeds configured yet" body="Connect your first domain to start monitoring its RSS/Atom feed." />
+      ) : (
+        <ul className="tof-list">
+          {activations.map((activation) => (
+            <li key={activation.id} className="tof-item">
+              <div className="tof-item-header">
+                <span className="tof-item-domain">{activation.domain}</span>
+                <StatusBadge variant={activation.status === 'verified' ? 'verified' : activation.status === 'pending' ? 'pending' : 'inactive'} />
+              </div>
+              <div className="tof-item-feed-url">{activation.feedUrl}</div>
+
+              {activation.status === 'pending' && (
+                <div className="tof-txt-instructions">
+                  <p>Publish this TXT record at your DNS registrar, then return here to verify:</p>
+                  <dl>
+                    <dt>Host</dt>
+                    <dd>{activation.txtRecordHost}</dd>
+                    <dt>Value</dt>
+                    <dd>{activation.txtRecordValue}</dd>
+                    <dt>Expires</dt>
+                    <dd>{activation.tokenExpiresAt}</dd>
+                  </dl>
+                  <p>
+                    DNS propagation can take anywhere from a few minutes to 72 hours — this is normal, not an error or a
+                    stuck state.
+                  </p>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleVerify(activation.id)}>
+                    Verify now
+                  </button>
+                  {verifyMessageId === activation.id && verifyMessage && <p role="status">{verifyMessage}</p>}
+                </div>
+              )}
+
+              {isTenantAdmin && (
+                <div className="tof-item-actions">
+                  {activation.status === 'verified' && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        setEditTarget(activation);
+                        setEditFeedUrl(activation.feedUrl);
+                        setEditError(null);
+                      }}
+                    >
+                      Edit feed URL
+                    </button>
+                  )}
+                  <button type="button" className="btn btn-destructive btn-sm" onClick={() => setRemoveTarget(activation)}>
+                    Remove
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {isTenantAdmin && (
+        <>
+          <button type="button" className="btn btn-primary" onClick={() => setConnectOpen(true)}>
+            Connect another feed
+          </button>
+          <ActivateDeactivateButton platformId="tenant-owned-feed" ownerType="tenant" isActive={isActive} />
+        </>
+      )}
+
+      <Modal isOpen={connectOpen} onClose={() => setConnectOpen(false)} title="Connect a tenant-owned feed">
+        <form onSubmit={handleConnect} className="tof-modal-form">
+          <label className="tof-field">
+            <span className="tof-field-label">Domain</span>
+            <input type="text" required value={domain} onChange={(event) => setDomain(event.target.value)} className="tof-input" />
+          </label>
+          <label className="tof-field">
+            <span className="tof-field-label">Feed URL</span>
+            <input type="text" required value={feedUrl} onChange={(event) => setFeedUrl(event.target.value)} className="tof-input" />
+          </label>
+          {connectError && (
+            <p role="alert" className="tof-form-message-error">
+              {connectError}
+            </p>
+          )}
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={() => setConnectOpen(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Connect
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={editTarget !== null} onClose={() => setEditTarget(null)} title="Edit feed URL">
+        <form onSubmit={handleEditSubmit} className="tof-modal-form">
+          <p>
+            Domain: <strong>{editTarget?.domain}</strong>
+          </p>
+          <label className="tof-field">
+            <span className="tof-field-label">Feed URL</span>
+            <input type="text" required value={editFeedUrl} onChange={(event) => setEditFeedUrl(event.target.value)} className="tof-input" />
+          </label>
+          {editError && (
+            <p role="alert" className="tof-form-message-error">
+              {editError}
+            </p>
+          )}
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={() => setEditTarget(null)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={removeTarget !== null}
+        title={`Remove ${removeTarget?.domain ?? 'this feed'}?`}
+        body="This feed will stop being polled. Already-ingested posts are kept."
+        confirmLabel="Remove"
+        confirmVariant="destructive"
+        onConfirm={handleRemoveConfirm}
+        onCancel={() => setRemoveTarget(null)}
+      />
+    </div>
   );
 }

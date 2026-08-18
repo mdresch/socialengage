@@ -7,6 +7,8 @@ import { getLatestCredentialId, readCredential } from '../../credentials/credent
 import { gnewsConnector, fetchGNewsSearch, GNEWS_PROVIDER_ID, GNewsArticle, stripGNewsTruncationMarker } from './gnewsConnector';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
+import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
+import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
 
 const DEFAULT_QUERY = 'technology';
 
@@ -63,6 +65,11 @@ export async function ingestGNewsArticles(
   let postsIngested = 0;
   let postsSkipped = 0;
 
+  // ADR-0058 Decision §6 — loaded once per poll batch, never once per post.
+  const watchlists = (await listActiveWatchlistsForTenant(tenantId)).filter((w) =>
+    w.platformIds.includes(GNEWS_PROVIDER_ID)
+  );
+
   for (const article of articles) {
     const normalized = gnewsConnector.normalize(article);
 
@@ -96,7 +103,7 @@ export async function ingestGNewsArticles(
     const enrichmentText = [article.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
-    await insertSocialPost({
+    const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
@@ -105,6 +112,16 @@ export async function ingestGNewsArticles(
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
+    });
+
+    // ADR-0058 Decision §1/§6 — post-commit: insertSocialPost() has already
+    // resolved (its own withTenant() transaction already committed) by the
+    // time this runs.
+    await publishSocialPostIngestedEvents(tenantId, GNEWS_PROVIDER_ID, watchlists, {
+      postId: inserted.id,
+      text: enrichmentText,
+      authorExternalId: normalized.authorExternalId,
+      publishedAt: normalized.publishedAt,
     });
 
     postsIngested += 1;

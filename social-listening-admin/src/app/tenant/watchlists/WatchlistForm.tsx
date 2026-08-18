@@ -2,8 +2,16 @@
 
 import { useState, type FormEvent } from 'react';
 import type { Watchlist } from '@/lib/core-client';
+import { TagInput } from '@/components/ui';
 
 type MatchType = 'keyword' | 'hashtag' | 'account' | 'boolean';
+
+const MATCH_TYPE_OPTIONS: { value: MatchType; label: string; icon: string }[] = [
+  { value: 'keyword', label: 'Keyword', icon: '🏷' },
+  { value: 'hashtag', label: 'Hashtag', icon: '#' },
+  { value: 'account', label: 'Account', icon: '@' },
+  { value: 'boolean', label: 'Boolean', icon: '⊕' },
+];
 
 function parseTerms(raw: string): string[] {
   return raw
@@ -32,7 +40,7 @@ function sameStringArray(a: string[] | null | undefined, b: string[] | null | un
  */
 function buildEditPatch(
   initial: Watchlist,
-  current: { name: string; matchType: MatchType; terms: string; booleanQuery: string; platformIds: string[] }
+  current: { name: string; matchType: MatchType; terms: string[]; booleanQuery: string; platformIds: string[] }
 ): Record<string, unknown> {
   const patch: Record<string, unknown> = {};
 
@@ -45,7 +53,7 @@ function buildEditPatch(
     patch.matchType = current.matchType;
   }
 
-  const finalTerms = current.matchType === 'boolean' ? null : parseTerms(current.terms);
+  const finalTerms = current.matchType === 'boolean' ? null : current.terms;
   const finalBooleanQuery = current.matchType === 'boolean' ? current.booleanQuery.trim() || null : null;
 
   if (matchTypeChanged || !sameStringArray(finalTerms, initial.terms ?? null)) {
@@ -84,10 +92,11 @@ export function WatchlistForm({
 }) {
   const [name, setName] = useState(watchlist?.name ?? '');
   const [matchType, setMatchType] = useState<MatchType>((watchlist?.matchType as MatchType) ?? 'keyword');
-  const [terms, setTerms] = useState((watchlist?.terms ?? []).join('\n'));
+  const [terms, setTerms] = useState<string[]>(watchlist?.terms ?? []);
   const [booleanQuery, setBooleanQuery] = useState(watchlist?.booleanQuery ?? '');
   const [platformIds, setPlatformIds] = useState<string[]>(watchlist?.platformIds ?? []);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function togglePlatform(id: string) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]));
@@ -96,23 +105,61 @@ export function WatchlistForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
+    setSubmitting(true);
 
-    if (mode === 'create') {
-      const response = await fetch('/api/watchlists', {
-        method: 'POST',
+    try {
+      if (mode === 'create') {
+        const response = await fetch('/api/watchlists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            matchType,
+            terms: matchType === 'boolean' ? null : terms,
+            booleanQuery: matchType === 'boolean' ? booleanQuery.trim() || null : null,
+            platformIds,
+          }),
+        });
+        const body = await response.json().catch(() => ({}));
+
+        if (response.status === 201) {
+          window.location.reload();
+          return;
+        }
+        if (response.status === 422) {
+          setMessage({
+            kind: 'error',
+            text: Array.isArray(body.details) && body.details.length > 0 ? body.details.join(' ') : 'Validation failed.',
+          });
+          return;
+        }
+        setMessage({ kind: 'error', text: 'Something went wrong while creating this watchlist.' });
+        return;
+      }
+
+      const current = watchlist as Watchlist;
+      const patch = buildEditPatch(current, { name, matchType, terms, booleanQuery, platformIds });
+
+      const response = await fetch(`/api/watchlists/${encodeURIComponent(current.id)}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          matchType,
-          terms: matchType === 'boolean' ? null : parseTerms(terms),
-          booleanQuery: matchType === 'boolean' ? booleanQuery.trim() || null : null,
-          platformIds,
-        }),
+        body: JSON.stringify({ patch, version: current.version }),
       });
       const body = await response.json().catch(() => ({}));
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         window.location.reload();
+        return;
+      }
+      if (response.status === 409) {
+        setMessage({
+          kind: 'error',
+          text: `This watchlist changed elsewhere (now at version ${body.current_version ?? '?'}) — reload the page to see the latest before retrying.`,
+        });
+        return;
+      }
+      if (response.status === 428) {
+        setMessage({ kind: 'error', text: 'A required version header was missing — reload the page and try again.' });
         return;
       }
       if (response.status === 422) {
@@ -122,96 +169,143 @@ export function WatchlistForm({
         });
         return;
       }
-      setMessage({ kind: 'error', text: 'Something went wrong while creating this watchlist.' });
-      return;
+      if (response.status === 404) {
+        setMessage({ kind: 'error', text: 'This watchlist no longer exists — reload the page.' });
+        return;
+      }
+      setMessage({ kind: 'error', text: 'Something went wrong while saving this watchlist.' });
+    } finally {
+      setSubmitting(false);
     }
-
-    const current = watchlist as Watchlist;
-    const patch = buildEditPatch(current, { name, matchType, terms, booleanQuery, platformIds });
-
-    const response = await fetch(`/api/watchlists/${encodeURIComponent(current.id)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ patch, version: current.version }),
-    });
-    const body = await response.json().catch(() => ({}));
-
-    if (response.status === 200) {
-      window.location.reload();
-      return;
-    }
-    if (response.status === 409) {
-      setMessage({
-        kind: 'error',
-        text: `This watchlist changed elsewhere (now at version ${body.current_version ?? '?'}) — reload the page to see the latest before retrying.`,
-      });
-      return;
-    }
-    if (response.status === 428) {
-      setMessage({ kind: 'error', text: 'A required version header was missing — reload the page and try again.' });
-      return;
-    }
-    if (response.status === 422) {
-      setMessage({
-        kind: 'error',
-        text: Array.isArray(body.details) && body.details.length > 0 ? body.details.join(' ') : 'Validation failed.',
-      });
-      return;
-    }
-    if (response.status === 404) {
-      setMessage({ kind: 'error', text: 'This watchlist no longer exists — reload the page.' });
-      return;
-    }
-    setMessage({ kind: 'error', text: 'Something went wrong while saving this watchlist.' });
   }
 
+  const termPrefix = matchType === 'hashtag' ? '#' : matchType === 'account' ? '@' : '';
+
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Name
-        <input required value={name} onChange={(event) => setName(event.target.value)} />
-      </label>
-      <label>
-        Match type
-        <select value={matchType} onChange={(event) => setMatchType(event.target.value as MatchType)}>
-          <option value="keyword">keyword</option>
-          <option value="hashtag">hashtag</option>
-          <option value="account">account</option>
-          <option value="boolean">boolean</option>
-        </select>
-      </label>
+    <form id="watchlist-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+      {/* Watchlist Name */}
+      <div className="wl-form-section">
+        <label className="wl-form-label" htmlFor="wl-name">Watchlist Name</label>
+        <input
+          id="wl-name"
+          type="text"
+          className="form-input"
+          required
+          placeholder="e.g. Acme Executive Mentions"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      {/* Match Type */}
+      <div className="wl-form-section">
+        <span className="wl-form-label">Match Type</span>
+        <div className="match-type-grid">
+          {MATCH_TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`match-type-btn${matchType === opt.value ? ' is-selected' : ''}`}
+              onClick={() => setMatchType(opt.value)}
+            >
+              <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
+              <span>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Query / Terms */}
       {matchType === 'boolean' ? (
-        <label>
-          Boolean query
-          <textarea value={booleanQuery} onChange={(event) => setBooleanQuery(event.target.value)} />
-        </label>
+        <div className="wl-form-section">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="wl-form-label">Boolean Query</span>
+            <span className="wl-form-hint">Supports AND, OR, NOT, (), &quot;&quot;</span>
+          </div>
+          <textarea
+            className="boolean-query-editor"
+            rows={4}
+            required
+            value={booleanQuery}
+            onChange={(e) => setBooleanQuery(e.target.value)}
+            placeholder={`("Acme Global" OR "Acme Cloud") AND (launch OR enterprise) NOT spam`}
+          />
+          <p className="wl-form-hint">Evaluated against titles and bodies during stream ingestion.</p>
+        </div>
       ) : (
-        <label>
-          Terms (one per line)
-          <textarea value={terms} onChange={(event) => setTerms(event.target.value)} />
-        </label>
+        <div className="wl-form-section">
+          <label className="wl-form-label">{MATCH_TYPE_OPTIONS.find((o) => o.value === matchType)?.label} List</label>
+          <TagInput
+            values={terms}
+            onChange={setTerms}
+            prefix={termPrefix}
+            placeholder={
+              matchType === 'hashtag'
+                ? 'e.g. EnterpriseAI…'
+                : matchType === 'account'
+                ? 'e.g. ReutersTech…'
+                : 'e.g. Acme Global…'
+            }
+          />
+          <p className="wl-form-hint">Press Enter or comma to add each term.</p>
+        </div>
       )}
-      <fieldset>
-        <legend>Platforms</legend>
-        {connectedPlatforms.length === 0 && <p>Connect a platform first (see the Connectors screen).</p>}
-        {connectedPlatforms.map((platform) => (
-          <label key={platform.id}>
-            <input
-              type="checkbox"
-              checked={platformIds.includes(platform.id)}
-              onChange={() => togglePlatform(platform.id)}
-            />
-            {platform.name}
-          </label>
-        ))}
-      </fieldset>
-      <button type="submit">{mode === 'create' ? 'Create watchlist' : 'Save changes'}</button>
+
+      {/* Connected Platforms */}
+      <div className="wl-form-section">
+        <span className="wl-form-label">Ingestion Platform Sources</span>
+        {connectedPlatforms.length === 0 && (
+          <p className="wl-form-hint">Connect a platform first (see the Connectors screen).</p>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          {connectedPlatforms.map((platform) => {
+            const selected = platformIds.includes(platform.id);
+            return (
+              <div
+                key={platform.id}
+                className={`platform-row${selected ? ' is-selected' : ''}`}
+                role="checkbox"
+                aria-checked={selected}
+                tabIndex={0}
+                onClick={() => togglePlatform(platform.id)}
+                onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePlatform(platform.id); } }}
+              >
+                <span>{platform.name}</span>
+                <div className="platform-row-check">{selected ? '✓' : ''}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {message && (
+        <p
+          role={message.kind === 'error' ? 'alert' : 'status'}
+          className={`form-message ${message.kind === 'error' ? 'form-message-error' : 'form-message-success'}`}
+        >
+          {message.text}
+        </p>
+      )}
+
+      {/* Inline cancel for edit mode when not in slideover */}
       {mode === 'edit' && onCancel && (
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+            {submitting ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
       )}
-      {message && <p role={message.kind === 'error' ? 'alert' : 'status'}>{message.text}</p>}
+
+      {mode === 'create' && !onCancel && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create watchlist'}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

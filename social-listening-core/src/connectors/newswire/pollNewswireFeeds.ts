@@ -7,6 +7,8 @@ import { newswireConnector, fetchNewswireFeed, NEWSWIRE_PROVIDER_ID, DEFAULT_NEW
 import { ParsedRssItem } from './rssFeedParser';
 import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
+import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
+import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
 
 /**
  * acquireForProvider() has no ingestion-domain knowledge of its own (see
@@ -44,6 +46,11 @@ export async function ingestNewswireItems(
   let postsIngested = 0;
   let postsSkipped = 0;
 
+  // ADR-0058 Decision §6 — loaded once per poll batch, never once per post.
+  const watchlists = (await listActiveWatchlistsForTenant(tenantId)).filter((w) =>
+    w.platformIds.includes(NEWSWIRE_PROVIDER_ID)
+  );
+
   for (const item of items) {
     const normalized = newswireConnector.normalize(item);
 
@@ -74,7 +81,7 @@ export async function ingestNewswireItems(
     const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
-    await insertSocialPost({
+    const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
@@ -83,6 +90,14 @@ export async function ingestNewswireItems(
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
+    });
+
+    // ADR-0058 Decision §1/§6 — post-commit, same as pollGNewsSearch.ts.
+    await publishSocialPostIngestedEvents(tenantId, NEWSWIRE_PROVIDER_ID, watchlists, {
+      postId: inserted.id,
+      text: enrichmentText,
+      authorExternalId: normalized.authorExternalId,
+      publishedAt: normalized.publishedAt,
     });
 
     postsIngested += 1;

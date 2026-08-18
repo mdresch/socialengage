@@ -182,17 +182,37 @@ export interface TenantUserActionOutcome {
   body: { error?: string; id?: string; [key: string]: unknown };
 }
 
+/** Enhancement, 2026-08-17 — the caller's own tenant's real seat counts, now returned alongside the user list (GET /v1/tenants/users). */
+export interface TenantSeatInfo {
+  licenseSeatCount: number;
+  activeSeatCount: number;
+}
+
+export interface TenantUsersResult {
+  users: TenantUser[];
+  seats: TenantSeatInfo;
+}
+
 /**
  * Story 6.8 / Story 1.9 — lists every user for the caller's own tenant
  * (GET /v1/tenants/users, RLS-scoped, no role gate on read).
+ *
+ * Enhancement, 2026-08-17 (dated correction — widened return shape, see
+ * this repo's own story-6.8 contract for the matching dated note): now
+ * returns `{ users, seats }` rather than a bare array, since the same
+ * response now also carries the caller tenant's own real
+ * licenseSeatCount/activeSeatCount (social-listening-core@556bb65).
  */
-export async function listTenantUsers(): Promise<TenantUser[]> {
+export async function listTenantUsers(): Promise<TenantUsersResult> {
   const response = await authenticatedCoreFetch('/v1/tenants/users');
   if (!response.ok) {
     throw new Error(`Failed to list tenant users: ${response.status}`);
   }
-  const payload = (await response.json()) as { users?: TenantUser[] };
-  return Array.isArray(payload.users) ? payload.users : [];
+  const payload = (await response.json()) as { users?: TenantUser[]; seats?: TenantSeatInfo };
+  return {
+    users: Array.isArray(payload.users) ? payload.users : [],
+    seats: payload.seats ?? { licenseSeatCount: 0, activeSeatCount: 0 },
+  };
 }
 
 /**
@@ -234,8 +254,36 @@ export async function setUserAccessEndsAt(
   return { status: response.status, body };
 }
 
+export interface AccessHistoryEntry {
+  id: string;
+  targetUserId: string;
+  actorUserId: string;
+  operation: string;
+  oldValue: string | null;
+  newValue: string | null;
+  occurredAt: string;
+}
+
+/**
+ * Story 6.14 / Story 5.17 — the audit trail for one user's own
+ * access_ends_at writes (GET /v1/tenants/users/:id/access-history,
+ * tenant_admin only, RLS-scoped server-side). Throws on a non-2xx, the same
+ * convention listTenantUsers() already uses — unlike inviteTenantUser()/
+ * setUserAccessEndsAt() above, there's no documented non-2xx outcome this
+ * screen needs to react to differently; a 403/404 here is a genuine failure.
+ */
+export async function getUserAccessHistory(userId: string): Promise<AccessHistoryEntry[]> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/users/${encodeURIComponent(userId)}/access-history`);
+  if (!response.ok) {
+    throw new Error(`Failed to load access history: ${response.status}`);
+  }
+  const payload = (await response.json()) as { entries?: AccessHistoryEntry[] };
+  return Array.isArray(payload.entries) ? payload.entries : [];
+}
+
 export interface ConnectorStatus {
-  status: 'healthy' | 'degraded' | 'failing' | 'disconnected';
+  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a credential-invalidation failure, distinct from ordinary rate-limit/network 'failing'. */
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
   lastSuccessfulFetchAt: string | null;
   lastAttemptAt: string | null;
   consecutiveFailures: number;
@@ -356,6 +404,66 @@ export async function deactivatePlatform(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userId ? { ownerType, userId } : { ownerType }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookOAuthExchangeOutcome {
+  status: number;
+  body: {
+    sessionToken?: string;
+    pages?: { id: string; name: string; category?: string }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.23 (ADR-0059 Decision §3/§4) — forwards the code Facebook's own
+ * redirect handed to our callback route to social-listening-core's real
+ * OAuth-exchange endpoint (Story 2.15), which does the actual Meta token
+ * exchange and /me/accounts call server-side. This function never talks to
+ * Meta directly — Meta itself is core's own boundary, not this repo's.
+ */
+export async function exchangeFacebookOAuthCode(
+  code: string,
+  redirectUri: string
+): Promise<FacebookOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/facebook/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface FacebookSelectPageOutcome {
+  status: number;
+  body: {
+    platformId?: string;
+    ownerType?: string;
+    page?: { id: string; name: string };
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.23 (ADR-0059 Decision §4) — completes the Page-picker step
+ * (`POST /v1/connectors/facebook/oauth/select-page`, Story 2.15). Always
+ * Tier 3/personal scope on the backend — there is no `ownerType` parameter
+ * here to choose, unlike `connectPlatform()`.
+ */
+export async function selectFacebookPage(
+  sessionToken: string,
+  pageId: string
+): Promise<FacebookSelectPageOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/facebook/oauth/select-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionToken, pageId }),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
@@ -604,6 +712,8 @@ export interface SocialPostSummary {
   rawPayload: unknown;
   publishedAt: string | null;
   enrichment: unknown;
+  /** Story 6.19 (Story 3.10/ADR-0053) — real, canonical Markdown body. null when never populated (pre-Story-3.10 posts), never omitted. */
+  bodyMarkdown: string | null;
 }
 
 export interface SocialPostsPage {
@@ -625,9 +735,19 @@ export interface SocialPostFull extends SocialPostSummary {
  * opaque-cursor contract (`posts-api/SKILL.md`'s own "cursor is opaque by
  * contract" constraint). Throws on a non-2xx — this screen has nothing
  * sensible to render without a real page of results.
+ *
+ * `limit` (Story 8.1, ADR-0054 Decision §3) is optional and forwarded
+ * as-is — the real, already-supported `GET /v1/posts?limit=` query param
+ * (`postsRouter.ts`, capped server-side at `MAX_PAGE_LIMIT=100`), not a new
+ * backend capability. Analytics' own paginate-everything-and-aggregate
+ * loop uses this to fetch in bigger pages (fewer round trips); every other
+ * existing caller keeps the server's own default page size by omitting it.
  */
-export async function listPosts(cursor?: string): Promise<SocialPostsPage> {
-  const suffix = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+export async function listPosts(cursor?: string, limit?: number): Promise<SocialPostsPage> {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', cursor);
+  if (typeof limit === 'number') params.set('limit', String(limit));
+  const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
     throw new Error(`Failed to list posts: ${response.status}`);
@@ -678,11 +798,31 @@ export interface TenantOwnedFeedActivation {
   txtRecordValue: string;
   expiresAt: string;
   feedUrl: string;
+  /** Story 6.20 (ADR-0057 Decision §1a) — 'verified' when this call auto-verified a second feed on an already-verified domain, skipping the DNS TXT step entirely; 'pending' for the ordinary new-domain path. */
+  status?: 'pending' | 'verified';
 }
 
 export interface TenantOwnedFeedConnectOutcome {
   status: number;
   body: Partial<TenantOwnedFeedActivation> & { error?: string };
+}
+
+/** Story 6.20 (ADR-0057) — one row from GET /v1/connectors/tenant-owned-feed/activations. */
+export interface TenantOwnedFeedActivationDetail {
+  id: string;
+  domain: string;
+  feedUrl: string;
+  status: 'pending' | 'verified' | 'expired' | 'removed';
+  txtRecordHost: string;
+  txtRecordValue: string;
+  tokenExpiresAt: string;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
+export interface TenantOwnedFeedActionOutcome {
+  status: number;
+  body: Partial<TenantOwnedFeedActivationDetail> & { error?: string };
 }
 
 export interface TenantOwnedFeedVerifyOutcome {
@@ -722,6 +862,54 @@ export async function verifyTenantOwnedFeedDomain(connectorActivationId: string)
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ connectorActivationId }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.20 (ADR-0057) — lists every tenant-owned-feed activation for the
+ * caller's tenant (`GET /v1/connectors/tenant-owned-feed/activations`,
+ * `tenant_admin` only), any status. Called server-side from page.tsx, the
+ * same pattern `listTenantUsers()` already established — no proxy route
+ * needed for a read a Server Component can make directly.
+ */
+export async function listTenantOwnedFeedActivations(): Promise<TenantOwnedFeedActivationDetail[]> {
+  const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/activations');
+  if (!response.ok) {
+    throw new Error(`Failed to list tenant-owned feed activations: ${response.status}`);
+  }
+  const payload = (await response.json()) as { activations?: TenantOwnedFeedActivationDetail[] };
+  return Array.isArray(payload.activations) ? payload.activations : [];
+}
+
+/**
+ * Story 6.20 (ADR-0057) — updates `feedUrl` only on an activation
+ * (`PATCH /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
+ * Returns the raw status/body: a `400` (a request that tried to also send
+ * `domain`) and a `404` (unknown id) are both real, expected outcomes the
+ * UI must react to specifically, not collapsed into a generic error.
+ */
+export async function updateTenantOwnedFeedActivation(id: string, feedUrl: string): Promise<TenantOwnedFeedActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feedUrl }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.20 (ADR-0057) — soft-removes an activation
+ * (`DELETE /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
+ * The backend transitions `status` to `'removed'`, never a hard delete;
+ * this function's own outcome shape mirrors that — a real, non-error
+ * response, not a thrown exception.
+ */
+export async function removeTenantOwnedFeedActivation(id: string): Promise<TenantOwnedFeedActionOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };

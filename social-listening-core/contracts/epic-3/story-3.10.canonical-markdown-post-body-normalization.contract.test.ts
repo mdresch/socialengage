@@ -501,6 +501,33 @@ describe('Story 3.10 — canonical Markdown post-body storage and enrichment inp
       expect(row.body_markdown).not.toContain('[+1,842 chars]');
       expect(row.body_markdown).toBe(htmlToMarkdown('A funding round was announced today'));
     });
+
+    it('healing note, 2026-08-17: strips the real, confirmed-live marker format (no "+" sign) — ADR-0053 Open Question 11, resolved against a real GNews response', async () => {
+      const tenantId = randomUUID();
+      const runId = await makeRun(tenantId, GNEWS_PROVIDER_ID);
+      const article: GNewsArticle = {
+        id: 'gnews-truncation-marker-real-format',
+        title: 'Real-format truncation marker check',
+        description: 'desc',
+        content: 'Anthropic CEO Dario Amodei has broken silence on claims that his warnings on AI fueled fear [1966 chars]',
+        url: 'https://example.com/article-2',
+        image: '',
+        publishedAt: '2026-08-17T10:00:00Z',
+        lang: 'en',
+        source: { id: 'src-1', name: 'Example News', url: 'https://example.com', country: 'us' },
+      };
+      await ingestGNewsArticles(tenantId, runId, [article]);
+      const [{ id }] = await withTenant(tenantId, async (client) => {
+        const { rows } = await client.query<{ id: string }>(
+          `SELECT id FROM social_posts WHERE raw_payload->>'externalId' = $1`,
+          ['gnews-truncation-marker-real-format']
+        );
+        return rows;
+      });
+      const row = await getRow(tenantId, id);
+      expect(row.body_markdown).not.toContain('[1966 chars]');
+      expect(row.body_markdown).toBe(htmlToMarkdown('Anthropic CEO Dario Amodei has broken silence on claims that his warnings on AI fueled fear'));
+    });
   });
 
   describe('AC10: enrichmentText composition — [title, body_markdown].filter(Boolean).join(\'. \')', () => {

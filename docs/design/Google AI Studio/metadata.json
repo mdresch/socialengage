@@ -1,0 +1,6 @@
+{
+  "name": "SocialEngage",
+  "description": "Enterprise social listening platform administration console with role-gated access, connector management, post feed AI enrichment, watchlists, team access control, and platform operations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

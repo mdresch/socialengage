@@ -72,6 +72,13 @@
  * AC11: `disconnect` (Story 1.7, unchanged) continues to hard-delete the
  *       credential and never touches either activation table; deactivate
  *       never deletes the credential.
+ *
+ * Clarification, 2026-08-17 (ADR-0028 Decision §1, found live — see
+ * story-1.7's own matching AC8 and connector-connect-disconnect/SKILL.md):
+ * AC12: `ownerType: 'user'` is rejected `400` for any real, registered
+ *       `AIProviderConnector` (Azure AI Language, Azure OpenAI) — ADR-0028
+ *       Tier 2 only, no Tier 3/personal variant; `connector_user_
+ *       activations` is never written for one.
  */
 
 import { randomUUID } from 'crypto';
@@ -262,6 +269,35 @@ describe('Story 1.11 — POST /v1/connectors/:platformId/activate', () => {
       [tenantId, AUTH_NONE_PLATFORM_ID]
     );
     expect(rows).toHaveLength(0);
+  });
+
+  it('AC12 (2026-08-17 Clarification): ownerType "user" is rejected 400 for a real AIProviderConnector (azure-ai-language), and no row is written', async () => {
+    const { tenantId, memberUserId } = await makeTenantWithUsers();
+
+    const res = await request(app)
+      .post('/v1/connectors/azure-ai-language/activate')
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: memberUserId, role: 'tenant_user' }))
+      .send({ ownerType: 'user' });
+
+    expect(res.status).toBe(400);
+
+    const { rows } = await getAdminPool().query(
+      `SELECT 1 FROM connector_user_activations WHERE tenant_id = $1 AND platform_id = $2`,
+      [tenantId, 'azure-ai-language']
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  it('AC12: a real, non-AI social connector (gnews) is unaffected — ownerType "user" activation still succeeds', async () => {
+    const { tenantId, memberUserId } = await makeTenantWithUsers();
+
+    const res = await request(app)
+      .post('/v1/connectors/gnews/activate')
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: memberUserId, role: 'tenant_user' }))
+      .send({ ownerType: 'user' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.isActive).toBe(true);
   });
 
   it('AC9: activating does not invoke runIngestionAttempt() — no IngestionRun is created as a side effect', async () => {

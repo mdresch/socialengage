@@ -20,13 +20,34 @@ export const tenantUsersRouter = Router();
  * caller's own tenant. Available to both tenant_admin and tenant_user
  * (read-only, no role gate on GET). RLS-scoped; includes 'invited' and
  * 'active' rows.
+ *
+ * Enhancement, 2026-08-17: also returns `seats: { licenseSeatCount,
+ * activeSeatCount }` for the caller's own tenant — both fields already exist
+ * and are already read/written by this same router's POST/PATCH handlers,
+ * but were Platform-Admin-only via GET /v1/tenants (Story 5.12) until now.
+ * No new query beyond what POST's own seat-ceiling check already does; RLS
+ * (withTenant) makes cross-tenant leakage the same non-issue it is for
+ * `users` above.
  */
 tenantUsersRouter.get('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 
   const users = await listUsers(identity.tenantId);
-  res.json({ users });
+  const seats = await withTenant(identity.tenantId, async (client) => {
+    const { rows } = await client.query<{ license_seat_count: number; active_seat_count: number }>(
+      `SELECT license_seat_count, active_seat_count FROM tenants WHERE id = $1`,
+      [identity.tenantId]
+    );
+    return rows[0] ?? null;
+  });
+
+  res.json({
+    users,
+    seats: seats
+      ? { licenseSeatCount: seats.license_seat_count, activeSeatCount: seats.active_seat_count }
+      : { licenseSeatCount: 0, activeSeatCount: 0 },
+  });
 });
 
 /**

@@ -18,6 +18,8 @@ This component renders the tenant-facing connector status screen (`/tenant/conne
 | ADR-0023 | Failing connectors must be visually distinguished from degraded/healthy ones. | 6.5 |
 | ADR-0021 | Boolean-query AST, `resolveWatchlistAstDispatch()`'s `unsupportedNodeTypes` — see "Known gaps" below. | not yet built |
 | ADR-0051 | Connector activation, decoupled from credential presence — the Active/Inactive indicator is now driven by real `isActive` (Story 1.12), never `authMode`/`credentialStatus`; real activate/deactivate controls added | 6.15 |
+| ADR-0042 | Wikipedia connector (`social-listening-core`) — added as a fifth `PLATFORMS` entry here too (no icon/color fields on this screen's own, plainer `PlatformDefinition` shape) | 6.21 |
+| ADR-0059 Decision §4 | `reconnect_required` — a new `ConnectorHealthStatus` value (Story 2.15's backend addition) for a credential-invalidation failure (password change, Page-admin removal, grant revocation), distinct from the generic `failing` state — this screen renders it as its own `StatusBadge` variant, not folded into `failing`/`inactive` | 6.23 |
 
 ## Correction, 2026-08-12 — this story was never actually built despite being marked "Built"
 Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardcoded `gnews`/`newswire`/`reddit` fixture array — never imported `core-client.ts`, never called `GET /v1/connectors/:platformId`. The original contract only did `fs.readFileSync` + string-literal checks, which could not detect this. Rebuilt for real — see `docs/user-stories/epic-6-tenant-admin-ui.md`'s own Story 6.5 entry and `docs/implementation-log.md` for the rebuild commit.
@@ -30,18 +32,28 @@ Confirmed directly: `src/app/tenant/connectors/status/page.tsx` rendered a hardc
 
 - `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` — real behavioral assertions (a real-session-plus-fetch-mocking page render, plus structural source checks), no jsdom in this repo (testEnvironment is `'node'`). **Revised 2026-08-12 (Story 6.15, ADR-0051):** the assertion that Newswire "always renders Active, regardless of credentialStatus" was real, deliberate behavior under the old (pre-ADR-0051) model and is now wrong under the current one — rewritten with a dated note, not silently changed, to assert Newswire renders Inactive by default and Active only once `isActive` is true.
 - `contracts/epic-6/story-6.15.connector-activation-controls.contract.test.ts` — the Active/Inactive label is driven by real `isActive`, on both this screen and `tenant/connectors/page.tsx`; `ActivateDeactivateButton` is rendered for every platform; the personal control is hidden for `authMode: 'none'`; the tenant-wide control is gated on `tenant_admin`.
+- `contracts/epic-6/story-6.21.wikipedia-connector-ui.contract.test.ts` — this screen's own `PLATFORMS` array gains a `wikipedia` entry (`authMode: 'none'`, `category: 'Ingestion'`).
+- `contracts/epic-6/story-6.23.facebook-oauth-connect-flow.contract.test.ts` — this screen's own `PLATFORMS` array gains a `facebook` entry (`authMode: 'oauth'`, `category: 'Ingestion'`, `tenantScopeAllowed: false`); `deriveVariant()` maps a `reconnect_required` health status to its own distinct `StatusBadge` variant, never falling through to `inactive`/`failing`; the reconnect action renders here too (not just on `tenant/connectors/page.tsx`) and targets the same `/api/connectors/facebook/oauth/start` entry point.
 
 ## How to extend this safely
 
 - Keep the screen focused on health/status data only — never render `rawPayload`, post text, or watchlist query content (ADR-0030 §2's Platform Admin analogue, applied here as a general "status views show status, not content" principle, per Story 6.9's own restatement).
-- Adding a fifth platform: add one entry to `PLATFORMS` here — no other change needed, same as `tenant/connectors/page.tsx`'s own equivalent note.
+- Adding a platform: add one entry to `PLATFORMS` here — this screen's own `PlatformDefinition` has no `icon`/`color` fields, so no matching visual-identity work is ever needed here even when `tenant/connectors/page.tsx`'s own richer `PlatformDef` needs a new one (Story 6.21).
 
 ## Load-bearing constraints — do not change casually
 
-- Health values are rendered as `healthy`/`degraded`/`failing`/`disconnected`, sourced from the real `GET /v1/connectors/:platformId` response — never a fixture. `failing` gets a materially distinct render (not just the same text in a different color no test can see), per ADR-0023.
+- Health values are rendered as `healthy`/`degraded`/`failing`/`disconnected`/`reconnect_required`, sourced from the real `GET /v1/connectors/:platformId` response — never a fixture. `failing` gets a materially distinct render (not just the same text in a different color no test can see), per ADR-0023. **`reconnect_required` (Story 6.23) is its own distinct `StatusBadge` variant, not a synonym for `failing`** — a revoked Facebook OAuth grant and an ordinary rate-limit blip are different problems needing different tenant-facing language (ADR-0059 Decision §4's own named silent-failure concern); don't collapse the two.
 - A platform whose `getConnectorStatus()` call throws (transient core-side issue) degrades to `isActive: false` for that one platform, the same pattern `tenant/connectors/page.tsx` already established — a single platform's failure must not block the whole screen's render.
 - **The Active/Inactive indicator is `isActive`, full stop — never re-derive it from `credentialStatus`/`authMode` again.** This was the exact conflation ADR-0051 exists to fix; reintroducing it anywhere (even as a "fallback" for a failed activation read) would reopen the Newswire always-active bug.
 - **The personal `ActivateDeactivateButton`'s `isActive` prop is always `false` on this screen too** (see `connector-connect-disconnect/SKILL.md`'s matching note) — `GET /v1/connectors/:platformId` only exposes tenant-wide activation.
+
+## Healing note, 2026-08-17 (real behavior unchanged; the file layout it lives in did)
+
+`page.tsx` is now a thin Server Component (data-fetching, gating, the local `PLATFORMS` list) — every rendering concern this doc's "Architecture" section above attributes to it (the health metrics, the failing/degraded distinction, `ActivateDeactivateButton` usage, the watchlist-compatibility gap notice) actually lives in **`ConnectorStatusClient.tsx`** now. The Active/Inactive indicator is the shared `StatusBadge` component (`src/components/ui`): **once active, `deriveVariant()` surfaces the real `health.status` (`healthy`/`degraded`/`failing`) rather than a flat "active"** — a genuinely richer, more correct signal for a screen literally named "Connector Health & Telemetry" than a binary Active/Inactive, and fully consistent with this file's own ADR-0023 requirement ("failing... visually distinguished from degraded/healthy"); only the *inactive* case renders the literal `inactive` variant, whose `StatusBadge` default label is "Paused" (`frontend-design-specification.md` §6.1), not "Inactive."
+
+## Fix, 2026-08-17 — personal-scope activation for AI providers had no effect (see connector-connect-disconnect/SKILL.md's matching note for the full account)
+
+`ConnectorStatusRow.platform` gains `personalScopeAllowed: boolean` (mirroring `ConnectorsClient.tsx`'s `PlatformDef`) — the personal `ActivateDeactivateButton` here now gates on it instead of a plain `authMode !== 'none'` check, so `azure-ai-language`/`azure-openai` (ADR-0028 Tier 2 only) no longer offer a personal activation control that `enrichPost.ts` would never actually read.
 
 ## Known gaps / deferred work
 

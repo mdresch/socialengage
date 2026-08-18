@@ -2,9 +2,9 @@
 ### Social Listening & Engagement Platform — Phase 1: Social Listening / Insights Subsystem
 
 **Author:** Menno
-**Date:** 5 August 2026
-**Status:** v1.0 — first entry
-**Version:** 1.0
+**Date:** 5 August 2026 (updated 13 August 2026)
+**Status:** v1.1 — second entry
+**Version:** 1.1
 **Framework referenced:** *PMBOK® Guide* (6th Edition), Process 4.4 "Manage Project Knowledge" (Project Integration Management knowledge area, Executing process group) — the process that originates the Lessons Learned Register as a project artifact, updated as an output across subsequent processes through project/phase closure. Verified directly (not assumed) before citing, per this project's own established precedent for framework citations (`Stakeholder-Register.md`'s corrected BABOK Task 3.2 citation).
 
 ---
@@ -44,11 +44,28 @@ The combination — no stated WIP limit, plus a real (not estimated) after-hours
 
 ---
 
+### 2026-08-13 — Contract-passing components with no real call site: a blind spot invisible to every existing enforcement layer
+
+**What happened.** During a methodology retrospective (Menno asked to review `implement-story`/`heal-contract-failure` for gaps, unprompted by any failure), a live re-verification of an unrelated question — "how far are we from M7?" — led to grepping `social-listening-core/src/ingestion` for `publishEvent()`'s real call sites, and finding none. `publishEvent()` (`src/events/serviceBusPublisher.ts`) had a fully passing contract (`ingestion-events`), but nothing in the real production ingestion path — no live scheduler tick, no real `ingestX()` function — ever actually called it. The component behaved correctly whenever exercised directly; it was simply never exercised by the running system.
+
+None of this project's existing enforcement layers would have caught it: `enforce-contract-first.cjs` only checks that a contract *exists* before a `src/` write, not that it's wired to a real caller; the full accumulated contract suite passing proves every contract's own assertions hold, not that every contract's subject is reachable; Documentation Steward's traceability sweep checks `SKILL.md` claims against ADRs/Stories/the Implementation Log, not against a real call-site grep. It surfaced only from a hand-run grep, prompted by an unrelated business question — not from any process step this project had already built for the purpose.
+
+**The pattern identified.** Contract-first TDD, as practiced here, verifies a component's behavior in isolation — it has no structural check that a contract-verified component is actually reachable from the real production call graph. A component can go from "built, contract-passing, `SKILL.md`-documented" to "silently orphaned" with every mechanical gate this project has still showing green. This is the same shape of gap as the entry above: a real, structural hole in the project's own process, invisible until direct inspection surfaced it — not a code defect in any one story, and not something any amount of care within a single story's own scope could have caught.
+
+**The resulting decision.** A new "relationship assertion" convention: a story that gives a component a real call relationship with another component must back that relationship with a contract exercising it at the real production call site, not only the isolated function — and each component's `SKILL.md` "Relations to other components" section is the declared surface Documentation Steward now checks this against, going forward. **The rule's authoritative text lives in `docs/implementation-methodology.md`'s "Relationship assertions" note (Step 3) and its 2026-08-13 Amendment Log entry, `docs/templates/component-skill-template.md`'s new "Relations to other components" section, and `.claude/agents/documentation-steward.md`'s corresponding 2026-08-13 checklist addition — not restated here.** Two smaller, related process gaps found in the same retrospective were closed the same day: resuming a story a prior session left uncommitted (a real, recurring case given this project's own weekly usage-quota limits) is now explicitly folded into `heal-contract-failure`'s existing entry conditions rather than left an unstated assumption; and a story's build status now has its own dedicated, fixed-shape `**Built:**` field (`docs/user-stories/README.md`'s "Built convention"), separate from `Status` (ADR-readiness), closing a smaller drift already observed in Stories 5.18 and 6.7. A new cross-cutting index, `docs/environment-gotchas.md`, also consolidates recurring environment/tooling surprises that had previously lived scattered across individual `SKILL.md` files, discoverable only by touching that component again.
+
+**What this entry does not claim.** It does not claim the `publishEvent()` gap itself is fixed — the live ingestion path still does not call it as of this entry; that remains a real, open code gap, not a documentation one, for a future story or healing pass. It does not claim the new relationship-assertion convention is retroactive — by explicit decision it is forward-only, so the ~30 existing `SKILL.md` files' relationship claims (including the one describing `publishEvent()`) are not swept for other instances of the same pattern. Another one may exist today, undiscovered.
+
+**Resolves:** none — this entry originates the finding rather than resolving one already flagged elsewhere in this project's governance documents.
+
+---
+
 ## Version History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-08-05 | Menno Drescher (AI Business & Requirements Analyst persona, drafting) | Initial version; first entry — backlog/scope growth pattern and the resulting WIP-limit decision |
+| 1.1 | 2026-08-13 | Menno Drescher (session retrospective) | Second entry — the `publishEvent()` contract-passing/no-real-call-site blind spot and the resulting methodology amendments (relationship-assertion convention, `heal-contract-failure` resume fold-in, `**Built:**` field, `docs/environment-gotchas.md`) |
 
 ---
 

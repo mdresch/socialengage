@@ -1,11 +1,13 @@
 ---
 name: heal-contract-failure
-description: Use when a contract test, the accumulated contract suite, a lint/typecheck step, CI, or the enforce-contract-first hook is failing/blocking and needs to be resolved. Re-walks Intent, Contract, Skill, and Implementation in that fixed order for every failure — no classifying the failure and jumping to a shortcut patch. Invoke this instead of freelancing a repair.
+description: Use when a contract test, the accumulated contract suite, a lint/typecheck step, CI, or the enforce-contract-first hook is failing/blocking and needs to be resolved — or when resuming a story a prior session left mid-implementation, uncommitted, because that session ended (e.g. a usage-quota cutoff) before Step 9's commit. Re-walks Intent, Contract, Skill, and Implementation in that fixed order for every failure — no classifying the failure and jumping to a shortcut patch. Invoke this instead of freelancing a repair.
 ---
 
 # Heal Contract Failure
 
-Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/implementation-methodology.md)'s "On failure" section — read it if this is your first time. This file is the operational checklist.
+Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/implementation-methodology.md)'s "On failure" and "Resuming a story interrupted before commit" sections — read it if this is your first time. This file is the operational checklist.
+
+**Resuming interrupted work is the same entry point as a red check, not a different one.** If you're picking up a story that has uncommitted changes on disk from a prior session but no failing check triggered this pass, don't assume that state is correct just because nothing turned red — a session ending mid-story (a usage-quota cutoff is the concrete case this project actually hits) leaves state exactly as unverified as a red check does. Start at Step 1 below the same way, then walk 2–5 before ever touching Step 7's commit.
 
 **The one rule that overrides everything else in this skill:** fix the underlying thing, never the check. If you find yourself editing a contract test's assertions, a hook's logic, a lint rule, or a CI gate in order to make a failure go away — stop. That's not a repair; it's the hard-stop condition in Step 6.
 
@@ -14,6 +16,8 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 **Retry cap: 3 full walks of Steps 1–5 for this failure, then mandatory escalation — no 4th attempt.** Before starting, check whether a todo item already exists for this failure from an earlier attempt this session (search the todo list via the `manage_todo_list` tool); if so, this is attempt 2 or 3, not attempt 1. Log a fresh todo entry per attempt with title `Healing attempt N: <what's failing> — <hypothesis>` so the count and the reasoning are both visible. Attempt 2 or 3 must be informed by why the previous attempt's Step 5 failed — repeating the same Step 4 change with no new information is not a distinct attempt; treat it as a signal to escalate now rather than spend the remaining budget on a repeat.
 
 ## Steps — fixed order, no skipping
+
+0. **Before Step 1, if the failure smells environmental** (times out only sometimes, only fails under the full suite / parallel run, only started after touching auth/Azure CLI/a dependency version) — check [`docs/environment-gotchas.md`](../../../docs/environment-gotchas.md) first. A known pattern there still needs Steps 1–5 walked (don't shortcut to a patch), but it tells you what you're likely looking at before you spend the walk re-deriving it. If this failure turns out to be a *new* environmental root cause, add it there once healed (Step 7 territory, not before).
 
 1. **Re-validate Intent.** Open the failing contract's Intent header comment. Re-read its Story in `docs/user-stories/epic-*.md` and its Source ADR in `docs/adr/` *fresh* — including any Amendment Log, Clarification, or Pending-supersession note added since this contract was written. Does the Intent block (scope, contract-to-encode, out-of-scope) still match what the story and ADR say right now? If not, that mismatch is very likely the actual root cause. Say so before continuing.
    

@@ -1,6 +1,9 @@
 import { startIngestionRun, completeIngestionRun, StartIngestionRunInput } from './ingestionRunStore';
 import { ClassifiableError, isCredentialError, isRetryable } from './errorClassification';
 import { withTenant } from '../db/withTenant';
+import { deriveConnectorHealth } from '../connectors/connectorHealth';
+import { buildConnectorHealthChangedEvent } from '../events/connectorHealthChangedEvent';
+import { publishEvent } from '../events/serviceBusPublisher';
 
 export interface IngestionAttemptResult {
   postsIngested: number;
@@ -43,6 +46,39 @@ const defaultBackoffMs = (attemptNumber: number) => Math.min(1000 * 2 ** attempt
 export async function runIngestionAttempt(
   options: RunIngestionAttemptOptions
 ): Promise<RunIngestionAttemptResult> {
+  // ADR-0058 Decision §2 — the "before" health snapshot, taken ahead of
+  // startIngestionRun() so it genuinely reflects state prior to this
+  // attempt, not including the just-opened 'running' row.
+  const previousHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId);
+
+  /**
+   * ADR-0058 Decision §2 — the one, shared exit point every return below
+   * funnels through: takes the "after" snapshot, publishes exactly one
+   * ConnectorHealthChangedEvent if and only if status actually changed,
+   * best-effort (never throws — ADR-0038's own "never blocks ingestion"
+   * precedent, same as publishSocialPostIngestedEvents()).
+   */
+  async function finish(result: RunIngestionAttemptResult): Promise<RunIngestionAttemptResult> {
+    const newHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId);
+    if (newHealth.status !== previousHealth.status) {
+      const event = buildConnectorHealthChangedEvent({
+        tenantId: options.tenantId,
+        platformId: options.connectorInfo.platformId,
+        previousStatus: previousHealth.status,
+        newStatus: newHealth.status,
+      });
+      try {
+        await publishEvent(options.tenantId, event);
+      } catch (err) {
+        console.error(
+          `[ingestion-events] Failed to publish ConnectorHealthChangedEvent (tenant=${options.tenantId} platform=${options.connectorInfo.platformId}):`,
+          err
+        );
+      }
+    }
+    return result;
+  }
+
   const run = await startIngestionRun(options.tenantId, options.connectorInfo);
   const maxRetries = options.maxRetries ?? 3;
   const backoffMs = options.backoffMs ?? defaultBackoffMs;
@@ -78,7 +114,7 @@ export async function runIngestionAttempt(
         postsIngested: result.postsIngested,
         postsSkipped: result.postsSkipped,
       });
-      return { runId: run.id, status: 'succeeded' };
+      return finish({ runId: run.id, status: 'succeeded' });
     } catch (err) {
       if (!(err instanceof ClassifiableError)) {
         throw err; // a programming error, not a classified ingestion outcome
@@ -97,8 +133,9 @@ export async function runIngestionAttempt(
             postsSkipped: 0,
             errorSummary,
             retryable: isRetryable(err.kind),
+            isCredentialFailure: isCredentialError(err.kind),
           });
-          return { runId: run.id, status: 'failed', errorSummary };
+          return finish({ runId: run.id, status: 'failed', errorSummary });
         }
       }
 
@@ -118,8 +155,9 @@ export async function runIngestionAttempt(
           postsSkipped: 0,
           errorSummary,
           retryable: isRetryable(err.kind),
+          isCredentialFailure: isCredentialError(err.kind),
         });
-        return { runId: run.id, status: 'failed', errorSummary };
+        return finish({ runId: run.id, status: 'failed', errorSummary });
       }
 
       await sleep(backoffMs(attemptsMade));

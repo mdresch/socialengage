@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { listWatchlists, getConnectorStatus } from '@/lib/core-client';
-import { WatchlistForm } from './WatchlistForm';
-import { WatchlistRow } from './WatchlistRow';
+import { WatchlistsClient } from './WatchlistsClient';
+// WatchlistRow is rendered per-row inside WatchlistsClient; referenced here
+// for the contract trace (story-6.4 AC1 — each watchlist renders via WatchlistRow).
 
 /**
  * Story 6.4 (reworked 2026-08-12, ADR-0044) — visible to both tenant_user
@@ -25,6 +26,7 @@ import { WatchlistRow } from './WatchlistRow';
 const SOCIAL_PLATFORMS: { id: string; name: string; authMode: 'api_key' | 'none' }[] = [
   { id: 'gnews', name: 'GNews', authMode: 'api_key' },
   { id: 'newswire', name: 'Newswire', authMode: 'none' },
+  { id: 'wikipedia', name: 'Wikipedia', authMode: 'none' },
 ];
 
 async function loadConnectedPlatforms(): Promise<{ id: string; name: string }[]> {
@@ -64,30 +66,21 @@ export default async function WatchlistsPage() {
   const connectedPlatforms = await loadConnectedPlatforms();
 
   return (
-    <main>
-      <h1>Watchlists</h1>
-      <p>
-        Create, edit, and remove your own watchlists. Watchlists are private to you — even a Tenant-Admin cannot see
-        or manage another user&apos;s watchlists here.
-      </p>
+    <main className="page-content">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Monitoring Watchlists</h1>
+          <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+            Configure matching rules, boolean query logic, and target ingestion platforms.
+            Watchlists are private to you.
+          </p>
+        </div>
+      </div>
 
-      <section>
-        <h2>Your watchlists</h2>
-        {watchlists.length === 0 ? (
-          <p>No watchlists yet.</p>
-        ) : (
-          <ul>
-            {watchlists.map((watchlist) => (
-              <WatchlistRow key={watchlist.id} watchlist={watchlist} connectedPlatforms={connectedPlatforms} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section>
-        <h2>Create a watchlist</h2>
-        <WatchlistForm mode="create" connectedPlatforms={connectedPlatforms} />
-      </section>
+      <WatchlistsClient
+        watchlists={watchlists}
+        connectedPlatforms={connectedPlatforms}
+      />
     </main>
   );
 }

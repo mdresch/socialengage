@@ -35,6 +35,16 @@
 // past v1); token-expiry transition to 'expired' (no scheduled job exists
 // yet — a named, real gap, see this component's own SKILL.md).
 //
+// Dated note, 2026-08-17 (Story 6.20 / ADR-0057 Decision §2): connect and
+// verify-domain now require tenant_admin — previously ungated (a real,
+// pre-existing role-gating inconsistency ADR-0057 found and corrected,
+// unlike every other tenant-wide connector action in this codebase). Every
+// call to either endpoint below that used to authorize with the default
+// tenant_user identity now explicitly passes tenant_admin instead — a
+// deliberate, ADR-justified update to this story's own contract, not a
+// silent rewrite; the behavior itself (TXT instructions, pending/verified
+// transitions) is completely unchanged.
+//
 // A note on the one deliberate mock in this file: this project has no
 // domain it can publish a real, controllable DNS TXT record for, so the
 // "record genuinely matches" path (AC4) is proven by spying on Node's own
@@ -78,6 +88,12 @@ afterAll(async () => {
   await closePool();
 });
 
+// Story 6.20 / ADR-0057 Decision §2 (2026-08-17): connect/verify-domain are
+// now tenant_admin-only — every real call to either below uses this helper.
+function adminHeader(tenantId: string): string {
+  return testIdentityHeaderValue(tenantId, { role: 'tenant_admin' });
+}
+
 // Real, live, already-proven-reachable feed (same one Story 2.6's own
 // contract already uses) — decoupled from domain *verification*, which is
 // exercised separately below. Reusing it avoids introducing a new external
@@ -111,7 +127,7 @@ describe('Story 2.11 — tenant-owned-feed connector contract', () => {
 
     const res = await request(app)
       .post('/v1/connectors/tenant-owned-feed/connect')
-      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+      .set('X-Test-Identity', adminHeader(tenantId))
       .send({ domain: 'blog.example.com', feedUrl: 'https://blog.example.com/feed' });
 
     expect(res.status).toBe(201);
@@ -144,7 +160,7 @@ describe('Story 2.11 — tenant-owned-feed connector contract', () => {
 
     const res = await request(app)
       .post('/v1/connectors/tenant-owned-feed/verify-domain')
-      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+      .set('X-Test-Identity', adminHeader(tenantId))
       .send({ connectorActivationId: activation.id });
 
     expect(res.status).toBe(200);
@@ -166,7 +182,7 @@ describe('Story 2.11 — tenant-owned-feed connector contract', () => {
     try {
       const res = await request(app)
         .post('/v1/connectors/tenant-owned-feed/verify-domain')
-        .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+        .set('X-Test-Identity', adminHeader(tenantId))
         .send({ connectorActivationId: activation.id });
 
       expect(res.status).toBe(200);
@@ -226,13 +242,13 @@ describe('Story 2.11 — tenant-owned-feed connector contract', () => {
 
     const missingFeedUrl = await request(app)
       .post('/v1/connectors/tenant-owned-feed/connect')
-      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+      .set('X-Test-Identity', adminHeader(tenantId))
       .send({ domain: 'blog.example.com' });
     expect(missingFeedUrl.status).toBe(400);
 
     const missingDomain = await request(app)
       .post('/v1/connectors/tenant-owned-feed/connect')
-      .set('X-Test-Identity', testIdentityHeaderValue(tenantId))
+      .set('X-Test-Identity', adminHeader(tenantId))
       .send({ feedUrl: 'https://blog.example.com/feed' });
     expect(missingDomain.status).toBe(400);
 

@@ -1,0 +1,6 @@
+{
+  "name": "SocialEngage - Social Listening Analytics",
+  "description": "Comprehensive social listening and analytics platform (ADPA) with sentiment tracking, location insights, stream management, search setup, and alerts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -63,7 +63,10 @@ function readSrc(...segments: string[]): string {
 const TENANT_USER = { type: 'tenant_user' as const, tenantId: 't-1', userId: 'u-1', role: 'tenant_user' as const };
 const PLATFORM_ADMIN = { type: 'platform_admin' as const, adminId: 'pa-1' };
 
-async function renderPageAs(identity: unknown, searchParams: Record<string, string> = {}) {
+// Dated correction, 2026-08-17 (Story 6.20/ADR-0057): page.tsx no longer
+// takes a searchParams prop at all — the ?activationId= mechanism this
+// helper used to seed is retired (see the dated note where AC4 used to be).
+async function renderPageAs(identity: unknown) {
   jest.resetModules();
   const sessionModule = await import('../../src/lib/session');
   const encrypted = await sessionModule.encryptSession({ idToken: 'x', accessToken: 'y', identity });
@@ -80,7 +83,7 @@ async function renderPageAs(identity: unknown, searchParams: Record<string, stri
   }));
 
   const { default: Page } = await import('../../src/app/tenant/connectors/tenant-owned-feed/page');
-  return Page({ searchParams: Promise.resolve(searchParams) });
+  return Page();
 }
 
 afterEach(() => {
@@ -103,7 +106,11 @@ describe('Story 6.12 — Tenant-owned-feed connector setup UI', () => {
     });
 
     it('links to the new screen from the main connectors page, so it is reachable', () => {
-      const source = readSrc(...connectorsPagePath);
+      // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session as
+      // Story 8.1): tenant/connectors/page.tsx was split into a thin Server
+      // Component + ConnectorsClient.tsx — the Tenant-Owned Feed banner
+      // link now lives in the latter. Verified present, not assumed.
+      const source = readSrc('app', 'tenant', 'connectors', 'ConnectorsClient.tsx');
       expect(source).toContain('/tenant/connectors/tenant-owned-feed');
     });
 
@@ -111,9 +118,17 @@ describe('Story 6.12 — Tenant-owned-feed connector setup UI', () => {
       await expect(renderPageAs(PLATFORM_ADMIN)).rejects.toThrow('NEXT_REDIRECT:/');
     });
 
-    it('renders for a real tenant_user session, embedding TenantOwnedFeedSetup (a real element carrying its initialActivationId prop)', async () => {
+    it('renders for a real tenant_user session, embedding TenantOwnedFeedSetup (a real element carrying its real activations prop)', async () => {
+      // Dated correction, 2026-08-17 (Story 6.20/ADR-0057): TenantOwnedFeedSetup
+      // no longer takes an initialActivationId prop at all — replaced by a real,
+      // server-fetched activations list. renderPageAs() here doesn't mock fetch,
+      // so listTenantOwnedFeedActivations()/getConnectorStatus() both throw/reject
+      // and the page degrades to activations: [] / isActive: false, per its own
+      // established honest-degradation precedent — still proves the element is
+      // real and carries the right prop shape, not the old, now-removed one.
       const element = await renderPageAs(TENANT_USER);
-      expect(JSON.stringify(element)).toContain('"initialActivationId":null');
+      expect(JSON.stringify(element)).toContain('"activations":[]');
+      expect(JSON.stringify(element)).not.toContain('initialActivationId');
     });
   });
 
@@ -168,11 +183,16 @@ describe('Story 6.12 — Tenant-owned-feed connector setup UI', () => {
   });
 
   describe('AC2: a successful connect displays real TXT instructions with propagation-delay copy, never as an error', () => {
-    it('renders txtRecordHost, txtRecordValue, and expiresAt from the real response', () => {
+    // Dated correction, 2026-08-17 (Story 6.20/ADR-0057): the instructions
+    // now render from the real, always-fresh GET .../activations list
+    // (field name tokenExpiresAt), not the ephemeral one-shot POST /connect
+    // response (which used expiresAt) — see story-6.20's own contract for
+    // full behavioral coverage of the new list-sourced rendering.
+    it('renders txtRecordHost, txtRecordValue, and tokenExpiresAt from the real activations list', () => {
       const source = readSrc(...setupPath);
       expect(source).toContain('txtRecordHost');
       expect(source).toContain('txtRecordValue');
-      expect(source).toContain('expiresAt');
+      expect(source).toContain('tokenExpiresAt');
     });
 
     it('includes plain-language propagation-delay copy naming the real up-to-72-hours window', () => {
@@ -240,27 +260,19 @@ describe('Story 6.12 — Tenant-owned-feed connector setup UI', () => {
     });
   });
 
-  describe('AC4: connectorActivationId persists across navigation (URL or component state)', () => {
-    it('a successful connect updates the URL with ?activationId=', () => {
-      const source = readSrc(...setupPath);
-      expect(source).toMatch(/activationId=/);
-      expect(source).toMatch(/router\.replace|window\.history/);
-    });
-
-    it('page.tsx reads an initial ?activationId= search param and passes it to TenantOwnedFeedSetup', async () => {
-      const element = await renderPageAs(TENANT_USER, { activationId: 'act-from-url' });
-      expect(JSON.stringify(element)).toContain('act-from-url');
-    });
-
-    it('a real activationId (from state or URL) alone — with no fresh connect response — still renders the "Verify now" action', () => {
-      const source = readSrc(...setupPath);
-      // The pending branch must be reachable purely from activationId, not require
-      // the full `activation` object (which is only ever populated by a fresh
-      // connect response, never by the URL) — otherwise a returning tenant
-      // (activationId from the URL only) could never re-click Verify now.
-      expect(source).toMatch(/if\s*\(\s*activationId\s*\)/);
-    });
-  });
+  // Superseded 2026-08-17, Story 6.20/ADR-0057 — the whole ?activationId=
+  // URL-persistence mechanism this AC4 originally proved is now gone by
+  // design, not broken. It existed only to survive a page reload without
+  // losing the just-connected activation's TXT instructions (the one-shot
+  // POST /connect response was the only place that data ever lived). Story
+  // 6.20's new GET .../activations endpoint returns full, real data for
+  // every activation — pending or verified — on every single page load, so
+  // there is nothing left for a URL param to preserve; page.tsx no longer
+  // reads searchParams at all (see the AC1 "no longer reads... ?activationId="
+  // test above), and TenantOwnedFeedSetup no longer has activationId/
+  // activation state of any kind. Retired outright, not weakened — the
+  // replacement behavior (every activation's real TXT instructions, always
+  // present, always fresh) is proven by story-6.20's own contract.
 
   describe('core-client.ts stays the sole Bearer-attachment choke point (re-checked after this story\'s additions)', () => {
     it('no second ad hoc fetch-with-Authorization-header call exists anywhere else in src/', () => {

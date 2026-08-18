@@ -59,6 +59,8 @@ import { NEWSWIRE_PROVIDER_ID } from '../../src/connectors/newswire/newswireConn
 import { pollNewswireFeeds } from '../../src/connectors/newswire/pollNewswireFeeds';
 import { TENANT_OWNED_FEED_PROVIDER_ID } from '../../src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector';
 import { pollTenantOwnedFeed } from '../../src/connectors/tenantOwnedFeed/pollTenantOwnedFeed';
+import { WIKIPEDIA_PROVIDER_ID } from '../../src/connectors/wikipedia/wikipediaConnector';
+import { FACEBOOK_PROVIDER_ID } from '../../src/connectors/facebook/facebookConnector';
 import { bootstrapConnectors } from '../../src/connectors/bootstrapConnectors';
 import { SocialConnector } from '../../src/connectors/types';
 import {
@@ -110,6 +112,18 @@ function fixtureConnector(providerId: string, overrides: Partial<SocialConnector
 function baseDeps(overrides: Partial<SchedulerDeps> = {}): Partial<SchedulerDeps> {
   return {
     onPollError: () => undefined,
+    // 2026-08-18 (Story 1.14, ADR-0052 Decision §5b): SchedulerDeps gained a
+    // new required member, getMostRecentRunStatus(). Without an override
+    // here, the merged defaultDeps falls back to the real, DB-backed
+    // implementation, which throws against this file's synthetic,
+    // non-UUID fixture tenant/platform ids — a real cross-component
+    // regression found and healed via heal-contract-failure, not silently
+    // patched. null ("no prior run known") is a safe, non-blocking default
+    // for every test in this file that doesn't itself care about this
+    // dependency; the 3 tests that do (Story 1.14's own contract file)
+    // override it explicitly per case, the same pattern this file already
+    // uses for deriveConnectorHealth.
+    getMostRecentRunStatus: async () => null,
     ...overrides,
   };
 }
@@ -123,7 +137,27 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
 
       const registered = listSocialConnectors();
       const providerIds = registered.map((c) => c.providerId).sort();
-      expect(providerIds).toEqual([GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID].sort());
+      // 2026-08-17 (Story 2.13, ADR-0042): a fourth real connector
+      // (Wikipedia) was registered — extended here per this test's own
+      // stated purpose ("registers every real connector exactly once"),
+      // not weakened. Every other assertion in this file targets a
+      // specific connector by id and is unaffected by a new one existing.
+      //
+      // 2026-08-18 (Story 2.15, ADR-0059): a fifth real connector
+      // (Facebook) was registered — extended the same way. Facebook is
+      // Tier-3-only (no tenant-wide credential path), so its own
+      // registered poll() wrapper is structurally unreachable via this
+      // scheduler today (shouldAttemptIngestion(tenantId, platformId)
+      // defaults to ownerType:'tenant', which this connector can never
+      // satisfy) — it still gets a real poll()/pollCadenceMs pair, per
+      // this test's own next assertion below, which every registered
+      // poll-mode connector must satisfy regardless of whether the
+      // scheduler can currently reach it. See
+      // .claude/skills/facebook-connector/SKILL.md's own Load-bearing
+      // constraints for why this is honest, not a workaround.
+      expect(providerIds).toEqual(
+        [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID, FACEBOOK_PROVIDER_ID].sort()
+      );
       for (const connector of registered) {
         expect(connector.deliveryMode).toBe('poll');
         expect(typeof connector.poll).toBe('function');

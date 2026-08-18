@@ -151,6 +151,18 @@ export interface AnalyzeResult {
    * confidenceScore's calibrated-probability semantics.
    */
   overallConfidence?: number;
+  /**
+   * Story 2.17 — a concise, LLM-generated summary of the enriched text.
+   * Populated only by an LLM-based provider capable of producing one as
+   * part of its own single structured-output call (currently
+   * azureOpenAiConnector.ts only) — azureAiLanguageConnector.ts's four
+   * capability calls have no summarization output of their own (real Azure
+   * AI Language document summarization is a separate, asynchronous
+   * endpoint, not this field's source) and correctly leave this
+   * `undefined`, the same "absence is correct, not a gap" treatment
+   * `overallConfidence` already established for that provider.
+   */
+  summary?: string;
 }
 
 export interface AIProviderConnector extends ProviderConnector {

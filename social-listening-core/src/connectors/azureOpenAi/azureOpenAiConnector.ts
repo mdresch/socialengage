@@ -103,6 +103,11 @@ const ENRICHMENT_SCHEMA = {
     },
     keyPhrases: { type: 'array', items: { type: 'string' } },
     detectedLanguage: { type: 'string' },
+    // Story 2.17 — a concise summary of the input text, produced in the
+    // same single structured-output call as every other field here (no
+    // second HTTP request). See AnalyzeResult's own doc comment (types.ts)
+    // for why azureAiLanguageConnector.ts never populates this field.
+    summary: { type: 'string' },
     // Self-reported, post-self-review confidence in the *whole* answer —
     // deliberately a distinct field from entities[].confidenceScore, which
     // is per-entity. Named `overallConfidence` (not `confidenceScore`) so
@@ -114,7 +119,7 @@ const ENRICHMENT_SCHEMA = {
     // existed to answer it.
     overallConfidence: { type: 'number' },
   },
-  required: ['sentiment', 'sentimentScores', 'entities', 'keyPhrases', 'detectedLanguage', 'overallConfidence'],
+  required: ['sentiment', 'sentimentScores', 'entities', 'keyPhrases', 'detectedLanguage', 'overallConfidence', 'summary'],
   additionalProperties: false,
 } as const;
 
@@ -130,6 +135,7 @@ interface StructuredEnrichment {
   keyPhrases: string[];
   detectedLanguage: string;
   overallConfidence: number;
+  summary: string;
 }
 
 async function callChatCompletions(
@@ -150,9 +156,10 @@ async function callChatCompletions(
           {
             role: 'system',
             content:
-              'Extract sentiment, per-class sentiment scores, named entities, key phrases, and the detected ISO 639-1 language code from the given social/news post text. ' +
-              'Before finalizing your answer, review it yourself: check that every entity actually appears in the text with the correct category from the allowed list, that sentimentScores are internally consistent with the chosen sentiment label, and that no key phrase or entity was fabricated or missed. ' +
+              'Extract sentiment, per-class sentiment scores, named entities, key phrases, the detected ISO 639-1 language code, and a concise summary from the given social/news post text. ' +
+              'Before finalizing your answer, review it yourself: check that every entity actually appears in the text with the correct category from the allowed list, that sentimentScores are internally consistent with the chosen sentiment label, that no key phrase or entity was fabricated or missed, and that the summary is faithful to the text and does not introduce any claim the text does not itself make. ' +
               'Silently correct anything you find wrong during this review, then respond only via the provided JSON schema with the corrected, final result. ' +
+              'Also report summary: a concise, neutral summary of the text (a few sentences, shorter than the original), capturing its main point(s) without adding outside information or opinion. ' +
               "Also report overallConfidence: your own honest confidence (0.0-1.0) in this final, corrected answer as a whole — 1.0 only if the text was clear and your extraction is unambiguous, lower if the text was short, ambiguous, sarcastic, or you had to guess on any field. Do not default to a high number; this score is used to decide whether to trust or discard your answer.",
           },
           { role: 'user', content: text },
@@ -246,6 +253,7 @@ export const azureOpenAiConnector: AIProviderConnector = {
       keyPhrases: structured.keyPhrases,
       detectedLanguage: structured.detectedLanguage,
       overallConfidence: structured.overallConfidence,
+      summary: structured.summary,
       modelUsed: `${AZURE_OPENAI_PROVIDER_ID}:${deployment}`,
     };
     return result;

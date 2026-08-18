@@ -945,28 +945,81 @@
 
 **PM-side project docs (`docs/project docs/`), checked against this entire batch's real git state, per this role's 2026-08-06 scope extension:** no drift found. `Uncertainty-Management-Plan.md`'s risk register (R-04, and the connector-status entries) remains accurate and was not touched by anything in this batch; `Project Management Plans/Go-Live-Readiness-Definition.md`'s Stage 0 classification and its own already-existing 2026-08-06/2026-08-13 Documentation Steward corrections remain accurate and unaffected by this batch (they concern self-service sign-up, Stories 5.15–5.18/6.7, which predate this batch entirely); `Development-Approach-and-Life-Cycle-Plan.md`'s phase table already carries its own 2026-08-06 Phase 4.5 correction and was not further diverged by anything in this batch (this batch added no new phase). **One separate, lower-confidence, out-of-scope observation, not fixed:** `CLAUDE.md` (itself, beyond the specific staleness already corrected under `57fe1de` above) describes `docs/implementation-plan.md` as having "phases (0 through 6, plus an inserted Phase 4.5)," but `implementation-plan.md`'s own real phase headers only go up to Phase 5 (0, 1, 2, 3, 4, 4.5, 5) — "Phase 6" appears to be informal shorthand for "Epic 6/Admin UI" that predates this entire batch and isn't introduced or exposed by any commit reviewed in this pass; flagged here for a future, dedicated look rather than fixed speculatively under this session's time budget.
 
-## ~~2026-08-13 — dcec172 — feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053)~~
+## 2026-08-13 — 13f5163 — docs: clear review backlog — Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-13)
+
+- **Full commit:** `13f5163e336b549c0bfb573021b6965114d7c578`
+- **Files touched:** docs/adr/0051-connector-activation-decoupled-from-credential.md, docs/adr/feature-coverage-review.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/open-decisions.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Case-v6.0.md, docs/project docs/Project Management Plans/Go-Live-Readiness-Definition.md, docs/project docs/Stakeholder-Register.md
+- **Status:** Pending review
+
+## 2026-08-13 — dcec172 — feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053)
 
 - **Full commit:** `dcec172f4f940fa048a3f05a2063e69628af0dc6`
-- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/canonical-markdown-conversion/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, plus connector/source/contract/migration files — confirmed via `git diff-tree --no-commit-id --name-only -r dcec172`.
-- **Status:** ~~Pending review~~ **Reviewed 2026-08-18 — never auto-queued by the post-commit hook at commit time (see the standalone gap note below); reviewed retroactively, clean, no drift.** This commit builds Story 3.10 for real (migration `0030`, shared `htmlToMarkdown()` utility, all three connectors updated). `docs/implementation-plan.md`'s traceability table, `docs/user-stories/README.md`'s dated note, and `epic-3-data-model-storage-and-archival.md`'s own Status line ("Ready — built 2026-08-13," matching this file's own established convention for same-day Ready→built stories, e.g. Story 3.9's identical phrasing) are all internally consistent with each other and with the real commit content. No component `SKILL.md` outside this commit's own new/touched ones references Story 3.10 incorrectly. `docs/adr/README.md`'s ADR-0053 footnote (added by the earlier `bd9bbfc` commit, already reviewed above) is unaffected by this build commit.
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/canonical-markdown-conversion/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.6.newswire-connector.contract.test.ts, social-listening-core/contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts, social-listening-core/migrations/0030_add_social_posts_body_markdown.sql, social-listening-core/package-lock.json, social-listening-core/package.json, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/content/htmlToMarkdown.ts, social-listening-core/src/content/turndown-plugin-gfm.d.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Status:** Pending review
 
-## ~~2026-08-13 — df0c2c3 — docs: implementation log entry for Story 3.10 (social-listening-core@dcec172)~~
+## 2026-08-13 — df0c2c3 — docs: implementation log entry for Story 3.10 (social-listening-core@dcec172)
 
 - **Full commit:** `df0c2c3bbac458a9846e2c26adeb954626fec8e4`
-- **Files touched:** docs/implementation-log.md — confirmed via `git diff-tree --no-commit-id --name-only -r df0c2c3`, exact match.
-- **Status:** ~~Pending review~~ **Reviewed 2026-08-18 — never auto-queued at commit time (see the gap note below); reviewed retroactively, clean, no drift.** Appends Story 3.10's own Implementation Log entry; the underlying commit (`dcec172`) is reviewed separately above. Append-only, no prior entry edited.
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
 
-## ~~2026-08-13 — 867ce87 — Enumerate the nine Project Management Plans explicitly in the Documentation Steward charter~~
+## 2026-08-13 — e59b2da — docs: methodology retrospective — relationship-assertion contracts, story resume, Built field, environment gotchas
 
-- **Full commit:** `867ce870a3538566681a0bf179fa006846622df9`
-- **Files touched:** .claude/agents/documentation-steward.md — confirmed via `git diff-tree --no-commit-id --name-only -r 867ce87`, exact match.
-- **Status:** ~~Pending review~~ **Reviewed 2026-08-18 — never auto-queued at commit time (see the gap note below); reviewed retroactively, clean, self-referential only.** This commit is this very role's own charter file naming all nine Project Management Plans explicitly (previously an unnamed "nine files" reference) plus clarifying that `Development-Approach-and-Life-Cycle-Plan.md` and `Go-Live-Readiness-Definition.md` remain in scope despite not carrying the "-Management-Plan" name. No other file makes a claim this charter change would contradict; nothing to correct elsewhere.
+- **Full commit:** `e59b2dabf32a9c95529ce6a75e1bdac4e5906dda`
+- **Files touched:** .claude/agents/documentation-steward.md, .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, CLAUDE.md, docs/environment-gotchas.md, docs/implementation-methodology.md, docs/project docs/Lessons-Learned-Register.md, docs/templates/component-skill-template.md, docs/user-stories/README.md
+- **Status:** Pending review
 
-## 2026-08-18 — Documentation Steward: a real gap in the queueing mechanism itself, found and reported, not fixed
+## 2026-08-13 — 6443562 — chore: rewrite root README, harden AGENTS.md, wire up VS Code test discovery
 
-- **Not a queued entry — a structural finding from this scheduled pass, per this file's own append-only convention (a correction is a new, dated entry, never an edit to an existing one).**
-- **What was found:** this session (a fresh cloud sandbox clone, checked out from `origin/main`) has no `.git/hooks/post-commit` installed — `scripts/git-hooks/post-commit` exists as a template but is never copied into `.git/hooks/` unless `scripts/setup-git-hooks.js` is explicitly run in that clone. As a direct, real consequence, three commits made in the prior (2026-08-13) session — `dcec172`, `df0c2c3`, `867ce87` — were never queued for review in any of the three review-queue files at all, not merely left "pending": confirmed by diffing `git log` since the last commit this file's own entries actually cover (`bd9bbfc`) against this file's content directly. This session only caught the gap because it cross-checked `git log` against the queue's own last-reviewed commit rather than trusting an empty "Pending review" grep to mean the queue was genuinely caught up.
-- **What was corrected:** the three missed commits were reviewed retroactively and entries added/resolved for them (see directly above), closing the specific instance of this gap. The mechanism itself was not touched — installing git hooks is infrastructure/tooling work outside this role's own chartered file scope (a docs-traceability audit, not git configuration), and durably fixing it (e.g., a `SessionStart` hook that runs `scripts/setup-git-hooks.js` on every fresh session/clone, or documenting that cloud sessions must run it by hand) is a decision for Menno or a future infrastructure-scoped pass, not decided unilaterally here.
-- **Flagged, not fixed:** every queue file's own header text ("Queued by: `scripts/git-hooks/post-commit`... automatically") describes the intended mechanism accurately but is silently untrue in any session where the hook was never installed. Worth Menno's attention: it means a future scheduled pass cannot trust "the queue shows zero Pending review entries" to mean "there is nothing to review" without the same independent `git log` cross-check this pass performed — the queue's own emptiness is not, on its own, proof of being caught up.
+- **Full commit:** `6443562c92fd966d53f3c581cb46eaf67d35e6be`
+- **Files touched:** .mcp.json, .vscode/extensions.json, .vscode/mcp.json, .vscode/settings.json, AGENTS.md, Dockerfile, README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, requirements.txt, social-listening-admin/next-env.d.ts, social-listening-admin/package-lock.json
+- **Status:** Pending review
+
+## 2026-08-13 — 8d210af — chore: post-commit hook queue entries for 6443562
+
+- **Full commit:** `8d210af4300713a0622403ddd79c5c2d2c517740`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-17 — ea9d9fe — fix: heal contract staleness from an uncommitted Server/Client component split
+
+- **Full commit:** `ea9d9fe0e58b1ae7b2c3d7b566de5db92d1ee799`
+- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.12.tenant-owned-feed-connector-setup.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.15.connector-activation-controls.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/layout.tsx, social-listening-admin/src/app/platform-admin/layout.tsx, social-listening-admin/src/app/sign-in/page.tsx, social-listening-admin/src/app/signed-out/page.tsx, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/layout.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/RunEnrichmentButton.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/app/tenant/watchlists/WatchlistRow.tsx, social-listening-admin/src/app/tenant/watchlists/WatchlistsClient.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/components/shell/AppHeader.tsx, social-listening-admin/src/components/shell/AppShell.tsx, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/index.ts, social-listening-admin/src/components/shell/shell.test.ts, social-listening-admin/src/components/ui/ConfirmModal.tsx, social-listening-admin/src/components/ui/EmptyState.tsx, social-listening-admin/src/components/ui/InlineError.tsx, social-listening-admin/src/components/ui/RelativeTime.tsx, social-listening-admin/src/components/ui/Slideover.tsx, social-listening-admin/src/components/ui/StatusBadge.tsx, social-listening-admin/src/components/ui/TagInput.tsx, social-listening-admin/src/components/ui/components.test.ts, social-listening-admin/src/components/ui/index.ts, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-17 — 30816ad — docs: log the 2026-08-17 healing pass for Stories 6.1/6.2/6.3/6.5/6.11/6.12/6.15
+
+- **Full commit:** `30816ad3772725b6d4f69d2de660c17a5363d3e3`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-17 — 5558e11 — feat: Story 8.1 — Analytics dashboard shell, date-range filter, Overview and Sources tabs
+
+- **Full commit:** `5558e11f61be16fce51cb49f31d252c80e11275b`
+- **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/src/app/api/analytics/summary/route.ts, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/AnimatedChartTooltip.tsx, social-listening-admin/src/app/tenant/analytics/GlobalDateRangePicker.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx
+- **Status:** Pending review
+
+## 2026-08-17 — 87e8cf4 — docs: ADR-0054 (Analytics Dashboard), Epic 8, and Story 8.1 traceability
+
+- **Full commit:** `87e8cf4baba1c5d846277bbec015e7dd053aefa5`
+- **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/README.md, docs/design/frontend-design-specification.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
+## 2026-08-17 — a54bf05 — feat: Story 8.2 — Sentiment tab
+
+- **Full commit:** `a54bf05bd12b169431c0f224c54016ffd6ea3355`
+- **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts
+- **Status:** Pending review
+
+## 2026-08-17 — 05cc132 — docs: log Story 8.2 (Sentiment tab) traceability
+
+- **Full commit:** `05cc1326de12a3a6d9ff8a2f65ff1114766b2330`
+- **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
+## 2026-08-17 — 5fed9dd — feat: Story 8.3 — Conversations tab, closing out Epic 8
+
+- **Full commit:** `5fed9ddaf072c30672a3c1d42fa55ec79723fb5b`
+- **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.3.conversations-tab.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts
+- **Status:** Pending review
 

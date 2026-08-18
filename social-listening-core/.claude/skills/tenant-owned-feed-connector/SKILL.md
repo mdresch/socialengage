@@ -18,12 +18,14 @@ The fourth real, non-example `SocialConnector` (ADR-0050) and the first where th
 | ADR-0048 | This connector's own registration proof — see Story 2.10's own contract, which greps for `tenant-owned-feed`'s providerId literal same as every other real connector | 2.10 (proves), 2.11 (subject) |
 | ADR-0021 | `supportedQueryFeatures: []` — whole-query post-fetch matching fallback, same as Newswire | 3.6 |
 | ADR-0053 | `ParsedFeedItem` gains RSS-shaped (`description`/`contentEncoded`) and Atom-shaped (`summary`/`content`) body fields plus `rawXml`; `ingestTenantOwnedFeedItems()` populates `body_markdown`/`body_markdown_version` via the shared `htmlToMarkdown()` utility and composes `enrichmentText` as `[title, body_markdown].filter(Boolean).join('. ')`, replacing the previous title-only `enrichPost()` call | 3.10 |
+| ADR-0057 | Resolves ADR-0050 Open Question 2: `GET .../activations` (list), `PATCH /:id` (`feedUrl` only), `DELETE /:id` (soft-remove, new `'removed'` status); `connect`/`verify-domain` gain a `tenant_admin` role check (previously ungated — a found, corrected inconsistency); `connect` auto-verifies a second feed on an already-verified domain, skipping DNS TXT re-proof | 6.20 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.11.tenant-owned-feed-connector.contract.test.ts` — registered connector shape; `POST .../connect` response shape (`txtRecordHost`/`txtRecordValue`/`expiresAt`); polling never begins while `pending`; `POST .../verify-domain` both outcomes (match → verified; no match/missing → pending, not a hard failure); a real poll cycle against a real feed produces `SocialPost` rows once verified; `Author.externalAuthorId` is the verified domain, `followerCount` unpopulated; no historical backfill; `feedUrl` required, no autodiscovery; a verified domain need not match `tenants.domain`; `supportedQueryFeatures` empty + fallback matching; every fetch sets a real, inspectable `User-Agent` header (proven against a real local HTTP server, not assumed); idempotent re-poll across two consecutive cycles.
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — this connector's own `providerId` literal (`'tenant-owned-feed'`) is absent from every designated core file.
 - `contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` — `feedItemParser.ts`'s widened RSS+Atom body fields and `rawXml` (against RSS and Atom fixtures, not a live fetch); `ingestTenantOwnedFeedItems()`'s richest-field precedence (identical to Newswire's own), `body_markdown`/`body_markdown_version` population via `ingestTenantOwnedFeedItems()` directly, `raw_payload.rawXml` propagation, and the new `enrichmentText` composition. See `.claude/skills/canonical-markdown-conversion/SKILL.md` for the shared conversion pipeline itself.
+- `contracts/epic-2/story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts` — `GET .../activations` lists every activation regardless of status, `tenant_admin` only, RLS-scoped; `PATCH /:id` updates `feedUrl` only (a `domain` key is a `400`), works on `pending` or `verified`, `404` for an unknown id; `DELETE /:id` soft-removes (excluded from `getVerifiedActivations()` immediately after), `404` for unknown, RLS-scoped; `connect`/`verify-domain` both `403` for a `tenant_user` now; `connect` on an already-`verified` domain returns `status: 'verified'` immediately (no TXT instructions needed), scoped per-tenant (another tenant's verified domain of the same name doesn't skip verification).
 
 ## Registration transparency (ADR-0048)
 
@@ -42,19 +44,20 @@ tenant_owned_feed_activations
   feed_url            TEXT        -- tenant-supplied, explicit — no autodiscovery (v1 scope)
   verification_token  TEXT
   txt_record_host     TEXT        -- _socialengage-verify.<domain>
-  status              TEXT        -- 'pending' | 'verified' | 'expired'
+  status              TEXT        -- 'pending' | 'verified' | 'expired' | 'removed' (Story 6.20)
   token_expires_at    TIMESTAMPTZ -- 7-day TTL (implementation default)
   verified_at         TIMESTAMPTZ
 ```
 
-RLS tenant-scoped, same pattern as every other tenant table. No uniqueness constraint on `(tenant_id, domain)` — a tenant may hold more than one row (ADR-0050 Open Question 2, storage-level support only; no multi-domain UX built here).
+RLS tenant-scoped, same pattern as every other tenant table. No uniqueness constraint on `(tenant_id, domain)` — a tenant may hold more than one row. **Story 6.20 (ADR-0057) built the multi-domain UX ADR-0050 Open Question 2 left open** — a real per-tenant list/edit/remove surface now exists (see below); the storage-level support itself hasn't changed.
 
 ## How to extend this safely
 
 - **Changing TXT record host-level scoping** (ADR-0050 Open Question 1 — currently subdomain-level, `_socialengage-verify.<domain>` at whatever domain the tenant supplied): `buildTxtRecordHost()` in `dnsVerification.ts` is the one place this is decided.
 - **Changing token TTL / re-check cadence / poll interval**: `TOKEN_TTL_MS` (`dnsVerification.ts`), the Admin UI's own re-check polling schedule (not enforced server-side — `verify-domain` is a synchronous, on-demand check, not a background job), and `getRateLimitConfig()` (`tenantOwnedFeedConnector.ts`) respectively — all named implementation defaults in ADR-0050's own Amendment Log, not fixed by this story.
-- **Multiple domains/feeds per tenant** (ADR-0050 Open Question 2): the storage model (no per-tenant uniqueness constraint) and `pollTenantOwnedFeed()` (iterates every verified activation, not just one) already support this — no schema change needed if/when the Admin UI adds multi-domain management.
+- **Multiple domains/feeds per tenant** (ADR-0050 Open Question 2, resolved by Story 6.20/ADR-0057): `GET .../activations` lists every activation for a tenant; `pollTenantOwnedFeed()` iterates every verified one, unchanged. Adding a second feed on a domain the tenant already verified skips DNS TXT verification entirely (`hasVerifiedDomain()`, called from `connect`'s own router handler) — don't reintroduce a mandatory re-verification step for this case without a new ADR decision.
 - **Respecting a feed's own `<ttl>` hint as a poll-interval floor** (ADR-0050 Open Question 4): not implemented — `getRateLimitConfig()` returns a fixed 30-minute window regardless of what the feed itself advertises.
+- **A feed-count cap per tenant** (ADR-0057 Decision §3): deliberately not implemented — left unbounded, revisit only with real usage/cost data.
 
 ## Load-bearing constraints — do not change casually
 
@@ -65,14 +68,20 @@ RLS tenant-scoped, same pattern as every other tenant table. No uniqueness const
 - **Every outbound feed fetch sets `TENANT_OWNED_FEED_USER_AGENT`.** Unlike Newswire/GNews (which predate this requirement and don't set one — a separate, pre-existing gap, not fixed here), ADR-0050 explicitly names this as an AC for this connector specifically.
 - **`enrichPost()`'s text argument is no longer bare `item.title` (Story 3.10, 2026-08-13)** — it's `[item.title, bodyMarkdown].filter(Boolean).join('. ')`, where `bodyMarkdown` is the richest of `item.contentEncoded`/`item.content`/`item.description`/`item.summary`, converted via `htmlToMarkdown()` and collapsed to `undefined` when empty. Don't revert to bare `title`.
 - **A single `??` precedence chain covers both RSS and Atom shapes for one item** (`contentEncoded ?? content ?? description ?? summary ?? null`) — safe because a given item only ever populates one format's own fields; the "wrong" format's fields stay `null` from `feedItemParser.ts` itself. Don't add per-format branching here; the parser's own shape already makes it unnecessary.
+- **`connect`, `verify-domain`, `GET .../activations`, `PATCH /:id`, and `DELETE /:id` are all `tenant_admin`-only (Story 6.20/ADR-0057 Decision §2)** — `connect`/`verify-domain` were previously ungated (any `tenant_user` could configure a domain-ownership claim on the tenant's behalf), a found inconsistency with every other tenant-wide connector action in this codebase, corrected here. Don't relax this without a new ADR decision.
+- **`listActivations()` is deliberately unfiltered by status — never use it to decide what's actually being polled.** `getVerifiedActivations()` is the only function that should ever answer "what's active" (it's the only one `pollTenantOwnedFeed()` reads); `listActivations()` exists solely to back the Admin UI's list screen, which needs to show `removed`/`expired` history too.
+- **`DELETE /:id` is a soft removal (`status = 'removed'`), never a hard SQL `DELETE`** — the table has no `DELETE` grant (`GRANT SELECT, INSERT, UPDATE` only, migration `0026`), and a hard delete would erase the domain-verification audit trail. Don't add a `DELETE` grant or a real row-delete path without a new ADR decision — this is a durable choice (ADR-0057 Decision §1), not an oversight.
+- **`PATCH /:id` never accepts `domain`, under any circumstance** — a request body containing the key `domain` is a `400` regardless of its value, even if it matches the activation's own current domain. Domain is the exact claim DNS TXT verification proves; the only sanctioned way to change it is remove-and-reconnect.
 
 ## Known gaps / deferred work
 
 - **No autodiscovery** — `feedUrl` must be supplied explicitly (ADR-0050's own v1 scope decision, Open Question 3 names third-party CMS-hosting ToS considerations as a related, unresolved question).
-- **No admin-UI screens** — `connect`/`verify-domain` are REST endpoints only; the two-step "publish TXT record, then click verify" UX and the pending-state re-check polling loop are Epic 6 UI work, not built here.
 - **`<ttl>` feed hint not respected** — see "How to extend this safely" above.
 - **No individual per-item author identity** — see ADR-0050's own Consequences; a CMS-specific API integration or a separate Author-identity-resolution ADR would be needed, out of scope here.
-- **Token expiry (`status = 'expired'`) is a stored state, but nothing yet transitions a `pending` row past its `token_expires_at` into `expired`** — no scheduled job exists; `verify-domain` would currently keep returning `pending` indefinitely for a token that's actually expired rather than surfacing that distinction. Named here as a real, not-yet-built gap.
+- **Token expiry (`status = 'expired'`) is a stored state, but nothing yet transitions a `pending` row past its `token_expires_at` into `expired`** — no scheduled job exists; `verify-domain` would currently keep returning `pending` indefinitely for a token that's actually expired rather than surfacing that distinction. Story 6.20 added a `'removed'` status alongside this same gap without closing it — a tenant can manually `DELETE` a stale `pending` row, but nothing does so automatically.
+- **No cleanup job for `removed` rows either** (ADR-0057 Open Question 2) — they accumulate indefinitely, same un-scheduled-cleanup category as the `expired` gap above.
+- **No feed-count cap per tenant** (ADR-0057 Decision §3) — deliberately unbounded at v1.
+- **No Platform-Admin cross-tenant feed visibility** (ADR-0057 Open Question 3) — a real, confirmed gap; a candidate for a future, separate ADR, not this component's scope.
 
 ## Relations to other components
 

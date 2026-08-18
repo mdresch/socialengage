@@ -51,6 +51,20 @@
  * own same-day dated note for the backend-side finding this surfaced (AI
  * provider activation wasn't gating enrichment at all before that fix).
  *
+ * --- Enhancement, 2026-08-17, at Menno's own direct request ("could you
+ * include the language in the post output slide window?") ---
+ * Both post-detail surfaces (the `[id]/page.tsx` standalone route and
+ * `PostsFeedClient.tsx`'s own Slideover, extended by Story 6.19 with an
+ * `initialActivePostId` testability seam) now also show
+ * `enrichment.detectedLanguage` (`PostEnrichmentSummary.language`,
+ * `postDisplay.ts` — already extracted since Story 8.5/ADR-0055 for the
+ * Analytics Dashboard's language-breakdown widget, but never rendered on
+ * either post-detail surface until now). No new extraction logic — this
+ * only wires an already-derived field into two more places it was
+ * previously missing from. Absent (`language: null`, e.g. a post enriched
+ * before Story 8.5 shipped) renders nothing, the same convention every
+ * other enrichment field in this panel already follows.
+ *
  * Explicitly out of scope for this contract:
  *   - Re-proving GET /v1/posts's / GET /v1/posts/:id's own backend behavior
  *     (cursor pagination correctness, RLS scoping) — Story 3.4's and Story
@@ -206,65 +220,87 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(rendered).toContain('no title here');
     });
 
-    it('links each post through to its own /tenant/posts/:id detail page', async () => {
+    it('opens a post in the in-page Slideover, not a navigation to a separate /tenant/posts/:id route', async () => {
+      // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session
+      // as Story 8.1): this project's real post feed now opens a post's
+      // detail via PostsFeedClient's own Slideover (activePost state),
+      // never a navigation href — confirmed by reading PostsFeedClient.tsx
+      // in full: no `/tenant/posts/${id}` href is constructed anywhere in
+      // it. Treated as intentional, not a regression to restore, per
+      // Menno's explicit choice this session. The standalone
+      // /tenant/posts/[id]/page.tsx detail route itself still exists and
+      // is still covered by AC4's own tests below — it's simply no longer
+      // linked to from the feed.
       const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
         new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: null }), { status: 200 })
       );
 
       const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('/tenant/posts/p-1');
+      const clientProps = element.props.children.props;
+      expect(clientProps.posts).toEqual([GNEWS_POST]);
+
+      const clientSource = fs.readFileSync(
+        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'posts', 'PostsFeedClient.tsx'),
+        'utf8'
+      );
+      expect(clientSource).not.toMatch(/\/tenant\/posts\/\$\{/);
+      expect(clientSource).toMatch(/setActivePost/);
+      expect(clientSource).toContain('Slideover');
+    });
+
+    it('healing note, 2026-08-17, rewritten 2026-08-18 (Story 6.26 — see that story\'s own dated note below): the Provider filter\'s tenant-owned-feed option value matches the real, hyphenated providerId (never the underscored form), found live — selecting it returned zero posts despite real ones existing', async () => {
+      // Story 6.26 rewrote the Provider filter's options from three
+      // hardcoded <option> elements into ones derived from the real,
+      // already-fetched post set (see that story's own contract file) — the
+      // literal source string this test originally grepped for
+      // (`<option value="tenant-owned-feed"`) no longer appears anywhere in
+      // source, since no option is hardcoded any more. Per this project's
+      // "regression, not rewrite" convention, the original *intent*
+      // (the hyphenated id is used, never the underscored form) is
+      // preserved here under the new mechanism: render the component with a
+      // real tenant-owned-feed-sourced post and assert the real rendered
+      // option's own value, rather than grepping static source text.
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const tenantOwnedFeedPost = {
+        id: 'p-tof',
+        createdAt: '2026-08-18T09:00:00.000Z',
+        publishedAt: '2026-08-18T08:00:00.000Z',
+        enrichment: null,
+        rawPayload: { providerId: 'tenant-owned-feed', title: 'A tenant-owned-feed post' },
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [tenantOwnedFeedPost], watchlists: [] })
+      );
+      expect(html).toMatch(/<option value="tenant-owned-feed">/);
+      expect(html).not.toMatch(/<option value="tenant_owned_feed"/);
     });
   });
 
   describe('AC2: pagination via the real, opaque nextCursor — a next-page link only, never a page-number control or a client-constructed cursor', () => {
+    // 2026-08-17, Story 6.18: this AC's own single-page-plus-cursor-link
+    // mechanism was deliberately superseded by design — page.tsx now pages
+    // through the tenant's *entire* real post set upfront (so search/filter
+    // can operate over all of it, not just the first 20), and the
+    // server-round-trip "?cursor=" next-page link was replaced by a
+    // client-side "Show more" control. This is the same anticipated
+    // in-epic-handoff pattern Stories 8.2/8.3 already established against
+    // Story 8.1's own contract — not a foreign regression. The four tests
+    // that specifically proved the now-retired mechanism (first-page-no-
+    // cursor, the rendered next-page link, no-link-when-null, and
+    // searchParams.cursor forwarding) are retired outright, since all four
+    // exercised behavior that no longer exists by design; Story 6.18's own
+    // contract (`story-6.18.post-feed-search-all-posts.contract.test.ts`)
+    // covers the real, current pagination shape. The one test below that
+    // remains — no page-number control anywhere in the source — is a
+    // still-true, still-relevant general constraint, unaffected by the
+    // supersession.
     it('the page-number anti-pattern is structurally absent from the source', () => {
       const source = readSrc(...listPagePath);
       expect(source).not.toMatch(/page\s*[:=]\s*\d/);
       expect(source).not.toMatch(/currentPage/i);
-    });
-
-    it('the first page requests GET /v1/posts with no cursor param', async () => {
-      let requestedUrl = '';
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrl = url;
-        return new Response(JSON.stringify({ posts: [], nextCursor: 'opaque-cursor-abc' }), { status: 200 });
-      });
-
-      await Page({ searchParams: Promise.resolve({}) });
-      expect(requestedUrl).toContain('/v1/posts');
-      expect(requestedUrl).not.toContain('cursor=');
-    });
-
-    it('renders a "next page" link built from the exact nextCursor the API returned, untouched', async () => {
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
-        new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: 'opaque-cursor-abc' }), { status: 200 })
-      );
-
-      const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).toContain('/tenant/posts?cursor=opaque-cursor-abc');
-    });
-
-    it('renders no next-page link at all when nextCursor is null', async () => {
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', () =>
-        new Response(JSON.stringify({ posts: [GNEWS_POST], nextCursor: null }), { status: 200 })
-      );
-
-      const element = await Page({ searchParams: Promise.resolve({}) });
-      const rendered = JSON.stringify(element);
-      expect(rendered).not.toMatch(/cursor=/);
-    });
-
-    it('a real second-page navigation (searchParams.cursor set) forwards that exact cursor value to GET /v1/posts, unmodified', async () => {
-      let requestedUrl = '';
-      const Page = await renderPageAs('../../src/app/tenant/posts/page', (url) => {
-        requestedUrl = url;
-        return new Response(JSON.stringify({ posts: [], nextCursor: null }), { status: 200 });
-      });
-
-      await Page({ searchParams: Promise.resolve({ cursor: 'opaque-cursor-abc' }) });
-      expect(requestedUrl).toContain('cursor=opaque-cursor-abc');
     });
   });
 
@@ -325,6 +361,57 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
       const rendered = JSON.stringify(element);
       expect(rendered).toContain('azure-ai-language:2025-01-01');
+    });
+
+    it('enhancement, 2026-08-17: shows the post\'s detected language on the standalone detail route', async () => {
+      const Page = await renderPageAs('../../src/app/tenant/posts/[id]/page', () =>
+        new Response(
+          JSON.stringify({
+            ...NEWSWIRE_POST,
+            id: 'p-2',
+            authorId: 'author-123',
+            acquisitionId: 'run-456',
+            enrichment: { ...NEWSWIRE_POST.enrichment, detectedLanguage: 'en' },
+          }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
+      const rendered = JSON.stringify(element);
+      expect(rendered).toMatch(/Language[^a-zA-Z][\s\S]{0,20}\ben\b/);
+    });
+
+    it('enhancement, 2026-08-17: renders no language line when detectedLanguage is absent', async () => {
+      const Page = await renderPageAs('../../src/app/tenant/posts/[id]/page', () =>
+        new Response(
+          JSON.stringify({ ...NEWSWIRE_POST, id: 'p-2', authorId: 'author-123', acquisitionId: 'run-456' }),
+          { status: 200 }
+        )
+      );
+
+      const element = await Page({ params: Promise.resolve({ id: 'p-2' }) });
+      const rendered = JSON.stringify(element);
+      // Case-sensitive, colon-anchored: modelUsed's own value
+      // ("azure-ai-language:2025-01-01") legitimately contains the
+      // substring "language" and must not trip this assertion.
+      expect(rendered).not.toMatch(/Language: /);
+    });
+
+    it('enhancement, 2026-08-17: PostsFeedClient\'s own Slideover shows the detected language too', () => {
+      const React = require('react');
+      const { renderToStaticMarkup } = require('react-dom/server');
+      const { PostsFeedClient } = require('../../src/app/tenant/posts/PostsFeedClient');
+
+      const withLanguage = {
+        ...NEWSWIRE_POST,
+        id: 'p-2',
+        enrichment: { ...NEWSWIRE_POST.enrichment, detectedLanguage: 'fr' },
+      };
+      const html = renderToStaticMarkup(
+        React.createElement(PostsFeedClient, { posts: [withLanguage], watchlists: [], initialActivePostId: 'p-2' })
+      );
+      expect(html).toMatch(/Language[^a-zA-Z][\s\S]{0,20}\bfr\b/i);
     });
 
     it('a post with no author recorded (authorId null) renders an honest "no author" state, not a blank or a crash', async () => {

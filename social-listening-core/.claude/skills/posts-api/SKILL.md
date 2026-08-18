@@ -16,6 +16,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 | ADR-0011 | `GET /posts` paginated by opaque cursor, not offset/limit | 3.4 |
 | ADR-0017 | Every route lives under `/v1/` | 1.3 (cross-cutting — this endpoint follows that pattern) |
 | ADR-0012 | Full post data is fetched via REST on demand (`GET /posts/:id`), not carried in Service Bus events | 5.1 |
+| ADR-0053 (Story 3.10) | `body_markdown`'s own canonical Markdown decision — this component only exposes it, doesn't decide its content | 6.19 |
 
 ## Contracts that constrain this component
 
@@ -23,6 +24,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 - `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — `listSocialPosts()`'s read path (and therefore `GET /v1/posts`'s response) round-trips `publishedAt`/`enrichment` for a post that has them set (see `.claude/skills/social-post-enrichment/SKILL.md` for what owns those fields' schema/semantics — this contract only constrains that the existing read path doesn't drop them).
 - `contracts/epic-5/story-5.1.thin-events.contract.test.ts` — `GET /v1/posts/:id` returns full post data for a known id, 404s for an unknown one, and never returns another tenant's post even by the right id (RLS).
 - `contracts/epic-3/story-6.16.post-manual-enrich-endpoint.contract.test.ts` — `POST /v1/posts/:id/enrich` derives the same enrichment text a real connector's own ingest function would (title, plus description when present), calls the real, unmodified `enrichPost()`, persists a real result, 404s the same way `GET /v1/posts/:id` does, and returns a real `200` with `enrichment: null` (not an error) when no AI provider is currently connected and active.
+- `contracts/epic-3/story-6.19.post-body-markdown-exposure.contract.test.ts` — both `GET /v1/posts` and `GET /v1/posts/:id` return a real, non-null `bodyMarkdown` for a post that has one stored; a post that never had one returns `bodyMarkdown: null` honestly (present, never omitted, never defaulted to empty string).
 
 ## How to extend this safely
 
