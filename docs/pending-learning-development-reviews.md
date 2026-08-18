@@ -1069,3 +1069,24 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-08-13 (Learning & Development Writer):** No user-facing change — confirmed directly, not just trusted from this entry's own description. This commit accepts ADR-0053 (a `body_markdown` column decision) and drafts Story 3.10; no migration, no code, and no UI exist for either yet. Nothing to document until Story 3.10 is actually built and, per that story's own scope, surfaces in a UI a reader would notice.
 
+## 2026-08-13 — dcec172 — feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053)
+
+- **Full commit:** `dcec172f4f940fa048a3f05a2063e69628af0dc6`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/canonical-markdown-conversion/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, plus connector/source/contract/migration files
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-18 (Learning & Development Writer; this commit was never auto-queued by the post-commit hook at the time — reviewed retroactively this pass; see the Documentation Steward's matching gap note in `docs/pending-documentation-steward-reviews.md`):** No user-facing change — nothing to document. This is a real, contract-verified backend improvement (Newswire, tenant-owned-feed, and GNews now enrich on actual body content rather than title-only/title+description), but it changes what feeds an already-shipped, already-documented capability, not the capability itself. `docs/manuals/tenant-admin-manual.md`'s "Posts" section already describes sentiment/key phrases/named entities generically ("If a post has already been analyzed by an AI provider, you'll also see its sentiment, key phrases, and named entities right in the list") with no claim about input-text scope this commit would date. Per Story 3.10's own AC11, there is no new consumer or screen to write up either — confirmed no manual currently makes any claim this commit contradicts.
+
+## 2026-08-13 — df0c2c3 — docs: implementation log entry for Story 3.10 (social-listening-core@dcec172)
+
+- **Full commit:** `df0c2c3bbac458a9846e2c26adeb954626fec8e4`
+- **Files touched:** docs/implementation-log.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-18 (Learning & Development Writer; never auto-queued at the time — reviewed retroactively):** No user-facing change — appends Story 3.10's own Implementation Log entry; the underlying commit (`dcec172`) is reviewed separately above.
+
+## 2026-08-13 — 867ce87 — Enumerate the nine Project Management Plans explicitly in the Documentation Steward charter
+
+- **Full commit:** `867ce870a3538566681a0bf179fa006846622df9`
+- **Files touched:** .claude/agents/documentation-steward.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-08-18 (Learning & Development Writer; never auto-queued at the time — reviewed retroactively):** No user-facing change — a charter-specificity edit to a different AI role's own governance file, no product code or UI touched.
+

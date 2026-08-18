@@ -1228,3 +1228,24 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-08-14:** see docs/management/manager-register.md's entry reviewing 57fe1de/e1e9913/b155bc5/500a4b9/42ff7b5/a479383/9a347c6/d0eb088/780f981/bd9bbfc.
 
+## 2026-08-13 — dcec172 — feat: Story 3.10 — canonical Markdown post-body storage and enrichment input (ADR-0053)
+
+- **Full commit:** `dcec172f4f940fa048a3f05a2063e69628af0dc6`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/canonical-markdown-conversion/SKILL.md, social-listening-core/.claude/skills/gnews-connector/SKILL.md, social-listening-core/.claude/skills/newswire-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, plus connector/source/contract/migration files
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-18:** never auto-queued by the post-commit hook at the time — see docs/management/manager-register.md's entry reviewing dcec172/df0c2c3/867ce87, which also names this gap as a finding.
+
+## 2026-08-13 — df0c2c3 — docs: implementation log entry for Story 3.10 (social-listening-core@dcec172)
+
+- **Full commit:** `df0c2c3bbac458a9846e2c26adeb954626fec8e4`
+- **Files touched:** docs/implementation-log.md
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-18:** see docs/management/manager-register.md's entry reviewing dcec172/df0c2c3/867ce87.
+
+## 2026-08-13 — 867ce87 — Enumerate the nine Project Management Plans explicitly in the Documentation Steward charter
+
+- **Full commit:** `867ce870a3538566681a0bf179fa006846622df9`
+- **Files touched:** .claude/agents/documentation-steward.md
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-18:** see docs/management/manager-register.md's entry reviewing dcec172/df0c2c3/867ce87.
+
