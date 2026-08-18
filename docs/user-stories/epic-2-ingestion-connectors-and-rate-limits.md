@@ -365,7 +365,7 @@
 
 ## Story 2.18 — Facebook connector: capture post-level engagement counts (reactions, comments, shares)
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-core@35e35c3
 
 **Source:** No new ADR needed — completes scope ADR-0059 Decision §2 already authorized ("including whatever engagement counts (reactions, comments, shares) the Page-feed response returns") but Story 2.15's own implementation never actually requested. **Status:** Ready.
 
