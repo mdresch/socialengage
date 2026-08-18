@@ -580,7 +580,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.25 — Post feed shows most-recently-ingested posts first
 
-**Built:** not yet
+**Built:** 2026-08-18 — social-listening-admin@6550716
 
 **Source:** No new ADR needed — a display-order fix over data ADR-0011's already-Accepted cursor pagination already provides in full; no change to the pagination mechanism itself. **Status:** Ready.
 

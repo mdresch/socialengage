@@ -2276,6 +2276,22 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 **Implementation**: `AnalyzeResult` (`types.ts`) gains an optional `summary?: string`, additive per every prior widening of this interface. `ENRICHMENT_SCHEMA` gains a `summary` property (added to `required`, since Azure OpenAI's `strict: true` structured-output mode requires every schema property be listed as required). The system prompt is extended to request a concise, neutral summary as part of the same self-review pass Story 2.9 already established, folded into the existing instruction rather than a separate block. `summary` round-trips through `insertSocialPost()` into `SocialPost.enrichment.summary` unchanged — no migration, no new column, since `enrichment` is already an unfiltered JSONB blob (same storage path Story 2.8 AC4 already proved). A tenant served by Azure AI Language instead (both providers connected/active, the existing fixed-order default) has `enrichment.summary` absent, not a placeholder — proven directly, not assumed.
 
+---
+
+## 2026-08-18, later the same day — Story 6.25 — social-listening-admin@6550716
+
+- **Full commit:** `65507164bac4ef7fdfb48d82627a940670b39155`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.25 / No new ADR — a display-order fix over data ADR-0011's already-Accepted cursor pagination already provides in full; no change to the pagination mechanism itself
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.25.post-feed-newest-first.contract.test.ts (new, 5/5)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md (updated)
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.25.post-feed-newest-first.contract.test.ts, social-listening-admin/src/app/tenant/posts/page.tsx
+- **Full suite at merge:** PASS (33/33 suites, 493/493 tests)
+
+**Requested directly by Menno, 2026-08-18.** Confirmed directly against the real backend: `GET /v1/posts` (`socialPostStore.ts`'s `queryFirstPage`/`queryAfterCursor`) orders every page `ORDER BY seq ASC` — `seq` is a monotonic, insertion-ordered identity column (ADR-0011/Story 3.4), so the first page returned is the oldest-ingested posts. `fetchAllPosts()` (Story 6.18) already pages through the tenant's entire post set into memory before `PostsFeedClient` renders/filters anything, and handed that array through unmodified — oldest-ingested-first.
+
+**A deliberately minimal fix, not a pagination redesign**: rather than reversing the backend's own `ORDER BY seq ASC` to `DESC` (which would flip the cursor's own keyset comparison direction — a real, non-trivial change to ADR-0011's already-contract-verified mechanism), `fetchAllPosts()` reverses the already-fully-fetched, in-memory array once, client-side, after paging completes. The backend's pagination mechanism, cursor encoding, and `seq ASC` ordering are all completely unchanged. `PostsFeedClient.tsx` has no `.sort()` of its own (confirmed directly, not assumed) — order is preserved end to end through its existing `.filter()`/`.slice()` derivation, proven by a test showing a filtered/searched result set keeps the same relative newest-first order as the input.
+
 **Also found live, both traceability files were already stale before this story touched them**: `docs/implementation-plan.md`'s Phase 3 row never listed Story 6.21 at all despite it being built the day before; corrected in the same pass alongside adding 6.22, per this project's own "correct staleness found along the way, don't leave it for later" convention.
 
 **Explicitly out of scope, named not solved**: `tenant-owned-feed` (Story 2.11, also a real `SocialConnector` missing from this same `SOCIAL_PLATFORMS` list) — its "connected" state is per-domain/multi-feed (Story 6.20), a materially different shape than the simple credential-or-none boolean this list already handles for the other three platforms; a real, separate, still-open gap.
