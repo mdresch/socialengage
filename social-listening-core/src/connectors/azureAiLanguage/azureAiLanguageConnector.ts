@@ -44,8 +44,12 @@ interface AnalyzeTextDocument {
   id: string;
   [key: string]: unknown;
 }
+interface AnalyzeTextError {
+  id: string;
+  error: { code: string; message: string; innererror?: { code: string; message: string } };
+}
 interface AnalyzeTextResponse {
-  results: { documents: AnalyzeTextDocument[]; modelVersion: string };
+  results: { documents: AnalyzeTextDocument[]; errors?: AnalyzeTextError[]; modelVersion: string };
 }
 
 /**
@@ -86,12 +90,42 @@ async function callAnalyzeText(
   if (!response.ok) {
     // A 4xx that isn't 401/403/429 (e.g. a malformed request) — real, but
     // not one of this project's already-established retryable/credential
-    // kinds; classified as 'network' as the closest existing non-retryable
-    // bucket rather than inventing a new ErrorKind for a single connector.
+    // kinds. Reuses 'network' because that is this project's existing,
+    // project-wide convention for "a generic rejection from a real
+    // provider" (the identical pattern in gnewsConnector.ts/
+    // newswireConnector.ts/azureOpenAiConnector.ts/tenantOwnedFeedConnector.ts/
+    // wikipediaConnector.ts), not because 'network' is non-retryable — it
+    // is (see errorClassification.ts's RETRYABLE_KINDS) and this does not
+    // change that — Story 2.16 corrected this comment in place; it
+    // previously mischaracterized this ErrorKind's retry behavior.
     throw new ClassifiableError('network', `Azure AI Language returned ${response.status}`);
   }
 
   return (await response.json()) as AnalyzeTextResponse;
+}
+
+/**
+ * Story 2.16 — Azure AI Language returns a real HTTP 200 even when it
+ * rejects a document (e.g. exceeding its real per-document size limit,
+ * confirmed directly this session: 5,120 text elements) — the rejected
+ * document is absent from `results.documents` and the real reason lives in
+ * `results.errors` instead, a shape the `!response.ok` branch above can
+ * never see. `analyze()` previously indexed `results.documents[0]`
+ * unconditionally on all four capability calls, crashing with a raw,
+ * unclassified TypeError instead of a ClassifiableError enrichPost.ts's
+ * own tryProvider() can react to and fail over from cleanly. Reuses
+ * 'network' for the same reason the `!response.ok` branch does — see that
+ * branch's own comment; this is not a new, connector-specific ErrorKind.
+ */
+function firstDocument(response: AnalyzeTextResponse, kind: string): AnalyzeTextDocument {
+  const doc = response.results.documents[0];
+  if (doc) return doc;
+
+  const err = response.results.errors?.[0]?.error;
+  const detail = err
+    ? `${err.code}: ${err.message}${err.innererror ? ` (${err.innererror.message})` : ''}`
+    : 'no error detail returned';
+  throw new ClassifiableError('network', `Azure AI Language rejected the document for ${kind} — ${detail}`);
 }
 
 /**
@@ -143,15 +177,15 @@ export const azureAiLanguageConnector: AIProviderConnector = {
       callAnalyzeText(endpoint, key, 'LanguageDetection', text),
     ]);
 
-    const sentimentDoc = sentimentRes.results.documents[0] as unknown as {
+    const sentimentDoc = firstDocument(sentimentRes, 'SentimentAnalysis') as unknown as {
       sentiment: AnalyzeResult['sentiment'];
       confidenceScores: AnalyzeResult['sentimentScores'];
     };
-    const keyPhrasesDoc = keyPhrasesRes.results.documents[0] as unknown as { keyPhrases: string[] };
-    const entitiesDoc = entitiesRes.results.documents[0] as unknown as {
+    const keyPhrasesDoc = firstDocument(keyPhrasesRes, 'KeyPhraseExtraction') as unknown as { keyPhrases: string[] };
+    const entitiesDoc = firstDocument(entitiesRes, 'EntityRecognition') as unknown as {
       entities: Array<{ text: string; category: string; confidenceScore: number }>;
     };
-    const languageDoc = languageRes.results.documents[0] as unknown as {
+    const languageDoc = firstDocument(languageRes, 'LanguageDetection') as unknown as {
       detectedLanguage: { iso6391Name: string };
     };
 
