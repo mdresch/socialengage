@@ -1,6 +1,10 @@
 # Git Hooks for socialengage
 
-This directory contains git hooks used to enforce project discipline, particularly contract-first implementation.
+This directory contains git hooks used to enforce project discipline, particularly contract-first implementation. It also contains `post-commit`, which queues every commit for three independent reviews (Ideal Manager, Documentation Steward, Learning & Development Writer) — see that hook's own source comments for the full account; this README's own "Files" section below was never updated to mention it and is corrected here, not rewritten.
+
+## Automatic installation via SessionStart (added 2026-08-18)
+
+Manually running `node scripts/setup-git-hooks.js` after cloning is easy to forget — and a fresh clone with neither hook installed looks identical, from the review-queue files alone, to one where nothing is actually pending review (an Ideal Manager register finding, 2026-08-18: "the queue is empty" can't be trusted without an independent git-log cross-check). `.claude/hooks/verify-git-hooks-installed.cjs`, wired as a `SessionStart` hook in `.claude/settings.json`, checks at the start of every Claude Code session whether both `.git/hooks/pre-commit` and `.git/hooks/post-commit` exist and, if either is missing, runs this same installer automatically. Non-blocking — it never prevents a session from starting, even if the install itself fails (matching `enforce-contract-first.cjs`'s own "fail open, don't block on a hook bug" posture). This does not replace running the installer yourself outside a Claude Code session (e.g. a fresh clone opened in a plain editor/terminal) — see Manual/Automatic Setup below for that path.
 
 ## Pre-commit Hook
 

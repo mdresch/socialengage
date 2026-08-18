@@ -15,6 +15,74 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-18 | — | — | auto | Documentation | ADR-0059 | docs: ADR-0059/0060/0061 acceptance and Story 6.27/1.15 governance update (7c0572c) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.23): implementation log entry and Built field (f6a1794) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.23): Facebook OAuth connect flow with Page selection (535338f) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-1.14): implementation log entry and Built field (3ce8db2) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-1.14): poll scheduler skips a pair whose most recent run is still running (838e3dc) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-2.15): implementation log entry and Built field (caf50ed) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-2.15): Facebook connector -- tenant's own Page, Tier 3 credential (50a5914) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.26): implementation log entry and Built field (42e693f) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.26): post feed's Provider filter derives its options from real data (03c37c9) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.25): implementation log entry and Built field (05d9ee0) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.25): post feed shows most-recently-ingested posts first (6550716) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-2.17): implementation log entry and Built field (28090fe) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-2.17): Azure OpenAI structured enrichment gains a summary field (6a9b628) |
+| 2026-08-18 | — | — | auto | Documentation | — | docs(story-2.16): implementation log entry and Built field (38c3e51) |
+| 2026-08-18 | — | — | auto | Documentation | — | fix(story-2.16): azureAiLanguageConnector throws classified error on rejected document (3fedac3) |
+| 2026-08-18 | — | — | auto | Documentation | Story 6.22 | docs: implementation log entry for Story 6.22 (14ada1b) |
+| 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.22): add Wikipedia to the watchlist screen's platform-source list (8182706) |
+| 2026-08-17 | — | — | auto | Documentation | Story 2.14 | docs: implementation log entry for Story 2.14 (8ed1e7b) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(story-2.14): Wikipedia discovery search driven by the tenant's own watchlist terms (c802b64) |
+| 2026-08-17 | — | — | auto | Documentation | — | The latest round of fronbend designs with Google AI Stduio App builder. Latest brainstorm sessions and the reworks of the frontend designs (2317c60) |
+| 2026-08-17 | — | — | auto | Documentation | — | Design principals with Gemini Building a new frontend (fd6cdb3) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.21 | docs: implementation log entry for Story 6.21 (ce4c2fa) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(story-6.21): expose the Wikipedia connector in the Tenant Admin UI (21c30bf) |
+| 2026-08-17 | — | — | auto | Documentation | Story 2.13 | docs: implementation log entry for Story 2.13 (e7055db) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(story-2.13): Wikipedia connector — MediaWiki Action API, revision re-poll via recentchanges, article-as-Author (591b0b8) |
+| 2026-08-17 | — | — | auto | Documentation | Story 5.19 | docs: implementation log entry for Story 5.19 (8ee53d9) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(story-5.19): wire SocialPostIngestedEvent/ConnectorHealthChangedEvent publishing into the real ingestion pipeline (3ef32ad) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.20 | docs: traceability for Story 6.20 (tenant-owned-feed multi-feed administration) (b05f317) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.20 | feat(admin): tenant-owned-feed multi-feed administration (Story 6.20, admin half) (be1764d) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.20 | feat(core): tenant-owned-feed multi-feed administration (Story 6.20, core half) (e9d797f) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: Implementation Log entry for dead analytics code cleanup (fc41590) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs(admin): lock in the dead-analytics-code deletions with contract checks (bd126c8) |
+| 2026-08-17 | — | — | auto | Documentation | — | chore(admin): delete dead analytics prototype/demo code (2acee9b) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0056 | docs: accept ADR-0056 and ADR-0057; draft Story 6.20 (bae1277) |
+| 2026-08-17 | — | — | auto | Review | ADR-0057 | docs: revise ADR-0057 against an external review (4 points, checked) (114d94f) |
+| 2026-08-17 | — | — | auto | Documentation | — | style(admin): widen the main content container from 900px to 1280px (249402a) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0057 | docs: draft ADR-0057 (tenant-owned-feed multi-feed administration) (0a1db2d) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: traceability for seat-counts enhancement and Team & Access redesign (145d38c) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(admin): redesign the Team & Access screen (/tenant/users) (1501247) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(core): expose caller tenant's own seat counts on GET /v1/tenants/users (556bb65) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: Implementation Log entry for language display + card-snippet fix (b86e518) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(admin): show detected language and clean the card-list post snippet (b837b39) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.19 | docs: traceability for Story 6.19 (post body Markdown rendering) (3edfed8) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.19 | feat(admin): render post detail body as real Markdown (Story 6.19) (4f099a6) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: Implementation Log entries for body_markdown exposure and GNews marker fix (00812ac) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0053 | fix(core): GNews truncation marker has no '+' sign (ADR-0053 Open Q11 resolved) (4bea1b8) |
+| 2026-08-17 | — | — | auto | Documentation | — | feat(core): expose body_markdown over GET /v1/posts and GET /v1/posts/:id (aa4f317) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0023 | docs: log ADR-0023 ceiling-recovery healing pass (6152308) |
+| 2026-08-17 | — | — | auto | Documentation | — | fix(core): shouldAttemptIngestion() allows a bounded probe once ceiling-failing (ff66d31) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: log Provider filter tenant-owned-feed value fix (177de14) |
+| 2026-08-17 | — | — | auto | Documentation | — | fix(admin): Provider filter's tenant-owned-feed option used the wrong value (5886a3e) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.14 | docs: log Story 6.14 (50c7de1) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.14 | feat(admin): Story 6.14 — access-history view on the tenant users screen (a27aa10) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.18 | docs: log Story 6.18 (5c23158) |
+| 2026-08-17 | — | — | auto | Documentation | Story 6.18 | feat(admin): Story 6.18 — post feed search/filter operates over all matched posts (a97cf30) |
+| 2026-08-17 | — | — | auto | Documentation | — | docs: log Key Vault credential-storage healing pass (1d49817) |
+| 2026-08-17 | — | — | auto | Documentation | — | fix(core): connect fails clearly when KEY_VAULT_KEY_ID is unconfigured (eeb9c8c) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.6 | docs: log Story 8.6, draft ADR-0056 (AI-inferred Newswire dateline location) (0ca3a9b) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.6 | feat(admin): Story 8.6 — Sources tab per-source sentiment score, volume-over-time (a17af3f) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.5 | docs: log Story 8.5, close out Epic 8's traceability (fa457e9) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.5 | feat(admin): Story 8.5 — Languages breakdown widget (8b8bb14) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0055 | docs: accept ADR-0055, move Story 8.5 to Ready (6a55e8b) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.4 | docs: log Story 8.4, draft ADR-0055 (language/location enrichment feasibility) (63d3604) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.4 | feat(admin): Story 8.4 — Overview volume/sentiment charts, period-over-period comparison (ae015e0) |
+| 2026-08-17 | — | — | auto | Infrastructure | — | docs: log core-side healing pass, publish infrastructure migration runbook (c1275ed) |
+| 2026-08-17 | — | — | auto | Documentation | — | fix(core): reject personal-scope connect/activate for AI provider connectors (5d0fb49) |
+| 2026-08-17 | — | — | auto | Documentation | ADR-0028 | fix: no personal-scope credential/activation UI for AI providers (ADR-0028 Tier 2 only) (4082a8a) |
+| 2026-08-17 | — | — | auto | Documentation | Story 8.3 | docs: log Story 8.3 (Conversations tab) traceability, closing out Epic 8 (838ac19) |
 | 2026-08-17 | — | — | auto | Documentation | Story 8.3 | feat: Story 8.3 — Conversations tab, closing out Epic 8 (5fed9dd) |
 | 2026-08-17 | — | — | auto | Documentation | Story 8.2 | docs: log Story 8.2 (Sentiment tab) traceability (05cc132) |
 | 2026-08-17 | — | — | auto | Documentation | Story 8.2 | feat: Story 8.2 — Sentiment tab (a54bf05) |
