@@ -198,3 +198,25 @@
 **Notes:**
 - GNews's truncation-marker regex (AC9) is a best-current-understanding pattern, not confirmed against a real truncated response (ADR-0053 Open Question 11) — whoever builds this story should verify against a live response if a real GNews credential is available, and adjust the regex if the actual format differs, without needing to revisit this story's own contract structure.
 - `body_markdown_version` (AC1/AC7) starts at `1` for this story's own pipeline; incrementing it for a future pipeline change is a judgment call left to whoever makes that later change (ADR-0053 Decision §2), not something this story's own contract needs to anticipate.
+
+---
+
+## Story 3.11 — Post-watchlist match persistence: `post_watchlist_matches` junction table, ingestion write, and `GET /v1/posts?watchlistId` filter
+
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Ready
+
+**As a** Tenant User or Tenant-Admin,
+**I want** `GET /v1/posts` to accept a `watchlistId` filter parameter so that I can retrieve only the posts that matched a specific watchlist at ingestion time,
+**so that** the analytics dashboard can display accurate, server-side-filtered content per watchlist without a client-side approximation.
+
+**Acceptance Criteria**
+
+1. A new migration creates the `post_watchlist_matches` table: columns `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `post_id UUID NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE`, `watchlist_id UUID NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE`, `tenant_id UUID NOT NULL`, `matched_at TIMESTAMPTZ NOT NULL DEFAULT now()`, plus a `UNIQUE (post_id, watchlist_id)` constraint, two named indexes (`idx_pwm_watchlist_id` on `(watchlist_id, tenant_id, matched_at DESC)`; `idx_pwm_post_id` on `(post_id, tenant_id)`), and a Row-Level Security policy using the existing `app.tenant_id` session predicate — same pattern as `watchlists` itself (ADR-0063 Decision §1). Proven by schema inspection in the contract test: the table, indexes, constraint, and RLS policy all exist after migrations run.
+2. A new store function `insertPostWatchlistMatches(tenantId, pairs: Array<{ postId: string; watchlistId: string }>)` issues a batch `INSERT INTO post_watchlist_matches ... ON CONFLICT (post_id, watchlist_id) DO NOTHING` — idempotent on retry, proven by calling the function twice with the same pairs and confirming the row count does not grow on the second call.
+3. `runIngestionAttempt()` calls `insertPostWatchlistMatches()` with the match pairs already computed for ADR-0058's event-publishing path. The call is best-effort: a failure inside `insertPostWatchlistMatches()` is logged (same telemetry path as connector health errors, ADR-0009/ADR-0010) but does not throw and does not fail the ingestion attempt. Proven by a contract test that injects a store-function error and confirms the ingesting post is still returned by `GET /v1/posts`.
+4. `postsRouter.ts` accepts an optional `watchlistId` query parameter (valid UUID). When present: validates UUID format (returns `400 INVALID_WATCHLIST_ID` on malformed input); verifies a matching row exists in `post_watchlist_matches` under the caller's RLS context (returns `404 WATCHLIST_NOT_FOUND` if none — same 404-vs-403 split as ADR-0044 Decision §5c); joins `post_watchlist_matches` on `post_id = social_posts.id AND watchlist_id = $watchlistId`; returns the filtered `SocialPostSummary[]` with cursor-based pagination preserved (ADR-0011). Proven by contract tests covering: a valid `watchlistId` returns only the matched posts; a UUID that belongs to a different tenant returns `404`; a malformed string returns `400`; cursor pagination still works when `watchlistId` is present.
+5. `SocialPostSummary` is not changed — no new field is added. The filter is server-side; the response shape is unchanged.
+6. No change to `matchesWatchlist()`, `matchesAst()`, `resolveWatchlistDispatch()`, or any other matching logic — this story writes match results, it does not change how they are computed (ADR-0063 Decision §1 note).
+7. No retroactive backfill of existing `social_posts` rows — posts ingested before this migration have no `post_watchlist_matches` rows, and `GET /v1/posts?watchlistId=<id>` returns an empty set for those posts. The empty result is honest; it is not an error. Confirmed by a contract test that seeds a post without a match row and verifies the filtered result is empty, not an error.
+
+**Explicitly out of scope:** retroactive backfill of historical posts (ADR-0063 Open Question 1 — deliberately not built; a future `POST /v1/watchlists/:id/reindex` endpoint is the named design direction); re-matching on watchlist update when `terms[]` or `boolean_query` changes (ADR-0063 Open Question 2 — accepted staleness at v1); `GET /v1/watchlists` response `postCount` field (ADR-0063 Open Question 4 — left to Story 8.9's judgment); any `social-listening-admin` change (Story 8.9).
