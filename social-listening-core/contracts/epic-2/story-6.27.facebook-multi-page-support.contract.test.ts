@@ -245,6 +245,21 @@ describe('Story 6.27 — Facebook: multiple Pages per user (backend)', () => {
   });
 
   describe('pollFacebook.ts (ADR-0060 Decision §3): sequential per-Page fan-out, one IngestionRun per Page, isolated', () => {
+    // Healed 2026-08-19: the file-level jest.setTimeout(60000) above was too
+    // tight for this specific test alone (every other test in this file
+    // stays well under it). Root-caused via instrumented timing, not assumed:
+    // the real Graph API consistently takes ~18s to reject each deliberately
+    // invalid Page/token — confirmed twice, 18276ms and 17842ms, close enough
+    // to read as Meta's own anti-abuse throttling for invalid credentials,
+    // not a client-side hang (graphApiFetch has no retry/backoff logic to
+    // hang in). Two invalid Pages + one real Page's own real fetch, run
+    // strictly sequentially per ADR-0060 Decision §3, land pollFacebook()
+    // itself around ~44s before this test's own fixture setup and DB
+    // assertions are even counted — leaving 60s essentially no margin. An
+    // explicit, more generous per-test override (the same "explicit
+    // jest.setTimeout(), not reliance on a default" fix docs/environment-
+    // gotchas.md already establishes for slow real infrastructure) rather
+    // than a code change — there is no bug in the fan-out logic itself.
     it('three connected Pages (one real, two deliberately invalid) produce three separate IngestionRun rows, one per Page, and one real classified failure never blocks the others', async () => {
       const tenantId = await createTenantFixture(`Fb627FanOut-${randomUUID()}`);
       const userId = await createUserFixture(tenantId, `fb627-${randomUUID()}@example.com`);
@@ -269,7 +284,7 @@ describe('Story 6.27 — Facebook: multiple Pages per user (backend)', () => {
       expect(realRow?.status).toBe('succeeded');
       expect(invalidA?.status).toBe('failed');
       expect(invalidC?.status).toBe('failed');
-    });
+    }, 180000);
   });
 
   describe('ingestion_runs.page_id (ADR-0060 Decision §3): nullable, populated only by Facebook\'s own per-Page path', () => {
