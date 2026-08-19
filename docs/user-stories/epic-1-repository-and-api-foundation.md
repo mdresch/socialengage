@@ -316,7 +316,7 @@
 
 ## Story 1.14 — Poll scheduler: skip a pair whose most recent run is still `status: 'running'`
 
-**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Ready
+**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Built 2026-08-18
 
 **Built:** 2026-08-18 — social-listening-core@838e3dc
 
@@ -334,6 +334,8 @@
 - `SchedulerDeps`' existing injectable seams are reused for this check (the same `deriveConnectorHealth`-style override pattern Story 1.13 already established) rather than a new, separately-maintained query path — proven by the new test overriding the same dependency shape already in use, not a new database call added directly inside `pollScheduler.ts`.
 
 **Explicitly out of scope, per ADR-0052 Decision §5b's own stated boundary:** a genuine multi-instance distributed lock (`pg_try_advisory_lock`, ADR-0052 Decision §7) — two truly concurrent *processes* can still both observe "not running" and both start a poll; this story closes only the common, same-process case (a slow cycle, or a prior run left `'running'` by an interrupted process) that this session's own evidence actually showed. A database-level uniqueness constraint on `social_posts(tenant_id, provider, external_id)` as defense-in-depth against a duplicate insert even if an overlap does occur — considered, not built here; Menno's own explicit choice this session was the scheduler-level guard only. Cleaning up the four orphaned `'running'` rows already found in the dev database — a direct, one-off DB fix, not a code change, and not requested as part of this story.
+
+**Documentation Steward correction, 2026-08-19.** This story's own `**Source:** ... **Status:** Ready` header still read "Ready" even though the very next line's fixed-shape `**Built:** 2026-08-18 — social-listening-core@838e3dc` field already named a real shipped commit — confirmed against `docs/implementation-log.md`'s own 2026-08-18 Story 1.14 entry (same commit, same 6/6 contract, same files-touched list) that the build is real. The Status line now reads "Built 2026-08-18," matching the `**Built:**` field and the Log; no Acceptance Criteria text changed.
 
 ---
 

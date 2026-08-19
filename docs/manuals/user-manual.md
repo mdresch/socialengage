@@ -2,7 +2,7 @@
 
 **Audience:** a `tenant_user` identity — an ordinary member of your organization's SocialEngage tenant, invited by your own Tenant-Admin.
 
-**Current coverage, as of 2026-08-13:** sign-in, plus every tenant-facing screen a Tenant User (as opposed to a Tenant-Admin) can actually reach in `social-listening-admin`'s tenant screen tree — connecting your own personal platform credential and turning it on or off (Stories 6.3, 6.15), managing your own watchlists (Story 6.4), checking connector status (Story 6.5), viewing your tenant's user list (Story 6.8), a read-only view of your tenant's own settings (Story 6.9), browsing your tenant's ingested posts including a manual "run enrichment now" button (Stories 6.11, 6.16), and setting up your own company domain's content feed (Story 6.12). **All of these screens are real, backed by your tenant's actual data, with working actions — this manual's earlier note (as of 2026-08-06) that these screens showed only placeholder data with nothing wired up is now stale and has been removed.** A few things stay a Tenant-Admin's job only, called out plainly wherever that's the case — this manual only ever describes what a Tenant User can actually do, never an admin-only screen in detail. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how any screen below works changed because of it.
+**Current coverage, as of 2026-08-19:** sign-in, plus every tenant-facing screen a Tenant User (as opposed to a Tenant-Admin) can actually reach in `social-listening-admin`'s tenant screen tree — connecting your own personal platform credential and turning it on or off, now across GNews, Wikipedia, and your own Facebook Page (Stories 6.3, 6.15, 6.21, 6.23), managing your own watchlists, including Wikipedia as a selectable source (Stories 6.4, 6.22), checking connector status (Story 6.5), viewing your tenant's user list on a redesigned Team & access screen with a real seat-utilization meter (Story 6.8, restyled 2026-08-17), a read-only view of your tenant's own settings (Story 6.9), browsing your tenant's ingested posts — newest-first, with search and filtering that now covers every ingested post rather than just the current page, and a manual "run enrichment now" button (Stories 6.11, 6.16, 6.18, 6.19, 6.25, 6.26), and a full Analytics dashboard covering post volume, sentiment, conversations/key phrases, languages, and per-source breakdowns (Stories 8.1–8.6). **All of these screens are real, backed by your tenant's actual data, with working actions.** **Corrected 2026-08-19: setting up your own company domain's content feed (Story 6.12) is no longer something a Tenant User can do** — Story 6.20 (2026-08-17) restricted that entire screen to Tenant-Admins only; see "What's not built yet" below. A few things stay a Tenant-Admin's job only, called out plainly wherever that's the case — this manual only ever describes what a Tenant User can actually do, never an admin-only screen in detail. The app also gained its first real stylesheet on 2026-08-12, and the main content area was widened from 900px to 1280px on 2026-08-18 — both purely visual changes, nothing about how any screen below works changed because of either.
 
 ---
 
@@ -20,41 +20,51 @@ You don't sign yourself up. Your organization's own Tenant-Admin invites you by 
 
 ## Your tenant's shared screens (Story 6.2)
 
-Once you're signed in, SocialEngage shows you your own tenant's screens — connecting a platform, setting up your own domain's content feed, managing watchlists, checking connector status, viewing the tenant's user list, viewing tenant settings, and browsing posts. You'll never see another tenant's data or the System Admin area. A couple of screens exist only for your Tenant-Admin — same-domain sign-up review and tenant deletion — and aren't reachable from your own sign-in at all.
+Once you're signed in, SocialEngage shows you your own tenant's screens — connecting a platform, managing watchlists, checking connector status, viewing the tenant's user list, viewing tenant settings, browsing posts, and the Analytics dashboard. You'll never see another tenant's data or the System Admin area. A few screens exist only for your Tenant-Admin — same-domain sign-up review, your own company domain's content feed (as of Story 6.20, corrected below), tenant deletion, and per-user access history — and aren't reachable from your own sign-in at all.
 
 ## Connecting your own platform credential (Story 6.3)
 
 1. From your tenant's screens, open "Connect a platform."
-2. You'll see every platform SocialEngage currently supports — GNews, Newswire, Azure AI Language, and Azure OpenAI Service — each shown with its real connection state and whether it's currently Active or Inactive.
+2. You'll see every platform SocialEngage currently supports as its own card — GNews, Newswire, Azure AI Language, Azure OpenAI Service, and Wikipedia (Story 6.21) — each shown with its real connection state and whether it's currently Active or Inactive. Facebook is also shown here, but works differently — see "Connecting your own Facebook Page" below.
 3. Before you submit any credential, the screen states plainly that you're creating your own account or API key directly with that provider, under that provider's own terms — SocialEngage is not signing you up with the provider and is not a billing intermediary for it.
-4. To connect GNews, Azure AI Language, or Azure OpenAI Service, enter the credential fields that platform needs (a single API key for GNews; an endpoint and key for Azure AI Language; an endpoint, key, and deployment name for Azure OpenAI Service) and submit. Newswire needs no credential at all.
-5. **As an ordinary member of your tenant, connecting a platform always creates a personal connection just for you** — there's no "tenant-wide, shared by everyone" option on this screen for you; that choice is your Tenant-Admin's own to make, on their own connections.
-6. Disconnecting asks you to confirm before it actually removes the connection — a two-step "Disconnect," then "Confirm: disconnect," never a single click, and it's immediate.
-7. Alongside connect/disconnect, your own personal connection also has its own Activate/Deactivate control (Story 6.15) — a separate switch from the credential itself. Deactivating keeps your stored credential in place but stops it from being used for ingestion.
+4. **As an ordinary member of your tenant, only GNews is something you can connect yourself.** Enter your GNews API key and submit — this always creates a personal connection just for you; there's no "tenant-wide, shared by everyone" option on this screen for you. Newswire and Wikipedia need no credential and are always available once your tenant's Tenant-Admin turns them on. **Azure AI Language and Azure OpenAI Service are Tenant-Admin only** — an Azure API key authenticates your organization's own subscription, not an individual's personal account, so neither ever offers you a way to connect it yourself; if one isn't connected yet, you'll see a plain note asking you to have your Tenant-Admin connect it, rather than a button that would just fail.
+5. Disconnecting your own GNews connection asks you to confirm before it actually removes it — a two-step "Disconnect," then "Confirm: disconnect," never a single click, and it's immediate.
+6. Alongside connect/disconnect, your own personal connection also has its own Activate/Deactivate control (Story 6.15) — a separate switch from the credential itself. Deactivating keeps your stored credential in place but stops it from being used for ingestion.
 
 **Current limitation:** your own personal Activate/Deactivate control always starts by showing Inactive, even if you'd already activated it before — there's no way yet for this screen to read back your own real personal on/off state. If it's actually already on, clicking Activate again is harmless.
+
+## Connecting your own Facebook Page (Story 6.23)
+
+Facebook works differently from every other platform on this screen — it's this app's first connector that uses a real sign-in redirect (OAuth) instead of an API key, and it's always personal, to you specifically, regardless of your role.
+
+1. From "Connect a platform," click "Connect Facebook Page (Owned Feed)." You're taken to a real Facebook sign-in and permission screen, not a form inside SocialEngage.
+2. After you approve it, you're brought back and asked to choose which of your own Facebook Pages to connect (if you manage more than one) — SocialEngage lists every Page you're an admin of.
+3. Once connected, SocialEngage only ever ingests that one Page's own published posts and engagement — never public Facebook content, never other people's posts, and never comments.
+4. Turning it on or off uses the same Activate/Deactivate control every other platform has. There's no Disconnect control for Facebook yet.
+5. If Facebook ever revokes your connection, the card shows a distinct "Reconnect required" status — click "Reconnect" to sign in again.
 
 ## Managing watchlists (Story 6.4)
 
 1. From your tenant's screens, open "Manage watchlists."
 2. You'll see your own watchlists — name, match type (keyword, hashtag, account, or boolean), whether each is active, and which connected platforms it covers. **Watchlists are private to you** — even your Tenant-Admin can't see or manage your watchlists from this screen, and you can't see anyone else's.
-3. Below the list, a form lets you create a new watchlist: a name, a match type, either search terms (one per line) or — for a boolean watchlist — a boolean query, and which of your connected platforms it should cover. Only platforms you've actually connected are offered here.
+3. Below the list, a form lets you create a new watchlist: a name, a match type, either search terms (one per line) or — for a boolean watchlist — a boolean query, and which of your connected platforms it should cover. Only platforms you've actually connected are offered here (GNews, Newswire, and/or Wikipedia, since Story 6.22).
 4. Each watchlist can be edited the same way it was created, switched active/inactive with its own dedicated toggle, and deleted. Deleting asks for a separate confirm step before anything is actually removed, and it's permanent.
 5. If a watchlist has changed elsewhere since you loaded the page, saving your own change won't silently overwrite the other one — you'll see a message asking you to reload before retrying.
 
 ## Checking connector status (Story 6.5)
 
 1. From your tenant's screens, open "View connector status."
-2. For every platform SocialEngage supports — including ones you haven't connected yet — you'll see whether it's Active or Inactive, and if Active, its real health, the time of its last successful fetch, the time of its last attempt, and its consecutive-failure count.
-3. This screen shows status only — never your posts or any other tenant content.
+2. For every platform SocialEngage supports — GNews, Newswire, Azure AI Language, Azure OpenAI Service, Wikipedia, and Facebook, including ones you haven't connected yet — you'll see whether it's Active or Inactive, and if Active, its real health, the time of its last successful fetch, the time of its last attempt, and its consecutive-failure count.
+3. Facebook shows a distinct "Reconnect required" status here too, with its own "Reconnect" action, whenever Facebook itself has revoked your connection.
+4. This screen shows status only — never your posts or any other tenant content.
 
 **Current limitations:**
 - Watchlist compatibility warnings (which boolean-query features a given connector can't natively evaluate) are not shown here yet.
 - For the two AI enrichment providers, this screen structurally can't show a meaningful "last successful fetch" — they're invoked inline while a post is being processed, not on a poll schedule, so they'll always read "no ingestion runs yet" here even after they've genuinely enriched real posts.
 
-## Viewing your tenant's users (Story 6.8)
+## Viewing your tenant's users — Team & access (Story 6.8, redesigned 2026-08-17)
 
-From your tenant's screens, open "Tenant users." You can see every user in your tenant — Tenant-Admin or Tenant User — along with their email, role, status, and when their access ends (shown as "active indefinitely" if no end date is set). **This is a read-only list for you** — inviting a new user or changing anyone's access is your Tenant-Admin's job; you won't see those controls here.
+From your tenant's screens, open "Team & access." You can see every user in your tenant — Tenant-Admin or Tenant User — along with their email, role, status, and when their access ends (shown as "active indefinitely" if no end date is set). A seat-utilization card at the top shows how many of your tenant's licensed seats are currently active out of the total, with a real progress meter. **This is a read-only screen for you** — inviting a new user, changing anyone's access, and viewing a user's access history are all your Tenant-Admin's job; you won't see those controls here.
 
 ## Viewing your tenant's settings (Story 6.9)
 
@@ -62,13 +72,14 @@ From your tenant's screens, open "Tenant users." You can see every user in your 
 2. You'll see your tenant's real name, status, domain, how many of its licensed seats are currently used out of the total, and when the tenant was created. This is a read-only view — there's no form and no way to change anything from here.
 3. You see the identical screen your Tenant-Admin does; there's no role difference on this one.
 
-## Browsing your tenant's posts (Story 6.11)
+## Browsing your tenant's posts (Story 6.11, updated by Stories 6.18, 6.19, 6.25, 6.26)
 
-Once your tenant has connected and activated a platform, SocialEngage polls it automatically in the background — GNews and Newswire every 15 minutes, your own domain's content feed every 30 minutes (Story 1.13) — so posts appear here on their own, with nothing anyone needs to click to make ingestion happen.
+Once your tenant has connected and activated a platform, SocialEngage polls it automatically in the background — GNews, Newswire, and Wikipedia every 15–30 minutes, your own domain's content feed every 30 minutes (Story 1.13) — so posts appear here on their own, with nothing anyone needs to click to make ingestion happen.
 
-1. From your tenant's screens, open "Posts" to see what SocialEngage has ingested for your tenant — most recent first, each with the platform it came from, a title/snippet, and its published date. If a post has already been analyzed by an AI provider, you'll also see its sentiment, key phrases, and named entities right in the list.
-2. A "Next page" link moves through the full list; there's no page-number picker, jump-to-page control, or way yet to filter by watchlist, platform, or date.
-3. Click any post to open its own detail screen, which shows the same information plus the author (currently shown as a raw internal identifier — there's no lookup yet to turn it into a friendlier name) and which ingestion run brought it in (also a raw identifier, for the same reason).
+1. From your tenant's screens, open "Posts" to see what SocialEngage has ingested for your tenant — **newest-ingested first** (Story 6.25), each with the platform it came from, the author where known, a title and body preview, and its published date. If a post has already been analyzed by an AI provider, you'll also see its sentiment, key phrases, entities, and the detected language right in the list.
+2. A search box and Provider/Sentiment/Watchlist filters sit above the list, and, as of Story 6.18, both search and every filter now cover your tenant's entire ingested history, not just the current page. The Provider filter automatically includes every platform your tenant actually has posts from (Story 6.26).
+3. A "Show more" button reveals more of your already-filtered result set in batches; there's no page-number picker or server round trip for paging.
+4. Click any post to open a detail panel on the same screen (a slide-over, not a separate page) showing the same information plus the full article body rendered as real, formatted Markdown (Story 6.19), the author (currently shown as a raw internal identifier — there's no lookup yet to turn it into a friendlier name) and which ingestion run brought it in (also a raw identifier, for the same reason).
 
 ## Running enrichment manually on an older post (Story 6.16)
 
@@ -77,19 +88,29 @@ Once your tenant has connected and activated a platform, SocialEngage polls it a
 3. If no AI provider is currently connected and active for your tenant, you'll see a plain message saying so rather than an error.
 4. This button only appears on a post with no enrichment yet.
 
-## Monitoring your own company domain's content feed (Story 6.12)
+## Your organization's own company domain content feed (Story 6.12, corrected 2026-08-19)
 
-If your organization wants SocialEngage to monitor its own blog or newsroom rather than a third-party platform, you can set this up yourself — it's not restricted to your Tenant-Admin.
+**As of Story 6.20 (2026-08-17), monitoring your organization's own blog or newsroom feed is Tenant-Admin only.** Earlier, a Tenant User could set this up and verify domain ownership themselves; that's no longer true — connecting, viewing, editing, or removing this feed all now require a Tenant-Admin. If your organization needs this, ask your Tenant-Admin to set it up from their own screens.
 
-1. From "Connect a platform," follow "Set up your own domain's content feed."
-2. Enter your domain and the feed URL and submit. SocialEngage gives you a DNS TXT record (a host, a value, and an expiry) to publish at your organization's own domain registrar — this can take up to 72 hours to take effect, which is normal.
-3. Once published, come back and click "Verify now" (repeatably, if needed, while DNS propagates).
-4. **Once verified, only your Tenant-Admin can actually turn this feed on** — you can set it up and verify domain ownership, but the Activate/Deactivate control that starts real monitoring only appears for a Tenant-Admin.
+## Analytics dashboard (Stories 8.1–8.6)
+
+Open "Analytics" from your tenant's screens to see aggregated, dashboard-style views over your tenant's own ingested posts — every number here is computed live from your real posts, never a fabricated or placeholder figure.
+
+1. **Date range.** A date-range picker at the top controls every tab at once — pick a standard range (Today, Last 7/14/30 Days, This Month, Last Month, All Available History) or a custom start/end date. A "Compare to previous period" checkbox, on by default, adds a percentage change against the immediately preceding period on the Overview tab.
+2. **Overview tab.** Total matched posts and a sentiment split for the selected range (each with its own vs.-previous-period change when comparison is on), a source breakdown, a post-volume-over-time chart, and a sentiment donut.
+3. **Sentiment tab.** A sentiment donut and a sentiment-over-time chart, plus your tenant's "Top fans" and "Top critics" — the authors whose posts skew most positive or most negative — and positive/negative key-phrase clouds. Clicking an author or a phrase filters every widget on this tab down to just their matching posts.
+4. **Conversations tab.** A key-phrase cloud and a top-phrases-over-time chart, plus a Languages breakdown — the real, detected language of each enriched post, ranked by count.
+5. **Sources tab.** Post volume by source, a detail list per source with its own post count, sentiment counts, and a real 0–10 weighted sentiment score — honestly blank when a source has no enriched posts yet — and a volume-over-time chart broken out per source.
+
+**Current limitations:** there is no Location tab yet (no connector reports where a post came from geographically), no per-widget export, and period-over-period comparison only appears on the Overview tab.
 
 ## What's not built yet
 
-- **Filtering or searching your tenant's posts** — by watchlist, by platform, by date range, or by text.
 - **A friendlier author or ingestion-run display on a post's detail screen** — both currently show as raw internal identifiers.
+- **A concise AI-generated summary field** — Azure OpenAI now computes one per post, but no screen displays it yet.
 - **Watchlist compatibility warnings on the connector status screen.**
 - **Reading back your own personal activation state for a connector** — the Activate/Deactivate control for your own personal connections always starts assuming it's off, even if it's actually already on.
-- **Recovering a lost DNS TXT record for your own-domain content feed** if you leave the setup screen before publishing it — you'd need to start over.
+- **Setting up, viewing, or managing your organization's own company domain content feed** — as of Story 6.20, this is Tenant-Admin only; see above.
+- **Disconnecting a connected Facebook Page** — there's no Disconnect control for it yet, only Activate/Deactivate.
+- **Your own company domain's content feed and a connected Facebook Page as watchlist sources** — a watchlist can only target GNews, Newswire, or Wikipedia today.
+- **A Location tab, per-widget export, and full period-over-period comparison on the Analytics dashboard** — see above.

@@ -26,7 +26,7 @@
 
 ## Story 8.1 — Analytics dashboard shell, global date-range filter, Overview tab, Sources tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17, via a structured approval decision in the orchestrating session ("Approve as summarized" — see ADR-0054's own Acceptance note), accepted as drafted, no revisions.
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17, via a structured approval decision in the orchestrating session ("Approve as summarized" — see ADR-0054's own Acceptance note), accepted as drafted, no revisions.
 **Built:** 2026-08-17 — social-listening-admin@5558e11
 
 **As a** Tenant User or Tenant-Admin,
@@ -49,7 +49,7 @@
 
 ## Story 8.2 — Sentiment tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
 **Built:** 2026-08-17 — social-listening-admin@a54bf05
 
 **As a** Tenant User or Tenant-Admin,
@@ -70,7 +70,7 @@
 
 ## Story 8.3 — Conversations tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
 **Built:** 2026-08-17 — social-listening-admin@5fed9dd
 
 **As a** Tenant User or Tenant-Admin,
@@ -90,7 +90,7 @@
 
 ## Story 8.4 — Overview enrichment: volume chart, sentiment donut, period-over-period comparison
 
-**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; both pieces below stay inside Decision §2's already-accepted Overview scope ("reusing the same computed aggregates... not a novel widget of its own") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Ready
+**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; both pieces below stay inside Decision §2's already-accepted Overview scope ("reusing the same computed aggregates... not a novel widget of its own") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Built 2026-08-17
 **Built:** 2026-08-17 — social-listening-admin@ae015e0
 
 **As a** Tenant User or Tenant-Admin,
@@ -113,7 +113,7 @@
 
 ## Story 8.5 — Languages breakdown widget
 
-**Source:** ADR-0055 (Accepted 2026-08-17) · **Status:** Ready — ADR-0055 accepted 2026-08-17, via a structured approval decision in the orchestrating session (Menno: "yes please extend the language field" — see ADR-0055's own Acceptance note), accepted as drafted, no revisions.
+**Source:** ADR-0055 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0055 accepted 2026-08-17, via a structured approval decision in the orchestrating session (Menno: "yes please extend the language field" — see ADR-0055's own Acceptance note), accepted as drafted, no revisions.
 **Built:** 2026-08-17 — social-listening-admin@8b8bb14
 
 **As a** Tenant User or Tenant-Admin,
@@ -133,7 +133,7 @@
 
 ## Story 8.6 — Sources tab enrichment: per-source sentiment score, per-source volume-over-time
 
-**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; stays inside Decision §2's already-accepted Sources scope ("post-volume and sentiment breakdown per real `providerId`") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Ready
+**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; stays inside Decision §2's already-accepted Sources scope ("post-volume and sentiment breakdown per real `providerId`") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Built 2026-08-17
 **Built:** 2026-08-17 — social-listening-admin@a17af3f
 
 **As a** Tenant User or Tenant-Admin,
@@ -160,3 +160,5 @@
 **ADR-0054 Decision §4 defers the Location tab entirely — no story exists for it in this epic, and none should be added speculatively.** Two independent, both-disqualifying findings: no connector in this project's real roster populates `social_posts.post_geo_location`, and even a populated column would not be visible to `GET /v1/posts`'s own `SocialPostSummary` response shape, which this epic's entire data-source strategy depends on (ADR-0054 Decision §3). A future story here would need, at minimum, a real geo-data-carrying connector or source, a `social-listening-core` schema/API change (its own separate contract-first story), and a demonstrated tenant need — none of which exist today. See ADR-0054 Open Question 1.
 
 **2026-08-17, later the same day — reconfirmed, not reopened, by ADR-0055.** ADR-0055 investigated Location independently at Menno's own direct request, rather than assuming this conclusion still held. Both disqualifying findings above were re-verified directly and remain unchanged. One new, real detail was found and named — `GNewsArticle.source.country` is already captured in `rawPayload`, technically free to surface — but explicitly declined as a Location substitute: it covers only one of three real connectors, and reports the publisher's own declared country, not per-post or per-conversation geography. No story is added here as a result. See ADR-0054's own new Clarification note on Open Question 1 and ADR-0055's own Decision §2/Context.
+
+**Documentation Steward correction, 2026-08-19.** Stories 8.1–8.6 above each already carried a correct, real `**Built:** 2026-08-17 — social-listening-admin@<hash>` field (each hash confirmed directly against `docs/implementation-log.md`'s own matching 2026-08-17 entries) and this epic file's own narrative notes above (lines 7/9/11/13/17/19) already stated in plain prose that every one of the six stories was built — but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone. This is exactly the gap `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13, closing an identical drift found in Stories 5.18/6.7) exists to catch. All six Status lines now read "Built 2026-08-17," matching the `**Built:**` field and the Log; no Acceptance Criteria text changed.
