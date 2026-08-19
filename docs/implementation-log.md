@@ -18,6 +18,8 @@ One entry per completed story or healing pass, added by the `implement-story` / 
 - **Full suite at merge:** PASS (N/N)
 ```
 
+**2026-08-19 — `Full suite at merge` may honestly read as epic-scoped instead of full, per `docs/implementation-methodology.md`'s Amendment Log entry of the same date.** Since Step 6/Step 5 validation now defaults to the touched story's own epic locally (with a carve-out back to the full suite for shared-file changes), a pass genuinely may not have run the full suite locally before this entry was written — CI runs it unconditionally on push regardless. State exactly what was run: `Epic-N suite at merge: PASS (N/N); full suite deferred to CI on push` when the epic-scoped default applied, or `Full suite at merge: PASS (N/N)` unchanged when the shared-file carve-out (or the Cross-Component Regression Protocol) required the full run. Never write "Full suite at merge: PASS" for a pass that only ran the epic-scoped subset — that would be an unverified claim sitting in a record this project's own discipline requires to be checkable against real evidence, not trusted prose.
+
 For a healing pass (no story number, or fixing a cross-component regression per that section of the methodology doc), use `## YYYY-MM-DD — Healing: <one-line description> — <repo>@<short-hash>` with the same field set, `Story / ADR` naming whichever story/ADR the healed contract belongs to.
 
 **Merge strategy note:** use regular or fast-forward merges, not squash — the commit hash recorded here is written *before* merge (it's the PR branch's tip commit), and squashing would replace it with a different hash on `main`, silently invalidating the entry. See `docs/templates/ci-workflow.md`.
