@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import type { ConnectorStatus } from '@/lib/core-client';
 import { StatusBadge, type StatusBadgeVariant } from '@/components/ui';
 import { RelativeTime } from '@/components/ui';
@@ -122,6 +122,30 @@ interface ConnectorStatusClientProps {
 // ---------------------------------------------------------------------------
 
 /**
+ * Story 6.24 — a small, explicitly-commented client-side constant, not a
+ * claim that this is dynamically sourced. No endpoint exposes per-platform
+ * poll cadence over HTTP today; must be kept in sync by hand with
+ * `bootstrapConnectors.ts`'s real `pollCadenceMs` constants
+ * (`social-listening-core`) whenever a connector's cadence changes or a new
+ * poll-mode connector is added.
+ */
+const POLL_INTERVAL_MINUTES: Record<string, number> = {
+  gnews: 15,
+  newswire: 15,
+  wikipedia: 30,
+  'tenant-owned-feed': 30,
+  facebook: 30,
+};
+
+/** Story 6.24 — mirrors `CONSECUTIVE_FAILURE_CEILING` (`social-listening-core/src/connectors/connectorHealth.ts`), the real, single global ceiling. Not importable across the repo boundary; restated here, kept in sync by hand. */
+const CONSECUTIVE_FAILURE_CEILING = 20;
+
+/** Story 6.24 — 'Ingestion' platforms render in the Connectors section; everything else (today, only 'Enrichment') renders in the AI Providers section. */
+function isAIProvider(row: ConnectorStatusRow): boolean {
+  return row.platform.category === 'Enrichment';
+}
+
+/**
  * Story 6.23 (Story 2.15 AC7, ADR-0059 Decision §4) — 'reconnect_required'
  * takes priority over the isActive check: a credential-invalidation
  * failure is real signal worth surfacing distinctly even while the
@@ -155,15 +179,168 @@ function cardBorderClass(row: ConnectorStatusRow): string {
 export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusClientProps) {
   const [pingingId, setPingingId] = useState<string | null>(null);
 
-  const healthyCount  = rows.filter((r) => r.health?.status === 'healthy').length;
-  const degradedCount = rows.filter((r) => r.health?.status === 'failing' || r.health?.status === 'degraded').length;
-  const totalCount    = rows.length;
+  // Story 6.24 — split by real category rather than one flat list. AI
+  // providers are not pollable feeds, so KPIs below are Connectors-only.
+  const connectorRows  = rows.filter((r) => !isAIProvider(r));
+  const aiProviderRows = rows.filter(isAIProvider);
+
+  const healthyCount  = connectorRows.filter((r) => r.health?.status === 'healthy').length;
+  const degradedCount = connectorRows.filter((r) => r.health?.status === 'failing' || r.health?.status === 'degraded').length;
+  const totalCount    = connectorRows.length;
 
   async function handleTestPing(id: string) {
     setPingingId(id);
     await new Promise((r) => setTimeout(r, 700));
     setPingingId(null);
   }
+
+  // Story 6.24 — one pass over the real, unfiltered `rows` prop (matching
+  // Story 6.5 AC6's own "every platform is always listed, not filtered
+  // down" requirement) that buckets each row's card into the right
+  // section. Card markup stays inline in this callback, not delegated to a
+  // helper defined above it, so that `ActivateDeactivateButton` (Story
+  // 6.15 AC3) and `cs-metrics-grid` (this story's AC3) keep the same
+  // "unconditional, before the metrics grid" source-order relationship
+  // those already-shipped, still-binding contracts assert.
+  const connectorCards: ReactElement[] = [];
+  const aiProviderCards: ReactElement[] = [];
+
+  rows.map((row) => {
+    const { platform, isActive, health } = row;
+    const isAI = isAIProvider(row);
+    const variant: StatusBadgeVariant = isAI ? (isActive ? 'active' : 'inactive') : deriveVariant(row);
+    const isPinging = pingingId === platform.id;
+
+    const actions = (
+      <div className="cs-card-actions">
+        {/* Story 6.23 (Story 2.15 AC7) — reconnect_required's own
+           action targets the same real OAuth entry point as the
+           connect screen's own Reconnect control, re-entering
+           the flow from the top rather than a dead end. */}
+        {variant === 'reconnect_required' && (
+          <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary btn-sm cs-reconnect-btn">
+            Reconnect
+          </a>
+        )}
+
+        <button
+          type="button"
+          disabled={isPinging || !isActive}
+          onClick={() => handleTestPing(platform.id)}
+          className="cs-ping-btn"
+          title="Send synthetic health ping"
+        >
+          <IconRefresh spinning={isPinging} />
+          {isPinging ? 'Pinging…' : 'Test Ping'}
+        </button>
+
+        {isTenantAdmin && platform.tenantScopeAllowed !== false && (
+          <ActivateDeactivateButton
+            platformId={platform.id}
+            ownerType="tenant"
+            isActive={isActive}
+          />
+        )}
+        {platform.personalScopeAllowed && (
+          <ActivateDeactivateButton
+            platformId={platform.id}
+            ownerType="user"
+            isActive={false}
+          />
+        )}
+      </div>
+    );
+
+    const badge = isAI
+      ? <StatusBadge variant={isActive ? 'active' : 'inactive'} label={isActive ? 'Active' : 'Inactive'} />
+      : <StatusBadge variant={variant} />;
+
+    const header = (
+      <div className="cs-card-top">
+        <div className="cs-card-info">
+          <div className="cs-card-title-row">
+            <h2 className="cs-card-name">{platform.name}</h2>
+            {badge}
+            <span className="cs-category-pill">{platform.category}</span>
+          </div>
+          <p className="cs-card-description">{platform.description}</p>
+        </div>
+        {actions}
+      </div>
+    );
+
+    if (isAI) {
+      /**
+       * Story 6.24 — an AIProviderConnector is invoked inline by
+       * `enrichPost()` and never accumulates an `ingestion_runs` row, so
+       * `health.status` is permanently 'disconnected' regardless of real
+       * usage (connector-status-view/SKILL.md's own named gap). The
+       * ingestion-shaped metrics grid is never rendered for this card —
+       * replaced by a one-line explanatory note.
+       */
+      aiProviderCards.push(
+        <div key={platform.id} className="cs-card">
+          {header}
+          <div className="cs-ai-note">
+            Invoked on demand during content enrichment — not independently polled.
+          </div>
+        </div>
+      );
+    } else {
+      connectorCards.push(
+        <div key={platform.id} className={cardBorderClass(row)}>
+          {header}
+
+          <div className="cs-metrics-grid">
+            <div className="cs-metric">
+              <div className="cs-metric-label">
+                <IconClock /> Last Successful Ingestion
+              </div>
+              <div className="cs-metric-value">
+                {health?.lastSuccessfulFetchAt ? (
+                  <RelativeTime timestamp={health.lastSuccessfulFetchAt} />
+                ) : (
+                  <span>never</span>
+                )}
+              </div>
+              {health?.lastSuccessfulFetchAt && (
+                <div className="cs-metric-sub">
+                  {new Date(health.lastSuccessfulFetchAt).toLocaleTimeString()}
+                </div>
+              )}
+            </div>
+
+            <div className="cs-metric">
+              <div className="cs-metric-label">
+                <IconZap /> Last Polling Attempt
+              </div>
+              <div className="cs-metric-value">
+                {health?.lastAttemptAt ? (
+                  <RelativeTime timestamp={health.lastAttemptAt} />
+                ) : (
+                  <span>never</span>
+                )}
+              </div>
+              <div className="cs-metric-sub">Interval: every {POLL_INTERVAL_MINUTES[platform.id] ?? '?'} minutes</div>
+            </div>
+
+            <div className="cs-metric">
+              <div className="cs-metric-label">
+                <IconWarning /> Consecutive Retry Count
+              </div>
+              <div className={`cs-metric-value ${(health?.consecutiveFailures ?? 0) > 0 ? 'cs-metric-value-warn' : ''}`}>
+                {health?.consecutiveFailures ?? 0}{' '}
+                {(health?.consecutiveFailures ?? 0) === 1 ? 'failure' : 'failures'}
+              </div>
+              <div className="cs-metric-sub">Threshold: {CONSECUTIVE_FAILURE_CEILING} retries before alert</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  });
 
   return (
     <div className="cs-root">
@@ -217,112 +394,20 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
         </div>
       </div>
 
-      {/* Connector Cards */}
-      <div className="cs-cards">
-        {rows.map(({ platform, isActive, health }) => {
-          const variant  = deriveVariant({ platform, isActive, health });
-          const isPinging = pingingId === platform.id;
+      {/* Connectors section — Story 6.24 */}
+      <div>
+        <h2 className="cs-section-heading">Connectors</h2>
+        <div className="cs-cards">
+          {connectorCards}
+        </div>
+      </div>
 
-          return (
-            <div key={platform.id} className={cardBorderClass({ platform, isActive, health })}>
-              {/* Top row: name + badge + category + actions */}
-              <div className="cs-card-top">
-                <div className="cs-card-info">
-                  <div className="cs-card-title-row">
-                    <h2 className="cs-card-name">{platform.name}</h2>
-                    <StatusBadge variant={variant} />
-                    <span className="cs-category-pill">{platform.category}</span>
-                  </div>
-                  <p className="cs-card-description">{platform.description}</p>
-                </div>
-
-                <div className="cs-card-actions">
-                  {/* Story 6.23 (Story 2.15 AC7) — reconnect_required's own
-                     action targets the same real OAuth entry point as the
-                     connect screen's own Reconnect control, re-entering
-                     the flow from the top rather than a dead end. */}
-                  {variant === 'reconnect_required' && (
-                    <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary btn-sm cs-reconnect-btn">
-                      Reconnect
-                    </a>
-                  )}
-
-                  <button
-                    type="button"
-                    disabled={isPinging || !isActive}
-                    onClick={() => handleTestPing(platform.id)}
-                    className="cs-ping-btn"
-                    title="Send synthetic health ping"
-                  >
-                    <IconRefresh spinning={isPinging} />
-                    {isPinging ? 'Pinging…' : 'Test Ping'}
-                  </button>
-
-                  {isTenantAdmin && platform.tenantScopeAllowed !== false && (
-                    <ActivateDeactivateButton
-                      platformId={platform.id}
-                      ownerType="tenant"
-                      isActive={isActive}
-                    />
-                  )}
-                  {platform.personalScopeAllowed && (
-                    <ActivateDeactivateButton
-                      platformId={platform.id}
-                      ownerType="user"
-                      isActive={false}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Metrics Grid */}
-              <div className="cs-metrics-grid">
-                <div className="cs-metric">
-                  <div className="cs-metric-label">
-                    <IconClock /> Last Successful Ingestion
-                  </div>
-                  <div className="cs-metric-value">
-                    {health?.lastSuccessfulFetchAt ? (
-                      <RelativeTime timestamp={health.lastSuccessfulFetchAt} />
-                    ) : (
-                      <span>never</span>
-                    )}
-                  </div>
-                  {health?.lastSuccessfulFetchAt && (
-                    <div className="cs-metric-sub">
-                      {new Date(health.lastSuccessfulFetchAt).toLocaleTimeString()}
-                    </div>
-                  )}
-                </div>
-
-                <div className="cs-metric">
-                  <div className="cs-metric-label">
-                    <IconZap /> Last Polling Attempt
-                  </div>
-                  <div className="cs-metric-value">
-                    {health?.lastAttemptAt ? (
-                      <RelativeTime timestamp={health.lastAttemptAt} />
-                    ) : (
-                      <span>never</span>
-                    )}
-                  </div>
-                  <div className="cs-metric-sub">Interval: every 2 minutes</div>
-                </div>
-
-                <div className="cs-metric">
-                  <div className="cs-metric-label">
-                    <IconWarning /> Consecutive Retry Count
-                  </div>
-                  <div className={`cs-metric-value ${(health?.consecutiveFailures ?? 0) > 0 ? 'cs-metric-value-warn' : ''}`}>
-                    {health?.consecutiveFailures ?? 0}{' '}
-                    {(health?.consecutiveFailures ?? 0) === 1 ? 'failure' : 'failures'}
-                  </div>
-                  <div className="cs-metric-sub">Threshold: 5 retries before alert</div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      {/* AI Providers section — Story 6.24 */}
+      <div>
+        <h2 className="cs-section-heading">AI Providers</h2>
+        <div className="cs-cards">
+          {aiProviderCards}
+        </div>
       </div>
 
       {/* Watchlist compatibility note */}
