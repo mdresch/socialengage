@@ -349,7 +349,7 @@ describe('Story 3.11 — post-watchlist match persistence contract', () => {
     expect(matchesWatchlist({ keywords: ['acme'] }, { id: 'p1', text: 'Acme just launched a product' })).toBe(true);
     expect(matchesWatchlist({ keywords: ['acme'] }, { id: 'p2', text: 'Nothing relevant here' })).toBe(false);
     expect(matchesAst(parseBooleanQuery('acme AND launch'), { id: 'p3', text: 'Acme launch today' })).toBe(true);
-    expect(matchesAst(parseBooleanQuery('acme AND launch'), { id: 'p4', text: 'Acme only, no launch word' })).toBe(
+    expect(matchesAst(parseBooleanQuery('acme AND launch'), { id: 'p4', text: 'Acme only, nothing else mentioned' })).toBe(
       false
     );
   });

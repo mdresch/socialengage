@@ -8,9 +8,29 @@
 -- social_posts/watchlists already use -- same pattern as watchlists itself
 -- (migrations/0014_create_watchlists.sql). See
 -- .claude/skills/post-watchlist-match-persistence/SKILL.md.
+--
+-- post_id deliberately carries no DB-enforced FK into social_posts, unlike
+-- watchlist_id below. social_posts has been partitioned by created_at since
+-- migration 0012 (Story 3.5, ADR-0018), which forced its primary key to
+-- become composite (id, created_at) -- a hard Postgres requirement for
+-- partitioned tables (a partition's unique/PK constraints must include the
+-- partition key). social_posts.id alone therefore has no unique constraint
+-- to reference; REFERENCES social_posts(id) fails at migration time
+-- (confirmed empirically, not assumed -- "no unique constraint matching
+-- given keys"). This is the identical conflict already discovered and
+-- resolved once before for social_posts.acquisition_id -> ingestion_runs(id)
+-- (migration 0012's own comment, data-retention-and-archival/SKILL.md's own
+-- load-bearing constraints): a real FK is also fundamentally incompatible
+-- with archiveAgedRawPayloads()'s own DETACH/reattach-partition cycle,
+-- since Postgres refuses to detach a partition any live FK still points
+-- into. post_id is app-enforced only (insertPostWatchlistMatches()'s only
+-- real caller, publishSocialPostIngestedEvents(), always passes a real,
+-- just-inserted post id), the same tier acquisition_id/author_id already
+-- partly rely on. See ADR-0063's own Amendment Log for the dated
+-- correction and .claude/skills/post-watchlist-match-persistence/SKILL.md.
 CREATE TABLE post_watchlist_matches (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_id      UUID        NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE,
+  post_id      UUID        NOT NULL,
   watchlist_id UUID        NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE,
   tenant_id    UUID        NOT NULL,
   matched_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -44,5 +64,7 @@ CREATE POLICY tenant_isolation ON post_watchlist_matches
 -- by this join).
 CREATE INDEX IF NOT EXISTS idx_pwm_watchlist_id ON post_watchlist_matches (watchlist_id, tenant_id, matched_at DESC);
 -- "which watchlists did this post match" (ADR-0058's own event-publishing
--- direction, and ON DELETE CASCADE's own lookup path when a post is removed).
+-- direction). No ON DELETE CASCADE relies on this index -- post_id carries
+-- no DB-enforced FK (see the CREATE TABLE comment above); no code path in
+-- this repo hard-deletes an individual social_posts row today.
 CREATE INDEX IF NOT EXISTS idx_pwm_post_id ON post_watchlist_matches (post_id, tenant_id);

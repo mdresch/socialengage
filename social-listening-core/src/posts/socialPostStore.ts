@@ -291,7 +291,9 @@ async function queryFirstPage(
     : '';
   const params = watchlistId ? [limit + 1, watchlistId] : [limit + 1];
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
+    `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
+            social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
+     FROM social_posts
      ${join}
      ORDER BY seq ASC
      LIMIT $1`,
@@ -312,7 +314,9 @@ async function queryAfterCursor(
     : '';
   const params = watchlistId ? [seq, limit + 1, watchlistId] : [seq, limit + 1];
   const { rows } = await client.query(
-    `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
+    `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
+            social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
+     FROM social_posts
      ${join}
      WHERE seq > $1
      ORDER BY seq ASC
