@@ -17,15 +17,12 @@ export const FACEBOOK_OAUTH_STATE_COOKIE_NAME = 'se_fb_oauth_state';
 /** Carries the callback's own {sessionToken, pages} result to the picker (pending/route.ts). Single-use, deleted on read — mirrors the backend's own single-use session Map (facebookOAuthRouter.ts). */
 export const FACEBOOK_OAUTH_PENDING_COOKIE_NAME = 'se_fb_oauth_pending';
 
-/**
- * Purely cosmetic, admin-side-only cache of the connected Page's own name —
- * GET /v1/connectors/:platformId has no field for this today (a real,
- * named backend gap, see connector-connect-disconnect/SKILL.md's Known
- * gaps). Long-lived since there's no natural expiry event for "still
- * connected" — cleared only by disconnecting or reconnecting to a
- * different Page.
- */
-export const FACEBOOK_CONNECTED_PAGE_COOKIE_NAME = 'se_fb_connected_page';
+// Story 6.27 (ADR-0060 Decision §5): the Story 6.23-era
+// FACEBOOK_CONNECTED_PAGE_COOKIE_NAME cosmetic Page-name cache was retired
+// here — GET /v1/connectors/facebook/pages (core-client.ts's
+// listFacebookPages()) now returns real per-Page names/status/health
+// directly, making the cookie workaround obsolete rather than merely
+// redundant.
 
 function requireEnv(name: string): string {
   const value = process.env[name];

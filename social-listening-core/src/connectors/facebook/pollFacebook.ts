@@ -7,7 +7,8 @@ import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
 import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
-import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
+import { readCredential } from '../../credentials/credentialStore';
+import { listConnectedPages, FacebookConnectedPage } from './facebookConnectedPagesStore';
 import {
   facebookConnector,
   fetchFacebookPagePosts,
@@ -33,30 +34,36 @@ async function gatedAcquire(tenantId: string): Promise<void> {
 }
 
 /**
- * ADR-0059 Decision §4 — this connector's credential is Tier 3 (user-bound),
- * never Tier 2 (tenant-wide) — the only real connector in this project's
- * roster where getLatestCredentialId()/readCredential() are called with
- * ownerType:'user' from a poll path, not 'tenant'. `userId` is a required
- * parameter (not optional the way tenant-wide connectors' poll(tenantId)
- * is) because there is structurally no tenant-wide credential to fall back
- * to for this connector — see facebookConnector.ts's own doc comment for
- * why this can't be wired into the scheduler's generic poll(tenantId)
- * invocation yet.
+ * ADR-0060 Decision §3 — one connected Page's full ingest cycle
+ * (credential read → fetch → author upsert → per-post insert/enrich/
+ * publish), as its own, independent `runIngestionAttempt()` call carrying
+ * `pageId` in `connectorInfo` — the load-bearing piece that makes Decision
+ * §4's per-Page health possible. This is the exact body `pollFacebook()`'s
+ * own single-Page version already ran; only the credential lookup changed
+ * (reads the already-known `credentialId` from the connected-Page row
+ * directly, never `getLatestCredentialId()` — this function's own caller
+ * already knows exactly which credential belongs to which Page).
  */
-export async function pollFacebook(tenantId: string, userId: string): Promise<RunIngestionAttemptResult> {
+async function pollFacebookPage(tenantId: string, userId: string, page: FacebookConnectedPage): Promise<RunIngestionAttemptResult> {
   return runIngestionAttempt({
     tenantId,
     connectorInfo: {
       platformId: FACEBOOK_PROVIDER_ID,
       triggerType: 'poll',
       connectorVersion: '1.0.0',
+      userId,
+      pageId: page.pageId,
     },
     attempt: async (runId) => {
-      const credentialId = await getLatestCredentialId(tenantId, FACEBOOK_PROVIDER_ID, 'user', userId);
-      if (!credentialId) {
-        throw new ClassifiableError('http_401', 'No Facebook credential connected for this user.');
+      // A status='connected' row (the only kind listConnectedPages() ever
+      // returns) always has a real credentialId — it is only ever nulled
+      // by the DELETE .../pages/:id path, which also sets status='removed'
+      // in the same call. Still a real, classified failure rather than a
+      // crash if that invariant is ever violated.
+      if (!page.credentialId) {
+        throw new ClassifiableError('http_401', 'Connected Facebook Page has no credential (already removed).');
       }
-      const credentialPlaintext = await readCredential(tenantId, credentialId);
+      const credentialPlaintext = await readCredential(tenantId, page.credentialId);
       const { pageId, pageAccessToken } = parseFacebookCredential(credentialPlaintext);
 
       const watchlists = (await listActiveWatchlistsForTenant(tenantId)).filter((w) =>
@@ -74,6 +81,9 @@ export async function pollFacebook(tenantId: string, userId: string): Promise<Ru
       // clause), upserted once per poll regardless of how many posts this
       // batch contains — the same "author upserted once, reused per post"
       // shape every other connector's own ingest loop already establishes.
+      // ADR-0060's own "A standing check applied, not skipped: author
+      // rights" section confirms this stays per-Page and unmerged across a
+      // user's several connected Pages.
       const author = await upsertAuthor(tenantId, FACEBOOK_PROVIDER_ID, pageMeta.id, {
         displayName: pageMeta.name,
         followerCount: typeof pageMeta.fan_count === 'number' ? pageMeta.fan_count : undefined,
@@ -123,4 +133,75 @@ export async function pollFacebook(tenantId: string, userId: string): Promise<Ru
       return { postsIngested, postsSkipped };
     },
   });
+}
+
+/**
+ * ADR-0060 Decision §3 — lists every `status = 'connected'` row in
+ * `facebook_connected_pages` for `(tenantId, userId)` and runs one
+ * independent `pollFacebookPage()` call per row, **sequentially** (one
+ * Page's entire attempt, including its own `gatedAcquire()` call,
+ * completes before the next begins — never `Promise.all()`-style
+ * concurrent fan-out). This reuses `RequestGate`'s own already-existing
+ * per-`(tenantId, providerId)` serialization/pacing (`requestGate.ts`) as
+ * its sole mitigation for the increased call-volume risk (ADR-0060
+ * Consequences) — a second, redundant jitter/delay layer here would
+ * duplicate work `RequestGate` already does.
+ *
+ * One Page's `ClassifiableError` does not prevent the next Page in the
+ * loop from being attempted — `runIngestionAttempt()` itself already
+ * catches `ClassifiableError` internally and *resolves* (never rejects),
+ * so this loop needs no extra try/catch for that case; only a genuine raw,
+ * non-`ClassifiableError` exception could reject a single page's promise,
+ * and that is explicitly not caught here either — the same
+ * "runIngestionAttempt() only catches ClassifiableError" load-bearing rule
+ * every other connector's own poll function already honors (see
+ * connector-health-and-error-handling/SKILL.md). A raw exception from one
+ * Page therefore does still stop this function's own loop; the Tier-3
+ * scheduler's own per-user `try`/`catch` (ADR-0061, `pollScheduler.ts`) is
+ * what isolates that from other users/tenants in the same tick — this
+ * function's own isolation guarantee is scoped to `ClassifiableError`-class
+ * per-Page failures, exactly as ADR-0060 Decision §3 states.
+ *
+ * `userId` is a required parameter (not optional the way tenant-wide
+ * connectors' `poll(tenantId)` is) because there is structurally no
+ * tenant-wide credential to fall back to for this connector (ADR-0059
+ * Decision §4) — this is the function registered as `pollUser` in
+ * `bootstrapConnectors.ts` (Story 1.15, ADR-0061).
+ *
+ * Returns a single aggregate `RunIngestionAttemptResult` for callers that
+ * need one value (the Tier-3 scheduler discards it; the "no connected
+ * Pages" fast path and this project's own existing direct-call tests rely
+ * on it): `status` is `'succeeded'` only if every Page's own attempt
+ * succeeded, `runId` is the last Page's own run id.
+ */
+export async function pollFacebook(tenantId: string, userId: string): Promise<RunIngestionAttemptResult> {
+  const pages = await listConnectedPages(tenantId, userId);
+
+  if (pages.length === 0) {
+    // No connected Pages at all — a real, single IngestionRun (no pageId,
+    // matching every pre-Story-6.27 row's own shape) records this as a
+    // clear, classified failure rather than silently no-op'ing, the same
+    // fast-path treatment the prior single-credential version gave "no
+    // credential connected."
+    return runIngestionAttempt({
+      tenantId,
+      connectorInfo: { platformId: FACEBOOK_PROVIDER_ID, triggerType: 'poll', connectorVersion: '1.0.0', userId },
+      attempt: async () => {
+        throw new ClassifiableError('http_401', 'No Facebook Pages connected for this user.');
+      },
+    });
+  }
+
+  const results: RunIngestionAttemptResult[] = [];
+  for (const page of pages) {
+    results.push(await pollFacebookPage(tenantId, userId, page));
+  }
+
+  const allSucceeded = results.every((r) => r.status === 'succeeded');
+  const failed = results.filter((r) => r.status === 'failed');
+  return {
+    runId: results[results.length - 1].runId,
+    status: allSucceeded ? 'succeeded' : 'failed',
+    errorSummary: failed.length > 0 ? failed.map((r) => r.errorSummary).filter(Boolean).join('; ') : undefined,
+  };
 }

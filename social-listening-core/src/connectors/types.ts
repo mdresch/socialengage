@@ -94,6 +94,18 @@ export interface SocialConnector extends ProviderConnector {
    * registration changed its cadence without a matching scheduler edit.
    */
   pollCadenceMs?: number;
+  /**
+   * Story 1.15 (ADR-0061 Decision §3) — the Tier-3 (user-bound) analogue of
+   * `poll`, for connectors with no tenant-wide activation path at all
+   * (Facebook, ADR-0059 Decision §4, is the first). A distinct method, not
+   * an overload of `poll` — TypeScript can't express two differently-shaped
+   * optional methods under one name — and never present alongside `poll`
+   * on the same connector: a connector is tenant-wide-pollable or
+   * user-bound-pollable, never both. The scheduler's own separate per-user
+   * enumeration loop (`.claude/skills/live-ingestion-polling-scheduler/SKILL.md`)
+   * is the only caller.
+   */
+  pollUser?(tenantId: string, userId: string): Promise<RunIngestionAttemptResult>;
 }
 
 export interface ModelCapabilities {

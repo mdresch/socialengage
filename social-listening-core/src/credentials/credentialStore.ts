@@ -129,3 +129,23 @@ export async function deleteCredential(
     }
   });
 }
+
+/**
+ * Story 6.27 (ADR-0060 Decision §2) — deletes exactly one row by its own
+ * primary key, tenant-scoped via `withTenant()` like every other function
+ * in this file. A new, narrowly-scoped, additive function — Facebook's own
+ * per-Page disconnect path (`facebookPagesRouter.ts`) calls this, never the
+ * existing tuple-scoped `deleteCredential()`, which would delete every
+ * credential row matching the 4-tuple (a real latent gap found while
+ * designing multi-Page support: today, before this function existed,
+ * disconnecting one Page would have destroyed every other Page's own
+ * credential too). `getLatestCredentialId()`/`deleteCredential()` above are
+ * completely unchanged by this addition — every other caller (GNews's
+ * connect/disconnect, tenant-wide credential flows generally) is
+ * unaffected.
+ */
+export async function deleteCredentialById(tenantId: string, credentialId: string): Promise<void> {
+  await withTenant(tenantId, async (client) => {
+    await client.query(`DELETE FROM platform_credentials WHERE tenant_id = $1 AND id = $2`, [tenantId, credentialId]);
+  });
+}

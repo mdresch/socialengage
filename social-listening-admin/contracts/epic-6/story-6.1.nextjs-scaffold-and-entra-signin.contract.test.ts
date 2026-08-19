@@ -26,14 +26,25 @@
  *   - The real Entra External ID tenant (getsocialengage.onmicrosoft.com,
  *     ENTRA_TENANT_ID) Story 5.6 already provisioned.
  *   - A real, dedicated app registration for social-listening-admin (ENTRA_ADMIN_CLIENT_ID),
- *     created 2026-08-04 for this story — confidential Web client, exact-match redirect
- *     URI http://localhost:3000/api/auth/callback, Authorization Code + PKCE.
+ *     created 2026-08-04 for this story — confidential Web client, Authorization Code +
+ *     PKCE. Its own exact-match redirect URI list now has two registered entries:
+ *     http://localhost:3000/api/auth/callback (the original) and
+ *     https://socialengage.test:3000/api/auth/callback (added 2026-08-18 alongside the
+ *     Facebook connector's own HTTPS/hosts-file workaround, ADR-0059/Story 6.23 — Entra
+ *     requires HTTPS for any redirect host other than the literal hostname "localhost").
+ *     This file runs against the socialengage.test entry, matching ENTRA_ADMIN_REDIRECT_URI
+ *     in .env, which switched to it in the same session for the same reason.
  *   - A real, dedicated test user (ENTRA_ADMIN_TEST_USER_EMAIL/PASSWORD) — deliberately
  *     not social-listening-core's own ENTRA_TEST_TARGET_USER_ID, whose password Story
  *     5.7/5.8's break-glass contracts reset as part of their own runs.
- *   - A real `next dev` server (this file's own beforeAll/afterAll) driven by a real
- *     headless browser (Playwright/Chromium) that completes a real interactive sign-in —
- *     filling the real Entra sign-in form, not intercepting or mocking any network call.
+ *   - A real `next dev --experimental-https -H socialengage.test` server (this file's own
+ *     beforeAll/afterAll) driven by a real headless browser (Playwright/Chromium) that
+ *     completes a real interactive sign-in — filling the real Entra sign-in form, not
+ *     intercepting or mocking any network call. Requires two real, machine-local
+ *     prerequisites this file cannot set up itself (see the dated note below): a
+ *     `127.0.0.1 socialengage.test` hosts-file entry, and a real self-signed certificate
+ *     covering that hostname (`certificates/localhost.pem`/`localhost-key.pem`, generated
+ *     once via `npm run dev:https` or by Next's own `--experimental-https` on first run).
  *
  * Auth.js/NextAuth.js check (ADR-0036 §3's own instruction to verify before committing to
  * a bespoke PKCE flow): checked directly at implementation time — Auth.js's documented
@@ -71,11 +82,64 @@
  * this contract (it spawns `next dev` only, never social-listening-core) — AC13 below
  * proves the scope itself is requested; the real live sign-in already proven by AC3/AC12
  * combined with this scope fix is what actually closes the loop, confirmed manually.
+ *
+ * --- Healed 2026-08-18 (Menno's own direct question, "can we setup the test to succeed
+ * with socialengage.test?"), a real cross-component regression, not a new scope change ---
+ * This file's own dev server had run over plain `http://localhost:3000` since Story 6.1
+ * shipped, matching this app's own then-only registered Entra redirect URI. Later the
+ * same session (Story 6.23/ADR-0059's Facebook connector), Menno switched his real local
+ * dev setup to `https://socialengage.test:3000` — Entra requires HTTPS for any redirect
+ * host other than the literal hostname "localhost" — adding a hosts-file entry, a real
+ * self-signed cert (`certificates/*.pem`, Next's own bundled `--experimental-https`
+ * mechanism, verified directly by reading `node_modules/next/dist/lib/mkcert.js`, not
+ * assumed from training data — this repo's own AGENTS.md warning about this exact class of
+ * mismatch), and a *second* registered redirect URI on the real Entra App Registration
+ * (`54622316-edd9-46cd-b953-f8c31bf0878d`) — confirmed directly by Menno, not assumed,
+ * after `az ad app show` failed against the wrong signed-in tenant (`cbadmin.onmicrosoft.com`
+ * vs. the project's own `getsocialengage.onmicrosoft.com`). `.env`'s own
+ * `ENTRA_ADMIN_REDIRECT_URI` was updated to match — this file's own hardcoded
+ * `http://localhost:3000` `BASE_URL` was not, so every real sign-in this file drove landed
+ * on a URL it never expected, and `page.waitForURL()` timed out. Not a code bug in the app
+ * itself — the app was correctly following its own, now-updated configuration; this file's
+ * own fixture was the stale half. Fixed by switching `BASE_URL` to
+ * `https://socialengage.test:3000` (matching `.env`), spawning the server with
+ * `--experimental-https -H socialengage.test` (mirroring `package.json`'s own already-
+ * working `dev:https` script), trusting the self-signed cert for every Playwright
+ * `BrowserContext` (`ignoreHTTPSErrors: true`), and trusting it for this test process's
+ * own outbound `fetch()` calls via a real `undici.Agent`/`setGlobalDispatcher()` (a new
+ * devDependency, `undici` — Node's global `fetch` is undici internally, but not
+ * reachable/configurable as a package without installing it explicitly). Two other,
+ * more common-looking approaches were tried first and confirmed, empirically, not to
+ * work in this exact environment before landing on this one: `process.env.
+ * NODE_TLS_REJECT_UNAUTHORIZED = '0'` set inside this file's own module code, and
+ * `process.env.NODE_EXTRA_CA_CERTS` set even earlier, in `jest.global-setup.js` (which
+ * runs before Jest forks worker processes) — both still produced a real
+ * `SELF_SIGNED_CERT_IN_CHAIN` error on every fetch, confirmed via temporary debug
+ * logging, not assumed from documentation alone. Node reads both of those env vars
+ * exactly once, at the actual process's own native bootstrap — before literally any
+ * JavaScript runs, including `globalSetup` — so mutating `process.env` from anywhere in
+ * userland JS, no matter how early, is structurally too late for either one. A real
+ * `undici.Agent` sidesteps this entirely: it's constructed by ordinary JS at whatever
+ * point this file chooses, not consulted by Node's native TLS bootstrap. Deliberately a
+ * scoped `Agent`/`setGlobalDispatcher()` trusting one specific local root CA, never
+ * `NODE_TLS_REJECT_UNAUTHORIZED=0`-style blanket disabling — the real Entra/Facebook TLS
+ * this same suite depends on elsewhere stays genuinely verified, not silently bypassed.
+ * **Real, machine-local prerequisites this file cannot establish on its own,
+ * unlike every other env var this file already checks:** the `127.0.0.1 socialengage.test`
+ * hosts-file entry (OS-level, not project-tracked) and the cert files under `certificates/`
+ * (gitignored, machine-specific) must already exist — confirmed present on this machine
+ * (generated by Menno's own earlier `npm run dev:https` run this session) rather than
+ * generated fresh here, since first-run generation shells out to `mkcert -install`, which
+ * can prompt for elevation and would hang a non-interactive run. A fresh clone or CI
+ * environment needs both set up once, by hand, before this file can pass — named here, not
+ * silently assumed portable.
  */
 
 import { spawn, execSync, type ChildProcess } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+import { Agent, setGlobalDispatcher } from 'undici';
 import { chromium, type Browser, type BrowserContext } from '@playwright/test';
 import { encryptSession, decryptSession, SESSION_COOKIE_NAME } from '../../src/lib/session';
 import { fetchResolvedIdentity } from '../../src/lib/core-client';
@@ -84,8 +148,71 @@ const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(ADMIN_ROOT, '..');
 const CORE_ROOT = path.join(REPO_ROOT, 'social-listening-core');
 const PORT = 3000;
-const BASE_URL = `http://localhost:${PORT}`;
+const HOSTNAME = 'socialengage.test';
+const BASE_URL = `https://${HOSTNAME}:${PORT}`;
 const CORE_BASE_URL = process.env.CORE_API_BASE_URL || 'http://localhost:3001';
+
+/**
+ * Locates the real, machine-local mkcert root CA — the same one Next's own
+ * `--experimental-https` used to issue `certificates/localhost.pem` (mirrors
+ * `node_modules/next/dist/lib/mkcert.js`'s own cache-directory resolution,
+ * read directly rather than assumed, per this repo's own AGENTS.md warning
+ * about training-data mismatches for this exact Next.js version). Returns
+ * `null` if mkcert was never run on this machine — this file's own earlier
+ * `certificates/*.pem` existence check already fails loudly before this
+ * point if that's the case, so `null` here should be unreachable in
+ * practice, not a silently-tolerated missing-prerequisite path.
+ */
+function findLocalMkcertRootCA(): string | null {
+  let cacheDir: string;
+  if (process.platform === 'win32') {
+    cacheDir = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'mkcert');
+  } else if (process.platform === 'darwin') {
+    cacheDir = path.join(os.homedir(), 'Library', 'Caches', 'mkcert');
+  } else {
+    cacheDir = path.join(process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache'), 'mkcert');
+  }
+  if (!fs.existsSync(cacheDir)) return null;
+
+  const binaryName = fs.readdirSync(cacheDir).find((f) => f.startsWith('mkcert-'));
+  if (!binaryName) return null;
+
+  try {
+    const caRoot = execSync(`"${path.join(cacheDir, binaryName)}" -CAROOT`).toString().trim();
+    const rootCAPath = path.join(caRoot, 'rootCA.pem');
+    return fs.existsSync(rootCAPath) ? rootCAPath : null;
+  } catch {
+    return null;
+  }
+}
+
+// This file's own dev server now runs over HTTPS with a real, self-signed
+// mkcert cert. Trusts it for this process's own outbound fetch() calls via
+// a real undici.Agent scoped to this one local root CA — never a blanket
+// NODE_TLS_REJECT_UNAUTHORIZED=0, which would also blind this same process
+// to a real TLS problem in the real Entra/Facebook calls it makes
+// elsewhere. See this file's own top-of-file dated note for why this is a
+// real undici.Agent rather than an env var (both env var approaches were
+// tried first and confirmed, empirically, not to work).
+//
+// Healed 2026-08-19: `setGlobalDispatcher()` alone is not enough inside Jest.
+// Confirmed directly (not assumed) via an isolated repro: a plain, global
+// `fetch()` call still threw `SELF_SIGNED_CERT_IN_CHAIN` inside a Jest test
+// file even with the dispatcher globally registered, while the exact same
+// setup worked in a plain `node script.js` run — Jest's `testEnvironment:
+// 'node'` does not share whatever internal state Node's native `fetch`
+// normally bridges to `undici`'s global dispatcher through. `undici`'s own
+// `fetch` export and passing an explicit `{ dispatcher }` per call both
+// worked in the same repro, so every BASE_URL (https://socialengage.test)
+// call in this file now passes `trustedDispatcher` explicitly — never
+// relying on the global registration alone. `setGlobalDispatcher()` is kept
+// too since it's what makes this correct for a plain Node process outside
+// Jest (e.g. this file's own findLocalMkcertRootCA()-driven tooling).
+const rootCA = findLocalMkcertRootCA();
+const trustedDispatcher = rootCA ? new Agent({ connect: { ca: fs.readFileSync(rootCA) } }) : undefined;
+if (trustedDispatcher) {
+  setGlobalDispatcher(trustedDispatcher);
+}
 
 const TEST_EMAIL = process.env.ENTRA_ADMIN_TEST_USER_EMAIL as string;
 const TEST_PASSWORD = process.env.ENTRA_ADMIN_TEST_USER_PASSWORD as string;
@@ -94,6 +221,19 @@ if (!process.env.ENTRA_TENANT_ID || !process.env.ENTRA_ADMIN_CLIENT_ID || !TEST_
   throw new Error(
     'Missing ENTRA_*/SESSION_SECRET env vars — see .env.example. This contract runs against ' +
       'a real Entra External ID tenant, not a mock.'
+  );
+}
+
+// A missing hosts-file entry or cert here fails as an opaque 90s server-boot
+// timeout otherwise — a clear, immediate error is far more actionable than
+// that, per this file's own established "fail fast, not with a confusing
+// downstream symptom" convention for its other real, machine-local
+// prerequisites above.
+if (!fs.existsSync(path.join(ADMIN_ROOT, 'certificates', 'localhost.pem')) || !fs.existsSync(path.join(ADMIN_ROOT, 'certificates', 'localhost-key.pem'))) {
+  throw new Error(
+    `Missing certificates/localhost.pem or localhost-key.pem in ${ADMIN_ROOT}. ` +
+      `Run "npm run dev:https" once (Ctrl+C after it starts) to generate a real, ` +
+      `mkcert-issued certificate covering ${HOSTNAME} before running this contract.`
   );
 }
 
@@ -152,7 +292,11 @@ function waitForCoreReady(timeoutMs: number): Promise<void> {
 async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<Response> {
   for (let i = 0; i < attempts; i++) {
     try {
-      return await fetch(url, init);
+      // Explicit dispatcher — see this file's own 2026-08-19 healing note above
+      // `trustedDispatcher`'s declaration for why setGlobalDispatcher() alone
+      // isn't enough inside Jest. Every caller of this function targets
+      // BASE_URL (https://socialengage.test), never CORE_BASE_URL.
+      return await fetch(url, { ...init, dispatcher: trustedDispatcher } as RequestInit);
     } catch (err) {
       if (i === attempts - 1) throw err;
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -166,7 +310,8 @@ function waitForServerReady(timeoutMs: number): Promise<void> {
   return new Promise((resolve, reject) => {
     const poll = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/sign-in`);
+        // Explicit dispatcher — see trustedDispatcher's own 2026-08-19 healing note.
+        const res = await fetch(`${BASE_URL}/sign-in`, { dispatcher: trustedDispatcher } as RequestInit);
         if (res.status < 500) {
           resolve();
           return;
@@ -217,18 +362,26 @@ beforeAll(async () => {
 
   const nextBin = path.join(ADMIN_ROOT, 'node_modules', '.bin', isWin ? 'next.cmd' : 'next');
 
-  // `next dev` (plain http://localhost) — deliberately not a production build+start. This
-  // environment has no real TLS locally, and the `Secure` cookie attribute is enforced by
-  // the browser regardless of NODE_ENV: confirmed directly (not assumed) that a real
-  // Chromium instance silently drops a Secure-flagged cookie set over plain http, even to
-  // localhost. session.ts's own SESSION_COOKIE_OPTIONS therefore gates `secure` on
-  // NODE_ENV==='production', the same convention NextAuth.js's own default cookie config
-  // uses, on the assumption a real production deployment is always served over https. This
-  // interactive E2E flow runs in dev mode (secure: false) so the session cookie actually
-  // persists in the browser and the full sign-in can be proven end-to-end; the Secure-flag
-  // *logic* itself (does it evaluate true under NODE_ENV=production) is proven separately,
-  // below, by a non-network unit assertion — provable without standing up real TLS.
-  serverProcess = spawn(nextBin, ['dev', '-p', String(PORT)], {
+  // `next dev` — deliberately not a production build+start, regardless of the real,
+  // self-signed HTTPS now in front of it (2026-08-18). session.ts's own
+  // SESSION_COOKIE_OPTIONS gates the `Secure` cookie attribute on
+  // NODE_ENV==='production', not on the actual transport scheme — the same convention
+  // NextAuth.js's own default cookie config uses, on the assumption a real production
+  // deployment is always served over https. `next dev` always runs in development
+  // mode no matter which flags it's given, so this stays `secure: false` here exactly
+  // as it did when this server ran over plain http: a real Chromium instance
+  // confirmed directly (not assumed) to silently drop a Secure-flagged cookie set
+  // over a connection that isn't actually https, which no longer applies now that
+  // this really is https, but the cookie's own `secure: false` value is otherwise
+  // unaffected either way. The Secure-flag *logic* itself (does it evaluate true
+  // under NODE_ENV=production) is proven separately, below, by a non-network unit
+  // assertion.
+  // --experimental-https -H socialengage.test mirrors package.json's own
+  // already-working dev:https script exactly (2026-08-18) — reuses the
+  // already-generated certificates/*.pem (checked to exist above) rather
+  // than attempting first-run generation, which shells out to `mkcert
+  // -install` and can prompt for elevation.
+  serverProcess = spawn(nextBin, ['dev', '-p', String(PORT), '-H', HOSTNAME, '--experimental-https'], {
     cwd: ADMIN_ROOT,
     // Own distDir (see next.config.js's own comment) — Story 6.7's contract
     // also spawns a real `next dev` from this same project directory, and
@@ -251,7 +404,8 @@ beforeAll(async () => {
   // fetch('/') failed this way when it ran as the very first request against "/".
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      await fetch(`${BASE_URL}/`, { redirect: 'manual' });
+      // Explicit dispatcher — see trustedDispatcher's own 2026-08-19 healing note.
+      await fetch(`${BASE_URL}/`, { redirect: 'manual', dispatcher: trustedDispatcher } as RequestInit);
       break;
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -359,7 +513,7 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
     });
 
     it('a real, live sign-in against the real Entra tenant lands the caller back on "/" signed in', async () => {
-      context = await browser!.newContext();
+      context = await browser!.newContext({ ignoreHTTPSErrors: true });
       const page = await performRealSignIn(context);
       expect(page.url()).toBe(`${BASE_URL}/`);
       const signedIn = await page.locator('[data-testid="signed-in-state"]').innerText();
@@ -370,7 +524,7 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
       // A fresh, isolated context — not the shared `context` above, which by this point
       // already carries real Entra SSO cookies from the previous test and would skip
       // straight past the email/password form entirely.
-      const freshContext = await browser!.newContext();
+      const freshContext = await browser!.newContext({ ignoreHTTPSErrors: true });
       const page = await freshContext.newPage();
       const config = new URL(
         `https://${process.env.ENTRA_TENANT_SUBDOMAIN}.ciamlogin.com/${process.env.ENTRA_TENANT_ID}/oauth2/v2.0/authorize`
@@ -459,7 +613,7 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
     });
 
     it('the session cookie is a small encrypted reference (not the raw tokens), flagged httpOnly/SameSite=Lax, and is unreadable from page JS', async () => {
-      context = await browser!.newContext();
+      context = await browser!.newContext({ ignoreHTTPSErrors: true });
       await performRealSignIn(context);
 
       const cookies = await context.cookies();
@@ -637,7 +791,7 @@ describe('Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
     });
 
     it('signing out redirects to /signed-out, clears the cookie, and the same browser can no longer reach "/"', async () => {
-      context = await browser!.newContext();
+      context = await browser!.newContext({ ignoreHTTPSErrors: true });
       const page = await performRealSignIn(context);
 
       await page.goto(`${BASE_URL}/api/auth/signout`);

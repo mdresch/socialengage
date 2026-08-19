@@ -2656,11 +2656,25 @@ button:disabled {
 .cs-kpi-icon-neutral  { background: var(--color-surface-page); color: var(--color-text-disabled); }
 .cs-kpi-icon-blue     { background: #eff6ff; color: #2563eb; }
 
+/* Section headings (Story 6.24 — Connectors vs. AI Providers) */
+.cs-section-heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
 /* Connector cards list */
 .cs-cards {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.cs-cards:empty {
+  display: none;
 }
 
 .cs-card {
@@ -2822,6 +2836,15 @@ button:disabled {
   color: var(--color-text-disabled);
   margin-top: 2px;
   font-family: var(--font-mono);
+}
+
+/* AI Provider card explanatory note (Story 6.24 — replaces the metrics grid, which doesn't describe an on-demand provider) */
+.cs-ai-note {
+  font-size: 0.75rem;
+  color: var(--color-text-disabled);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 /* Spin animation for ping button */
@@ -3186,6 +3209,176 @@ button:disabled {
   border-top: 1px solid var(--color-border);
   padding-top: var(--space-3);
   margin-top: var(--space-1);
+}
+
+/* Facebook Page picker (Story 6.23) */
+.cv-page-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: var(--space-4);
+}
+
+.cv-page-picker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cv-page-picker-row:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-page);
+}
+
+.cv-page-picker-row:has(input:checked) {
+  border-color: var(--color-accent);
+  background: #eff6ff;
+}
+
+.cv-page-picker-row input[type='radio'],
+.cv-page-picker-row input[type='checkbox'] {
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+}
+
+.cv-page-picker-name {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.cv-page-picker-category {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  white-space: nowrap;
+}
+
+.cv-modal-empty-state {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: var(--space-4) 0;
+  margin: 0;
+}
+
+.cv-connected-page-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* Facebook multi-Page support (Story 6.27, ADR-0060) */
+.cv-fb-footer {
+  width: 100%;
+  align-items: stretch;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cv-fb-rollup-note {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-status-failing);
+  margin: 0;
+}
+
+.cv-fb-pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.cv-fb-deactivated-banner {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin: 0;
+}
+
+.cv-fb-page-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+
+.cv-fb-page-name {
+  flex: 1;
+  min-width: 120px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.cv-fb-page-orphaned {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-status-failing);
+}
+
+.cv-fb-page-reconnect {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.cv-fb-page-reconnect:hover {
+  text-decoration: underline;
+}
+
+.cv-fb-page-disconnect {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-disabled);
+  cursor: pointer;
+}
+
+.cv-fb-page-disconnect:hover {
+  color: var(--color-status-failing);
+  background: transparent;
+}
+
+.cv-fb-result-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  font-size: 0.8125rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cv-fb-result-connected li {
+  color: var(--color-status-healthy);
+}
+
+.cv-fb-result-errors li {
+  color: var(--color-status-failing);
 }
 
 /* ---------------------------------------------------------------------- */

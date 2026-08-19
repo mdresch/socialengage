@@ -9,6 +9,7 @@ import { pollWikipedia } from './wikipedia/pollWikipedia';
 import { azureAiLanguageConnector } from './azureAiLanguage/azureAiLanguageConnector';
 import { azureOpenAiConnector } from './azureOpenAi/azureOpenAiConnector';
 import { facebookConnector } from './facebook/facebookConnector';
+import { pollFacebook } from './facebook/pollFacebook';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
@@ -74,30 +75,16 @@ export function bootstrapConnectors(): void {
     pollCadenceMs: THIRTY_MINUTES_MS,
   });
 
-  // Story 2.15 (ADR-0059) — registered WITH a real poll/pollCadenceMs
-  // wrapper, matching every other connector's own shape (Story 1.13 AC1's
-  // own registration invariant: every registered poll-mode connector has
-  // both). Structurally unreachable today, honestly, not silently: the
-  // scheduler's own eligibility check (shouldAttemptIngestion(tenantId,
-  // platformId), defaulting to ownerType:'tenant') always returns false
-  // for this connector, since it is Tier-3-only and can never have a
-  // tenant-wide activation — so connector.poll below is never actually
-  // invoked by the real running scheduler. It throws a clear, named error
-  // rather than silently no-op'ing or faking a result if that assumption
-  // is ever violated (e.g. a future scheduler change). Real Facebook
-  // ingestion requires pollFacebook(tenantId, userId) invoked directly, or
-  // real Tier-3 scheduler support (ADR-0052 Decision §6's own named,
-  // not-yet-built gap) — see facebookConnector.ts's own doc comment and
-  // this connector's own SKILL.md Known gaps.
+  // Story 1.15 (ADR-0061 Decision §3) — registered with `pollUser`, never
+  // `poll`/`pollCadenceMs`: this connector is Tier-3-only (ADR-0059
+  // Decision §4) and can never have a tenant-wide activation, so it must
+  // never be picked up by the scheduler's tenant-wide enumeration loop.
+  // The scheduler's separate per-user loop calls pollUser(tenantId, userId)
+  // once per due (tenant, user) tuple instead — see this connector's own
+  // SKILL.md and .claude/skills/live-ingestion-polling-scheduler/SKILL.md.
   registerSocialConnector({
     ...facebookConnector,
-    poll: async () => {
-      throw new Error(
-        'facebookConnector.poll(tenantId) has no tenant-wide credential to poll — this connector is Tier-3-only ' +
-          '(ADR-0059 Decision §4). Real ingestion is pollFacebook(tenantId, userId), invoked directly; this wrapper ' +
-          'should be structurally unreachable via the scheduler today (see ADR-0052 Decision §6, this connector\'s own SKILL.md Known gaps).'
-      );
-    },
+    pollUser: pollFacebook,
     pollCadenceMs: THIRTY_MINUTES_MS,
   });
 

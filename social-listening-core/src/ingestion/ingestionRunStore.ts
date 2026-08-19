@@ -7,6 +7,10 @@ export interface StartIngestionRunInput {
   platformId: string;
   triggerType: TriggerType;
   connectorVersion: string;
+  /** Story 1.15 (ADR-0061 Decision §2) — set for a Tier-3 (user-bound) poll's own run; omitted/undefined for a tenant-wide run. */
+  userId?: string;
+  /** Story 6.27 (ADR-0060 Decision §3) — set for Facebook's own per-Page poll fan-out; NULL for every other connector and every pre-existing Facebook row. */
+  pageId?: string;
 }
 
 export interface CompleteIngestionRunInput {
@@ -36,10 +40,10 @@ export async function startIngestionRun(
 ): Promise<IngestionRunRef> {
   return withTenant(tenantId, async (client) => {
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO ingestion_runs (tenant_id, platform_id, trigger_type, connector_version)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO ingestion_runs (tenant_id, platform_id, trigger_type, connector_version, user_id, page_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [tenantId, input.platformId, input.triggerType, input.connectorVersion]
+      [tenantId, input.platformId, input.triggerType, input.connectorVersion, input.userId ?? null, input.pageId ?? null]
     );
     return { id: rows[0].id };
   });
@@ -60,6 +64,27 @@ export async function getMostRecentRunStatus(
     const { rows } = await client.query<{ status: IngestionRunStatus }>(
       `SELECT status FROM ingestion_runs WHERE platform_id = $1 ORDER BY started_at DESC LIMIT 1`,
       [platformId]
+    );
+    return rows.length > 0 ? rows[0].status : null;
+  });
+}
+
+/**
+ * Story 1.15 (ADR-0061 Decision §2) — the status of a specific user's own
+ * single most recent ingestion_runs row for a (tenantId, platformId) pair,
+ * or null if none exists. Mirrors getMostRecentRunStatus()'s own shape,
+ * scoped to one user's own runs so the Tier-3 scheduler's in-flight guard
+ * never blends one user's still-running poll with another's.
+ */
+export async function getMostRecentRunStatusForUser(
+  tenantId: string,
+  platformId: string,
+  userId: string
+): Promise<IngestionRunStatus | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ status: IngestionRunStatus }>(
+      `SELECT status FROM ingestion_runs WHERE platform_id = $1 AND user_id = $2 ORDER BY started_at DESC LIMIT 1`,
+      [platformId, userId]
     );
     return rows.length > 0 ? rows[0].status : null;
   });

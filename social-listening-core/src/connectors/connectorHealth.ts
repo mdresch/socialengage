@@ -60,22 +60,57 @@ interface IngestionRunRow {
  * derived by querying ingestion_runs (and platform_credentials for
  * credentialStatus) at read time. See
  * .claude/skills/connector-health-and-error-handling/SKILL.md.
+ *
+ * `pageId` (ADR-0060 Decision §4, Story 6.27) — omitted, behavior is
+ * byte-for-byte unchanged for every existing caller and every existing
+ * connector (the query stays `WHERE platform_id = $1`, exactly as before
+ * this story). Supplied, the `ingestion_runs` query additionally filters to
+ * that Page's own rows only (populated by Facebook's own per-Page poll
+ * fan-out, `pollFacebook.ts`) — a real, independent health signal per
+ * connected Page, distinct from the platform-level rollup every other
+ * caller still gets.
+ *
+ * `userId` (ADR-0061 Decision §2/§3, Story 1.15) scopes BOTH sub-queries —
+ * ingestion_runs and platform_credentials — to that one user's own rows, so
+ * a Tier-3 user's health/credentialStatus is never blended with the
+ * tenant-wide (or another user's) rows on the same (tenantId, platformId).
+ * `platform_credentials` has no `page_id` column, so `pageId` never filters
+ * the credentialStatus sub-query — only `userId` does, unchanged from
+ * Story 1.15.
  */
 export async function deriveConnectorHealth(
   tenantId: string,
-  platformId: string
+  platformId: string,
+  pageId?: string,
+  userId?: string
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
+    const runConditions = ['platform_id = $1'];
+    const runParams: unknown[] = [platformId];
+    if (pageId) {
+      runParams.push(pageId);
+      runConditions.push(`page_id = $${runParams.length}`);
+    }
+    if (userId) {
+      runParams.push(userId);
+      runConditions.push(`user_id = $${runParams.length}`);
+    }
     const { rows: runs } = await client.query<IngestionRunRow>(
       `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
-       WHERE platform_id = $1 ORDER BY started_at DESC`,
-      [platformId]
+       WHERE ${runConditions.join(' AND ')} ORDER BY started_at DESC`,
+      runParams
     );
 
-    const { rows: credentialRows } = await client.query<{ status: CredentialStatus }>(
-      `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
-      [platformId]
-    );
+    const { rows: credentialRows } = userId
+      ? await client.query<{ status: CredentialStatus }>(
+          `SELECT status FROM platform_credentials
+           WHERE platform_id = $1 AND owner_type = 'user' AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
+          [platformId, userId]
+        )
+      : await client.query<{ status: CredentialStatus }>(
+          `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+          [platformId]
+        );
     const credentialStatus = credentialRows.length > 0 ? credentialRows[0].status : null;
 
     if (runs.length === 0) {
@@ -174,7 +209,16 @@ export async function shouldAttemptIngestion(
   ownerType: ConnectorActivationOwnerType = 'tenant',
   userId?: string
 ): Promise<boolean> {
-  const health = await deriveConnectorHealth(tenantId, platformId);
+  // Story 1.15: forward ownerType/userId into deriveConnectorHealth() so a
+  // Tier-3 user's eligibility check reads that user's own health, not the
+  // tenant-wide (or another user's) health — a real, previously-silent
+  // Story 1.11 bug (this call used to ignore both arguments entirely).
+  const health = await deriveConnectorHealth(
+    tenantId,
+    platformId,
+    undefined,
+    ownerType === 'user' ? userId : undefined
+  );
   if (health.status === 'failing') {
     const withinProbeCooldown =
       health.lastAttemptAt !== null && Date.now() - new Date(health.lastAttemptAt).getTime() < PROBE_COOLDOWN_MS;

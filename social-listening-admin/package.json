@@ -4,7 +4,8 @@
   "private": true,
   "description": "Social Listening / Insights admin UI. Talks to social-listening-core exclusively through its REST API; never accesses the database directly (ADR-0001). Independently deployable from social-listening-core.",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3000 -H socialengage.test --experimental-https",
+    "dev:https": "next dev -p 3000 -H socialengage.test --experimental-https",
     "build": "next build",
     "start": "next start -p 3000",
     "test": "jest",
@@ -23,7 +24,8 @@
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
     "ts-jest": "29.4.12",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "undici": "^8.10.0"
   },
   "dependencies": {
     "jose": "5.10.0",

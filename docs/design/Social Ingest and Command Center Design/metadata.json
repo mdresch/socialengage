@@ -1,0 +1,6 @@
+{
+  "name": "Social Ingest and Sentiment Command Center",
+  "description": "An intelligent, action-oriented analytics command center featuring real-time sentiment dashboards, spatial mapping, channel volume audits, and interactive Gemini assistance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

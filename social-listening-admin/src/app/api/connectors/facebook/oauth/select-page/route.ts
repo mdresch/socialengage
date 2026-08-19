@@ -1,30 +1,23 @@
 /**
- * Story 6.23 (ADR-0059 Decision §4) — same-origin proxy so the Page-picker
+ * Story 6.27 (ADR-0060 Decision §5) — same-origin proxy so the Page-picker
  * (a Client Component) can reach social-listening-core's own select-page
- * endpoint (Story 2.15) without a bearer token — attached inside
- * core-client.ts's selectFacebookPage(), the sole choke point (ADR-0036
- * §2), same pattern as connect/route.ts. On success, also caches the
- * selected Page's own name in a long-lived, cosmetic-only cookie — see
- * facebookOAuth.ts's own FACEBOOK_CONNECTED_PAGE_COOKIE_NAME doc comment
- * for why (no backend field for this exists today).
+ * endpoint without a bearer token — attached inside core-client.ts's
+ * selectFacebookPages(), the sole choke point (ADR-0036 §2), same pattern
+ * as connect/route.ts. Forwards a plural `pageIds` array (Story 6.23's own
+ * singular `pageId` shape retired — a breaking change to this endpoint,
+ * acceptable because its sole caller is this repo itself) and the real,
+ * structured `{connected, errors}` partial-failure response straight
+ * through. No longer caches a Page name in a cosmetic cookie (Story 6.23's
+ * own FACEBOOK_CONNECTED_PAGE_COOKIE_NAME) — the real per-Page list
+ * (`GET /v1/connectors/facebook/pages`, listFacebookPages()) makes that
+ * cache obsolete.
  */
 
 import { NextResponse } from 'next/server';
-import { selectFacebookPage } from '@/lib/core-client';
-import { FACEBOOK_CONNECTED_PAGE_COOKIE_NAME } from '@/lib/facebookOAuth';
+import { selectFacebookPages } from '@/lib/core-client';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const outcome = await selectFacebookPage(body.sessionToken, body.pageId);
-  const response = NextResponse.json(outcome.body, { status: outcome.status });
-  if (outcome.status === 201 && outcome.body.page) {
-    response.cookies.set(FACEBOOK_CONNECTED_PAGE_COOKIE_NAME, JSON.stringify(outcome.body.page), {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 400 * 24 * 60 * 60,
-    });
-  }
-  return response;
+  const outcome = await selectFacebookPages(body.sessionToken, body.pageIds);
+  return NextResponse.json(outcome.body, { status: outcome.status });
 }
