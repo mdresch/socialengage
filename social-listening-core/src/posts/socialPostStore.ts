@@ -205,6 +205,8 @@ export async function getIngestionRunForPost(
 export interface ListSocialPostsOptions {
   cursor?: string;
   limit?: number;
+  /** Story 3.11 (ADR-0063) — filters to posts with a real post_watchlist_matches row for this watchlist. */
+  watchlistId?: string;
 }
 
 export interface SocialPostSummary {
@@ -239,8 +241,8 @@ export async function listSocialPosts(
 
   return withTenant(tenantId, async (client) => {
     const rows = options.cursor
-      ? await queryAfterCursor(client, options.cursor, limit)
-      : await queryFirstPage(client, limit);
+      ? await queryAfterCursor(client, options.cursor, limit, options.watchlistId)
+      : await queryFirstPage(client, limit, options.watchlistId);
 
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
@@ -270,15 +272,30 @@ interface PostRow {
   body_markdown: string | null;
 }
 
+/**
+ * Story 3.11 (ADR-0063 Decision §3) — JOINs post_watchlist_matches when a
+ * watchlistId filter is present; RLS on both social_posts and
+ * post_watchlist_matches enforces tenant isolation without any additional
+ * application-layer predicate. Ordering stays social_posts.seq ASC either
+ * way — never matched_at or any other TIMESTAMPTZ column (posts-api's own
+ * load-bearing "never a TIMESTAMPTZ column" pagination rule is unchanged by
+ * this join). See .claude/skills/post-watchlist-match-persistence/SKILL.md.
+ */
 async function queryFirstPage(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
-  limit: number
+  limit: number,
+  watchlistId?: string
 ): Promise<PostRow[]> {
+  const join = watchlistId
+    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $2`
+    : '';
+  const params = watchlistId ? [limit + 1, watchlistId] : [limit + 1];
   const { rows } = await client.query(
     `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
+     ${join}
      ORDER BY seq ASC
      LIMIT $1`,
-    [limit + 1]
+    params
   );
   return rows;
 }
@@ -286,15 +303,21 @@ async function queryFirstPage(
 async function queryAfterCursor(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
   cursorToken: string,
-  limit: number
+  limit: number,
+  watchlistId?: string
 ): Promise<PostRow[]> {
   const { seq } = decodeCursor(cursorToken);
+  const join = watchlistId
+    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $3`
+    : '';
+  const params = watchlistId ? [seq, limit + 1, watchlistId] : [seq, limit + 1];
   const { rows } = await client.query(
     `SELECT id, seq, created_at, raw_payload, published_at, enrichment, body_markdown FROM social_posts
+     ${join}
      WHERE seq > $1
      ORDER BY seq ASC
      LIMIT $2`,
-    [seq, limit + 1]
+    params
   );
   return rows;
 }
