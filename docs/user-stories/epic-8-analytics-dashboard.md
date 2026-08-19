@@ -160,7 +160,7 @@
 ## Story 8.7 — Overview Tab Enhancement: 3-column grid, 7-dimension filter model, statistical volume forecast, filter chips, deep-link share state
 
 **Source:** ADR-0062 (Accepted 2026-08-19) · **Status:** Built 2026-08-19 — full accumulated `social-listening-admin` suite green (38/38 suites, 577/577 tests) after fixing two real, ADR-authorized cross-story regressions in Story 8.1's and Story 8.4's own contracts (see each story's own dated note).
-**Built:** not yet
+**Built:** 2026-08-19 — social-listening-admin@7698563
 
 **As a** Tenant User or Tenant-Admin,
 **I want** the Overview tab to show a rich, filterable view with a statistical volume forecast, active filter chips, and a shareable deep-link URL,
