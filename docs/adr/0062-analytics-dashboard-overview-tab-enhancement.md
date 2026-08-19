@@ -45,7 +45,7 @@ The specification (§4–§10) describes an Overview Tab with:
 | `activeLanguageFilter` | Yes | `enrichment.detectedLanguage` (ADR-0055, Story 8.5) |
 | `activeSentimentFilter` | Yes | `enrichment.sentiment` |
 | `selectedDateRange` | Yes | Already wired via `GlobalDateRangePicker` (Story 8.1) |
-| `selectedTopic` (watchlist selector) | No | No per-post watchlist-match field in `SocialPostSummary`; `GET /v1/posts` has no `watchlistId` filter parameter |
+| `activeWatchlistFilter` (watchlist selector) | Partial — client-side approximation | `GET /v1/watchlists` returns `Watchlist[]` with `id`, `name`, `matchType`, `terms[]`; for `keyword`/`hashtag` watchlists, client-side match of `terms[]` against `bodyMarkdown` (ADR-0053/Story 3.10) is feasible without any new backend surface; `boolean_query` watchlists excluded at v1; no `post_watchlist_matches` junction table exists to enable true server-side filtering |
 | `activeRegionFilter` | No | No geo data; `post_geo_location` unpopulated and absent from `SocialPostSummary` (ADR-0054 §4, ADR-0055 §2) |
 | `activeIntentionFilter` | No | No `intention` field in real `PostEnrichmentSummary` (ADR-0054 §2) |
 | `activeTagFilter` | No | No `tag` field in real `PostEnrichmentSummary` (ADR-0054 §2) |
@@ -121,12 +121,12 @@ The specification's 11-dimension flat filter model (§4.1) is adopted for the di
 - `activeLanguageFilter` — ISO 639-1 code from real `enrichment.detectedLanguage` (ADR-0055)
 - `activeSentimentFilter` — `'Positive'`, `'Neutral'`, `'Negative'`
 - `selectedDateRange` — preset date-range key (already wired via `GlobalDateRangePicker`, Story 8.1)
+- `activeWatchlistFilter` — Watchlist-based topic filter: fetches the user's active watchlists from the existing `GET /v1/watchlists` endpoint (`{ watchlists: Watchlist[] }`, scoped to the caller via RLS); presents them as a dropdown defaulting to `'all'`. For `keyword` and `hashtag` `matchType` watchlists only: each `terms[]` entry is matched case-insensitively against the post's `bodyMarkdown` field (already present in `SocialPostSummary` per ADR-0053/Story 3.10). `boolean_query` watchlists are excluded from the dropdown at v1 — re-implementing the full boolean AST client-side (AND/OR/NOT/TERM/HASHTAG/ACCOUNT) carries a fidelity risk against the server's own `matchesAst()` path (ADR-0021 consistency mandate). The approximation is disclosed in the widget's tooltip: "Approximate match — based on keyword terms in post text; advanced boolean watchlists are not included." No new `social-listening-core` endpoint is introduced; `GET /v1/watchlists` already exists and serves this purpose.
 
 **Not adopted (no real data backing):**
 - `activeRegionFilter` — no geo data (ADR-0054 §4 still intact)
 - `activeIntentionFilter` — no `intention` field (ADR-0054 §2 still intact)
 - `activeTagFilter` — no `tag` field (ADR-0054 §2 still intact)
-- `selectedTopic` — watchlist/topic selector: the UI control may be rendered as a selector defaulting to `'all'` with no other functional value until `GET /v1/posts` gains a watchlist-match parameter; named as Open Question 1, not designed further here.
 
 All adopted filter dimensions are applied as `useMemo` predicates over the raw `posts[]` array per the specification's §4.2 pipeline, consistent with ADR-0054 Decision §3 (client-side aggregation only).
 
@@ -134,7 +134,7 @@ All adopted filter dimensions are applied as `useMemo` predicates over the raw `
 
 **Active filter chips bar:** A chip bar renders between the header and the widget grid whenever any real-data-backed filter is active. Each chip is colour-coded per §6.2 and carries a `×` dismiss control. A "Clear all" text link resets all active filters simultaneously. The chip bar covers only the adopted filter dimensions (Decision §3) — no chip for region, intention, or tag.
 
-**Deep-link share state:** On mount, the component reads URL search parameters (`tab`, `source`, `author`, `keyword`, `language`, `sentiment`, `range`) and hydrates the corresponding filter states. The `handleShareView()` function serialises current filter state into a URL, writes it to the clipboard via `navigator.clipboard.writeText`, and shows a 3-second "Link Copied!" confirmation on the Share View button. Pure client-side, no backend change.
+**Deep-link share state:** On mount, the component reads URL search parameters (`tab`, `source`, `author`, `keyword`, `language`, `sentiment`, `range`, `watchlist`) and hydrates the corresponding filter states. The `handleShareView()` function serialises current filter state into a URL, writes it to the clipboard via `navigator.clipboard.writeText`, and shows a 3-second "Link Copied!" confirmation on the Share View button. The `watchlist` param carries the selected watchlist's `id` (`'all'` for the default state). Pure client-side, no backend change.
 
 ### 5. Statistical volume forecast, Crisis Alert Radar, and Sentiment Trajectory
 
@@ -224,7 +224,7 @@ Recharts remains the sole charting library, consistent with ADR-0054 Decision §
 - The AI Spike Storyteller adds genuinely new analytical value: a user who notices an unusual volume spike can get an AI-generated narrative in-context, reusing the existing Azure OpenAI infrastructure at no new provider-onboarding cost.
 - The statistical forecast is available immediately and honestly labelled — a real user benefit with no server round-trip required.
 - Deep-link share state allows capturing and sharing an exact filter configuration — a real collaboration feature at very low implementation cost.
-- The filter model covers all real, enrichment-backed dimensions (source, author, keyword, language, sentiment, date drill-down) — the full set the data actually supports today.
+- The filter model covers all real, enrichment-backed dimensions (source, author, keyword, language, sentiment, date drill-down) plus a Watchlist-based topic filter (`activeWatchlistFilter`) using the already-built `GET /v1/watchlists` endpoint — the full set the data actually supports today, with no new backend surface required for the watchlist dimension.
 
 **Negative**
 
@@ -234,7 +234,7 @@ Recharts remains the sole charting library, consistent with ADR-0054 Decision §
 - **No simulation stubs** (translation, team assignment, response compose). The Posts Drawer is less demo-complete than the specification envisions — the correct trade-off for a real product, but a divergence from the spec.
 - **Author avatars: initials only.** No photo-realistic thumbnails in the Top Authors Feed.
 - **Three filter dimensions unbuilt** (`activeRegionFilter`, `activeIntentionFilter`, `activeTagFilter`). The `+Add filters` modal, if built, has limited non-redundant content until those fields gain real backing data.
-- **The `selectedTopic` watchlist selector** is a UI control with no functional predicate yet — could confuse a tenant who sees a selector that appears to do nothing when set to any value other than `'all'`.
+- **`activeWatchlistFilter` is a client-side approximation.** Only `keyword`/`hashtag` watchlists produce a real filter predicate; `boolean_query` watchlists are excluded at v1 — that gap is disclosed in the widget tooltip. The match runs against `bodyMarkdown` post-fetch (client-side), not the server-side ingestion match that originally classified each post — results may differ from what the platform stored at ingestion time (same approximation caveat ADR-0006 already names for connector-side vs. fallback semantics). A `post_watchlist_matches` junction table (Open Question 1) would enable a true server-side filter on `GET /v1/posts`.
 
 ---
 
@@ -247,7 +247,7 @@ Recharts remains the sole charting library, consistent with ADR-0054 Decision §
 | **Add D3 for the three named bespoke components** | Rejected. The SVG gauge, sparklines, and word cloud are each achievable with inline SVG or Recharts. D3 is best reserved for genuinely complex graph-shaped visualisations; none of the three cases qualifies, and adding a heavy dependency for them is disproportionate. |
 | **Build `POST /api/predictive-forecast` (AI-backed) alongside `POST /v1/posts/explain-spike`** | Rejected for v1. The statistical fallback provides an immediate, real forecast line. An AI-backed model has no demonstrated accuracy advantage over it at this project's current tenant scale. Named as Open Question 2. |
 | **Use Unsplash URLs for author avatars in Top Authors Feed** | Rejected. Unsplash is an external CDN with its own Terms of Service; serving profile images from a third-party CDN in a tenant-facing screen introduces a content-hosting dependency that has never been evaluated or contracted. Initials/placeholder avatars are always available and never fail. |
-| **Build `selectedTopic` as a real watchlist-based filter now** | Rejected for v1. `GET /v1/posts` carries no `watchlistId` parameter; client-side watchlist matching requires a `matchedWatchlistIds` field on `SocialPostSummary` — a `social-listening-core` schema change not authorized by this ADR. Named as Open Question 1. |
+| **Build `activeWatchlistFilter` as a real watchlist-based filter now** | Adopted — partial. `GET /v1/watchlists` already exists and returns `keyword`/`hashtag` watchlists with `terms[]`; client-side matching against `bodyMarkdown` is feasible without any new `social-listening-core` surface. `boolean_query` watchlists are excluded at v1. A `post_watchlist_matches` junction table (Open Question 1) remains the proper long-term path for a fully accurate server-side filter on `GET /v1/posts`. |
 | **Include MSE translation / team assignment / response compose simulation stubs** | Rejected. All three are explicit stubs of non-existent services. The specification's own "simulates" framing confirms this is the same category of defect this project rejected in the Sentiment tab's `TOP_FANS`/`TOP_CRITICS` hardcoded fallback and the Conversations tab's `MAIN_PHRASES` static array. A stub that looks like a feature but calls nothing misleads a real tenant user. |
 | **Keep the current three-KPI Overview layout and add widgets to the other tabs instead** | Rejected. The user's direct request is to enhance the Overview tab specifically, and the current layout is too sparse compared to the real data available. |
 
@@ -255,7 +255,7 @@ Recharts remains the sole charting library, consistent with ADR-0054 Decision §
 
 ## Open Questions
 
-1. **Topic/watchlist selector — when is it functional?** The `selectedTopic` UI control is built defaulting to `'all'` with no other active value until `GET /v1/posts` gains a `watchlistId` filter parameter (a `social-listening-core` change, its own ADR and story) or `SocialPostSummary` carries a `matchedWatchlistIds` field. Not designed here. Whoever eventually revisits this should evaluate whether client-side watchlist matching over a fully-fetched post set is acceptable (potentially many round-trips, same scale ceiling ADR-0054 §3 already named) or whether a backend filter parameter is the right path.
+1. **`post_watchlist_matches` junction table — proper server-side watchlist filtering.** The `activeWatchlistFilter` adopted in Decision §3 is a client-side approximation: `keyword`/`hashtag` watchlist `terms[]` matched against `bodyMarkdown` post-fetch. The accurate, server-side path would require a persisted junction table (e.g. `post_watchlist_matches`) linking each `social_post` to every watchlist it matched at ingestion time — enabling `GET /v1/posts?watchlistId=<id>` as a true server-side filter. This is a `social-listening-core` schema addition (new migration, junction table, new `postsRouter.ts` filter parameter) requiring its own ADR and story. It would also enable the Watchlist Coverage widget (currently not built per Decision §8) to use real per-watchlist post counts. Not authorized here; named so the next architect finds the gap rather than re-deriving it from scratch.
 
 2. **`POST /api/predictive-forecast` (AI-backed)** — named, not built. Revisit if a tenant demonstrates a real need for accuracy beyond the statistical fallback, or if the `explain-spike` endpoint is later extended to return forecast data as part of its already-authorized response.
 
