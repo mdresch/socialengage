@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-19 | 11:54 | — | — | Documentation | ADR-0063 | docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9 (6eb6062) |
+| 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 59356e6 (6f25f17) |
 | 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 2f605b6 (59356e6) |
 | 2026-08-19 | 11:43 | — | — | Documentation | ADR-0063 | docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter (2f605b6) |
 | 2026-08-19 | 10:56 | — | — | Infrastructure | — | chore: post-commit hook outputs for a5d0036 (23a6dca) |

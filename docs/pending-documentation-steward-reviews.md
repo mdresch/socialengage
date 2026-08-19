@@ -1473,3 +1473,15 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-08-19 — 6f25f17 — chore: post-commit hook outputs for 59356e6
+
+- **Full commit:** `6f25f171c9700b084988ff5339bcd844f7a59661`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-19 — 6eb6062 — docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9
+
+- **Full commit:** `6eb6062b192135f8950e807ecb1d4e07c7360de2`
+- **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
