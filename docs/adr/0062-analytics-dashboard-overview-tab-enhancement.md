@@ -130,6 +130,8 @@ The specification's 11-dimension flat filter model (§4.1) is adopted for the di
 
 All adopted filter dimensions are applied as `useMemo` predicates over the raw `posts[]` array per the specification's §4.2 pipeline, consistent with ADR-0054 Decision §3 (client-side aggregation only).
 
+**Pending supersession note (2026-08-19):** ADR-0063 (Proposed 2026-08-19) — if and when accepted — adds a `post_watchlist_matches` junction table and a `GET /v1/posts?watchlistId=<id>` filter parameter, enabling `activeWatchlistFilter` to be upgraded (Story 8.9) from the client-side approximation above to a proper server-side query covering all `matchType` values including `boolean_query` watchlists. The tooltip disclosure ("Approximate match — based on keyword terms in post text; advanced boolean watchlists are not included") would be retired at Story 8.9's build time. Takes effect only if and when ADR-0063 is accepted by Menno.
+
 ### 4. Active filter chips bar and deep-link share state
 
 **Active filter chips bar:** A chip bar renders between the header and the widget grid whenever any real-data-backed filter is active. Each chip is colour-coded per §6.2 and carries a `×` dismiss control. A "Clear all" text link resets all active filters simultaneously. The chip bar covers only the adopted filter dimensions (Decision §3) — no chip for region, intention, or tag.
@@ -202,7 +204,7 @@ All three are explicit simulations of non-existent services. Per this project's 
 | Top Authors Feed | **Build** (initials avatars) | Real `author` + post count aggregation; **Unsplash URLs are rejected** (external CDN, no content-hosting contract in scope) — deterministic initial-letter avatars are always available and never fail |
 | AI Spike Storyteller | **Build** (conditional on `activeDateFilter`) | Decision §6 |
 | Location Insights (SVG world map) | **Not built** | ADR-0054 Decision §4 unchanged: no connector populates `post_geo_location`; `SocialPostSummary` excludes it |
-| Watchlist Coverage (PieChart donut) | **Not built** | Spec's own framing ("static for now, pending real watchlist matching API") confirms there is no real data to back it — this is the fabricated-placeholder pattern this project consistently rejects |
+| Watchlist Coverage (PieChart donut) | **Not built** | Spec's own framing ("static for now, pending real watchlist matching API") confirms there is no real data to back it — this is the fabricated-placeholder pattern this project consistently rejects. **Pending supersession note (2026-08-19):** ADR-0063 (Proposed 2026-08-19), if accepted, adds the `post_watchlist_matches` junction table that would make real per-watchlist post counts available; Story 8.9 would then build this widget. Takes effect only if and when ADR-0063 is accepted by Menno. |
 
 ### 9. Chart library — no D3
 

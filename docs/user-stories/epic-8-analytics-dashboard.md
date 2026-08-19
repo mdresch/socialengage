@@ -200,6 +200,27 @@
 
 ---
 
+## Story 8.9 — `activeWatchlistFilter` server-side upgrade and Watchlist Coverage widget
+
+**Source:** ADR-0063 (Proposed 2026-08-19) · **Status:** Blocked — pending ADR-0063 acceptance
+**Depends on:** Story 3.11 (`post_watchlist_matches` junction table and `GET /v1/posts?watchlistId` filter in `social-listening-core`); Story 8.7 (Overview tab grid and `activeWatchlistFilter` client-side approximation)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the Watchlist filter on the analytics Overview tab to use the server-side watchlist match records rather than a client-side approximation, and to see a real Watchlist Coverage breakdown showing how many posts each watchlist has matched,
+**so that** the filter covers all watchlist types accurately and the coverage widget reflects real ingestion data rather than being absent.
+
+**Acceptance Criteria**
+
+- **`activeWatchlistFilter` server-side upgrade:** Story 8.7's `activeWatchlistFilter` client-side predicate (case-insensitive `terms[]` match against `bodyMarkdown`, keyword/hashtag watchlists only) is replaced with a server-side call: `GET /v1/posts?watchlistId=<id>` (Story 3.11's new parameter). The `useMemo` predicate over the in-memory `posts[]` array is removed for this dimension; instead, selecting a watchlist from the dropdown triggers a new `listPosts` call with `watchlistId` set. The `boolean_query` exclusion constraint from Story 8.7 is lifted — all active watchlist types appear in the dropdown because the server-side filter handles all of them. The tooltip disclosure ("Approximate match — based on keyword terms in post text; advanced boolean watchlists are not included") is removed. No changes to `social-listening-core` beyond Story 3.11's already-shipped parameter.
+- **Watchlist Coverage widget** (`id="widget-watchlist-coverage"`, previously excluded in ADR-0062 Decision §8): renders a PieChart donut (Recharts `<PieChart>`) with one slice per active watchlist, sized by post count. Post counts come from real data — either `GET /v1/posts?watchlistId=<id>` total counts (one call per active watchlist, using the filtered result count) or a `postCount` field on `GET /v1/watchlists` if Story 3.11 added it (implementation's own judgment per ADR-0063 Open Question 4). Zero matched posts for a watchlist renders a zero-sized slice (not omitted — the watchlist still appears in the legend). A tenant with zero active watchlists renders the `EmptyState` component for this widget, never a fabricated sample breakdown.
+- The Watchlist Coverage widget uses the stable `id` attribute `id="widget-watchlist-coverage"` (from the specification's §5, previously excluded by ADR-0062 Decision §8 as non-buildable). Its grid placement follows ADR-0062 Decision §2's column layout — Story 8.9's implementation-time judgment as to which existing widget slot it fills or which layout adjustment it triggers (given Location Insights is still absent).
+- No fabricated, placeholder, or "sample" data — all coverage counts come from real `GET /v1/posts?watchlistId` calls against the already-fetched `post_watchlist_matches` records. An honest zero is shown for watchlists with no matched posts in the selected date range.
+- No new `social-listening-core` endpoint introduced by this story — relies solely on Story 3.11's already-shipped `GET /v1/posts?watchlistId` parameter and the existing `GET /v1/watchlists`.
+
+**Explicitly out of scope:** retroactive backfill of historical posts (ADR-0063 Open Question 1 — not this story's concern); re-matching on watchlist term update (ADR-0063 Open Question 2 — accepted staleness at v1); any change to `social-listening-core`; any change to the Sentiment, Conversations, or Sources tabs.
+
+---
+
 ## Not storied in this epic: Location tab
 
 **ADR-0054 Decision §4 defers the Location tab entirely — no story exists for it in this epic, and none should be added speculatively.** Two independent, both-disqualifying findings: no connector in this project's real roster populates `social_posts.post_geo_location`, and even a populated column would not be visible to `GET /v1/posts`'s own `SocialPostSummary` response shape, which this epic's entire data-source strategy depends on (ADR-0054 Decision §3). A future story here would need, at minimum, a real geo-data-carrying connector or source, a `social-listening-core` schema/API change (its own separate contract-first story), and a demonstrated tenant need — none of which exist today. See ADR-0054 Open Question 1.
