@@ -202,8 +202,8 @@
 
 ## Story 8.9 — `selectedTopic` watchlist filter and Watchlist Coverage widget
 
-**Source:** ADR-0063 (Proposed 2026-08-19) · **Status:** Blocked — pending ADR-0063 acceptance
-**Depends on:** Story 3.11 (`post_watchlist_matches` junction table and `GET /v1/posts?watchlistId` filter in `social-listening-core`); Story 8.7 (Overview tab grid and the reserved `selectedTopic` filter slot)
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Blocked — pending Story 3.11 implementation and Story 8.7 build
+**Depends on:** Story 3.11 (`post_watchlist_matches` junction table and `GET /v1/posts?watchlistId` filter in `social-listening-core` — now **Ready**); Story 8.7 (Overview tab grid and the reserved `selectedTopic` filter slot)
 
 **As a** Tenant User or Tenant-Admin,
 **I want** a Watchlist/Topic filter on the analytics Overview tab backed by real server-side match records, and a real Watchlist Coverage breakdown showing how many posts each watchlist has matched,

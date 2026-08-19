@@ -203,7 +203,7 @@
 
 ## Story 3.11 — Post-watchlist match persistence: `post_watchlist_matches` junction table, ingestion write, and `GET /v1/posts?watchlistId` filter
 
-**Source:** ADR-0063 (Proposed 2026-08-19) · **Status:** Blocked — pending ADR-0063 acceptance
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Ready
 
 **As a** Tenant User or Tenant-Admin,
 **I want** `GET /v1/posts` to accept a `watchlistId` filter parameter so that I can retrieve only the posts that matched a specific watchlist at ingestion time,
