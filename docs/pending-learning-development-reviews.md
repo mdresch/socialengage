@@ -1636,3 +1636,9 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-08-19 (Learning & Development Writer):** No user-facing change — accepts ADR-0059/0060/0061 (the last of these three, the Facebook connector ADR, documents a decision already reflected in the shipped Story 6.23 reviewed above; the other two — multiple connected Pages per user, Tier-3 per-user poll scheduling — are accepted decisions with no story built against them yet) and updates Story 6.27/1.15 governance bookkeeping. Acceptance and a drafted/Ready story are not yet shipped, contract-verified capability — correctly nothing added to either manual on this commit's own account.
 
+## 2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues
+
+- **Full commit:** `608079561c17597c1bfec604ae57551b2e21a148`
+- **Files touched:** CLAUDE.md, README.md, docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Integration-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/project docs/Project Management Plans/Project-Work-Management-Plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/ingestion-events/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md
+- **Status:** Pending review
+

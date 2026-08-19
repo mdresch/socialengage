@@ -1795,3 +1795,9 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-08-19:** see docs/management/manager-register.md's entry reviewing 591b0b8/e7055db/21c30bf/ce4c2fa/fd6cdb3/2317c60/c802b64/8ed1e7b/8182706/14ada1b/3fedac3/38c3e51/6a9b628/28090fe/6550716/05d9ee0/03c37c9/42e693f/50a5914/caf50ed/838e3dc/3ce8db2/535338f/f6a1794/7c0572c.
 
+## 2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues
+
+- **Full commit:** `608079561c17597c1bfec604ae57551b2e21a148`
+- **Files touched:** CLAUDE.md, README.md, docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Integration-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/project docs/Project Management Plans/Project-Work-Management-Plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/ingestion-events/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md
+- **Status:** Pending review
+
