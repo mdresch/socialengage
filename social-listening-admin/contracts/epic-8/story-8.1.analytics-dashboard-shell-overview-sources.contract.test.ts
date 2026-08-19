@@ -343,17 +343,36 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
   });
 
   describe('AC7/AC9: Overview tab — total, compact sentiment split, compact source breakdown; honest empty state', () => {
+    // 2026-08-19, Story 8.7 (ADR-0062 Decision §2): "The Overview tab is
+    // restructured from its current three-KPI-card layout (Stories 8.1/8.4)
+    // to the specification's three-column responsive grid" — an explicit,
+    // dated, ADR-authorized supersession of this describe block's own
+    // original three-KPI-card assertions, not a silent edit (this project's
+    // "Regression, not rewrite" convention). OverviewTab.tsx now computes
+    // every widget from summary.posts (SentimentPost[]) rather than the
+    // pre-flattened summary.sentimentSplit/summary.sources this fixture
+    // originally provided — those two fields are harmless-but-unused
+    // leftovers here now, kept only for readability; posts is the field the
+    // component actually reads. Same in-epic-widening precedent already
+    // used for the Sources-tab fixture below (Story 8.6, 2026-08-17).
     it('renders real totals, split, and source rows from a real AnalyticsSummary, no widget of its own beyond that', () => {
       const React = require('react');
       const { renderToStaticMarkup } = require('react-dom/server');
       const { OverviewTab } = require('../../src/app/tenant/analytics/OverviewTab');
+      const posts = [
+        { id: 'p1', publishedAt: '2026-08-01T00:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: [], title: 'Post 1', language: null, providerId: 'gnews' },
+        { id: 'p2', publishedAt: '2026-08-01T00:00:00.000Z', author: 'Beta Inc', sentiment: 'positive', keyPhrases: [], title: 'Post 2', language: null, providerId: 'gnews' },
+        { id: 'p3', publishedAt: '2026-08-01T00:00:00.000Z', author: 'Gamma LLC', sentiment: 'negative', keyPhrases: [], title: 'Post 3', language: null, providerId: 'gnews' },
+      ];
       const summary = {
         totalPosts: 3,
         sentimentSplit: { positive: 2, neutral: 0, negative: 1 },
         sources: [{ providerId: 'gnews', label: 'GNews', count: 3, sentiment: { positive: 2, neutral: 0, negative: 1 } }],
+        posts,
       };
-      const html = renderToStaticMarkup(React.createElement(OverviewTab, { summary }));
-      expect(html).toContain('3');
+      const range = { startDate: '2026-08-01', endDate: '2026-08-01' };
+      const html = renderToStaticMarkup(React.createElement(OverviewTab, { summary, range }));
+      expect(html).toContain('3 matching post');
       expect(html).toContain('2 positive');
       expect(html).toContain('1 negative');
       expect(html).toContain('GNews');
@@ -363,8 +382,9 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       const React = require('react');
       const { renderToStaticMarkup } = require('react-dom/server');
       const { OverviewTab } = require('../../src/app/tenant/analytics/OverviewTab');
-      const summary = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [] };
-      const html = renderToStaticMarkup(React.createElement(OverviewTab, { summary }));
+      const summary = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [], posts: [] };
+      const range = { startDate: '2026-08-01', endDate: '2026-08-01' };
+      const html = renderToStaticMarkup(React.createElement(OverviewTab, { summary, range }));
       expect(html).toContain('data-testid="empty-state"');
     });
   });

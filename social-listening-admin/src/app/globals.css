@@ -3795,6 +3795,167 @@ button:disabled {
   font-weight: 650;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Overview tab enhancement (Story 8.7, ADR-0062)                          */
+/* ---------------------------------------------------------------------- */
+
+.an-overview-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.an-filtered-count-btn {
+  align-self: flex-end;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.an-overview-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.an-overview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+}
+
+.an-overview-chip-dismiss {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.an-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.an-overview-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  grid-column: span 12;
+}
+
+@media (min-width: 1024px) {
+  .an-overview-col-left,
+  .an-overview-col-right {
+    grid-column: span 3;
+  }
+  .an-overview-col-centre {
+    grid-column: span 6;
+  }
+}
+
+.an-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.an-gauge-segment {
+  cursor: pointer;
+}
+
+.an-gauge-segment-active {
+  filter: brightness(0.85);
+}
+
+.an-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.an-forecast-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.an-crisis-radar {
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-2);
+}
+
+.an-crisis-radar-stable {
+  background: var(--color-surface-page);
+  color: var(--color-text-secondary);
+}
+
+.an-crisis-radar-elevated {
+  background: color-mix(in srgb, var(--color-status-degraded) 15%, transparent);
+  color: var(--color-status-degraded);
+}
+
+.an-crisis-radar-crisis {
+  background: color-mix(in srgb, var(--color-status-failing) 15%, transparent);
+  color: var(--color-status-failing);
+}
+
+.an-sentiment-trajectory {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.an-trajectory-scale {
+  opacity: 0.7;
+  margin-left: var(--space-1);
+}
+
+.an-authors-by-source-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.an-authors-by-source-list {
+  width: 100%;
+}
+
+.an-author-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: 0.6875rem;
+  font-weight: 650;
+}
+
 /* =========================================================================
    Team & Access screen (/tenant/users) — Story 6.8/6.10/6.14, visual
    redesign 2026-08-17

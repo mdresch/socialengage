@@ -203,7 +203,8 @@
 
 ## Story 3.11 — Post-watchlist match persistence: `post_watchlist_matches` junction table, ingestion write, and `GET /v1/posts?watchlistId` filter
 
-**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Ready
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Built 2026-08-19 — resumed mid-implementation from a prior session via `heal-contract-failure` (real schema conflict, ambiguous-column SQL bug, and fixture bug found and fixed — see ADR-0063's own Amendment Log and `docs/implementation-log.md`).
+**Built:** 2026-08-19 — social-listening-core@63902a1
 
 **As a** Tenant User or Tenant-Admin,
 **I want** `GET /v1/posts` to accept a `watchlistId` filter parameter so that I can retrieve only the posts that matched a specific watchlist at ingestion time,

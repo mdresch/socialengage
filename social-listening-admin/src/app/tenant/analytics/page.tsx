@@ -4,7 +4,7 @@ import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { fetchAnalyticsSummary } from './fetchAnalyticsSummary';
 import { AnalyticsClient } from './AnalyticsClient';
-import type { DateRangeFilter } from './analyticsData';
+import { parseOverviewFiltersFromSearchParams, type DateRangeFilter } from './analyticsData';
 
 const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources'] as const;
 export type AnalyticsTab = (typeof TAB_VALUES)[number];
@@ -27,7 +27,7 @@ function defaultDateRange(): DateRangeFilter {
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; date?: string; source?: string; author?: string; keyword?: string; language?: string; sentiment?: string }>;
 }) {
   const jar = await cookies();
   const raw = jar.get(SESSION_COOKIE_NAME)?.value;
@@ -38,17 +38,34 @@ export default async function AnalyticsPage({
     redirect('/');
   }
 
-  const { tab } = await searchParams;
+  const { tab, date, source, author, keyword, language, sentiment } = await searchParams;
   const initialTab: AnalyticsTab = (TAB_VALUES as readonly string[]).includes(tab ?? '')
     ? (tab as AnalyticsTab)
     : 'overview';
+
+  // Story 8.7 (ADR-0062 Decision §4) — deep-link filter state, parsed
+  // server-side the same way `tab` already is. `watchlist` is deliberately
+  // never read here — reserved for Story 8.9.
+  const filterParams = new URLSearchParams();
+  if (date) filterParams.set('date', date);
+  if (source) filterParams.set('source', source);
+  if (author) filterParams.set('author', author);
+  if (keyword) filterParams.set('keyword', keyword);
+  if (language) filterParams.set('language', language);
+  if (sentiment) filterParams.set('sentiment', sentiment);
+  const initialOverviewFilters = parseOverviewFiltersFromSearchParams(filterParams);
 
   const initialRange = defaultDateRange();
   const initialSummary = await fetchAnalyticsSummary(initialRange);
 
   return (
     <main>
-      <AnalyticsClient initialSummary={initialSummary} initialRange={initialRange} initialTab={initialTab} />
+      <AnalyticsClient
+        initialSummary={initialSummary}
+        initialRange={initialRange}
+        initialTab={initialTab}
+        initialOverviewFilters={initialOverviewFilters}
+      />
     </main>
   );
 }

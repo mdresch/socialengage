@@ -63,6 +63,21 @@
  *   - The "AI Spike Storyteller" / predictive forecast panels (already
  *     excluded, ADR-0054 Decision §2).
  *   - Any change to social-listening-core or GET /v1/posts.
+ *
+ * 2026-08-19 addendum, Story 8.7 (ADR-0062) — the three-KPI-card Overview
+ * layout (AC1/AC2's own widget ids, AC3/AC4's delta-badge rendering) this
+ * contract originally targeted is superseded by the new 3-column, 8-widget
+ * grid. AC1/AC2 are updated in place (dated note at their own describe
+ * block) to match the new widget ids and the new filtered-post-set
+ * computation path. AC3/AC4 (period-over-period delta) are confirmed
+ * dropped from the Overview tab — a direct decision from Menno, not
+ * assumed, since ADR-0062 itself never mentions previousSummary/delta —
+ * and their own describe block is updated to assert the (harmless,
+ * unrendered) absence instead. AC5's own describe block (the fetch/
+ * comparison machinery itself: fetchAnalyticsComparison(), route.ts's
+ * ?compare=true, AnalyticsClient.tsx's previousSummary state) is untouched
+ * and still fully real — only OverviewTab's own rendering of a delta is
+ * gone.
  */
 
 import fs from 'fs';
@@ -226,55 +241,89 @@ describe('Story 8.4 — Overview enrichment, period-over-period comparison', () 
     });
   });
 
+  // 2026-08-19, Story 8.7 (ADR-0062 Decision §2): the three-KPI-card Overview
+  // layout this describe block was written against is superseded by the
+  // 3-column, eight-widget grid — a dated, ADR-authorized supersession, not
+  // a silent edit (this project's "Regression, not rewrite" convention).
+  // OverviewTab.tsx no longer reads summary.volumeHistory/summary.
+  // sentimentSplit directly: both are now recomputed from summary.posts
+  // filtered through Story 8.7's own 7-dimension applyOverviewFilters() —
+  // required, not optional, since ADR-0062's entire point is that every
+  // widget (including the volume/sentiment ones) reflects the active
+  // filters, which the old direct-reuse approach could never do once
+  // filtering existed at all.
   describe('AC1/AC2: Overview renders a real volume chart and reuses summary.sentimentSplit for its donut', () => {
-    it('OverviewTab renders driven by summary.volumeHistory and summary.sentimentSplit, not a new independent computation', () => {
+    it('OverviewTab computes its volume/sentiment data from summary.posts through applyOverviewFilters(), not a second independent post-fetch', () => {
       const source = readSrc(...overviewPath);
-      expect(source).toMatch(/summary\.volumeHistory/);
-      expect(source).toMatch(/summary\.sentimentSplit/);
+      expect(source).toMatch(/applyOverviewFilters\(summary\.posts/);
+      expect(source).toMatch(/computeVolumeHistory\(filteredPosts/);
+      expect(source).toMatch(/computeSentimentSplitFromFlat\(filteredPosts/);
     });
 
-    it('renders the volume chart widget and real sentiment counts for a non-empty summary', () => {
+    it('renders the volume timeline and sentiment gauge widgets with real sentiment counts for a non-empty summary', () => {
       // Recharts' ResponsiveContainer measures 0x0 under renderToStaticMarkup
       // (no real DOM layout) and so doesn't render its chart children — the
       // same known limitation Story 8.2's own contract already works around
       // by never asserting rendered chart labels, only the widget shell and
       // the underlying data plumbing (covered by the source-grep test above).
-      const summary = {
-        totalPosts: 3,
-        sentimentSplit: { positive: 2, neutral: 0, negative: 1 },
-        sources: [],
-        volumeHistory: [{ date: '2026-08-01', count: 2 }, { date: '2026-08-02', count: 1 }],
-      };
-      const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null });
-      expect(html).toContain('id="widget-overview-volume"');
-      expect(html).toContain('id="widget-overview-sentiment-donut"');
+      const posts = [
+        { id: 'x1', publishedAt: '2026-08-01T00:00:00.000Z', author: 'A', sentiment: 'positive', keyPhrases: [], title: 'X1', language: null, providerId: 'gnews' },
+        { id: 'x2', publishedAt: '2026-08-01T00:00:00.000Z', author: 'B', sentiment: 'positive', keyPhrases: [], title: 'X2', language: null, providerId: 'gnews' },
+        { id: 'x3', publishedAt: '2026-08-02T00:00:00.000Z', author: 'C', sentiment: 'negative', keyPhrases: [], title: 'X3', language: null, providerId: 'gnews' },
+      ];
+      const summary = { totalPosts: 3, sentimentSplit: { positive: 2, neutral: 0, negative: 1 }, sources: [], volumeHistory: [], posts };
+      const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null, range: RANGE });
+      expect(html).toContain('id="widget-timeline-volume"');
+      expect(html).toContain('id="widget-sentiment-gauge"');
       expect(html).toContain('2 positive');
       expect(html).toContain('1 negative');
     });
 
     it('keeps the existing EmptyState for zero matched posts (Story 8.1 behavior unchanged)', () => {
-      const summary = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [], volumeHistory: [] };
-      const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null });
+      const summary = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [], volumeHistory: [], posts: [] };
+      const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null, range: RANGE });
       expect(html).toContain('data-testid="empty-state"');
     });
   });
 
-  describe('AC3/AC4: real percentage delta vs. an honest "no prior data" state — never a fabricated delta string', () => {
-    it('renders a real percentage delta when a non-zero previousSummary is provided', () => {
-      const summary = { totalPosts: 12, sentimentSplit: { positive: 8, neutral: 2, negative: 2 }, sources: [], volumeHistory: [] };
-      const previousSummary = { totalPosts: 10, sentimentSplit: { positive: 5, neutral: 3, negative: 2 }, sources: [], volumeHistory: [] };
-      const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary });
-      expect(html).toContain('20%');
+  // 2026-08-19, Story 8.7 (ADR-0062): period-over-period delta badges are
+  // deliberately dropped from the Overview tab — confirmed directly with
+  // Menno rather than assumed, since ADR-0062's own Decision sections never
+  // mention previousSummary/delta at all (a silence, not an explicit
+  // removal, so this project's own discipline against silently dropping a
+  // shipped feature required asking rather than guessing). Crisis Alert
+  // Radar (48h momentum) and Sentiment Trajectory (day-over-day) now give
+  // related "is this changing" signals in the new design; a like-for-like
+  // previous-equal-length-period comparison is not rebuilt. The fetch/
+  // comparison machinery itself (fetchAnalyticsComparison(), route.ts's
+  // ?compare=true, AnalyticsClient.tsx's previousSummary state) is
+  // untouched and still real — see AC5's own describe block below, still
+  // green — only OverviewTab's own rendering of a delta is gone; the prop
+  // is still accepted, silently unused, for the other tabs' own possible
+  // future use.
+  describe('AC3/AC4 — superseded 2026-08-19 by ADR-0062/Story 8.7: previousSummary is accepted without error, produces no rendered delta', () => {
+    it('a non-zero previousSummary changes nothing about the render — no delta text appears, and nothing throws', () => {
+      const posts = [
+        { id: 'y1', publishedAt: '2026-08-01T00:00:00.000Z', author: 'A', sentiment: 'positive', keyPhrases: [], title: 'Y1', language: null, providerId: 'gnews' },
+      ];
+      const summary = { totalPosts: 1, sentimentSplit: { positive: 1, neutral: 0, negative: 0 }, sources: [], volumeHistory: [], posts };
+      const previousSummary = { totalPosts: 10, sentimentSplit: { positive: 5, neutral: 3, negative: 2 }, sources: [], volumeHistory: [], posts: [] };
+      expect(() =>
+        renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary, range: RANGE })
+      ).not.toThrow();
     });
 
-    it('renders an honest "no prior data" indicator, never a fabricated percentage, when previousSummary is null or its total is zero', () => {
-      const summary = { totalPosts: 12, sentimentSplit: { positive: 8, neutral: 2, negative: 2 }, sources: [], volumeHistory: [] };
-      const htmlNoComparison = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null });
-      expect(htmlNoComparison.toLowerCase()).not.toMatch(/\+\d+%|-\d+%/);
+    it('never renders a fabricated percentage delta, with or without a previousSummary', () => {
+      const posts = [
+        { id: 'z1', publishedAt: '2026-08-01T00:00:00.000Z', author: 'A', sentiment: 'positive', keyPhrases: [], title: 'Z1', language: null, providerId: 'gnews' },
+      ];
+      const summary = { totalPosts: 1, sentimentSplit: { positive: 1, neutral: 0, negative: 0 }, sources: [], volumeHistory: [], posts };
+      const htmlNoComparison = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null, range: RANGE });
+      expect(htmlNoComparison).not.toMatch(/vs\. previous period|vs previous period/i);
 
-      const zeroPrevious = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [], volumeHistory: [] };
-      const htmlZeroPrevious = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: zeroPrevious });
-      expect(htmlZeroPrevious.toLowerCase()).not.toMatch(/\+\d+%|-\d+%/);
+      const zeroPrevious = { totalPosts: 0, sentimentSplit: { positive: 0, neutral: 0, negative: 0 }, sources: [], volumeHistory: [], posts: [] };
+      const htmlZeroPrevious = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: zeroPrevious, range: RANGE });
+      expect(htmlZeroPrevious).not.toMatch(/vs\. previous period|vs previous period/i);
     });
   });
 

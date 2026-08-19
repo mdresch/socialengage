@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { InlineError } from '@/components/ui';
 import { GlobalDateRangePicker, type DateRangeValue } from './GlobalDateRangePicker';
-import type { AnalyticsSummary, DateRangeFilter } from './analyticsData';
+import type { AnalyticsSummary, DateRangeFilter, OverviewFilters } from './analyticsData';
 import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
 import { SentimentTab } from './SentimentTab';
@@ -22,9 +22,11 @@ interface AnalyticsClientProps {
   initialSummary: AnalyticsSummary;
   initialRange: DateRangeFilter;
   initialTab: AnalyticsTab;
+  /** Story 8.7 — parsed server-side by page.tsx from the initial URL search params, same pattern as initialTab. */
+  initialOverviewFilters: OverviewFilters;
 }
 
-export function AnalyticsClient({ initialSummary, initialRange, initialTab }: AnalyticsClientProps) {
+export function AnalyticsClient({ initialSummary, initialRange, initialTab, initialOverviewFilters }: AnalyticsClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>(initialTab);
   const [range, setRange] = useState<DateRangeFilter>(initialRange);
@@ -103,7 +105,9 @@ export function AnalyticsClient({ initialSummary, initialRange, initialTab }: An
       {loading && <p className="an-loading">Updating…</p>}
 
       <div className="an-tab-panel" role="tabpanel">
-        {activeTab === 'overview' && <OverviewTab summary={summary} previousSummary={previousSummary} />}
+        {activeTab === 'overview' && (
+          <OverviewTab summary={summary} previousSummary={previousSummary} range={range} initialFilters={initialOverviewFilters} />
+        )}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
