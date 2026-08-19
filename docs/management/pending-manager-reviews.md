@@ -1720,3 +1720,15 @@
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/user-stories/epic-8-analytics-dashboard.md
 - **Status:** Pending review
 
+## 2026-08-19 — 67c546f — chore: post-commit hook outputs for ADR-0062 commit (2c00920)
+
+- **Full commit:** `67c546f0ddcf7125c6860a304db1b711600712a6`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit, scripts/git-hooks/pre-commit
+- **Status:** Pending review
+
+## 2026-08-19 — 48f5cf3 — docs(adr-0062): replace selectedTopic with activeWatchlistFilter
+
+- **Full commit:** `48f5cf3690c6f4d65175d148c8144f34e3495694`
+- **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
