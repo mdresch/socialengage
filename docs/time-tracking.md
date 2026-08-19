@@ -15,19 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-08-19 | 12:15 | — | — | Infrastructure | — | chore: post-commit hook outputs for 17c563b (31af056) |
-| 2026-08-19 | 12:14 | — | — | Documentation | ADR-0063 | docs(adr): accept ADR-0063; move Story 3.11 to Ready (17c563b) |
-| 2026-08-19 | 11:55 | — | — | Infrastructure | — | chore: post-commit hook outputs for 24adf6c (c1d6a44) |
-| 2026-08-19 | 11:54 | — | — | Infrastructure | — | chore: post-commit hook outputs for 6eb6062 (24adf6c) |
-| 2026-08-19 | 11:54 | — | — | Documentation | ADR-0063 | docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9 (6eb6062) |
-| 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 59356e6 (6f25f17) |
-| 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 2f605b6 (59356e6) |
-| 2026-08-19 | 11:43 | — | — | Documentation | ADR-0063 | docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter (2f605b6) |
-| 2026-08-19 | 10:56 | — | — | Infrastructure | — | chore: post-commit hook outputs for a5d0036 (23a6dca) |
-| 2026-08-19 | 10:56 | — | — | Infrastructure | — | chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3) (a5d0036) |
-| 2026-08-19 | 10:55 | — | — | Documentation | — | docs(adr-0062): replace selectedTopic with activeWatchlistFilter (48f5cf3) |
-| 2026-08-19 | 10:24 | — | — | Infrastructure | ADR-0062 | chore: post-commit hook outputs for ADR-0062 commit (2c00920) (67c546f) |
-| 2026-08-19 | 10:22 | — | — | Documentation | ADR-0062 | feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement (2c00920) |
+| 2026-08-19 | 05:28 | — | — | Review | — | Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues (6080795) |
 | 2026-08-18 | — | — | auto | Documentation | ADR-0059 | docs: ADR-0059/0060/0061 acceptance and Story 6.27/1.15 governance update (7c0572c) |
 | 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.23): implementation log entry and Built field (f6a1794) |
 | 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.23): Facebook OAuth connect flow with Page selection (535338f) |

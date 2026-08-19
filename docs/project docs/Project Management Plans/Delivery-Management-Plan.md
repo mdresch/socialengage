@@ -102,7 +102,7 @@ PHASE DELIVERED (milestone achieved)
 |------|------------------|------------|
 | **AI Delivery Agent** | Executes story delivery end-to-end | Per story |
 | **AI QA/Contract Author** | Verifies contract quality before acceptance | Per story |
-| **AI Documentation Steward** | Ensures all deliverable documentation is current | Not yet exercised |
+| **AI Documentation Steward** | Ensures all deliverable documentation is current | ~~Not yet exercised~~ **Documentation Steward correction, 2026-08-19:** real, repeated exercise — see `docs/pending-documentation-steward-reviews.md`'s own dozens of dated, resolved entries since 2026-08-06, this pass included (same correction already made to `Planning-Management-Plan.md` and `Stakeholder-Register.md`'s own S-13 row on 2026-08-06/13; this file's own matching row was missed at the time) |
 
 ---
 
