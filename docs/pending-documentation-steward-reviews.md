@@ -1431,3 +1431,9 @@
 - **Files touched:** docs/adr/0059-facebook-connector-tenant-owned-page-scope-organization-as-author.md, docs/adr/0060-facebook-connector-multiple-pages-per-user.md, docs/adr/0061-tier-3-poll-scheduler-per-user-enumeration.md, docs/adr/README.md, docs/open-decisions.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-19 — 2c00920 — feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement
+
+- **Full commit:** `2c00920ee0755b4caf32b895e20b09bc6ed99c31`
+- **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
