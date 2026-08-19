@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-19 | 12:14 | — | — | Documentation | ADR-0063 | docs(adr): accept ADR-0063; move Story 3.11 to Ready (17c563b) |
+| 2026-08-19 | 11:55 | — | — | Infrastructure | — | chore: post-commit hook outputs for 24adf6c (c1d6a44) |
 | 2026-08-19 | 11:54 | — | — | Infrastructure | — | chore: post-commit hook outputs for 6eb6062 (24adf6c) |
 | 2026-08-19 | 11:54 | — | — | Documentation | ADR-0063 | docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9 (6eb6062) |
 | 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 59356e6 (6f25f17) |
