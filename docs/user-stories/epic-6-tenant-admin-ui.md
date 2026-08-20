@@ -718,6 +718,42 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** External push notifications (email/SMS/Slack alerts — downstream services, not admin UI scope).
 
+---
+
+## Story 6.30 — Brave Search API Connector Setup, Activation, and Status Screen
+
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.21 (`brave-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant Administrator,
+**I want** to connect, activate, manage, and monitor the Brave Search API connector using my organization's Brave API key from the admin portal,
+**so that** our tenant can actively discover web and news content for our watchlists without backend developer assistance.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `brave-search` to `PLATFORMS` array in both client components:
+    - `id: 'brave-search'`, `name: 'Brave Search'`, `description: 'Active web & news search discovery for watchlists'`
+    - `category: 'Ingestion'`, `authMode: 'api_key'`
+    - `tenantScopeAllowed: true`, `personalScopeAllowed: false` (Tier-2 platform credential, ADR-0028)
+    - `icon: 'search'` or dedicated Brave icon glyph
+- **Connect Modal & Credential Submission (`ConnectModal`):**
+  - When clicking "Connect" on the Brave Search card, opens `ConnectModal` with:
+    - Dedicated field for Brave Search API Key (`X-Subscription-Token`).
+    - Explicit ADR-0027 billing disclaimer noting that the tenant creates their own API account directly with Brave Search.
+  - Submits credential to `/api/connectors/brave-search/connect` via `POST` with `ownerType: 'tenant'`.
+  - On success, updates card state to connected with a masked credential indicator.
+- **Activation & Deactivation Controls:**
+  - Renders `ActivateDeactivateButton` (`ownerType: 'tenant'`) gated on `tenant_admin` role.
+  - Toggling active state correctly calls `/api/connectors/brave-search/activate` or `/api/connectors/brave-search/deactivate`.
+- **Connector Status & Telemetry (`/tenant/connectors/status`):**
+  - Renders `brave-search` in the "Connectors" section (Ingestion), distinct from "AI Providers".
+  - Shows operational metrics: Last Ingestion Attempt, Last Successful Ingestion, and polling cadence (e.g. "Poll interval: 1h–4h").
+  - Displays health status badge (`Healthy`, `Degraded`, `Failing`, `Stalled`).
+  - Gated on `tenant_admin`: renders "Re-sync now" button (Story 6.29) triggering on-demand retry for active Brave Search connector.
+
+**Explicitly out of scope:** Billing/reselling Brave Search credits (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.21).
+
 
 ---
 

@@ -445,3 +445,46 @@
 - Contract test verifies that GNews items with `source.country` and Newswire/Tenant-feed items with explicit country tags populate `enrichment.geoCountry`, `geoCountryName`, `geoSource`, and `geoConfidence` accurately, while feeds without country tags default to `null`/`undefined` without failure.
 
 **Explicitly out of scope:** Sub-national/city-level geocoding (Open Question 1); storing precise lat/lon points in `post_geo_location`; geocoding unstructured author profile location strings; any UI visualization changes (handled in Story 8.10).
+
+---
+
+## Story 2.21 — Active Watchlist Sourcing via Brave Search API: Polling connector, query transformation, and junction linking
+
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the platform to actively query the Brave Search API for my active watchlists, validate matching articles, and ingest them as social posts linked to their respective watchlists,
+**so that** my monitored topics are proactively discovered across the web and news index rather than waiting for them to randomly cross generic feeds.
+
+**Acceptance Criteria**
+- **Connector Implementation (`braveSearchConnector.ts`):**
+  - Implements `SocialConnector` with `providerId: 'brave-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, and `poll(tenantId: string)`.
+  - Registered in `connectorRegistry.ts` under `brave-search`.
+- **Active Watchlist Querying & Pacing Loop:**
+  - `poll(tenantId)` retrieves all active watchlists for the tenant (`listActiveWatchlistsForTenant(tenantId)`).
+  - Iterates over active watchlists sequentially with a **1.2-second pacing delay** between requests to strictly respect Brave's 1 req/sec rate limit and avoid HTTP 429 errors.
+  - Constructs queries per watchlist match type:
+    - `keyword`/`hashtag`/`account`: formats terms into an OR-expression (e.g. `"term1" OR "term2"`).
+    - `boolean_query`: passes the AST boolean expression formatted for Brave search syntax.
+  - Calls Brave Search endpoint (`/res/v1/news/search` by default, or `/res/v1/web/search`) with the tenant's `X-Subscription-Token` header, lookback `freshness` window, and result pagination.
+- **Dual Discovery & Validation Filter:**
+  - Discovered search result candidate items (title + snippet/description) are evaluated in-process against the triggering watchlist's exact rules (`matchesWatchlist()` or `matchesAst()`).
+  - Only candidate items that strictly satisfy the rule predicate are ingested, ensuring zero false-positive drift between active search and passive ingestion.
+- **Publication / Domain as Author (ADR-0004 Generalization):**
+  - Maps `Author` from the article's source domain and publication name:
+    - `author.id = 'brave-search:' + domain`
+    - `author.username = domain` (e.g. `bbc.com`, `techcrunch.com`)
+    - `author.displayName = sourceName || domain`
+    - `author.platform = 'brave-search'`
+- **Canonical Ingestion & Multi-Watchlist Junction Linking:**
+  - Normalizes article into `SocialPost` using canonicalized `url` as `externalId` on `(tenant_id, 'brave-search', externalId)` for deduplication.
+  - Links successfully ingested post to the triggering watchlist in `post_watchlist_matches` via `insertPostWatchlistMatches()`.
+  - Discovered articles immediately become queryable via `GET /v1/posts?watchlistId=<id>` (Story 3.11) and flow into standard AI enrichment.
+- **Quota & Error Handling:**
+  - Handles HTTP 401/403 by marking connector `failing` (invalid credential).
+  - Handles HTTP 429 with backoff and records quota telemetry.
+  - Staggers next poll cycle with 1–4 hour default cadence.
+
+**Explicitly out of scope:** Full-text scraping of external web pages; client-side web scraping; admin UI connector setup screen (handled in Story 6.30).
+
