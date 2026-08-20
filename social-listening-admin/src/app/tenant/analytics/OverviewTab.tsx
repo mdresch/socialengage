@@ -13,6 +13,7 @@ import {
 import { EmptyState, RelativeTime } from '@/components/ui';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
 import { PostDetailPanel } from '../posts/PostDetailPanel';
+import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
 import { flattenPost, type FlatPost } from '../posts/postDisplay';
 import type { SocialPostFull } from '@/lib/core-client';
 import {
@@ -83,6 +84,17 @@ function IconChevronRight() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+/** Same icon PostsFeedClient.tsx already defines for its own Slideover footer's "Open original" link — kept local here too, matching this project's existing per-file icon convention (see PostDetailPanel.tsx's own header comment). */
+function IconExternalLink() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   );
 }
@@ -543,6 +555,20 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
                   {detailError && <p className="an-drawer-detail-status an-drawer-detail-error">{detailError}</p>}
                   {detailPost && <PostDetailPanel key={detailPost.id} post={detailPost} />}
                 </div>
+                {detailPost && (
+                  <div className="slideover-footer">
+                    <div className="pf-slideover-footer-inner">
+                      {detailPost.url ? (
+                        <a href={detailPost.url} target="_blank" rel="noreferrer" className="pf-footer-ext-link">
+                          <IconExternalLink /> Open original
+                        </a>
+                      ) : (
+                        <span />
+                      )}
+                      <RunEnrichmentButton postId={detailPost.id} />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -12,12 +12,22 @@ export interface DisplayText {
   snippet: string | null;
 }
 
-/** Extracts `url` (or `link`) from rawPayload, best-effort. */
+/**
+ * Extracts `url` (or `link`) from rawPayload, best-effort.
+ *
+ * Found live 2026-08-20 (same shape as the `extractAuthor()` Newswire gap
+ * below): Facebook posts carry their real permalink as `permalink_url`
+ * (`extractDisplayText()` already reads it as a title fallback), but this
+ * function never did — every real Facebook post's "Open original" /
+ * "view on Facebook" link (`PostsFeedClient.tsx`'s Slideover footer,
+ * `OverviewTab.tsx`'s detail panel) silently rendered nothing.
+ */
 export function extractUrl(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.url === 'string') return p.url;
     if (typeof p.link === 'string') return p.link;
+    if (typeof p.permalink_url === 'string') return p.permalink_url;
   }
   return null;
 }
@@ -34,12 +44,22 @@ export function extractUrl(rawPayload: unknown): string | null {
  * (post cards, drawer rows, search-by-author). `story-6.11...contract.test`
  * even carried a fixture with `issuer: 'Acme Corp'` set for exactly this
  * case, unused until now.
+ *
+ * Same-day follow-up, also found live: Facebook's own `rawPayload` never
+ * carried the connected Page's name at all (ADR-0059 Decision §5, "Page is
+ * the Author" — the Page's name only ever reached the separate `authors`
+ * table, which this admin has no endpoint to resolve). Fixed at the source
+ * (`social-listening-core`'s `pollFacebook.ts` now denormalizes
+ * `pageId`/`pageName` into `rawPayload`, the same connector-side change
+ * that made Newswire's `issuer` fallback above meaningful) — this function
+ * just needed the matching `pageName` branch to pick it up.
  */
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.author === 'string') return p.author;
     if (typeof p.issuer === 'string') return p.issuer;
+    if (typeof p.pageName === 'string') return p.pageName;
     if (p.source && typeof p.source === 'object') {
       const src = p.source as Record<string, unknown>;
       if (typeof src.name === 'string') return src.name;

@@ -177,6 +177,11 @@ const FACEBOOK_POST = {
     providerId: 'facebook',
     externalId: 'ext-4',
     id: 'ext-4',
+    // pageId/pageName added 2026-08-20 — social-listening-core's own
+    // pollFacebook.ts now denormalizes these (found-live gap, same day),
+    // so this fixture matches the real, current rawPayload shape.
+    pageId: 'page-1',
+    pageName: 'Acme Widgets Co.',
     message: 'Excited to announce our new product launch next week!',
     created_time: '2026-08-12T08:15:00.000Z',
     permalink_url: 'https://facebook.com/1/posts/ext-4',
@@ -283,7 +288,23 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(extractAuthor(NEWSWIRE_POST.rawPayload)).toBe('Acme Corp');
     });
 
-    it('extractAuthor() still prefers rawPayload.author over issuer/source.name, and falls back to null when none are present (real connector shapes never mix these fields — precedence only matters for this direct unit test)', async () => {
+    // 2026-08-20, same-day follow-up: same shape again — social-listening-
+    // core's pollFacebook.ts now denormalizes pageId/pageName into
+    // rawPayload (found-live gap, fixed at the source), so extractAuthor()
+    // needed the matching pageName branch. FACEBOOK_POST's own fixture was
+    // updated in place above to carry pageName, matching the real, current
+    // rawPayload shape.
+    it("extractAuthor() returns rawPayload.pageName for a Facebook-shaped post (ADR-0059 Decision §5 'Page is the Author', found-live regression, dated note above)", async () => {
+      const { extractAuthor } = await import('../../src/app/tenant/posts/postDisplay');
+      expect(extractAuthor(FACEBOOK_POST.rawPayload)).toBe('Acme Widgets Co.');
+    });
+
+    it("extractUrl() returns rawPayload.permalink_url for a Facebook-shaped post (found-live regression, dated note on extractUrl() itself)", async () => {
+      const { extractUrl } = await import('../../src/app/tenant/posts/postDisplay');
+      expect(extractUrl(FACEBOOK_POST.rawPayload)).toBe('https://facebook.com/1/posts/ext-4');
+    });
+
+    it('extractAuthor() still prefers rawPayload.author over issuer/pageName/source.name, and falls back to null when none are present (real connector shapes never mix these fields — precedence only matters for this direct unit test)', async () => {
       const { extractAuthor } = await import('../../src/app/tenant/posts/postDisplay');
       expect(extractAuthor({ author: 'Direct Author', issuer: 'Some Wire' })).toBe('Direct Author');
       expect(extractAuthor({ source: { name: 'GNews Source' } })).toBe('GNews Source');
