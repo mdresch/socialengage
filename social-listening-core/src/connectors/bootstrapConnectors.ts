@@ -10,12 +10,16 @@ import { azureAiLanguageConnector } from './azureAiLanguage/azureAiLanguageConne
 import { azureOpenAiConnector } from './azureOpenAi/azureOpenAiConnector';
 import { facebookConnector } from './facebook/facebookConnector';
 import { pollFacebook } from './facebook/pollFacebook';
+import { braveSearchConnector } from './braveSearch/braveSearchConnector';
+import { pollBraveSearch } from './braveSearch/pollBraveSearch';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 /** ADR-0050's own already-decided tenant-owned-feed cadence — not re-litigated here. */
 const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+/** ADR-0065 quota-safe active watchlist search cadence — 1 hour default. */
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
  * Story 1.13 (ADR-0052 Decision §3) — the one real production call site
@@ -86,6 +90,14 @@ export function bootstrapConnectors(): void {
     ...facebookConnector,
     pollUser: pollFacebook,
     pollCadenceMs: THIRTY_MINUTES_MS,
+  });
+
+  // Story 2.21 (ADR-0065) — Active watchlist sourcing via Brave Search API.
+  // 1-hour default cadence balances discovery freshness against search quota.
+  registerSocialConnector({
+    ...braveSearchConnector,
+    poll: (tenantId: string) => pollBraveSearch(tenantId),
+    pollCadenceMs: ONE_HOUR_MS,
   });
 
   registerAIProviderConnector(azureAiLanguageConnector);

@@ -2808,6 +2808,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Optimized Shell Post Listing (`page.tsx` in admin):** Streamlined initial tenant shell posts query.
 - **Fixed Test Database Name in Global Setup (`jest.global-setup.js`):** Forced `PGDATABASE = 'social_listening_test'` so `.env`'s `PGDATABASE=social_listening_dev` does not override test database selection.
 
+---
+
+## 2026-08-20 — Story 2.21: Active Watchlist Sourcing via Brave Search API — socialengage@4df8d6d
+
+- **Full commit:** `4df8d6d9d4ed670bf52b586059ee2705e8c43b21`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.21 / ADR-0065 (Active Watchlist Sourcing via Brave Search API: Polling connector, query transformation, and junction linking)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.21.brave-search-active-watchlist-connector.contract.test.ts (13/13 passed)
+- **SKILL.md:** social-listening-core/.claude/skills/brave-search-connector/SKILL.md (new)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.21.brave-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchQueryBuilder.ts, social-listening-core/src/connectors/braveSearch/pollBraveSearch.ts
+- **Full suite at merge:** PASS (13/13 tests in Story 2.21 contract; 18/18 tests in Story 2.10 contract; typecheck clean with 0 errors)
+
+**Delivered Story 2.21 following the contract-first methodology per ADR-0065:**
+- **Connector Definition & Normalization (`braveSearchConnector.ts`, AC1):** Exported `braveSearchConnector` implementing `SocialConnector` with `providerId: 'brave-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, and `supportedQueryFeatures: ['AND', 'OR', 'NOT', 'TERM']`. Implemented `canonicalizeUrl` to strip tracking params (`utm_*`, `fbclid`, etc.) and `extractDomainFromUrl`.
+- **Active Watchlist Query Transformation (`braveSearchQueryBuilder.ts`, AC2):** Constructed tailored search expressions from `Watchlist` terms (OR-joined quoted expressions for keyword/hashtag/account or raw boolean query string).
+- **Dual Discovery & In-Process AST Validation (`braveSearchQueryBuilder.ts`, AC3):** Added `validateCandidateMatch()` evaluating candidate title + snippet against the watchlist's exact AST filter rules before ingestion to prevent false-positive drift.
+- **Publication / Domain as Author (`pollBraveSearch.ts`, AC4):** Mapped domain name as Author (`brave-search:<domain>`), keeping `followerCount` unpopulated per ADR-0004/ADR-0026 generalization.
+- **Deduplication & Multi-Watchlist Junction Linking (`pollBraveSearch.ts`, AC5):** Inserted `social_posts` deduplicating on canonical URL and persisted junction pairs into `post_watchlist_matches` via `publishSocialPostIngestedEvents()`.
+- **Sequential 1.2s Pacing Loop & Rate Limiting (`pollBraveSearch.ts`, AC2/AC6):** Enforced 1.2-second pacing delay between watchlist queries to adhere to Brave Search's 1 req/sec limit. Classified errors into `http_401`, `http_403`, `rate_limit`, `http_5xx`, and `network`.
+- **Bootstrap Registration (`bootstrapConnectors.ts`, AC1):** Registered `braveSearchConnector` with 1-hour polling cadence in `bootstrapConnectors()`. Verified registration transparency via `story-2.10.connector-registration-transparency.contract.test.ts`.
+
+
 
 
 

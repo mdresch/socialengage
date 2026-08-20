@@ -450,7 +450,7 @@
 
 ## Story 2.21 — Active Watchlist Sourcing via Brave Search API: Polling connector, query transformation, and junction linking
 
-**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
 
 **As a** Tenant User or Tenant-Admin,

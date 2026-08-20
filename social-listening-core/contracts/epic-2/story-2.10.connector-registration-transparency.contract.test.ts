@@ -114,6 +114,13 @@ const REAL_CONNECTORS: RealConnector[] = [
     kind: 'social',
     skillPath: '.claude/skills/wikipedia-connector/SKILL.md',
   },
+  // 2026-08-20 (Story 2.21, ADR-0065) — extended for Brave Search active watchlist sourcing connector.
+  {
+    name: 'Brave Search',
+    providerId: 'brave-search',
+    kind: 'social',
+    skillPath: '.claude/skills/brave-search-connector/SKILL.md',
+  },
 ];
 
 function readCore(relativePath: string): string {
