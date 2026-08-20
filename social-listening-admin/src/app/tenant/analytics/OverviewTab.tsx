@@ -809,13 +809,19 @@ function WatchlistCoverageWidget({
   }
 
   const coverageMap = new Map(coverage.map((c) => [c.id, c.count]));
-  const data = activeWatchlists.map((w, idx) => ({
-    id: w.id,
-    name: w.name,
-    matchType: w.matchType,
-    count: coverageMap.get(w.id) ?? 0,
-    color: COVERAGE_COLORS[idx % COVERAGE_COLORS.length],
-  }));
+  const data = activeWatchlists
+    .map((w) => ({
+      id: w.id,
+      name: w.name,
+      matchType: w.matchType,
+      count: coverageMap.get(w.id) ?? 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 6)
+    .map((item, idx) => ({
+      ...item,
+      color: COVERAGE_COLORS[idx % COVERAGE_COLORS.length],
+    }));
 
   const chartData = data.filter((d) => d.count > 0);
 

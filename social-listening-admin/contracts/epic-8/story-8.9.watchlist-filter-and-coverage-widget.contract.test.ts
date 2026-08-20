@@ -259,6 +259,70 @@ describe('Story 8.9 — selectedTopic watchlist filter and Watchlist Coverage wi
       expect(html).toContain('0');
     });
 
+    it('sorts watchlists descending by post count and limits display to top 6 items', () => {
+      const eightWatchlists: Watchlist[] = Array.from({ length: 8 }, (_, i) => ({
+        id: `wl-${i + 1}`,
+        tenantId: 't-1',
+        name: `Topic ${i + 1}`,
+        matchType: 'keyword',
+        terms: [`term${i + 1}`],
+        platformIds: ['gnews'],
+        isActive: true,
+        version: 1,
+        createdAt: '2026-08-01T00:00:00Z',
+        updatedAt: '2026-08-01T00:00:00Z',
+      }));
+
+      const coverage: WatchlistCoverageEntry[] = [
+        { id: 'wl-1', name: 'Topic 1', matchType: 'keyword', count: 10 },
+        { id: 'wl-2', name: 'Topic 2', matchType: 'keyword', count: 50 },
+        { id: 'wl-3', name: 'Topic 3', matchType: 'keyword', count: 30 },
+        { id: 'wl-4', name: 'Topic 4', matchType: 'keyword', count: 5 },
+        { id: 'wl-5', name: 'Topic 5', matchType: 'keyword', count: 100 },
+        { id: 'wl-6', name: 'Topic 6', matchType: 'keyword', count: 20 },
+        { id: 'wl-7', name: 'Topic 7', matchType: 'keyword', count: 2 },
+        { id: 'wl-8', name: 'Topic 8', matchType: 'keyword', count: 1 },
+      ];
+
+      const html = renderComponent(
+        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'analytics', 'OverviewTab.tsx'),
+        'OverviewTab',
+        {
+          summary: {
+            totalPosts: 218,
+            sentimentSplit: { positive: 100, neutral: 100, negative: 18 },
+            sources: [],
+            sentimentHistory: [],
+            topFans: [],
+            topCritics: [],
+            positivePhrases: [],
+            negativePhrases: [],
+            phraseFrequency: [],
+            phraseHistory: [],
+            volumeHistory: [{ date: '2026-08-19', count: 218 }],
+            languages: [],
+            sourceVolumeHistory: [],
+            posts: [],
+          },
+          range: { startDate: '2026-08-01', endDate: '2026-08-20' },
+          watchlists: eightWatchlists,
+          watchlistCoverage: coverage,
+        }
+      );
+
+      // Check within the Watchlist Coverage widget specifically
+      const coverageWidgetHtml = html.substring(html.indexOf('id="widget-watchlist-coverage"'));
+      expect(coverageWidgetHtml).toContain('Topic 5');
+      expect(coverageWidgetHtml).toContain('Topic 2');
+      expect(coverageWidgetHtml).toContain('Topic 3');
+      expect(coverageWidgetHtml).toContain('Topic 6');
+      expect(coverageWidgetHtml).toContain('Topic 1');
+      expect(coverageWidgetHtml).toContain('Topic 4');
+      // 7th and 8th items (Topic 7: 2, Topic 8: 1) are omitted from the coverage widget legend
+      expect(coverageWidgetHtml).not.toContain('<span class="an-coverage-name">Topic 7</span>');
+      expect(coverageWidgetHtml).not.toContain('<span class="an-coverage-name">Topic 8</span>');
+    });
+
     it('renders EmptyState when there are no active watchlists', () => {
       const html = renderComponent(
         path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'analytics', 'OverviewTab.tsx'),
