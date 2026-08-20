@@ -253,3 +253,51 @@
 5. **No breaking changes:** `GET /v1/posts?watchlistId=<id>` response shape, RLS policies, and error handling remain unchanged.
 
 **Explicitly out of scope:** Automatic re-matching triggers on live watchlist term update (ADR-0063 Open Question 2 — accepted staleness at v1; can be invoked via manual backfill if needed); any change to `social-listening-admin`.
+
+---
+
+## Story 3.13 — Post Enrichment Overrides API and Re-Enrichment Precedence Guard
+
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 1.1 (Posts router and RLS context), Story 2.20 (Geospatial enrichment normalization), Story 3.5 (Post storage schema), Story 3.8 (AI Language enrichment)
+
+**As a** core backend engineer,
+**I want** a `PATCH /v1/posts/:id/enrichment` endpoint allowing authorized tenant users to modify post enrichment attributes with full audit lineage, and an explicit re-enrichment precedence guard,
+**so that** human corrections are immediately reflected across the system while preventing automated AI re-runs from silently overwriting human edits.
+
+**Acceptance Criteria**
+
+1. **Enrichment Update Endpoint (`PATCH /v1/posts/:id/enrichment`):**
+   - Implemented in `postsRouter.ts`, authenticated with bearer session, and scoped by PostgreSQL Row-Level Security (`tenant_id`). Authorized for `tenant_user` and `tenant_admin` roles.
+   - Accepts request payload `UpdatePostEnrichmentRequest`:
+     - `sentiment?: 'positive' | 'neutral' | 'negative'`
+     - `sentimentScore?: number` (optional float clamped between `0.0..1.0`)
+     - `keyPhrases?: string[]` (allows empty array `[]`)
+     - `detectedLanguage?: string | null`
+     - `geoCountry?: string | null`
+     - `geoCountryName?: string | null`
+     - `summary?: string | null`
+2. **Payload Validation & Sanitization:**
+   - **Sentiment Score Consistency:** If `sentiment` is modified and `sentimentScore` is omitted, the backend auto-assigns a default score (`positive` → `0.8`, `neutral` → `0.5`, `negative` → `0.2`).
+   - **Key Phrases Sanitization:** Strips HTML, trims whitespace, removes empty entries, deduplicates case-insensitively while preserving first-seen casing, caps at max 50 phrases and max 200 chars per phrase.
+   - **Language Validation:** Validates `detectedLanguage` against ISO 639-1 two-letter lowercase allowlist or `null`. Rejects invalid codes with `400 Bad Request`.
+   - **Geospatial Cross-Field Validation:** Normalizes `geoCountry` to uppercase ISO 3166-1 alpha-2 or `null`. If `geoCountry` is `null`, clears `geoCountryName` to `null`. If `geoCountry` is set, resolves/validates `geoCountryName`.
+3. **Audit History & Override Schema:**
+   - Updates `social_posts.enrichment` in-place.
+   - Sets `enrichment.override`:
+     - `isOverridden: true`
+     - `overriddenAt: string` (ISO 8601 UTC)
+     - `overriddenByUserId: string` (from authenticated session)
+     - `overriddenFields: string[]` (exact list of keys modified in this request)
+     - `originalValues: Record<string, any>` (snapshot of initial values prior to the first human override)
+     - `aiHistory: Array<{ generatedAt: string, model?: string, values: Record<string, any> }>` (preserves prior automated outputs)
+4. **Re-Enrichment Precedence Guard (`POST /v1/posts/:id/enrich` & AI Runners):**
+   - Any re-enrichment operation checks `enrichment->'override'->>'isOverridden'`.
+   - If `isOverridden === true` and `force !== true`: rejects with **`409 Conflict`** and payload `{ error: 'Post enrichment has been manually overridden', code: 'ENRICHMENT_MANUALLY_OVERRIDDEN', override: {...} }`.
+   - If `force === true`: overwrites top-level values, archives previous AI values into `override.aiHistory[]`, updates `override.originalValues` to the new AI output, and resets `override.isOverridden = false`.
+5. **Response & Error Handling:**
+   - Returns HTTP `200 OK` with full updated `SocialPostSummary`.
+   - Returns `404 Not Found` if the post ID does not exist or belongs to another tenant.
+
+**Explicitly out of scope:** Admin UI components (Story 6.31); batch enrichment endpoint (deferred).
+

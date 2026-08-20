@@ -754,6 +754,48 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** Billing/reselling Brave Search credits (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.21).
 
+---
+
+## Story 6.31 — Human-in-the-Loop Post Enrichment Cascading Edit Drawer
+
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 3.13 (Post enrichment override API & precedence guard in `social-listening-core`), Story 6.15 (Post detail panel), Story 6.16 (Post enrichment display & re-enrichment action)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** to click an edit button on the post details enrichment card to open an Enrichment Details drawer side-by-side with the post,
+**so that** I can correct sentiment, add/remove key phrases, and update country or language attributes with real-time feedback and audit history.
+
+**Acceptance Criteria**
+
+- **Edit Trigger on Enrichment Card (`PostDetailPanel.tsx`):**
+  - Renders an edit icon button (`aria-label="Edit enrichment details"`, pencil icon) in the header of the AI Enrichment card.
+  - Clicking "Edit" opens the secondary `EnrichmentEditDrawer` without dismissing the active post drawer.
+- **Cascading Multi-Drawer Layout & Responsive Behavior:**
+  - **Large Viewports (`>= 1200px`):** The primary `PostDetailPanel` translates leftward smoothly (`transform: translateX(-420px)` or side-by-side container) while `EnrichmentEditDrawer` slides in flush to the right viewport edge.
+  - **Compact Viewports (`< 1200px`):** `EnrichmentEditDrawer` renders as a full-width overlay over the post panel with a back navigation arrow returning to the post details view.
+- **Enrichment Form Controls (`EnrichmentEditDrawer.tsx`):**
+  - **Sentiment Segmented Control:** Interactive toggle buttons for `Positive` (green), `Neutral` (slate), `Negative` (red).
+  - **Key Phrases Tag Editor:** Tag pills with remove (`×`) buttons, plus a text input and "+ Add" button to append new phrases (with duplicate prevention and max 50 phrase ceiling).
+  - **Language Selector:** Dropdown of standard ISO 639-1 languages.
+  - **Country / Region Selector:** Country dropdown supporting ISO 3166-1 alpha-2 codes or "Unknown / Unmapped".
+  - **Summary / Notes Field:** Multi-line textarea for analyst notes / corrected summary (max 1,000 characters).
+- **Optimistic Update, Submission, & Rollback:**
+  - Submitting "Save Changes" invokes `PATCH /api/posts/[id]/enrichment` (Next.js proxy route) with the modified fields.
+  - Optimistically updates the post's enrichment in `PostsFeedClient` and closes the secondary edit drawer.
+  - While saving, the button shows a loading spinner and is disabled against double-clicks.
+  - On failure, rolls back local state and displays an error toast notification.
+- **Visual "Edited by user" Badge & Lineage Indicator:**
+  - When a post has `enrichment.override.isOverridden === true`, the enrichment card displays an amber/blue "Edited by user" pill badge with a tooltip showing who edited the post and when (`overriddenAt`).
+- **Accessibility (a11y) & Keyboard Flow:**
+  - Both drawers carry `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`.
+  - Focus is trapped within `EnrichmentEditDrawer` while open.
+  - Pressing `Escape` closes **only** the `EnrichmentEditDrawer`, returns the primary post drawer to resting position, and returns focus to the Edit button.
+- **Re-Enrichment Conflict Handling:**
+  - If a user triggers `RunEnrichmentButton` on an overridden post, a confirmation modal is shown before proceeding.
+  - Confirming passes `force: true` to `/api/posts/[id]/enrich`.
+
+**Explicitly out of scope:** Batch multi-post enrichment editing (deferred); custom training-set export UI.
+
 
 ---
 
