@@ -838,6 +838,37 @@ interface AuthorsBySourceWidgetProps {
   onRowClick: (providerId: string) => void;
 }
 
+function getPlatformColor(providerId: string): string {
+  const norm = providerId.toLowerCase().replace(/_/g, '-');
+  switch (norm) {
+    case 'gnews':
+    case 'google-news':
+      return '#059669';
+    case 'newswire':
+      return '#4f46e5';
+    case 'wikipedia':
+      return '#374151';
+    case 'facebook':
+    case 'meta':
+      return '#1877f2';
+    case 'tenant-owned-feed':
+    case 'rss':
+    case 'blog':
+      return '#ea580c';
+    case 'x':
+    case 'twitter':
+      return '#0ea5e9';
+    case 'linkedin':
+      return '#0a66c2';
+    case 'youtube':
+      return '#ef4444';
+    case 'instagram':
+      return '#e1306c';
+    default:
+      return '#2563eb';
+  }
+}
+
 function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsBySourceWidgetProps) {
   let offset = 0;
   return (
@@ -846,7 +877,7 @@ function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsByS
         <circle cx="40" cy="40" r={AUTHORS_DONUT_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="6" />
         {summary.totalUniqueAuthors === 0
           ? null
-          : summary.bySource.map((source, i) => {
+          : summary.bySource.map((source) => {
               if (source.uniqueAuthorCount === 0) return null;
               const length = (source.uniqueAuthorCount / summary.totalUniqueAuthors) * AUTHORS_DONUT_CIRCUMFERENCE;
               const dashOffset = -offset;
@@ -858,7 +889,7 @@ function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsByS
                   cy="40"
                   r={AUTHORS_DONUT_RADIUS}
                   fill="none"
-                  stroke={SOURCE_DONUT_COLORS[i % SOURCE_DONUT_COLORS.length]}
+                  stroke={getPlatformColor(source.providerId)}
                   strokeWidth="6"
                   strokeDasharray={`${length} ${AUTHORS_DONUT_CIRCUMFERENCE - length}`}
                   strokeDashoffset={dashOffset}
@@ -878,7 +909,12 @@ function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsByS
               className={`an-author-row${activeSource === source.providerId ? ' an-author-row-active' : ''}`}
               onClick={() => onRowClick(source.providerId)}
             >
-              <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
+              <div className="an-source-identity">
+                <span className={`an-source-icon an-source-icon-${source.providerId}`}>
+                  <PlatformSourceIcon providerId={source.providerId} />
+                </span>
+                <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
+              </div>
               <span className="an-author-count">{source.uniqueAuthorCount}</span>
             </button>
           </li>
