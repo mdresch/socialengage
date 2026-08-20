@@ -16,12 +16,14 @@ description: SocialPost's enrichment JSONB blob and publishedAt column for socia
 | ADR-0008 | Defer `TopicDailyCount` aggregation and all charting to a future subsystem; rely on `enrichment.entities`/`keyPhrases` and `publishedAt` already being captured and queryable on `SocialPost` | 4.2 |
 | ADR-0038 | The real provider whose output actually fills `enrichment` — Azure AI Language, via `enrichPost()` (`.claude/skills/azure-ai-language-connector/SKILL.md`), wired into both GNews's and Newswire's own ingest functions ahead of `insertSocialPost()` | 2.8 |
 | ADR-0064 | Country-level geospatial extraction and normalization (`geoCountry`, `geoCountryName`, `geoRegion`, `geoSource`, `geoConfidence`) inside `enrichment` JSONB blob, with provenance and confidence tracking | 2.20 |
+| ADR-0071 | Human-in-the-Loop Post Enrichment Overrides API (`PATCH /v1/posts/:id/enrichment`), `enrichment.override` audit metadata lineage, and 409 Conflict automated re-enrichment precedence guard | 3.13 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts` — a `SocialPost` carries `publishedAt`/`enrichment.entities`/`enrichment.keyPhrases`, queryable both via a direct SQL read and via `listSocialPosts()`'s existing read path; no `topic_daily_count`-like table/view exists and no charting-style route is mounted; a raw SQL query grouping `social_posts` by `published_at`'s day and each entity's own `text` reconstructs exact per-day-per-topic counts, proving the captured data is sufficient for a future subsystem without this one computing the aggregation itself. **Updated 2026-08-10 (Story 2.8, dated note in the contract's own header):** `entities` widened from `string[]` to `{text,category,confidenceScore}[]` — the AC3 query now uses `jsonb_array_elements` + `->>'text'`, not `jsonb_array_elements_text`.
 - `contracts/epic-2/story-2.8.azure-ai-language-connector.contract.test.ts` — the real pipeline that actually populates these fields now. Not re-proven here; this component's own contract only proves the schema/read-path are correct given data that exists.
 - `contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts` — country-level geospatial extraction and normalization across GNews, Newswire, and tenant-owned-feed, populating `geoCountry`, `geoCountryName`, `geoSource`, and `geoConfidence` within `enrichment` with zero DB migrations.
+- `contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts` — verifies `PATCH /v1/posts/:id/enrichment` updates sentiment, sentimentScore, keyPhrases, detectedLanguage, geoCountry, summary, persists `enrichment.override` audit lineage, and enforces `409 Conflict` on `POST /v1/posts/:id/enrich` when `isOverridden === true` unless `force: true` is passed.
 
 ## How to extend this safely
 

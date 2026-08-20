@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { listSocialPosts, getSocialPostById, deriveEnrichmentText, setPostEnrichment } from '../../../posts/socialPostStore';
+import {
+  listSocialPosts,
+  getSocialPostById,
+  deriveEnrichmentText,
+  setPostEnrichment,
+  updatePostEnrichment,
+} from '../../../posts/socialPostStore';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import { enrichPost } from '../../../connectors/azureAiLanguage/enrichPost';
 import { getWatchlistById } from '../../../watchlists/watchlistStore';
@@ -68,15 +74,31 @@ postsRouter.get('/:id', async (req, res) => {
 });
 
 /**
- * Story 6.16 — manually (re-)run enrichment for one already-ingested post,
- * for the case Story 6.11's own detail screen surfaced live: a post
- * ingested before any AI provider was credentialed and active stays
- * enrichment: null forever, since enrichPost() is otherwise only ever
- * called inline during ingestion. Same requireTenantUser() identity
- * source and 404-on-unknown/cross-tenant behavior as the GET route above.
- * enrichPost() resolving to undefined (no provider currently connected) is
- * a real, honest 200 with enrichment left null — not an error status; see
- * .claude/skills/posts-api/SKILL.md.
+ * Story 3.13 (ADR-0071) — Human-in-the-Loop post enrichment overrides.
+ * Updates sentiment, keyPhrases, detectedLanguage, geoCountry, and summary
+ * with audit lineage.
+ */
+postsRouter.patch('/:id/enrichment', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId } = identity;
+
+  try {
+    const updated = await updatePostEnrichment(tenantId, req.params.id, userId, req.body);
+    if (!updated) {
+      res.status(404).json({ error: 'Not found.' });
+      return;
+    }
+    res.json(updated);
+  } catch (err: any) {
+    const code = err?.message || 'BAD_REQUEST';
+    res.status(400).json({ error: err?.message || 'Invalid payload', code });
+  }
+});
+
+/**
+ * Story 6.16 & Story 3.13 (ADR-0071) — manually (re-)run enrichment for one already-ingested post.
+ * Enforces a 409 Conflict guard if the post has been manually overridden unless force: true is passed.
  */
 postsRouter.post('/:id/enrich', async (req, res) => {
   const tenantId = requireTenantUser(req, res);
@@ -88,12 +110,43 @@ postsRouter.post('/:id/enrich', async (req, res) => {
     return;
   }
 
+  const existingEnrichment = (post.enrichment as Record<string, any>) || {};
+  const override = existingEnrichment.override;
+
+  // Story 3.13 precedence guard: 409 Conflict if manually overridden without force
+  if (override?.isOverridden && req.body?.force !== true) {
+    res.status(409).json({
+      error: 'Post enrichment has been manually overridden',
+      code: 'ENRICHMENT_MANUALLY_OVERRIDDEN',
+      override,
+    });
+    return;
+  }
+
   const text = deriveEnrichmentText(post.rawPayload);
   const enrichment = await enrichPost(tenantId, text);
 
   if (enrichment) {
-    await setPostEnrichment(tenantId, post.id, enrichment as unknown as Record<string, unknown>);
-  }
+    let finalEnrichment: Record<string, any> = { ...enrichment };
+    if (override) {
+      const aiHistory = override.aiHistory ? [...override.aiHistory] : [];
+      aiHistory.push({
+        generatedAt: new Date().toISOString(),
+        model: (enrichment as any).modelUsed ?? (enrichment as any).model,
+        values: { ...enrichment },
+      });
 
-  res.json({ ...post, enrichment: enrichment ?? null });
+      finalEnrichment.override = {
+        ...override,
+        isOverridden: false,
+        originalValues: { ...enrichment },
+        aiHistory,
+      };
+    }
+    await setPostEnrichment(tenantId, post.id, finalEnrichment);
+    res.json({ ...post, enrichment: finalEnrichment });
+  } else {
+    res.json({ ...post, enrichment: post.enrichment ?? null });
+  }
 });
+
