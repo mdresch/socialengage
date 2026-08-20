@@ -58,6 +58,7 @@ interface OverviewTabProps {
   watchlists?: Watchlist[];
   watchlistCoverage?: WatchlistCoverageEntry[];
   onWatchlistChange?: (watchlistId: string | null) => void;
+  dateRangePicker?: React.ReactNode;
 }
 
 const SENTIMENT_COLORS = { positive: '#15803d', neutral: '#64748b', negative: '#dc2626' };
@@ -124,6 +125,7 @@ export function OverviewTab({
   watchlists = [],
   watchlistCoverage = [],
   onWatchlistChange,
+  dateRangePicker,
 }: OverviewTabProps) {
   const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
   const [forecastOn, setForecastOn] = useState(false);
@@ -299,14 +301,19 @@ export function OverviewTab({
           </select>
         </div>
 
-        <button
-          type="button"
-          id="widget-filtered-post-count"
-          className="an-filtered-count-btn"
-          onClick={() => setDrawerOpen(true)}
-        >
-          {filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}
-        </button>
+        <div className="an-overview-header-right">
+          {dateRangePicker}
+
+          <button
+            type="button"
+            id="widget-filtered-post-count"
+            className="an-filtered-count-btn"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <span>{filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}</span>
+            <span className="an-post-drawer-tag">POSTS ›</span>
+          </button>
+        </div>
       </div>
 
       {chips.length > 0 && (

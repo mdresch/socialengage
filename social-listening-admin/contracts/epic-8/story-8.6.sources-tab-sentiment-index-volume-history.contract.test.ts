@@ -67,6 +67,7 @@ function post(id: string, providerId: string, publishedAt: string | null, sentim
     createdAt: '2026-08-01T00:00:00.000Z',
     publishedAt,
     enrichment: sentiment ? { sentiment, keyPhrases: [], entities: [] } : null,
+    bodyMarkdown: null,
     rawPayload: { providerId, title: `Post ${id}` },
   };
 }

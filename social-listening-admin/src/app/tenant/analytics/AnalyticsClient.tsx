@@ -132,7 +132,9 @@ export function AnalyticsClient({
             Post volume, sentiment, and source breakdown for {range.startDate} to {range.endDate}
           </p>
         </div>
-        <GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />
+        {activeTab !== 'overview' && (
+          <GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />
+        )}
       </div>
 
       <div className="an-tabs" role="tablist" aria-label="Analytics views">
@@ -164,6 +166,7 @@ export function AnalyticsClient({
             watchlists={watchlists}
             watchlistCoverage={coverage}
             onWatchlistChange={handleWatchlistChange}
+            dateRangePicker={<GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />}
           />
         )}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}

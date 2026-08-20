@@ -200,6 +200,7 @@ export function flattenPost(post: SocialPostSummary): FlatPost {
   const { title, snippet } = extractDisplayText(post.rawPayload);
   return {
     ...post,
+    bodyMarkdown: post.bodyMarkdown ?? null,
     title,
     snippet,
     provider: extractProviderBadge(post.rawPayload),
