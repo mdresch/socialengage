@@ -492,7 +492,7 @@
 
 ## Story 2.22 — Active Watchlist Sourcing via Bing Search API (Azure): Polling connector, candidate evaluation cap, and URL canonicalisation
 
-**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
 
 **As a** Tenant User or Tenant-Admin,

@@ -2846,6 +2846,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Status Screen Integration (`status/page.tsx`, AC3):** Added `brave-search` to `PLATFORMS` in category `Ingestion` with `tenantScopeAllowed: true` and Tier-2 scoping.
 - **Watchlist Platform Source Connection (`watchlists/page.tsx`, AC4):** Added `brave-search` to `SOCIAL_PLATFORMS` (`authMode: 'api_key'`), enabling tenants to select Brave Search as a platform source once connected.
 
+---
+
+## 2026-08-21 — Story 2.22: Active Watchlist Sourcing via Bing Search API (Azure) — socialengage@bb34673
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.22 / ADR-0066 (Active Watchlist Sourcing via Bing Search API (Azure))
+- **Contract:** social-listening-core/contracts/epic-2/story-2.22.bing-search-active-watchlist-connector.contract.test.ts (13/13 passed)
+- **SKILL.md:** social-listening-core/.claude/skills/bing-search-connector/SKILL.md (new)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.22.bing-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/bingSearch/bingSearchQueryBuilder.ts, social-listening-core/src/connectors/bingSearch/pollBingSearch.ts, social-listening-core/src/connectors/bootstrapConnectors.ts
+- **Full suite at merge:** PASS (13/13 in story-2.22, 20/20 in story-2.10; typecheck clean with 0 errors)
+
+**Delivered Story 2.22 following the contract-first methodology per ADR-0066:**
+- **Connector Definition & Normalization (`bingSearchConnector.ts`, AC1):** Implemented `SocialConnector` for `bing-search` (`authMode: 'api_key'`, `deliveryMode: 'poll'`). Added `canonicalizeUrl()` (stripping `utm_*`, `fbclid`, `gclid`, `msclkid`, `ref`, `source`, standardizing scheme/host, and stripping fragments), `extractDomainFromUrl()`, `lookbackToFreshness()`, and `parsePublicationDate()`.
+- **Active Watchlist Query Transformation (`bingSearchQueryBuilder.ts`, AC2):** Constructed Bing search queries per watchlist match type (OR-joined quoted expressions for keyword/hashtag/account or boolean query expression).
+- **Dual Discovery & In-Process AST Validation (`bingSearchQueryBuilder.ts`, AC2):** Implemented `validateCandidateMatch()` evaluating candidate title + snippet against watchlist AST filter rules before ingestion (100% precision guarantee).
+- **Deterministic Auto Fallback & Freshness (`pollBingSearch.ts`, AC3):** Sourced candidates via `/v7.0/news/search` first; if $< 5$ validated candidates were found, automatically fell back to `/v7.0/search` (Web) in the same cycle. Set `freshness` (`Day`, `Week`, `Month`) based on lookback.
+- **Publication / Domain as Author (`pollBingSearch.ts`, AC4):** Mapped base domain as Author (`bing-search:<domain>`) with provider name as `displayName`, keeping `followerCount` unpopulated per ADR-0004.
+- **Deduplication, Junction Linking & Cost Telemetry (`pollBingSearch.ts`, AC5):** Deduplicated posts on canonical URL, ingested into `social_posts`, and linked to `post_watchlist_matches` via `publishSocialPostIngestedEvents()`. Calculated tenant-scoped Azure search telemetry and transaction cost ($14.00 per 1,000 transactions = $0.014/call).
+- **Sequential Pacing Loop & Error Classification (`pollBingSearch.ts`, AC6):** Paced queries sequentially across active watchlists with 1.2s delay. Classified API errors into `http_401`, `http_403`, `rate_limit`, `http_5xx`, and `network`.
+- **Bootstrap Registration (`bootstrapConnectors.ts`, AC7):** Registered `bingSearchConnector` in `bootstrapConnectors()` with 1-hour polling cadence. Verified registration transparency via `story-2.10.connector-registration-transparency.contract.test.ts`.
+
+
 
 
 

@@ -121,6 +121,13 @@ const REAL_CONNECTORS: RealConnector[] = [
     kind: 'social',
     skillPath: '.claude/skills/brave-search-connector/SKILL.md',
   },
+  // 2026-08-21 (Story 2.22, ADR-0066) — extended for Bing Search API active watchlist sourcing connector.
+  {
+    name: 'Bing Search',
+    providerId: 'bing-search',
+    kind: 'social',
+    skillPath: '.claude/skills/bing-search-connector/SKILL.md',
+  },
 ];
 
 function readCore(relativePath: string): string {

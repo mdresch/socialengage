@@ -12,6 +12,8 @@ import { facebookConnector } from './facebook/facebookConnector';
 import { pollFacebook } from './facebook/pollFacebook';
 import { braveSearchConnector } from './braveSearch/braveSearchConnector';
 import { pollBraveSearch } from './braveSearch/pollBraveSearch';
+import { bingSearchConnector } from './bingSearch/bingSearchConnector';
+import { pollBingSearch } from './bingSearch/pollBingSearch';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
@@ -97,6 +99,14 @@ export function bootstrapConnectors(): void {
   registerSocialConnector({
     ...braveSearchConnector,
     poll: (tenantId: string) => pollBraveSearch(tenantId),
+    pollCadenceMs: ONE_HOUR_MS,
+  });
+
+  // Story 2.22 (ADR-0066) — Active watchlist sourcing via Bing Search API (Azure).
+  // 1-hour default cadence balances discovery freshness against Azure search quota.
+  registerSocialConnector({
+    ...bingSearchConnector,
+    poll: (tenantId: string) => pollBingSearch(tenantId),
     pollCadenceMs: ONE_HOUR_MS,
   });
 
