@@ -239,7 +239,7 @@
 
 ## Story 8.10 — Location & Geospatial Insights: Country aggregation, Top Countries widget, and SVG Choropleth Map
 
-**Source:** ADR-0064 (Accepted 2026-08-19) · **Status:** Ready
+**Source:** ADR-0064 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
 **Built:** 2026-08-20 — social-listening-admin@75a0a4a
 **Depends on:** Story 2.20 (Country-level geospatial enrichment in `social-listening-core`); Story 8.7 (Overview tab 3-column grid and filter model)
 

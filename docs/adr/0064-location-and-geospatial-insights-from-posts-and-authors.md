@@ -1,6 +1,8 @@
 # ADR-0064: Location and geospatial insights from posts and authors
 
-**Status:** Proposed (2026-08-19)
+**Status:** Accepted (2026-08-20)
+
+**Accepted by Menno 2026-08-20.** Resolves the Location Insights gap from ADR-0054/ADR-0055/ADR-0062 via country-level ISO 3166-1 alpha-2 normalization stored in `social_posts.enrichment` JSONB without schema migration. **Story 8.10** (`docs/user-stories/epic-8-analytics-dashboard.md`) is implemented and verified in `social-listening-admin@75a0a4a`.
 
 **Source:** Follow-up to ADR-0054 (Analytics scope/data-source strategy), ADR-0055 (Language and location enrichment feasibility), ADR-0056 (AI-inferred origin location from Newswire dateline text), and ADR-0062 (Analytics Dashboard Overview enhancements). This ADR evaluates the feasibility of collecting, normalising, and surfacing location/geospatial insights in the analytics dashboards using data available from the project's real connectors, and makes the case for a pragmatic, privacy-conscious v1 implementation.
 
@@ -146,4 +148,4 @@ These replace the previously-deferred "Location Insights" widget with a realisti
 
 ---
 
-*Drafted 2026-08-19, updated 2026-08-20 to address the gap identified in ADR-0054 and ADR-0062. Reconciled with ADR-0055 (Language/Location feasibility), ADR-0056 (AI-inferred dateline extraction), and verified against real connector capabilities (gnews, newswire, tenant-owned-feed, facebook) and existing enrichment model. The approach prioritises data realism, privacy, zero-migration schema extension via `enrichment` JSONB, and alignment with the project's "no fabricated data" discipline. Left **Proposed** per project ADR-acceptance authority convention.*
+*Drafted 2026-08-19, updated and accepted 2026-08-20 to address the gap identified in ADR-0054 and ADR-0062. Reconciled with ADR-0055 (Language/Location feasibility), ADR-0056 (AI-inferred dateline extraction), and verified against real connector capabilities (gnews, newswire, tenant-owned-feed, facebook) and existing enrichment model. The approach prioritises data realism, privacy, zero-migration schema extension via `enrichment` JSONB, and alignment with the project's "no fabricated data" discipline. Story 8.10 is fully built and verified in `social-listening-admin`.*
