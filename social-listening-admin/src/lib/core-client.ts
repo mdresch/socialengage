@@ -869,6 +869,8 @@ export interface TenantOwnedFeedActivationDetail {
   tokenExpiresAt: string;
   verifiedAt: string | null;
   createdAt: string;
+  /** Story 6.28 (ADR-0050's 2026-08-20 Amendment Log entry) — optional, tenant-owner-set display label; null when unset (the setup UI falls back to `domain`). */
+  name: string | null;
 }
 
 export interface TenantOwnedFeedActionOutcome {
@@ -891,11 +893,11 @@ export interface TenantOwnedFeedVerifyOutcome {
  * `400` (missing domain/feedUrl) is a real, expected outcome the form must
  * react to specifically, not collapsed into a generic error.
  */
-export async function connectTenantOwnedFeed(domain: string, feedUrl: string): Promise<TenantOwnedFeedConnectOutcome> {
+export async function connectTenantOwnedFeed(domain: string, feedUrl: string, name?: string): Promise<TenantOwnedFeedConnectOutcome> {
   const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/connect', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ domain, feedUrl }),
+    body: JSON.stringify(name ? { domain, feedUrl, name } : { domain, feedUrl }),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
@@ -935,17 +937,24 @@ export async function listTenantOwnedFeedActivations(): Promise<TenantOwnedFeedA
 }
 
 /**
- * Story 6.20 (ADR-0057) — updates `feedUrl` only on an activation
- * (`PATCH /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
- * Returns the raw status/body: a `400` (a request that tried to also send
- * `domain`) and a `404` (unknown id) are both real, expected outcomes the
- * UI must react to specifically, not collapsed into a generic error.
+ * Story 6.20 (ADR-0057) / Story 6.28 (ADR-0050's 2026-08-20 Amendment Log
+ * entry widened this to also accept `name`) — updates `feedUrl` and/or
+ * `name` on an activation (`PATCH /v1/connectors/tenant-owned-feed/:id`,
+ * `tenant_admin` only). `updates` must carry at least one of the two —
+ * the same requirement the backend route now enforces. `name: null`
+ * explicitly clears a previously-set name. Returns the raw status/body: a
+ * `400` (a request that tried to also send `domain`, or supplied neither
+ * field) and a `404` (unknown id) are both real, expected outcomes the UI
+ * must react to specifically, not collapsed into a generic error.
  */
-export async function updateTenantOwnedFeedActivation(id: string, feedUrl: string): Promise<TenantOwnedFeedActionOutcome> {
+export async function updateTenantOwnedFeedActivation(
+  id: string,
+  updates: { feedUrl?: string; name?: string | null }
+): Promise<TenantOwnedFeedActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feedUrl }),
+    body: JSON.stringify(updates),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };

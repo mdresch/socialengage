@@ -4807,6 +4807,12 @@ button:disabled {
   color: var(--color-text-primary);
 }
 
+/* Story 6.28 — the verified domain, shown as a secondary line only once a friendlier name is set (which then takes the primary .tof-item-domain slot above). */
+.tof-item-domain-secondary {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
 .tof-item-feed-url {
   font-family: var(--font-mono);
   font-size: 0.8125rem;

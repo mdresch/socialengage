@@ -12,6 +12,6 @@ import { connectTenantOwnedFeed } from '@/lib/core-client';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const outcome = await connectTenantOwnedFeed(body.domain, body.feedUrl);
+  const outcome = await connectTenantOwnedFeed(body.domain, body.feedUrl, body.name);
   return NextResponse.json(outcome.body, { status: outcome.status });
 }

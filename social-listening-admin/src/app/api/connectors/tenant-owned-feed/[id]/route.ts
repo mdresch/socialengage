@@ -11,7 +11,13 @@ import { updateTenantOwnedFeedActivation, removeTenantOwnedFeedActivation } from
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
-  const outcome = await updateTenantOwnedFeedActivation(id, body.feedUrl);
+  // Story 6.28 — forwards only whichever of feedUrl/name the client
+  // actually sent, so `name: null` (explicit clear) is distinguishable
+  // from "name not being changed" (key absent entirely).
+  const updates: { feedUrl?: string; name?: string | null } = {};
+  if (Object.prototype.hasOwnProperty.call(body, 'feedUrl')) updates.feedUrl = body.feedUrl;
+  if (Object.prototype.hasOwnProperty.call(body, 'name')) updates.name = body.name;
+  const outcome = await updateTenantOwnedFeedActivation(id, updates);
   return NextResponse.json(outcome.body, { status: outcome.status });
 }
 

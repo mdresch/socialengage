@@ -33,10 +33,12 @@ export function TenantOwnedFeedSetup({
   const [connectOpen, setConnectOpen] = useState(false);
   const [domain, setDomain] = useState('');
   const [feedUrl, setFeedUrl] = useState('');
+  const [name, setName] = useState('');
   const [connectError, setConnectError] = useState<string | null>(null);
 
   const [editTarget, setEditTarget] = useState<TenantOwnedFeedActivationDetail | null>(null);
   const [editFeedUrl, setEditFeedUrl] = useState('');
+  const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
 
   const [removeTarget, setRemoveTarget] = useState<TenantOwnedFeedActivationDetail | null>(null);
@@ -50,7 +52,7 @@ export function TenantOwnedFeedSetup({
     const response = await fetch('/api/connectors/tenant-owned-feed/connect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain, feedUrl }),
+      body: JSON.stringify(name.trim() ? { domain, feedUrl, name: name.trim() } : { domain, feedUrl }),
     });
     const body = await response.json().catch(() => ({}));
     if (response.status === 201) {
@@ -84,7 +86,7 @@ export function TenantOwnedFeedSetup({
     const response = await fetch(`/api/connectors/tenant-owned-feed/${editTarget.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedUrl: editFeedUrl }),
+      body: JSON.stringify({ feedUrl: editFeedUrl, name: editName.trim() ? editName.trim() : null }),
     });
     const body = await response.json().catch(() => ({}));
     if (response.ok) {
@@ -116,9 +118,10 @@ export function TenantOwnedFeedSetup({
           {activations.map((activation) => (
             <li key={activation.id} className="tof-item">
               <div className="tof-item-header">
-                <span className="tof-item-domain">{activation.domain}</span>
+                <span className="tof-item-domain">{activation.name || activation.domain}</span>
                 <StatusBadge variant={activation.status === 'verified' ? 'verified' : activation.status === 'pending' ? 'pending' : 'inactive'} />
               </div>
+              {activation.name && <div className="tof-item-domain-secondary">{activation.domain}</div>}
               <div className="tof-item-feed-url">{activation.feedUrl}</div>
 
               {activation.status === 'pending' && (
@@ -152,6 +155,7 @@ export function TenantOwnedFeedSetup({
                       onClick={() => {
                         setEditTarget(activation);
                         setEditFeedUrl(activation.feedUrl);
+                        setEditName(activation.name ?? '');
                         setEditError(null);
                       }}
                     >
@@ -187,6 +191,16 @@ export function TenantOwnedFeedSetup({
             <span className="tof-field-label">Feed URL</span>
             <input type="text" required value={feedUrl} onChange={(event) => setFeedUrl(event.target.value)} className="tof-input" />
           </label>
+          <label className="tof-field">
+            <span className="tof-field-label">Name (optional)</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="tof-input"
+              placeholder="e.g. Company Blog — falls back to the domain if left blank"
+            />
+          </label>
           {connectError && (
             <p role="alert" className="tof-form-message-error">
               {connectError}
@@ -211,6 +225,16 @@ export function TenantOwnedFeedSetup({
           <label className="tof-field">
             <span className="tof-field-label">Feed URL</span>
             <input type="text" required value={editFeedUrl} onChange={(event) => setEditFeedUrl(event.target.value)} className="tof-input" />
+          </label>
+          <label className="tof-field">
+            <span className="tof-field-label">Name (optional)</span>
+            <input
+              type="text"
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+              className="tof-input"
+              placeholder="Falls back to the domain if left blank"
+            />
           </label>
           {editError && (
             <p role="alert" className="tof-form-message-error">
