@@ -1431,87 +1431,111 @@
 - **Files touched:** docs/adr/0059-facebook-connector-tenant-owned-page-scope-organization-as-author.md, docs/adr/0060-facebook-connector-multiple-pages-per-user.md, docs/adr/0061-tier-3-poll-scheduler-per-user-enumeration.md, docs/adr/README.md, docs/open-decisions.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-19 — real drift found and corrected.** This commit accepted ADR-0059/0060/0061 and moved Story 6.27/1.15 to Ready, correctly updating `docs/adr/README.md` and both epic files — but never touched `docs/user-stories/README.md`'s separate "Epics" master table, which (per `git blame`) hadn't been updated for Epic 1 since 2026-08-11 and was missing Stories 1.11–1.15/ADRs 0051/0052/0061 entirely, missing Story 6.27/ADR-0060 from Epic 6's row, and still showed ADR-0056 as "Proposed" (stale since `bae1277`, 2026-08-17). Also found: `docs/implementation-plan.md`'s own Traceability table was missing Stories 1.14/1.15/6.27 entirely and still described Story 6.23 as "drafted, not yet built" after it shipped. All corrected directly, each with its own dated note; `CLAUDE.md`'s much larger, cascading staleness (last updated by `e59b2da`, five days before this final entry) was also found and corrected as part of this same pass — see that file's own 2026-08-19 dated note.
 
-## 2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues
+## ~~2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues~~
 
 - **Full commit:** `608079561c17597c1bfec604ae57551b2e21a148`
 - **Files touched:** CLAUDE.md, README.md, docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Integration-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/project docs/Project Management Plans/Project-Work-Management-Plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/ingestion-events/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean on its own terms at the time it ran; its own corrections (Epic 1/6/8 table rows, Story 6.23's "drafted, not yet built" fix) verified accurate against real state.** This is this project's own prior scheduled doc-review pass (itself the work product of the same three-role cycle this pass continues) — spot-checked its landed corrections rather than re-deriving them: the Epic 1 row's addition of Stories 1.11–1.15/ADRs 0051/0052/0061, the Epic 6 row's addition of Story 6.27/ADR-0060, and the Epic 8 row's ADR-0056 "Proposed" → "Accepted" fix all match real, current state. Its own "6.24 ... drafted, not yet built" carry-forward text was accurate *at the time this commit ran* (Story 6.24 wasn't built until the next day, `5d76e44`) — not a defect in this commit. This pass's own later drift, exposed by unqueued follow-on commits, is corrected and cross-referenced under the `17c563b` entry below, not attributed here.
 
-## 2026-08-19 — 2c00920 — feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement
+## ~~2026-08-19 — 2c00920 — feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement~~
 
 - **Full commit:** `2c00920ee0755b4caf32b895e20b09bc6ed99c31`
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean on its own chartered files.** `docs/adr/README.md`'s new ADR-0062 master-index row, footnote 32, and "Proposed" section update are all internally consistent and accurate; ADR-0054's own dated "Pending supersession" notes on Decision §2/§3 correctly cite ADR-0062 and take effect only at acceptance, per this README's own governance-table Row 5 convention; `epic-8-analytics-dashboard.md`'s new Stories 8.7/8.8 correctly cite ADR-0062 and are Blocked pending its acceptance. This commit did not touch `docs/user-stories/README.md`'s separate Epics master table or `docs/implementation-plan.md`'s Traceability table — neither is wrong *as of this commit alone* (Stories 8.7/8.8 were brand new, one commit old), but the gap accumulated across this whole ADR-0062/0063 saga and is corrected under the `17c563b` entry below, where the cumulative drift actually became real and checkable.
 
-## 2026-08-19 — 67c546f — chore: post-commit hook outputs for ADR-0062 commit (2c00920)
+## ~~2026-08-19 — 67c546f — chore: post-commit hook outputs for ADR-0062 commit (2c00920)~~
 
 - **Full commit:** `67c546f0ddcf7125c6860a304db1b711600712a6`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit, scripts/git-hooks/pre-commit
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping for commit 2c00920, plus what appears to be a minor `post-commit`/`pre-commit` hook touch-up (not a behavioral change this role's own chartered files would surface — no ADR, story, or SKILL.md references this hook's own mechanics). No factual claim about shipped/decided project state.
 
-## 2026-08-19 — 48f5cf3 — docs(adr-0062): replace selectedTopic with activeWatchlistFilter
+## ~~2026-08-19 — 48f5cf3 — docs(adr-0062): replace selectedTopic with activeWatchlistFilter~~
 
 - **Full commit:** `48f5cf3690c6f4d65175d148c8144f34e3495694`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, self-contained revision while ADR-0062 remained Proposed.** A same-day in-place revision to ADR-0062 (rejected `selectedTopic` stub → adopted `activeWatchlistFilter` client-side approximation) plus the matching Story 8.7 AC update — since ADR-0062 stayed Proposed throughout, no `docs/adr/README.md` change was required or expected (this project's own established convention: README's footnotes/Proposed-section are updated at drafting and at status changes, not on every in-place revision of a still-Proposed ADR's own body text — matching ADR-0060's own multi-point revision round, which didn't touch README either). Note: this rename was itself reverted the same day by `6eb6062` below, per Menno's own direct instruction — not a defect in either commit, just this ADR's own real, same-day design back-and-forth, each step internally consistent when read against the commit that follows it.
 
-## 2026-08-19 — a5d0036 — chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3)
+## ~~2026-08-19 — a5d0036 — chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3)~~
 
 - **Full commit:** `a5d003631df657b9e89aeddbb17563de93faa7b0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — 23a6dca — chore: post-commit hook outputs for a5d0036
+## ~~2026-08-19 — 23a6dca — chore: post-commit hook outputs for a5d0036~~
 
 - **Full commit:** `23a6dcaca33d4d084bfb5baec261416c406d9caa`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — 2f605b6 — docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter
+## ~~2026-08-19 — 2f605b6 — docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter~~
 
 - **Full commit:** `2f605b667a26863f31dd28c7fa1d787c8b9471db`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/adr/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean on its own chartered files.** `docs/adr/README.md`'s new ADR-0063 master-index row and footnote 33 are accurate and correctly cite ADR-0062 Open Question 1 as source; ADR-0062's own Open Question 1 is correctly updated to reference the new ADR-0063 rather than re-describing the gap. `epic-3-data-model-storage-and-archival.md`'s new Story 3.11 and `epic-8-analytics-dashboard.md`'s new Story 8.9 correctly cite ADR-0063 and are Blocked pending its acceptance. Same `docs/user-stories/README.md`/`docs/implementation-plan.md` master-table gap as `2c00920` above — not yet real/checkable one commit in, corrected under `17c563b` below once ADR-0063 actually reached Accepted.
 
-## 2026-08-19 — 59356e6 — chore: post-commit hook outputs for 2f605b6
+## ~~2026-08-19 — 59356e6 — chore: post-commit hook outputs for 2f605b6~~
 
 - **Full commit:** `59356e60f2db66ec365cf7490059cc310a0e322d`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — 6f25f17 — chore: post-commit hook outputs for 59356e6
+## ~~2026-08-19 — 6f25f17 — chore: post-commit hook outputs for 59356e6~~
 
 - **Full commit:** `6f25f171c9700b084988ff5339bcd844f7a59661`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — 6eb6062 — docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9
+## ~~2026-08-19 — 6eb6062 — docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9~~
 
 - **Full commit:** `6eb6062b192135f8950e807ecb1d4e07c7360de2`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, self-contained, and confirmed correct against Menno's own direction, not merely trusted.** Per this commit's own message ("ADR-0062 amendment per Menno's direction: watchlist/topic filtering is a hard dependency on ADR-0063, not a client-side approximation"), this reverts `48f5cf3`'s `activeWatchlistFilter` client-side-approximation rename back to `selectedTopic`/Blocked, and correspondingly reworks Story 8.7 (filter dimension count 7→6, chip bar, deep-link param) and Story 8.9 (retitled, first AC rewritten to go straight to the server-side path once ADR-0063 lands, no client-side predicate ever built as an interim step). Verified consistent with the current, still-live "Proposed" section text in `docs/adr/README.md` (which already reads "`selectedTopic`... Blocked... explicitly not a client-side approximation" — matching this commit's own change, not the reverted `48f5cf3` language) — no residual `activeWatchlistFilter` reference survives anywhere in `docs/adr/README.md`, `epic-8-analytics-dashboard.md`, or ADR-0062 itself at current HEAD.
 
-## 2026-08-19 — 24adf6c — chore: post-commit hook outputs for 6eb6062
+## ~~2026-08-19 — 24adf6c — chore: post-commit hook outputs for 6eb6062~~
 
 - **Full commit:** `24adf6c546ffe6b108891ea52144bea41e3d7ba4`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — c1d6a44 — chore: post-commit hook outputs for 24adf6c
+## ~~2026-08-19 — c1d6a44 — chore: post-commit hook outputs for 24adf6c~~
 
 - **Full commit:** `c1d6a44f4ff89a6dc83cf509ff3f7105feaf6041`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-19 — 17c563b — docs(adr): accept ADR-0063; move Story 3.11 to Ready
+## ~~2026-08-19 — 17c563b — docs(adr): accept ADR-0063; move Story 3.11 to Ready~~
 
 - **Full commit:** `17c563b71264e47a833fded1df66facaa34ced98`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/adr/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — real drift found and corrected, the same recurring class this file's own `7c0572c` entry already caught once (ADR-0059/0060/0061's own master-table gap).** This commit's own touched files (`docs/adr/README.md`'s new footnote 33/Proposed-section update, ADR-0063's own Status/Accepted-note, both epic files' Story 3.11/8.9 Status lines) are all accurate — verified directly. But across this entire ADR-0062/0063 saga (`2c00920` through this commit, six commits, all reviewed individually above as clean on their own touched files), **`docs/user-stories/README.md`'s separate Epics master table and `docs/implementation-plan.md`'s Traceability table were never once touched** — by this point genuinely stale: Epic 3's master-table row was missing ADR-0063/Story 3.11 entirely; Epic 8's row was missing ADR-0062, ADR-0063, and Stories 8.7/8.8/8.9 entirely; `implementation-plan.md`'s Traceability table was missing Stories 8.7/8.8/8.9/3.11 outright. **The same investigation also found, and corrected, three further real staleness items in `implementation-plan.md`'s own Traceability table, exposed but not caused by this commit chain:** Story 2.18 (Facebook engagement counts, built 2026-08-18, already had its own dated prose note in this file) was missing from the Phase 4 Ready-stories row entirely; Stories 1.15, 6.24, and 6.27 all still read "drafted, not yet built" despite being real, contract-verified builds confirmed directly against `docs/implementation-log.md` (1.15 and 6.27 built and healed 2026-08-19, 6.24 built 2026-08-19 with healing the same day). **Root cause investigated, not just patched:** those three stories' real builds landed via a branch (`claude/social-engage-adr-tenant-analytics-nmbz16`, merged via PR #4/`cd8071e`) whose commits never populated any of the three `docs/pending-*-reviews.md` queues at all — the exact same class of gap this project's own `docs/implementation-log.md` `c0cb2d4` entry already found and flagged once before ("catch up 3 un-queued commits, flag post-commit hook gap"), recurring. Corrected: `docs/user-stories/README.md`'s Epic 3/Epic 8 rows and `docs/implementation-plan.md`'s Traceability table, each with its own dated note; the hook gap itself flagged for Menno directly in both notes, not fixed here — `scripts/git-hooks/post-commit` is outside this role's own chartered file scope, and the affected commits (named in full in `implementation-plan.md`'s own dated note) remain unreviewed by any of the three AI governance roles, a real, standing gap for a future pass or Menno to close.
 
-## 2026-08-19 — 31af056 — chore: post-commit hook outputs for 17c563b
+## ~~2026-08-19 — 31af056 — chore: post-commit hook outputs for 17c563b~~
 
 - **Full commit:** `31af056e5b52958cbf0eceb884f03aa1ce6eb1b1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
+
+## 2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues
+
+- **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
+- **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
+- **Status:** Pending review
+
+## 2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713
+
+- **Full commit:** `d5ef4597f396b559dd9d75c9a6df6bdb6a5c179f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459
+
+- **Full commit:** `d4c8ca0b276fadee003b8f407c3a9df87a08a144`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits
+
+- **Full commit:** `66735370992a4a48420236e90a5b97ddf339ed8c`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
 - **Status:** Pending review
 

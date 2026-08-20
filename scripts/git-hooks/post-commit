@@ -37,6 +37,32 @@ else
   SKIP_TIME_LOG=0
 fi
 
+# 2026-08-20 — Documentation Steward: found live, not theorized. This hook's own
+# "chore: post-commit hook outputs for X" commits (their entire diff is time-tracking.md
+# plus the three queue files below, nothing else) were themselves being re-queued for
+# review on every commit, with no terminating condition — the exact self-referential
+# loop the time-tracking guard above already exists to prevent for that one file, never
+# extended to these three. A session committing its own hook output would see a fresh,
+# unrelated diff appear immediately after every single commit, forever. Applying the
+# same guard here, generalized to the fixed bookkeeping fileset a pure hook-output
+# commit touches.
+BOOKKEEPING_FILES=" docs/time-tracking.md docs/management/pending-manager-reviews.md docs/pending-documentation-steward-reviews.md docs/pending-learning-development-reviews.md "
+ONLY_TOUCHES_BOOKKEEPING=1
+if [ -z "$FILES" ]; then
+  ONLY_TOUCHES_BOOKKEEPING=0
+else
+  OLD_IFS="$IFS"
+  IFS=','
+  for f in $FILES; do
+    f=$(echo "$f" | sed 's/^ *//;s/ *$//')
+    case "$BOOKKEEPING_FILES" in
+      *" $f "*) ;;
+      *) ONLY_TOUCHES_BOOKKEEPING=0 ;;
+    esac
+  done
+  IFS="$OLD_IFS"
+fi
+
 if [ "$SKIP_TIME_LOG" -eq 0 ] && [ -f "$TIME_TRACKING_FILE" ]; then
   # Auto-derived, never interactive: 2026-08-06 addition, replacing this file's own
   # stale claim of an interactive pre-commit prompt (never actually built — see
@@ -103,19 +129,21 @@ queue_commit() {
   } >> "$QUEUE_FILE"
 }
 
-queue_commit \
-  "docs/management/pending-manager-reviews.md" \
-  "Pending Manager Reviews" \
-  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Ideal Manager (\`.claude/agents/ideal-manager.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note pointing to \`docs/management/manager-register.md\`'s matching finding, never deleted."
+if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ]; then
+  queue_commit \
+    "docs/management/pending-manager-reviews.md" \
+    "Pending Manager Reviews" \
+    "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Ideal Manager (\`.claude/agents/ideal-manager.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note pointing to \`docs/management/manager-register.md\`'s matching finding, never deleted."
 
-queue_commit \
-  "docs/pending-documentation-steward-reviews.md" \
-  "Pending Documentation Steward Reviews" \
-  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Documentation Steward (\`.claude/agents/documentation-steward.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Steward may edit stale docs directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once its corrections are actually committed."
+  queue_commit \
+    "docs/pending-documentation-steward-reviews.md" \
+    "Pending Documentation Steward Reviews" \
+    "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Documentation Steward (\`.claude/agents/documentation-steward.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Steward may edit stale docs directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once its corrections are actually committed."
 
-queue_commit \
-  "docs/pending-learning-development-reviews.md" \
-  "Pending Learning & Development Reviews" \
-  "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Learning & Development Writer (\`.claude/agents/learning-development-writer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Writer may edit the three manuals under docs/manuals/ directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting manual edit is actually committed. Most commits resolve with 'no user-facing change' — a legitimate outcome, not a non-answer."
+  queue_commit \
+    "docs/pending-learning-development-reviews.md" \
+    "Pending Learning & Development Reviews" \
+    "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Learning & Development Writer (\`.claude/agents/learning-development-writer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Writer may edit the three manuals under docs/manuals/ directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting manual edit is actually committed. Most commits resolve with 'no user-facing change' — a legitimate outcome, not a non-answer."
+fi
 
 exit 0
