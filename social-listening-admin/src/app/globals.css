@@ -767,9 +767,17 @@ button:disabled {
   padding: var(--space-4) var(--space-2);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--space-1);
   flex-shrink: 0;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: calc(100vh - 64px);
+}
+
+.app-sidebar.app-sidebar-collapsed {
+  width: 64px;
+  padding: var(--space-4) var(--space-1);
 }
 
 .app-sidebar-nav {
@@ -800,6 +808,25 @@ button:disabled {
   font-weight: 500;
   transition: all 120ms ease;
   border-left: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 150ms ease;
 }
 
 .nav-link:hover {
@@ -813,6 +840,57 @@ button:disabled {
   color: #ffffff;
   border-left-color: var(--color-accent);
   font-weight: 600;
+}
+
+.app-sidebar-collapsed .nav-link {
+  justify-content: center;
+  padding: var(--space-2-5) 0;
+  border-left: none;
+  border-right: 3px solid transparent;
+}
+
+.app-sidebar-collapsed .nav-link.active {
+  border-right-color: var(--color-accent);
+}
+
+.app-sidebar-collapsed .nav-label {
+  display: none;
+}
+
+.app-sidebar-footer {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-on-dark);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.app-sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.app-sidebar-collapsed .app-sidebar-toggle {
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+.app-sidebar-collapsed .sidebar-toggle-text {
+  display: none;
 }
 
 .app-main-content {
@@ -841,6 +919,10 @@ button:disabled {
   .nav-link.active {
     border-left-color: transparent;
     border-bottom-color: var(--color-accent);
+  }
+
+  .app-sidebar-footer {
+    display: none;
   }
 }
 
