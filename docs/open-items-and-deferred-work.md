@@ -92,6 +92,15 @@ Grouped by theme. Each component's own `SKILL.md` ("Known gaps / deferred work" 
 - Nothing populates `enrichment.entities`/`keyPhrases`/`publishedAt` from real posts yet — needs the real `AIProviderConnector` (Section A). `entities` is currently just a plain string array; the real pipeline may need a richer shape (confidence scores, entity types) — that decision is deferred to whoever builds it.
 *(`social-post-enrichment` SKILL.md)*
 
+### Outbound Post Authoring & Personal Account Web Intent Sharing (added 2026-08-20)
+- **Background API posting to personal timelines is prohibited by Meta** (ADR-0059/ADR-0067) — the `publish_actions` endpoint was permanently deprecated by Meta in 2018; Meta Graph API strictly does not permit automated background posting or inbound timeline ingestion for personal Facebook profiles.
+- **Interactive Browser Web Intent URI Pattern (Deferred / Planned Feature):**
+  - **Local Post Persistence:** When a tenant user authors a post inside SocialEngage intended for a personal timeline, the post is saved locally in `social_posts` (e.g. `status = 'draft'` / `deliveryMode = 'browser_intent'`).
+  - **Browser Web Intent Launch:** The UI constructs a pre-populated Facebook Web Intent URI (`https://www.facebook.com/sharer/sharer.php?u={ENCODED_URL}&quote={ENCODED_TEXT}`) and opens a centered popup dialog.
+  - **Clipboard Helper:** The full drafted post body is simultaneously copied to the user's clipboard (`navigator.clipboard.writeText`) with a toast notification, allowing the user to paste additional context into Facebook if desired.
+  - **Interactive User Approval:** The user reviews the pre-filled post and clicks "Post to Facebook" in their own browser session, ensuring 100% compliance with Meta Platform Policies and zero App Review barriers.
+  - **Telemetry Sandbox Boundary:** Because personal timeline posts run in Meta's privacy sandbox, Meta returns zero engagement telemetry (no post ID, reactions, or comments) back to third-party applications.
+
 ---
 
 ## C. Explicitly out of scope (not deferred — a boundary, not a gap)
