@@ -19,6 +19,7 @@ export function getPool(): Pool {
       database: process.env.PGDATABASE ?? 'social_listening',
       user: process.env.APP_PGUSER ?? 'app_user',
       password: process.env.APP_PGPASSWORD ?? 'app_user_password',
+      max: Number(process.env.PGPOOL_MAX ?? 20),
     });
   }
   return pool;

@@ -189,10 +189,24 @@ export async function deriveConnectorHealth(
     // 3. stalled (active connector, valid credentials, not failing or reconnect_required, and cadence or silence breached)
     let isStalled = false;
     if (!isReconnectRequired && !isFailing) {
-      const isConnectorActiveState =
-        options?.isConnectorActive !== undefined
-          ? options.isConnectorActive
-          : await isConnectorActive(tenantId, platformId, userId ? 'user' : 'tenant', userId);
+      let isConnectorActiveState = options?.isConnectorActive;
+      if (isConnectorActiveState === undefined) {
+        if (userId) {
+          const { rows: actRows } = await client.query<{ is_active: boolean }>(
+            `SELECT is_active FROM connector_user_activations
+             WHERE tenant_id = $1 AND platform_id = $2 AND user_id = $3`,
+            [tenantId, platformId, userId]
+          );
+          isConnectorActiveState = actRows.length > 0 ? actRows[0].is_active : false;
+        } else {
+          const { rows: actRows } = await client.query<{ is_active: boolean }>(
+            `SELECT is_active FROM connector_activations
+             WHERE tenant_id = $1 AND platform_id = $2`,
+            [tenantId, platformId]
+          );
+          isConnectorActiveState = actRows.length > 0 ? actRows[0].is_active : false;
+        }
+      }
 
       const hasValidCredentials = credentialStatus === null || credentialStatus === 'valid' || credentialStatus === 'expiring_soon';
 

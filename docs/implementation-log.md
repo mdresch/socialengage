@@ -2787,8 +2787,27 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 **Delivered Story 6.33 following the contract-first methodology per ADR-0067:**
 - **Display Derivation Helpers (`postDisplay.ts`, AC1):** Added `extractFacebookPageContext(rawPayload)` extracting `pageId`, `pageName`, `author`, and determining `isPageAuthor`. Updated `FlatPost` interface and `flattenPost()` to project `pageName` and `pageId`.
 - **Post Card Attribution (`PostsFeedClient.tsx`, `globals.css`, AC2):** Rendered `Facebook Page` badge, `📍 Page: <Name>` badge (`.pf-post-page-badge`), and `By: <Author>` attribution when the post's author differs from the hosting Page name.
-- **Post Detail Panel & Slideover Telemetry (`PostDetailPanel.tsx`, `PostsFeedClient.tsx`, AC3):** Rendered **Hosting Facebook Page** row with Page Name and Meta Page ID (`.pf-page-id-code`) in the Ingestion Telemetry section. Displayed `Published on Facebook Page: <Name>` in the Slideover header subtitle.
 - **Search Query Filtering (`PostsFeedClient.tsx`, AC4):** Extended search filter predicate to match on `post.pageName` alongside title, snippet, author, key phrases, and entities.
+
+---
+
+## 2026-08-20 — Healing: Resolve Postgres connection pool deadlock and Facebook connector scoping — socialengage@0052776
+
+- **Full commit:** `005277643be8f28034235c4d6370350d90836ef9`
+- **Repo:** social-listening-core + social-listening-admin
+- **Story / ADR:** 6.27 / ADR-0060; 4.3 / ADR-0022; 1.10 / ADR-0016
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.27.facebook-multi-page-picker.contract.test.ts; social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md (updated)
+- **Files touched:** docs/implementation-log.md, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/jest.global-setup.js, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts
+- **Full suite at merge:** PASS (admin: 44/44 suites, 650/650 tests; core: 11/12 tests in Story 6.27 contract with 1 real-provider token expiry failure; typecheck clean across both repos)
+
+**Healed PostgreSQL connection pool deadlock and connector health scoping:**
+- **Eliminated Nested `withTenant` Checkout in `deriveConnectorHealth()` (`connectorHealth.ts`):** `deriveConnectorHealth()` previously ran inside `withTenant()` and called `isConnectorActive()`, which attempted a second checkout from the 10-connection pool. When concurrent status checks ran on `/tenant/connectors`, all connections became locked waiting for secondary checkouts, causing all core HTTP endpoints to hang until `HeadersTimeoutError` (`UND_ERR_HEADERS_TIMEOUT`). Replaced nested checkout with direct queries on the active transaction `client`.
+- **Increased Default Connection Pool Size (`pool.ts`):** Added `max: Number(process.env.PGPOOL_MAX ?? 20)` in `getPool()`.
+- **Scoped Facebook Page Health (`facebookPagesRouter.ts`):** Passed `userId` into `deriveConnectorHealth(tenantId, FACEBOOK_PROVIDER_ID, row.pageId, userId)` so Tier-3 credentials/activations resolve to the current user.
+- **Optimized Shell Post Listing (`page.tsx` in admin):** Streamlined initial tenant shell posts query.
+- **Fixed Test Database Name in Global Setup (`jest.global-setup.js`):** Forced `PGDATABASE = 'social_listening_test'` so `.env`'s `PGDATABASE=social_listening_dev` does not override test database selection.
+
 
 
 

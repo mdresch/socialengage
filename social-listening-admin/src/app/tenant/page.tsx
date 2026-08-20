@@ -62,21 +62,12 @@ export default async function TenantShellPage() {
       )
     ),
     (async () => {
-      const posts: SocialPostSummary[] = [];
-      let cursor: string | undefined = undefined;
-      let pageCount = 0;
       try {
-        do {
-          const page = await listPosts(cursor, 100);
-          posts.push(...page.posts);
-          cursor = page.nextCursor ?? undefined;
-          pageCount++;
-        } while (cursor && pageCount < 500);
+        const page = await listPosts(undefined, 100);
+        return (page.posts ?? []).reverse();
       } catch {
-        // graceful degradation
+        return [];
       }
-      // Story 6.25 — reverse the ascending ingestion sequence so newest-ingested posts appear first
-      return posts.reverse();
     })(),
   ]);
 

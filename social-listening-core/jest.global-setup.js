@@ -19,11 +19,11 @@ require('dotenv').config();
  * additive only.
  */
 module.exports = async function globalSetup() {
-  process.env.PGHOST = process.env.PGHOST || 'localhost';
+  process.env.PGHOST = 'localhost';
   process.env.PGPORT = '5434';
-  process.env.PGDATABASE = process.env.PGDATABASE || 'social_listening_test';
-  process.env.PGUSER = process.env.PGUSER || 'postgres';
-  process.env.PGPASSWORD = process.env.PGPASSWORD || 'postgres';
+  process.env.PGDATABASE = 'social_listening_test';
+  process.env.PGUSER = 'postgres';
+  process.env.PGPASSWORD = 'postgres';
   process.env.APP_PGUSER = process.env.APP_PGUSER || 'app_user';
   process.env.APP_PGPASSWORD = process.env.APP_PGPASSWORD || 'app_user_password';
   process.env.PLATFORM_ADMIN_PGUSER = process.env.PLATFORM_ADMIN_PGUSER || 'platform_admin_role';

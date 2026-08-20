@@ -50,7 +50,7 @@ facebookPagesRouter.get('/', async (req, res) => {
       pageId: row.pageId,
       pageName: row.pageName,
       status: row.status,
-      connectorHealth: await deriveConnectorHealth(tenantId, FACEBOOK_PROVIDER_ID, row.pageId),
+      connectorHealth: await deriveConnectorHealth(tenantId, FACEBOOK_PROVIDER_ID, row.pageId, userId),
     }))
   );
 

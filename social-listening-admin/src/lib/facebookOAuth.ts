@@ -52,6 +52,7 @@ export function facebookAuthorizeUrl(state: string): string {
     state,
     scope: 'pages_show_list,pages_read_engagement',
     response_type: 'code',
+    auth_type: 'rerequest',
   });
   return `https://www.facebook.com/${GRAPH_API_VERSION}/dialog/oauth?${params.toString()}`;
 }
