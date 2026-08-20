@@ -250,6 +250,35 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   };
 }
 
+export interface FacebookPageContext {
+  pageId: string | null;
+  pageName: string | null;
+  author: string | null;
+  isPageAuthor: boolean;
+}
+
+/**
+ * Story 6.33 (ADR-0067) — extracts Facebook Page context and detects
+ * whether post author is distinct from the hosting Page entity.
+ */
+export function extractFacebookPageContext(rawPayload: unknown): FacebookPageContext | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    const pageId = typeof p.pageId === 'string' ? p.pageId : null;
+    const pageName = typeof p.pageName === 'string' ? p.pageName : null;
+    const author = extractAuthor(rawPayload);
+    if (pageId || pageName) {
+      return {
+        pageId,
+        pageName,
+        author,
+        isPageAuthor: author === pageName || !author,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * 2026-08-19 — moved here from PostsFeedClient.tsx (its original home) so the
  * Analytics Overview tab's own post-detail drawer, a second, sibling call
@@ -271,11 +300,14 @@ export interface FlatPost {
   provider: string;
   url: string | null;
   author: string | null;
+  pageName: string | null;
+  pageId: string | null;
   enrichmentSummary: PostEnrichmentSummary | null;
 }
 
 export function flattenPost(post: SocialPostSummary): FlatPost {
   const { title, snippet } = extractDisplayText(post.rawPayload);
+  const fbContext = extractFacebookPageContext(post.rawPayload);
   return {
     ...post,
     bodyMarkdown: post.bodyMarkdown ?? null,
@@ -284,6 +316,8 @@ export function flattenPost(post: SocialPostSummary): FlatPost {
     provider: extractProviderBadge(post.rawPayload),
     url: extractUrl(post.rawPayload),
     author: extractAuthor(post.rawPayload),
+    pageName: fbContext?.pageName ?? null,
+    pageId: fbContext?.pageId ?? null,
     enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,
   };
 }

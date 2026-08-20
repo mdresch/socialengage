@@ -153,9 +153,10 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
         const inTitle = post.title.toLowerCase().includes(q);
         const inSnippet = post.snippet ? post.snippet.toLowerCase().includes(q) : false;
         const inAuthor = post.author ? post.author.toLowerCase().includes(q) : false;
+        const inPageName = post.pageName ? post.pageName.toLowerCase().includes(q) : false;
         const inPhrases = post.enrichmentSummary?.keyPhrases.some((kp) => kp.toLowerCase().includes(q)) ?? false;
         const inEntities = post.enrichmentSummary?.entities.some((e) => e.toLowerCase().includes(q)) ?? false;
-        if (!inTitle && !inSnippet && !inAuthor && !inPhrases && !inEntities) return false;
+        if (!inTitle && !inSnippet && !inAuthor && !inPageName && !inPhrases && !inEntities) return false;
       }
       return true;
     });
@@ -323,10 +324,19 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
               <div className="pf-post-card-meta">
                 <div className="pf-post-card-meta-left">
                   <span className={providerClass(post.provider)}>
-                    {post.provider.replace(/_/g, ' ')}
+                    {post.provider === 'facebook' ? 'Facebook Page' : post.provider.replace(/_/g, ' ')}
                   </span>
-                  {post.author && (
-                    <span className="pf-post-author">{post.author}</span>
+                  {post.provider === 'facebook' && post.pageName ? (
+                    <>
+                      <span className="pf-post-page-badge" title={`Hosted on Facebook Page: ${post.pageName}`}>
+                        📍 Page: {post.pageName}
+                      </span>
+                      {post.author && post.author !== post.pageName && (
+                        <span className="pf-post-author">By: {post.author}</span>
+                      )}
+                    </>
+                  ) : (
+                    post.author && <span className="pf-post-author">{post.author}</span>
                   )}
                 </div>
                 <div className="pf-post-card-meta-right">
@@ -425,7 +435,9 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             }}
             title={activePost.title}
             subtitle={
-              activePost.publishedAt
+              activePost.provider === 'facebook' && activePost.pageName
+                ? `Published on Facebook Page: ${activePost.pageName}${activePost.publishedAt ? ` · ${new Date(activePost.publishedAt).toLocaleString()}` : ''}`
+                : activePost.publishedAt
                 ? `Published ${new Date(activePost.publishedAt).toLocaleString()} · ${activePost.provider.replace(/_/g, ' ')}`
                 : activePost.provider.replace(/_/g, ' ')
             }

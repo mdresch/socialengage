@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { PostEnrichmentSummary } from './postDisplay';
+import { extractFacebookPageContext, type PostEnrichmentSummary } from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 
 // ---------------------------------------------------------------------------
@@ -239,6 +239,19 @@ export function PostDetailPanel({
           <span>Provider</span>
           <code>{post.provider}</code>
         </div>
+        {(() => {
+          const fbContext = extractFacebookPageContext(post.rawPayload);
+          if (!fbContext || (!fbContext.pageName && !fbContext.pageId)) return null;
+          return (
+            <div className="pf-telemetry-row">
+              <span>Hosting Facebook Page</span>
+              <span>
+                <strong>{fbContext.pageName ?? 'Unknown Page'}</strong>
+                {fbContext.pageId && <code className="pf-page-id-code">(ID: {fbContext.pageId})</code>}
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Raw JSON toggle */}

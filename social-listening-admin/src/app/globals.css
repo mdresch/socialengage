@@ -2103,6 +2103,25 @@ button:disabled {
   color: var(--color-text-primary);
 }
 
+.pf-post-page-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1877f2;
+  background: #e7f3ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-full, 9999px);
+  padding: 1px 8px;
+}
+
+.pf-page-id-code {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-left: var(--space-1);
+}
+
 .pf-post-time {
   font-size: 0.8125rem;
   color: var(--color-text-disabled);

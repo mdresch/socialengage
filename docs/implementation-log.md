@@ -2772,4 +2772,23 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Author Store Query Helper (`authorStore.ts`):** Added `getAuthorById(tenantId, authorId)` to fetch single author records within tenant boundary.
 - **Telemetry & Event Delivery (AC5):** Preserves post deduplication on `(tenant_id, 'facebook', externalId)` and passes the resolved `authorExternalId` to `publishSocialPostIngestedEvents()`.
 
+---
+
+## 2026-08-20 — Story 6.33 — social-listening-admin
+
+- **Full commit:** `pending`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.33 / ADR-0067 (Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts (5/5)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md (updated)
+- **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Full suite at merge:** PASS (5/5 in Story 6.33 contract; typecheck clean with 0 errors)
+
+**Delivered Story 6.33 following the contract-first methodology per ADR-0067:**
+- **Display Derivation Helpers (`postDisplay.ts`, AC1):** Added `extractFacebookPageContext(rawPayload)` extracting `pageId`, `pageName`, `author`, and determining `isPageAuthor`. Updated `FlatPost` interface and `flattenPost()` to project `pageName` and `pageId`.
+- **Post Card Attribution (`PostsFeedClient.tsx`, `globals.css`, AC2):** Rendered `Facebook Page` badge, `📍 Page: <Name>` badge (`.pf-post-page-badge`), and `By: <Author>` attribution when the post's author differs from the hosting Page name.
+- **Post Detail Panel & Slideover Telemetry (`PostDetailPanel.tsx`, `PostsFeedClient.tsx`, AC3):** Rendered **Hosting Facebook Page** row with Page Name and Meta Page ID (`.pf-page-id-code`) in the Ingestion Telemetry section. Displayed `Published on Facebook Page: <Name>` in the Slideover header subtitle.
+- **Search Query Filtering (`PostsFeedClient.tsx`, AC4):** Extended search filter predicate to match on `post.pageName` alongside title, snippet, author, key phrases, and entities.
+
+
 
