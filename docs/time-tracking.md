@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 21:11 | — | — | Review | Story 2.23 | docs(reviews): sync review tracking for Story 2.23 (2b908be) |
 | 2026-08-20 | 21:11 | — | — | Documentation | Story 2.23 | feat(core): implement Facebook Graph API from extraction and two-tier author resolution (Story 2.23 / ADR-0067) (450fffc) |
 | 2026-08-20 | 20:57 | — | — | Review | — | docs(reviews): update pending reviews with latest story commits (9e6c2c4) |
 | 2026-08-20 | 20:57 | — | — | Documentation | — | chore: update tracking docs and apply UI connector label refinements (c1c7b2f) |
