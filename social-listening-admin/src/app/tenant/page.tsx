@@ -71,11 +71,12 @@ export default async function TenantShellPage() {
           posts.push(...page.posts);
           cursor = page.nextCursor ?? undefined;
           pageCount++;
-        } while (cursor && pageCount < 50);
+        } while (cursor && pageCount < 500);
       } catch {
         // graceful degradation
       }
-      return posts;
+      // Story 6.25 — reverse the ascending ingestion sequence so newest-ingested posts appear first
+      return posts.reverse();
     })(),
   ]);
 
