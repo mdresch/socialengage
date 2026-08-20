@@ -2751,3 +2751,25 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Re-Enrichment Precedence Dialog (`RunEnrichmentButton.tsx`, AC6):** Added confirmation modal when re-running enrichment on manually overridden posts, forwarding `{ force: true }` to `/api/posts/[id]/enrich` upon user confirmation.
 - **Accessibility & Escape Isolation (AC7):** Configured `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and scoped `Escape` key handler to dismiss only the secondary edit drawer.
 
+---
+
+## 2026-08-20 — Story 2.23 — social-listening-core
+
+- **Full commit:** `pending`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.23 / ADR-0067 (Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts (3/3)
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md (updated)
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts, social-listening-core/src/authors/authorStore.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
+- **Full suite at merge:** PASS (3/3 in Story 2.23 contract; typecheck clean with 0 errors)
+
+**Delivered Story 2.23 following the contract-first methodology per ADR-0067:**
+- **Graph API Field Widening (`facebookConnector.ts`, AC1):** Widened `fetchFacebookPagePosts()` fields parameter to request `from{id,name}` alongside engagement summary metrics and post content. Added optional `from?: { id: string; name: string }` to `FacebookPagePost`.
+- **Two-Tier Author Resolution Hierarchy (`pollFacebook.ts`, AC2 & AC3):**
+  - **Tier 1 (True Author / `from.name`):** When Graph API returns a distinct creator (`post.from?.id` and `post.from.name` present and `post.from.id !== pageMeta.id`), upserts an individual author record (`external_author_id = post.from.id`, `displayName = post.from.name`, `rawProfile = post.from`) and links the post to this author. Sets `rawPayload.author = post.from.name` and `rawPayload.from = post.from`.
+  - **Tier 2 (Hosting Page Fallback):** When `post.from` is absent or `post.from.id === pageMeta.id`, links the post to the hosting Page entity (`external_author_id = pageMeta.id`, `displayName = pageMeta.name`) and sets `rawPayload.author = pageMeta.name`.
+- **Explicit Hosting Page Dependency (`pollFacebook.ts`, AC4):** Unconditionally records `rawPayload.pageId = pageMeta.id` and `rawPayload.pageName = pageMeta.name` on every ingested post, establishing an explicit, queryable link to the hosting Facebook Page.
+- **Author Store Query Helper (`authorStore.ts`):** Added `getAuthorById(tenantId, authorId)` to fetch single author records within tenant boundary.
+- **Telemetry & Event Delivery (AC5):** Preserves post deduplication on `(tenant_id, 'facebook', externalId)` and passes the resolved `authorExternalId` to `publishSocialPostIngestedEvents()`.
+
+

@@ -18,6 +18,11 @@ export interface FacebookPagePost {
   created_time: string;
   permalink_url?: string;
   /**
+   * Story 2.23 (ADR-0067) — true author attribution when a post is created
+   * on the Page by a specific user/creator rather than directly as the Page entity.
+   */
+  from?: { id: string; name: string };
+  /**
    * Story 2.18 (ADR-0059 Decision §2) — aggregate engagement counts only,
    * never individual comment/reaction content (ADR-0059 Decision §5's own
    * author-rights boundary). All three optional: `shares` is confirmed,
@@ -119,7 +124,7 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
  * pull in individual identifiable people.
  */
 export async function fetchFacebookPagePosts(pageId: string, pageAccessToken: string, limit = 25): Promise<FacebookPagePost[]> {
-  const fields = 'id,message,created_time,permalink_url,reactions.summary(total_count),comments.summary(total_count),shares';
+  const fields = 'id,message,created_time,permalink_url,from{id,name},reactions.summary(total_count),comments.summary(total_count),shares';
   const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=${fields}&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
   const body = await graphApiFetch(url, 'feed');
   const data = (body as { data?: FacebookPagePost[] }).data;
