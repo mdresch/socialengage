@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 12:20 | — | — | Documentation | — | fix(analytics): align topic selector, date range picker, and matching posts count on a single control line (3d7d743) |
+| 2026-08-20 | 12:05 | — | — | Review | — | docs: update review logs and time tracking (3e3c352) |
 | 2026-08-20 | 12:05 | — | — | Documentation | — | fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items (aa1e7f5) |
 | 2026-08-20 | 12:00 | — | — | Documentation | Story 3.12 | docs(story-3.12): record Story 3.12 implementation and update traceability (af83d18) |
 | 2026-08-20 | 11:59 | — | — | Documentation | — | feat(story-3.12): post-watchlist match historical backfill and discovery attribution (3adc060) |

@@ -1852,3 +1852,15 @@
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 3e3c352 — docs: update review logs and time tracking
+
+- **Full commit:** `3e3c352bf6cbac8a13095db155665a370162b4cf`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line
+
+- **Full commit:** `3d7d7435a8a67f17d4e68b6b165e3772c8e747f6`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.3.conversations-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.5.languages-breakdown-widget.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
