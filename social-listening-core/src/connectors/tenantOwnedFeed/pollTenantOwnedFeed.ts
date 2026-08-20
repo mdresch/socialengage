@@ -10,6 +10,7 @@ import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
 import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
+import { buildGeoEnrichment } from '../geo/geoCountryUtils';
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
 async function gatedAcquire(tenantId: string): Promise<void> {
@@ -76,6 +77,12 @@ export async function ingestTenantOwnedFeedItems(
     const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
+    // Story 2.20 (ADR-0064) — country-level geospatial extraction from explicit country feed tags
+    const geoEnrichment = buildGeoEnrichment(item.country, 'post', 'high');
+    const combinedEnrichment = (enrichment || Object.keys(geoEnrichment).length > 0)
+      ? { ...(enrichment ?? {}), ...geoEnrichment }
+      : undefined;
+
     const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
@@ -92,7 +99,7 @@ export async function ingestTenantOwnedFeedItems(
         ...item,
       },
       publishedAt: normalized.publishedAt,
-      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      enrichment: combinedEnrichment as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
     });

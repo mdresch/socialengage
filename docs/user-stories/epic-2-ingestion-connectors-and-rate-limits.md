@@ -367,6 +367,24 @@
 
 ---
 
+## Story 2.18 — Facebook connector captures post-level engagement counts (reactions, comments, shares)
+
+**Built:** 2026-08-18 — social-listening-core@35e35c3
+
+**Source:** ADR-0059 Decision §2 · **Status:** Built 2026-08-18
+
+**As a** core backend engineer / downstream consumer of Facebook posts,
+**I want** post-level engagement counts (`reactions`, `comments`, `shares`) captured during Page post polling,
+**so that** engagement metrics are preserved in `rawPayload` for downstream analytics without schema changes.
+
+**Acceptance Criteria**
+- `fetchFacebookPagePosts()` requests `reactions.summary(total_count).limit(0).as(reactions)` and `comments.summary(total_count).limit(0).as(comments)` alongside standard post fields.
+- `FacebookPagePost` interface in `facebookConnector.ts` gains optional `reactions`, `comments`, and `shares` summary objects.
+- `shares` is treated as optional/absent when a post has 0 shares (per Meta Graph API convention).
+- Raw engagement counts flow through `normalize()` into `SocialPost.rawPayload` unmodified.
+
+---
+
 ## Story 2.19 — Tenant-owned feed: per-feed display name, and per-item author (byline) extraction
 
 **Built:** 2026-08-20 — social-listening-core@2f52c0f (backend half only — see Explicitly out of scope below for the admin-side UI, Story 6.28)
@@ -388,3 +406,42 @@
 - `social-listening-admin`'s `postDisplay.ts`: `extractAuthor()` already checks `rawPayload.author` first in its precedence chain (established by the same-day Newswire/Facebook fixes) — the byline above is picked up with zero admin-side code change. `extractUrl()`/provider-badge/Analytics-grouping behavior is unaffected; `rawPayload.feedName` is denormalized for possible future display use but nothing reads it for grouping/filtering yet.
 
 **Explicitly out of scope:** replacing organization-as-Author (the verified domain) with individual-as-Author for the `Author` entity/topic-signals/Analytics grouping — a real, separate, not-yet-decided design question named in ADR-0050's own Amendment Log entry, not resolved here; a name-uniqueness constraint (none decided — a label, not an id); using `name`/`feedName` as an Analytics Dashboard/Provider-filter grouping key (still keyed on the fixed `tenant-owned-feed` `providerId`); any admin-side UI surfacing of the feed's own `name` in the connector setup screen itself — that is a separate, admin-repo story (Story 6.28).
+
+---
+
+## Story 2.20 — Country-level geospatial extraction and normalization on post enrichment
+
+**Source:** ADR-0064 (Proposed 2026-08-19) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core
+
+**As a** core backend engineer,
+**I want** the ingestion and enrichment pipelines to extract, normalize, and store country-level geospatial metadata from connector payloads (`gnews`, `newswire`, `tenant-owned-feed`) into `social_posts.enrichment`,
+**so that** downstream consumers (such as the Analytics Dashboard) can query and aggregate post volume and sentiment by country without storing sensitive coordinate point data or executing ad-hoc geocoding.
+
+**Acceptance Criteria**
+- `AnalyzeResult` / enrichment contract in `social-listening-core/src/connectors/types.ts` is widened with optional, nullable geospatial fields in `camelCase`:
+  - `geoCountry?: string | null` (ISO 3166-1 alpha-2 uppercase, e.g. `'US'`, `'GB'`, `'NL'`)
+  - `geoCountryName?: string | null` (derived human-readable name, e.g. `'United States'`)
+  - `geoRegion?: string | null` (optional sub-region, e.g. `'EU'`, `'NA'`)
+  - `geoSource?: 'post' | 'source' | 'inferred' | 'unknown' | null` (provenance tracker)
+  - `geoConfidence?: 'high' | 'medium' | 'low' | null`
+- **GNews connector extraction (`pollGNewsSearch.ts`):**
+  - Reads `GNewsArticle.source.country` from the GNews search response.
+  - Normalizes country code to uppercase ISO 3166-1 alpha-2 (e.g. `'us'` → `'US'`).
+  - Sets `geoCountry: 'US'`, `geoCountryName: 'United States'`, `geoSource: 'source'`, `geoConfidence: 'high'`.
+- **Newswire connector extraction (`pollNewswireFeeds.ts`):**
+  - Inspects explicit `sourceCountry` or `country` if present in feed item: sets `geoSource: 'post'`, `geoConfidence: 'high'`.
+  - Fallback: maps unambiguous wire source domains to country where determined: sets `geoSource: 'source'`, `geoConfidence: 'medium'`.
+  - If no unambiguous country signal is found: leaves `geoCountry: null`, `geoCountryName: null`, `geoSource: null`, `geoConfidence: null`.
+- **Tenant-owned feed extraction (`pollTenantOwnedFeed.ts`):**
+  - Inspects explicit feed metadata/tag fields (`country`, `countryCode`, `geo.country`, `sourceCountry`).
+  - Normalizes explicit valid country codes to ISO 3166-1 alpha-2 uppercase; sets `geoSource: 'post'`, `geoConfidence: 'high'`.
+  - If absent/unstructured: leaves `geoCountry: null`. Does not attempt unstructured text geocoding in v1 (ADR-0064 §3).
+- **Facebook connector (`pollFacebookPage.ts`):**
+  - Leaves `geoCountry: null` (Page-level posts in standard feed do not carry reliable post coordinates).
+- **Storage & wire contract (zero migration):**
+  - Extracted geo fields are persisted directly inside `social_posts.enrichment` (`JSONB`), round-tripping through `insertSocialPost()`.
+  - `SocialPostSummary` returned by `GET /v1/posts` exposes `enrichment` containing the new geo fields with zero database schema migrations and zero SQL alterations.
+- Contract test verifies that GNews items with `source.country` and Newswire/Tenant-feed items with explicit country tags populate `enrichment.geoCountry`, `geoCountryName`, `geoSource`, and `geoConfidence` accurately, while feeds without country tags default to `null`/`undefined` without failure.
+
+**Explicitly out of scope:** Sub-national/city-level geocoding (Open Question 1); storing precise lat/lon points in `post_geo_location`; geocoding unstructured author profile location strings; any UI visualization changes (handled in Story 8.10).

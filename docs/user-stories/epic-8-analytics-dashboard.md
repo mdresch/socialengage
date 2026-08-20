@@ -237,10 +237,47 @@
 
 ---
 
-## Not storied in this epic: Location tab
+## Story 8.10 — Location & Geospatial Insights: Country aggregation, Top Countries widget, and SVG Choropleth Map
 
-**ADR-0054 Decision §4 defers the Location tab entirely — no story exists for it in this epic, and none should be added speculatively.** Two independent, both-disqualifying findings: no connector in this project's real roster populates `social_posts.post_geo_location`, and even a populated column would not be visible to `GET /v1/posts`'s own `SocialPostSummary` response shape, which this epic's entire data-source strategy depends on (ADR-0054 Decision §3). A future story here would need, at minimum, a real geo-data-carrying connector or source, a `social-listening-core` schema/API change (its own separate contract-first story), and a demonstrated tenant need — none of which exist today. See ADR-0054 Open Question 1.
+**Source:** ADR-0064 (Proposed 2026-08-19) · **Status:** Ready
+**Built:** not yet
+**Depends on:** Story 2.20 (Country-level geospatial enrichment in `social-listening-core`); Story 8.7 (Overview tab 3-column grid and filter model)
 
-**2026-08-17, later the same day — reconfirmed, not reopened, by ADR-0055.** ADR-0055 investigated Location independently at Menno's own direct request, rather than assuming this conclusion still held. Both disqualifying findings above were re-verified directly and remain unchanged. One new, real detail was found and named — `GNewsArticle.source.country` is already captured in `rawPayload`, technically free to surface — but explicitly declined as a Location substitute: it covers only one of three real connectors, and reports the publisher's own declared country, not per-post or per-conversation geography. No story is added here as a result. See ADR-0054's own new Clarification note on Open Question 1 and ADR-0055's own Decision §2/Context.
+**As a** Tenant User or Tenant-Admin,
+**I want** to see country-level conversation volume, regional sentiment distribution, and an interactive country choropleth map on the Analytics Overview tab,
+**so that** I can identify which geographic markets are driving conversation and spot regional sentiment variations across my monitored topics.
+
+**Acceptance Criteria**
+- `PostEnrichmentSummary` and `extractEnrichmentSummary()` in `social-listening-admin/src/app/tenant/posts/postDisplay.ts` are widened to read and return:
+  - `geoCountry: string | null` (ISO 3166-1 alpha-2 code, e.g. `'US'`)
+  - `geoCountryName: string | null`
+  - `geoRegion: string | null`
+  - `geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null`
+  - `geoConfidence: 'high' | 'medium' | 'low' | null`
+- Pure aggregation function `computeCountryBreakdown(posts: SocialPostSummary[])`:
+  - Groups filtered posts by `enrichment.geoCountry` (ISO 3166-1 alpha-2).
+  - Counts total posts, percentage volume share, and sentiment breakdown (`positive`, `neutral`, `negative`) per country.
+  - Returns a ranked array of countries by volume descending.
+  - Explicitly accounts for posts where `geoCountry === null` in a dedicated "Unknown" bucket (`{ countryCode: 'UNKNOWN', name: 'Unknown / Unmapped', count: N, share: P }`) — "Unknown" is never hidden, omitted, or averaged away (ADR-0064 §4).
+  - Suppression threshold: for countries with fewer than 3 posts in the selected filter window, sentiment scores are suppressed (`sentiment: null`) to prevent misleading small-sample bias (ADR-0064 §4 / Open Question 5).
+- **Location & Geospatial Insights widget** (`id="widget-location-insights"`, placed in the Overview tab grid per ADR-0062 Decision §2 / ADR-0064 §4):
+  - **Top Countries list:** Ranked list showing top N countries by volume with country flag/code, country name, post count, and percentage share, plus the explicit "Unknown" count row.
+  - **Country Choropleth Map:** An inline SVG world map rendering country polygons colored by post count density using a graduated palette scale. Hovering over a country displays a tooltip with country name, post count, and sentiment breakdown. Countries with 0 posts render in neutral background/border tone. Unmapped/"Unknown" volume is rendered in a status legend badge beside the map, never mapped to arbitrary coordinates.
+  - **Zero heavy external mapping dependencies:** Implemented via lightweight SVG / TopoJSON / GeoJSON paths or Recharts; no external D3/Mapbox bundles (ADR-0062 Decision §9 / ADR-0064 §4).
+- **Click-to-filter interaction & Filter model integration:**
+  - Clicking a country row or map polygon sets `activeCountryFilter` to that country's ISO code (e.g. `'US'`), composing with all other active filters with **AND** semantics in the shared `useMemo` pipeline (ADR-0062 Decision §3).
+  - Clicking an already-selected country a second time clears the filter (toggle-off).
+  - Active country filter renders a dismissible chip in the filter chips bar (Story 8.7) with an `×` clear button, and updates the URL search query parameter `?country=` via `window.history.replaceState`.
+- Zero matched posts in the selected range renders the standard `EmptyState` component on the widget, never a broken layout or fabricated fallback data.
+
+**Explicitly out of scope:** Sub-national/city-level point mapping; external paid geocoding APIs; any changes to `social-listening-core` (delivered in Story 2.18); modifying Sentiment, Conversations, or Sources tabs.
+
+---
+
+## Location tab status: Replaced by Country-Level Overview Widget (ADR-0064)
+
+**Historical context (ADR-0054 / ADR-0055):** ADR-0054 Decision §4 originally deferred a standalone Location tab because precise coordinate geometry (`post_geo_location`) was unpopulated across all connectors. ADR-0055 reaffirmed that standalone per-post GPS coordinates remained infeasible.
+
+**Resolved 2026-08-19/20 via ADR-0064:** ADR-0064 provides the formal decision to adopt country-level geospatial aggregation (ISO 3166-1 alpha-2) stored within `enrichment` (Story 2.18) and surfaced on the Overview tab as the **Location & Geospatial Insights** widget (Story 8.10). Rather than a separate empty tab, spatial analytics are integrated directly into the multi-dimensional command center on the Overview tab with honest "Unknown" tracking and zero point-geometry fabrication.
 
 **Documentation Steward correction, 2026-08-19.** Stories 8.1–8.6 above each already carried a correct, real `**Built:** 2026-08-17 — social-listening-admin@<hash>` field (each hash confirmed directly against `docs/implementation-log.md`'s own matching 2026-08-17 entries) and this epic file's own narrative notes above (lines 7/9/11/13/17/19) already stated in plain prose that every one of the six stories was built — but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone. This is exactly the gap `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13, closing an identical drift found in Stories 5.18/6.7) exists to catch. All six Status lines now read "Built 2026-08-17," matching the `**Built:**` field and the Log; no Acceptance Criteria text changed.

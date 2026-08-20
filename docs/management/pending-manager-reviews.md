@@ -2107,3 +2107,9 @@
 - **Files touched:** social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — ad3e8be — docs: update review logs
+
+- **Full commit:** `ad3e8be50c8a8a784522d90390b378a98096b6bc`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+

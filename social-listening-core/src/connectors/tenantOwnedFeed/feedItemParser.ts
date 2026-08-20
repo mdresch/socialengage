@@ -44,6 +44,8 @@ export interface ParsedFeedItem {
    * the feed provides none of these — never fabricated.
    */
   author: string | null;
+  /** Story 2.20 (ADR-0064) — explicit country tag if present in item; null otherwise. */
+  country?: string | null;
 }
 
 const ITEM_RE = /<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi;
@@ -130,6 +132,12 @@ function parseBlocks(xml: string, pattern: RegExp, idTag: string, dateTags: stri
     const summary = extractTag(block, 'summary');
     const content = extractTag(block, 'content');
     const author = extractByline(block);
+    const country =
+      extractTag(block, 'country') ??
+      extractTag(block, 'countryCode') ??
+      extractTag(block, 'geo:country') ??
+      extractTag(block, 'sourceCountry') ??
+      extractTag(block, 'dc:coverage');
 
     if (!title || !publishedAt || !(id || link)) continue;
 
@@ -144,6 +152,7 @@ function parseBlocks(xml: string, pattern: RegExp, idTag: string, dateTags: stri
       content,
       rawXml: block,
       author,
+      country,
     });
   }
   return items;

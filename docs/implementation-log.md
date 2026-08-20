@@ -2650,3 +2650,22 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Wikipedia Discovery-Driven Watchlist Attribution:** In `pollWikipedia.ts`, Phase 1 (discovery) explicitly passes the discovering `watchlistId` into `ingestWikipediaRevisions()` and `publishSocialPostIngestedEvents()`, guaranteeing that posts acquired from a watchlist-targeted discovery search are credited to that watchlist in `post_watchlist_matches` while still evaluating other active tenant watchlists via AST matching.
 - **Preserved Re-poll & API Semantics:** Phase 2 (re-poll of already tracked articles) evaluates all active tenant watchlists without discovering watchlist override.
 
+---
+
+## 2026-08-20 — Story 2.20 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.20 / ADR-0064 (Location and geospatial insights from posts and authors)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts (12/12)
+- **SKILL.md:** social-listening-core/.claude/skills/social-post-enrichment/SKILL.md (updated)
+- **Files touched:** docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/implementation-plan.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts, social-listening-core/src/connectors/geo/geoCountryUtils.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/types.ts
+- **Full suite at merge:** PASS, 4/4 suites, 34/34 tests passing in affected Epic 2 connectors; 12/12 in Story 2.20 contract test.
+
+**Delivered Story 2.20 following the contract-first methodology per ADR-0064:**
+- **Zero Database Migration Model (ADR-0064 §2):** Country geospatial metadata is stored strictly inside `social_posts.enrichment` JSONB using camelCase properties (`geoCountry`, `geoCountryName`, `geoRegion`, `geoSource`, `geoConfidence`). `post_geo_location` remains reserved for future coordinates.
+- **`geoCountryUtils.ts` Helper Library:** Implemented `normalizeCountryCode()` (validating 2-letter uppercase ISO 3166-1 alpha-2 codes and rejecting multi-letter/invalid strings), `getCountryName()` (resolving common country codes to display names), and `buildGeoEnrichment()`.
+- **GNews Country Extraction (AC2):** Polling extracts `article.source.country`, normalizes to ISO alpha-2 uppercase, and merges into post enrichment with `geoSource: 'source'` and `geoConfidence: 'high'`.
+- **Newswire RSS Parsing & Domain Mapping (AC3):** `rssFeedParser.ts` parses explicit `<country>`, `<sourceCountry>`, and `<dc:coverage>` tags (`geoSource: 'post'`, `geoConfidence: 'high'`), falling back to unambiguous wire domain mappings (`geoSource: 'source'`, `geoConfidence: 'medium'`) such as PR Newswire and Business Wire.
+- **Tenant-Owned Feed Parsing (AC4):** `feedItemParser.ts` parses explicit `<country>` and `<countryCode>` tags from RSS/Atom items (`geoSource: 'post'`, `geoConfidence: 'high'`), defaulting cleanly to null for unstructured or absent country data.
+- **Contract & API Compatibility (AC5, AC6):** Facebook posts leave `geoCountry` absent/null. `GET /v1/posts` exposes `enrichment.geoCountry` and `geoCountryName` unfiltered without schema changes.
+
