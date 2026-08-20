@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 12:05 | — | — | Documentation | — | fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items (aa1e7f5) |
+| 2026-08-20 | 12:00 | — | — | Documentation | Story 3.12 | docs(story-3.12): record Story 3.12 implementation and update traceability (af83d18) |
 | 2026-08-20 | 11:59 | — | — | Documentation | — | feat(story-3.12): post-watchlist match historical backfill and discovery attribution (3adc060) |
 | 2026-08-20 | 11:40 | — | — | Documentation | Story 3.12 | docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution (1320adb) |
 | 2026-08-20 | 11:24 | — | — | Documentation | Story 8.9 | docs(story-8.9): record implementation and traceability for Story 8.9 (1fee797) |
