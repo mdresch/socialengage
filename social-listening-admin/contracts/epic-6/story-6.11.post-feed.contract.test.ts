@@ -271,6 +271,25 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(result.title).toBe('https://facebook.com/1/posts/ext-5');
     });
 
+    // 2026-08-20, dated note: found-live regression, same shape as the
+    // Facebook extractDisplayText() fix above — the Newswire connector
+    // (ADR-0024, "issuer-as-Author") deliberately treats rawPayload.issuer
+    // as the post's author, but extractAuthor() never read it, so every
+    // real Newswire post's author rendered blank everywhere it's shown.
+    // NEWSWIRE_POST's own fixture above already carried issuer: 'Acme Corp'
+    // for exactly this case; nothing exercised it until now.
+    it('extractAuthor() returns rawPayload.issuer for a Newswire-shaped post (ADR-0024 issuer-as-Author, found-live regression, dated note above)', async () => {
+      const { extractAuthor } = await import('../../src/app/tenant/posts/postDisplay');
+      expect(extractAuthor(NEWSWIRE_POST.rawPayload)).toBe('Acme Corp');
+    });
+
+    it('extractAuthor() still prefers rawPayload.author over issuer/source.name, and falls back to null when none are present (real connector shapes never mix these fields — precedence only matters for this direct unit test)', async () => {
+      const { extractAuthor } = await import('../../src/app/tenant/posts/postDisplay');
+      expect(extractAuthor({ author: 'Direct Author', issuer: 'Some Wire' })).toBe('Direct Author');
+      expect(extractAuthor({ source: { name: 'GNews Source' } })).toBe('GNews Source');
+      expect(extractAuthor({ someField: 'no author here' })).toBeNull();
+    });
+
     it('opens a post in the in-page Slideover, not a navigation to a separate /tenant/posts/:id route', async () => {
       // Healing pass, 2026-08-17 (Menno's explicit sign-off, same session
       // as Story 8.1): this project's real post feed now opens a post's

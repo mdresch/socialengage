@@ -22,11 +22,24 @@ export function extractUrl(rawPayload: unknown): string | null {
   return null;
 }
 
-/** Extracts `author` (or `source.name`) from rawPayload, best-effort. */
+/**
+ * Extracts `author` (or `source.name`) from rawPayload, best-effort.
+ *
+ * Found live 2026-08-20 (real, confirmed regression, not previously caught
+ * by any contract): the Newswire connector (ADR-0024, "issuer-as-Author")
+ * deliberately treats the feed item's `<dc:contributor>` issuing
+ * organization as the post's author — `rawPayload.issuer` — but this
+ * function never read that field, so every real Newswire post's author was
+ * silently rendering blank everywhere `extractAuthor()` feeds a display
+ * (post cards, drawer rows, search-by-author). `story-6.11...contract.test`
+ * even carried a fixture with `issuer: 'Acme Corp'` set for exactly this
+ * case, unused until now.
+ */
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.author === 'string') return p.author;
+    if (typeof p.issuer === 'string') return p.issuer;
     if (p.source && typeof p.source === 'object') {
       const src = p.source as Record<string, unknown>;
       if (typeof src.name === 'string') return src.name;
