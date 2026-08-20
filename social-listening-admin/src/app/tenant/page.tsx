@@ -20,7 +20,7 @@ const PLATFORMS = [
   { id: 'gnews', name: 'GNews' },
   { id: 'newswire', name: 'Newswire' },
   { id: 'wikipedia', name: 'Wikipedia' },
-  { id: 'facebook', name: 'Facebook' },
+  { id: 'facebook', name: 'Facebook Page (Owned Feed)' },
   { id: 'azure-ai-language', name: 'Azure AI Language' },
   { id: 'azure-openai', name: 'Azure OpenAI' },
   { id: 'tenant-owned-feed', name: 'Tenant Feed' },
@@ -81,10 +81,10 @@ export default async function TenantShellPage() {
   ]);
 
   const activeWatchlists = watchlists.filter((w) => w.isActive).length;
-  const activeConnectors = connectors.filter((c) => c.isActive);
+  const activeConnectors = connectors.filter((c) => c.isActive || c.status !== 'disconnected');
   const activeConnectorsCount = activeConnectors.length;
   const degradedConnectors = connectors.filter(
-    (c) => c.isActive && (c.status === 'degraded' || c.status === 'failing')
+    (c) => (c.isActive || c.status !== 'disconnected') && (c.status === 'degraded' || c.status === 'failing')
   );
 
   const totalPostsCount = allPosts.length;
@@ -337,7 +337,7 @@ export default async function TenantShellPage() {
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    {connectors.filter((c) => c.isActive).map((c) => (
+                    {connectors.filter((c) => c.isActive || c.status !== 'disconnected').map((c) => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                         <span style={{ fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.name}

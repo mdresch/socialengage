@@ -6,6 +6,7 @@ import { requireTenantUser, requireTenantUserIdentity } from '../../auth/require
 import {
   setConnectorActivation,
   isConnectorActive,
+  listActiveUserActivations,
   ConnectorActivationOwnerType,
 } from '../../../connectors/connectorActivationStore';
 import { getSocialConnector, getAIProviderConnector } from '../../../connectors/registry';
@@ -39,14 +40,19 @@ export const connectorsRouter = Router();
  * fields or the cache itself.
  */
 connectorsRouter.get('/:platformId', async (req, res) => {
-  const tenantId = requireTenantUser(req, res);
-  if (!tenantId) return;
+  const caller = requireTenantUserIdentity(req as any, res);
+  if (!caller) return;
+  const { tenantId, userId: callerUserId } = caller;
 
   const platformId = req.params.platformId;
-  const [health, isActive] = await Promise.all([
+
+  const [health, isTenantActive, isCallerActive, activeUsers] = await Promise.all([
     getCachedConnectorHealth(tenantId, platformId),
     isConnectorActive(tenantId, platformId, 'tenant'),
+    callerUserId ? isConnectorActive(tenantId, platformId, 'user', callerUserId) : Promise.resolve(false),
+    listActiveUserActivations(tenantId, platformId).catch(() => []),
   ]);
+  const isActive = isTenantActive || isCallerActive || activeUsers.length > 0;
   res.json({ ...health, isActive });
 });
 
