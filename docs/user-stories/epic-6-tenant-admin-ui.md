@@ -796,6 +796,43 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** Batch multi-post enrichment editing (deferred); custom training-set export UI.
 
+---
+
+## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
+
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant Administrator,
+**I want** to connect, activate, manage, and monitor the Bing Search API connector using my organization's Azure subscription key from the admin portal,
+**so that** our tenant can actively discover web and news content for our watchlists via Azure-aligned search infrastructure.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `bing-search` to `PLATFORMS` array in both client components:
+    - `id: 'bing-search'`, `name: 'Bing Search (Azure)'`, `description: 'Azure AI Services active web & news search discovery for watchlists'`
+    - `category: 'Ingestion'`, `authMode: 'api_key'`
+    - `tenantScopeAllowed: true`, `personalScopeAllowed: false` (Tier-2 platform credential, ADR-0028)
+    - `icon: 'search'` or dedicated Microsoft / Bing icon glyph
+- **Connect Modal & Credential Submission (`ConnectModal`):**
+  - When clicking "Connect" on the Bing Search card, opens `ConnectModal` with:
+    - Dedicated field for Azure Cognitive Services / Bing Search API Key (`Ocp-Apim-Subscription-Key`).
+    - Optional Azure custom endpoint URL input (defaulting to standard Bing Search v7 endpoint).
+    - Explicit ADR-0027 billing disclaimer noting that the tenant provisions their own Azure Cognitive Services resource directly with Microsoft.
+  - Submits credential to `/api/connectors/bing-search/connect` via `POST` with `ownerType: 'tenant'`.
+  - On success, updates card state to connected with a masked credential indicator.
+- **Activation & Deactivation Controls:**
+  - Renders `ActivateDeactivateButton` (`ownerType: 'tenant'`) gated on `tenant_admin` role.
+  - Toggling active state correctly calls `/api/connectors/bing-search/activate` or `/api/connectors/bing-search/deactivate`.
+- **Connector Status & Telemetry (`/tenant/connectors/status`):**
+  - Renders `bing-search` in the "Connectors" section (Ingestion), distinct from "AI Providers".
+  - Shows operational metrics: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 1h–4h"), and estimated Azure call volume.
+  - Displays health status badge (`Healthy`, `Degraded`, `Failing`, `Stalled`).
+  - Gated on `tenant_admin`: renders "Re-sync now" button (Story 6.29) triggering on-demand retry for active Bing Search connector.
+
+**Explicitly out of scope:** Billing/reselling Azure transactions (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.22).
+
 
 ---
 

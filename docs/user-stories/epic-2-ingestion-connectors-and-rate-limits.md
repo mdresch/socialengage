@@ -488,3 +488,50 @@
 
 **Explicitly out of scope:** Full-text scraping of external web pages; client-side web scraping; admin UI connector setup screen (handled in Story 6.30).
 
+---
+
+## Story 2.22 — Active Watchlist Sourcing via Bing Search API (Azure): Polling connector, candidate evaluation cap, and URL canonicalisation
+
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the platform to actively query the Bing Search API (Azure) for my active watchlists, validate matching news and web articles, and ingest them as social posts linked to their respective watchlists,
+**so that** my monitored topics benefit from Azure-aligned enterprise search discovery and index depth.
+
+**Acceptance Criteria**
+- **Connector Implementation (`bingSearchConnector.ts`):**
+  - Implements `SocialConnector` with `providerId: 'bing-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, and `poll(tenantId: string)`.
+  - Registered in `connectorRegistry.ts` under `bing-search`.
+- **Active Watchlist Querying & Pacing Loop:**
+  - `poll(tenantId)` retrieves all active watchlists for the tenant (`listActiveWatchlistsForTenant(tenantId)`).
+  - Iterates over active watchlists sequentially with a per-tenant pacing delay to respect Azure Cognitive Services rate limits and avoid cross-tenant thundering herds.
+  - Constructs queries per watchlist match type:
+    - `keyword`/`hashtag`/`account`: formats terms into an OR-expression (e.g. `"term1" OR "term2"`).
+    - `boolean_query`: passes the AST boolean expression formatted for Bing search syntax.
+  - Sets `mkt` and `setLang` based on tenant locale settings (defaulting to `en-US`).
+- **Deterministic Auto Endpoint Fallback (`endpoint: 'auto'`):**
+  - Calls `/v7.0/news/search` first with `count = 25` and mapped `freshness` (`Day` for lookback $\le$ 48h, `Week` for 3–7d, `Month` for $>$ 7d).
+  - If the news search yields **fewer than 5 validated results**, automatically falls back to `/v7.0/search` (Web) in the same tick to broaden candidate discovery.
+- **Candidate Evaluation Cap & Dual AST Validation:**
+  - Evaluates the top **25–50** candidate items (title + snippet/description) in-process against `matchesWatchlist()` or `matchesAst()`.
+  - Only candidates strictly meeting the rule criteria are ingested, guaranteeing 100% precision with passive feeds.
+- **Multi-Step URL Canonicalisation & Deduplication:**
+  - Unwraps/resolves redirects where available.
+  - Strips marketing/tracking parameters (`utm_*`, `fbclid`, `gclid`, `msclkid`, `ref`).
+  - Normalizes scheme/host (lowercase, standardizes `www.`) and strips trailing fragments.
+  - Deduplicates on `(tenant_id, 'bing-search', externalId)` using canonical URL.
+- **Publication / Base Domain as Author (ADR-0004 Generalization):**
+  - Maps `Author` from provider and base domain:
+    - `author.id = 'bing-search:' + baseDomain`
+    - `author.username = baseDomain` (e.g. `bbc.co.uk`, `reuters.com`)
+    - `author.displayName = provider[0].name || baseDomain`
+    - `author.platform = 'bing-search'`
+- **Canonical Ingestion, Multi-Watchlist Junction Linking & Telemetry:**
+  - Ingests normalized post into `social_posts` and writes `(post_id, watchlist_id, tenant_id)` to `post_watchlist_matches`.
+  - Emits tenant-scoped telemetry metrics: API call counts, query volume, endpoint used, candidate yield, and **estimated Azure cost** scoped by `tenantId`, `platformId='bing-search'`, and `watchlistId`.
+  - Staggers next poll cycle with 1–4 hour default cadence.
+
+**Explicitly out of scope:** Full-text scraping of external web pages; admin UI connector setup screen (handled in Story 6.32).
+
+
