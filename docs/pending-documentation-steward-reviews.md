@@ -1941,3 +1941,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.23.facebook-oauth-connect-flow.contract.test.ts, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/page.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 450fffc — feat(core): implement Facebook Graph API from extraction and two-tier author resolution (Story 2.23 / ADR-0067)
+
+- **Full commit:** `450fffc5b7875fe08e6884d7eb542f2b1ec57b09`
+- **Files touched:** docs/implementation-log.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts, social-listening-core/src/authors/authorStore.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
+- **Status:** Pending review
+
