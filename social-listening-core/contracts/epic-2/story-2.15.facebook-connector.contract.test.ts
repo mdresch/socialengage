@@ -328,6 +328,36 @@ describe('Story 2.15 — Facebook connector', () => {
       expect(rows[0].external_author_id).toBe(REAL_PAGE_ID);
       expect(typeof rows[0].follower_count).toBe('number');
     });
+
+    // 2026-08-20, dated note: found-live gap, not a weakening of this AC —
+    // the Author row above proves the Page is resolvable via the authorId
+    // FK, but social-listening-admin has no /v1/authors/:id endpoint and
+    // only ever reads rawPayload directly (postDisplay.ts). Without the
+    // Page's id/name also denormalized into rawPayload itself, every real
+    // Facebook post's author/Page rendered blank in the admin UI. Same
+    // "friendly attribution lives in rawPayload" shape GNews (source.name)
+    // and Newswire (issuer, ADR-0024) already establish.
+    it("a real inserted post's own rawPayload also carries the Page's pageId/pageName directly, not only resolvable via the authorId FK", async () => {
+      const tenantId = await createTenantFixture(`FbRawPayloadPage-${randomUUID()}`);
+      const userId = await createUserFixture(tenantId, `fb-test-${randomUUID()}@example.com`);
+      await seedRealFacebookCredential(tenantId, userId);
+
+      await pollFacebook(tenantId, userId);
+
+      const posts = await fetchFacebookPagePosts(REAL_PAGE_ID, REAL_PAGE_TOKEN, 1);
+      const { rows } = await withTenant(tenantId, (client) =>
+        client.query<{ page_id: string | null; page_name: string | null }>(
+          `SELECT raw_payload->>'pageId' AS page_id, raw_payload->>'pageName' AS page_name
+           FROM social_posts
+           WHERE tenant_id = $1 AND raw_payload->>'providerId' = $2 AND raw_payload->>'externalId' = $3`,
+          [tenantId, FACEBOOK_PROVIDER_ID, posts[0].id]
+        )
+      );
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows[0].page_id).toBe(REAL_PAGE_ID);
+      expect(typeof rows[0].page_name).toBe('string');
+      expect((rows[0].page_name as string).length).toBeGreaterThan(0);
+    });
   });
 
   describe('AC5: supportedQueryFeatures is empty; matching is 100% post-fetch fallback', () => {

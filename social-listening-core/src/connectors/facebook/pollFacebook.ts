@@ -113,7 +113,24 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
           tenantId,
           authorId: author.id,
           acquisitionId: runId,
-          rawPayload: { providerId: FACEBOOK_PROVIDER_ID, externalId: normalized.externalId, ...post },
+          // Found live 2026-08-20: pageMeta.id/pageMeta.name were fetched
+          // and used to upsert the Author row (ADR-0059 Decision §5,
+          // "Page is the Author") but never denormalized into rawPayload
+          // itself — the same friendly-attribution-in-rawPayload shape
+          // every other connector already carries (GNews's source.name,
+          // Newswire's issuer, ADR-0024). Without it, social-listening-
+          // admin's postDisplay.ts (which only ever reads rawPayload, never
+          // resolves the authorId FK — no /v1/authors/:id endpoint exists)
+          // had nothing to extract; every real Facebook post's author/Page
+          // rendered blank everywhere extractAuthor() feeds a display. No
+          // new Graph API call — pageMeta is already fetched above.
+          rawPayload: {
+            providerId: FACEBOOK_PROVIDER_ID,
+            externalId: normalized.externalId,
+            pageId: pageMeta.id,
+            pageName: pageMeta.name,
+            ...post,
+          },
           publishedAt: normalized.publishedAt,
           enrichment: enrichment as unknown as Record<string, unknown> | undefined,
           bodyMarkdown,
