@@ -516,6 +516,8 @@ export interface OverviewFilters {
   activeKeywordFilter: string | null;
   activeLanguageFilter: string | null;
   activeSentimentFilter: 'positive' | 'neutral' | 'negative' | null;
+  /** Story 8.9 (ADR-0063) — server-side filtered watchlist id (?watchlist= in deep-link). */
+  activeWatchlistFilter: string | null;
 }
 
 export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
@@ -525,14 +527,16 @@ export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
   activeKeywordFilter: null,
   activeLanguageFilter: null,
   activeSentimentFilter: null,
+  activeWatchlistFilter: null,
 };
 
 /**
- * All six dimensions compose with AND semantics — every widget on the
+ * All six client-side dimensions compose with AND semantics — every widget on the
  * Overview tab recomputes from this same single filtered set, including the
  * widget that is itself the click target for a given dimension (a
  * deliberate, simpler-than-standard-faceted-search choice — see this
  * component's own SKILL.md).
+ * Note: activeWatchlistFilter is filtered server-side via GET /v1/posts?watchlistId= (Story 8.9).
  */
 export function applyOverviewFilters(posts: SentimentPost[], filters: OverviewFilters): SentimentPost[] {
   return posts.filter((post) => {
@@ -553,7 +557,10 @@ export interface OverviewFilterChip {
 }
 
 /** One chip per currently-active dimension — never one for a dimension at its default (null) value. */
-export function computeActiveChips(filters: OverviewFilters): OverviewFilterChip[] {
+export function computeActiveChips(
+  filters: OverviewFilters,
+  watchlists: Array<{ id: string; name: string }> = []
+): OverviewFilterChip[] {
   const chips: OverviewFilterChip[] = [];
   if (filters.activeDateFilter) chips.push({ type: 'activeDateFilter', label: 'Date', value: filters.activeDateFilter });
   if (filters.activeSourceFilter) chips.push({ type: 'activeSourceFilter', label: 'Source', value: PROVIDER_LABELS[filters.activeSourceFilter] ?? filters.activeSourceFilter });
@@ -561,15 +568,18 @@ export function computeActiveChips(filters: OverviewFilters): OverviewFilterChip
   if (filters.activeKeywordFilter) chips.push({ type: 'activeKeywordFilter', label: 'Keyword', value: filters.activeKeywordFilter });
   if (filters.activeLanguageFilter) chips.push({ type: 'activeLanguageFilter', label: 'Language', value: LANGUAGE_LABELS[filters.activeLanguageFilter] ?? filters.activeLanguageFilter });
   if (filters.activeSentimentFilter) chips.push({ type: 'activeSentimentFilter', label: 'Sentiment', value: filters.activeSentimentFilter });
+  if (filters.activeWatchlistFilter) {
+    const wl = watchlists.find((w) => w.id === filters.activeWatchlistFilter);
+    chips.push({ type: 'activeWatchlistFilter', label: 'Watchlist', value: wl?.name ?? filters.activeWatchlistFilter });
+  }
   return chips;
 }
 
 const RECOGNIZED_SENTIMENT_FILTER_VALUES = new Set(['positive', 'neutral', 'negative']);
 
 /**
- * Deep-link share state (ADR-0062 Decision §4) — an invalid or unrecognised
- * param value silently falls back to the default (null), never an error.
- * `watchlist` is deliberately never read here — reserved for Story 8.9.
+ * Deep-link share state (ADR-0062 Decision §4; Story 8.9 / ADR-0063 adds ?watchlist) —
+ * an invalid or unrecognised param value silently falls back to the default (null), never an error.
  */
 export function parseOverviewFiltersFromSearchParams(params: URLSearchParams): OverviewFilters {
   const sentiment = params.get('sentiment');
@@ -580,10 +590,11 @@ export function parseOverviewFiltersFromSearchParams(params: URLSearchParams): O
     activeKeywordFilter: params.get('keyword') || null,
     activeLanguageFilter: params.get('language') || null,
     activeSentimentFilter: sentiment && RECOGNIZED_SENTIMENT_FILTER_VALUES.has(sentiment) ? (sentiment as OverviewFilters['activeSentimentFilter']) : null,
+    activeWatchlistFilter: params.get('watchlist') || null,
   };
 }
 
-/** The inverse of parseOverviewFiltersFromSearchParams() — round-trips exactly; never writes a `watchlist` param. */
+/** The inverse of parseOverviewFiltersFromSearchParams() — round-trips exactly including ?watchlist (Story 8.9). */
 export function serializeOverviewFiltersToSearchString(filters: OverviewFilters): string {
   const params = new URLSearchParams();
   if (filters.activeDateFilter) params.set('date', filters.activeDateFilter);
@@ -592,7 +603,29 @@ export function serializeOverviewFiltersToSearchString(filters: OverviewFilters)
   if (filters.activeKeywordFilter) params.set('keyword', filters.activeKeywordFilter);
   if (filters.activeLanguageFilter) params.set('language', filters.activeLanguageFilter);
   if (filters.activeSentimentFilter) params.set('sentiment', filters.activeSentimentFilter);
+  if (filters.activeWatchlistFilter) params.set('watchlist', filters.activeWatchlistFilter);
   return params.toString();
+}
+
+export interface WatchlistCoverageEntry {
+  id: string;
+  name: string;
+  matchType: string;
+  count: number;
+}
+
+export function computeWatchlistCoverage(
+  watchlists: Array<{ id: string; name: string; matchType: string; isActive: boolean }>,
+  countsByWatchlistId: Record<string, number>
+): WatchlistCoverageEntry[] {
+  return watchlists
+    .filter((w) => w.isActive)
+    .map((w) => ({
+      id: w.id,
+      name: w.name,
+      matchType: w.matchType,
+      count: countsByWatchlistId[w.id] ?? 0,
+    }));
 }
 
 /** Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment(). */

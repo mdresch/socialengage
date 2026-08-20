@@ -188,6 +188,7 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
         activeKeywordFilter: 'launch',
         activeLanguageFilter: 'en',
         activeSentimentFilter: 'positive',
+        activeWatchlistFilter: null,
       });
     });
 
@@ -207,7 +208,7 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
       expect(parseOverviewFiltersFromSearchParams(new URLSearchParams(search))).toEqual(filters);
     });
 
-    it('the watchlist param is never written by serialization — reserved for Story 8.9', () => {
+    it('the watchlist param is only written when activeWatchlistFilter is set', () => {
       const filters = { ...EMPTY_OVERVIEW_FILTERS, activeSourceFilter: 'gnews' };
       expect(serializeOverviewFiltersToSearchString(filters)).not.toContain('watchlist');
     });
@@ -340,9 +341,8 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
       // Crisis Alert Radar / Sentiment Trajectory render inside widget-timeline-volume, never their own top-level id.
       expect(html).not.toContain('id="crisis-alert-radar"');
       expect(html).not.toContain('id="sentiment-trajectory"');
-      // selectedTopic / Watchlist Coverage — reserved, not rendered by this story.
-      expect(html).not.toContain('id="widget-watchlist-coverage"');
-      expect(html).not.toMatch(/selectedTopic|watchlist-selector/i);
+      // Story 8.9 (ADR-0063) builds widget-watchlist-coverage.
+      expect(html).toContain('id="widget-watchlist-coverage"');
     });
 
     it('a zero-post result renders EmptyState-shaped output, not fabricated widget content', () => {
@@ -442,11 +442,9 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
     it('reads all six filter search params and calls parseOverviewFiltersFromSearchParams()', () => {
       const source = readSrc('app', 'tenant', 'analytics', 'page.tsx');
       expect(source).toMatch(/parseOverviewFiltersFromSearchParams/);
-      for (const param of ['date', 'source', 'author', 'keyword', 'language', 'sentiment']) {
+      for (const param of ['date', 'source', 'author', 'keyword', 'language', 'sentiment', 'watchlist']) {
         expect(source).toContain(param);
       }
-      // watchlist is reserved for Story 8.9 — never read here.
-      expect(source).not.toMatch(/searchParams\.watchlist|['"]watchlist['"]/);
     });
   });
 

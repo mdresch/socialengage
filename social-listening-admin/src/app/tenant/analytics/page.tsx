@@ -2,7 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
-import { fetchAnalyticsSummary } from './fetchAnalyticsSummary';
+import { listWatchlists } from '@/lib/core-client';
+import { fetchAnalyticsSummary, fetchWatchlistCoverage } from './fetchAnalyticsSummary';
 import { AnalyticsClient } from './AnalyticsClient';
 import { parseOverviewFiltersFromSearchParams, type DateRangeFilter } from './analyticsData';
 
@@ -23,11 +24,23 @@ function defaultDateRange(): DateRangeFilter {
  * fetches its own default 30-day range server-side (no client round trip
  * needed for the first render); every subsequent range/tab change is
  * handled by AnalyticsClient re-fetching /api/analytics/summary.
+ *
+ * Story 8.9 (ADR-0063) — loads watchlists and watchlist coverage for the
+ * Overview tab, and supports initial ?watchlist=<id> server-side filtering.
  */
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; date?: string; source?: string; author?: string; keyword?: string; language?: string; sentiment?: string }>;
+  searchParams: Promise<{
+    tab?: string;
+    date?: string;
+    source?: string;
+    author?: string;
+    keyword?: string;
+    language?: string;
+    sentiment?: string;
+    watchlist?: string;
+  }>;
 }) {
   const jar = await cookies();
   const raw = jar.get(SESSION_COOKIE_NAME)?.value;
@@ -38,14 +51,12 @@ export default async function AnalyticsPage({
     redirect('/');
   }
 
-  const { tab, date, source, author, keyword, language, sentiment } = await searchParams;
+  const { tab, date, source, author, keyword, language, sentiment, watchlist } = await searchParams;
   const initialTab: AnalyticsTab = (TAB_VALUES as readonly string[]).includes(tab ?? '')
     ? (tab as AnalyticsTab)
     : 'overview';
 
-  // Story 8.7 (ADR-0062 Decision §4) — deep-link filter state, parsed
-  // server-side the same way `tab` already is. `watchlist` is deliberately
-  // never read here — reserved for Story 8.9.
+  // Story 8.7 (ADR-0062) / Story 8.9 (ADR-0063) — deep-link filter state
   const filterParams = new URLSearchParams();
   if (date) filterParams.set('date', date);
   if (source) filterParams.set('source', source);
@@ -53,10 +64,13 @@ export default async function AnalyticsPage({
   if (keyword) filterParams.set('keyword', keyword);
   if (language) filterParams.set('language', language);
   if (sentiment) filterParams.set('sentiment', sentiment);
+  if (watchlist) filterParams.set('watchlist', watchlist);
   const initialOverviewFilters = parseOverviewFiltersFromSearchParams(filterParams);
 
   const initialRange = defaultDateRange();
-  const initialSummary = await fetchAnalyticsSummary(initialRange);
+  const watchlists = await listWatchlists().catch(() => []);
+  const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined);
+  const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists);
 
   return (
     <main>
@@ -65,6 +79,8 @@ export default async function AnalyticsPage({
         initialRange={initialRange}
         initialTab={initialTab}
         initialOverviewFilters={initialOverviewFilters}
+        watchlists={watchlists}
+        initialWatchlistCoverage={initialWatchlistCoverage}
       />
     </main>
   );

@@ -4473,6 +4473,109 @@ button:disabled {
   font-weight: 650;
 }
 
+.an-overview-header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.an-overview-watchlist-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.an-overview-filter-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.an-watchlist-select {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.an-coverage-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.an-coverage-chart-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-coverage-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.an-coverage-legend-item {
+  width: 100%;
+}
+
+.an-coverage-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.an-coverage-btn:hover {
+  background: var(--color-surface-page);
+}
+
+.an-coverage-btn-active {
+  background: var(--color-surface-page);
+  border-color: var(--color-accent);
+}
+
+.an-coverage-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  margin-right: var(--space-2);
+  flex-shrink: 0;
+}
+
+.an-coverage-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-coverage-count {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-left: var(--space-2);
+}
+
 /* =========================================================================
    Team & Access screen (/tenant/users) — Story 6.8/6.10/6.14, visual
    redesign 2026-08-17

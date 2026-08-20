@@ -9,13 +9,16 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 import { EmptyState, RelativeTime } from '@/components/ui';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
 import { PostDetailPanel } from '../posts/PostDetailPanel';
 import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
 import { flattenPost, type FlatPost } from '../posts/postDisplay';
-import type { SocialPostFull } from '@/lib/core-client';
+import type { SocialPostFull, Watchlist } from '@/lib/core-client';
 import {
   applyOverviewFilters,
   computeActiveChips,
@@ -35,6 +38,7 @@ import {
   type AnalyticsSummary,
   type DateRangeFilter,
   type OverviewFilters,
+  type WatchlistCoverageEntry,
 } from './analyticsData';
 
 interface OverviewTabProps {
@@ -50,6 +54,10 @@ interface OverviewTabProps {
    * Defaults to EMPTY_OVERVIEW_FILTERS when omitted.
    */
   initialFilters?: OverviewFilters;
+  /** Story 8.9 (ADR-0063) — watchlists list for dropdown and coverage */
+  watchlists?: Watchlist[];
+  watchlistCoverage?: WatchlistCoverageEntry[];
+  onWatchlistChange?: (watchlistId: string | null) => void;
 }
 
 const SENTIMENT_COLORS = { positive: '#15803d', neutral: '#64748b', negative: '#dc2626' };
@@ -109,7 +117,14 @@ function IconExternalLink() {
  * empty — Story 8.8 fills it. `selectedTopic`/Watchlist Coverage are not
  * rendered at all — reserved for Story 8.9 (ADR-0063).
  */
-export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps) {
+export function OverviewTab({
+  summary,
+  range,
+  initialFilters,
+  watchlists = [],
+  watchlistCoverage = [],
+  onWatchlistChange,
+}: OverviewTabProps) {
   const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
   const [forecastOn, setForecastOn] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -173,7 +188,7 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
     };
   }, [drawerOpen, detailPostId]);
 
-  // Deep-link share state (ADR-0062 Decision §4) — keeps the URL in sync on
+  // Deep-link share state (ADR-0062 Decision §4; Story 8.9 ADR-0063) — keeps the URL in sync on
   // every filter change via replaceState, never a full navigation event.
   // The `?tab=overview` param (Story 8.1) is preserved alongside it.
   useEffect(() => {
@@ -183,7 +198,7 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
   }, [filters]);
 
   const filteredPosts = useMemo(() => applyOverviewFilters(summary.posts, filters), [summary.posts, filters]);
-  const chips = useMemo(() => computeActiveChips(filters), [filters]);
+  const chips = useMemo(() => computeActiveChips(filters, watchlists), [filters, watchlists]);
 
   const sentimentSplit = useMemo(() => computeSentimentSplitFromFlat(filteredPosts), [filteredPosts]);
   const sentimentIndex = useMemo(() => computeSentimentIndex(sentimentSplit), [sentimentSplit]);
@@ -236,10 +251,20 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
   function toggleDateFilter(value: string) {
     setFilters((prev) => ({ ...prev, activeDateFilter: prev.activeDateFilter === value ? null : value }));
   }
+  function handleWatchlistSelect(value: string | null) {
+    setFilters((prev) => ({ ...prev, activeWatchlistFilter: value }));
+    onWatchlistChange?.(value);
+  }
   function clearChip(type: keyof OverviewFilters) {
+    if (type === 'activeWatchlistFilter') {
+      onWatchlistChange?.(null);
+    }
     setFilters((prev) => ({ ...prev, [type]: null }));
   }
   function clearAll() {
+    if (filters.activeWatchlistFilter) {
+      onWatchlistChange?.(null);
+    }
     setFilters(EMPTY_OVERVIEW_FILTERS);
   }
 
@@ -254,14 +279,35 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
 
   return (
     <div className="an-overview-header-row">
-      <button
-        type="button"
-        id="widget-filtered-post-count"
-        className="an-filtered-count-btn"
-        onClick={() => setDrawerOpen(true)}
-      >
-        {filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}
-      </button>
+      <div className="an-overview-header-controls">
+        <div className="an-overview-watchlist-select-wrap">
+          <label htmlFor="overview-watchlist-selector" className="an-overview-filter-label">
+            Topic / Watchlist:
+          </label>
+          <select
+            id="overview-watchlist-selector"
+            className="an-watchlist-select"
+            value={filters.activeWatchlistFilter ?? ''}
+            onChange={(e) => handleWatchlistSelect(e.target.value || null)}
+          >
+            <option value="">All Topics</option>
+            {watchlists.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name} ({w.matchType.replace(/_/g, ' ')})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          id="widget-filtered-post-count"
+          className="an-filtered-count-btn"
+          onClick={() => setDrawerOpen(true)}
+        >
+          {filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}
+        </button>
+      </div>
 
       {chips.length > 0 && (
         <div className="an-filter-banner" id="an-overview-chip-bar">
@@ -301,6 +347,18 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
               <span className="an-widget-title">Authors by source</span>
             </div>
             <AuthorsBySourceWidget summary={authorsBySource} activeSource={filters.activeSourceFilter} onRowClick={toggleSourceFilter} />
+          </div>
+
+          <div className="an-widget" id="widget-watchlist-coverage">
+            <div className="an-widget-header">
+              <span className="an-widget-title">Watchlist coverage</span>
+            </div>
+            <WatchlistCoverageWidget
+              coverage={watchlistCoverage}
+              watchlists={watchlists}
+              activeWatchlistId={filters.activeWatchlistFilter}
+              onWatchlistClick={handleWatchlistSelect}
+            />
           </div>
         </div>
 
@@ -711,6 +769,105 @@ function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsByS
             >
               <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
               <span className="an-author-count">{source.uniqueAuthorCount}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const COVERAGE_COLORS = ['#2563eb', '#7c3aed', '#0891b2', '#10b981', '#f59e0b', '#ec4899', '#6366f1', '#14b8a6'];
+
+interface WatchlistCoverageWidgetProps {
+  coverage: WatchlistCoverageEntry[];
+  watchlists: Watchlist[];
+  activeWatchlistId: string | null;
+  onWatchlistClick?: (id: string) => void;
+}
+
+/**
+ * Story 8.9 (ADR-0063) — Watchlist Coverage Widget (id="widget-watchlist-coverage").
+ * Renders a Recharts donut chart showing post distribution across active watchlists.
+ * If zero active watchlists exist, renders EmptyState.
+ * Slices are sized by post count; zero-count active watchlists appear in the legend.
+ */
+function WatchlistCoverageWidget({
+  coverage,
+  watchlists,
+  activeWatchlistId,
+  onWatchlistClick,
+}: WatchlistCoverageWidgetProps) {
+  const activeWatchlists = watchlists.filter((w) => w.isActive);
+  if (activeWatchlists.length === 0) {
+    return (
+      <EmptyState
+        heading="No active watchlists"
+        body="Create and activate a watchlist in the Watchlists screen to view topic coverage."
+      />
+    );
+  }
+
+  const coverageMap = new Map(coverage.map((c) => [c.id, c.count]));
+  const data = activeWatchlists.map((w, idx) => ({
+    id: w.id,
+    name: w.name,
+    matchType: w.matchType,
+    count: coverageMap.get(w.id) ?? 0,
+    color: COVERAGE_COLORS[idx % COVERAGE_COLORS.length],
+  }));
+
+  const chartData = data.filter((d) => d.count > 0);
+
+  return (
+    <div className="an-coverage-wrap">
+      <div className="an-coverage-chart-container" style={{ width: '100%', height: 160 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData.length > 0 ? chartData : [{ name: 'No matches', count: 1, color: '#e2e8f0' }]}
+              dataKey="count"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={36}
+              outerRadius={56}
+              paddingAngle={chartData.length > 1 ? 2 : 0}
+            >
+              {(chartData.length > 0 ? chartData : [{ id: 'empty', color: '#e2e8f0' }]).map((entry, i) => (
+                <Cell key={entry.id ?? i} fill={entry.color} />
+              ))}
+            </Pie>
+            {chartData.length > 0 && (
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const item = payload[0];
+                  return (
+                    <AnimatedChartTooltip
+                      active={active}
+                      title={String(item.name)}
+                      items={[{ name: 'Posts', value: Number(item.value), color: (item.payload as { color?: string })?.color ?? '#2563eb' }]}
+                    />
+                  );
+                }}
+              />
+            )}
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <ul className="an-coverage-legend">
+        {data.map((item) => (
+          <li key={item.id} className="an-coverage-legend-item">
+            <button
+              type="button"
+              className={`an-coverage-btn${activeWatchlistId === item.id ? ' an-coverage-btn-active' : ''}`}
+              onClick={() => onWatchlistClick?.(item.id)}
+            >
+              <span className="an-coverage-indicator" style={{ backgroundColor: item.color }} />
+              <span className="an-coverage-name">{item.name}</span>
+              <span className="an-coverage-count">{item.count.toLocaleString()}</span>
             </button>
           </li>
         ))}

@@ -793,11 +793,15 @@ export interface SocialPostFull extends SocialPostSummary {
  * backend capability. Analytics' own paginate-everything-and-aggregate
  * loop uses this to fetch in bigger pages (fewer round trips); every other
  * existing caller keeps the server's own default page size by omitting it.
+ *
+ * `watchlistId` (Story 8.9, ADR-0063) is optional and forwarded as-is —
+ * the real `GET /v1/posts?watchlistId=` server-side filter (Story 3.11).
  */
-export async function listPosts(cursor?: string, limit?: number): Promise<SocialPostsPage> {
+export async function listPosts(cursor?: string, limit?: number, watchlistId?: string): Promise<SocialPostsPage> {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', cursor);
   if (typeof limit === 'number') params.set('limit', String(limit));
+  if (watchlistId) params.set('watchlistId', watchlistId);
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
