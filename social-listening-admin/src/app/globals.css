@@ -3694,6 +3694,155 @@ button:disabled {
   font-size: 0.8125rem;
 }
 
+.an-widget-sublabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.an-source-row-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  width: 100%;
+  padding: var(--space-1-5) var(--space-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 120ms ease;
+  font: inherit;
+  color: var(--color-text-primary);
+}
+
+.an-source-row-btn:hover {
+  background: var(--color-surface-page);
+  border-color: var(--color-border);
+}
+
+.an-source-row-btn.an-source-row-active {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.an-source-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.an-source-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.an-source-icon-gnews {
+  background: #059669;
+}
+
+.an-source-icon-newswire {
+  background: #4f46e5;
+}
+
+.an-source-icon-wikipedia {
+  background: #1f2937;
+}
+
+.an-source-icon-facebook {
+  background: #1877f2;
+}
+
+.an-source-icon-tenant-owned-feed,
+.an-source-icon-tenant_owned_feed {
+  background: #ea580c;
+}
+
+.an-source-icon-x,
+.an-source-icon-twitter {
+  background: #0ea5e9;
+}
+
+.an-source-icon-linkedin {
+  background: #0a66c2;
+}
+
+.an-source-icon-youtube {
+  background: #ef4444;
+}
+
+.an-source-icon-instagram {
+  background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+}
+
+.an-source-bar-wrapper {
+  flex: 1;
+  min-width: 40px;
+  margin: 0 var(--space-1);
+}
+
+.an-source-bar-track {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.an-source-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  transition: width 300ms ease;
+}
+
+.an-source-bar-gnews {
+  background: #059669;
+}
+
+.an-source-bar-newswire {
+  background: #4f46e5;
+}
+
+.an-source-bar-wikipedia {
+  background: #4b5563;
+}
+
+.an-source-bar-facebook {
+  background: #1877f2;
+}
+
+.an-source-bar-tenant-owned-feed,
+.an-source-bar-tenant_owned_feed {
+  background: #ea580c;
+}
+
+.an-source-stat-block {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 65px;
+  justify-content: flex-end;
+}
+
+.an-source-percent {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
 /* ---------------------------------------------------------------------- */
 /* Sentiment tab (Story 8.2, ADR-0054)                                     */
 /* ---------------------------------------------------------------------- */
