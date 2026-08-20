@@ -5117,3 +5117,141 @@ button:disabled {
   border-radius: var(--radius-sm);
   margin: 0;
 }
+
+/* =========================================================================
+   Tenant Overview Cards Grid & Cards
+   ========================================================================= */
+
+.overview-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 1200px) {
+  .overview-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .overview-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  min-height: 148px;
+}
+
+.overview-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.overview-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.overview-card-label {
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.overview-card-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.overview-card-icon-watchlists {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.overview-card-icon-connectors {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.overview-card-icon-posts {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+}
+
+.overview-card-icon-seats {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.overview-card-body {
+  margin-bottom: var(--space-3);
+}
+
+.overview-card-stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.overview-card-count {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+.overview-card-sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.overview-card-progress-track {
+  margin-top: var(--space-2-5);
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.overview-card-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width 300ms ease;
+}
+
+.overview-card-footer {
+  font-size: 0.8125rem;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.overview-card:hover .overview-card-footer {
+  text-decoration: underline;
+}
