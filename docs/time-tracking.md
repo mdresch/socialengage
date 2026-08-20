@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 21:26 | — | — | Review | Story 6.33 | docs(reviews): sync review tracking for Story 6.33 (519fb4b) |
 | 2026-08-20 | 21:26 | — | — | Documentation | Story 6.33 | feat(admin): implement Facebook hosting Page attribution and author distinction display (Story 6.33 / ADR-0067) (b0dc89e) |
 | 2026-08-20 | 21:11 | — | — | Review | Story 2.23 | docs(reviews): sync review tracking for Story 2.23 (2b908be) |
 | 2026-08-20 | 21:11 | — | — | Documentation | Story 2.23 | feat(core): implement Facebook Graph API from extraction and two-tier author resolution (Story 2.23 / ADR-0067) (450fffc) |
