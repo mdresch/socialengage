@@ -2631,3 +2631,22 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Watchlist Coverage widget (`id="widget-watchlist-coverage"`):** Renders a Recharts `<PieChart>` donut chart showing post distribution across all active watchlists. Slices are sized by post count from real match data; zero-count active watchlists appear in the legend with an honest `0` count; tenants with zero active watchlists render the standard `EmptyState` component.
 - **Deep-linking & Chips:** URL search parameter `?watchlist=<id>` is parsed server-side by `page.tsx` on initial load and updated in-place via `window.history.replaceState`. Active filter chips bar reflects the active watchlist name with a dismissal button that resets the selector.
 - **Cross-component progression in Story 8.7 contract:** Updated Story 8.7 contract assertions (which previously asserted that `widget-watchlist-coverage` and `?watchlist` search param were reserved/unrendered) to verify presence and integration with Story 8.9.
+
+---
+
+## 2026-08-20 — Story 3.12 — social-listening-core@3adc060
+
+- **Full commit:** `3adc06068ea5736c6fac6a2ae0794a49e07be533`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.12 / ADR-0063 (2026-08-20 Amendment Log entry: Historical backfill and discovery-driven watchlist attribution)
+- **Contract:** social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts (4/4)
+- **SKILL.md:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md (updated), social-listening-core/.claude/skills/wikipedia-connector/SKILL.md (updated)
+- **Files touched:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts, social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/migrations/0038_backfill_post_watchlist_matches.sql, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
+- **Full suite at merge:** PASS, 14/14 suites, 98/98 tests passing in `contracts/epic-3`
+
+**Delivered Story 3.12 following the contract-first methodology per ADR-0063 (2026-08-20 Amendment Log entry):**
+- **Historical Backfill (`backfillPostWatchlistMatches`):** A new store function in `social-listening-core/src/watchlists/postWatchlistMatchStore.ts` that scans existing `social_posts`, converts each active tenant watchlist to an AST (`watchlistToAst`), runs fallback AST matching (`matchesAst`), and idempotently persists match records via `insertPostWatchlistMatches()`.
+- **Database Migration Backfill (`0038_backfill_post_watchlist_matches.sql`):** Executes an idempotent SQL backfill linking existing keyword and hashtag watchlists against historical posts upon migration.
+- **Wikipedia Discovery-Driven Watchlist Attribution:** In `pollWikipedia.ts`, Phase 1 (discovery) explicitly passes the discovering `watchlistId` into `ingestWikipediaRevisions()` and `publishSocialPostIngestedEvents()`, guaranteeing that posts acquired from a watchlist-targeted discovery search are credited to that watchlist in `post_watchlist_matches` while still evaluating other active tenant watchlists via AST matching.
+- **Preserved Re-poll & API Semantics:** Phase 2 (re-poll of already tracked articles) evaluates all active tenant watchlists without discovering watchlist override.
+

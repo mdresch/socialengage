@@ -1623,3 +1623,15 @@
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-8-analytics-dashboard.md
 - **Status:** Pending review
 
+## 2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution
+
+- **Full commit:** `1320adbb2fd8e54a955dce7fa3092ab8eeaa274c`
+- **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
+- **Status:** Pending review
+
+## 2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution
+
+- **Full commit:** `3adc06068ea5736c6fac6a2ae0794a49e07be533`
+- **Files touched:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts, social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/migrations/0038_backfill_post_watchlist_matches.sql, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
+- **Status:** Pending review
+

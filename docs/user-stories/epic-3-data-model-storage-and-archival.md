@@ -228,7 +228,8 @@
 
 ## Story 3.12 — Post-watchlist match historical backfill and discovery-driven watchlist attribution
 
-**Source:** ADR-0063 (2026-08-20 Amendment Log entry) · **Status:** Ready
+**Source:** ADR-0063 (2026-08-20 Amendment Log entry) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@3adc060
 **Depends on:** Story 3.11 (`post_watchlist_matches` table, **Built** 2026-08-19); Story 2.14 (Wikipedia watchlist-driven discovery, **Built** 2026-08-18)
 
 **As a** Tenant User or Tenant-Admin,
