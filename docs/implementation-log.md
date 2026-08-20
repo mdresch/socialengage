@@ -2829,6 +2829,24 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Sequential 1.2s Pacing Loop & Rate Limiting (`pollBraveSearch.ts`, AC2/AC6):** Enforced 1.2-second pacing delay between watchlist queries to adhere to Brave Search's 1 req/sec limit. Classified errors into `http_401`, `http_403`, `rate_limit`, `http_5xx`, and `network`.
 - **Bootstrap Registration (`bootstrapConnectors.ts`, AC1):** Registered `braveSearchConnector` with 1-hour polling cadence in `bootstrapConnectors()`. Verified registration transparency via `story-2.10.connector-registration-transparency.contract.test.ts`.
 
+---
+
+## 2026-08-21 — Story 6.30: Brave Search API Connector Setup, Activation, and Status Screen — socialengage@dedfb6b
+
+- **Full commit:** `dedfb6b31c9ec4f1ea38cc324807d6d183e17453`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.30 / ADR-0065 (Brave Search API Connector Setup, Activation, and Status Screen)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.30.brave-search-connector-ui.contract.test.ts (5/5 passed)
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md (updated)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.30.brave-search-connector-ui.contract.test.ts, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Full suite at merge:** PASS (33/33 suites, 469/469 tests passed in epic-6; typecheck clean with 0 errors)
+
+**Delivered Story 6.30 following the contract-first methodology per ADR-0065:**
+- **Connector Definition & Branding (`ConnectorsClient.tsx`, `page.tsx`, AC1/AC2):** Added `IconBraveSearch` search glyph, extended `PlatformDef['icon']` with `'brave-search'`, and added `brave-search` to `PLATFORMS` with `authMode: 'api_key'`, `color: 'amber'`, `subscriptionToken` credential field, `adNotice: 'billing'`, `personalScopeAllowed: false`, and `tenantScopeAllowed: true`.
+- **Status Screen Integration (`status/page.tsx`, AC3):** Added `brave-search` to `PLATFORMS` in category `Ingestion` with `tenantScopeAllowed: true` and Tier-2 scoping.
+- **Watchlist Platform Source Connection (`watchlists/page.tsx`, AC4):** Added `brave-search` to `SOCIAL_PLATFORMS` (`authMode: 'api_key'`), enabling tenants to select Brave Search as a platform source once connected.
+
+
 
 
 

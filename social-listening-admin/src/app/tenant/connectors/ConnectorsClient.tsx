@@ -56,6 +56,16 @@ function IconFacebookF() {
   );
 }
 
+/** Story 6.30 — Brave Search's own search icon glyph. */
+function IconBraveSearch() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
 function IconShieldCheck() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -104,7 +114,7 @@ export interface PlatformDef {
   /** Story 6.23 (ADR-0059) — 'oauth' added for Facebook, this project's first redirect-based connector. */
   authMode: 'api_key' | 'none' | 'oauth';
   color: 'blue' | 'indigo' | 'purple' | 'emerald' | 'amber';
-  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open' | 'facebook';
+  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open' | 'facebook' | 'brave-search';
   adNotice: 'billing' | 'public' | null;
   credentialFields: CredentialFieldDef[];
   /**
@@ -210,6 +220,7 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
     case 'sparkles-emerald': return <IconSparkles />;
     case 'book-open':        return <IconBookOpen />;
     case 'facebook':         return <IconFacebookF />;
+    case 'brave-search':     return <IconBraveSearch />;
   }
 }
 

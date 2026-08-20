@@ -76,6 +76,15 @@ const PLATFORMS: PlatformDefinition[] = [
     personalScopeAllowed: true,
     tenantScopeAllowed: false,
   },
+  {
+    id: 'brave-search',
+    name: 'Brave Search',
+    authMode: 'api_key',
+    category: 'Ingestion',
+    description: 'Active discovery connector querying the Brave Search index for tenant active watchlists with strict AST validation.',
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
 ];
 
 async function loadRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {

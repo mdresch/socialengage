@@ -142,6 +142,28 @@ const PLATFORMS: PlatformDef[] = [
     personalScopeAllowed: true,
     tenantScopeAllowed: false,
   },
+  {
+    id: 'brave-search',
+    name: 'Brave Search',
+    subtitle: 'Active Web & News Discovery',
+    description: 'Active discovery connector querying the Brave Search index for tenant active watchlists with in-process AST validation.',
+    authMode: 'api_key',
+    color: 'amber',
+    icon: 'brave-search',
+    adNotice: 'billing',
+    credentialFields: [
+      {
+        key: 'subscriptionToken',
+        label: 'Brave Search API Subscription Token',
+        type: 'password',
+        placeholder: 'BSA...',
+        hint: 'Obtained from your Brave Search API account dashboard (api.search.brave.com).',
+      },
+    ],
+    // ADR-0028 / ADR-0065 — Tier 2 (tenant-wide) only.
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
 ];
 
 /**
