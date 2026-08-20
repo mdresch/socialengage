@@ -452,6 +452,56 @@ export function OverviewTab({
             )}
           </div>
 
+          <div className="an-centre-bottom-row">
+            <div className="an-widget" id="widget-sources-volume">
+              <div className="an-widget-header">
+                <span className="an-widget-title">Sources</span>
+              </div>
+              {sourceBreakdown.length === 0 ? (
+                <EmptyState heading="No source data yet" />
+              ) : (
+                <ul className="an-source-detail-list">
+                  {sourceBreakdown.map((source) => (
+                    <li key={source.providerId} className="an-source-detail-row">
+                      <button
+                        type="button"
+                        className={`an-author-row${filters.activeSourceFilter === source.providerId ? ' an-author-row-active' : ''}`}
+                        onClick={() => toggleSourceFilter(source.providerId)}
+                      >
+                        <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
+                        <span className="an-source-detail-count">{source.count.toLocaleString()}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="an-widget" id="widget-top-authors">
+              <div className="an-widget-header">
+                <span className="an-widget-title">Top authors</span>
+              </div>
+              {topAuthors.length === 0 ? (
+                <EmptyState heading="No authors yet" />
+              ) : (
+                <ul className="an-author-list">
+                  {topAuthors.map((a) => (
+                    <li key={a.author}>
+                      <button
+                        type="button"
+                        className={`an-author-row${filters.activeAuthorFilter === a.author ? ' an-author-row-active' : ''}`}
+                        onClick={() => toggleAuthorFilter(a.author)}
+                      >
+                        <span className="an-author-initials">{initials(a.author)}</span>
+                        <span>{a.author}</span>
+                        <span className="an-author-count">{a.count}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right column */}
@@ -478,30 +528,6 @@ export function OverviewTab({
             )}
           </div>
 
-          <div className="an-widget" id="widget-sources-volume">
-            <div className="an-widget-header">
-              <span className="an-widget-title">Sources</span>
-            </div>
-            {sourceBreakdown.length === 0 ? (
-              <EmptyState heading="No source data yet" />
-            ) : (
-              <ul className="an-source-detail-list">
-                {sourceBreakdown.map((source) => (
-                  <li key={source.providerId} className="an-source-detail-row">
-                    <button
-                      type="button"
-                      className={`an-author-row${filters.activeSourceFilter === source.providerId ? ' an-author-row-active' : ''}`}
-                      onClick={() => toggleSourceFilter(source.providerId)}
-                    >
-                      <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
-                      <span className="an-source-detail-count">{source.count.toLocaleString()}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
           <div className="an-widget" id="widget-languages">
             <div className="an-widget-header">
               <span className="an-widget-title">Languages</span>
@@ -519,31 +545,6 @@ export function OverviewTab({
                     >
                       <span>{lang.label}</span>
                       <span className="an-author-count">{lang.count}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="an-widget" id="widget-top-authors">
-            <div className="an-widget-header">
-              <span className="an-widget-title">Top authors</span>
-            </div>
-            {topAuthors.length === 0 ? (
-              <EmptyState heading="No authors yet" />
-            ) : (
-              <ul className="an-author-list">
-                {topAuthors.map((a) => (
-                  <li key={a.author}>
-                    <button
-                      type="button"
-                      className={`an-author-row${filters.activeAuthorFilter === a.author ? ' an-author-row-active' : ''}`}
-                      onClick={() => toggleAuthorFilter(a.author)}
-                    >
-                      <span className="an-author-initials">{initials(a.author)}</span>
-                      <span>{a.author}</span>
-                      <span className="an-author-count">{a.count}</span>
                     </button>
                   </li>
                 ))}

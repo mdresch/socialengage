@@ -4457,6 +4457,20 @@ button:disabled {
   }
 }
 
+.an-centre-bottom-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .an-centre-bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .an-gauge-wrap {
   display: flex;
   flex-direction: column;
