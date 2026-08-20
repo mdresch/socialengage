@@ -1,8 +1,10 @@
-# ADR-0067: Facebook Connector (`facebook`) — Platform Connector Scope Reconfirmation, Managed Pages vs. Personal User Profiles, and Geospatial Normalization
+# ADR-0067: Facebook Connector (`facebook`) — Platform Connector Scope Reconfirmation, Managed Pages vs. Personal User Profiles, Hosting Page Dependency, and Two-Tier Author Resolution
 
-**Status:** Proposed (2026-08-19, revised 2026-08-20)
+**Status:** Accepted (2026-08-20)
 
-**Source:** Follow-up to ADR-0059 (Facebook Page connector scope), ADR-0060 (Multiple Pages per user), ADR-0061 (Tier-3 poll scheduler), ADR-0064 (Geospatial country normalization), and ADR-0070 (Watchdog reconciliation & stalled alerts). This ADR consolidates and reconfirms the architectural boundaries of the Facebook connector, provides explicit analysis regarding personal user profiles versus managed business pages, updates the UI catalog description and active ingestion status, and aligns credential tiers and geospatial data handling.
+**Accepted by Menno 2026-08-20.** Reconfirms Facebook Page connector boundaries, establishes explicit post dependency on the hosting Facebook Page (`pageId`/`pageName`) with clear post-level UI attribution, defines a two-tier author resolution strategy (`from.name` true author falling back to `pageName`), aligns Tier-3 user-delegated OAuth credentials, and harmonizes with ADR-0064 (country-level geospatial normalization) and ADR-0070 (watchdog reconciliation).
+
+**Source:** Follow-up to ADR-0059 (Facebook Page connector scope), ADR-0060 (Multiple Pages per user), ADR-0061 (Tier-3 poll scheduler), ADR-0064 (Geospatial country normalization), and ADR-0070 (Watchdog reconciliation & stalled alerts). This ADR consolidates and reconfirms the architectural boundaries of the Facebook connector, provides explicit analysis regarding personal user profiles versus managed business pages, updates the UI catalog description and active ingestion status, establishes explicit post-to-hosting-Page attribution and author resolution, and aligns credential tiers and geospatial data handling.
 
 ---
 
@@ -43,7 +45,7 @@ A native ingestion connector is established with provider ID `facebook`.
 - **Ingestion Target:** **Connected Facebook Pages only**. Personal user profiles, personal timelines, and Facebook Groups are **strictly excluded** from automated background ingestion.
 - **UI Platform Presentation & Description:**
   - **Platform ID:** `facebook`
-  - **Display Name:** `Facebook Page (Owned Feed)` (mandated by ADR-0059 Decision §2 to prevent generic public keyword listening misconceptions).
+  - **Display Name:** `Facebook Page` (mandated by ADR-0059/0067 to prevent generic public keyword listening misconceptions).
   - **Subtitle:** `Meta Graph API Ingestion Source`
   - **Catalog Description:** 
     > *"Ingests published posts, reactions, comments, and shares directly from your connected Facebook Business, Brand, and Creator Pages via Meta Graph API. Outbound personal profile sharing is supported via browser Web Intent."*
@@ -51,7 +53,7 @@ A native ingestion connector is established with provider ID `facebook`.
   - When a user completes the OAuth connection and selects one or more managed Pages, the connector is in **Active Ingestion** mode.
   - The background poll scheduler continuously executes Page ingestion runs (`pollFacebookPage.ts`).
   - The connector displays "Active / Ingesting" (or "Healthy") status badges. "Paused" state applies only when no Page credentials are authenticated or when a user explicitly pauses/deactivates a connected Page.
-- **Endpoint:** `GET /{page-id}/posts` (Graph API v21.0 or current LTS) requesting:
+- **Endpoint & Requested Fields:** `GET /{page-id}/posts` (Graph API v21.0 or current LTS) requesting:
   `id, message, created_time, permalink_url, place, from, attachments, reactions.summary(total_count).limit(0).as(reactions), comments.summary(total_count).limit(0).as(comments), shares`
 
 ---
@@ -67,15 +69,39 @@ A native ingestion connector is established with provider ID `facebook`.
 
 ---
 
-### 3. Mapping to Canonical Schema & Engagement Normalization
+### 3. Hosting Page Dependency, Two-Tier Author Resolution, & Canonical Schema Mapping
 
-| Graph API field | `SocialPostSummary` field | Notes |
+#### A. Post Dependency on Hosting Facebook Page
+Every ingested post carries an explicit dependency on the hosting Facebook Page:
+- `rawPayload.pageId`: Unique Meta ID of the Facebook Page where the post was published.
+- `rawPayload.pageName`: Canonical display name of the hosting Facebook Page.
+- **Unambiguous UI Attribution:** In post feeds, detail drawers, and analytics views, the hosting Page is prominently displayed alongside the platform badge (e.g. `[Facebook Page] 📍 Page: Acme Global · By: John Doe`).
+
+#### B. Two-Tier Author Resolution Strategy
+Post authorship is resolved using a deterministic hierarchy:
+1. **True Author (`from.name` / `from.id`):** If Meta Graph API returns a populated `from` object (such as an individual admin, author, or creator with identity attribution), `Author.displayName` and `rawPayload.author` are set to `from.name`, with `Author.id = "facebook:" + from.id`.
+2. **Page Name Fallback:** If `from` is absent, restricted by API permissions, or identical to the Page ID (`from.id === pageId`), authorship resolves to the **Hosting Page Name** (`pageMeta.name`), fulfilling the Organization-as-Author model (ADR-0004/ADR-0059).
+
+```mermaid
+flowchart TD
+    A[Fetch Facebook Post] --> B{Does post contain 'from' with valid name?}
+    B -->|Yes - Distinct Author/Creator| C[Author = from.name<br/>Author ID = facebook:from.id]
+    B -->|No or from.id == pageId| D[Author = pageName<br/>Author ID = facebook:pageId]
+    C --> E[Denormalize into rawPayload.author & upsert Author record]
+    D --> E
+    E --> F[Persist rawPayload.pageName as Hosting Page]
+```
+
+#### C. Mapping to Canonical Schema & Normalization
+
+| Graph API / Context field | `SocialPostSummary` / `rawPayload` field | Notes |
 |---|---|---|
 | `id` | `externalId` | Graph API post ID (`{pageId}_{postId}`). |
 | `permalink_url` | `url` | Canonical permalink to the published Page post. |
 | `message` | `bodyMarkdown` | Normalized markdown body text. If empty, falls back to `attachments[0].description`. |
 | `created_time` | `publishedAt` | Parsed to ISO 8601 UTC `Date`. |
-| `from.name` / `from.id` | `author` / metadata | **Organization-as-Author (ADR-0004/0059):** `author.id = "facebook:" + from.id`, `author.username = from.id`, `author.displayName = from.name`, `author.platform = 'facebook'`. |
+| `pageMeta.id` / `pageMeta.name` | `rawPayload.pageId` / `rawPayload.pageName` | **Hosting Page Dependency:** Explicitly records the hosting Facebook Page on which the post was published. |
+| `from.name` / `from.id` $\rightarrow$ Fallback: `pageMeta.name` | `author` / `rawPayload.author` | **Two-Tier Author Resolution:** Sets `author.displayName = from.name` (true author) when present; falls back to `pageName` (Organization-as-Author) otherwise. |
 | `place` | Geo fields | **Country-Level Geospatial Policy (ADR-0064):** If `place.country` exists, extracts uppercase ISO 3166-1 alpha-2 code (`geoCountry: 'US'`, `geoCountryName: 'United States'`, `geoSource: 'post'`, `geoConfidence: 'high'`). **Discards** lat/lon coordinates, bounding boxes, and street addresses. If `place` is absent, sets `geoCountry = null`. |
 | `reactions`, `comments`, `shares` | `rawPayload` | Persists engagement count summaries (`reactions.summary.total_count`, `comments.summary.total_count`, `shares.count`) into `rawPayload` (Story 2.18). |
 | — | `providerId` | `facebook` |
@@ -96,6 +122,8 @@ A native ingestion connector is established with provider ID `facebook`.
 
 ### Positive
 
+- **Unambiguous Hosting Page Attribution:** Tenants managing multiple Facebook Pages immediately see which brand or business Page published each post.
+- **Accurate Author Attribution:** Accurately reflects true individual authors when provided by Meta Graph API, while seamlessly falling back to the Page Name for standard organizational posts.
 - **Transparent Product Truth:** The clear distinction between Managed Pages and Personal Accounts eliminates tenant confusion and aligns with Meta's strict platform boundaries.
 - **Accurate Active Ingestion Visibility:** Clarifies that Page ingestion is active and continuous upon authentication, not paused or dormant.
 - **Modern Description:** Professional description replaces legacy negative disclaimers with an informative summary of Page ingestion and browser-assisted outbound personal sharing.
@@ -114,19 +142,22 @@ A native ingestion connector is established with provider ID `facebook`.
 
 | Alternative | Disposition |
 |---|---|
+| **Blend Author and Hosting Page into single opaque string** | **Rejected.** Conflating author with hosting page prevents clear filtering by Page and misrepresents true author identities. |
 | **Ingest Personal User Profile Timelines (`/me/posts`)** | **Rejected.** Prohibited by Meta Platform Terms §3.b, creates severe GDPR liability, and technically deprecated by Meta for third-party commercial applications. |
 | **Scrape public Facebook Pages without tokens** | **Rejected.** Violates Meta Terms of Service, risks IP blocks, and provides brittle data. |
-| **Label connector as generic "Facebook"** | **Rejected.** Misleads tenants into expecting public network listening. The label "Facebook Page (Owned Feed)" is mandatory. |
+| **Label connector as generic "Facebook"** | **Rejected.** Misleads tenants into expecting public network listening. The label "Facebook Page" is mandatory. |
 
 ---
 
 ## Resolved Questions
 
-1. **Personal Profile Handling:** The personal user account acts solely as an OAuth authenticator; personal timelines are strictly excluded from automated background ingestion (outbound personal posting is supported via browser Web Intent URIs).
-2. **Credential Ownership:** Formally reaffirmed as Tier-3 user-delegated OAuth credentials (`owner_type = 'user'`).
-3. **Geospatial Processing:** Mapped strictly to country-level ISO 3166-1 alpha-2 when `place.country` is present, discarding coordinates per ADR-0064.
-4. **Active Ingestion State:** Confirmed active and continuous upon Page authentication, with status badges reflecting real operational health.
+1. **Hosting Page Attribution:** Every post explicitly stores `pageId` and `pageName` in `rawPayload`, and UI displays clearly indicate which Page hosted the post.
+2. **Author Resolution:** Defined as a two-tier hierarchy: true author via `from.name` if present; fallback to `pageName` (Organization-as-Author).
+3. **Personal Profile Handling:** The personal user account acts solely as an OAuth authenticator; personal timelines are strictly excluded from automated background ingestion (outbound personal posting is supported via browser Web Intent URIs).
+4. **Credential Ownership:** Formally reaffirmed as Tier-3 user-delegated OAuth credentials (`owner_type = 'user'`).
+5. **Geospatial Processing:** Mapped strictly to country-level ISO 3166-1 alpha-2 when `place.country` is present, discarding coordinates per ADR-0064.
+6. **Active Ingestion State:** Confirmed active and continuous upon Page authentication, with status badges reflecting real operational health.
 
 ---
 
-*Drafted 2026-08-19, revised 2026-08-20 to incorporate Personal Profile vs. Managed Page analysis, Tier-3 OAuth credential harmonization, updated catalog description, active ingestion clarification, and ADR-0064 geospatial alignment. Left **Proposed** for Menno's review and final acceptance.*
+*Drafted 2026-08-19, revised and accepted 2026-08-20 to incorporate Hosting Page post dependency, Two-Tier Author Resolution, Personal Profile vs. Managed Page analysis, Tier-3 OAuth credential harmonization, updated catalog description, active ingestion clarification, and ADR-0064 geospatial alignment. Formally **Accepted** by Menno.*

@@ -534,4 +534,40 @@
 
 **Explicitly out of scope:** Full-text scraping of external web pages; admin UI connector setup screen (handled in Story 6.32).
 
+---
+
+## Story 2.23 — Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution
+
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Facebook engagement counts), Story 6.27 (Facebook multiple Pages per user)
+
+**As a** core backend engineer / social listening analyst,
+**I want** `pollFacebookPage()` and `fetchFacebookPagePosts()` to extract the `from` object from Meta Graph API, record the explicit hosting Facebook Page ID/Name (`rawPayload.pageId`, `rawPayload.pageName`), and resolve post authorship using a two-tier hierarchy (`from.name` true author falling back to `pageName`),
+**so that** ingested Facebook posts accurately reflect who wrote the post and clearly link to the hosting Page that published it.
+
+**Acceptance Criteria**
+- **Graph API Field Widening (`facebookConnector.ts`):**
+  - `fetchFacebookPagePosts()` requests `from{id,name}` in its `fields` query parameter alongside standard post and engagement summary fields.
+  - `FacebookPagePost` interface in `facebookConnector.ts` gains optional `from?: { id: string; name: string }`.
+- **Hosting Page Post Dependency (`pollFacebook.ts`):**
+  - Every ingested post's `rawPayload` is populated unconditionally with `pageId: pageMeta.id` and `pageName: pageMeta.name`, establishing an explicit dependency on the hosting Facebook Page.
+- **Two-Tier Author Resolution Hierarchy (`pollFacebook.ts`):**
+  - **True Author (`from.name`):** When Graph API returns a distinct author object where `post.from?.id` exists and `post.from.name` is non-empty:
+    - Upserts/links `Author` with `authorExternalId = "facebook:" + post.from.id` and `displayName = post.from.name`.
+    - Sets `rawPayload.author = post.from.name` and `rawPayload.from = post.from`.
+  - **Page Name Fallback:** When `post.from` is absent, or `post.from.id === pageMeta.id` (published directly as the Page):
+    - Upserts/links `Author` with `authorExternalId = "facebook:" + pageMeta.id` and `displayName = pageMeta.name`.
+    - Sets `rawPayload.author = pageMeta.name`.
+- **Deduplication & Event Ingestion:**
+  - Preserves deduplication key on `(tenant_id, 'facebook', externalId)`.
+  - Emits `publishSocialPostIngestedEvents()` with the resolved `authorExternalId`.
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts` asserts:
+    - Post with individual `from` object maps `rawPayload.author` to the creator's name and `rawPayload.pageName` to the Page name.
+    - Post without `from` or with `from.id === pageMeta.id` falls back cleanly to `rawPayload.author = pageMeta.name` and `rawPayload.pageName = pageMeta.name`.
+    - `fetchFacebookPagePosts` correctly parses `from` object when returned by Graph API.
+
+**Explicitly out of scope:** Ingesting personal timeline feeds (`/me/posts`); admin UI post display enhancements (handled in Story 6.33).
+
+
 

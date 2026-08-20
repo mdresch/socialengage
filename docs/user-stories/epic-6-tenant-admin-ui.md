@@ -833,7 +833,41 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** Billing/reselling Azure transactions (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.22).
 
+---
+
+## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
+
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
+
+**As a** Tenant User or Tenant-Admin reviewing ingested social posts,
+**I want** Facebook posts in the feed and details drawer to clearly indicate which Facebook Page published the post and show the post's author,
+**so that** I can easily distinguish content published across our organization's various connected brand/regional Facebook Pages and understand whether a post was authored by a specific creator or by the Page itself.
+
+**Acceptance Criteria**
+
+- **Display Derivation Helpers (`postDisplay.ts`):**
+  - `extractFacebookPageContext(rawPayload)` (or equivalent helper) parses `pageId`, `pageName`, `author`, and detects if authorship is identical to the hosting Page (`author === pageName`).
+  - `extractAuthor(rawPayload)` cleanly resolves `rawPayload.author` (the true author or page name set by Story 2.23) as the top priority.
+- **Post Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'facebook'`, the post card header renders:
+    - Platform badge (`Facebook Page`).
+    - Explicit hosting Page attribution tag/badge (e.g. `📍 Page: Acme Global`).
+    - Author attribution (e.g. `By: John Doe` when the author differs from the Page, or `Acme Global` when published directly as the Page).
+- **Post Detail Panel & Slideover (`PostDetailPanel.tsx` & `PostsFeedClient.tsx`):**
+  - Renders a prominent **Hosting Facebook Page** row in the Ingestion Telemetry / Details section showing `pageName` and Meta `pageId`.
+  - In the Slideover header subtitle, displays `Published on Facebook Page: [Page Name]` alongside publication time.
+- **Post Feed Search Matching:**
+  - `searchQuery` filter in `PostsFeedClient` matches against `pageName` (in addition to existing `title`, `snippet`, `author`, and key phrases), enabling users to search for posts from a specific Facebook Page.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts` asserts:
+    - Post card renders hosting Page name and author distinction cleanly.
+    - Post detail panel renders hosting Page ID and name in metadata view.
+    - Post feed search query filtering matches on Facebook Page name.
+
+**Explicitly out of scope:** Filtering by Facebook Page ID via a dedicated dropdown (future extension); editing Facebook Page connection settings from the feed.
 
 ---
 
 **Documentation Steward correction, 2026-08-19.** Ten stories in this epic — 6.8, 6.14, 6.18, 6.19, 6.20, 6.21, 6.22, 6.23, 6.25, and 6.26 — each already carried a correct, real `**Built:**` field naming a real shipped commit (6.8: `social-listening-admin@6b7fc00`; 6.14: `@a27aa10`; 6.18: `@a97cf30`; 6.19: `@4f099a6`/core `@aa4f317`; 6.20: `@be1764d`/core `@e9d797f`; 6.21: `@21c30bf`; 6.22: `@8182706`; 6.23: `@535338f`; 6.25: `@6550716`; 6.26: `@03c37c9` — every hash confirmed directly against `docs/implementation-log.md`'s own matching entries), but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone — the same class of drift `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13) already names for Stories 5.18/6.7. For 6.23/6.25/6.26 specifically, the `**Built:**` field was placed *before* the `**Source:**/**Status:**` line rather than after it, the inverse of every other story's own ordering in this file — a likely reason this specific instance wasn't already caught by casual visual scanning. All ten Status lines now read "Built <date>," matching each story's own `**Built:**` field and the Log; no Acceptance Criteria text changed. (Story 6.8's own narrative context — a 2026-08-10 original build, `**Built:**` field date backfilled 2026-08-17 per the field's own forward-only, single-commit convention — is unaffected; only the Status word itself was stale.)
+
