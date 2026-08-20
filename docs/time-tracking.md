@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 12:42 | — | — | Documentation | — | feat(tenant): update overview metric cards with icons, full-width grid, and real actuals (8d9b6f3) |
+| 2026-08-20 | 12:38 | — | — | Review | — | docs: update review tracking (6115e1b) |
 | 2026-08-20 | 12:38 | — | — | Documentation | — | feat(shell): add icons to sidebar navigation items and make sidebar collapsable (76941c0) |
 | 2026-08-20 | 12:31 | — | — | Review | — | docs: update reviews and time tracking (8e50e38) |
 | 2026-08-20 | 12:30 | — | — | Documentation | — | feat(analytics): promote toolbar items to header for persistent visibility across all tabs (1edd1e7) |

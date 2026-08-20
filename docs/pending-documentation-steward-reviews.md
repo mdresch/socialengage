@@ -1683,3 +1683,15 @@
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/shell.test.ts
 - **Status:** Pending review
 
+## 2026-08-20 — 6115e1b — docs: update review tracking
+
+- **Full commit:** `6115e1b4a1708a79f8d57df3380dbd28795081f9`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals
+
+- **Full commit:** `8d9b6f365123c8747d52f43a5804a70fe6f165c5`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/page.tsx
+- **Status:** Pending review
+
