@@ -2,15 +2,42 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { InlineError } from '@/components/ui';
+import { EmptyState, InlineError, RelativeTime } from '@/components/ui';
 import { GlobalDateRangePicker, type DateRangeValue } from './GlobalDateRangePicker';
 import type { AnalyticsSummary, DateRangeFilter, OverviewFilters, WatchlistCoverageEntry } from './analyticsData';
-import type { Watchlist } from '@/lib/core-client';
+import type { SocialPostFull, Watchlist } from '@/lib/core-client';
+import { flattenPost, type FlatPost } from '../posts/postDisplay';
+import { PostDetailPanel } from '../posts/PostDetailPanel';
+import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
 import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
 import { SentimentTab } from './SentimentTab';
 import { ConversationsTab } from './ConversationsTab';
 import type { AnalyticsTab } from './page';
+
+function providerPillClass(providerId: string): string {
+  const slug = providerId.toLowerCase().replace(/_/g, '-');
+  const known = ['gnews', 'newswire', 'tenant-owned-feed'];
+  return `provider-pill provider-pill-${known.includes(slug) ? slug : 'default'}`;
+}
+
+function IconChevronRight() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+function IconExternalLink() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
 
 const TABS: { id: AnalyticsTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -48,10 +75,41 @@ export function AnalyticsClient({
   const [coverage, setCoverage] = useState<WatchlistCoverageEntry[]>(initialWatchlistCoverage);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [detailPostId, setDetailPostId] = useState<string | null>(null);
+  const [detailPost, setDetailPost] = useState<FlatPost | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   function selectTab(tab: AnalyticsTab) {
     setActiveTab(tab);
     router.replace(`?tab=${tab}`);
+  }
+
+  function openDetail(postId: string) {
+    setDetailPostId(postId);
+    setDetailPost(null);
+    setDetailError(null);
+    setDetailLoading(true);
+    fetch(`/api/posts/${postId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found.');
+        return res.json() as Promise<SocialPostFull>;
+      })
+      .then((post) => setDetailPost(flattenPost(post)))
+      .catch(() => setDetailError('Could not load this post.'))
+      .finally(() => setDetailLoading(false));
+  }
+
+  function closeDetail() {
+    setDetailPostId(null);
+    setDetailPost(null);
+    setDetailError(null);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    closeDetail();
   }
 
   /**
@@ -92,7 +150,7 @@ export function AnalyticsClient({
 
   /**
    * Story 8.9 (ADR-0063) — re-fetches posts via GET /v1/posts?watchlistId=
-   * when the watchlist selector changes on the Overview tab.
+   * when the watchlist selector changes.
    */
   async function handleWatchlistChange(nextWatchlistId: string | null) {
     setWatchlistFilter(nextWatchlistId);
@@ -132,9 +190,39 @@ export function AnalyticsClient({
             Post volume, sentiment, and source breakdown for {range.startDate} to {range.endDate}
           </p>
         </div>
-        {activeTab !== 'overview' && (
+
+        <div className="an-header-toolbar">
+          <div className="an-overview-watchlist-select-wrap">
+            <label htmlFor="overview-watchlist-selector" className="an-overview-filter-label">
+              Topic / Watchlist:
+            </label>
+            <select
+              id="overview-watchlist-selector"
+              className="an-watchlist-select"
+              value={watchlistFilter ?? ''}
+              onChange={(e) => handleWatchlistChange(e.target.value || null)}
+            >
+              <option value="">All Topics</option>
+              {watchlists.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name} ({w.matchType.replace(/_/g, ' ')})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />
-        )}
+
+          <button
+            type="button"
+            id="widget-filtered-post-count"
+            className="an-filtered-count-btn"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <span>{summary.totalPosts.toLocaleString()} matching post{summary.totalPosts === 1 ? '' : 's'}</span>
+            <span className="an-post-drawer-tag">POSTS ›</span>
+          </button>
+        </div>
       </div>
 
       <div className="an-tabs" role="tablist" aria-label="Analytics views">
@@ -166,13 +254,102 @@ export function AnalyticsClient({
             watchlists={watchlists}
             watchlistCoverage={coverage}
             onWatchlistChange={handleWatchlistChange}
-            dateRangePicker={<GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />}
+            hideHeaderControls={true}
           />
         )}
         {activeTab === 'sources' && <SourcesTab summary={summary} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
       </div>
+
+      {drawerOpen && (
+        <div
+          className="slideover-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeDrawer();
+          }}
+        >
+          <div className="an-drawer-stack">
+            <div className="slideover-panel" role="dialog" aria-modal="true" aria-labelledby="an-drawer-title" data-testid="slideover-panel">
+              <div className="slideover-header">
+                <div>
+                  <h3 id="an-drawer-title">Matching posts ({summary.posts.length})</h3>
+                </div>
+                <button type="button" className="slideover-close-btn" onClick={closeDrawer} aria-label="Close panel" data-testid="slideover-close-btn">
+                  ✕
+                </button>
+              </div>
+              <div className="slideover-content">
+                {summary.posts.length === 0 ? (
+                  <EmptyState heading="No matching posts" />
+                ) : (
+                  <ul className="an-drawer-post-list">
+                    {summary.posts.map((post) => (
+                      <li key={post.id}>
+                        <button
+                          type="button"
+                          className={`an-drawer-post-row${detailPostId === post.id ? ' an-drawer-post-row-active' : ''}`}
+                          onClick={() => openDetail(post.id)}
+                        >
+                          <span className="an-drawer-post-row-main">
+                            <span className={providerPillClass(post.providerId)}>{post.providerId.replace(/_/g, ' ')}</span>
+                            <span className="an-drawer-post-title">{post.title}</span>
+                          </span>
+                          <span className="an-drawer-post-meta">
+                            {post.sentiment && <span className={`an-sentiment-mini-${post.sentiment}`}>{post.sentiment}</span>}
+                            {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
+                            <IconChevronRight />
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {detailPostId && (
+              <div className="slideover-panel slideover-lg" role="dialog" aria-modal="true" aria-labelledby="an-drawer-detail-title">
+                <div className="slideover-header">
+                  <div>
+                    {detailPost && (
+                      <span className={`${providerPillClass(detailPost.provider)} an-drawer-detail-provider-pill`}>
+                        {detailPost.provider.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                    <h3 id="an-drawer-detail-title">{detailPost?.title ?? 'Post detail'}</h3>
+                    {detailPost?.author && <p className="slideover-subtitle">{detailPost.author}</p>}
+                  </div>
+                  <button type="button" className="slideover-close-btn" onClick={closeDetail} aria-label="Close post detail">
+                    ✕
+                  </button>
+                </div>
+                <div className="slideover-content">
+                  {detailLoading && <p className="an-drawer-detail-status">Loading post…</p>}
+                  {detailError && <p className="an-drawer-detail-status an-drawer-detail-error">{detailError}</p>}
+                  {detailPost && <PostDetailPanel key={detailPost.id} post={detailPost} />}
+                </div>
+                {detailPost && (
+                  <div className="slideover-footer">
+                    <div className="pf-slideover-footer-inner">
+                      {detailPost.url ? (
+                        <a href={detailPost.url} target="_blank" rel="noreferrer" className="pf-footer-ext-link">
+                          <IconExternalLink /> Open original
+                        </a>
+                      ) : (
+                        <span />
+                      )}
+                      <RunEnrichmentButton postId={detailPost.id} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

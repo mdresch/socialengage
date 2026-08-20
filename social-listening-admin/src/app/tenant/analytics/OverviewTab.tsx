@@ -59,6 +59,7 @@ interface OverviewTabProps {
   watchlistCoverage?: WatchlistCoverageEntry[];
   onWatchlistChange?: (watchlistId: string | null) => void;
   dateRangePicker?: React.ReactNode;
+  hideHeaderControls?: boolean;
 }
 
 const SENTIMENT_COLORS = { positive: '#15803d', neutral: '#64748b', negative: '#dc2626' };
@@ -126,6 +127,7 @@ export function OverviewTab({
   watchlistCoverage = [],
   onWatchlistChange,
   dateRangePicker,
+  hideHeaderControls,
 }: OverviewTabProps) {
   const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
   const [forecastOn, setForecastOn] = useState(false);
@@ -281,40 +283,42 @@ export function OverviewTab({
 
   return (
     <div className="an-overview-header-row">
-      <div className="an-overview-header-controls">
-        <div className="an-overview-watchlist-select-wrap">
-          <label htmlFor="overview-watchlist-selector" className="an-overview-filter-label">
-            Topic / Watchlist:
-          </label>
-          <select
-            id="overview-watchlist-selector"
-            className="an-watchlist-select"
-            value={filters.activeWatchlistFilter ?? ''}
-            onChange={(e) => handleWatchlistSelect(e.target.value || null)}
-          >
-            <option value="">All Topics</option>
-            {watchlists.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name} ({w.matchType.replace(/_/g, ' ')})
-              </option>
-            ))}
-          </select>
-        </div>
+      {!hideHeaderControls && (
+        <div className="an-overview-header-controls">
+          <div className="an-overview-watchlist-select-wrap">
+            <label htmlFor="overview-watchlist-selector" className="an-overview-filter-label">
+              Topic / Watchlist:
+            </label>
+            <select
+              id="overview-watchlist-selector"
+              className="an-watchlist-select"
+              value={filters.activeWatchlistFilter ?? ''}
+              onChange={(e) => handleWatchlistSelect(e.target.value || null)}
+            >
+              <option value="">All Topics</option>
+              {watchlists.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name} ({w.matchType.replace(/_/g, ' ')})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="an-overview-header-right">
-          {dateRangePicker}
+          <div className="an-overview-header-right">
+            {dateRangePicker}
 
-          <button
-            type="button"
-            id="widget-filtered-post-count"
-            className="an-filtered-count-btn"
-            onClick={() => setDrawerOpen(true)}
-          >
-            <span>{filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}</span>
-            <span className="an-post-drawer-tag">POSTS ›</span>
-          </button>
+            <button
+              type="button"
+              id="widget-filtered-post-count"
+              className="an-filtered-count-btn"
+              onClick={() => setDrawerOpen(true)}
+            >
+              <span>{filteredPosts.length.toLocaleString()} matching post{filteredPosts.length === 1 ? '' : 's'}</span>
+              <span className="an-post-drawer-tag">POSTS ›</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {chips.length > 0 && (
         <div className="an-filter-banner" id="an-overview-chip-bar">

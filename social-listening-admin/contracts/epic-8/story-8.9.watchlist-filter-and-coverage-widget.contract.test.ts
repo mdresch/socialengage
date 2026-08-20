@@ -155,6 +155,43 @@ describe('Story 8.9 — selectedTopic watchlist filter and Watchlist Coverage wi
       expect(html).toContain('All Topics');
     });
 
+    it('AnalyticsClient renders the watchlist selector in the persistent header toolbar across tabs', () => {
+      jest.doMock('next/navigation', () => ({
+        useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
+      }));
+      const html = renderComponent(
+        path.join(ADMIN_ROOT, 'src', 'app', 'tenant', 'analytics', 'AnalyticsClient.tsx'),
+        'AnalyticsClient',
+        {
+          initialSummary: {
+            totalPosts: 5,
+            sentimentSplit: { positive: 2, neutral: 2, negative: 1 },
+            sources: [],
+            sentimentHistory: [],
+            topFans: [],
+            topCritics: [],
+            positivePhrases: [],
+            negativePhrases: [],
+            phraseFrequency: [],
+            phraseHistory: [],
+            volumeHistory: [{ date: '2026-08-19', count: 5 }],
+            languages: [],
+            sourceVolumeHistory: [],
+            posts: [],
+          },
+          initialRange: { startDate: '2026-08-01', endDate: '2026-08-20' },
+          initialTab: 'sentiment',
+          initialOverviewFilters: {},
+          watchlists: SAMPLE_WATCHLISTS,
+          initialWatchlistCoverage: SAMPLE_COVERAGE,
+        }
+      );
+
+      expect(html).toContain('id="overview-watchlist-selector"');
+      expect(html).toContain('an-header-toolbar');
+      expect(html).toContain('widget-filtered-post-count');
+    });
+
     it('OverviewTab.tsx does not introduce any client-side terms[] matching predicate', () => {
       const source = readSrc(...overviewTabPath);
       // Ensures applyOverviewFilters does not filter by terms or boolean AST client-side
