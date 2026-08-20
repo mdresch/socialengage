@@ -1876,3 +1876,15 @@
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 8e50e38 — docs: update reviews and time tracking
+
+- **Full commit:** `8e50e387ba9fbdfe27e8cac2932de6d95ffa5f11`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable
+
+- **Full commit:** `76941c005b8fd6feb0a26b262f03b1a8af67e4f9`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/shell.test.ts
+- **Status:** Pending review
+
