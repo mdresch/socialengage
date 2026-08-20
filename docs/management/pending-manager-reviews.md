@@ -2325,3 +2325,9 @@
 - **Files touched:** docs/implementation-log.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts, social-listening-core/src/authors/authorStore.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
 - **Status:** Pending review
 
+## 2026-08-20 — b0dc89e — feat(admin): implement Facebook hosting Page attribution and author distinction display (Story 6.33 / ADR-0067)
+
+- **Full commit:** `b0dc89e38aa2ee5476ba99db34f875cc11e70891`
+- **Files touched:** docs/implementation-log.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
