@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 12:46 | — | — | Documentation | — | fix(tenant): show most-recently ingested posts first in recent ingestion stream (cb953f1) |
+| 2026-08-20 | 12:43 | — | — | Review | — | docs: update review logs (142638c) |
 | 2026-08-20 | 12:42 | — | — | Documentation | — | feat(tenant): update overview metric cards with icons, full-width grid, and real actuals (8d9b6f3) |
 | 2026-08-20 | 12:38 | — | — | Review | — | docs: update review tracking (6115e1b) |
 | 2026-08-20 | 12:38 | — | — | Documentation | — | feat(shell): add icons to sidebar navigation items and make sidebar collapsable (76941c0) |

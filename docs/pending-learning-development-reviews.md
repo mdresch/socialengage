@@ -1900,3 +1900,15 @@
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/page.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 142638c — docs: update review logs
+
+- **Full commit:** `142638c24d5e21c5dc8a5fb627abcec7ae77713f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream
+
+- **Full commit:** `cb953f1d197bf09f6c7cfc1cbcc57950d5276038`
+- **Files touched:** social-listening-admin/src/app/tenant/page.tsx
+- **Status:** Pending review
+
