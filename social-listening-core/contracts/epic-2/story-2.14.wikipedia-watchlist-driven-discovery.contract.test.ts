@@ -37,6 +37,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { closePool } from '../../src/db/pool';
+import { closePlatformAdminPool } from '../../src/db/platformAdminPool';
 import { withTenant } from '../../src/db/withTenant';
 import * as wikipediaConnectorModule from '../../src/connectors/wikipedia/wikipediaConnector';
 import { WIKIPEDIA_PROVIDER_ID } from '../../src/connectors/wikipedia/wikipediaConnector';
@@ -55,6 +56,7 @@ async function makeTenant(label: string): Promise<{ tenantId: string; userId: st
 }
 
 afterAll(async () => {
+  await closePlatformAdminPool();
   await closePool();
 });
 

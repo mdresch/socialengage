@@ -35,6 +35,7 @@ export interface IngestedPostForEventPublishing {
   authorExternalId?: string;
   sentiment?: string | null;
   publishedAt?: string | null;
+  discoveringWatchlistId?: string;
 }
 
 /**
@@ -80,10 +81,11 @@ export async function publishSocialPostIngestedEvents(
   const matchedWatchlistIds: string[] = [];
 
   for (const watchlist of watchlists) {
+    const isDiscoveringWatchlist = Boolean(
+      post.discoveringWatchlistId && watchlist.id === post.discoveringWatchlistId
+    );
     const ast = watchlistToAst(watchlist);
-    if (!ast) continue;
-
-    const matched = matchesAst(ast, matchablePost);
+    const matched = isDiscoveringWatchlist || (ast ? matchesAst(ast, matchablePost) : false);
     if (!matched) continue;
 
     matchedWatchlistIds.push(watchlist.id);

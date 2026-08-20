@@ -37,8 +37,20 @@ module.exports = async function globalSetup() {
     cwd: __dirname,
     stdio: 'inherit',
   });
-  execSync('npx ts-node src/db/migrate.ts', {
-    cwd: __dirname,
-    stdio: 'inherit',
-  });
+
+  // Brief pause/retry for Postgres socket acceptance on cold start
+  let migrated = false;
+  for (let i = 0; i < 5; i++) {
+    try {
+      execSync('npx ts-node src/db/migrate.ts', {
+        cwd: __dirname,
+        stdio: 'inherit',
+      });
+      migrated = true;
+      break;
+    } catch (err) {
+      if (i === 4) throw err;
+      execSync('node -e "setTimeout(() => {}, 500)"');
+    }
+  }
 };

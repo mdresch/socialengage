@@ -14,6 +14,7 @@ A real, queryable junction table (`post_watchlist_matches`) persisting the `(pos
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0063 | `post_watchlist_matches` junction table; match pairs written at ingestion, best-effort; `GET /v1/posts?watchlistId` filter, 400/404 mapping; historical/staleness gaps named, not solved | 3.11 |
+| ADR-0063 (Amendment Log 2026-08-20) | Retroactive backfill (`backfillPostWatchlistMatches()`, migration 0038) and discovery-driven watchlist attribution | 3.12 |
 | ADR-0058 | The match-pairs computation this story persists — `publishSocialPostIngestedEvents()`'s own `matchesAst()` loop, unchanged | 5.19 |
 | ADR-0044 §5c | The 404-vs-403, ownership-scoped split this story's `watchlistId` existence check reuses via `getWatchlistById(tenantId, userId, id)` | 1.5 |
 | ADR-0011 | Cursor (keyset, `seq`-ordered) pagination — unchanged by the `watchlistId` JOIN | 3.4 |
@@ -21,11 +22,12 @@ A real, queryable junction table (`post_watchlist_matches`) persisting the `(pos
 ## Contracts that constrain this component
 
 - `contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts` — `post_watchlist_matches`' own schema/indexes/UNIQUE constraint/RLS policy; `insertPostWatchlistMatches()` is idempotent (`ON CONFLICT DO NOTHING`); a real matching watchlist produces a real row via `publishSocialPostIngestedEvents()`; a store-layer failure there is logged, never thrown, never fails the surrounding `runIngestionAttempt()`; `GET /v1/posts?watchlistId=<id>` returns only matched posts for a valid id, 404s `WATCHLIST_NOT_FOUND` for a cross-tenant or another-user's-in-the-same-tenant id, 400s `INVALID_WATCHLIST_ID` for a malformed string, and preserves `seq`-based cursor pagination; a post with no match row returns an honest empty result, not an error.
+- `contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts` — `backfillPostWatchlistMatches()` scans unlinked `social_posts` and populates `post_watchlist_matches` via AST evaluation, idempotent on rerun; discovery-driven ingestion in `pollWikipedia.ts` explicitly attributes the discovering watchlist ID in `post_watchlist_matches`; re-poll evaluates all active watchlists via fallback AST matching.
 
 ## How to extend this safely
 
 - **A new connector that should also write match records:** nothing to do here — every connector that already calls `publishSocialPostIngestedEvents()` (GNews, Newswire, Facebook, tenant-owned-feed, Wikipedia) gets match persistence automatically, the moment it publishes events at all. Don't add a second, parallel call to `insertPostWatchlistMatches()` anywhere else.
-- **A retroactive backfill for historical posts** (ADR-0063 Open Question 1): feasible using the existing `matchesWatchlist()`/`matchesAst()` fallback matchers against `body_markdown` — not built. Check that Open Question before adding one speculatively; a `POST /v1/watchlists/:id/reindex` endpoint is the named (not designed) direction.
+- **A retroactive backfill for historical posts** (Story 3.12, ADR-0063 Open Question 1 resolved): call `backfillPostWatchlistMatches(tenantId?)` or let migration `0038_backfill_post_watchlist_matches.sql` run automatically.
 - **A `postCount` field on `GET /v1/watchlists`** (ADR-0063 Open Question 4, Story 8.9's own judgment call): a cheap `COUNT(*) ... GROUP BY watchlist_id` join on this table — not this story's own scope, don't add it here without Story 8.9 actually calling for it.
 - **A new `GET /v1/posts` filter** (`platformId`, `from`/`to`, `sentiment` — still named, still not built per `posts-api/SKILL.md`): follow this story's own shape — thread an optional field through `ListSocialPostsOptions`, add the `WHERE`/`JOIN` clause to both `queryFirstPage`/`queryAfterCursor` together, never touch `seq` ordering.
 
@@ -40,8 +42,8 @@ A real, queryable junction table (`post_watchlist_matches`) persisting the `(pos
 
 ## Known gaps / deferred work
 
-- **No retroactive backfill** (ADR-0063 Open Question 1) — posts ingested before this table existed have no match records; `GET /v1/posts?watchlistId=<id>` returns an honest empty result for them, not an error.
-- **No re-matching on watchlist update** (ADR-0063 Open Question 2) — a watchlist's `terms[]`/`booleanQuery` change does not retroactively re-evaluate existing match rows; new posts use the new definition, historical posts keep the old one.
+- **No retroactive backfill** — closed by Story 3.12 (`backfillPostWatchlistMatches()` / migration `0038_backfill_post_watchlist_matches.sql`).
+- **No re-matching on watchlist update** (ADR-0063 Open Question 2) — a watchlist's `terms[]`/`booleanQuery` change does not automatically re-evaluate existing match rows; new posts use the new definition, historical posts keep the old one (can be refreshed manually via backfill if needed).
 - **No storage ceiling / TTL / partitioning** for `post_watchlist_matches` (ADR-0063 Open Question 3) — grows proportionally to `posts × active_watchlists_per_tenant`; left to a future ADR if a real capacity signal emerges.
 - **`GET /v1/watchlists`'s own `postCount` field is not added** (ADR-0063 Open Question 4) — left to Story 8.9's own implementation-time judgment, not fixed here.
 - **`social-listening-admin`'s `activeWatchlistFilter` (ADR-0062 Decision §3) is not upgraded to use this filter** — that's Story 8.9's own, separate, `social-listening-admin`-only scope; this story only builds the backend prerequisite.
