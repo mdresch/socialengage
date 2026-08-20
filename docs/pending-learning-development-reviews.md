@@ -2016,3 +2016,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
 - **Status:** Pending review
 
+## 2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts
+
+- **Full commit:** `70035d7e03eeb2e2e3a3020938ba91cf511ab4d6`
+- **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/adr/README.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
