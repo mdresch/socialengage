@@ -2652,20 +2652,25 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-08-20 — Story 2.20 — social-listening-core
+## 2026-08-20 — Story 8.10 — social-listening-admin@75a0a4a
 
-- **Repo:** social-listening-core
-- **Story / ADR:** 2.20 / ADR-0064 (Location and geospatial insights from posts and authors)
-- **Contract:** social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts (12/12)
-- **SKILL.md:** social-listening-core/.claude/skills/social-post-enrichment/SKILL.md (updated)
-- **Files touched:** docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/implementation-plan.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts, social-listening-core/src/connectors/geo/geoCountryUtils.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/types.ts
-- **Full suite at merge:** PASS, 4/4 suites, 34/34 tests passing in affected Epic 2 connectors; 12/12 in Story 2.20 contract test.
+- **Full commit:** `75a0a4a72328f56953c49f3622b3e0ebfd0830ea`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.10 / ADR-0064 (Location and geospatial insights from posts and authors)
+- **Contract:** social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts (13/13)
+- **SKILL.md:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md (updated)
+- **Files touched:** docs/implementation-plan.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Full suite at merge:** PASS, 39/39 suites, 597/597 tests passing in `social-listening-admin`; 9/9 suites, 158/158 tests in `contracts/epic-8/`
 
-**Delivered Story 2.20 following the contract-first methodology per ADR-0064:**
-- **Zero Database Migration Model (ADR-0064 §2):** Country geospatial metadata is stored strictly inside `social_posts.enrichment` JSONB using camelCase properties (`geoCountry`, `geoCountryName`, `geoRegion`, `geoSource`, `geoConfidence`). `post_geo_location` remains reserved for future coordinates.
-- **`geoCountryUtils.ts` Helper Library:** Implemented `normalizeCountryCode()` (validating 2-letter uppercase ISO 3166-1 alpha-2 codes and rejecting multi-letter/invalid strings), `getCountryName()` (resolving common country codes to display names), and `buildGeoEnrichment()`.
-- **GNews Country Extraction (AC2):** Polling extracts `article.source.country`, normalizes to ISO alpha-2 uppercase, and merges into post enrichment with `geoSource: 'source'` and `geoConfidence: 'high'`.
-- **Newswire RSS Parsing & Domain Mapping (AC3):** `rssFeedParser.ts` parses explicit `<country>`, `<sourceCountry>`, and `<dc:coverage>` tags (`geoSource: 'post'`, `geoConfidence: 'high'`), falling back to unambiguous wire domain mappings (`geoSource: 'source'`, `geoConfidence: 'medium'`) such as PR Newswire and Business Wire.
-- **Tenant-Owned Feed Parsing (AC4):** `feedItemParser.ts` parses explicit `<country>` and `<countryCode>` tags from RSS/Atom items (`geoSource: 'post'`, `geoConfidence: 'high'`), defaulting cleanly to null for unstructured or absent country data.
-- **Contract & API Compatibility (AC5, AC6):** Facebook posts leave `geoCountry` absent/null. `GET /v1/posts` exposes `enrichment.geoCountry` and `geoCountryName` unfiltered without schema changes.
+**Delivered Story 8.10 following the contract-first methodology per ADR-0064:**
+- **Post Display & Geospatial Extraction Widening (AC1):** `PostEnrichmentSummary` and `extractEnrichmentSummary()` in `postDisplay.ts` are widened to extract `geoCountry`, `geoCountryName`, `geoRegion`, `geoSource`, and `geoConfidence` from post enrichment without any schema changes.
+- **Pure Country Breakdown Aggregation (`computeCountryBreakdown` in `analyticsData.ts`, AC2, AC3, AC4):**
+  - Groups filtered posts by `enrichment.geoCountry` (ISO 3166-1 alpha-2) and ranks countries descending by post volume.
+  - Calculates post count, percentage volume share, and regional sentiment split (`positive`, `neutral`, `negative`).
+  - Creates an explicit, dedicated "Unknown" bucket (`{ countryCode: 'UNKNOWN', name: 'Unknown / Unmapped' }`) for posts without geo metadata, ensuring unmapped volume is never hidden or averaged away (ADR-0064 §4).
+  - Small-sample suppression threshold: countries with fewer than 3 posts in the active filter window suppress sentiment scores (`sentiment: null`, `sentimentIndex: null`) to prevent small-sample bias (ADR-0064 §4).
+- **Location & Geospatial Insights Widget (`id="widget-location-insights"`, AC5):** Renders in the Overview tab center column featuring an interactive inline SVG world choropleth map (`CountryWorldMap.tsx`) with density-scaled palette shading, interactive hover tooltips with sentiment stats, and a ranked Top Countries list.
+- **7th Filter Dimension & Click-to-Filter Integration (AC6):** Clicking a country row or map polygon sets `activeCountryFilter` to the country ISO code or `'UNKNOWN'`, composing with all other filters with AND semantics in `applyOverviewFilters()`. Clicking again toggles off. Emits a dismissible filter chip in the Overview filter chips bar and round-trips `?country=<ISO>` in deep-linking state.
+- **Zero-regression Validation (AC7):** All 39 test suites across `social-listening-admin` passed cleanly. Updated prior exact-shape assertions in `story-8.2` and `story-8.7` contracts with dated notes per the "extend, don't weaken" project methodology.
+
 
