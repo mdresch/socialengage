@@ -2095,3 +2095,15 @@
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 624c626 — docs: update review tracking
+
+- **Full commit:** `624c6263f819237845fa7982f4f7a31a59ebfef3`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget
+
+- **Full commit:** `d2dff0dd7e5a29bc37eb37b64f65c07499c756fe`
+- **Files touched:** social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
+- **Status:** Pending review
+

@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 14:03 | — | — | Documentation | — | feat(analytics): add platform icons and brand coloring to Authors by Source widget (d2dff0d) |
+| 2026-08-20 | 13:49 | — | — | Review | — | docs: update review tracking (624c626) |
 | 2026-08-20 | 13:48 | — | — | Documentation | — | feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget (8cbb71a) |
 | 2026-08-20 | 13:42 | — | — | Review | — | docs: update review logs (034e968) |
 | 2026-08-20 | 13:42 | — | — | Documentation | — | feat(analytics): place Sources and Authors widgets underneath volume graph in centre column (72a15c9) |
