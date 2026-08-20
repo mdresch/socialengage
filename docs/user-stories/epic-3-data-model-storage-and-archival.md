@@ -223,3 +223,32 @@
 **Explicitly out of scope:** retroactive backfill of historical posts (ADR-0063 Open Question 1 — deliberately not built; a future `POST /v1/watchlists/:id/reindex` endpoint is the named design direction); re-matching on watchlist update when `terms[]` or `boolean_query` changes (ADR-0063 Open Question 2 — accepted staleness at v1); `GET /v1/watchlists` response `postCount` field (ADR-0063 Open Question 4 — left to Story 8.9's judgment); any `social-listening-admin` change (Story 8.9).
 
 **Note:** AC1's `post_id` column deliberately carries no DB-enforced foreign key into `social_posts`, discovered at implementation time and corrected in ADR-0063's own Amendment Log — `social_posts` has been partitioned by `created_at` since migration `0012` (Story 3.5, ADR-0018), which forced its primary key to become composite (`id`, `created_at`); Postgres requires a partitioned table's unique/PK constraints to include the partition key, so `social_posts.id` alone has no unique constraint to reference. This is the same conflict already resolved once for `social_posts.acquisition_id → ingestion_runs(id)` (`data-retention-and-archival/SKILL.md`) — `post_id` is app-enforced only, the same tier `acquisition_id`/`author_id` already partly rely on. No code path in this repo hard-deletes an individual `social_posts` row today, so the `ON DELETE CASCADE` guarantee this trades away is currently theoretical, not active. `watchlist_id`'s own `ON DELETE CASCADE` is unaffected — `watchlists` is not partitioned.
+
+---
+
+## Story 3.12 — Post-watchlist match historical backfill and discovery-driven watchlist attribution
+
+**Source:** ADR-0063 (2026-08-20 Amendment Log entry) · **Status:** Ready
+**Depends on:** Story 3.11 (`post_watchlist_matches` table, **Built** 2026-08-19); Story 2.14 (Wikipedia watchlist-driven discovery, **Built** 2026-08-18)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** historical posts ingested before Story 3.11 to be matched against active watchlists in `post_watchlist_matches`, and Wikipedia posts discovered via a specific watchlist to be attributed directly to that watchlist,
+**so that** historical and discovered posts accurately populate the watchlist coverage charts and topic filters on the analytics dashboard.
+
+**Acceptance Criteria**
+
+1. **Backfill function / operation:** A new function `backfillPostWatchlistMatches(tenantId?: string)` in `social-listening-core/src/watchlists/postWatchlistMatchStore.ts`:
+   - Iterates through existing `social_posts` across all tenants (or scoped to `tenantId` if provided).
+   - For each post, loads the tenant's active watchlists via `listActiveWatchlistsForTenant(tenantId)`.
+   - Converts each watchlist to an AST (`watchlistToAst(watchlist)`) and runs the fallback AST evaluator `matchesAst(ast, { id: post.id, text, authorExternalId })` against the post's text (composed from title/snippet and `body_markdown`).
+   - Inserts the resulting pairs into `post_watchlist_matches` using `insertPostWatchlistMatches()` (`ON CONFLICT (post_id, watchlist_id) DO NOTHING`), ensuring idempotency and zero duplicate match records.
+   - Proven by a contract test verifying that historical posts unlinked in `post_watchlist_matches` become linked after running `backfillPostWatchlistMatches()`, without creating duplicate rows on repeated runs.
+2. **Backfill migration execution:** A new migration (`0038_backfill_post_watchlist_matches.sql` or equivalent runner step) runs the retroactive backfill pass during database migration so that existing databases automatically populate `post_watchlist_matches` upon upgrade.
+3. **Wikipedia discovery-driven attribution:** In `pollWikipedia.ts` (Story 2.14), when articles are fetched during Phase 1 (discovery) for a specific watchlist's discovery query:
+   - The discovering watchlist's `watchlist.id` is explicitly passed into `ingestWikipediaRevisions()`.
+   - `publishSocialPostIngestedEvents()` guarantees that the discovering `watchlistId` is included in the persisted `matchedWatchlistIds` sent to `insertPostWatchlistMatches()`, while continuing to evaluate all other active tenant watchlists via `matchesAst()`.
+   - Proven by a contract test confirming that an article discovered via a watchlist query is always recorded in `post_watchlist_matches` for that watchlist even if specific sub-phrasing varies.
+4. **Re-poll preserved:** Re-polling already-tracked Wikipedia articles (Phase 2 of `pollWikipedia.ts`) continues to evaluate all active tenant watchlists via `publishSocialPostIngestedEvents()`.
+5. **No breaking changes:** `GET /v1/posts?watchlistId=<id>` response shape, RLS policies, and error handling remain unchanged.
+
+**Explicitly out of scope:** Automatic re-matching triggers on live watchlist term update (ADR-0063 Open Question 2 — accepted staleness at v1; can be invoked via manual backfill if needed); any change to `social-listening-admin`.

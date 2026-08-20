@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 11:24 | — | — | Documentation | Story 8.9 | docs(story-8.9): record implementation and traceability for Story 8.9 (1fee797) |
 | 2026-08-20 | 11:23 | — | — | Documentation | — | feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget (605e5a4) |
 | 2026-08-20 | 09:55 | — | — | Review | — | docs: sync tracking and review registers (983ae70) |
 | 2026-08-20 | 09:54 | — | — | Review | — | docs: ADR filename fixes and governance review updates (1bb19f7) |
