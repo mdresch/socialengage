@@ -1893,3 +1893,9 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-08-20:** see docs/management/manager-register.md's entry reviewing 6080795/2c00920/67c546f/48f5cf3/a5d0036/23a6dca/2f605b6/59356e6/6f25f17/6eb6062/24adf6c/c1d6a44/17c563b/31af056.
 
+## 2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues
+
+- **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
+- **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
+- **Status:** Pending review
+

@@ -1515,3 +1515,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
+## 2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues
+
+- **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
+- **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
+- **Status:** Pending review
+
