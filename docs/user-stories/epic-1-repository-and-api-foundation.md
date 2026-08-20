@@ -368,8 +368,8 @@
 
 ## Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health Derivation, and Service Bus Ingestion Alert Events
 
-**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Built
+**Built:** 2026-08-20
 **Depends on:** Story 1.13 (Live polling scheduler), Story 1.14 (In-flight run guard), Story 1.15 (Tier-3 per-user scheduler), Story 5.19 (Service Bus event publishing)
 
 **As a** system operator and platform engineer,

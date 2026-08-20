@@ -11,7 +11,13 @@ import { isConnectorActive, ConnectorActivationOwnerType } from './connectorActi
  * individual to actually reconnect (ADR-0059 Decision §4's own named silent-
  * failure problem this status exists to surface honestly).
  */
-export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+export type ConnectorHealthStatus =
+  | 'healthy'
+  | 'degraded'
+  | 'failing'
+  | 'disconnected'
+  | 'reconnect_required'
+  | 'stalled';
 export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
 
 export interface ConnectorHealth {
@@ -21,6 +27,17 @@ export interface ConnectorHealth {
   consecutiveFailures: number;
   credentialStatus: CredentialStatus | null;
 }
+
+export interface DeriveConnectorHealthOptions {
+  effectiveCadenceMs?: number;
+  isConnectorActive?: boolean;
+  now?: number;
+}
+
+export const DEFAULT_EFFECTIVE_CADENCE_MS = 15 * 60 * 1000;
+export const STALL_CADENCE_MULTIPLIER = 3;
+export const MIN_STALL_CADENCE_MS = 45 * 60 * 1000;
+export const MAX_INGESTION_SILENCE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * `failing` derivation (Story 2.5, ADR-0023) — supersedes the original flat
@@ -77,12 +94,16 @@ interface IngestionRunRow {
  * `platform_credentials` has no `page_id` column, so `pageId` never filters
  * the credentialStatus sub-query — only `userId` does, unchanged from
  * Story 1.15.
+ *
+ * Story 1.16 (ADR-0070 §2) — derives 'stalled' status with strict precedence:
+ * disconnected -> reconnect_required -> failing -> stalled -> degraded -> healthy.
  */
 export async function deriveConnectorHealth(
   tenantId: string,
   platformId: string,
   pageId?: string,
-  userId?: string
+  userId?: string,
+  options?: DeriveConnectorHealthOptions
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
     const runConditions = ['platform_id = $1'];
@@ -156,26 +177,46 @@ export async function deriveConnectorHealth(
       recentAttempts >= RATE_ATTEMPT_FLOOR && recentFailures / recentAttempts >= RATE_FAILURE_THRESHOLD;
     const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
 
-    /**
-     * Story 2.15 (ADR-0059 Decision §4) — 'reconnect_required' overrides
-     * the ordinary rate/ceiling-derived status when the single most recent
-     * run (runs[0], already ordered DESC) was a credential-class failure —
-     * but every other field (consecutiveFailures, recentFailures/Successes,
-     * lastSuccessfulFetchAt) is still computed by the exact same loop
-     * above, unchanged. A prior version of this derivation short-circuited
-     * before that loop ran at all, hardcoding consecutiveFailures to 0 —
-     * a real, found-live regression (Story 1.13's own GNews credential-
-     * failure test, whose missing-credential path is *also* http_401,
-     * expects consecutiveFailures to still increment normally). Overriding
-     * only the label, never bypassing the counting, is what keeps that
-     * already-established behavior intact for every connector, Facebook
-     * included.
-     */
-    const status: ConnectorHealthStatus =
-      runs[0].status === 'failed' && runs[0].is_credential_failure === true
-        ? 'reconnect_required'
-        : rateFailing || ceilingFailing
-          ? 'failing'
+    // Strict precedence order (ADR-0070 §2):
+    // 1. reconnect_required (credential failure on runs[0] OR revoked/expired credentialStatus)
+    const isCredentialRevoked = credentialStatus === 'expired' || credentialStatus === 'revoked';
+    const isLatestRunCredentialFailure = runs[0].status === 'failed' && runs[0].is_credential_failure === true;
+    const isReconnectRequired = isLatestRunCredentialFailure || isCredentialRevoked;
+
+    // 2. failing (rate or ceiling)
+    const isFailing = rateFailing || ceilingFailing;
+
+    // 3. stalled (active connector, valid credentials, not failing or reconnect_required, and cadence or silence breached)
+    let isStalled = false;
+    if (!isReconnectRequired && !isFailing) {
+      const isConnectorActiveState =
+        options?.isConnectorActive !== undefined
+          ? options.isConnectorActive
+          : await isConnectorActive(tenantId, platformId, userId ? 'user' : 'tenant', userId);
+
+      const hasValidCredentials = credentialStatus === null || credentialStatus === 'valid' || credentialStatus === 'expiring_soon';
+
+      if (isConnectorActiveState && hasValidCredentials) {
+        const now = options?.now ?? Date.now();
+        const effectiveCadenceMs = options?.effectiveCadenceMs ?? DEFAULT_EFFECTIVE_CADENCE_MS;
+        const stallCadenceThreshold = Math.max(MIN_STALL_CADENCE_MS, STALL_CADENCE_MULTIPLIER * effectiveCadenceMs);
+        const lastAttemptMs = runs[0].started_at.getTime();
+        const lastSuccessMs = lastSuccessfulFetchAt ? new Date(lastSuccessfulFetchAt).getTime() : -Infinity;
+
+        const isCadenceBreached = (now - lastAttemptMs) >= stallCadenceThreshold;
+        const isSilenceBreached = (now - lastSuccessMs) >= MAX_INGESTION_SILENCE_MS;
+        if (isCadenceBreached || isSilenceBreached) {
+          isStalled = true;
+        }
+      }
+    }
+
+    const status: ConnectorHealthStatus = isReconnectRequired
+      ? 'reconnect_required'
+      : isFailing
+        ? 'failing'
+        : isStalled
+          ? 'stalled'
           : recentFailures > 0 && recentSuccesses > 0
             ? 'degraded'
             : 'healthy';
