@@ -869,5 +869,106 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ---
 
+## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
+
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
+
+**As a** Tenant Administrator or User,
+**I want** to connect our organization's Instagram Business and Creator accounts via Meta OAuth, select which accounts to ingest using an account picker modal, monitor connector health on the status screen, and review rich Instagram posts (including carousel galleries and Reels) in the post feed and details drawer,
+**so that** our team can easily manage visual brand listening alongside our other social channels.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `instagram` to `PLATFORMS` definition:
+    - `id: 'instagram'`, `name: 'Instagram Business'`, `subtitle: 'Meta Graph API Ingestion Source'`
+    - `description: 'Ingests published photos, videos, carousels, and reels directly from your connected Instagram Business and Creator accounts via Meta Graph API.'`
+    - `category: 'Ingestion'`, `authMode: 'oauth'`
+    - `personalScopeAllowed: true`, `tenantScopeAllowed: false` (Tier-3 user credential)
+    - `icon: 'instagram'`, `color: 'pink'` (or gradient-aligned badge)
+- **OAuth Connect Flow & Multi-Account Picker Modal (`InstagramAccountPickerModal.tsx`):**
+  - Initiates OAuth via `/api/connectors/instagram/connect` with required scopes (`instagram_basic`, `pages_show_list`, `pages_read_engagement`).
+  - Upon OAuth callback, queries `GET /me/accounts?fields=id,name,instagram_business_account{id,username,name,profile_picture_url,followers_count}`.
+  - Displays modal listing all discovered Instagram Business/Creator accounts linked to the user's Facebook Pages, with account avatar, handle (`@username`), parent Facebook Page name, and checkboxes.
+  - Submits selected accounts to `/api/connectors/instagram/accounts` (`POST`) to register them in `instagram_connected_accounts`.
+- **Connector Status, Health, & Alerts (`/tenant/connectors/status`):**
+  - Renders `instagram` in the "Connectors" (Ingestion) section with connected account count.
+  - Shows operational telemetry: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 15m").
+  - Displays `reconnect_required` badge (and surfaces global `IngestionAlertBanner`) when Graph API returns errors `190`/`10`/`100`.
+  - Gated on credential owner or `tenant_admin`: renders "Re-sync now" button for on-demand polling.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'instagram'`, post card header displays:
+    - `Instagram Business` badge.
+    - Hosting account badge (e.g. `📍 @acmeglobal`).
+    - Publication timestamp.
+  - Renders visual media preview if `mediaUrl` or `thumbnailUrl` is available in `rawPayload` (with graceful fallback to canonical link).
+  - Displays engagement counters (`❤️ {likeCount}` · `💬 {commentsCount}`).
+- **Post Detail Panel & Carousel Gallery (`PostDetailPanel.tsx`):**
+  - For `mediaType === 'CAROUSEL_ALBUM'`, renders an interactive or multi-thumbnail carousel gallery derived from `rawPayload.children` (in preserved display order).
+  - If `rawPayload.childrenTruncated === true`, displays a subtle "View full gallery on Instagram" link pointing to `url`.
+  - Details telemetry row displays **Hosting Instagram Account:** `@username (ID: {igUserId})` and parent Facebook Page name.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts` asserts:
+    - Platform definition registers `instagram` with Tier-3 scope and correct metadata.
+    - Post card renders hosting handle `@username` and media preview gracefully.
+    - Post detail panel renders carousel gallery from `rawPayload.children`.
+    - Connector status screen displays operational metrics and `reconnect_required` badge.
+
+**Explicitly out of scope:** Ingesting personal Instagram account timelines; direct publishing/replying from admin UI.
+
+---
+
+## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
+
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
+
+**As a** Tenant Administrator or User,
+**I want** to connect our organization's LinkedIn member and company accounts via OAuth, view connector operational health and scope availability on the status screen, and view ingested LinkedIn posts in the post feed and details drawer,
+**so that** our team can monitor professional network discussions and company page interactions seamlessly.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `linkedin` to `PLATFORMS` definition:
+    - `id: 'linkedin'`, `name: 'LinkedIn'`, `subtitle: 'OAuth Ingestion Source'`
+    - `description: 'Ingests published posts, comments, reactions, and company page analytics via LinkedIn REST API.'`
+    - `category: 'Ingestion'`, `authMode: 'oauth'`
+    - `personalScopeAllowed: true`, `tenantScopeAllowed: false` (Tier-3 user credential)
+    - `icon: 'linkedin'`, `color: 'blue'`
+- **OAuth Connect & Callback Flow:**
+  - Initiates OAuth via `/api/connectors/linkedin/connect`, generating cryptographically secure `state` parameter cached server-side (TTL 10m).
+  - Handles callback at `/api/connectors/linkedin/callback`, verifying `state` and linking credential to tenant and user.
+- **Graceful Scope Degradation & Status Screen (`/tenant/connectors/status`):**
+  - Renders `linkedin` in the "Connectors" (Ingestion) section.
+  - If organization scopes (`w_organization_social`, `r_organization_social`) are pending or missing, displays a non-blocking informational badge / callout:
+    > *"Organization features unavailable — partner scope approval pending."*
+  - Shows operational telemetry: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 1h").
+  - Surfaces `expiring_soon` badge when token is within 7 days of 60-day expiry or refresh token is within 30 days of 1-year ceiling.
+  - Displays `reconnect_required` badge and alert banner if token is revoked or refresh fails.
+  - Gated on credential owner or `tenant_admin`: renders "Re-sync now" button for on-demand polling.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'linkedin'`, post card header displays:
+    - `LinkedIn` badge.
+    - Author attribution (e.g. `By: John Smith` or `Acme Corp`).
+    - Publication timestamp.
+  - Renders body text from canonical markdown.
+  - Displays engagement counters (reactions, comments, shares).
+- **Post Detail Panel & Drawer (`PostDetailPanel.tsx`):**
+  - Details telemetry row displays **Provider:** `LinkedIn`, **Author ID:** `linkedin:{memberId}`, and post permalink.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts` asserts:
+    - Platform definition registers `linkedin` with Tier-3 scope and correct metadata.
+    - Post card renders LinkedIn badge, author name, and engagement counts.
+    - Status screen displays scope degradation notice when organization scopes are missing.
+    - Connector status screen displays operational metrics and `reconnect_required` badge on token revocation.
+
+**Explicitly out of scope:** In-app LinkedIn ad campaign creation; direct message monitoring.
+
+---
+
 **Documentation Steward correction, 2026-08-19.** Ten stories in this epic — 6.8, 6.14, 6.18, 6.19, 6.20, 6.21, 6.22, 6.23, 6.25, and 6.26 — each already carried a correct, real `**Built:**` field naming a real shipped commit (6.8: `social-listening-admin@6b7fc00`; 6.14: `@a27aa10`; 6.18: `@a97cf30`; 6.19: `@4f099a6`/core `@aa4f317`; 6.20: `@be1764d`/core `@e9d797f`; 6.21: `@21c30bf`; 6.22: `@8182706`; 6.23: `@535338f`; 6.25: `@6550716`; 6.26: `@03c37c9` — every hash confirmed directly against `docs/implementation-log.md`'s own matching entries), but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone — the same class of drift `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13) already names for Stories 5.18/6.7. For 6.23/6.25/6.26 specifically, the `**Built:**` field was placed *before* the `**Source:**/**Status:**` line rather than after it, the inverse of every other story's own ordering in this file — a likely reason this specific instance wasn't already caught by casual visual scanning. All ten Status lines now read "Built <date>," matching each story's own `**Built:**` field and the Log; no Acceptance Criteria text changed. (Story 6.8's own narrative context — a 2026-08-10 original build, `**Built:**` field date backfilled 2026-08-17 per the field's own forward-only, single-commit convention — is unaffected; only the Status word itself was stale.)
+
+
 

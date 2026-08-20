@@ -1,7 +1,7 @@
-# ADR-0029: LinkedIn OAuth Account Connection
+# ADR-0069: LinkedIn Connector (`linkedin`) — OAuth 2.0 Account Connection, Token Lifecycle, and Ingestion Architecture
 
-**Status:** Proposed  
-**Date:** 2026-08-19  
+**Status:** Accepted (2026-08-20)  
+**Date:** 2026-08-19 (Revised and Accepted 2026-08-20)  
 **Author:** Menno Drescher  
 **Project:** Social Engage  
 **Source:** Connector Framework §3 — Social Connector interface (ADR-0002)
@@ -12,25 +12,25 @@
 
 Social Engage requires users to connect their social media accounts so the platform can act on their behalf — publishing content, monitoring engagement, responding to comments, and surfacing analytics. LinkedIn is a primary channel for professional audiences and is a prerequisite for the platform's core value proposition.
 
-LinkedIn exposes its capabilities through the LinkedIn Marketing Developer Platform and the LinkedIn REST API (v2), both gated behind OAuth 2.0. Unlike some platforms, LinkedIn enforces strict API partner tiers; certain scopes (e.g. advertising analytics, organization management) require explicit approval from LinkedIn's Partner Programme.
+LinkedIn exposes its capabilities through the LinkedIn Marketing Developer Platform and the LinkedIn REST API (v2 / Community Management API), gated behind OAuth 2.0. Unlike open platforms, LinkedIn enforces strict API partner tiers; certain scopes (e.g. organization page management, deep analytics) require explicit approval from LinkedIn's Partner Programme.
 
-This ADR governs how the LinkedIn connector fits into the established connector architecture. It does not re-decide credential storage mechanics (ADR-0014), rate-limit enforcement (ADR-0003), error handling and auto-disable (ADR-0010), connector health derivation (ADR-0009), tenant isolation (ADR-0015), or data retention (ADR-0018) — those decisions apply here by reference. This ADR decides only what is specific to the LinkedIn integration: the OAuth flow, the scopes, the token lifecycle, and the connector's implementation of the `SocialConnector` interface.
+This ADR governs how the LinkedIn connector fits into the established connector architecture. It does not re-decide credential storage mechanics (ADR-0014), rate-limit enforcement (ADR-0003), error handling and auto-disable (ADR-0010), connector health derivation (ADR-0009), tenant isolation (ADR-0015), or data retention (ADR-0018) — those decisions apply here by reference. This ADR decides the LinkedIn-specific integration: the OAuth flow, scopes, token lifecycle, error classification, scheduler guardrails, and connector implementation of the `SocialConnector` interface.
 
-Key constraints driving this decision:
+### Key Constraints
 
-- LinkedIn does not allow long-lived user tokens; access tokens expire after 60 days and must be refreshed using a refresh token (valid for 1 year).
-- LinkedIn's API enforces per-member daily limits (e.g. 100 posts/day) and per-endpoint API call quotas that must be tracked per `(tenantId, providerId)` (ADR-0003).
-- LinkedIn's Terms of Service prohibit storing raw API responses beyond what is operationally necessary; only derived/aggregated data may be retained long-term (aligned with ADR-0018).
-- The integration must comply with GDPR: user authorization is explicit, token storage is encrypted (ADR-0014), and users must be able to revoke access and have their tokens and derived data deleted on request.
-- LinkedIn does not offer push webhooks for post engagement on the standard partner tier; this connector is therefore a **poll-mode** connector (`deliveryMode: 'poll'`).
+- **Token Lifecycle:** LinkedIn access tokens expire after 60 days and must be refreshed using a refresh token (valid for up to 1 year from initial issuance).
+- **Rate Limits & Quotas:** LinkedIn enforces per-member daily limits (e.g. 100 posts/day) and per-endpoint Rest.li API call quotas that must be tracked per `(tenantId, providerId)` (ADR-0003).
+- **Data Retention & Privacy:** LinkedIn Terms of Service prohibit storing raw API responses beyond immediate operational needs; only normalized/derived data may be retained long-term (aligned with ADR-0018).
+- **GDPR Compliance:** User authorization is explicit, token storage is envelope-encrypted (ADR-0014), and users must be able to disconnect, revoke access, and have tenant-scoped LinkedIn-derived data deleted on request.
+- **Poll Mode Delivery:** LinkedIn does not offer push webhooks for post engagement on the standard partner tier; this connector operates strictly in **poll mode** (`deliveryMode: 'poll'`).
 
 ---
 
 ## Decision
 
-Social Engage will integrate LinkedIn as a `SocialConnector` implementation under the unified connector pattern (ADR-0002), using OAuth 2.0 Authorization Code Flow with PKCE via the LinkedIn REST API v2.
+Social Engage will integrate LinkedIn as a `SocialConnector` implementation under the unified connector pattern (ADR-0002), using the **OAuth 2.0 Authorization Code Flow (confidential client)** using `client_id` and `client_secret` via the LinkedIn REST API v2.
 
-### 1. Connector interface implementation
+### 1. Connector Interface Implementation
 
 The LinkedIn connector implements `SocialConnector` with the following characteristics:
 
@@ -43,182 +43,208 @@ const linkedInConnector: SocialConnector = {
   getRateLimitConfig(): RateLimitConfig {
     return {
       strategy: 'fixed-window',
-      requestsPerWindow: 100,          // per-member daily post limit
+      requestsPerWindow: 100,          // conservative per-member daily post limit baseline
       windowSeconds: 86400,
-      supportsLiveHeaders: true,        // LinkedIn returns X-RateLimit-* headers
+      supportsLiveHeaders: true,        // LinkedIn returns Rest.li rate limit headers
+      minPollIntervalSeconds: 3600,     // strict baseline: at most once per hour
     };
   },
 
   parseRateLimitHeaders(headers: Headers): Partial<RateLimitState> {
-    // Read X-RateLimit-Remaining and X-RateLimit-Reset; live state
-    // takes priority over static config per ADR-0003.
+    // Defensively and case-insensitively parse LinkedIn Rest.li gateway headers first:
+    // 1. 'x-restli-gateway-ratelimit-remaining' (fallback: 'x-ratelimit-remaining')
+    // 2. 'x-restli-gateway-ratelimit-reset' (epoch seconds; converted to epoch ms)
+    // 3. 'x-restli-gateway-ratelimit-limit' (fallback: 'x-ratelimit-limit')
+    // Live header state dynamically overrides static config per ADR-0003.
   },
 
-  getAuthUrl(tenantId: string): string { /* generate PKCE challenge, build authorize URL */ },
+  getAuthUrl(tenantId: string, state: string): string {
+    // Build authorize URL with cryptographically secure, tenant-scoped state parameter
+  },
 
-  async handleAuthCallback(code: string): Promise<Credential> {
-    // Exchange code for access_token + refresh_token.
-    // Credential stored via envelope encryption in Azure Key Vault (ADR-0014).
+  async handleAuthCallback(code: string, state: string): Promise<Credential> {
+    // Validate state from tenant-scoped cache (TTL 10m, CSRF prevention).
+    // Exchange authorization code for access_token + refresh_token via confidential client flow.
+    // Store credential with explicit refreshTokenExpiresAt via envelope encryption in Azure Key Vault (ADR-0014, ADR-0028).
   },
 
   async refreshToken(credential: Credential): Promise<Credential> {
-    // Called automatically by the core before surfacing a 401 to the tenant (ADR-0010).
-    // On success: update stored credential in Key Vault.
-    // On failure: surface credential_status = 'expired'; do not retry blindly.
+    // Invoked automatically by core before surfacing a 401 (ADR-0010).
+    // On success: updates access_token. If LinkedIn returned a new refresh_token,
+    // updates refresh_token and its refreshTokenExpiresAt (+365 days); otherwise retains existing refresh_token.
+    // On failure: evaluates stored refreshTokenExpiresAt to classify as 'expired' or 'revoked'; halts blind retries.
   },
 
   async poll(credential: Credential, watchlist: Watchlist): Promise<RawPost[]> {
-    // Poll LinkedIn at most once per hour per (tenantId, platformId) to stay within limits.
+    // Poll LinkedIn at most once per hour per (tenantId, 'linkedin').
+    // Higher frequencies (down to 15m) are strictly gated behind partner status verification
+    // and the `linkedin.org.enabled` feature flag.
     // Rate-limit gate enforced by shared RequestGate per ADR-0003.
-    // Each poll recorded as an IngestionRun (ADR-0005).
+    // Each poll attempt (including rate-limited queued runs) is recorded as an IngestionRun (ADR-0005).
   },
 
   normalize(raw: RawPost): { post: SocialPost; author: Author } {
     // Map LinkedIn response to platform-internal data model on ingest.
-    // Raw payloads are not persisted; only normalized data is stored (ADR-0018).
+    // Raw payloads are transient and not stored permanently (ADR-0018).
   },
 };
 ```
 
-### 2. OAuth scopes
+---
 
-Scopes requested at authorization:
+### 2. OAuth Scopes & Graceful Degradation
+
+Scopes are structured into two distinct tiers:
+
+#### A. Member Scopes (Standard Tier — Self-Service)
+Available immediately upon app creation for member-level publishing and analytics:
 
 | Scope | Purpose |
 |---|---|
-| `r_liteprofile` | Read member display name and profile image |
-| `r_emailaddress` | Identify the member for account linkage |
-| `w_member_social` | Create, edit, delete posts on behalf of the member |
-| `r_member_social` | Read likes, comments, shares, impressions on member posts |
-| `w_organization_social` | Publish to organization pages the member administers |
-| `r_organization_social` | Read organization post analytics and follower stats |
+| `openid` / `r_liteprofile` | Read member profile, display name, and avatar |
+| `email` / `r_emailaddress` | Member identity verification and account linkage |
+| `w_member_social` | Create, edit, and delete posts on behalf of the member |
+| `r_member_social` | Read post engagement (reactions, comments, impressions) on member posts |
 
-Scopes requiring LinkedIn Partner Programme approval (`r_organization_social` beyond basic metrics) are requested at authorization time. The feature set degrades gracefully when a scope is unavailable (see Consequences).
+#### B. Organization Scopes (Partner Tier — Gated)
+Requires approved access under LinkedIn's Marketing Developer Partner Programme:
 
-### 3. Token lifecycle and storage
+| Scope | Purpose |
+|---|---|
+| `w_organization_social` | Publish posts to organization / company pages administered by the member |
+| `r_organization_social` | Read organization page post analytics and follower demographics |
 
-- Tokens are stored via **envelope encryption backed by Azure Key Vault** (ADR-0014). This ADR does not re-specify the storage mechanism; it delegates entirely to ADR-0014.
-- The `credentialStatus` field on `ConnectorHealth` (derived per ADR-0009) surfaces `expiring_soon` when the access token is within 7 days of its 60-day expiry, prompting proactive refresh.
-- `refreshToken()` is invoked by the core automatically before surfacing a failure to the tenant (ADR-0010). If the refresh token itself has expired (>1 year), the credential status becomes `expired` and the connector auto-disables with a clear reason — the tenant is prompted to re-authorize.
-- No LinkedIn credentials or raw tokens are exposed to the client at any point.
+#### Graceful Scope Degradation
+Organization-level features are gated behind the `linkedin.org.enabled` feature flag. If organization scopes are not granted (e.g. partner approval pending), the connector continues operating normally for member-level posts and surfaces a non-blocking informational status in the Admin UI:
+> *"Organization features unavailable — partner scope approval pending."*
 
-### 4. Rate-limit integration
-
-LinkedIn rate limits are enforced per `(tenantId, 'linkedin')` via the shared `RequestGate` (ADR-0003), not globally. Where LinkedIn returns live rate-limit state in response headers (`X-RateLimit-Remaining`, `X-RateLimit-Reset`), `parseRateLimitHeaders()` updates the gate's live state, which takes priority over the static declared config. Requests that would exceed the limit are queued and retried after window reset; they are never dropped silently and never counted against the tenant's quota wastefully.
-
-### 5. Error classification (LinkedIn-specific)
-
-Following ADR-0010's retryable / non-retryable split:
-
-| Error | Classification | Response |
-|---|---|---|
-| `401 Unauthorized` (token expired) | Non-retryable before refresh attempt | Attempt `refreshToken()`; if refresh fails → `failing`, surface to tenant |
-| `403 Forbidden` (scope not granted) | Non-retryable | Surface to tenant with scope context; disable affected feature |
-| `429 Too Many Requests` | Retryable | Exponential backoff; `RequestGate` updates live state from response headers |
-| `5xx` transient | Retryable | Exponential backoff |
-| Malformed watchlist | Non-retryable | Surface to tenant immediately |
-
-After the failure threshold (ADR-0023: proportional threshold, not a single global number) is crossed, the connector auto-disables for that tenant. `ConnectorHealth` reflects `disconnected` with a reason; health is never stored separately but derived from `IngestionRun` history (ADR-0009).
-
-### 6. Disconnect and revocation
-
-Disconnect is triggered via the standard `DELETE /connectors/linkedin/disconnect` endpoint (platform API surface). The implementation must:
-
-1. Call `https://www.linkedin.com/oauth/v2/revoke` with the stored access token to revoke the grant at LinkedIn's end.
-2. Delete the envelope-encrypted credential from Azure Key Vault (per ADR-0014 and ADR-0028 creation-authority rules for credential lifecycle).
-3. Enqueue deletion of derived analytics data per ADR-0018's retention and deletion policy.
-
-This satisfies the GDPR right-to-erasure obligation for LinkedIn-sourced data.
-
-### 7. Data retention
-
-Raw LinkedIn API response payloads must not be stored beyond immediate operational need. On ingest, `normalize()` transforms each response into the platform's internal `SocialPost` / `Author` data model; the raw payload is held only transiently in memory during the ingestion pipeline. Debug logging of raw payloads (if enabled for incident diagnostics) is subject to ADR-0018's purge schedule, not retained as permanent records. Derived analytics data follows ADR-0018's archival and deletion tiers.
-
-### 8. Tenant isolation
-
-All credential storage, rate-limit state, `IngestionRun` records, and `ConnectorHealth` derivation are scoped to the tenant. Postgres row-level security (ADR-0015) ensures no cross-tenant data access. One tenant's failing or rate-limited LinkedIn connector has no effect on any other tenant's ingestion.
+The connector remains in `healthy` status and does not fail.
 
 ---
 
-## Alternatives Considered
+### 3. Token Lifecycle, Refresh, and State Parameter Isolation
 
-**A. Third-party social aggregator (e.g. Ayrshare, Buffer API)**  
-Rejected. It introduces a critical dependency on a third-party intermediary that holds tenant tokens outside the platform's security perimeter (contradicting ADR-0014); it increases per-action cost at scale; and it prevents the platform from supporting advanced or custom LinkedIn features as needs evolve.
+- **State Parameter Storage & Tenant Isolation:**
+  - The `state` parameter is generated as a cryptographically secure 32-byte hex string.
+  - Stored server-side in a short-lived, tenant-isolated cache key: `linkedin:oauth:state:{tenantId}:{state}` with a strict **TTL of 10 minutes**.
+  - On callback, the backend validates that the `state` key exists, verifies that the callback context's `tenantId` matches the key's tenant segment (preventing cross-tenant CSRF attacks), and immediately invalidates/deletes the key.
+- **Envelope Encryption Storage:** Tokens are encrypted with a tenant-scoped Data Encryption Key (DEK) backed by Azure Key Vault Key Encryption Key (KEK) per ADR-0014. No raw tokens are exposed to client browsers.
+- **Refresh Token Expiry Persistence (`refreshTokenExpiresAt`):**
+  - An explicit `refreshTokenExpiresAt` timestamp (ISO 8601 UTC) is persisted in the credential metadata.
+  - On initial authorization, it is set to `now + 365 days`.
+  - When invoking `refreshToken()`, LinkedIn returns a new `access_token` (60 days) and **may or may not** return a new `refresh_token`.
+  - If a new `refresh_token` is present in the response, it is stored and `refreshTokenExpiresAt` is updated to `now + 365 days`. If absent, the existing `refresh_token` and its existing `refreshTokenExpiresAt` are retained.
+- **Proactive Warnings on `ConnectorHealth`:**
+  - `credentialStatus: 'expiring_soon'` is surfaced when the access token is within **7 days** of its 60-day expiry (triggering proactive background refresh).
+  - `credentialStatus: 'expiring_soon'` is surfaced when the refresh token is within **30 days** of its `refreshTokenExpiresAt` date (prompting the tenant administrator to re-authenticate).
+- **Deterministic `invalid_grant` Classification:**
+  - When token refresh returns an `invalid_grant` error from LinkedIn:
+    - If `now > refreshTokenExpiresAt`: set `credentialStatus = 'expired'` with reason `"Refresh token expired (>1 year)"`.
+    - If `now <= refreshTokenExpiresAt`: set `credentialStatus = 'revoked'` with reason `"Authorization revoked by user or password changed"`.
+  - Transitions connector health to `reconnect_required` (ADR-0070), halts blind retries, and emits `ConnectorIngestionAlertEvent`.
 
-**B. Browser automation / scraping**  
-Rejected categorically — this violates LinkedIn's Terms of Service and would expose tenants to account suspension.
+---
 
-**C. Server-to-server token only (no OAuth)**  
-Rejected. The core use cases — publishing on behalf of members, reading member-level engagement — require acting on behalf of individual members, which mandates OAuth per LinkedIn's API requirements.
+### 4. Rate-Limit Integration & Rest.li Header Parsing
+
+- **Tenant-Scoped Rate Limiting:** Enforced per `(tenantId, 'linkedin')` via the shared `RequestGate` (ADR-0003).
+- **Rest.li Header Extraction & Epoch Units:**
+  - `parseRateLimitHeaders()` parses headers defensively and case-insensitively in the following priority order:
+    1. Limit: `x-restli-gateway-ratelimit-limit` (fallback: `x-ratelimit-limit`)
+    2. Remaining: `x-restli-gateway-ratelimit-remaining` (fallback: `x-ratelimit-remaining`)
+    3. Reset: `x-restli-gateway-ratelimit-reset` (fallback: `x-ratelimit-reset`)
+  - **Reset Unit Conversion:** `x-restli-gateway-ratelimit-reset` is returned by LinkedIn in **epoch seconds**. The parser explicitly converts this to epoch milliseconds (`resetEpochSeconds * 1000`) before computing backoff delays.
+- **Dynamic Override & Queuing:** Live header state dynamically overrides the conservative baseline (`100 requests/day`). Requests encountering rate limits are queued until reset rather than dropped.
+
+---
+
+### 5. Polling Frequency Guardrails & Scheduler-Level Enforcement
+
+- **Default Cadence:** Polling executes at most **once per hour** (`minPollIntervalSeconds = 3600`) per `(tenantId, 'linkedin')`.
+- **Scheduler-Level Enforcement:**
+  - Guardrails are enforced at the **scheduler level** in `social-listening-core` (not merely advisory config).
+  - The Tier-3 poll scheduler strictly rejects any requested interval < 3600 seconds with a validation error unless:
+    1. `linkedin.org.enabled === true` feature flag is active.
+    2. The tenant possesses a verified partner-tier flag with elevated API quotas.
+- **Audit Tracking:** Every poll attempt (including rate-limited or queued runs) creates an `IngestionRun` record (ADR-0005) so `ConnectorHealth` derivation (ADR-0009) remains mathematically accurate.
+
+---
+
+### 6. Error Classification (LinkedIn-Specific)
+
+| Error Code / Condition | Classification | Behavior & Lifecycle Action |
+|---|---|---|
+| `401 Unauthorized` (access token expired) | Transient before refresh | Invokes `refreshToken()`. If refresh succeeds, retries request. If refresh fails, evaluates `refreshTokenExpiresAt` and marks `reconnect_required` |
+| `401 Unauthorized` / `invalid_grant` | Non-retryable | Classifies as `revoked` or `expired` via `refreshTokenExpiresAt`; enters `reconnect_required` (ADR-0070) |
+| `403 Forbidden` (scope missing) | Non-retryable | Gracefully degrades affected feature; surfaces informational badge |
+| `429 Too Many Requests` | Retryable | Parses `Retry-After` or `x-restli-gateway-ratelimit-reset` (epoch seconds); exponential backoff with jitter |
+| `5xx Server Error` | Retryable | Exponential backoff with jitter |
+| Malformed query / payload | Non-retryable | Logs error, halts run, surfaces failure to admin |
+
+---
+
+### 7. Disconnect, Best-Effort Revocation, and GDPR Deletion
+
+When a tenant disconnects LinkedIn (`DELETE /connectors/linkedin/disconnect`):
+
+1. **Refresh-Token-Preferred Revocation:**
+   - The backend calls `https://www.linkedin.com/oauth/v2/revoke` passing the **stored refresh token** (or access token if refresh token is unavailable). Refresh tokens remain valid even if the 60-day access token has expired, ensuring reliable grant revocation.
+   - Revocation is treated as **best-effort and idempotent**: if revocation returns a non-200 response, it is logged at `WARN` level (not `ERROR`) and **does not block** disconnection.
+2. **Credential Erasure:** The envelope-encrypted credential is deleted from the database and Azure Key Vault (ADR-0014, ADR-0028).
+3. **Tenant-Scoped Data Deletion:** Enqueues deletion of tenant-scoped LinkedIn-sourced `SocialPost` and `Author` records per ADR-0018's GDPR right-to-erasure retention policy.
+
+---
+
+### 8. Data Retention & Tenant Isolation
+
+- **Transient Raw Payloads:** Raw LinkedIn API responses are held only in memory during the ingestion pipeline; `normalize()` extracts normalized `SocialPost` / `Author` entities. Raw JSON payloads are discarded (ADR-0018).
+- **Postgres Row-Level Security (RLS):** All LinkedIn records, credentials, and `IngestionRun` entries are isolated by `tenant_id` (ADR-0015).
 
 ---
 
 ## Consequences
 
-**Positive**
+### Positive
 
-- Full control over the OAuth flow and token lifecycle within Social Engage's own security perimeter; no third-party intermediary holds tokens.
-- The LinkedIn connector is a first-class citizen of the unified `SocialConnector` interface (ADR-0002): it benefits from the shared `RequestGate` (ADR-0003), automatic refresh-before-fail (ADR-0010), derived `ConnectorHealth` (ADR-0009), and envelope-encrypted Key Vault storage (ADR-0014) with zero bespoke logic for any of these cross-cutting concerns.
-- Enables both member-level and organization-level actions under a single integration.
-- Positions the platform for LinkedIn Marketing Partner Programme application, unlocking higher-tier API access and higher rate limits.
-- Explicit user consent model (OAuth + PKCE) aligns with GDPR requirements for processing personal data.
+- **Direct Enterprise Integration:** Provides native LinkedIn connection without third-party aggregator dependencies (Ayrshare, Buffer).
+- **Tier-3 Architecture Alignment:** Integrates seamlessly with `SocialConnector` (ADR-0002), `RequestGate` (ADR-0003), derived health (ADR-0009), error classification (ADR-0010), and watchdog alerts (ADR-0070).
+- **Robust Token Management:** Handles 60-day access token refresh, conditional 1-year refresh token retention with persisted `refreshTokenExpiresAt`, and precise `revoked` vs. `expired` reason tracking.
+- **Fail-Safe Disconnection:** Refresh-token-preferred revocation with non-blocking error logging ensures tenants never become stuck if tokens are already expired.
+- **Graceful Partner Scope Degradation:** Standard member features work out of the box; missing organization scopes do not fail the connector.
+- **GDPR Compliant:** Envelope-encrypted storage, explicit OAuth consent, and clean tenant-scoped data purging on disconnect.
 
-**Negative / Risks**
+### Negative / Risks
 
-- **LinkedIn partner tier gating.** Some scopes (e.g. deep organization analytics) require partner approval, which is not guaranteed and may delay feature delivery. Mitigation: apply for partner status early; design features behind those scopes to degrade gracefully when unavailable, surfacing a clear in-product explanation rather than a silent error.
-- **Token expiry management.** The 60-day access token lifecycle requires a reliable proactive-refresh mechanism. A missed refresh breaks the tenant's connection silently. Mitigation: `credentialStatus: 'expiring_soon'` is surfaced 7 days before expiry (ADR-0009); proactive refresh runs on a background schedule; if the refresh fails, the tenant is notified and prompted to re-authorize before the connector auto-disables.
-- **Refresh token expiry.** The 1-year refresh token expiry means a tenant who has not used LinkedIn features for a year will need to re-authorize. Mitigation: surface a warning via `credentialStatus: 'expiring_soon'` as the 1-year mark approaches; document the re-authorization flow clearly in the tenant-facing UI.
-- **Rate limits.** LinkedIn enforces per-member daily limits. Mitigation: the shared `RequestGate` enforces limits per `(tenantId, 'linkedin')` (ADR-0003); live header state takes priority over static config; tenants receive clear UI feedback when limits are approached or hit.
-- **API versioning.** LinkedIn has historically deprecated API versions with limited notice. Mitigation: pin to versioned endpoints; subscribe to LinkedIn's developer changelog; the `normalize()` adapter layer isolates business logic from raw API shape changes.
-- **No push webhooks.** On the standard partner tier LinkedIn does not offer webhooks for post engagement. Polling is capped at once per hour per `(tenantId, 'linkedin')` to stay within rate limits, which means engagement data has up to 1-hour latency. Mitigation: document the latency clearly; re-evaluate when LinkedIn webhook access becomes available through the Partner Programme.
-- **Data retention compliance.** Raw API payloads must not be stored long-term per LinkedIn's ToS. Mitigation: `normalize()` transforms on ingest; raw payloads are transient; debug logs are subject to ADR-0018's purge schedule.
+- **Partner Programme Requirements:** Deep company page analytics require Partner Programme vetting; org features are gated behind `linkedin.org.enabled`.
+- **1-Year Re-Authentication:** Tenants must re-authenticate annually when the refresh token expires.
+- **1-Hour Ingestion Cadence:** Standard rate limits restrict polling to 1-hour intervals, introducing up to 1-hour latency for engagement metrics.
+- **No Push Webhooks:** Lacks real-time push events for post engagement on standard tiers.
 
 ---
 
-## Implementation Notes
+## Alternatives Considered
 
-- Redirect URI must be registered in the LinkedIn Developer App dashboard and match exactly the value sent in the OAuth authorize request.
-- PKCE code verifier and challenge must be generated per-request; the code verifier must not be logged or stored persistently.
-- The `handleAuthCallback()` implementation must validate the `state` parameter to prevent CSRF.
-- LinkedIn's `r_liteprofile` scope returns `localizedFirstName`, `localizedLastName`, and `profilePicture`; map these to the platform's `Author` record (ADR-0004: Author normalized separately from Post).
-- Poll frequency: default once per hour per `(tenantId, 'linkedin')`; configurable down to once per 15 minutes if the tenant's LinkedIn partner tier allows higher limits (gate this behind a feature flag until partner status is confirmed).
-- `IngestionRun` records (ADR-0005) are created for every poll attempt — successful or not — and are the sole source of truth for `ConnectorHealth` derivation (ADR-0009).
-- Service Bus events emitted after successful normalization follow ADR-0012 (thin events: IDs and minimal fields only; full post data fetched via REST on demand) and ADR-0019 (event schema versioning).
-
----
-
-## Relation to Other ADRs
-
-| ADR | Relation |
+| Alternative | Disposition |
 |---|---|
-| ADR-0002 | LinkedIn connector implements `SocialConnector`; `authMode: 'oauth'`, `deliveryMode: 'poll'` |
-| ADR-0003 | Rate limits enforced per `(tenantId, 'linkedin')` via `RequestGate`; live header state preferred |
-| ADR-0004 | `Author` normalized once from `r_liteprofile`; not duplicated per post |
-| ADR-0005 | Every poll attempt recorded as an `IngestionRun` |
-| ADR-0009 | `ConnectorHealth` derived from `IngestionRun` history; `credentialStatus` lives on `Credential` |
-| ADR-0010 | LinkedIn-specific error classification table above; refresh-before-fail; auto-disable after threshold |
-| ADR-0012 | Post-ingest events are thin; full data fetched via REST |
-| ADR-0014 | Token storage via envelope encryption in Azure Key Vault; this ADR does not re-specify storage |
-| ADR-0015 | Tenant isolation via Postgres RLS applies to all LinkedIn-sourced records |
-| ADR-0018 | Raw payloads transient; derived data follows archival/deletion tiers |
-| ADR-0019 | Events emitted after normalization follow schema versioning policy |
-| ADR-0023 | Proportional failure threshold governs when the LinkedIn connector auto-disables |
-| ADR-0028 | Credential creation authority check precedes storage; revocation follows credential lifecycle rules |
+| **Third-Party Aggregator (Ayrshare, Buffer)** | **Rejected.** Exposes credentials outside the platform perimeter (violating ADR-0014) and limits custom feature flexibility. |
+| **Web Scraping / Browser Automation** | **Rejected.** Violates LinkedIn Terms of Service; risks tenant account suspension. |
+| **Public Client PKCE Only** | **Rejected.** Backend is a secure server-side confidential client; uses standard confidential client flow with `client_secret`. |
+| **Blocking Disconnect on Revoke Failure** | **Rejected.** If tokens have expired or LinkedIn's revoke endpoint fails, tenants would be unable to disconnect their accounts. |
 
 ---
 
-## References
+## Resolved Questions
 
-- [LinkedIn OAuth 2.0 Authorization Code Flow (Microsoft Learn)](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow)
-- [LinkedIn Marketing Developer Platform](https://learn.microsoft.com/en-us/linkedin/marketing/)
-- [LinkedIn API Rate Limits](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits)
-- [LinkedIn Partner Programme](https://business.linkedin.com/marketing-solutions/marketing-partners)
-- ADR-0002: Unified Provider Connector Pattern
-- ADR-0003: Per-tenant per-provider rate limiting
-- ADR-0005: IngestionRun as audit anchor
-- ADR-0009: ConnectorHealth derived not stored
-- ADR-0010: Error handling and auto-disable policy
-- ADR-0014: Credential storage envelope encryption
-- ADR-0018: Data retention and archival policy
-- ADR-0023: Proportional connector failure threshold
-- ADR-0028: Credential creation authority
+1. **OAuth Client Type:** Server-side confidential client flow using `client_id` and `client_secret`.
+2. **State Parameter Isolation:** Stored in tenant-scoped cache key (`linkedin:oauth:state:{tenantId}:{state}`) with 10-minute TTL.
+3. **Refresh Token Expiry:** Persists `refreshTokenExpiresAt` (ISO 8601 UTC) and surfaces 30-day re-auth warnings.
+4. **`invalid_grant` Classification:** Evaluates `now > refreshTokenExpiresAt` to distinguish `expired` vs. `revoked`.
+5. **Revocation Semantics:** Prefers refresh token; best-effort and non-blocking with WARN-level logging on failure.
+6. **Header Parsing & Units:** Defensively parses Rest.li gateway headers (`x-restli-gateway-ratelimit-*`), converting reset epoch seconds to milliseconds.
+7. **Polling Guardrails:** Enforced at the scheduler level (1h minimum baseline; <1h gated by `linkedin.org.enabled` and partner status).
+8. **Scope Degradation:** Missing org scopes surface a non-blocking info notice while keeping member features healthy.
+
+---
+
+*Accepted 2026-08-20 by Menno with confidential client OAuth, tenant-scoped state caching (10m TTL), persisted `refreshTokenExpiresAt`, refresh-token-preferred revocation, scheduler-enforced 1-hour polling guardrail, Rest.li epoch seconds conversion, and graceful scope degradation.*
+

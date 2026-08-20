@@ -569,5 +569,100 @@
 
 **Explicitly out of scope:** Ingesting personal timeline feeds (`/me/posts`); admin UI post display enhancements (handled in Story 6.33).
 
+---
 
+## Story 2.24 — Instagram Business Connector: Tier-3 OAuth Poller, Single-Row Carousel Normalization, Lookback Pagination, and Error Reclassification
+
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Engagement counts), Story 2.20 (Country geospatial normalization), Story 6.27 (Multi-asset credential model), Story 1.16 (Watchdog reconciliation & alerts)
+
+**As a** core backend engineer / social listening analyst,
+**I want** a dedicated `instagram` ingestion connector in `social-listening-core` that queries the Instagram Graph API (`/{ig-user-id}/media`) for connected Instagram Business and Creator accounts,
+**so that** published photos, videos, Reels, and carousels are ingested with single-row carousel modeling, bounded lookback pagination, deterministic error handling, and hosting profile attribution.
+
+**Acceptance Criteria**
+
+- **Instagram Connector Client (`instagramConnector.ts`):**
+  - Implements `fetchInstagramMedia(igUserId, accessToken, options)` calling `GET /{ig-user-id}/media`.
+  - Requests fields: `id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,username,like_count,comments_count,children{id,media_type,media_url,thumbnail_url},location`.
+  - Supports cursor-based pagination with `limit = 25` (max 50).
+- **Lookback Bounds Precedence & Incremental Halting:**
+  - **Initial Ingestion Cap:** On initial account ingestion, paginates until **whichever condition is reached first**:
+    1. The oldest fetched item's `timestamp` is older than `(now - 30 days)`, **OR**
+    2. Total fetched items reach **100 media items**.
+  - **Incremental Short-Circuit:** Periodic scheduler ticks stop pagination immediately upon encountering an item whose `externalId` already exists in `social_posts` for that `(tenantId, 'instagram', igUserId)`.
+- **Single-Row Carousel Modeling & Gallery Persistence (`pollInstagram.ts`):**
+  - Creates exactly **one `SocialPostSummary` row** in `social_posts` per media item returned by `/media` (`externalId: instagram_{igUserId}_{mediaId}`).
+  - For `media_type === 'CAROUSEL_ALBUM'`, stores child media objects in `rawPayload.children` in the **exact original display order** returned by Meta Graph API, capped at 10 items (setting `rawPayload.childrenTruncated = true` if exceeding 10).
+- **Media Previews & URL Stability:**
+  - `permalink` is stored as the immutable canonical post URL (`SocialPost.url`).
+  - `media_url` and `thumbnail_url` are stored in `rawPayload` as best-effort preview URLs.
+  - Published Reels (`media_type === 'VIDEO'`) are ingested; ephemeral 24h Stories are excluded.
+- **Caption Fallback & Author Normalization:**
+  - `caption` is converted to canonical markdown. If empty, falls back deterministically to `[Instagram Photo]`, `[Instagram Video]`, or `[Instagram Carousel]`.
+  - Author mapped as `author.id = "instagram:" + igUserId`, `author.displayName = username`, `author.username = username`.
+  - Unconditionally stores `rawPayload.igUserId`, `rawPayload.username`, and parent `rawPayload.pageName`.
+- **Geospatial Normalization (ADR-0064):**
+  - If `location.country` is present, extracts uppercase ISO 3166-1 alpha-2 code (`geoCountry`), setting `geoSource: 'post'`, `geoConfidence: 'high'`. Discards raw coordinates. Defaults to `geoCountry = null`.
+- **Pacing & Rate Limiting:**
+  - Sequential polling across configured Instagram accounts within a user tick with 1.2s inter-account jitter.
+  - Honors `Retry-After` headers on HTTP 429/Error 4/17 with exponential backoff.
+- **Deterministic Error Reclassification & Alerts (ADR-0070):**
+  - Reclassifies Graph API errors `190` (expired/invalid token), `10` (permission revoked), and `100` (account unlinked) into `http_401` / `reconnect_required`.
+  - Marks account status in `instagram_connected_accounts` as requiring reconnect and emits `ConnectorIngestionAlertEvent` (`alertType: 'reconnect_required'`).
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.24.instagram-connector.contract.test.ts` asserts:
+    - Standard photo, video/Reel, and carousel media mapping.
+    - Carousel single-row creation with ordered `rawPayload.children` (and truncation flag if >10).
+    - 30-day / 100-item pagination precedence and newest-first halting.
+    - Graph API errors `190`/`10`/`100` reclassified to `reconnect_required` with alert emission.
+
+**Explicitly out of scope:** Personal Instagram timeline scraping (prohibited); ephemeral Stories ingestion; admin UI setup screens (handled in Story 6.34).
+
+---
+
+## Story 2.25 — LinkedIn Connector: Confidential Client OAuth, Token Lifecycle with Persisted Expiry, Rest.li Rate Limiting, and 1-Hour Poller Guardrails
+
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Depends on:** Story 2.1 (Unified connector interface), Story 2.2 (Rate limiting request gate), Story 1.16 / ADR-0070 (Watchdog reconciliation & alerts)
+
+**As a** core backend engineer / social listening analyst,
+**I want** a dedicated `linkedin` ingestion connector in `social-listening-core` implementing OAuth 2.0 confidential client flow, 60-day access token refresh with persisted `refreshTokenExpiresAt`, Rest.li rate-limit header parsing, scheduler-level 1-hour polling guardrails, and graceful scope degradation,
+**so that** our platform securely ingests LinkedIn posts and engagement while strictly adhering to LinkedIn Marketing API constraints and GDPR data retention policies.
+
+**Acceptance Criteria**
+
+- **LinkedIn Connector Client (`linkedinConnector.ts`):**
+  - Implements `SocialConnector` for `providerId = 'linkedin'` with `authMode: 'oauth'`, `deliveryMode: 'poll'`.
+  - Generates authorize URL with cryptographically secure, tenant-scoped `state` parameter cached server-side (TTL 10m).
+  - Validates `state` and exchanges authorization code for tokens using confidential client credentials (`client_id` + `client_secret`).
+  - Persists credential in Azure Key Vault via envelope encryption (ADR-0014) with explicit `refreshTokenExpiresAt` (now + 365 days).
+- **Token Refresh & Lifecycle Management (`refreshToken()`):**
+  - Invoked automatically before returning a 401 error.
+  - Updates `access_token` (60-day expiry). If a new `refresh_token` is present in the response, updates `refreshTokenExpiresAt` to `now + 365 days`; if omitted, retains existing refresh token and expiry.
+  - Surfaces `credentialStatus: 'expiring_soon'` when access token is within 7 days of expiry or refresh token is within 30 days of `refreshTokenExpiresAt`.
+  - On `invalid_grant` failure: evaluates `now > refreshTokenExpiresAt` to set `credentialStatus = 'expired'` (if expired) or `credentialStatus = 'revoked'` (if revoked/password changed), transitioning connector to `reconnect_required`.
+- **Rest.li Rate-Limit Header Extraction (`parseRateLimitHeaders()`):**
+  - Defensively parses `x-restli-gateway-ratelimit-remaining`, `x-restli-gateway-ratelimit-reset` (converting epoch seconds to milliseconds), and `x-restli-gateway-ratelimit-limit` (with fallbacks to standard `x-ratelimit-*`).
+  - Dynamic live header state overrides the baseline 100 requests/day config; queued runs create an `IngestionRun` audit record.
+- **Scheduler-Enforced Polling Guardrails:**
+  - The Tier-3 poll scheduler strictly rejects any configured polling interval < 3600 seconds (1 hour) unless `linkedin.org.enabled === true` AND partner tier is verified.
+- **Graceful Scope Degradation:**
+  - Supports member scopes (`openid`, `profile`, `email`, `w_member_social`, `r_member_social`).
+  - If organization scopes (`w_organization_social`, `r_organization_social`) are missing or partner approval is pending, continues member post polling without failing the connector.
+- **Best-Effort Idempotent Revocation & Disconnect:**
+  - `disconnect()` calls `https://www.linkedin.com/oauth/v2/revoke` passing the refresh token (fallback: access token).
+  - Logs non-200 responses at `WARN` level without blocking credential erasure or tenant-scoped data purging (ADR-0018).
+- **Data Normalization (`normalize()`):**
+  - Maps post to `SocialPost` and author to `Author` (`author.id = "linkedin:" + memberId`, `author.displayName = firstName + ' ' + lastName`).
+  - Discards raw JSON response payloads from permanent storage (ADR-0018).
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts` asserts:
+    - Confidential client code exchange and `refreshTokenExpiresAt` initialization.
+    - Refresh token retention logic and `invalid_grant` reason classification.
+    - Rest.li header parsing with epoch seconds to ms conversion.
+    - Scheduler rejection of <3600s interval without partner flag.
+    - Best-effort disconnect with non-blocking revoke failure handling.
+
+**Explicitly out of scope:** Public client PKCE flow; admin UI connection management screens (handled in Story 6.35).
 
