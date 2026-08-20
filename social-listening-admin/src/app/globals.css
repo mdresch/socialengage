@@ -3785,6 +3785,7 @@ button:disabled {
   width: 100%;
   text-align: left;
   background: none;
+  color: var(--color-text-primary);
   border: none;
   border-bottom: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
