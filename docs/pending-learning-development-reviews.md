@@ -1912,3 +1912,15 @@
 - **Files touched:** social-listening-admin/src/app/tenant/page.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — c3044d0 — docs: update review logs
+
+- **Full commit:** `c3044d0593e42deeb88fd941f0bd8f4039450cb1`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column
+
+- **Full commit:** `72a15c91b2114e92f0a5496402d44b48acbca145`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
+- **Status:** Pending review
+
