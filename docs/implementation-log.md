@@ -2693,5 +2693,25 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Service Bus Ingestion Alert Events:** Defined `ConnectorIngestionAlertEvent` and helper `publishConnectorAlertEvents()` to dispatch structured telemetry (`run_timed_out`, `ingestion_stalled`, `connector_failing`, `reconnect_required`) to Azure Service Bus.
 - **Force Retry API Endpoint:** Added `POST /v1/connectors/:id/retry` and `POST /v1/connectors/:id/users/:userId/retry` with a 409 guard against legitimate in-flight runs (< 60s old), transient error clearing, automatic poll invocation, and fresh health return.
 
+---
+
+## 2026-08-20 — Story 6.29 — social-listening-admin@be6c4cd
+
+- **Full commit:** `be6c4cd081b8cef9b314f636707f51a6f057f575`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.29 / ADR-0070 (Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.29.connector-ingestion-status-and-stalled-alerts.contract.test.ts (14/14)
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md (updated)
+- **Files touched:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.29.connector-ingestion-status-and-stalled-alerts.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/retry/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/components/IngestionAlertBanner.tsx, social-listening-admin/src/components/ui/StatusBadge.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (30/30 suites, 447/447 tests in contracts/epic-6; 14/14 in Story 6.29 contract; tsc typecheck clean)
+
+**Delivered Story 6.29 following the contract-first methodology per ADR-0070:**
+- **StatusBadge Widening & Styling (AC1):** Added `'stalled'` variant to `StatusBadge` and `StatusBadgeVariant` with default label `'Stalled / No Ingestion'`. Added amber/warning dot styling `.status-badge-stalled .status-badge-dot` and amber card border `.cs-card-stalled` in `globals.css`.
+- **Connector Telemetry & Status Badges (`ConnectorStatusClient.tsx`, AC1):** Updated `deriveVariant()` to surface `'stalled'` when `row.health.status === 'stalled'` and connector is active. Rendered Last Polling Attempt (`lastAttemptAt`), Last Successful Ingestion (`lastSuccessfulFetchAt`), and platform polling cadence on Ingestion Connector cards.
+- **On-Demand "Re-sync now" Action (AC2):** Added `retryConnector(platformId, userId)` in `core-client.ts` and BFF proxy route `POST /api/connectors/[platformId]/retry`. Mounted "Re-sync now" button on active ingestion cards for `tenant_admin` with loading spinner, 409 conflict handling ("Run already in progress"), and instant refresh.
+- **Global IngestionAlertBanner (AC3):** Created `IngestionAlertBanner.tsx` displaying actionable warning banners for active connectors in `stalled`, `failing`, or `reconnect_required` status, with "Re-sync now" or "Reconnect" action triggers and session dismissal. Mounted on `/tenant/connectors` and `/tenant/analytics` (Overview tab).
+- **Regression and Typecheck Validation:** 14/14 tests in Story 6.29 contract passed; all 30 test suites across Epic 6 passed; `tsc --noEmit` clean.
+
+
 
 

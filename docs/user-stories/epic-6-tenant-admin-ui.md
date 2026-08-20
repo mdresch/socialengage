@@ -689,8 +689,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
 
-**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 (`social-listening-admin`)
 **Depends on:** Story 1.16 (Ingestion watchdog, stalled status derivation, retry API endpoint in `social-listening-core`), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant-Admin or Tenant User,
