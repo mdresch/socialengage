@@ -10,6 +10,7 @@ export interface SlideoverProps {
   children: ReactNode;
   footer?: ReactNode;
   width?: 'md' | 'lg';
+  className?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export function Slideover({
   children,
   footer,
   width = 'md',
+  className,
 }: SlideoverProps): ReactElement | null {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -71,7 +73,7 @@ export function Slideover({
     >
       <div
         ref={panelRef}
-        className={`slideover-panel ${width === 'lg' ? 'slideover-lg' : ''}`.trim()}
+        className={`slideover-panel ${width === 'lg' ? 'slideover-lg' : ''} ${className ?? ''}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="slideover-title"

@@ -865,16 +865,47 @@ export interface PostEnrichOutcome {
 }
 
 /**
- * Story 6.16 / Story 2.8/2.9 — manually (re-)runs enrichment for one
- * already-ingested post (`POST /v1/posts/:id/enrich`). Returns the raw
- * status/body rather than throwing on a non-2xx, the same pattern every
- * other Client-Component-triggered action in this app uses — a `200` with
- * `enrichment: null` (no AI provider currently connected and active) is a
- * real, honest outcome the caller must react to specifically, not an
- * exception.
+ * Story 6.16 / Story 3.13 / ADR-0071 — manually (re-)runs enrichment for one
+ * already-ingested post (`POST /v1/posts/:id/enrich`). Accepts optional { force?: boolean }
+ * to overwrite human-in-the-loop overrides.
  */
-export async function runPostEnrichment(id: string): Promise<PostEnrichOutcome> {
-  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrich`, { method: 'POST' });
+export async function runPostEnrichment(id: string, options?: { force?: boolean }): Promise<PostEnrichOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrich`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ force: options?.force ?? false }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface PostEnrichmentUpdateInput {
+  sentiment?: 'positive' | 'neutral' | 'negative';
+  sentimentScore?: number;
+  keyPhrases?: string[];
+  detectedLanguage?: string | null;
+  geoCountry?: string | null;
+  geoCountryName?: string | null;
+  summary?: string | null;
+}
+
+export interface PostEnrichmentUpdateOutcome {
+  status: number;
+  body: Record<string, unknown>;
+}
+
+/**
+ * Story 6.31 (ADR-0071) — updates post enrichment overrides via PATCH /v1/posts/:id/enrichment.
+ */
+export async function updatePostEnrichment(
+  id: string,
+  updates: PostEnrichmentUpdateInput
+): Promise<PostEnrichmentUpdateOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrichment`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }

@@ -2712,6 +2712,42 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Global IngestionAlertBanner (AC3):** Created `IngestionAlertBanner.tsx` displaying actionable warning banners for active connectors in `stalled`, `failing`, or `reconnect_required` status, with "Re-sync now" or "Reconnect" action triggers and session dismissal. Mounted on `/tenant/connectors` and `/tenant/analytics` (Overview tab).
 - **Regression and Typecheck Validation:** 14/14 tests in Story 6.29 contract passed; all 30 test suites across Epic 6 passed; `tsc --noEmit` clean.
 
+---
 
+## 2026-08-20 — Story 3.13 — social-listening-core
 
+- **Full commit:** `pending`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.13 / ADR-0071 (Post Enrichment Overrides API & Precedence Guard)
+- **Contract:** social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts (9/9)
+- **SKILL.md:** social-listening-core/.claude/skills/social-post-enrichment/SKILL.md (updated); social-listening-core/.claude/skills/posts-api/SKILL.md (updated)
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/postEnrichmentUtils.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Full suite at merge:** PASS (9/9 in Story 3.13 contract; all 15 suites in contracts/epic-3 passing / typecheck clean)
+
+**Delivered Story 3.13 following the contract-first methodology per ADR-0071:**
+- **Human-in-the-Loop Overrides API (`PATCH /v1/posts/:id/enrichment`, AC1 & AC2):** Implemented `PATCH /v1/posts/:id/enrichment` allowing authenticated tenant users to override `sentiment`, `sentimentScore`, `keyPhrases`, `detectedLanguage`, `geoCountry`, `geoCountryName`, and `summary`.
+- **Validation & Sanitization (AC2):** Added `postEnrichmentUtils.ts` enforcing default scoring (`positive: 0.8`, `neutral: 0.5`, `negative: 0.2`), ISO 639-1 language validation (`400 INVALID_LANGUAGE_CODE`), key phrases HTML stripping, trimming, and case-insensitive deduplication capped at 50 items / 200 chars, and ISO 3166-1 alpha-2 geo normalization (clearing `geoCountryName` when `geoCountry: null`).
+- **Audit Lineage & Schema (`enrichment.override`, AC3):** Persists `override` object containing `isOverridden: true`, `overriddenAt`, `overriddenByUserId`, `overriddenFields`, `originalValues`, and `aiHistory` snapshots.
+- **Re-Enrichment Precedence Guard (`POST /v1/posts/:id/enrich`, AC4):** Rejects re-enrichment of manually overridden posts with `409 Conflict` (`ENRICHMENT_MANUALLY_OVERRIDDEN`) unless `force: true` is explicitly provided. When `force: true`, archives current values in `aiHistory` and resets `isOverridden: false`.
+- **Multi-Tenant RLS Isolation (AC5):** Scoped by tenant context; cross-tenant updates return `404 Not Found`.
+
+---
+
+## 2026-08-20 — Story 6.31 — social-listening-admin
+
+- **Full commit:** `pending`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.31 / ADR-0071 (Human-in-the-Loop Post Enrichment Cascading Edit Drawer)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.31.post-enrichment-cascading-edit-drawer.contract.test.ts (10/10)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md (updated)
+- **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.31.post-enrichment-cascading-edit-drawer.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/enrich/route.ts, social-listening-admin/src/app/api/posts/[id]/enrichment/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/RunEnrichmentButton.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/ui/Slideover.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (31/31 suites, 458/458 tests in contracts/epic-6; 10/10 in Story 6.31 contract; tsc typecheck clean)
+
+**Delivered Story 6.31 following the contract-first methodology per ADR-0071:**
+- **Edit Trigger & "Edited by user" Badge (`PostDetailPanel.tsx`, AC1 & AC5):** Rendered "Edit" button with pencil icon in the AI Cognitive Analysis card header. Extracted and rendered the amber "Edited by user" badge (`.pf-override-badge`) with audit tooltip (editor ID, formatted timestamp, overridden fields) when `enrichment.override.isOverridden === true`.
+- **Cascading Multi-Drawer Layout (`PostsFeedClient.tsx`, `Slideover.tsx`, `globals.css`, AC2):** Added `.slideover-shifted` to translate the primary post details panel leftward (`transform: translateX(-440px)`) on viewports `>= 1200px` while `EnrichmentEditDrawer` slides in flush to the right edge. Rendered overlay layout with back button on viewports `< 1200px`.
+- **Enrichment Form Controls (`EnrichmentEditDrawer.tsx`, AC3):** Implemented interactive sentiment segmented control (Positive/Neutral/Negative), key phrases tag editor (add/remove chips with duplicate prevention and 50-phrase cap), ISO 639-1 language dropdown, ISO 3166-1 alpha-2 country dropdown, and character-counted summary textarea (1,000 char limit).
+- **Core Client & Proxy Route (`core-client.ts`, `api/posts/[id]/enrichment/route.ts`, AC4):** Added `updatePostEnrichment()` and `PATCH /api/posts/[id]/enrichment` same-origin BFF proxy route with loading state, optimistic feed update, and rollback error handling.
+- **Re-Enrichment Precedence Dialog (`RunEnrichmentButton.tsx`, AC6):** Added confirmation modal when re-running enrichment on manually overridden posts, forwarding `{ force: true }` to `/api/posts/[id]/enrich` upon user confirmation.
+- **Accessibility & Escape Isolation (AC7):** Configured `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and scoped `Escape` key handler to dismiss only the secondary edit drawer.
 

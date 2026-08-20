@@ -116,10 +116,24 @@ export interface SentimentScores {
   negative: number;
 }
 
+export interface PostEnrichmentOverrideSummary {
+  isOverridden: boolean;
+  overriddenAt: string | null;
+  overriddenByUserId: string | null;
+  overriddenFields: string[];
+  originalValues?: Record<string, unknown>;
+}
+
+export interface PostEnrichmentNamedEntity {
+  text: string;
+  category: string | null;
+}
+
 export interface PostEnrichmentSummary {
   sentiment: string | null;
   sentimentScores: SentimentScores | null;
   entities: string[];
+  namedEntities?: PostEnrichmentNamedEntity[];
   keyPhrases: string[];
   modelUsed: string | null;
   /** ISO 639-1 code (e.g. "en"), read from enrichment.detectedLanguage — Story 8.5 (ADR-0055). Both real AIProviderConnectors already compute and persist this on every enrichment; this is the first place it's surfaced. */
@@ -132,6 +146,8 @@ export interface PostEnrichmentSummary {
   geoRegion: string | null;
   geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null;
   geoConfidence: 'high' | 'medium' | 'low' | null;
+  /** Human-in-the-loop override audit history — Story 6.31 (ADR-0071). */
+  override?: PostEnrichmentOverrideSummary | null;
 }
 
 /**
@@ -160,15 +176,27 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
     }
   }
 
-  const entities = Array.isArray(e.entities)
-    ? e.entities
-        .map((entity) =>
-          entity && typeof entity === 'object' && typeof (entity as Record<string, unknown>).text === 'string'
-            ? ((entity as Record<string, unknown>).text as string)
-            : null
-        )
-        .filter((text): text is string => text !== null)
-    : [];
+  const namedEntities: PostEnrichmentNamedEntity[] = [];
+  const entities: string[] = [];
+
+  if (Array.isArray(e.entities)) {
+    for (const item of e.entities) {
+      if (typeof item === 'string') {
+        entities.push(item);
+        namedEntities.push({ text: item, category: null });
+      } else if (item && typeof item === 'object') {
+        const obj = item as Record<string, unknown>;
+        if (typeof obj.text === 'string') {
+          entities.push(obj.text);
+          namedEntities.push({
+            text: obj.text,
+            category: typeof obj.category === 'string' ? obj.category : null,
+          });
+        }
+      }
+    }
+  }
+
   const keyPhrases = Array.isArray(e.keyPhrases) ? e.keyPhrases.filter((k): k is string => typeof k === 'string') : [];
   const modelUsed = typeof e.modelUsed === 'string' ? e.modelUsed : null;
   const language = typeof e.detectedLanguage === 'string' ? e.detectedLanguage : null;
@@ -186,11 +214,29 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
       ? e.geoConfidence
       : null;
 
-  if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed && !geoCountry) return null;
+  let override: PostEnrichmentOverrideSummary | null = null;
+  if (e.override && typeof e.override === 'object') {
+    const o = e.override as Record<string, unknown>;
+    override = {
+      isOverridden: o.isOverridden === true,
+      overriddenAt: typeof o.overriddenAt === 'string' ? o.overriddenAt : null,
+      overriddenByUserId: typeof o.overriddenByUserId === 'string' ? o.overriddenByUserId : null,
+      overriddenFields: Array.isArray(o.overriddenFields)
+        ? o.overriddenFields.filter((f): f is string => typeof f === 'string')
+        : [],
+      originalValues:
+        o.originalValues && typeof o.originalValues === 'object'
+          ? (o.originalValues as Record<string, unknown>)
+          : undefined,
+    };
+  }
+
+  if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed && !geoCountry && !override) return null;
   return {
     sentiment,
     sentimentScores,
     entities,
+    namedEntities,
     keyPhrases,
     modelUsed,
     language,
@@ -200,6 +246,7 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
     geoRegion,
     geoSource,
     geoConfidence,
+    override,
   };
 }
 

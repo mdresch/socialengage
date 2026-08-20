@@ -9,6 +9,8 @@ import { Slideover } from '@/components/ui';
 import { EmptyState } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostDetailPanel } from './PostDetailPanel';
+import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
+import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-react is not installed)
@@ -110,7 +112,9 @@ interface PostsFeedClientProps {
  * what search/filter can actually see.
  */
 export function PostsFeedClient({ posts, watchlists, initialActivePostId }: PostsFeedClientProps) {
-  const flat = useMemo(() => posts.map(flattenPost), [posts]);
+  const [postList, setPostList] = useState<SocialPostSummary[]>(posts);
+  const flat = useMemo(() => postList.map(flattenPost), [postList]);
+  const [isEditingEnrichment, setIsEditingEnrichment] = useState(false);
 
   /**
    * Story 6.26 — derived from the real, already-fetched post set (Story
@@ -410,38 +414,76 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
         </div>
       )}
 
-      {/* Detail Slideover */}
+      {/* Detail Slideover & Cascading Edit Drawer */}
       {activePost && (
-        <Slideover
-          isOpen={!!activePost}
-          onClose={() => setActivePost(null)}
-          title={activePost.title}
-          subtitle={
-            activePost.publishedAt
-              ? `Published ${new Date(activePost.publishedAt).toLocaleString()} · ${activePost.provider.replace(/_/g, ' ')}`
-              : activePost.provider.replace(/_/g, ' ')
-          }
-          width="lg"
-          footer={
-            <div className="pf-slideover-footer-inner">
-              {activePost.url ? (
-                <a
-                  href={activePost.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="pf-footer-ext-link"
-                >
-                  <IconExternalLink /> Open original article
-                </a>
-              ) : (
-                <span />
-              )}
-              <RunEnrichmentButton postId={activePost.id} />
-            </div>
-          }
-        >
-          <PostDetailPanel key={activePost.id} post={activePost} />
-        </Slideover>
+        <>
+          <Slideover
+            isOpen={!!activePost}
+            onClose={() => {
+              setActivePost(null);
+              setIsEditingEnrichment(false);
+            }}
+            title={activePost.title}
+            subtitle={
+              activePost.publishedAt
+                ? `Published ${new Date(activePost.publishedAt).toLocaleString()} · ${activePost.provider.replace(/_/g, ' ')}`
+                : activePost.provider.replace(/_/g, ' ')
+            }
+            width="lg"
+            className={isEditingEnrichment ? 'slideover-shifted' : undefined}
+            footer={
+              <div className="pf-slideover-footer-inner">
+                {activePost.url ? (
+                  <a
+                    href={activePost.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="pf-footer-ext-link"
+                  >
+                    <IconExternalLink /> Open original article
+                  </a>
+                ) : (
+                  <span />
+                )}
+                <RunEnrichmentButton
+                  postId={activePost.id}
+                  isOverridden={activePost.enrichmentSummary?.override?.isOverridden === true}
+                />
+              </div>
+            }
+          >
+            <PostDetailPanel
+              key={activePost.id}
+              post={activePost}
+              onEdit={() => setIsEditingEnrichment(true)}
+            />
+          </Slideover>
+
+          {/* Cascading Secondary Edit Drawer */}
+          {isEditingEnrichment && (
+            <EnrichmentEditDrawer
+              isOpen={isEditingEnrichment}
+              onClose={() => setIsEditingEnrichment(false)}
+              post={activePost}
+              onSave={async (updates: PostEnrichmentUpdateInput) => {
+                const response = await fetch(`/api/posts/${encodeURIComponent(activePost.id)}/enrichment`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(updates),
+                });
+                const body = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                  throw new Error(body?.error || 'Failed to save enrichment overrides.');
+                }
+                if (body.post) {
+                  const updatedSummary = body.post as SocialPostSummary;
+                  setPostList((prev) => prev.map((p) => (p.id === updatedSummary.id ? updatedSummary : p)));
+                  setActivePost(flattenPost(updatedSummary));
+                }
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

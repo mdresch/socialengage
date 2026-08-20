@@ -41,6 +41,14 @@ function IconCode() {
   );
 }
 
+function IconPencil() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    </svg>
+  );
+}
+
 export interface PostDetailPanelPost {
   id: string;
   createdAt: string;
@@ -67,7 +75,13 @@ export interface PostDetailPanelPost {
  * SKILL.md`'s own Relations section for the real, contract-verified caller
  * list this extraction is asserted against.
  */
-export function PostDetailPanel({ post }: { post: PostDetailPanelPost }) {
+export function PostDetailPanel({
+  post,
+  onEdit,
+}: {
+  post: PostDetailPanelPost;
+  onEdit?: () => void;
+}) {
   const [showRawJson, setShowRawJson] = useState(false);
 
   return (
@@ -94,11 +108,39 @@ export function PostDetailPanel({ post }: { post: PostDetailPanelPost }) {
               <IconSparkles />
               Azure AI Cognitive Analysis
             </div>
+            {post.enrichmentSummary.override?.isOverridden && (
+              <span
+                className="pf-override-badge"
+                title={`Edited by user${
+                  post.enrichmentSummary.override.overriddenByUserId
+                    ? ` (${post.enrichmentSummary.override.overriddenByUserId})`
+                    : ''
+                }${
+                  post.enrichmentSummary.override.overriddenAt
+                    ? ` on ${new Date(post.enrichmentSummary.override.overriddenAt).toLocaleString()}`
+                    : ''
+                }`}
+              >
+                Edited by user
+              </span>
+            )}
             {post.enrichmentSummary.modelUsed && (
               <span className="pf-enrichment-model">{post.enrichmentSummary.modelUsed}</span>
             )}
             {post.enrichmentSummary.language && (
               <span className="pf-enrichment-language">Language: {post.enrichmentSummary.language}</span>
+            )}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="pf-enrich-edit-btn"
+                aria-label="Edit enrichment details"
+                title="Edit enrichment attributes"
+              >
+                <IconPencil />
+                <span>Edit</span>
+              </button>
             )}
           </div>
 
@@ -138,11 +180,20 @@ export function PostDetailPanel({ post }: { post: PostDetailPanelPost }) {
             <div>
               <span className="pf-detail-field-label">Extracted Named Entities</span>
               <div className="pf-chip-group">
-                {post.enrichmentSummary.entities.map((ent) => (
-                  <span key={ent} className="pf-chip-entity-lg">
-                    <IconTag /> <strong>{ent}</strong>
-                  </span>
-                ))}
+                {post.enrichmentSummary.namedEntities && post.enrichmentSummary.namedEntities.length > 0
+                  ? post.enrichmentSummary.namedEntities.map((ent, idx) => (
+                      <span key={`${ent.text}-${idx}`} className="pf-chip-entity-lg">
+                        <IconTag /> <strong>{ent.text}</strong>
+                        {ent.category && (
+                          <span className="pf-chip-entity-category">{ent.category}</span>
+                        )}
+                      </span>
+                    ))
+                  : post.enrichmentSummary.entities.map((ent, idx) => (
+                      <span key={`${ent}-${idx}`} className="pf-chip-entity-lg">
+                        <IconTag /> <strong>{ent}</strong>
+                      </span>
+                    ))}
               </div>
             </div>
           )}

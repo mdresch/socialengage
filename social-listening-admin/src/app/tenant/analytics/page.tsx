@@ -5,7 +5,7 @@ import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
 import { listWatchlists } from '@/lib/core-client';
 import { fetchAnalyticsSummary, fetchWatchlistCoverage } from './fetchAnalyticsSummary';
 import { AnalyticsClient } from './AnalyticsClient';
-import { parseOverviewFiltersFromSearchParams, type DateRangeFilter } from './analyticsData';
+import { parseOverviewFiltersFromSearchParams, computeAnalyticsSummary, type DateRangeFilter } from './analyticsData';
 
 const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources'] as const;
 export type AnalyticsTab = (typeof TAB_VALUES)[number];
@@ -23,10 +23,7 @@ function defaultDateRange(): DateRangeFilter {
  * shell like every other tenant screen (Story 6.2). The initial page load
  * fetches its own default 30-day range server-side (no client round trip
  * needed for the first render); every subsequent range/tab change is
- * handled by AnalyticsClient re-fetching /api/analytics/summary.
- *
- * Story 8.9 (ADR-0063) — loads watchlists and watchlist coverage for the
- * Overview tab, and supports initial ?watchlist=<id> server-side filtering.
+ * handled client-side via AnalyticsClient.tsx.
  */
 export default async function AnalyticsPage({
   searchParams,
@@ -52,32 +49,24 @@ export default async function AnalyticsPage({
   }
 
   const { tab, date, source, author, keyword, language, sentiment, watchlist } = await searchParams;
-  const initialTab: AnalyticsTab = (TAB_VALUES as readonly string[]).includes(tab ?? '')
+  const initialTab: AnalyticsTab = typeof tab === 'string' && (TAB_VALUES as readonly string[]).includes(tab)
     ? (tab as AnalyticsTab)
     : 'overview';
 
-  // Story 8.7 (ADR-0062) / Story 8.9 (ADR-0063) — deep-link filter state
   const filterParams = new URLSearchParams();
-  if (date) filterParams.set('date', date);
-  if (source) filterParams.set('source', source);
-  if (author) filterParams.set('author', author);
-  if (keyword) filterParams.set('keyword', keyword);
-  if (language) filterParams.set('language', language);
-  if (sentiment) filterParams.set('sentiment', sentiment);
-  if (watchlist) filterParams.set('watchlist', watchlist);
+  if (typeof date === 'string') filterParams.set('date', date);
+  if (typeof source === 'string') filterParams.set('source', source);
+  if (typeof author === 'string') filterParams.set('author', author);
+  if (typeof keyword === 'string') filterParams.set('keyword', keyword);
+  if (typeof language === 'string') filterParams.set('language', language);
+  if (typeof sentiment === 'string') filterParams.set('sentiment', sentiment);
+  if (typeof watchlist === 'string') filterParams.set('watchlist', watchlist);
   const initialOverviewFilters = parseOverviewFiltersFromSearchParams(filterParams);
 
   const initialRange = defaultDateRange();
   const watchlists = await listWatchlists().catch(() => []);
   const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined)
-    .catch(() => ({
-      postCount: 0,
-      sentimentSummary: { positive: 0, neutral: 0, negative: 0, unanalyzed: 0 },
-      topEntities: [],
-      topKeyPhrases: [],
-      sourceBreakdown: [],
-      countryBreakdown: [],
-    }));
+    .catch(() => computeAnalyticsSummary([], initialRange));
   const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists).catch(() => []);
 
   return (
