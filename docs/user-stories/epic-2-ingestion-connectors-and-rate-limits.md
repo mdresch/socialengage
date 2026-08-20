@@ -369,9 +369,9 @@
 
 ## Story 2.19 — Tenant-owned feed: per-feed display name, and per-item author (byline) extraction
 
-**Built:** not yet
+**Built:** 2026-08-20 — social-listening-core@2f52c0f (backend half only — see Explicitly out of scope below for the admin-side UI, Story 6.28)
 
-**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Ready.
+**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Built 2026-08-20.
 
 **Requested directly by Menno, 2026-08-20**, having just been given the connector setup screen's own URL (`/tenant/connectors/tenant-owned-feed`): *"give feeds ... a name. Let the feed owner give the feed a separate name. This allow for a feed identification name instead of the generic tenant-owned-feed selection and review the feeds for a mandatory field that is designated to be the Author of the article/project/posts."* Clarified directly with Menno (`AskUserQuestion`) that "mandatory field... designated to be the Author" meant adding real per-article byline extraction from the feed itself (`<dc:creator>`/`<author>`), not merely confirming the already-existing domain-as-Author invariant — ADR-0050's own Consequences/Open Question 5 had explicitly reserved that as "a separate, named design decision... not in scope for this ADR," so a short Amendment Log entry was drafted (not a re-opened Decision) before implementing.
 
