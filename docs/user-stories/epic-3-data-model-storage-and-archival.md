@@ -258,7 +258,7 @@
 
 ## Story 3.13 — Post Enrichment Overrides API and Re-Enrichment Precedence Guard
 
-**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 1.1 (Posts router and RLS context), Story 2.20 (Geospatial enrichment normalization), Story 3.5 (Post storage schema), Story 3.8 (AI Language enrichment)
 
 **As a** core backend engineer,

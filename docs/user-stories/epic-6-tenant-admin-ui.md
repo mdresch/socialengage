@@ -758,7 +758,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.31 — Human-in-the-Loop Post Enrichment Cascading Edit Drawer
 
-**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 3.13 (Post enrichment override API & precedence guard in `social-listening-core`), Story 6.15 (Post detail panel), Story 6.16 (Post enrichment display & re-enrichment action)
 
 **As a** Tenant User or Tenant-Admin,
