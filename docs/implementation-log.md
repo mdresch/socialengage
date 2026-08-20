@@ -2613,3 +2613,21 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 **A real cross-component regression was found during full-suite validation and fixed, narrowing the change in the foreign file per this project's own protocol, no assertion weakened:** two pre-existing `ParsedFeedItem`/`TenantOwnedFeedActivationRow` object literals in `contracts/epic-3/story-3.10...contract.test.ts` (an unrelated story, canonical-Markdown body normalization) failed to type-check once `author`/`name` became required fields on those interfaces — both literals were building fixtures for a story that never cared about either field. Fixed by adding `author: null`/`name: null` to the two literals, with a comment naming why; no assertion in that file changed.
 
 **Admin-side UI for the `name` field itself (the connector setup screen's own connect/edit forms and list display) is separate, tracked as Story 6.28** — not built by this commit, which is `social-listening-core`-only.
+
+---
+
+## 2026-08-20 — Story 8.9 — social-listening-admin@605e5a4
+
+- **Full commit:** `605e5a430aaa535dea868af78acd5d222ed1ea72`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.9 / ADR-0063 (Post-watchlist match persistence and server-side watchlist filter)
+- **Contract:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts (11/11)
+- **SKILL.md:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md (updated)
+- **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/analytics/summary/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS, 40/40 suites, 604/604 tests passing in `social-listening-admin`; 8/8 suites, 143/143 tests in `contracts/epic-8/`
+
+**Delivered Story 8.9 following the contract-first methodology per ADR-0063:**
+- **`selectedTopic` watchlist selector:** Wires the topic / watchlist dropdown selector on the Overview tab using real server-side filtering via `GET /v1/posts?watchlistId=<id>` (Story 3.11). Populated from `listWatchlists()` so all `matchType` values (`keyword`, `hashtag`, `boolean_query`) are fully supported without any client-side terms/AST matching approximation.
+- **Watchlist Coverage widget (`id="widget-watchlist-coverage"`):** Renders a Recharts `<PieChart>` donut chart showing post distribution across all active watchlists. Slices are sized by post count from real match data; zero-count active watchlists appear in the legend with an honest `0` count; tenants with zero active watchlists render the standard `EmptyState` component.
+- **Deep-linking & Chips:** URL search parameter `?watchlist=<id>` is parsed server-side by `page.tsx` on initial load and updated in-place via `window.history.replaceState`. Active filter chips bar reflects the active watchlist name with a dismissal button that resets the selector.
+- **Cross-component progression in Story 8.7 contract:** Updated Story 8.7 contract assertions (which previously asserted that `widget-watchlist-coverage` and `?watchlist` search param were reserved/unrendered) to verify presence and integration with Story 8.9.

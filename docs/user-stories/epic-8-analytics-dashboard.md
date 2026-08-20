@@ -217,7 +217,8 @@
 
 ## Story 8.9 — `selectedTopic` watchlist filter and Watchlist Coverage widget
 
-**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Ready — both named blockers are now built (2026-08-19)
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-admin@605e5a4
 **Depends on:** Story 3.11 (`post_watchlist_matches` junction table and `GET /v1/posts?watchlistId` filter in `social-listening-core` — **Built** 2026-08-19); Story 8.7 (Overview tab grid and the reserved `selectedTopic` filter slot — **Built** 2026-08-19)
 
 **As a** Tenant User or Tenant-Admin,
