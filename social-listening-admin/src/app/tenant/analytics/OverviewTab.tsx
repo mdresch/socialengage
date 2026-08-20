@@ -57,6 +57,8 @@ interface OverviewTabProps {
    * Defaults to EMPTY_OVERVIEW_FILTERS when omitted.
    */
   initialFilters?: OverviewFilters;
+  filters?: OverviewFilters;
+  onFiltersChange?: (filters: OverviewFilters) => void;
   /** Story 8.9 (ADR-0063) — watchlists list for dropdown and coverage */
   watchlists?: Watchlist[];
   watchlistCoverage?: WatchlistCoverageEntry[];
@@ -205,8 +207,19 @@ export function OverviewTab({
   dateRangePicker,
   hideHeaderControls,
   ingestionIssues = [],
+  filters: controlledFilters,
+  onFiltersChange,
 }: OverviewTabProps) {
-  const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
+  const [internalFilters, setInternalFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
+  const filters = controlledFilters ?? internalFilters;
+  const setFilters = (updater: OverviewFilters | ((prev: OverviewFilters) => OverviewFilters)) => {
+    const next = typeof updater === 'function' ? updater(filters) : updater;
+    if (onFiltersChange) {
+      onFiltersChange(next);
+    } else {
+      setInternalFilters(next);
+    }
+  };
   const [forecastOn, setForecastOn] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 

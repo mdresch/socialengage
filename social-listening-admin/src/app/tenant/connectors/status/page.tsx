@@ -68,10 +68,10 @@ const PLATFORMS: PlatformDefinition[] = [
   },
   {
     id: 'facebook',
-    name: 'Facebook Page (Owned Feed)',
+    name: 'Facebook Page',
     authMode: 'oauth',
     category: 'Ingestion',
-    description: "Ingests your own connected Facebook Page's own posts and engagement (ADR-0059).",
+    description: "Ingests published posts, reactions, comments, and shares directly from your connected Facebook Business, Brand, and Creator Pages via Meta Graph API (Pages only; personal accounts excluded).",
     // ADR-0059 Decision §4 — Tier 3 (personal) only, no tenant-wide credential path exists on the backend at all.
     personalScopeAllowed: true,
     tenantScopeAllowed: false,

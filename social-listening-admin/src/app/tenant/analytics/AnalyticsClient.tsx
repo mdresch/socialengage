@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { EmptyState, InlineError, RelativeTime } from '@/components/ui';
 import { GlobalDateRangePicker, type DateRangeValue } from './GlobalDateRangePicker';
-import type { AnalyticsSummary, DateRangeFilter, OverviewFilters, WatchlistCoverageEntry } from './analyticsData';
+import {
+  applyOverviewFilters,
+  EMPTY_OVERVIEW_FILTERS,
+  type AnalyticsSummary,
+  type DateRangeFilter,
+  type OverviewFilters,
+  type WatchlistCoverageEntry,
+} from './analyticsData';
 import type { SocialPostFull, Watchlist } from '@/lib/core-client';
 import { flattenPost, type FlatPost } from '../posts/postDisplay';
 import { PostDetailPanel } from '../posts/PostDetailPanel';
@@ -71,6 +78,7 @@ export function AnalyticsClient({
   const [rangeKey, setRangeKey] = useState<string>('last_30_days');
   const [summary, setSummary] = useState<AnalyticsSummary>(initialSummary);
   const [previousSummary, setPreviousSummary] = useState<AnalyticsSummary | null>(null);
+  const [overviewFilters, setOverviewFilters] = useState<OverviewFilters>(() => initialOverviewFilters ?? EMPTY_OVERVIEW_FILTERS);
   const [watchlistFilter, setWatchlistFilter] = useState<string | null>(initialOverviewFilters.activeWatchlistFilter ?? null);
   const [coverage, setCoverage] = useState<WatchlistCoverageEntry[]>(initialWatchlistCoverage);
   const [loading, setLoading] = useState(false);
@@ -80,6 +88,11 @@ export function AnalyticsClient({
   const [detailPost, setDetailPost] = useState<FlatPost | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const postsSource = summary.posts ?? (summary as any).sentimentPosts ?? [];
+  const overviewFilteredPosts = useMemo(() => applyOverviewFilters(postsSource, overviewFilters), [postsSource, overviewFilters]);
+  const displayCount = activeTab === 'overview' ? overviewFilteredPosts.length : summary.totalPosts;
+  const drawerPosts = activeTab === 'overview' ? overviewFilteredPosts : (summary.posts ?? []);
 
   function selectTab(tab: AnalyticsTab) {
     setActiveTab(tab);
@@ -154,6 +167,7 @@ export function AnalyticsClient({
    */
   async function handleWatchlistChange(nextWatchlistId: string | null) {
     setWatchlistFilter(nextWatchlistId);
+    setOverviewFilters((prev) => ({ ...prev, activeWatchlistFilter: nextWatchlistId }));
     setLoading(true);
     setError(null);
     const wlParam = nextWatchlistId ? `&watchlistId=${encodeURIComponent(nextWatchlistId)}` : '';
@@ -182,46 +196,45 @@ export function AnalyticsClient({
   }
 
   return (
-    <div className="an-root" id="tenant-analytics-dashboard">
+    <div className="an-shell" id="tenant-analytics-dashboard">
       <div className="an-header">
-        <div>
-          <h1 className="page-title">Analytics</h1>
-          <p className="page-subtitle">
-            Post volume, sentiment, and source breakdown for {range.startDate} to {range.endDate}
-          </p>
+        <div className="an-header-title-wrap">
+          <h1 className="an-page-title">Analytics</h1>
         </div>
 
         <div className="an-header-toolbar">
-          <div className="an-overview-watchlist-select-wrap">
-            <label htmlFor="overview-watchlist-selector" className="an-overview-filter-label">
-              Topic / Watchlist:
-            </label>
-            <select
-              id="overview-watchlist-selector"
-              className="an-watchlist-select"
-              value={watchlistFilter ?? ''}
-              onChange={(e) => handleWatchlistChange(e.target.value || null)}
+          <div className="an-header-controls">
+            <div className="an-watchlist-select-wrap">
+              <label htmlFor="overview-watchlist-selector" className="an-filter-label">
+                Topic / Watchlist:
+              </label>
+              <select
+                id="overview-watchlist-selector"
+                className="an-watchlist-select"
+                value={watchlistFilter ?? ''}
+                onChange={(e) => handleWatchlistChange(e.target.value || null)}
+              >
+                <option value="">All Topics</option>
+                {watchlists.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name} ({w.matchType.replace(/_/g, ' ')})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />
+
+            <button
+              type="button"
+              id="widget-filtered-post-count"
+              className="an-filtered-count-btn"
+              onClick={() => setDrawerOpen(true)}
             >
-              <option value="">All Topics</option>
-              {watchlists.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name} ({w.matchType.replace(/_/g, ' ')})
-                </option>
-              ))}
-            </select>
+              <span>{displayCount.toLocaleString()} matching post{displayCount === 1 ? '' : 's'}</span>
+              <span className="an-post-drawer-tag">POSTS ›</span>
+            </button>
           </div>
-
-          <GlobalDateRangePicker value={rangeKey} onChange={handleRangeChange} />
-
-          <button
-            type="button"
-            id="widget-filtered-post-count"
-            className="an-filtered-count-btn"
-            onClick={() => setDrawerOpen(true)}
-          >
-            <span>{summary.totalPosts.toLocaleString()} matching post{summary.totalPosts === 1 ? '' : 's'}</span>
-            <span className="an-post-drawer-tag">POSTS ›</span>
-          </button>
         </div>
       </div>
 
@@ -251,6 +264,8 @@ export function AnalyticsClient({
             previousSummary={previousSummary}
             range={range}
             initialFilters={initialOverviewFilters}
+            filters={overviewFilters}
+            onFiltersChange={setOverviewFilters}
             watchlists={watchlists}
             watchlistCoverage={coverage}
             onWatchlistChange={handleWatchlistChange}
@@ -274,18 +289,18 @@ export function AnalyticsClient({
             <div className="slideover-panel" role="dialog" aria-modal="true" aria-labelledby="an-drawer-title" data-testid="slideover-panel">
               <div className="slideover-header">
                 <div>
-                  <h3 id="an-drawer-title">Matching posts ({summary.posts.length})</h3>
+                  <h3 id="an-drawer-title">Matching posts ({drawerPosts.length})</h3>
                 </div>
                 <button type="button" className="slideover-close-btn" onClick={closeDrawer} aria-label="Close panel" data-testid="slideover-close-btn">
                   ✕
                 </button>
               </div>
               <div className="slideover-content">
-                {summary.posts.length === 0 ? (
+                {drawerPosts.length === 0 ? (
                   <EmptyState heading="No matching posts" />
                 ) : (
                   <ul className="an-drawer-post-list">
-                    {summary.posts.map((post) => (
+                    {drawerPosts.map((post) => (
                       <li key={post.id}>
                         <button
                           type="button"

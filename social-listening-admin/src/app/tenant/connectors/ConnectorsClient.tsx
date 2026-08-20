@@ -806,7 +806,7 @@ export function ConnectorsClient({
                       <ActivateDeactivateButton
                         platformId={platform.id}
                         ownerType="user"
-                        isActive={false}
+                        isActive={state.isActive}
                       />
                     </div>
                   ) : (
@@ -839,7 +839,7 @@ export function ConnectorsClient({
                         <ActivateDeactivateButton
                           platformId={platform.id}
                           ownerType="user"
-                          isActive={false}
+                          isActive={state.isActive}
                         />
                       )}
                     </div>
@@ -926,7 +926,7 @@ export function ConnectorsClient({
       {/* Facebook Page Picker (Story 6.23/6.27) */}
       {facebookPending && (
         <FacebookPagePickerModal
-          platformName={platforms.find((p) => p.id === 'facebook')?.name ?? 'Facebook Page (Owned Feed)'}
+          platformName={platforms.find((p) => p.id === 'facebook')?.name ?? 'Facebook Page'}
           pending={facebookPending}
           onClose={() => setFacebookPending(null)}
           onDone={() => window.location.reload()}

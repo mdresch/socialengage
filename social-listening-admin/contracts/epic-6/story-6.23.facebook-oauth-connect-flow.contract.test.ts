@@ -96,7 +96,7 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
   describe('AC1 (ADR-0059 §4): facebook PLATFORMS entry — oauth, personal-only, no tenant-wide option ever', () => {
     it('tenant/connectors/page.tsx defines a facebook entry with authMode "oauth", personalScopeAllowed true, tenantScopeAllowed false', () => {
       const source = readSrc('app', 'tenant', 'connectors', 'page.tsx');
-      const facebookBlock = source.slice(source.indexOf("id: 'facebook'"), source.indexOf("id: 'facebook'") + 600);
+      const facebookBlock = source.slice(source.indexOf("id: 'facebook'"), source.indexOf("id: 'facebook'") + 800);
       expect(facebookBlock).toContain("authMode: 'oauth'");
       expect(facebookBlock).toContain('personalScopeAllowed: true');
       expect(facebookBlock).toContain('tenantScopeAllowed: false');
@@ -124,15 +124,15 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
     });
   });
 
-  describe('AC2 (ADR-0059 §2): connector label is always "Facebook Page (Owned Feed)", never bare "Facebook"', () => {
+  describe('AC2 (ADR-0059 §2): connector label is always "Facebook Page", never bare "Facebook"', () => {
     it('both PLATFORMS arrays use the full disclosed label', () => {
       const connectSource = readSrc('app', 'tenant', 'connectors', 'page.tsx');
       const statusSource = readSrc('app', 'tenant', 'connectors', 'status', 'page.tsx');
-      expect(connectSource).toContain("name: 'Facebook Page (Owned Feed)'");
-      expect(statusSource).toContain("name: 'Facebook Page (Owned Feed)'");
+      expect(connectSource).toContain("name: 'Facebook Page'");
+      expect(statusSource).toContain("name: 'Facebook Page'");
       // Never a bare, unqualified "Facebook" name field anywhere in either file.
-      expect(connectSource).not.toMatch(/name: 'Facebook'/);
-      expect(statusSource).not.toMatch(/name: 'Facebook'/);
+      expect(connectSource).not.toMatch(/name:\s*'Facebook',/);
+      expect(statusSource).not.toMatch(/name:\s*'Facebook',/);
     });
   });
 
@@ -402,7 +402,7 @@ describe('Story 6.23 — Facebook OAuth connect flow with Page selection', () =>
 
 const FACEBOOK_PLATFORM = {
   id: 'facebook',
-  name: 'Facebook Page (Owned Feed)',
+  name: 'Facebook Page',
   subtitle: 'OAuth Ingestion Source',
   description: "Ingests your own connected Facebook Page's own posts (ADR-0059).",
   authMode: 'oauth' as const,

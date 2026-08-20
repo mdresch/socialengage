@@ -129,9 +129,9 @@ const PLATFORMS: PlatformDef[] = [
   },
   {
     id: 'facebook',
-    name: 'Facebook Page (Owned Feed)',
-    subtitle: 'OAuth Ingestion Source',
-    description: "Ingests your own connected Facebook Page's own posts and engagement — not public listening (ADR-0059).",
+    name: 'Facebook Page',
+    subtitle: 'Meta Graph API Ingestion Source',
+    description: "Ingests published posts, reactions, comments, and shares directly from your connected Facebook Business, Brand, and Creator Pages via Meta Graph API. Exclusively for managed Pages — personal account profiles and timelines are not ingested.",
     authMode: 'oauth',
     color: 'blue',
     icon: 'facebook',

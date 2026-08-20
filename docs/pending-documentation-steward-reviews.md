@@ -1905,3 +1905,33 @@
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/src/app/tenant/page.tsx, social-listening-core/contracts/epic-1/story-1.12.connector-status-includes-activation.contract.test.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts
 - **Status:** Pending review
 
+## 2026-08-20 — 30ed2df — fix(analytics): add resilient error handling for watchlist coverage and analytics initial load
+
+- **Full commit:** `30ed2dffbe1ca01d31ff0d36081a4ae3952dc75f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx
+- **Status:** Pending review
+
+## 2026-08-20 — 1c47d9e — docs(adr): accept ADR-0067 and draft Story 2.23 and Story 6.33
+
+- **Full commit:** `1c47d9e5f51dade0359943bc12da55c0646ec15a`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md, docs/adr/README.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — 9617cec — docs(adr): accept ADR-0068 (Instagram) & ADR-0069 (LinkedIn); draft Stories 2.24, 2.25, 6.34, 6.35
+
+- **Full commit:** `9617cecf9341e211133d11b15db5baa0b2d211f1`
+- **Files touched:** docs/adr/0068-instagram-connector.md, docs/adr/0069-linkedin-connector.md, docs/adr/README.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — d9639df — feat(core): implement post enrichment overrides API and precedence guard (Story 3.13 / ADR-0071)
+
+- **Full commit:** `d9639dfbb7bf5153288abda80440fd86cdb2a8f6`
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/postEnrichmentUtils.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Status:** Pending review
+
+## 2026-08-20 — 9260f6f — feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071)
+
+- **Full commit:** `9260f6f73f84f3f6a9955546878d54d0268d97ab`
+- **Files touched:** docs/implementation-log.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.31.post-enrichment-cascading-edit-drawer.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/enrich/route.ts, social-listening-admin/src/app/api/posts/[id]/enrichment/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/RunEnrichmentButton.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/ui/Slideover.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+

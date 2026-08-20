@@ -20,7 +20,7 @@ const PLATFORMS = [
   { id: 'gnews', name: 'GNews' },
   { id: 'newswire', name: 'Newswire' },
   { id: 'wikipedia', name: 'Wikipedia' },
-  { id: 'facebook', name: 'Facebook Page (Owned Feed)' },
+  { id: 'facebook', name: 'Facebook Page' },
   { id: 'azure-ai-language', name: 'Azure AI Language' },
   { id: 'azure-openai', name: 'Azure OpenAI' },
   { id: 'tenant-owned-feed', name: 'Tenant Feed' },

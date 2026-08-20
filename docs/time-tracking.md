@@ -15,6 +15,11 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 20:57 | — | — | Documentation | Story 6.31 | feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071) (9260f6f) |
+| 2026-08-20 | 20:57 | — | — | Documentation | Story 3.13 | feat(core): implement post enrichment overrides API and precedence guard (Story 3.13 / ADR-0071) (d9639df) |
+| 2026-08-20 | 19:53 | — | — | Documentation | ADR-0068 | docs(adr): accept ADR-0068 (Instagram) & ADR-0069 (LinkedIn); draft Stories 2.24, 2.25, 6.34, 6.35 (9617cec) |
+| 2026-08-20 | 19:35 | — | — | Documentation | ADR-0067 | docs(adr): accept ADR-0067 and draft Story 2.23 and Story 6.33 (1c47d9e) |
+| 2026-08-20 | 19:15 | — | — | Documentation | — | fix(analytics): add resilient error handling for watchlist coverage and analytics initial load (30ed2df) |
 | 2026-08-20 | 19:11 | — | — | Documentation | — | feat(tenant): include Facebook connector and display connected status in Active Connectors card (7cd9cf9) |
 | 2026-08-20 | 19:01 | — | — | Infrastructure | ADR-0067 | docs(adr): update ADR-0067 with modernized catalog description, active ingestion clarification, and personal intent sharing (b26cc4f) |
 | 2026-08-20 | 18:55 | — | — | Documentation | — | docs(deferred): document personal account outbound post authoring and browser intent URI sharing (e2802f2) |
