@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 23:50 | — | — | Review | — | docs: sync review and time tracking for healing pass (e67a53d) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (d0094f6) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (0052776) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (dca7b22) |
