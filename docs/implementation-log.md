@@ -2673,4 +2673,25 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **7th Filter Dimension & Click-to-Filter Integration (AC6):** Clicking a country row or map polygon sets `activeCountryFilter` to the country ISO code or `'UNKNOWN'`, composing with all other filters with AND semantics in `applyOverviewFilters()`. Clicking again toggles off. Emits a dismissible filter chip in the Overview filter chips bar and round-trips `?country=<ISO>` in deep-linking state.
 - **Zero-regression Validation (AC7):** All 39 test suites across `social-listening-admin` passed cleanly. Updated prior exact-shape assertions in `story-8.2` and `story-8.7` contracts with dated notes per the "extend, don't weaken" project methodology.
 
+---
+
+## 2026-08-20 — Story 1.16 — social-listening-core@ae1bd98
+
+- **Full commit:** `ae1bd988c6c10846afe3465ccd8c844824b7b905`
+- **Repo:** social-listening-core
+- **Story / ADR:** 1.16 / ADR-0070 (Connector Ingestion Watchdog, Stalled Health Derivation, and Alert Events)
+- **Contract:** social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts (13/13)
+- **SKILL.md:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md (updated), social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md (updated)
+- **Files touched:** docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/migrations/0039_add_ingestion_runs_stale_watchdog_index.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/publishConnectorAlertEvents.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
+- **Full suite at merge:** PASS, 13/13 in Story 1.16 contract; 18/18 in Story 1.15; 6/6 in Story 1.14
+
+**Delivered Story 1.16 following the contract-first methodology per ADR-0070:**
+- **Partial Database Index (Migration `0039`):** Added partial index `idx_ingestion_runs_stale_watchdog` on `ingestion_runs(status, started_at) WHERE status = 'running'` for O(1) watchdog sweeps.
+- **Lock-Safe Ingestion Run Watchdog (`reconcileStaleIngestionRuns`):** Implemented in `ingestionRunStore.ts` using `getAdminPool()` with `FOR UPDATE SKIP LOCKED` row locking to atomically reconcile orphaned `running` rows older than `MAX_RUN_DURATION_MS = max(15m, 2 * effectiveCadenceMs)` to `failed` with `retryable: true` and `error_summary: 'Ingestion run timed out or aborted (reconciled by watchdog)'`, immediately unblocking the Story 1.14/1.15 in-flight guard without operator intervention.
+- **Watchdog Scheduler Hook:** Wired `reconcileStaleRuns` into `runSchedulerTick()` in `pollScheduler.ts` as the first operation of every scheduler tick, publishing `run_timed_out` alert events when stale runs are detected.
+- **Extended Connector Health Derivation (`'stalled'` Status):** Widened `ConnectorHealthStatus` to include `'stalled'` and implemented the strict 6-tier derivation precedence in `deriveConnectorHealth()`: `disconnected` -> `reconnect_required` -> `failing` -> `stalled` -> `degraded` -> `healthy`. Connectors that have not attempted a poll in `3 * effectiveCadenceMs` or have had 24 hours of silence transition into `stalled` without overriding active failure states.
+- **Service Bus Ingestion Alert Events:** Defined `ConnectorIngestionAlertEvent` and helper `publishConnectorAlertEvents()` to dispatch structured telemetry (`run_timed_out`, `ingestion_stalled`, `connector_failing`, `reconnect_required`) to Azure Service Bus.
+- **Force Retry API Endpoint:** Added `POST /v1/connectors/:id/retry` and `POST /v1/connectors/:id/users/:userId/retry` with a 409 guard against legitimate in-flight runs (< 60s old), transient error clearing, automatic poll invocation, and fresh health return.
+
+
 
