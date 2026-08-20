@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 09:54 | — | — | Review | — | docs: ADR filename fixes and governance review updates (1bb19f7) |
 | 2026-08-20 | 09:54 | — | — | Documentation | — | feat(story-6.28): tenant-owned-feed friendly naming in setup UI (cc38b6a) |
 | 2026-08-20 | 09:21 | — | — | Documentation | Story 2.19 | docs: implementation log entry for Story 2.19, Built hash finalized (e54f937) |
 | 2026-08-20 | 09:20 | — | — | Documentation | — | feat(story-2.19): tenant-owned-feed per-feed name + per-item byline (2f52c0f) |
