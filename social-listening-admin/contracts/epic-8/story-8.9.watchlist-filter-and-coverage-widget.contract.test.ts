@@ -418,6 +418,7 @@ describe('Story 8.9 — selectedTopic watchlist filter and Watchlist Coverage wi
         activeAuthorFilter: null,
         activeKeywordFilter: null,
         activeLanguageFilter: null,
+        activeCountryFilter: null,
         activeSentimentFilter: null,
         activeWatchlistFilter: 'wl-456',
       };
@@ -432,6 +433,7 @@ describe('Story 8.9 — selectedTopic watchlist filter and Watchlist Coverage wi
         activeAuthorFilter: null,
         activeKeywordFilter: null,
         activeLanguageFilter: null,
+        activeCountryFilter: null,
         activeSentimentFilter: null,
         activeWatchlistFilter: 'wl-1',
       };

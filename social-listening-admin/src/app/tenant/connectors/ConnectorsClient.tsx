@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { StatusBadge, type StatusBadgeVariant, ConfirmModal } from '@/components/ui';
+import { IngestionAlertBanner } from '@/components/IngestionAlertBanner';
 import { ActivateDeactivateButton } from './ActivateDeactivateButton';
 
 // ---------------------------------------------------------------------------
@@ -143,7 +144,7 @@ export interface ConnectorInitialState {
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
   isActive: boolean;
   /** Story 6.23 — raw ConnectorStatus.status, so the UI can detect 'reconnect_required' distinctly from ordinary credentialStatus-derived states. */
-  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | null;
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled' | null;
   /** Masked credential hint shown after connection (e.g. first 4 chars) */
   maskedHint: string | null;
 }
@@ -162,7 +163,7 @@ export interface FacebookConnectedPageRow {
   pageName: string;
   status: 'connected' | 'removed' | 'orphaned';
   connectorHealth: {
-    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
     lastSuccessfulFetchAt: string | null;
     lastAttemptAt: string | null;
     consecutiveFailures: number;
@@ -225,6 +226,7 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
  */
 function platformVariant(state: ConnectorInitialState, platform: PlatformDef): StatusBadgeVariant {
   if (state.status === 'reconnect_required') return 'reconnect_required';
+  if (state.status === 'stalled') return 'stalled';
   if (!state.connected && platform.authMode !== 'none') return 'inactive';
   if (!state.isActive) return 'inactive';
   switch (state.credentialStatus) {
@@ -523,6 +525,7 @@ function derivePageVariant(health: FacebookConnectedPageRow['connectorHealth']):
     case 'healthy':      return 'healthy';
     case 'degraded':     return 'degraded';
     case 'failing':      return 'failing';
+    case 'stalled':      return 'stalled';
     case 'disconnected': return 'inactive';
     default:              return 'inactive';
   }
@@ -670,6 +673,21 @@ export function ConnectorsClient({
   // Split platforms: standard grid cards (first 4) vs the special tenant-owned-feed banner handled separately
   const gridPlatforms = platforms;
 
+  const activeIssues = initialStates
+    .filter(
+      (s) =>
+        s.isActive &&
+        (s.status === 'stalled' || s.status === 'failing' || s.status === 'reconnect_required')
+    )
+    .map((s) => {
+      const p = platforms.find((pl) => pl.id === s.platformId);
+      return {
+        platformId: s.platformId,
+        platformName: p?.name ?? s.platformId,
+        status: s.status as 'stalled' | 'failing' | 'reconnect_required',
+      };
+    });
+
   return (
     <div className="cv-root">
       {/* Page Header */}
@@ -684,6 +702,9 @@ export function ConnectorsClient({
           View Connector Status &amp; Latency <IconArrowRight />
         </a>
       </div>
+
+      {/* Global Ingestion Alert Banner (Story 6.29 / ADR-0070) */}
+      <IngestionAlertBanner issues={activeIssues} isTenantAdmin={isTenantAdmin} />
 
       {/* Billing disclaimer (ADR-0027) */}
       <div className="cv-disclaimer">

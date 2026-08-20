@@ -156,11 +156,12 @@ function deriveVariant(row: ConnectorStatusRow): StatusBadgeVariant {
   if (row.health?.status === 'reconnect_required') return 'reconnect_required';
   if (!row.isActive) return 'inactive';
   switch (row.health?.status) {
-    case 'healthy':     return 'healthy';
-    case 'degraded':    return 'degraded';
-    case 'failing':     return 'failing';
+    case 'healthy':      return 'healthy';
+    case 'degraded':     return 'degraded';
+    case 'failing':      return 'failing';
+    case 'stalled':      return 'stalled';
     case 'disconnected': return 'inactive';
-    default:            return 'inactive';
+    default:             return 'inactive';
   }
 }
 
@@ -169,6 +170,7 @@ function cardBorderClass(row: ConnectorStatusRow): string {
   if (row.health.status === 'reconnect_required') return 'cs-card cs-card-failing';
   if (row.health.status === 'failing')  return 'cs-card cs-card-failing';
   if (row.health.status === 'degraded') return 'cs-card cs-card-degraded';
+  if (row.health.status === 'stalled')  return 'cs-card cs-card-stalled';
   return 'cs-card';
 }
 
@@ -178,6 +180,8 @@ function cardBorderClass(row: ConnectorStatusRow): string {
 
 export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusClientProps) {
   const [pingingId, setPingingId] = useState<string | null>(null);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [retryFeedback, setRetryFeedback] = useState<{ id: string; type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   // Story 6.24 — split by real category rather than one flat list. AI
   // providers are not pollable feeds, so KPIs below are Connectors-only.
@@ -185,13 +189,40 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
   const aiProviderRows = rows.filter(isAIProvider);
 
   const healthyCount  = connectorRows.filter((r) => r.health?.status === 'healthy').length;
-  const degradedCount = connectorRows.filter((r) => r.health?.status === 'failing' || r.health?.status === 'degraded').length;
+  const degradedCount = connectorRows.filter((r) => r.health?.status === 'failing' || r.health?.status === 'degraded' || r.health?.status === 'stalled').length;
   const totalCount    = connectorRows.length;
 
   async function handleTestPing(id: string) {
     setPingingId(id);
     await new Promise((r) => setTimeout(r, 700));
     setPingingId(null);
+  }
+
+  async function handleRetry(platformId: string) {
+    setRetryingId(platformId);
+    setRetryFeedback(null);
+    try {
+      const res = await fetch(`/api/connectors/${encodeURIComponent(platformId)}/retry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 200) {
+        setRetryFeedback({ id: platformId, type: 'success', message: 'Ingestion run triggered. Refreshing...' });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
+      } else if (res.status === 409) {
+        setRetryFeedback({ id: platformId, type: 'info', message: data.message || 'Run already in progress.' });
+      } else {
+        setRetryFeedback({ id: platformId, type: 'error', message: data.error || 'Failed to trigger retry.' });
+      }
+    } catch {
+      setRetryFeedback({ id: platformId, type: 'error', message: 'Network error triggering retry.' });
+    } finally {
+      setRetryingId(null);
+    }
   }
 
   // Story 6.24 — one pass over the real, unfiltered `rows` prop (matching
@@ -221,6 +252,19 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
           <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary btn-sm cs-reconnect-btn">
             Reconnect
           </a>
+        )}
+
+        {/* Story 6.29 (ADR-0070 §4) — on-demand force retry / re-sync for active ingestion connectors */}
+        {!isAI && isActive && isTenantAdmin && (
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm cs-retry-btn"
+            onClick={() => handleRetry(platform.id)}
+            disabled={retryingId === platform.id}
+          >
+            <IconRefresh spinning={retryingId === platform.id} />
+            {retryingId === platform.id ? 'Re-syncing…' : 'Re-sync now'}
+          </button>
         )}
 
         <button

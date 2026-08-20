@@ -114,7 +114,21 @@ function post(
   keyPhrases: string[] = [],
   language: string | null = 'en'
 ): SentimentPost {
-  return { id, publishedAt, author, sentiment, keyPhrases, title: `Post ${id}`, language, providerId };
+  return {
+    id,
+    publishedAt,
+    author,
+    sentiment,
+    keyPhrases,
+    title: `Post ${id}`,
+    language,
+    providerId,
+    geoCountry: null,
+    geoCountryName: null,
+    geoRegion: null,
+    geoSource: null,
+    geoConfidence: null,
+  };
 }
 
 const RANGE = { startDate: '2026-08-01', endDate: '2026-08-05' };

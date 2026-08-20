@@ -14,6 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { EmptyState, RelativeTime } from '@/components/ui';
+import { IngestionAlertBanner, type IngestionAlertIssue } from '@/components/IngestionAlertBanner';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
 import { PostDetailPanel } from '../posts/PostDetailPanel';
 import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
@@ -62,6 +63,7 @@ interface OverviewTabProps {
   onWatchlistChange?: (watchlistId: string | null) => void;
   dateRangePicker?: React.ReactNode;
   hideHeaderControls?: boolean;
+  ingestionIssues?: IngestionAlertIssue[];
 }
 
 const SENTIMENT_COLORS = { positive: '#15803d', neutral: '#64748b', negative: '#dc2626' };
@@ -202,6 +204,7 @@ export function OverviewTab({
   onWatchlistChange,
   dateRangePicker,
   hideHeaderControls,
+  ingestionIssues = [],
 }: OverviewTabProps) {
   const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
   const [forecastOn, setForecastOn] = useState(false);
@@ -361,7 +364,9 @@ export function OverviewTab({
   }
 
   return (
-    <div className="an-overview-header-row">
+    <>
+      <IngestionAlertBanner issues={ingestionIssues || []} className="mb-4" />
+      <div className="an-overview-header-row">
       {!hideHeaderControls && (
         <div className="an-overview-header-controls">
           <div className="an-overview-watchlist-select-wrap">
@@ -803,6 +808,7 @@ export function OverviewTab({
         </div>
       )}
     </div>
+    </>
   );
 }
 

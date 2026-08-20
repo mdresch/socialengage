@@ -282,8 +282,8 @@ export async function getUserAccessHistory(userId: string): Promise<AccessHistor
 }
 
 export interface ConnectorStatus {
-  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a credential-invalidation failure, distinct from ordinary rate-limit/network 'failing'. */
-  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required'; Story 6.29 (ADR-0070 §2) added 'stalled'. */
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
   lastSuccessfulFetchAt: string | null;
   lastAttemptAt: string | null;
   consecutiveFailures: number;
@@ -404,6 +404,38 @@ export async function deactivatePlatform(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userId ? { ownerType, userId } : { ownerType }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface ConnectorRetryOutcome {
+  status: number;
+  body: {
+    message?: string;
+    health?: ConnectorStatus;
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.29 / Story 1.16 (ADR-0070 §4) — on-demand force retry / re-sync
+ * (`POST /v1/connectors/:platformId/retry` or `/v1/connectors/:platformId/users/:userId/retry`).
+ * Reconciles any stale runs, resets circuit-breaker failure streaks, triggers an immediate poll,
+ * and returns fresh derived ConnectorHealth. A 409 (run already in progress) is a real expected outcome.
+ */
+export async function retryConnector(
+  platformId: string,
+  userId?: string
+): Promise<ConnectorRetryOutcome> {
+  const path = userId
+    ? `/v1/connectors/${encodeURIComponent(platformId)}/users/${encodeURIComponent(userId)}/retry`
+    : `/v1/connectors/${encodeURIComponent(platformId)}/retry`;
+  const response = await authenticatedCoreFetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };

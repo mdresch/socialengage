@@ -413,7 +413,8 @@ button:disabled {
 }
 
 .status-badge-degraded .status-badge-dot,
-.status-badge-pending .status-badge-dot {
+.status-badge-pending .status-badge-dot,
+.status-badge-stalled .status-badge-dot {
   background-color: var(--color-status-degraded);
 }
 
@@ -2794,7 +2795,8 @@ button:disabled {
   box-shadow: 0 0 0 1px #fecaca, var(--shadow-sm);
 }
 
-.cs-card-degraded {
+.cs-card-degraded,
+.cs-card-stalled {
   border-color: #fcd34d;
   box-shadow: 0 0 0 1px #fde68a, var(--shadow-sm);
 }
