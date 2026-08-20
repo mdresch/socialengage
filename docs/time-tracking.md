@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 16:44 | — | — | Documentation | ADR-0070 | docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence (f00b34c) |
+| 2026-08-20 | 16:43 | — | — | Infrastructure | ADR-0070 | chore: record post-commit hook outputs for ADR-0070 (79da4c8) |
 | 2026-08-20 | 16:42 | — | — | Documentation | ADR-0070 | docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts (70035d7) |
 | 2026-08-20 | 16:39 | — | — | Infrastructure | Story 8.10 | chore: record post-commit hook outputs for Story 8.10 (07a885b) |
 | 2026-08-20 | 16:39 | — | — | Documentation | Story 8.10 | docs: record Story 8.10 implementation in user stories and log (168e5f7) |

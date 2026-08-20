@@ -2022,3 +2022,9 @@
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/adr/README.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence
+
+- **Full commit:** `f00b34cf34d4185043728eba09aa2f9df7e58588`
+- **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
