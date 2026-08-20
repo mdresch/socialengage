@@ -49,6 +49,11 @@
 | 2026-08-20 | 08:13 | — | — | Documentation | — | fix(post-feed): allocate the Newswire issuer to the author position (cd6f41e) |
 | 2026-08-20 | 08:09 | — | — | Documentation | — | fix(analytics-overview): unreadable white-on-white post title in drawer rows (efa96e8) |
 | 2026-08-20 | 07:58 | — | — | Documentation | — | feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer (2859a76) |
+| 2026-08-20 | 05:18 | — | — | Infrastructure | — | chore: post-commit hook outputs for 6673537 (ab41a7c) |
+| 2026-08-20 | 05:18 | — | — | Infrastructure | — | fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits (6673537) |
+| 2026-08-20 | 05:16 | — | — | Infrastructure | — | chore: post-commit hook outputs for d5ef459 (d4c8ca0) |
+| 2026-08-20 | 05:15 | — | — | Infrastructure | — | chore: post-commit hook outputs for 532e713 (d5ef459) |
+| 2026-08-20 | 05:13 | — | — | Review | — | Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues (532e713) |
 | 2026-08-19 | 20:52 | — | — | Documentation | Story 8.7 | docs: implementation log entry for Story 8.7, Built hash finalized (6a59885) |
 | 2026-08-19 | 20:51 | — | — | Documentation | Story 8.7 | feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance (7698563) |
 | 2026-08-19 | 20:06 | — | — | Documentation | — | docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate (1d550a1) |
