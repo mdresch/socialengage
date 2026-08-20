@@ -397,9 +397,28 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
       expect(source).toMatch(/window\.history\.replaceState/);
     });
 
-    it('the filtered-post-count control opens the existing Slideover drawer, not a new drawer implementation', () => {
-      expect(source).toMatch(/Slideover/);
+    /**
+     * 2026-08-19 — superseded the same day, live, at Menno's own explicit
+     * request ("when a post is selected it will move the current sidebar to
+     * the left of it and open a sidebar with post details as on the post
+     * page sidebar similar view"): the filtered-post-count control now opens
+     * a custom two-panel stacked drawer (post list + on-demand full post
+     * detail via `PostDetailPanel`), not the shared single-panel `Slideover`
+     * component — the shared component can't render two panels side by side
+     * without breaking its other four-plus call sites (see
+     * `PostDetailPanel.tsx`'s own header comment). It still reuses
+     * `Slideover`'s own CSS classes (`.slideover-backdrop`,
+     * `.slideover-panel`) rather than inventing new chrome, so this
+     * assertion checks for that reuse instead of the component import.
+     */
+    it('the filtered-post-count control opens a stacked two-panel drawer reusing Slideover CSS, not the Slideover component', () => {
+      expect(source).not.toMatch(/<Slideover[\s>]/);
+      expect(source).not.toMatch(/import\s*\{[^}]*\bSlideover\b[^}]*\}\s*from/);
+      expect(source).toMatch(/slideover-backdrop/);
+      expect(source).toMatch(/an-drawer-stack/);
       expect(source).toMatch(/an-drawer-post-row/);
+      expect(source).toMatch(/openDetail/);
+      expect(source).toMatch(/PostDetailPanel/);
     });
 
     it('no D3 import — Recharts and inline SVG only (ADR-0062 Decision §9)', () => {

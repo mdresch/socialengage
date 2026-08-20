@@ -2,15 +2,19 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { EmptyState, Slideover, RelativeTime } from '@/components/ui';
+import { EmptyState, RelativeTime } from '@/components/ui';
 import { AnimatedChartTooltip } from './AnimatedChartTooltip';
+import { PostDetailPanel } from '../posts/PostDetailPanel';
+import { flattenPost, type FlatPost } from '../posts/postDisplay';
+import type { SocialPostFull } from '@/lib/core-client';
 import {
   applyOverviewFilters,
   computeActiveChips,
@@ -18,13 +22,13 @@ import {
   computeCrisisAlertRadar,
   computeLanguageBreakdown,
   computePhraseFrequency,
+  computeMovingAverage,
+  computeSentimentIndex,
   computeSentimentSplitFromFlat,
-  computeSentimentTrajectory,
   computeSourceBreakdownFromFlat,
   computeTopAuthorsByVolume,
   computeVolumeForecast,
   computeVolumeHistory,
-  computeSentimentHistory,
   serializeOverviewFiltersToSearchString,
   EMPTY_OVERVIEW_FILTERS,
   type AnalyticsSummary,
@@ -68,6 +72,21 @@ function initials(author: string): string {
   return (first + second).toUpperCase();
 }
 
+/** Same `provider-pill-*` classes /tenant/posts already established (globals.css) — reused, not reinvented, for the drawer's row-level provider badge. */
+function providerPillClass(providerId: string): string {
+  const slug = providerId.toLowerCase().replace(/_/g, '-');
+  const known = ['gnews', 'newswire', 'tenant-owned-feed'];
+  return `provider-pill provider-pill-${known.includes(slug) ? slug : 'default'}`;
+}
+
+function IconChevronRight() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
 /**
  * Story 8.7 (ADR-0062) — Overview Tab Enhancement. Replaces the prior
  * three-KPI-card layout (Stories 8.1/8.4) with a 3-column, eight-widget
@@ -80,8 +99,67 @@ function initials(author: string): string {
  */
 export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps) {
   const [filters, setFilters] = useState<OverviewFilters>(() => initialFilters ?? EMPTY_OVERVIEW_FILTERS);
-  const [forecastOn, setForecastOn] = useState(true);
+  const [forecastOn, setForecastOn] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  /**
+   * 2026-08-19 — the drawer's post-list rows are `SentimentPost`-shaped
+   * (`filteredPosts`, from `applyOverviewFilters(summary.posts, ...)`), not
+   * the richer `FlatPost` `PostDetailPanel` needs (full body, raw payload,
+   * entities) — that fuller shape isn't in `AnalyticsSummary` at all (only
+   * the fields Story 8.2's `flattenForSentiment()` extracted). So a row
+   * click fetches the one selected post's full detail on demand via the new
+   * `GET /api/posts/[id]` proxy, mirroring `PostsFeedClient.tsx`'s own
+   * activePost fetch-free path is not available here since Overview never
+   * had `SocialPostFull` to begin with.
+   */
+  const [detailPostId, setDetailPostId] = useState<string | null>(null);
+  const [detailPost, setDetailPost] = useState<FlatPost | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  function openDetail(postId: string) {
+    setDetailPostId(postId);
+    setDetailPost(null);
+    setDetailError(null);
+    setDetailLoading(true);
+    fetch(`/api/posts/${postId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found.');
+        return res.json() as Promise<SocialPostFull>;
+      })
+      .then((post) => setDetailPost(flattenPost(post)))
+      .catch(() => setDetailError('Could not load this post.'))
+      .finally(() => setDetailLoading(false));
+  }
+
+  function closeDetail() {
+    setDetailPostId(null);
+    setDetailPost(null);
+    setDetailError(null);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    closeDetail();
+  }
+
+  /** Escape/scroll-lock parity with the shared `Slideover` component's own useEffect (this drawer can't reuse it — see PostDetailPanel.tsx's own header comment for why). Escape closes the detail panel first if it's open, matching a stacked-panel convention (innermost first). */
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (detailPostId) closeDetail();
+      else closeDrawer();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [drawerOpen, detailPostId]);
 
   // Deep-link share state (ADR-0062 Decision §4) — keeps the URL in sync on
   // every filter change via replaceState, never a full navigation event.
@@ -96,20 +174,28 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
   const chips = useMemo(() => computeActiveChips(filters), [filters]);
 
   const sentimentSplit = useMemo(() => computeSentimentSplitFromFlat(filteredPosts), [filteredPosts]);
+  const sentimentIndex = useMemo(() => computeSentimentIndex(sentimentSplit), [sentimentSplit]);
   const sourceBreakdown = useMemo(() => computeSourceBreakdownFromFlat(filteredPosts), [filteredPosts]);
   const authorsBySource = useMemo(() => computeAuthorsBySource(filteredPosts), [filteredPosts]);
   const topAuthors = useMemo(() => computeTopAuthorsByVolume(filteredPosts), [filteredPosts]);
   const phraseFrequency = useMemo(() => computePhraseFrequency(filteredPosts, 20), [filteredPosts]);
-  const languages = useMemo(() => computeLanguageBreakdown(filteredPosts), [filteredPosts]);
+  // 2026-08-19 follow-up: capped to the top 6 (already ranked descending by
+  // computeLanguageBreakdown()) at Menno's own request — a long-tail list of
+  // every language present was more clutter than signal.
+  const languages = useMemo(() => computeLanguageBreakdown(filteredPosts).slice(0, 6), [filteredPosts]);
   const volumeHistory = useMemo(() => computeVolumeHistory(filteredPosts, range), [filteredPosts, range]);
-  const sentimentHistory = useMemo(() => computeSentimentHistory(filteredPosts, range), [filteredPosts, range]);
   const forecast = useMemo(() => computeVolumeForecast(volumeHistory, 7), [volumeHistory]);
+  const movingAverage = useMemo(() => computeMovingAverage(volumeHistory, 7), [volumeHistory]);
   const crisisRadar = useMemo(() => computeCrisisAlertRadar(filteredPosts, range), [filteredPosts, range]);
-  const trajectory = useMemo(() => computeSentimentTrajectory(sentimentHistory), [sentimentHistory]);
 
   const timelineData = useMemo(() => {
-    const byDate = new Map<string, { date: string; actual?: number; forecast?: number }>();
+    const byDate = new Map<string, { date: string; actual?: number; forecast?: number; average?: number }>();
     for (const point of volumeHistory) byDate.set(point.date, { date: point.date, actual: point.count });
+    for (const point of movingAverage) {
+      const existing = byDate.get(point.date) ?? { date: point.date };
+      existing.average = Math.round(point.average * 10) / 10;
+      byDate.set(point.date, existing);
+    }
     if (forecastOn) {
       for (const point of forecast) {
         const existing = byDate.get(point.date) ?? { date: point.date };
@@ -118,7 +204,7 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
       }
     }
     return Array.from(byDate.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
-  }, [volumeHistory, forecast, forecastOn]);
+  }, [volumeHistory, movingAverage, forecast, forecastOn]);
 
   function toggleSentimentFilter(value: NonNullable<OverviewFilters['activeSentimentFilter']>) {
     setFilters((prev) => ({ ...prev, activeSentimentFilter: prev.activeSentimentFilter === value ? null : value }));
@@ -195,7 +281,7 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
             <div className="an-widget-header">
               <span className="an-widget-title">Sentiment</span>
             </div>
-            <SentimentGaugeSVG split={sentimentSplit} onSegmentClick={toggleSentimentFilter} activeSegment={filters.activeSentimentFilter} />
+            <SentimentGaugeSVG index={sentimentIndex} split={sentimentSplit} onSegmentClick={toggleSentimentFilter} activeSegment={filters.activeSentimentFilter} />
           </div>
 
           <div className="an-widget" id="widget-authors-by-source">
@@ -217,26 +303,20 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
               </label>
             </div>
 
-            {crisisRadar && (
+            {/* 2026-08-19 follow-up: only a genuine alert (elevated/crisis) is worth surfacing — "stable" isn't an alert, and any decrease in negative posts (however large) always computes as "stable" under the fixed thresholds, so showing it unconditionally was just noise. */}
+            {crisisRadar && crisisRadar.level !== 'stable' && (
               <div className={`an-crisis-radar an-crisis-radar-${crisisRadar.level}`}>
                 Negative-sentiment momentum: {crisisRadar.changePct > 0 ? '+' : ''}
                 {crisisRadar.changePct}% ({crisisRadar.level})
               </div>
             )}
 
-            {trajectory.points.some((p) => p.score !== null) && (
-              <div className="an-sentiment-trajectory">
-                Sentiment trajectory: {trajectory.trend ?? 'flat'}
-                <span className="an-trajectory-scale">(−10 to +10 per day)</span>
-              </div>
-            )}
-
             {timelineData.length === 0 ? (
               <EmptyState heading="No volume data" />
             ) : (
-              <div className="an-chart-wrap" style={{ height: 220 }}>
+              <div className="an-chart-wrap" style={{ height: 420 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
+                  <ComposedChart
                     data={timelineData}
                     margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
                     onClick={(e) => {
@@ -252,7 +332,12 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
                           active={active}
                           title={String(label)}
                           items={payload?.map((p) => ({
-                            name: p.dataKey === 'forecast' ? 'Statistical projection — not a real measurement' : 'Posts',
+                            name:
+                              p.dataKey === 'forecast'
+                                ? 'Statistical projection — not a real measurement'
+                                : p.dataKey === 'average'
+                                  ? '7-day average'
+                                  : 'Posts',
                             value: p.value as number,
                             color: p.color as string,
                           })) ?? []}
@@ -260,6 +345,15 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
                       )}
                     />
                     <Area type="monotone" dataKey="actual" name="Posts" stroke="#2563eb" fill="#2563eb" fillOpacity={0.15} />
+                    <Line
+                      type="monotone"
+                      dataKey="average"
+                      name="7-day average"
+                      stroke="#94a3b8"
+                      strokeWidth={1.5}
+                      dot={false}
+                      activeDot={false}
+                    />
                     {forecastOn && (
                       <Area
                         type="monotone"
@@ -271,12 +365,16 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
                         fillOpacity={0.08}
                       />
                     )}
-                  </AreaChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             )}
           </div>
 
+        </div>
+
+        {/* Right column */}
+        <div className="an-overview-col an-overview-col-right">
           <div className="an-widget" id="widget-wordcloud">
             <div className="an-widget-header">
               <span className="an-widget-title">Key phrases</span>
@@ -299,33 +397,6 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
             )}
           </div>
 
-          <div className="an-widget" id="widget-languages">
-            <div className="an-widget-header">
-              <span className="an-widget-title">Languages</span>
-            </div>
-            {languages.length === 0 ? (
-              <EmptyState heading="No language data yet" />
-            ) : (
-              <ul className="an-source-mini-list">
-                {languages.map((lang) => (
-                  <li key={lang.code}>
-                    <button
-                      type="button"
-                      className={`an-author-row${filters.activeLanguageFilter === lang.code ? ' an-author-row-active' : ''}`}
-                      onClick={() => toggleLanguageFilter(lang.code)}
-                    >
-                      <span>{lang.label}</span>
-                      <span className="an-author-count">{lang.count}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        {/* Right column */}
-        <div className="an-overview-col an-overview-col-right">
           <div className="an-widget" id="widget-sources-volume">
             <div className="an-widget-header">
               <span className="an-widget-title">Sources</span>
@@ -343,6 +414,30 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
                     >
                       <span className={`provider-pill provider-pill-${source.providerId}`}>{source.label}</span>
                       <span className="an-source-detail-count">{source.count.toLocaleString()}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="an-widget" id="widget-languages">
+            <div className="an-widget-header">
+              <span className="an-widget-title">Languages</span>
+            </div>
+            {languages.length === 0 ? (
+              <EmptyState heading="No language data yet" />
+            ) : (
+              <ul className="an-source-mini-list">
+                {languages.map((lang) => (
+                  <li key={lang.code}>
+                    <button
+                      type="button"
+                      className={`an-author-row${filters.activeLanguageFilter === lang.code ? ' an-author-row-active' : ''}`}
+                      onClick={() => toggleLanguageFilter(lang.code)}
+                    >
+                      <span>{lang.label}</span>
+                      <span className="an-author-count">{lang.count}</span>
                     </button>
                   </li>
                 ))}
@@ -380,34 +475,93 @@ export function OverviewTab({ summary, range, initialFilters }: OverviewTabProps
         </div>
       </div>
 
-      <Slideover title={`Matching posts (${filteredPosts.length})`} isOpen={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        {filteredPosts.length === 0 ? (
-          <EmptyState heading="No matching posts" />
-        ) : (
-          <ul className="an-drawer-post-list">
-            {filteredPosts.map((post) => (
-              <li key={post.id} className="an-drawer-post-row">
-                <span className="an-drawer-post-title">{post.title}</span>
-                <span className="an-drawer-post-meta">
-                  {post.sentiment && <span className={`an-sentiment-mini-${post.sentiment}`}>{post.sentiment}</span>}
-                  {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Slideover>
+      {drawerOpen && (
+        <div
+          className="slideover-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeDrawer();
+          }}
+        >
+          <div className="an-drawer-stack">
+            <div className="slideover-panel" role="dialog" aria-modal="true" aria-labelledby="an-drawer-title" data-testid="slideover-panel">
+              <div className="slideover-header">
+                <div>
+                  <h3 id="an-drawer-title">Matching posts ({filteredPosts.length})</h3>
+                </div>
+                <button type="button" className="slideover-close-btn" onClick={closeDrawer} aria-label="Close panel" data-testid="slideover-close-btn">
+                  ✕
+                </button>
+              </div>
+              <div className="slideover-content">
+                {filteredPosts.length === 0 ? (
+                  <EmptyState heading="No matching posts" />
+                ) : (
+                  <ul className="an-drawer-post-list">
+                    {filteredPosts.map((post) => (
+                      <li key={post.id}>
+                        <button
+                          type="button"
+                          className={`an-drawer-post-row${detailPostId === post.id ? ' an-drawer-post-row-active' : ''}`}
+                          onClick={() => openDetail(post.id)}
+                        >
+                          <span className="an-drawer-post-row-main">
+                            <span className={providerPillClass(post.providerId)}>{post.providerId.replace(/_/g, ' ')}</span>
+                            <span className="an-drawer-post-title">{post.title}</span>
+                          </span>
+                          <span className="an-drawer-post-meta">
+                            {post.sentiment && <span className={`an-sentiment-mini-${post.sentiment}`}>{post.sentiment}</span>}
+                            {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
+                            <IconChevronRight />
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {detailPostId && (
+              <div className="slideover-panel slideover-lg" role="dialog" aria-modal="true" aria-labelledby="an-drawer-detail-title">
+                <div className="slideover-header">
+                  <div>
+                    {detailPost && (
+                      <span className={`${providerPillClass(detailPost.provider)} an-drawer-detail-provider-pill`}>
+                        {detailPost.provider.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                    <h3 id="an-drawer-detail-title">{detailPost?.title ?? 'Post detail'}</h3>
+                    {detailPost?.author && <p className="slideover-subtitle">{detailPost.author}</p>}
+                  </div>
+                  <button type="button" className="slideover-close-btn" onClick={closeDetail} aria-label="Close post detail">
+                    ✕
+                  </button>
+                </div>
+                <div className="slideover-content">
+                  {detailLoading && <p className="an-drawer-detail-status">Loading post…</p>}
+                  {detailError && <p className="an-drawer-detail-status an-drawer-detail-error">{detailError}</p>}
+                  {detailPost && <PostDetailPanel key={detailPost.id} post={detailPost} />}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 interface SentimentGaugeSVGProps {
+  /** Real 0–10 weighted score (computeSentimentIndex()) — null when there's nothing enriched to score, never a fabricated default. */
+  index: number | null;
   split: { positive: number; neutral: number; negative: number };
   activeSegment: 'positive' | 'neutral' | 'negative' | null;
   onSegmentClick: (value: 'positive' | 'neutral' | 'negative') => void;
 }
 
-function SentimentGaugeSVG({ split, activeSegment, onSegmentClick }: SentimentGaugeSVGProps) {
+/** Story 8.7 review follow-up (2026-08-19) — the resulting sentiment index is placed in front of (to the left of, per the original design spec's own §5) the donut ring, not just implied by its arc proportions. */
+function SentimentGaugeSVG({ index, split, activeSegment, onSegmentClick }: SentimentGaugeSVGProps) {
   const total = split.positive + split.neutral + split.negative;
   const segments: Array<{ key: 'positive' | 'neutral' | 'negative'; value: number; color: string }> = [
     { key: 'negative', value: split.negative, color: SENTIMENT_COLORS.negative },
@@ -418,38 +572,67 @@ function SentimentGaugeSVG({ split, activeSegment, onSegmentClick }: SentimentGa
 
   return (
     <div className="an-gauge-wrap">
-      <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="Sentiment gauge">
-        <circle cx="50" cy="50" r={GAUGE_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="8" />
-        {total === 0
-          ? null
-          : segments.map((seg) => {
-              if (seg.value === 0) return null;
-              const length = (seg.value / total) * GAUGE_CIRCUMFERENCE;
-              const dashOffset = -offset;
-              offset += length;
-              return (
-                <circle
-                  key={seg.key}
-                  cx="50"
-                  cy="50"
-                  r={GAUGE_RADIUS}
-                  fill="none"
-                  stroke={seg.color}
-                  strokeWidth="8"
-                  strokeDasharray={`${length} ${GAUGE_CIRCUMFERENCE - length}`}
-                  strokeDashoffset={dashOffset}
-                  transform="rotate(-90 50 50)"
-                  className={`an-gauge-segment${activeSegment === seg.key ? ' an-gauge-segment-active' : ''}`}
-                  onClick={() => onSegmentClick(seg.key)}
-                />
-              );
-            })}
-      </svg>
-      <div className="an-sentiment-mini">
-        <span className="an-sentiment-mini-positive">{split.positive} positive</span>
-        <span className="an-sentiment-mini-neutral">{split.neutral} neutral</span>
-        <span className="an-sentiment-mini-negative">{split.negative} negative</span>
+      <div className="an-gauge-top-row">
+        <span className="an-gauge-index" title="Sentiment index (0–10, 10 = fully positive)">
+          {index === null ? '—' : index.toFixed(1)}
+        </span>
+        <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="Sentiment gauge">
+          <circle cx="50" cy="50" r={GAUGE_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="8" />
+          {total === 0
+            ? null
+            : segments.map((seg) => {
+                if (seg.value === 0) return null;
+                const length = (seg.value / total) * GAUGE_CIRCUMFERENCE;
+                const dashOffset = -offset;
+                offset += length;
+                return (
+                  <circle
+                    key={seg.key}
+                    cx="50"
+                    cy="50"
+                    r={GAUGE_RADIUS}
+                    fill="none"
+                    stroke={seg.color}
+                    strokeWidth="8"
+                    strokeDasharray={`${length} ${GAUGE_CIRCUMFERENCE - length}`}
+                    strokeDashoffset={dashOffset}
+                    transform="rotate(-90 50 50)"
+                    className={`an-gauge-segment${activeSegment === seg.key ? ' an-gauge-segment-active' : ''}`}
+                    onClick={() => onSegmentClick(seg.key)}
+                  />
+                );
+              })}
+        </svg>
       </div>
+      {total > 0 && (
+        <>
+          <div className="an-sentiment-bar" role="img" aria-label="Sentiment split as a percentage of matched posts">
+            {split.positive > 0 && (
+              <span
+                className="an-sentiment-bar-segment an-sentiment-bar-positive"
+                style={{ width: `${(split.positive / total) * 100}%` }}
+              />
+            )}
+            {split.neutral > 0 && (
+              <span
+                className="an-sentiment-bar-segment an-sentiment-bar-neutral"
+                style={{ width: `${(split.neutral / total) * 100}%` }}
+              />
+            )}
+            {split.negative > 0 && (
+              <span
+                className="an-sentiment-bar-segment an-sentiment-bar-negative"
+                style={{ width: `${(split.negative / total) * 100}%` }}
+              />
+            )}
+          </div>
+          <div className="an-sentiment-bar-legend">
+            <span className="an-sentiment-mini-positive">{Math.round((split.positive / total) * 100)}% positive</span>
+            <span className="an-sentiment-mini-neutral">{Math.round((split.neutral / total) * 100)}% neutral</span>
+            <span className="an-sentiment-mini-negative">{Math.round((split.negative / total) * 100)}% negative</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

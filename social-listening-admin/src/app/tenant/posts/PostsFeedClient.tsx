@@ -3,18 +3,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
-import {
-  extractDisplayText,
-  extractProviderBadge,
-  extractEnrichmentSummary,
-  extractUrl,
-  extractAuthor,
-  type PostEnrichmentSummary,
-} from './postDisplay';
+import { flattenPost, type FlatPost } from './postDisplay';
 import { RelativeTime } from '@/components/ui';
 import { Slideover } from '@/components/ui';
 import { EmptyState } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
+import { PostDetailPanel } from './PostDetailPanel';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-react is not installed)
@@ -55,66 +49,6 @@ function IconBuilding() {
       <path d="M8 7h.01M16 7h.01M8 12h.01M16 12h.01" />
     </svg>
   );
-}
-
-function IconTag() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
-    </svg>
-  );
-}
-
-function IconSparkles() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3v1M12 20v1M4.22 4.22l.7.7M18.36 18.36l.7.7M1 12h1M21 12h1M4.22 19.78l.7-.7M18.36 5.64l.7-.7" />
-      <path d="M12 8a4 4 0 1 0 4 4A4 4 0 0 0 12 8z" />
-    </svg>
-  );
-}
-
-function IconCode() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Derived type for flattened post display data
-// ---------------------------------------------------------------------------
-
-interface FlatPost {
-  id: string;
-  createdAt: string;
-  publishedAt: string | null;
-  rawPayload: unknown;
-  enrichment: unknown;
-  bodyMarkdown: string | null;
-  // derived
-  title: string;
-  snippet: string | null;
-  provider: string;
-  url: string | null;
-  author: string | null;
-  enrichmentSummary: PostEnrichmentSummary | null;
-}
-
-function flattenPost(post: SocialPostSummary): FlatPost {
-  const { title, snippet } = extractDisplayText(post.rawPayload);
-  return {
-    ...post,
-    title,
-    snippet,
-    provider: extractProviderBadge(post.rawPayload),
-    url: extractUrl(post.rawPayload),
-    author: extractAuthor(post.rawPayload),
-    enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +133,6 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
   const [activePost, setActivePost] = useState<FlatPost | null>(
     () => (initialActivePostId && flat.find((p) => p.id === initialActivePostId)) || null
   );
-  const [showRawJson, setShowRawJson] = useState(false);
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
 
   const filteredPosts = useMemo(() => {
@@ -376,10 +309,10 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             <article
               key={post.id}
               className="pf-post-card"
-              onClick={() => { setShowRawJson(false); setActivePost(post); }}
+              onClick={() => setActivePost(post)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setShowRawJson(false); setActivePost(post); } }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePost(post); }}
               aria-label={`Inspect: ${post.title}`}
             >
               {/* Header row */}
@@ -507,140 +440,7 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             </div>
           }
         >
-          <div className="pf-detail-body">
-            {/* Full body */}
-            {(activePost.bodyMarkdown || activePost.snippet) && (
-              <div>
-                <h3 className="pf-detail-section-title">Ingested Article Body</h3>
-                {activePost.bodyMarkdown ? (
-                  <div className="pf-detail-body-markdown">
-                    <ReactMarkdown>{activePost.bodyMarkdown}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <div className="pf-detail-body-text">{activePost.snippet}</div>
-                )}
-              </div>
-            )}
-
-            {/* AI Enrichment Panel */}
-            {activePost.enrichmentSummary ? (
-              <div className="pf-enrichment-panel">
-                <div className="pf-enrichment-panel-header">
-                  <div className="pf-enrichment-panel-title">
-                    <IconSparkles />
-                    Azure AI Cognitive Analysis
-                  </div>
-                  {activePost.enrichmentSummary.modelUsed && (
-                    <span className="pf-enrichment-model">{activePost.enrichmentSummary.modelUsed}</span>
-                  )}
-                  {activePost.enrichmentSummary.language && (
-                    <span className="pf-enrichment-language">Language: {activePost.enrichmentSummary.language}</span>
-                  )}
-                </div>
-
-                {/* Sentiment scores */}
-                {activePost.enrichmentSummary.sentiment && (
-                  <div className="pf-sentiment-section">
-                    <div className="pf-sentiment-header">
-                      <span>Sentiment: <strong>{activePost.enrichmentSummary.sentiment}</strong></span>
-                      {activePost.enrichmentSummary.sentimentScores && (
-                        <span className="pf-sentiment-sub">Confidence Distribution</span>
-                      )}
-                    </div>
-                    {activePost.enrichmentSummary.sentimentScores && (
-                      <div className="pf-sentiment-bars">
-                        {(['positive', 'neutral', 'negative'] as const).map((key) => {
-                          const score = activePost.enrichmentSummary!.sentimentScores![key];
-                          const pct = (score * 100).toFixed(0);
-                          return (
-                            <div key={key} className="pf-bar-row">
-                              <span className={`pf-bar-label pf-bar-label-${key}`}>
-                                {key.charAt(0).toUpperCase() + key.slice(1)}
-                              </span>
-                              <div className="pf-bar-track">
-                                <div
-                                  className={`pf-bar-fill pf-bar-fill-${key}`}
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                              <span className="pf-bar-pct">{pct}%</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Named entities */}
-                {activePost.enrichmentSummary.entities.length > 0 && (
-                  <div>
-                    <span className="pf-detail-field-label">Extracted Named Entities</span>
-                    <div className="pf-chip-group">
-                      {activePost.enrichmentSummary.entities.map((ent) => (
-                        <span key={ent} className="pf-chip-entity-lg">
-                          <IconTag /> <strong>{ent}</strong>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Key phrases */}
-                {activePost.enrichmentSummary.keyPhrases.length > 0 && (
-                  <div>
-                    <span className="pf-detail-field-label">Extracted Key Phrases</span>
-                    <div className="pf-chip-group">
-                      {activePost.enrichmentSummary.keyPhrases.map((phrase) => (
-                        <span key={phrase} className="pf-chip-phrase-lg">#{phrase}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="pf-no-enrichment">
-                <p>This post has not been enriched yet.</p>
-                <RunEnrichmentButton postId={activePost.id} />
-              </div>
-            )}
-
-            {/* Ingestion telemetry */}
-            <div className="pf-telemetry">
-              <div className="pf-telemetry-row">
-                <span>Post ID</span>
-                <code>{activePost.id}</code>
-              </div>
-              <div className="pf-telemetry-row">
-                <span>Ingested At</span>
-                <code>{new Date(activePost.createdAt).toISOString()}</code>
-              </div>
-              <div className="pf-telemetry-row">
-                <span>Provider</span>
-                <code>{activePost.provider}</code>
-              </div>
-            </div>
-
-            {/* Raw JSON toggle */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowRawJson((v) => !v)}
-                className="pf-raw-toggle"
-              >
-                <span className="pf-raw-toggle-left">
-                  <IconCode />
-                  {showRawJson ? 'Hide Raw Ingestion JSON' : 'Inspect Raw Ingestion Payload'}
-                </span>
-                <span>{showRawJson ? '▲' : '▼'}</span>
-              </button>
-              {showRawJson && (
-                <pre className="pf-raw-json">
-                  {JSON.stringify(activePost.rawPayload, null, 2)}
-                </pre>
-              )}
-            </div>
-          </div>
+          <PostDetailPanel key={activePost.id} post={activePost} />
         </Slideover>
       )}
     </div>

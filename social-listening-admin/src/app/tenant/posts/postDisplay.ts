@@ -5,6 +5,8 @@
  * functions return however fits their own layout.
  */
 
+import type { SocialPostSummary } from '@/lib/core-client';
+
 export interface DisplayText {
   title: string;
   snippet: string | null;
@@ -89,6 +91,8 @@ export interface PostEnrichmentSummary {
   modelUsed: string | null;
   /** ISO 639-1 code (e.g. "en"), read from enrichment.detectedLanguage — Story 8.5 (ADR-0055). Both real AIProviderConnectors already compute and persist this on every enrichment; this is the first place it's surfaced. */
   language: string | null;
+  /** A concise, LLM-generated executive summary — read from enrichment.summary (social-listening-core's own AnalyzeResult.summary, Story 2.17). Populated only when Azure OpenAI (not Azure AI Language) did the enrichment; null otherwise, never a fabricated fallback. This admin UI never surfaced it until now. */
+  summary: string | null;
 }
 
 /**
@@ -129,7 +133,45 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   const keyPhrases = Array.isArray(e.keyPhrases) ? e.keyPhrases.filter((k): k is string => typeof k === 'string') : [];
   const modelUsed = typeof e.modelUsed === 'string' ? e.modelUsed : null;
   const language = typeof e.detectedLanguage === 'string' ? e.detectedLanguage : null;
+  const summary = typeof e.summary === 'string' ? e.summary : null;
 
   if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed) return null;
-  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed, language };
+  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed, language, summary };
+}
+
+/**
+ * 2026-08-19 — moved here from PostsFeedClient.tsx (its original home) so the
+ * Analytics Overview tab's own post-detail drawer, a second, sibling call
+ * site, can derive the identical shape without importing a Client Component
+ * module. Belongs here regardless of caller count: built entirely from this
+ * file's own extract*() functions, matching this file's "pure
+ * display-derivation helpers" purpose exactly.
+ */
+export interface FlatPost {
+  id: string;
+  createdAt: string;
+  publishedAt: string | null;
+  rawPayload: unknown;
+  enrichment: unknown;
+  bodyMarkdown: string | null;
+  // derived
+  title: string;
+  snippet: string | null;
+  provider: string;
+  url: string | null;
+  author: string | null;
+  enrichmentSummary: PostEnrichmentSummary | null;
+}
+
+export function flattenPost(post: SocialPostSummary): FlatPost {
+  const { title, snippet } = extractDisplayText(post.rawPayload);
+  return {
+    ...post,
+    title,
+    snippet,
+    provider: extractProviderBadge(post.rawPayload),
+    url: extractUrl(post.rawPayload),
+    author: extractAuthor(post.rawPayload),
+    enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,
+  };
 }

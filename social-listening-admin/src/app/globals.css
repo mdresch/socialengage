@@ -139,6 +139,13 @@ main {
   padding: var(--space-6) var(--space-5) var(--space-8);
 }
 
+/* Analytics dashboard (Story 8.7) — the 3-column widget grid benefits from
+   the full available width, unlike every other screen's text-column
+   content; scoped to this one page only, never the global main cap above. */
+main:has(.an-root) {
+  max-width: 100%;
+}
+
 h1 {
   font-size: 1.5rem;
   font-weight: 650;
@@ -2380,6 +2387,20 @@ button:disabled {
   margin-bottom: var(--space-2);
 }
 
+.pf-summary-section {
+  background: var(--color-surface-page);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.pf-summary-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
 /* Chip groups */
 .pf-chip-group {
   display: flex;
@@ -3736,33 +3757,128 @@ button:disabled {
   padding: var(--space-1) 0;
 }
 
+/*
+ * 2026-08-19 — a stacked, two-panel drawer (post list + on-demand post
+ * detail) reusing the shared `.slideover-backdrop`/`.slideover-panel`
+ * classes but NOT the `Slideover` component itself, which assumes exactly
+ * one full-screen backdrop/panel and can't render two side by side without
+ * breaking every other existing call site (Sentiment/Conversations/Sources/
+ * PostsFeed tabs). `.slideover-backdrop`'s own `justify-content: flex-end`
+ * already pushes this row flush to the right edge; the row just needs to
+ * lay its own two panels out side by side inside that.
+ */
+.an-drawer-stack {
+  display: flex;
+  height: 100%;
+}
+
 .an-drawer-post-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .an-drawer-post-row {
-  padding-bottom: var(--space-3);
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
   border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-2);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--space-1);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.an-drawer-post-row:hover {
+  background: var(--color-surface-page);
+}
+
+.an-drawer-post-row-active {
+  background: var(--color-accent-subtle, var(--color-surface-page));
+  border-left: 3px solid var(--color-accent);
+  padding-left: calc(var(--space-2) - 3px);
+}
+
+.an-drawer-post-row-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.an-drawer-post-row-main .provider-pill {
+  flex-shrink: 0;
 }
 
 .an-drawer-post-title {
   font-weight: 600;
   font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .an-drawer-post-meta {
   display: flex;
+  align-items: center;
   gap: var(--space-3);
   font-size: 0.75rem;
   color: var(--color-text-secondary);
+  width: 100%;
+}
+
+.an-drawer-post-meta svg {
+  margin-left: auto;
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.an-drawer-post-row:hover .an-drawer-post-meta svg {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Small colored dot ahead of the sentiment label — the "icon" for an otherwise text-only badge, scoped to this drawer row so the shared .an-sentiment-mini-* color classes (reused elsewhere without a dot) are unaffected. */
+.an-drawer-post-meta [class^='an-sentiment-mini-'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.an-drawer-post-meta [class^='an-sentiment-mini-']::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.an-drawer-detail-provider-pill {
+  display: inline-flex;
+  margin-bottom: var(--space-1);
+}
+
+.an-drawer-detail-status {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  padding: var(--space-3) 0;
+}
+
+.an-drawer-detail-error {
+  color: var(--color-danger, #b91c1c);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -3793,6 +3909,359 @@ button:disabled {
 .an-phrase-cloud-xl {
   font-size: 1.125rem;
   font-weight: 650;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Global date range picker (Story 8.1) — never styled until now, found   */
+/* live 2026-08-19 while reviewing Story 8.7's own Overview tab rebuild.  */
+/* ---------------------------------------------------------------------- */
+
+.ad-drp-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.ad-drp-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.ad-drp-trigger:hover {
+  background: var(--color-surface-page);
+}
+
+.ad-drp-trigger-icon {
+  display: inline-flex;
+  color: var(--color-text-secondary);
+}
+
+.ad-drp-trigger-chevron {
+  display: inline-flex;
+  color: var(--color-text-secondary);
+  transition: transform 0.15s ease;
+}
+
+.ad-drp-trigger-chevron-open {
+  transform: rotate(180deg);
+}
+
+.ad-drp-popover {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 30;
+  width: min(560px, 90vw);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dropdown);
+  overflow: hidden;
+}
+
+.ad-drp-pop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-page);
+}
+
+.ad-drp-pop-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ad-drp-pop-clock {
+  display: inline-flex;
+  color: var(--color-text-secondary);
+}
+
+.ad-drp-pop-header-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ad-drp-pop-header-range {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono), monospace;
+}
+
+.ad-drp-pop-body {
+  display: flex;
+  align-items: stretch;
+}
+
+.ad-drp-presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 180px;
+  flex-shrink: 0;
+  padding: var(--space-3);
+  border-right: 1px solid var(--color-border);
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.ad-drp-preset-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-disabled);
+  padding: var(--space-1) var(--space-2);
+}
+
+.ad-drp-preset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.ad-drp-preset-btn:hover {
+  background: var(--color-surface-page);
+}
+
+.ad-drp-preset-btn-active {
+  background: var(--color-surface-page);
+  border-color: var(--color-accent);
+}
+
+.ad-drp-preset-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.ad-drp-preset-sub {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.ad-drp-preset-check {
+  display: inline-flex;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.ad-drp-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-drp-date-inputs {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.ad-drp-date-inputs > div {
+  flex: 1;
+}
+
+.ad-drp-date-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.ad-drp-date-input {
+  width: 100%;
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+}
+
+.ad-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-cal-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.ad-cal-nav-btn:hover {
+  background: var(--color-surface-page);
+}
+
+.ad-cal-nav-month {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ad-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-text-disabled);
+}
+
+.ad-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.ad-cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: none;
+  color: var(--color-text-primary);
+}
+
+.ad-cal-cell-empty {
+  cursor: default;
+}
+
+.ad-cal-cell-normal:hover {
+  background: var(--color-surface-page);
+}
+
+.ad-cal-cell-range {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+}
+
+.ad-cal-cell-selected {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-weight: 600;
+}
+
+.ad-drp-compare-row {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.ad-drp-compare-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.ad-drp-compare-checkbox {
+  cursor: pointer;
+}
+
+.ad-drp-pop-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-page);
+}
+
+.ad-drp-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ad-drp-footer-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ad-drp-cancel-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.ad-drp-cancel-btn:hover {
+  background: var(--color-surface-card);
+}
+
+.ad-drp-apply-btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-accent-contrast);
+  cursor: pointer;
+}
+
+.ad-drp-apply-btn:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .ad-drp-popover {
+    width: 90vw;
+  }
+  .ad-drp-pop-body {
+    flex-direction: column;
+  }
+  .ad-drp-presets {
+    width: 100%;
+    max-height: 160px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -3876,8 +4345,55 @@ button:disabled {
   gap: var(--space-3);
 }
 
+.an-gauge-top-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.an-gauge-index {
+  font-size: 1.875rem;
+  font-weight: 650;
+  color: var(--color-text-primary);
+  min-width: 1.8em;
+  text-align: right;
+}
+
 .an-gauge-segment {
   cursor: pointer;
+}
+
+.an-sentiment-bar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-surface-page);
+}
+
+.an-sentiment-bar-segment {
+  height: 100%;
+}
+
+.an-sentiment-bar-positive {
+  background: var(--color-status-healthy);
+}
+
+.an-sentiment-bar-neutral {
+  background: var(--color-text-secondary);
+}
+
+.an-sentiment-bar-negative {
+  background: var(--color-status-failing);
+}
+
+.an-sentiment-bar-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  width: 100%;
 }
 
 .an-gauge-segment-active {

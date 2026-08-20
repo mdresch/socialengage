@@ -275,8 +275,12 @@ describe('Story 8.4 — Overview enrichment, period-over-period comparison', () 
       const html = renderComponent('../../src/app/tenant/analytics/OverviewTab', 'OverviewTab', { summary, previousSummary: null, range: RANGE });
       expect(html).toContain('id="widget-timeline-volume"');
       expect(html).toContain('id="widget-sentiment-gauge"');
-      expect(html).toContain('2 positive');
-      expect(html).toContain('1 negative');
+      // 2026-08-19 follow-up: the sentiment legend switched from raw counts
+      // ("2 positive") to a percentage-of-total bar+legend ("67% positive"),
+      // requested directly by Menno while reviewing the live page. 2/3 posts
+      // positive, 1/3 negative.
+      expect(html).toContain('67% positive');
+      expect(html).toContain('33% negative');
     });
 
     it('keeps the existing EmptyState for zero matched posts (Story 8.1 behavior unchanged)', () => {

@@ -662,6 +662,30 @@ export function computeVolumeForecast(volumeHistory: VolumeHistoryPoint[], days 
   return points;
 }
 
+export interface MovingAveragePoint {
+  date: string;
+  average: number;
+}
+
+/**
+ * Story 8.7 review follow-up (2026-08-19) — a trailing N-day moving average
+ * over the real volume history, requested directly by Menno as a steadier
+ * reference line alongside the day-to-day actual-volume series. Each day's
+ * value is the mean of that day and the (windowDays - 1) days before it,
+ * clamped to however many real days are actually available so far (the
+ * first day in range is its own 1-day average, not padded with zeros or
+ * left blank) — never a fabricated look-ahead, since only already-known
+ * days are ever averaged.
+ */
+export function computeMovingAverage(volumeHistory: VolumeHistoryPoint[], windowDays = 7): MovingAveragePoint[] {
+  return volumeHistory.map((point, i) => {
+    const windowStart = Math.max(0, i - windowDays + 1);
+    const window = volumeHistory.slice(windowStart, i + 1);
+    const sum = window.reduce((total, p) => total + p.count, 0);
+    return { date: point.date, average: sum / window.length };
+  });
+}
+
 export type CrisisAlertLevel = 'stable' | 'elevated' | 'crisis';
 
 export interface CrisisAlertRadar {
