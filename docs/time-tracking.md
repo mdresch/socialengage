@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 13:48 | — | — | Documentation | — | feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget (8cbb71a) |
+| 2026-08-20 | 13:42 | — | — | Review | — | docs: update review logs (034e968) |
 | 2026-08-20 | 13:42 | — | — | Documentation | — | feat(analytics): place Sources and Authors widgets underneath volume graph in centre column (72a15c9) |
 | 2026-08-20 | 12:46 | — | — | Review | — | docs: update review logs (c3044d0) |
 | 2026-08-20 | 12:46 | — | — | Documentation | — | fix(tenant): show most-recently ingested posts first in recent ingestion stream (cb953f1) |

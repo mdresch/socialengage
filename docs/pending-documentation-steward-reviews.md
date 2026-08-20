@@ -1719,3 +1719,15 @@
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
 - **Status:** Pending review
 
+## 2026-08-20 — 034e968 — docs: update review logs
+
+- **Full commit:** `034e968612549535e418d716e7f14b4c111c9173`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget
+
+- **Full commit:** `8cbb71a022a1c48e8bbef8a0795312ac07e4a74b`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
+- **Status:** Pending review
+
