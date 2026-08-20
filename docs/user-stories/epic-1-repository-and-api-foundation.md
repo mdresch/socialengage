@@ -364,9 +364,41 @@
 - One user's `pollUser()` call throwing (a raw, non-`ClassifiableError` exception) does not prevent the next due user, or the next due tenant, from being attempted in the same tick — proven by a test mirroring Story 1.13 AC5's own tenant-wide failure-isolation test, one level deeper (ADR-0061 Decision §4).
 - `jitterFraction(tenantId, platformId, userId?)` gains the optional third segment — omitted, output is byte-for-byte identical to today's two-argument calls (every existing tenant-wide call site unaffected); supplied, two different users under the same tenant/connector receive different, individually deterministic and repeatable jittered due-times — proven by a test confirming both properties (ADR-0061 Decision §5).
 
-**Explicitly out of scope, per ADR-0061's own named Open Questions — not solved here:**
-- `RequestGate`'s own key shape for Facebook (`pollFacebook()`'s internal `gatedAcquire(tenantId)` call stays tenant-wide, not per-user) — unaffected by this story; that decision belongs to ADR-0060/`pollFacebook()`'s own scope.
-- A cost/quota budget ceiling or spend-alerting mechanism for continuous Tier-3 polling — inherits, does not resolve, ADR-0052 Open Question 4.
-- Multi-instance distributed locking — unaffected, mirrors ADR-0052 Decision §7's own already-accepted deferral.
-- Any change to ADR-0060 Decision §3's own per-Page fan-out inside `pollFacebook()` itself — this story triggers it, once per due `(tenant, user)` tuple, and does not touch its internals.
-- Any Admin UI surfacing of Tier-3 scheduler activity (e.g. a "last polled at" indicator) — a future, separate UI concern, not bundled here, matching Story 1.13's own identical out-of-scope note for the tenant-wide case.
+---
+
+## Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health Derivation, and Service Bus Ingestion Alert Events
+
+**Source:** ADR-0070 (Proposed 2026-08-20) · **Status:** Ready
+**Built:** not yet
+**Depends on:** Story 1.13 (Live polling scheduler), Story 1.14 (In-flight run guard), Story 1.15 (Tier-3 per-user scheduler), Story 5.19 (Service Bus event publishing)
+
+**As a** system operator and platform engineer,
+**I want** orphaned or hung `running` ingestion runs to be automatically reconciled by a scheduler watchdog, inactive connectors to be derived as `stalled`, and structured alert events published to Service Bus,
+**so that** polling deadlocks cannot occur after server restarts or network hangs, and ingestion failures/stalls trigger proactive notifications.
+
+**Acceptance Criteria**
+
+- **Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`):**
+  - Stored in `ingestionRunStore.ts` and executed automatically at the start of each `runSchedulerTick()`.
+  - Atomically finds all `ingestion_runs` rows where `status = 'running'` and `started_at < NOW() - INTERVAL '15 minutes'` (configurable `MAX_RUN_DURATION_MS`, default 15 minutes).
+  - Updates matching rows to `status = 'failed'`, `completed_at = NOW()`, `error_summary = 'Ingestion run timed out or process aborted (reconciled by watchdog)'`, and `retryable = true`.
+  - Proved by a test verifying that an orphaned `running` row older than 15 minutes is reconciled to `failed`, allowing subsequent `getMostRecentRunStatus()` to return `failed` and immediately unblocking the Story 1.14/1.15 in-flight guard.
+  - Active runs with `started_at` within the last 15 minutes remain `status: 'running'` and are untouched.
+- **Extended Connector Health Derivation (`stalled` Status):**
+  - `ConnectorHealthStatus` union in `connectorHealth.ts` is widened to include `'stalled'`.
+  - An active connector (`isConnectorActive === true` and `credentialStatus === 'valid'`) derives `status = 'stalled'` when:
+    - `lastAttemptAt` is older than `3 * connector.pollCadenceMs` (minimum 45 minutes); OR
+    - `lastSuccessfulFetchAt` is older than 24 hours (`MAX_INGESTION_SILENCE_MS`) while `consecutiveFailures < 20` (below the `failing` threshold); AND
+    - Has at least one prior recorded run in `ingestion_runs`.
+  - Proved by tests asserting `deriveConnectorHealth()` returns `'stalled'` when elapsed time since last attempt or success exceeds threshold.
+- **Service Bus Ingestion Alert Events (`ConnectorIngestionAlertEvent`):**
+  - `src/events/connectorIngestionAlertEvent.ts` defines `ConnectorIngestionAlertEvent` (`tenantId`, `platformId`, `userId?`, `alertType`, `severity`, `message`, `occurredAt`, `metadata`).
+  - When the watchdog reconciles one or more stale runs, it publishes a `run_timed_out` alert event (severity `'warning'`).
+  - When derived health transitions into `stalled`, `failing`, or `reconnect_required`, `publishConnectorHealthEvents.ts` publishes `ConnectorIngestionAlertEvent` to Service Bus.
+- **Manual Force Retry API Endpoint:**
+  - `POST /v1/connectors/:id/retry` (and optional `?userId=` query param for Tier-3 connectors) is mounted behind `authMiddleware` and `requireTenantAdmin`.
+  - Reconciles any stale runs for that `(tenantId, platformId)`, bypasses scheduler cadence interval check, and triggers an immediate on-demand `connector.poll(tenantId)` / `connector.pollUser(tenantId, userId)`.
+  - Returns HTTP 200 with the freshly derived `ConnectorHealth` summary, or HTTP 409 if a legitimate run started within the last 60 seconds is still actively in progress.
+
+**Explicitly out of scope:** UI rendering in Next.js admin frontend (scoped to Story 6.29); third-party notification delivery channels (Slack/PagerDuty/Email — downstream consumers of the Service Bus event, not core pipeline scope).
+

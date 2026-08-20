@@ -685,13 +685,39 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - The existing per-user `ActivateDeactivateButton` (`ownerType: 'user'`) stays exactly where it is — one switch covering all of that user's connected Pages collectively. When `parentConnectionActive` (from the new `GET .../pages` response) is `false`, the per-Page list renders an explicit banner (e.g. *"N Pages connected, but your personal Facebook connection is currently deactivated — none of them are being polled"*) rather than showing every row as if it were actively polling — proven by a test toggling `parentConnectionActive` and confirming the banner's presence/absence.
 - **A judgment call this story makes that ADR-0060 itself left undesigned, flagged for Menno's review before this is built:** the card-level `reconnect_required` action is redesigned so the per-Page list's own row-level action carries the actual remediation (re-entering the OAuth flow scoped to reconnecting that one Page), while the card-level badge becomes a pure rollup signal ("one or more Pages need attention — see your Page list") rather than a single "Reconnect Facebook" link that forces re-selecting every already-healthy Page again — proven by a test confirming the card-level action no longer restarts the full multi-Page flow when only one Page is unhealthy.
 
-**Explicitly out of scope** (per ADR-0060's own named Open Questions — not solved here, not invented as new scope):
-- Re-keying `RequestGate` beyond `(tenantId, providerId)` (e.g. to include `userId`/`credentialId`) — named, not designed, in ADR-0060; revisit only once real fan-out volume demonstrates the shared budget is actually insufficient.
-- The real per-Page, Engaged-Users-relative Graph API rate ceiling — `getRateLimitConfig()`'s flat placeholder is unchanged by this story.
-- The two-different-users-connecting-the-same-underlying-Page health-blending edge case (ADR-0060 Decision §4's own named blind spot) — not solved.
-- Pagination on `GET /v1/connectors/facebook/pages` — not needed at any Page count seen so far.
-- Comment/mention ingestion — remains out of scope per ADR-0059 Decision §5, unaffected by this story.
-- Any proactive notification (email, in-app alert) when a Page becomes `orphaned` — this story surfaces it only passively, in the per-Page list, the next time the tenant views that screen; a push-style nudge is not designed here.
+---
+
+## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
+
+**Source:** ADR-0070 (Proposed 2026-08-20) · **Status:** Ready
+**Built:** not yet
+**Depends on:** Story 1.16 (Ingestion watchdog, stalled status derivation, retry API endpoint in `social-listening-core`), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant-Admin or Tenant User,
+**I want** to see clear, real-time ingestion status badges (including `Stalled`), actionable alert banners when ingestion stops, and an on-demand "Force Retry / Re-sync" action,
+**so that** I am immediately aware when ingestion has stalled and can proactively trigger a recovery attempt without database intervention.
+
+**Acceptance Criteria**
+
+- **Connector Status View (`/tenant/connectors/status` & `/tenant/connectors`):**
+  - Widens `StatusBadge` variants to include `'stalled'` (rendered as Amber/Orange with label "Stalled / No Ingestion").
+  - Renders explicit operational metrics for each Ingestion Connector card:
+    - **Last Ingestion Attempt:** Relative timestamp (e.g. "10 mins ago") + ISO tooltip.
+    - **Last Successful Ingestion:** Relative timestamp (e.g. "25 mins ago") + ISO tooltip.
+    - **Ingestion Cadence:** Displays platform poll cadence (e.g. "Poll interval: 15m").
+- **On-Demand "Force Retry / Re-sync" Button:**
+  - Rendered on each Ingestion Connector card for `tenant_admin` users when the connector is active.
+  - Clicking invokes `POST /v1/connectors/:id/retry` (via `/api/connectors/[id]/retry` proxy route).
+  - While request is in-flight, displays a loading spinner and disables repeat clicks.
+  - On success, displays a toast notification ("Ingestion run triggered") and refreshes connector metrics immediately.
+  - On 409 conflict ("Run already in progress"), shows an informative message without failing abruptly.
+- **Global Ingestion Alert Banner:**
+  - If any active connector for the tenant is in `stalled`, `failing`, or `reconnect_required` status, renders a prominent alert banner at the top of `/tenant/analytics` (Overview tab) and `/tenant/connectors`.
+  - Banner details the affected platform(s), reason (e.g. "Ingestion stalled — no posts received in > 24 hours"), and provides direct actions ("Re-sync now" or "Reconnect account").
+  - Dismissible for the current browser session, but reappears if status remains unresolved on next page load.
+
+**Explicitly out of scope:** External push notifications (email/SMS/Slack alerts — downstream services, not admin UI scope).
+
 
 ---
 
