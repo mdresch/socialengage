@@ -88,14 +88,23 @@ export async function fetchWatchlistCoverage(
   const activeWatchlists = watchlists.filter((w) => w.isActive);
   const coverage = await Promise.all(
     activeWatchlists.map(async (w) => {
-      const posts = await fetchAllPosts(w.id);
-      const inRange = filterPostsByDateRange(posts, range);
-      return {
-        id: w.id,
-        name: w.name,
-        matchType: w.matchType,
-        count: inRange.length,
-      };
+      try {
+        const posts = await fetchAllPosts(w.id);
+        const inRange = filterPostsByDateRange(posts, range);
+        return {
+          id: w.id,
+          name: w.name,
+          matchType: w.matchType,
+          count: inRange.length,
+        };
+      } catch {
+        return {
+          id: w.id,
+          name: w.name,
+          matchType: w.matchType,
+          count: 0,
+        };
+      }
     })
   );
   return coverage;

@@ -1821,3 +1821,87 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
 - **Status:** Pending review
 
+## 2026-08-20 — be6c4cd — feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070)
+
+- **Full commit:** `be6c4cd081b8cef9b314f636707f51a6f057f575`
+- **Files touched:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.29.connector-ingestion-status-and-stalled-alerts.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/retry/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/components/IngestionAlertBanner.tsx, social-listening-admin/src/components/ui/StatusBadge.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-20 — 8930de7 — docs: record Story 6.29 implementation in log and user story metadata
+
+- **Full commit:** `8930de757d22fb2dbc64e690a5d1bc04f7c90b52`
+- **Files touched:** docs/implementation-log.md, docs/time-tracking.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — 3ee2b75 — docs(adr): mark ADR-0064 as Accepted and Story 8.10 as Built
+
+- **Full commit:** `3ee2b759480c1b413dd94211520cb1ef215fe865`
+- **Files touched:** docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
+## 2026-08-20 — 1dd76ef — docs(adr): update ADR-0065 with review recommendations and mark as Accepted
+
+- **Full commit:** `1dd76ef0f66c25db44dd89db7207f7bc9e303d32`
+- **Files touched:** docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md, docs/adr/README.md
+- **Status:** Pending review
+
+## 2026-08-20 — 49760f7 — docs(stories): draft Story 2.21 (Brave Search backend connector) and Story 6.30 (Brave Search admin UI) for ADR-0065
+
+- **Full commit:** `49760f742866d25c2dc0031f74107eb5367d5cf7`
+- **Files touched:** docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — dae4b78 — docs(adr): draft ADR-0071 Human-in-the-Loop Post Enrichment Overrides and Cascading Drawer UI
+
+- **Full commit:** `dae4b787addb17e6980134b43f87b21259c66d1e`
+- **Files touched:** docs/adr/0071-human-in-the-loop-post-enrichment-overrides-and-cascading-drawer-ui.md, docs/adr/README.md
+- **Status:** Pending review
+
+## 2026-08-20 — 210f063 — docs(adr): update ADR-0071 with re-enrichment precedence, audit history, a11y, and mark as Accepted
+
+- **Full commit:** `210f063e3d326fc17d33c23e55be3980fc3bca54`
+- **Files touched:** docs/adr/0071-human-in-the-loop-post-enrichment-overrides-and-cascading-drawer-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — 761a25a — docs(stories): draft Story 3.13 (backend enrichment overrides API) and Story 6.31 (cascading drawer UI) for ADR-0071
+
+- **Full commit:** `761a25a9c62f38c1bb727b9e5bd77b2b64cfe880`
+- **Files touched:** docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — b6631ad — docs(adr): update ADR-0066 with Author mapping, AST validation, pacing loop, and direct Azure billing (Proposed)
+
+- **Full commit:** `b6631adb815b8e9a1b390df6a771adb45600f9ed`
+- **Files touched:** docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md
+- **Status:** Pending review
+
+## 2026-08-20 — 1872453 — docs(adr): accept ADR-0066 and draft Story 2.22 and Story 6.32 for Bing Search connector
+
+- **Full commit:** `1872453220750e95897db37497ea86dfe9d3b36b`
+- **Files touched:** docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — a697749 — docs(adr): update ADR-0067 with Personal Account analysis, Tier-3 OAuth alignment, and ADR-0064 geo normalization (Proposed)
+
+- **Full commit:** `a697749df14fa6f0009dde3f3c419c3b99a2510f`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
+- **Status:** Pending review
+
+## 2026-08-20 — e2802f2 — docs(deferred): document personal account outbound post authoring and browser intent URI sharing
+
+- **Full commit:** `e2802f21e27c36f99a8e9250f51d3db98c299452`
+- **Files touched:** docs/open-items-and-deferred-work.md
+- **Status:** Pending review
+
+## 2026-08-20 — b26cc4f — docs(adr): update ADR-0067 with modernized catalog description, active ingestion clarification, and personal intent sharing
+
+- **Full commit:** `b26cc4f054a7fa2ed655ec385be6d4d04a69579a`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
+- **Status:** Pending review
+
+## 2026-08-20 — 7cd9cf9 — feat(tenant): include Facebook connector and display connected status in Active Connectors card
+
+- **Full commit:** `7cd9cf99c6cf748e6c36e1cbf23393e0598b8298`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts, social-listening-admin/src/app/tenant/page.tsx, social-listening-core/contracts/epic-1/story-1.12.connector-status-includes-activation.contract.test.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts
+- **Status:** Pending review
+

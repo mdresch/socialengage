@@ -15,6 +15,19 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 19:11 | — | — | Documentation | — | feat(tenant): include Facebook connector and display connected status in Active Connectors card (7cd9cf9) |
+| 2026-08-20 | 19:01 | — | — | Infrastructure | ADR-0067 | docs(adr): update ADR-0067 with modernized catalog description, active ingestion clarification, and personal intent sharing (b26cc4f) |
+| 2026-08-20 | 18:55 | — | — | Documentation | — | docs(deferred): document personal account outbound post authoring and browser intent URI sharing (e2802f2) |
+| 2026-08-20 | 18:44 | — | — | Documentation | ADR-0067 | docs(adr): update ADR-0067 with Personal Account analysis, Tier-3 OAuth alignment, and ADR-0064 geo normalization (Proposed) (a697749) |
+| 2026-08-20 | 18:38 | — | — | Documentation | ADR-0066 | docs(adr): accept ADR-0066 and draft Story 2.22 and Story 6.32 for Bing Search connector (1872453) |
+| 2026-08-20 | 18:35 | — | — | Documentation | ADR-0066 | docs(adr): update ADR-0066 with Author mapping, AST validation, pacing loop, and direct Azure billing (Proposed) (b6631ad) |
+| 2026-08-20 | 18:30 | — | — | Documentation | Story 3.13 | docs(stories): draft Story 3.13 (backend enrichment overrides API) and Story 6.31 (cascading drawer UI) for ADR-0071 (761a25a) |
+| 2026-08-20 | 18:29 | — | — | Documentation | ADR-0071 | docs(adr): update ADR-0071 with re-enrichment precedence, audit history, a11y, and mark as Accepted (210f063) |
+| 2026-08-20 | 18:26 | — | — | Documentation | ADR-0071 | docs(adr): draft ADR-0071 Human-in-the-Loop Post Enrichment Overrides and Cascading Drawer UI (dae4b78) |
+| 2026-08-20 | 18:18 | — | — | Documentation | Story 2.21 | docs(stories): draft Story 2.21 (Brave Search backend connector) and Story 6.30 (Brave Search admin UI) for ADR-0065 (49760f7) |
+| 2026-08-20 | 18:16 | — | — | Review | ADR-0065 | docs(adr): update ADR-0065 with review recommendations and mark as Accepted (1dd76ef) |
+| 2026-08-20 | 18:07 | — | — | Documentation | ADR-0064 | docs(adr): mark ADR-0064 as Accepted and Story 8.10 as Built (3ee2b75) |
+| 2026-08-20 | 18:02 | — | — | Documentation | Story 6.29 | docs: record Story 6.29 implementation in log and user story metadata (8930de7) |
 | 2026-08-20 | 18:02 | — | — | Documentation | Story 6.29 | feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070) (be6c4cd) |
 | 2026-08-20 | 17:29 | — | — | Infrastructure | Story 1.16 | chore: record post-commit hook outputs for Story 1.16 (3df6e74) |
 | 2026-08-20 | 17:28 | — | — | Documentation | Story 1.16 | docs: record Story 1.16 implementation in log and user story metadata (e40d3e5) |

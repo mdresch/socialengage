@@ -69,8 +69,16 @@ export default async function AnalyticsPage({
 
   const initialRange = defaultDateRange();
   const watchlists = await listWatchlists().catch(() => []);
-  const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined);
-  const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists);
+  const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined)
+    .catch(() => ({
+      postCount: 0,
+      sentimentSummary: { positive: 0, neutral: 0, negative: 0, unanalyzed: 0 },
+      topEntities: [],
+      topKeyPhrases: [],
+      sourceBreakdown: [],
+      countryBreakdown: [],
+    }));
+  const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists).catch(() => []);
 
   return (
     <main>
