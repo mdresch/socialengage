@@ -1,6 +1,8 @@
 # ADR-0071: Human-in-the-Loop Post Enrichment Overrides and Cascading Drawer UI
 
-**Status:** Proposed (2026-08-20)
+**Status:** Accepted (2026-08-20)
+
+**Accepted by Menno 2026-08-20.** Authorizes human-in-the-loop post enrichment overrides and the cascading drawer UI on the Posts page, incorporating the backend re-enrichment precedence guard (`409 Conflict` unless `force: true`), `overriddenFields[]` tracking, AI history preservation, cross-field geo/language validation, key-phrase sanitization constraints, and comprehensive drawer accessibility (a11y) standards.
 
 **Source:** Requested by Menno (2026-08-20): *"On the Posts page can select one post and it opens the Post Details Drawer on the right of the screen. The post details drawer displays the post title, details and the card with enrichment data. Could you add a icon button on the enrichment data card that will open a new drawer pushing the current post details to the left and opening a Enrichment Details page allowing the user to edit the enrichment details as they are populated and overwrite the sentiment from one to another for example from Sentiment Neutral to Positive Sentiment. All the enriched post details should be editable in the drawers details. This will allow the end user to always be able to overwrite an AI generated enhanced post and will allow the user to always change any of the data enrichments points in each post."*
 
@@ -33,30 +35,45 @@ Selecting a post on `/tenant/posts` currently opens a slideover drawer (`PostDet
 
 ## Decision
 
-### 1. In-Place Enrichment Override Schema with Audit History
+### 1. In-Place Enrichment Override Schema with Audit & AI History
 
-When a user modifies enrichment fields, the top-level values in `social_posts.enrichment` (`JSONB`) are updated directly in-place, while preserving the original AI-generated values and recording audit metadata in a dedicated `override` sub-object:
+When a user modifies enrichment fields, the top-level values in `social_posts.enrichment` (`JSONB`) are updated directly in-place, while preserving the original AI-generated values, tracking the specific overridden fields, and recording full audit metadata in a dedicated `override` sub-object:
 
 ```json
 {
   "sentiment": "positive",
-  "sentimentScore": 1.0,
+  "sentimentScore": 0.8,
   "keyPhrases": ["product launch", "market expansion"],
   "detectedLanguage": "en",
   "geoCountry": "US",
   "geoCountryName": "United States",
-  "summary": "Positive feedback regarding regional expansion",
+  "summary": "Positive analyst assessment of US market launch",
   "override": {
     "isOverridden": true,
     "overriddenAt": "2026-08-20T18:25:00.000Z",
     "overriddenByUserId": "usr_789abc",
+    "overriddenFields": ["sentiment", "keyPhrases", "summary"],
     "originalValues": {
       "sentiment": "neutral",
       "sentimentScore": 0.52,
       "keyPhrases": ["product launch"],
       "detectedLanguage": "en",
-      "geoCountry": null
-    }
+      "geoCountry": "US",
+      "geoCountryName": "United States",
+      "summary": "Automated summary of market release"
+    },
+    "aiHistory": [
+      {
+        "generatedAt": "2026-08-20T17:00:00.000Z",
+        "model": "azure-ai-language",
+        "values": {
+          "sentiment": "neutral",
+          "sentimentScore": 0.52,
+          "keyPhrases": ["product launch"],
+          "detectedLanguage": "en"
+        }
+      }
+    ]
   }
 }
 ```
@@ -64,16 +81,19 @@ When a user modifies enrichment fields, the top-level values in `social_posts.en
 **Architectural Rationale:**
 - **Zero Schema Migration:** Leveraging the existing `JSONB` column eliminates database schema migrations and avoids table locks.
 - **Immediate Analytics Parity:** Because all analytics aggregation pipelines (`computeSentimentSplit()`, `computeSentimentIndex()`, `computeCountryBreakdown()`, `computePhraseFrequency()`) query top-level `enrichment.*` fields directly, human corrections are **instantly reflected** across the entire analytics dashboard and filter models without requiring schema rewrites or custom aggregation predicates.
-- **Auditability & Traceability:** The `override` block preserves the original AI extraction and records who made the change and when, satisfying compliance and data-lineage requirements.
+- **Selective Overridden Field Tracking (`overriddenFields`):** Storing `overriddenFields: string[]` makes rendering the "Edited by user" badges fast and precise, and enables future reporting on human-corrected volume by dimension.
+- **Preserved AI Lineage (`aiHistory`):** Appending previous AI generation passes into `aiHistory[]` ensures that even across forced re-enrichment cycles, the initial automated baseline is never permanently erased.
 
 ---
 
-### 2. Backend REST API Surface (`social-listening-core`)
+### 2. Backend REST API Surface & Re-Enrichment Precedence Guard (`social-listening-core`)
+
+#### A. Post Enrichment Override Endpoint (`PATCH /v1/posts/:id/enrichment`)
 
 A dedicated REST endpoint is added to `postsRouter.ts`:
 
 - **Route:** `PATCH /v1/posts/:id/enrichment`
-- **Authentication & Authorization:** Gated behind tenant RLS context and bearer token. Authorized for both `tenant_user` and `tenant_admin` roles.
+- **Authentication & Authorization:** Gated behind tenant RLS context and bearer token. Authorized for both `tenant_user` and `tenant_admin` roles. The caller's user ID from `req.identity.userId` is recorded as `overriddenByUserId`.
 - **Request Payload:**
 ```ts
 export interface UpdatePostEnrichmentRequest {
@@ -86,16 +106,49 @@ export interface UpdatePostEnrichmentRequest {
   summary?: string | null;
 }
 ```
-- **Validation Rules:**
-  - `sentiment`: must be one of `'positive'`, `'neutral'`, `'negative'` if provided.
-  - `sentimentScore`: numeric value clamped between `0.0` and `1.0`.
-  - `keyPhrases`: array of non-empty strings (trimmed, sanitized, deduplicated).
-  - `geoCountry`: normalized to uppercase ISO 3166-1 alpha-2 or `null`.
-- **Response:** Returns the updated `SocialPostSummary` with HTTP `200 OK`. Returns `404 Not Found` if the post does not exist or belongs to another tenant.
+
+- **Strict Validation & Normalization Rules:**
+  - **Sentiment & Score Consistency:**
+    - `sentiment`: must be one of `'positive'`, `'neutral'`, `'negative'` if supplied.
+    - `sentimentScore`: optional float clamped to `0.0..1.0`. If omitted when `sentiment` is changed, the backend auto-assigns a consistent default (`positive` → `0.8`, `neutral` → `0.5`, `negative` → `0.2`) to prevent data inconsistency with old neutral scores.
+  - **Key Phrases Sanitization:**
+    - Allowed to be empty array `[]` (if the user clears all phrases).
+    - Max 50 phrases, max 200 characters per phrase.
+    - Strips HTML tags, trims leading/trailing whitespace, discards blank strings, and deduplicates case-insensitively while preserving the entered casing of the first instance.
+  - **Language Code Validation:**
+    - `detectedLanguage`: validated against an ISO 639-1 two-letter lowercase allowlist or `null` (e.g. `'en'`, `'nl'`, `'de'`). Malformed values (such as `'eng'`) return `400 Bad Request`.
+  - **Cross-Field Geospatial Validation:**
+    - If `geoCountry` is `null`, `geoCountryName` is automatically cleared to `null`.
+    - If `geoCountry` is provided, it is validated and normalized to uppercase ISO 3166-1 alpha-2 (e.g. `'us'` → `'US'`), and `geoCountryName` is validated or derived (e.g. `'United States'`). Inconsistent states (e.g. `geoCountry: 'US'`, `geoCountryName: null`) are normalized automatically.
+  - **Summary / Grounding Notes:**
+    - `summary`: string up to 1,000 characters (or `null`), mapped to `enrichment.summary` and `enrichment.groundingContext`.
+- **Response:** Returns the full updated `SocialPostSummary` with HTTP `200 OK`. Returns `404 Not Found` if the post does not exist or belongs to another tenant.
+
+#### B. Re-Enrichment Precedence Guard (`POST /v1/posts/:id/enrich` & Background Schedulers)
+
+To prevent automated or scheduled AI pipelines from silently obliterating human edits:
+
+1. **Precedence Check:** Any operation that regenerates post enrichment (whether the on-demand `POST /v1/posts/:id/enrich` endpoint or an automated background re-enricher) must inspect `enrichment->'override'->>'isOverridden'`.
+2. **Conflict Prevention (`409 Conflict`):**
+   - If `isOverridden === true` and `force !== true`: the backend **aborts the re-enrichment** and returns HTTP `409 Conflict` with the override metadata:
+     ```json
+     {
+       "error": "Post enrichment has been manually overridden by a user",
+       "code": "ENRICHMENT_MANUALLY_OVERRIDDEN",
+       "override": {
+         "overriddenAt": "2026-08-20T18:25:00.000Z",
+         "overriddenByUserId": "usr_789abc",
+         "overriddenFields": ["sentiment", "keyPhrases"]
+       }
+     }
+     ```
+3. **Explicit Force Overwrite (`force: true`):**
+   - Only when the request explicitly passes `force: true` will the backend overwrite the active top-level fields with new AI predictions.
+   - On force re-run: the backend archives the previous AI values into `override.aiHistory[]`, updates `override.originalValues` to the new AI output, and resets `override.isOverridden = false`.
 
 ---
 
-### 3. Cascading Dual-Drawer UI Interaction (`social-listening-admin`)
+### 3. Cascading Dual-Drawer UI Interaction & Accessibility (`social-listening-admin`)
 
 A multi-drawer cascading interaction is introduced on the Posts Feed screen (`/tenant/posts`):
 
@@ -122,21 +175,27 @@ A multi-drawer cascading interaction is introduced on the Posts Feed screen (`/t
 1. **Edit Action Trigger:** An edit icon button (`aria-label="Edit enrichment details"`, styled with a pencil icon) is placed in the header of the AI Enrichment card within `PostDetailPanel.tsx`.
 2. **Cascading Animation & Spatial Layout:**
    - Clicking "Edit" does not replace or dismiss the Post Details drawer.
-   - The primary `PostDetailPanel` drawer smoothly translates leftward (e.g. `transform: translateX(-420px)` or side-by-side flex layout) while the new **Enrichment Details Drawer** (`EnrichmentEditDrawer.tsx`) slides in flush to the right viewport edge.
+   - The primary `PostDetailPanel` drawer smoothly translates leftward (`transform: translateX(-420px)` or side-by-side flex layout) while the new **Enrichment Details Drawer** (`EnrichmentEditDrawer.tsx`) slides in flush to the right viewport edge.
    - This maintains the complete reading context of the original post on the left while editing enrichment parameters on the right.
-3. **Editable Fields:**
-   - **Sentiment Toggle:** Interactive segmented buttons or colored radio cards for `Positive` (green), `Neutral` (slate), `Negative` (red).
+3. **Form Controls:**
+   - **Sentiment Toggle:** Interactive segmented buttons for `Positive` (green), `Neutral` (slate), `Negative` (red).
    - **Key Phrases Tag Editor:** Interactive tag list allowing users to remove existing phrases with `×` and input new phrases with an `<input>` tag adder.
-   - **Detected Language Selector:** Dropdown selector populated with standard languages.
+   - **Detected Language Selector:** Dropdown selector populated with ISO 639-1 languages.
    - **Country / Region Selector:** Country dropdown supporting ISO 3166-1 alpha-2 selection or clearing to "Unknown".
    - **Summary / Grounding Textarea:** Multi-line text field for custom analyst notes or corrected summary.
-4. **Optimistic Updates & Visual Feedback:**
-   - Submitting "Save" calls `PATCH /api/posts/[id]/enrichment` (via Next.js BFF proxy).
-   - Updates post state optimistically in the feed and drawer.
-   - The AI Enrichment card displays an **"Edited by user"** badge (`StatusBadge` or metadata pill) with timestamp tooltip.
-   - The secondary drawer closes with smooth transition, returning the primary drawer to its default position.
-5. **Conflict Handling with Re-Enrichment:**
-   - If a user triggers manual re-enrichment (`RunEnrichmentButton`, Story 6.16) on an already-overridden post, the UI prompts a confirmation warning (*"This post contains manual enrichment edits. Running AI re-enrichment will overwrite these changes. Proceed?"*).
+4. **Optimistic Updates, Double-Submit Guard, & Error Rollback:**
+   - Submitting "Save" immediately applies an optimistic update to the local post state in `PostsFeedClient` and closes the secondary edit drawer.
+   - The "Save Changes" button displays a loading spinner and is disabled while the request is in-flight to prevent duplicate submissions.
+   - If the `PATCH` request fails, the local state automatically rolls back to previous values and an error toast notification is displayed.
+5. **Accessibility (a11y) Standards:**
+   - Both drawers implement `role="dialog"`, `aria-modal="true"`, and descriptive `aria-labelledby` headers.
+   - Focus is trapped within the currently active (rightmost) drawer.
+   - Keyboard Navigation on `Escape`: If the Enrichment Edit drawer is open, pressing `Escape` closes **only** the edit drawer, restores the primary post details drawer position, and returns focus directly to the "Edit enrichment" trigger button.
+6. **Responsive Layout Breakpoints:**
+   - On large viewports (`>= 1200px`): Full dual-drawer cascading layout is active side-by-side.
+   - On compact viewports (`< 1200px`): The Enrichment Edit drawer slides in as a full-width overlay over the post details panel (avoiding awkward cramped stacking), with a back button returning to the post details panel.
+7. **Conflict Handling with Manual Re-Enrichment:**
+   - If a user clicks `RunEnrichmentButton` on an already-overridden post, the UI displays a confirmation dialog: *"This post contains manual enrichment edits by [User]. Running AI re-enrichment will overwrite these changes. Proceed with forced re-enrichment?"* Confirming triggers `POST /v1/posts/:id/enrich` with `force: true`.
 
 ---
 
@@ -146,14 +205,15 @@ A multi-drawer cascading interaction is introduced on the Posts Feed screen (`/t
 
 - **Complete Human-in-the-Loop (HITL) Control:** Eliminates helplessness against AI misclassifications by giving users full editorial authority over every enriched data point.
 - **Accurate Analytics & Sentiment Scoring:** Overridden sentiment immediately fixes skewed brand reputation scores and executive KPIs in the Analytics dashboard.
+- **Protected User Edits:** The backend precedence guard (`409 Conflict`) strictly guarantees that human edits cannot be silently overwritten by automated re-enrichment jobs.
 - **Superior Contextual UX:** The cascading drawer pattern enables analysts to reference long-form post text and quotes while adjusting tags and sentiment side-by-side.
 - **Zero Database Migration Overhead:** Schema updates utilize existing `JSONB` structures and standard REST endpoints without table locks.
-- **Full Traceability:** Preserves original AI predictions in `override.originalValues` for ML quality monitoring and audit trails.
+- **Full Traceability:** Preserves original AI predictions in `override.originalValues` and subsequent runs in `aiHistory[]` for ML quality monitoring and audit trails.
 
 ### Negative
 
-- **Client State Synchronization:** Updating a post's enrichment requires synchronizing local state across the active drawer, the posts feed table, and any open analytics cache without requiring a full page refresh.
-- **CSS Layout Complexity:** Supporting dual sliding drawers on smaller viewports requires responsive viewport breakpoints (on screens `< 1200px`, the primary drawer can temporarily stack beneath the editing panel).
+- **Client State Synchronization:** Updating a post's enrichment requires synchronizing local state across the active drawer and the posts feed table without requiring a full page refresh.
+- **Dual Drawer State Management:** Requires clean coordination of drawer translation states, focus traps, and keyboard event bubbling in the admin UI.
 
 ---
 
@@ -167,12 +227,12 @@ A multi-drawer cascading interaction is introduced on the Posts Feed screen (`/t
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. **Role Gating for Overrides:** Should regular `tenant_user` members be permitted to edit post enrichments, or should edits be restricted to `tenant_admin`? *Recommendation: Allow both roles by default (matching the collaborative nature of social listening analysts), but record `overriddenByUserId` for auditability.*
-2. **Bulk Enrichment Editing:** Should users be able to select multiple posts on the feed and batch-override sentiment (e.g. mark 10 selected posts as Positive)? *Deferred to v2 as a follow-up story once single-post editing is established.*
-3. **ML Re-training Export:** Should overridden posts be flagged for export as few-shot training examples for fine-tuning future prompt templates? *Supported naturally by filtering on `enrichment->'override'->>'isOverridden' = 'true'`.*
+1. **Role Gating:** Both `tenant_user` and `tenant_admin` roles are authorized to perform enrichment overrides. The acting user's ID is recorded in `override.overriddenByUserId`.
+2. **Re-enrichment Conflict Precedence:** Enforced at the backend API layer via `409 Conflict` unless `force: true` is explicitly provided.
+3. **Audit Tracking Granularity:** Detailed at the field level via `overriddenFields: string[]`, while preserving prior AI outputs in `aiHistory[]`.
 
 ---
 
-*Drafted 2026-08-20 pursuant to Menno's request. Unblocks Human-in-the-Loop post enrichment editing, sentiment correction, and the cascading multi-drawer workflow on the Posts page. Left **Proposed** per project ADR-acceptance authority convention.*
+*Drafted and Accepted 2026-08-20 with full Menno review recommendations incorporated. Unblocks Human-in-the-Loop post enrichment editing, sentiment correction, and the cascading multi-drawer workflow on the Posts page.*
