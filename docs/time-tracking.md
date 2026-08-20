@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 16:39 | — | — | Documentation | Story 8.10 | docs: record Story 8.10 implementation in user stories and log (168e5f7) |
+| 2026-08-20 | 16:38 | — | — | Documentation | Story 8.10 | Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064) (75a0a4a) |
+| 2026-08-20 | 16:25 | — | — | Infrastructure | — | chore: record post-commit hook outputs for merge (4740537) |
 | 2026-08-20 | 16:24 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (93dadab) |
 | 2026-08-20 | 16:20 | — | — | Documentation | Story 2.20 | Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064) (8bc60a1) |
 | 2026-08-20 | 14:05 | — | — | Review | — | docs: update review logs (ad3e8be) |

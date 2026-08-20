@@ -1785,3 +1785,15 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)
+
+- **Full commit:** `75a0a4a72328f56953c49f3622b3e0ebfd0830ea`
+- **Files touched:** docs/implementation-plan.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
+## 2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log
+
+- **Full commit:** `168e5f75ae88234db755aea052b5c0d143bb8bdd`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
+- **Status:** Pending review
+
