@@ -126,6 +126,12 @@ export interface PostEnrichmentSummary {
   language: string | null;
   /** A concise, LLM-generated executive summary — read from enrichment.summary (social-listening-core's own AnalyzeResult.summary, Story 2.17). Populated only when Azure OpenAI (not Azure AI Language) did the enrichment; null otherwise, never a fabricated fallback. This admin UI never surfaced it until now. */
   summary: string | null;
+  /** ISO 3166-1 alpha-2 country code (e.g. "US"), read from enrichment.geoCountry — Story 8.10 (ADR-0064). */
+  geoCountry: string | null;
+  geoCountryName: string | null;
+  geoRegion: string | null;
+  geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null;
+  geoConfidence: 'high' | 'medium' | 'low' | null;
 }
 
 /**
@@ -168,8 +174,33 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   const language = typeof e.detectedLanguage === 'string' ? e.detectedLanguage : null;
   const summary = typeof e.summary === 'string' ? e.summary : null;
 
-  if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed) return null;
-  return { sentiment, sentimentScores, entities, keyPhrases, modelUsed, language, summary };
+  const geoCountry = typeof e.geoCountry === 'string' ? e.geoCountry : null;
+  const geoCountryName = typeof e.geoCountryName === 'string' ? e.geoCountryName : null;
+  const geoRegion = typeof e.geoRegion === 'string' ? e.geoRegion : null;
+  const geoSource =
+    e.geoSource === 'post' || e.geoSource === 'source' || e.geoSource === 'inferred' || e.geoSource === 'unknown'
+      ? e.geoSource
+      : null;
+  const geoConfidence =
+    e.geoConfidence === 'high' || e.geoConfidence === 'medium' || e.geoConfidence === 'low'
+      ? e.geoConfidence
+      : null;
+
+  if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed && !geoCountry) return null;
+  return {
+    sentiment,
+    sentimentScores,
+    entities,
+    keyPhrases,
+    modelUsed,
+    language,
+    summary,
+    geoCountry,
+    geoCountryName,
+    geoRegion,
+    geoSource,
+    geoConfidence,
+  };
 }
 
 /**

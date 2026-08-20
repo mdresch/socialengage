@@ -181,6 +181,8 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
     it('parses recognised params into filter state', () => {
       const params = new URLSearchParams('source=gnews&author=Acme+Corp&keyword=launch&language=en&sentiment=positive');
       const filters = parseOverviewFiltersFromSearchParams(params);
+      // 2026-08-20, Story 8.9: OverviewFilters gained activeWatchlistFilter per ADR-0063
+      // 2026-08-20, Story 8.10: OverviewFilters gained activeCountryFilter per ADR-0064
       expect(filters).toEqual({
         activeDateFilter: null,
         activeSourceFilter: 'gnews',
@@ -189,6 +191,7 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
         activeLanguageFilter: 'en',
         activeSentimentFilter: 'positive',
         activeWatchlistFilter: null,
+        activeCountryFilter: null,
       });
     });
 

@@ -135,6 +135,12 @@ export interface SentimentPost {
   language: string | null;
   /** Real providerId (e.g. "gnews") — Story 8.6, needed to bucket by source and day simultaneously. */
   providerId: string;
+  /** ISO 3166-1 alpha-2 country code (e.g. "US"), or null when unmapped — Story 8.10 (ADR-0064). */
+  geoCountry: string | null;
+  geoCountryName: string | null;
+  geoRegion: string | null;
+  geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null;
+  geoConfidence: 'high' | 'medium' | 'low' | null;
 }
 
 export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
@@ -150,6 +156,11 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       title,
       language: enrichment?.language ?? null,
       providerId: extractProviderBadge(post.rawPayload),
+      geoCountry: enrichment?.geoCountry ?? null,
+      geoCountryName: enrichment?.geoCountryName ?? null,
+      geoRegion: enrichment?.geoRegion ?? null,
+      geoSource: enrichment?.geoSource ?? null,
+      geoConfidence: enrichment?.geoConfidence ?? null,
     };
   });
 }
@@ -445,6 +456,155 @@ export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakd
     .sort((a, b) => b.count - a.count);
 }
 
+/** Standard ISO 3166-1 alpha-2 country code lookup table — Story 8.10 (ADR-0064). */
+export const COUNTRY_NAMES: Record<string, string> = {
+  US: 'United States',
+  GB: 'United Kingdom',
+  NL: 'Netherlands',
+  DE: 'Germany',
+  FR: 'France',
+  CA: 'Canada',
+  AU: 'Australia',
+  JP: 'Japan',
+  CN: 'China',
+  IN: 'India',
+  BR: 'Brazil',
+  IT: 'Italy',
+  ES: 'Spain',
+  MX: 'Mexico',
+  KR: 'South Korea',
+  RU: 'Russia',
+  CH: 'Switzerland',
+  SE: 'Sweden',
+  NO: 'Norway',
+  DK: 'Denmark',
+  FI: 'Finland',
+  BE: 'Belgium',
+  AT: 'Austria',
+  IE: 'Ireland',
+  NZ: 'New Zealand',
+  SG: 'Singapore',
+  ZA: 'South Africa',
+  AR: 'Argentina',
+  CL: 'Chile',
+  CO: 'Colombia',
+  IL: 'Israel',
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  PL: 'Poland',
+  PT: 'Portugal',
+  GR: 'Greece',
+  CZ: 'Czech Republic',
+  HU: 'Hungary',
+  RO: 'Romania',
+  TR: 'Turkey',
+  TH: 'Thailand',
+  ID: 'Indonesia',
+  MY: 'Malaysia',
+  PH: 'Philippines',
+  VN: 'Vietnam',
+  TW: 'Taiwan',
+  HK: 'Hong Kong',
+  UNKNOWN: 'Unknown / Unmapped',
+};
+
+export function getCountryDisplayName(code: string): string {
+  if (code === 'UNKNOWN') return 'Unknown / Unmapped';
+  return COUNTRY_NAMES[code] ?? code;
+}
+
+export interface CountryBreakdownItem {
+  countryCode: string;
+  name: string;
+  count: number;
+  share: number;
+  sentiment: SentimentSplit | null;
+  sentimentIndex: number | null;
+}
+
+/**
+ * Story 8.10 (ADR-0064) — groups posts by country, calculates volume share,
+ * and ranks countries descending by post count.
+ * - Explicitly creates an UNKNOWN bucket for unmapped posts without omitting or averaging them away (AC3).
+ * - Suppression threshold: countries with < 3 posts have sentiment: null and sentimentIndex: null
+ *   to prevent small-sample bias (ADR-0064 §4).
+ */
+export function computeCountryBreakdown(posts: (SentimentPost | SocialPostSummary)[]): CountryBreakdownItem[] {
+  if (!posts || posts.length === 0) return [];
+  const totalCount = posts.length;
+  const groups = new Map<string, { name: string | null; items: (SentimentPost | SocialPostSummary)[] }>();
+
+  for (const post of posts) {
+    let countryCode: string | null = null;
+    let countryName: string | null = null;
+
+    if ('geoCountry' in post) {
+      countryCode = (post as SentimentPost).geoCountry;
+      countryName = (post as SentimentPost).geoCountryName;
+    } else if ('enrichment' in post) {
+      const summary = extractEnrichmentSummary((post as SocialPostSummary).enrichment);
+      countryCode = summary?.geoCountry ?? null;
+      countryName = summary?.geoCountryName ?? null;
+    }
+
+    const key = countryCode ?? 'UNKNOWN';
+    const entry = groups.get(key);
+    if (entry) {
+      entry.items.push(post);
+      if (!entry.name && countryName) entry.name = countryName;
+    } else {
+      groups.set(key, { name: countryName, items: [post] });
+    }
+  }
+
+  return Array.from(groups.entries())
+    .map(([code, { name, items: groupItems }]) => {
+      const count = groupItems.length;
+      const share = totalCount > 0 ? (count / totalCount) * 100 : 0;
+      const displayName =
+        code === 'UNKNOWN' ? 'Unknown / Unmapped' : name || COUNTRY_NAMES[code] || code;
+
+      // Small-sample suppression threshold (< 3 posts)
+      if (count < 3) {
+        return {
+          countryCode: code,
+          name: displayName,
+          count,
+          share,
+          sentiment: null,
+          sentimentIndex: null,
+        };
+      }
+
+      // Compute sentiment split for group items
+      const split: SentimentSplit = { positive: 0, neutral: 0, negative: 0 };
+      for (const item of groupItems) {
+        let sent: string | null = null;
+        if ('sentiment' in item && typeof (item as SentimentPost).sentiment === 'string') {
+          sent = (item as SentimentPost).sentiment;
+        } else if ('enrichment' in item) {
+          const summary = extractEnrichmentSummary((item as SocialPostSummary).enrichment);
+          sent = summary?.sentiment ?? null;
+        }
+        const lower = sent?.toLowerCase();
+        if (lower && RECOGNIZED_SENTIMENTS.has(lower)) {
+          split[lower as keyof SentimentSplit] += 1;
+        }
+      }
+      const sentimentIndex = computeSentimentIndex(split);
+
+      return {
+        countryCode: code,
+        name: displayName,
+        count,
+        share,
+        sentiment: split,
+        sentimentIndex,
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+}
+
 export interface SourceVolumeHistoryPoint {
   date: string;
   [providerId: string]: number | string;
@@ -518,6 +678,8 @@ export interface OverviewFilters {
   activeSentimentFilter: 'positive' | 'neutral' | 'negative' | null;
   /** Story 8.9 (ADR-0063) — server-side filtered watchlist id (?watchlist= in deep-link). */
   activeWatchlistFilter: string | null;
+  /** Story 8.10 (ADR-0064) — client-side country ISO filter or 'UNKNOWN' (?country= in deep-link). */
+  activeCountryFilter: string | null;
 }
 
 export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
@@ -528,10 +690,11 @@ export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
   activeLanguageFilter: null,
   activeSentimentFilter: null,
   activeWatchlistFilter: null,
+  activeCountryFilter: null,
 };
 
 /**
- * All six client-side dimensions compose with AND semantics — every widget on the
+ * All client-side dimensions compose with AND semantics — every widget on the
  * Overview tab recomputes from this same single filtered set, including the
  * widget that is itself the click target for a given dimension (a
  * deliberate, simpler-than-standard-faceted-search choice — see this
@@ -539,6 +702,7 @@ export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
  * Note: activeWatchlistFilter is filtered server-side via GET /v1/posts?watchlistId= (Story 8.9).
  */
 export function applyOverviewFilters(posts: SentimentPost[], filters: OverviewFilters): SentimentPost[] {
+  if (!posts || !Array.isArray(posts)) return [];
   return posts.filter((post) => {
     if (filters.activeDateFilter && post.publishedAt?.slice(0, 10) !== filters.activeDateFilter) return false;
     if (filters.activeSourceFilter && post.providerId !== filters.activeSourceFilter) return false;
@@ -546,6 +710,13 @@ export function applyOverviewFilters(posts: SentimentPost[], filters: OverviewFi
     if (filters.activeKeywordFilter && !post.keyPhrases.includes(filters.activeKeywordFilter)) return false;
     if (filters.activeLanguageFilter && post.language !== filters.activeLanguageFilter) return false;
     if (filters.activeSentimentFilter && post.sentiment !== filters.activeSentimentFilter) return false;
+    if (filters.activeCountryFilter) {
+      if (filters.activeCountryFilter === 'UNKNOWN') {
+        if (post.geoCountry !== null) return false;
+      } else if (post.geoCountry !== filters.activeCountryFilter) {
+        return false;
+      }
+    }
     return true;
   });
 }
@@ -572,13 +743,20 @@ export function computeActiveChips(
     const wl = watchlists.find((w) => w.id === filters.activeWatchlistFilter);
     chips.push({ type: 'activeWatchlistFilter', label: 'Watchlist', value: wl?.name ?? filters.activeWatchlistFilter });
   }
+  if (filters.activeCountryFilter) {
+    chips.push({
+      type: 'activeCountryFilter',
+      label: 'Country',
+      value: getCountryDisplayName(filters.activeCountryFilter),
+    });
+  }
   return chips;
 }
 
 const RECOGNIZED_SENTIMENT_FILTER_VALUES = new Set(['positive', 'neutral', 'negative']);
 
 /**
- * Deep-link share state (ADR-0062 Decision §4; Story 8.9 / ADR-0063 adds ?watchlist) —
+ * Deep-link share state (ADR-0062 Decision §4; Story 8.9 / ADR-0063 adds ?watchlist; Story 8.10 / ADR-0064 adds ?country) —
  * an invalid or unrecognised param value silently falls back to the default (null), never an error.
  */
 export function parseOverviewFiltersFromSearchParams(params: URLSearchParams): OverviewFilters {
@@ -591,10 +769,11 @@ export function parseOverviewFiltersFromSearchParams(params: URLSearchParams): O
     activeLanguageFilter: params.get('language') || null,
     activeSentimentFilter: sentiment && RECOGNIZED_SENTIMENT_FILTER_VALUES.has(sentiment) ? (sentiment as OverviewFilters['activeSentimentFilter']) : null,
     activeWatchlistFilter: params.get('watchlist') || null,
+    activeCountryFilter: params.get('country') || null,
   };
 }
 
-/** The inverse of parseOverviewFiltersFromSearchParams() — round-trips exactly including ?watchlist (Story 8.9). */
+/** The inverse of parseOverviewFiltersFromSearchParams() — round-trips exactly including ?watchlist and ?country. */
 export function serializeOverviewFiltersToSearchString(filters: OverviewFilters): string {
   const params = new URLSearchParams();
   if (filters.activeDateFilter) params.set('date', filters.activeDateFilter);
@@ -604,6 +783,7 @@ export function serializeOverviewFiltersToSearchString(filters: OverviewFilters)
   if (filters.activeLanguageFilter) params.set('language', filters.activeLanguageFilter);
   if (filters.activeSentimentFilter) params.set('sentiment', filters.activeSentimentFilter);
   if (filters.activeWatchlistFilter) params.set('watchlist', filters.activeWatchlistFilter);
+  if (filters.activeCountryFilter) params.set('country', filters.activeCountryFilter);
   return params.toString();
 }
 

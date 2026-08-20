@@ -19,10 +19,12 @@ import { PostDetailPanel } from '../posts/PostDetailPanel';
 import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
 import { flattenPost, type FlatPost } from '../posts/postDisplay';
 import type { SocialPostFull, Watchlist } from '@/lib/core-client';
+import { CountryWorldMap } from './CountryWorldMap';
 import {
   applyOverviewFilters,
   computeActiveChips,
   computeAuthorsBySource,
+  computeCountryBreakdown,
   computeCrisisAlertRadar,
   computeLanguageBreakdown,
   computePhraseFrequency,
@@ -273,7 +275,8 @@ export function OverviewTab({
     window.history.replaceState(null, '', url);
   }, [filters]);
 
-  const filteredPosts = useMemo(() => applyOverviewFilters(summary.posts, filters), [summary.posts, filters]);
+  const postsSource = summary.posts ?? (summary as any).sentimentPosts ?? [];
+  const filteredPosts = useMemo(() => applyOverviewFilters(postsSource, filters), [postsSource, filters]);
   const chips = useMemo(() => computeActiveChips(filters, watchlists), [filters, watchlists]);
 
   const sentimentSplit = useMemo(() => computeSentimentSplitFromFlat(filteredPosts), [filteredPosts]);
@@ -286,6 +289,7 @@ export function OverviewTab({
   // computeLanguageBreakdown()) at Menno's own request — a long-tail list of
   // every language present was more clutter than signal.
   const languages = useMemo(() => computeLanguageBreakdown(filteredPosts).slice(0, 6), [filteredPosts]);
+  const countryBreakdown = useMemo(() => computeCountryBreakdown(filteredPosts), [filteredPosts]);
   const volumeHistory = useMemo(() => computeVolumeHistory(filteredPosts, range), [filteredPosts, range]);
   const forecast = useMemo(() => computeVolumeForecast(volumeHistory, 7), [volumeHistory]);
   const movingAverage = useMemo(() => computeMovingAverage(volumeHistory, 7), [volumeHistory]);
@@ -323,6 +327,9 @@ export function OverviewTab({
   }
   function toggleLanguageFilter(value: string) {
     setFilters((prev) => ({ ...prev, activeLanguageFilter: prev.activeLanguageFilter === value ? null : value }));
+  }
+  function toggleCountryFilter(value: string) {
+    setFilters((prev) => ({ ...prev, activeCountryFilter: prev.activeCountryFilter === value ? null : value }));
   }
   function toggleDateFilter(value: string) {
     setFilters((prev) => ({ ...prev, activeDateFilter: prev.activeDateFilter === value ? null : value }));
@@ -520,6 +527,58 @@ export function OverviewTab({
                     )}
                   </ComposedChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+
+          <div className="an-widget" id="widget-location-insights">
+            <div className="an-widget-header">
+              <span className="an-widget-title">Location &amp; geospatial insights</span>
+              <span className="an-widget-sublabel">Conversations by market</span>
+            </div>
+            {countryBreakdown.length === 0 ? (
+              <EmptyState heading="No geographic data yet" body="Posts with country metadata or regional datelines will appear here." />
+            ) : (
+              <div className="an-location-insights-body">
+                <CountryWorldMap
+                  countryBreakdown={countryBreakdown}
+                  selectedCountry={filters.activeCountryFilter}
+                  onSelectCountry={toggleCountryFilter}
+                />
+                <div className="an-top-countries-wrap">
+                  <div className="an-top-countries-title">Top Countries</div>
+                  <ul className="an-top-countries-list">
+                    {countryBreakdown.slice(0, 6).map((c) => {
+                      const isSelected = filters.activeCountryFilter === c.countryCode;
+                      return (
+                        <li key={c.countryCode}>
+                          <button
+                            type="button"
+                            className={`an-country-row${isSelected ? ' an-country-row-active' : ''}`}
+                            onClick={() => toggleCountryFilter(c.countryCode)}
+                          >
+                            <div className="an-country-identity">
+                              <span className="an-country-code-badge">{c.countryCode}</span>
+                              <span className="an-country-name">{c.name}</span>
+                            </div>
+                            <div className="an-country-bar-wrap">
+                              <div className="an-country-bar-track">
+                                <div
+                                  className="an-country-bar-fill"
+                                  style={{ width: `${Math.min(100, Math.max(3, c.share))}%` }}
+                                />
+                              </div>
+                            </div>
+                            <div className="an-country-stat">
+                              <span className="an-country-count">{c.count.toLocaleString()}</span>
+                              <span className="an-country-share">{c.share.toFixed(1)}%</span>
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
             )}
           </div>
