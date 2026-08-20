@@ -1,6 +1,8 @@
 # ADR-0065: Active Watchlist Sourcing via Brave Search API — Polling Connector, Post Ingestion Grounding, and LLM Enrichment
 
-**Status:** Proposed (2026-08-19)
+**Status:** Accepted (2026-08-20)
+
+**Accepted by Menno 2026-08-20.** Authorizes the `brave-search` connector for proactive watchlist topic discovery, post grounding, and AI enrichment, with the four review recommendations in effect: (1) Domain/Publication as Author mapping (ADR-0004 generalization), (2) Dual discovery query + in-process AST validation filter, (3) 1–4 hour quota-safe pacing loop to stay strictly within rate limits, and (4) Tier-2 tenant credential ownership per ADR-0028 and direct billing per ADR-0027.
 
 **Source:** Follow-up to ADR-0063 (Post-watchlist match persistence and server-side filters) and ADR-0062 (Analytics Dashboard Overview enhancements). Menno's request (2026-08-19): *"could you please review the decline of the Topics Filter and align the Topics to the Watchlist already available in the systems? ... [and write an ADR] for the Brave Search API to search on topics/watchlist items and return results as posts to the social listening. Future review the enhancements to the grounding of posts and enhancing enrich posts with search results."*
 
@@ -26,9 +28,16 @@ By integrating the Brave Search API as an active connector, the platform can tra
 
 A new native ingestion connector is introduced with provider ID `brave-search`.
 
-- **Mechanism:** Rather than polling a static RSS feed, the connector iterates through the tenant's **active** watchlists and executes a Brave Search API call per watchlist (using the watchlist's query representation). For watchlists with `matchType = keyword`/`hashtag`/`account`, the connector uses the watchlist's `terms[]` to construct a search query. For watchlists with `matchType = boolean_query` (ADR-0021), the connector uses the `boolean_query` string as the search query (as supported by Brave's search syntax), deferring to Brave for query interpretation.
+- **Mechanism (Dual Discovery & Validation):** Rather than polling a static RSS feed, the connector iterates through the tenant's **active** watchlists:
+  1. **Discovery phase:** Executes a Brave Search API call per watchlist. For watchlists with `matchType = keyword`/`hashtag`/`account`, the connector formats the watchlist's `terms[]` into a search query. For watchlists with `matchType = boolean_query` (ADR-0021), the connector passes the `boolean_query` string (as supported by Brave's search syntax).
+  2. **Validation filter:** Because search engines use broad matching and stemming, each candidate snippet returned by Brave is evaluated in-process against the triggering watchlist's exact rules (`matchesAst()` or `matchesWatchlist()`) before insertion. Only candidate items strictly meeting the rule criteria are ingested, guaranteeing identical precision to passive feeds.
 - **Preferred endpoint:** The connector uses `/res/v1/news/search` when the watchlist is intended to surface recent news coverage; otherwise it falls back to `/res/v1/web/search`. The choice is configurable per connector run configuration (default: `news`).
 - **Freshness & pagination:** The connector uses Brave's `freshness` parameter to respect the ingestion lookback window (aligned with ADR-0018's retention/ingestion cadence) and paginates through results using `offset`/`count` to avoid over-fetching in a single call.
+- **Publication / Domain as Author (ADR-0004 Generalization):** Following the generalized organization-as-Author precedent (ADR-0024, ADR-0026, ADR-0050), web search results lack individual journalist profiles. The source domain and publication name serve as the canonical Author:
+  - `author.id = "brave-search:" + domain`
+  - `author.username = domain` (e.g. `bbc.com`, `techcrunch.com`)
+  - `author.displayName = sourceName || domain`
+  - `author.platform = 'brave-search'`
 - **Mapping to canonical schema:** Each Brave Search result is mapped to `SocialPostSummary` as follows:
 
 | Brave Search field | `SocialPostSummary` field | Notes |
@@ -40,7 +49,7 @@ A new native ingestion connector is introduced with provider ID `brave-search`.
 | `source` / `domain` | `providerId` context + `source` metadata | `providerId = 'brave-search'`. The source domain (e.g. `bbc.co.uk`) is stored in the post's source metadata for display and filtering. |
 | `language` (if present) | `enrichment.detectedLanguage` (initial) | If Brave returns a language hint, it is used as an initial value but the standard enrichment pass may override it (ADR-0055). |
 
-- **Deduplication:** The connector uses the standard URL-based deduplication path (ADR-0005). The `externalId` is set to the canonicalised result URL. `INSERT` into `social_posts` respects the existing unique key on `(tenant_id, providerId, externalId)` (or equivalent) so articles discovered across multiple polling cycles or overlapping watchlist queries are not ingested twice.
+- **Deduplication:** The connector uses the standard URL-based deduplication path (ADR-0005). The `externalId` is set to the canonicalised result URL. `INSERT` into `social_posts` respects the existing unique key on `(tenant_id, providerId, externalId)` so articles discovered across multiple polling cycles or overlapping watchlist queries are not ingested twice.
 
 ### 2. Automatic watchlist linking on ingestion
 
@@ -62,13 +71,14 @@ Brave-sourced posts are treated as first-class posts and flow through the existi
   - **Grounding context / executive summary** — stored as part of the enrichment payload (e.g. `enrichment.groundingContext` or `enrichment.summary`) explaining why the article matches the watchlist criteria. This is persisted in the `post_enrichments` store table.
 - **UI parity:** Once enriched, Brave-sourced posts are indistinguishable from posts from native feeds. They support sentiment filters, language filters, the AI Spike Storyteller (ADR-0062 Decision §6), and all existing analytics aggregations.
 
-### 4. Credential and rate-limit architecture
+### 4. Credential, rate-limit, and cadence architecture
 
-- **Credential storage:** The Brave Search API key (`X-Subscription-Token`) is stored in the platform credential vault using the existing pattern (Tier-2 platform credentials, ADR-0028). Credentials are resolved per tenant context where applicable, or at platform level if the subscription is platform-managed.
-- **Authentication:** All Brave API calls include the `X-Subscription-Token` header as required by the Brave Search API.
-- **Throttling & backoff:** The connector implements polite polling with configurable intervals per watchlist. It respects Brave's rate limits via exponential backoff on `429`/`5xx` responses, retries with jitter, and tracks quota usage against the tenant's subscription tier.
-- **Per-watchlist cadence:** To avoid excessive API spend, polling frequency is configurable (see Open Question 1). The connector never polls all watchlists simultaneously; it staggers execution across the tenant's watchlist set.
-- **Budget guardrails:** The connector records API call counts and estimated cost metrics to the existing connector telemetry path (ADR-0009/ADR-0010). If a tenant approaches its configured quota, the connector logs a warning and can defer lower-priority watchlists to the next cycle (best-effort degradation).
+- **Credential storage (Tier-2, ADR-0028):** The Brave Search API key (`X-Subscription-Token`) is a tenant-owned credential stored in `platform_credentials` (`owner_type: 'tenant'`), configured by `tenant_admin`.
+- **Direct billing (ADR-0027):** In accordance with ADR-0027, the tenant contracts directly with Brave for their API subscription token; SocialEngage acts strictly as the technical connector.
+- **Authentication:** All Brave API calls include the `X-Subscription-Token` header.
+- **Quota-safe polling cadence:** To avoid rapid exhaustion of Brave Search rate limits (e.g. 2,000 req/mo on free tier, 1 req/sec limit), the default active watchlist polling cadence is set to **1 to 4 hours** (configurable per tenant) rather than 15 minutes.
+- **Pacing loop & jitter:** Within a scheduler tick, queries across multiple active watchlists are executed sequentially with a **1.2-second pacing delay** between requests, guaranteeing adherence to Brave's 1 req/sec ceiling and preventing HTTP 429 rate-limit errors.
+- **Budget guardrails:** The connector records API call counts and quota usage in connector telemetry (ADR-0009/ADR-0010/ADR-0070). If a tenant approaches their quota limit, the connector logs a warning and gracefully defers further queries until the next period.
 
 ---
 
@@ -110,6 +120,4 @@ Brave-sourced posts are treated as first-class posts and flow through the existi
 4. **Result deduplication window:** Should deduplication consider results seen in the last N polling cycles (e.g. 7–30 days) or rely solely on the existing `(tenant_id, providerId, externalId)` uniqueness? The current approach (relying on the existing unique constraint) is sufficient for v1, but cross-cycle dedup across very old results may need tuning.
 5. **Backpressure & watchlist prioritisation:** When API quota is constrained, which watchlists should be polled first (e.g. most recently created, most frequently used in dashboards, or explicitly marked as high-priority)? Left to implementation-time judgment with a sensible default (prioritise active watchlists with recent dashboard usage).
 
----
-
-*Drafted 2026-08-19. This ADR builds directly on ADR-0063's junction table and server-side filtering, and enables the Watchlist Coverage widget and `selectedTopic` filter to receive real, actively-sourced data. It reuses the existing ingestion framework, enrichment pipeline (ADR-0038), and credential architecture (ADR-0028) while introducing a new active connector (`brave-search`). Left **Proposed** per the project's ADR-acceptance authority convention.*
+*Drafted 2026-08-19, updated and accepted 2026-08-20 with review recommendations in effect. This ADR builds directly on ADR-0063's junction table and server-side filtering, and enables the Watchlist Coverage widget and `selectedTopic` filter to receive real, actively-sourced data. It reuses the existing ingestion framework, enrichment pipeline (ADR-0038), and credential architecture (ADR-0028) while introducing a new active connector (`brave-search`).*
