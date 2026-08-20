@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 20:57 | — | — | Documentation | — | chore: update tracking docs and apply UI connector label refinements (c1c7b2f) |
 | 2026-08-20 | 20:57 | — | — | Documentation | Story 6.31 | feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071) (9260f6f) |
 | 2026-08-20 | 20:57 | — | — | Documentation | Story 3.13 | feat(core): implement post enrichment overrides API and precedence guard (Story 3.13 / ADR-0071) (d9639df) |
 | 2026-08-20 | 19:53 | — | — | Documentation | ADR-0068 | docs(adr): accept ADR-0068 (Instagram) & ADR-0069 (LinkedIn); draft Stories 2.24, 2.25, 6.34, 6.35 (9617cec) |
