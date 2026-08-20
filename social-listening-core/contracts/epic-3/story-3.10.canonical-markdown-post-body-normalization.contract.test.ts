@@ -102,6 +102,11 @@ function fakeActivation(domain: string): TenantOwnedFeedActivationRow {
     verified_at: new Date(),
     created_at: new Date(),
     updated_at: new Date(),
+    // Story 2.19 (ADR-0050's 2026-08-20 Amendment Log entry) added this
+    // required field — null here is correct, not a stand-in: this
+    // fixture's own activation never had a name set, unrelated to what
+    // this story's own AC1 (schema) actually tests.
+    name: null,
   };
 }
 
@@ -351,6 +356,8 @@ describe('Story 3.10 — canonical Markdown post-body storage and enrichment inp
             summary: null,
             content: null,
             rawXml: '<item/>',
+            // Story 2.19 — required field, unrelated to this precedence test.
+            author: null,
           },
         ]);
         expect(result.postsIngested).toBe(1);
@@ -568,6 +575,8 @@ describe('Story 3.10 — canonical Markdown post-body storage and enrichment inp
           summary: null,
           content: null,
           rawXml: '<item/>',
+          // Story 2.19 — required field, unrelated to this composition test.
+          author: null,
         },
       ]);
       const expectedBody = htmlToMarkdown('<p>Body text</p>');

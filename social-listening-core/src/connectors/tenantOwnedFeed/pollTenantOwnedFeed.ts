@@ -80,7 +80,17 @@ export async function ingestTenantOwnedFeedItems(
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
-      rawPayload: { providerId: TENANT_OWNED_FEED_PROVIDER_ID, externalId: normalized.externalId, ...item },
+      // Story 2.19 — activation.name (when the tenant set one) is
+      // denormalized alongside item.author (the per-item byline, already
+      // present on `item` via feedItemParser.ts) — display-only, matching
+      // the same pattern Facebook's pageName/Newswire's issuer already
+      // establish. Never overrides Author/providerId modeling.
+      rawPayload: {
+        providerId: TENANT_OWNED_FEED_PROVIDER_ID,
+        externalId: normalized.externalId,
+        feedName: activation.name ?? undefined,
+        ...item,
+      },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
