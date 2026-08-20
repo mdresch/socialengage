@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 17:28 | — | — | Documentation | Story 1.16 | docs: record Story 1.16 implementation in log and user story metadata (e40d3e5) |
+| 2026-08-20 | 17:27 | — | — | Documentation | Story 1.16 | feat(core): implement Story 1.16 ingestion watchdog, stalled health, and alert events (ADR-0070) (ae1bd98) |
 | 2026-08-20 | 16:45 | — | — | Infrastructure | ADR-0070 | chore: record post-commit hook outputs for ADR-0070 acceptance (39211ac) |
 | 2026-08-20 | 16:44 | — | — | Documentation | ADR-0070 | docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence (f00b34c) |
 | 2026-08-20 | 16:43 | — | — | Infrastructure | ADR-0070 | chore: record post-commit hook outputs for ADR-0070 (79da4c8) |

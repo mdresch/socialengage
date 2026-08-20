@@ -1809,3 +1809,15 @@
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-20 — ae1bd98 — feat(core): implement Story 1.16 ingestion watchdog, stalled health, and alert events (ADR-0070)
+
+- **Full commit:** `ae1bd988c6c10846afe3465ccd8c844824b7b905`
+- **Files touched:** docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/migrations/0039_add_ingestion_runs_stale_watchdog_index.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/publishConnectorAlertEvents.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
+- **Status:** Pending review
+
+## 2026-08-20 — e40d3e5 — docs: record Story 1.16 implementation in log and user story metadata
+
+- **Full commit:** `e40d3e5a3d882a2cbc8b73071a0fc7e66c2711aa`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
+- **Status:** Pending review
+
