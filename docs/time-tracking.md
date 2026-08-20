@@ -15,6 +15,20 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 09:54 | — | — | Documentation | — | feat(story-6.28): tenant-owned-feed friendly naming in setup UI (cc38b6a) |
+| 2026-08-20 | 09:21 | — | — | Documentation | Story 2.19 | docs: implementation log entry for Story 2.19, Built hash finalized (e54f937) |
+| 2026-08-20 | 09:20 | — | — | Documentation | — | feat(story-2.19): tenant-owned-feed per-feed name + per-item byline (2f52c0f) |
+| 2026-08-20 | 08:39 | — | — | Documentation | — | fix(post-feed): surface Facebook Page author and original-post link (2fa45ba) |
+| 2026-08-20 | 08:33 | — | — | Documentation | — | fix(facebook-connector): denormalize Page id/name into rawPayload (75362d3) |
+| 2026-08-20 | 08:13 | — | — | Documentation | — | fix(post-feed): allocate the Newswire issuer to the author position (cd6f41e) |
+| 2026-08-20 | 08:09 | — | — | Documentation | — | fix(analytics-overview): unreadable white-on-white post title in drawer rows (efa96e8) |
+| 2026-08-20 | 07:58 | — | — | Documentation | — | feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer (2859a76) |
+| 2026-08-19 | 20:52 | — | — | Documentation | Story 8.7 | docs: implementation log entry for Story 8.7, Built hash finalized (6a59885) |
+| 2026-08-19 | 20:51 | — | — | Documentation | Story 8.7 | feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance (7698563) |
+| 2026-08-19 | 20:06 | — | — | Documentation | — | docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate (1d550a1) |
+| 2026-08-19 | 19:54 | — | — | Documentation | Story 3.11 | docs: implementation log entry for Story 3.11 healing pass (6e6755e) |
+| 2026-08-19 | 19:52 | — | — | Documentation | Story 3.11 | fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo (63902a1) |
+| 2026-08-19 | 17:15 | — | — | Documentation | — | Writen the ADRs 0064 0065 0066 0067 0068 0069 (5d3ec45) |
 | 2026-08-19 | 05:28 | — | — | Review | — | Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues (6080795) |
 | 2026-08-18 | — | — | auto | Documentation | ADR-0059 | docs: ADR-0059/0060/0061 acceptance and Story 6.27/1.15 governance update (7c0572c) |
 | 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.23): implementation log entry and Built field (f6a1794) |
