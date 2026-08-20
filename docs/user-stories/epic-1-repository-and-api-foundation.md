@@ -368,37 +368,42 @@
 
 ## Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health Derivation, and Service Bus Ingestion Alert Events
 
-**Source:** ADR-0070 (Proposed 2026-08-20) · **Status:** Ready
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 1.13 (Live polling scheduler), Story 1.14 (In-flight run guard), Story 1.15 (Tier-3 per-user scheduler), Story 5.19 (Service Bus event publishing)
 
 **As a** system operator and platform engineer,
-**I want** orphaned or hung `running` ingestion runs to be automatically reconciled by a scheduler watchdog, inactive connectors to be derived as `stalled`, and structured alert events published to Service Bus,
+**I want** orphaned or hung `running` ingestion runs to be automatically reconciled by a lock-safe scheduler watchdog, inactive connectors to be derived as `stalled`, and structured alert events published to Service Bus,
 **so that** polling deadlocks cannot occur after server restarts or network hangs, and ingestion failures/stalls trigger proactive notifications.
 
 **Acceptance Criteria**
 
-- **Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`):**
+- **Database Partial Index:**
+  - A migration adds partial index `idx_ingestion_runs_stale_watchdog` on `ingestion_runs(status, started_at) WHERE status = 'running'` for O(1) watchdog query scans.
+- **Lock-Safe Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`):**
   - Stored in `ingestionRunStore.ts` and executed automatically at the start of each `runSchedulerTick()`.
-  - Atomically finds all `ingestion_runs` rows where `status = 'running'` and `started_at < NOW() - INTERVAL '15 minutes'` (configurable `MAX_RUN_DURATION_MS`, default 15 minutes).
-  - Updates matching rows to `status = 'failed'`, `completed_at = NOW()`, `error_summary = 'Ingestion run timed out or process aborted (reconciled by watchdog)'`, and `retryable = true`.
-  - Proved by a test verifying that an orphaned `running` row older than 15 minutes is reconciled to `failed`, allowing subsequent `getMostRecentRunStatus()` to return `failed` and immediately unblocking the Story 1.14/1.15 in-flight guard.
-  - Active runs with `started_at` within the last 15 minutes remain `status: 'running'` and are untouched.
-- **Extended Connector Health Derivation (`stalled` Status):**
+  - Uses `FOR UPDATE SKIP LOCKED` row locking to atomically select and update all `ingestion_runs` rows where `status = 'running'` and `started_at < NOW() - INTERVAL '15 minutes'` (or `2 * effectiveCadenceMs`).
+  - Sets `status = 'failed'`, `completed_at = NOW()`, `error_summary = 'Ingestion run timed out or aborted (reconciled by watchdog)'`, and `retryable = true`, returning reconciled row details (`id`, `tenant_id`, `platform_id`, `user_id`).
+  - Proved by a test verifying that an orphaned `running` row older than threshold is reconciled to `failed`, allowing subsequent `getMostRecentRunStatus()` to return `failed` and immediately unblocking the Story 1.14/1.15 in-flight guard. Active runs within the threshold remain `status: 'running'` and are untouched.
+- **Extended Connector Health Derivation with Strict Precedence (`stalled` Status):**
   - `ConnectorHealthStatus` union in `connectorHealth.ts` is widened to include `'stalled'`.
-  - An active connector (`isConnectorActive === true` and `credentialStatus === 'valid'`) derives `status = 'stalled'` when:
-    - `lastAttemptAt` is older than `3 * connector.pollCadenceMs` (minimum 45 minutes); OR
-    - `lastSuccessfulFetchAt` is older than 24 hours (`MAX_INGESTION_SILENCE_MS`) while `consecutiveFailures < 20` (below the `failing` threshold); AND
-    - Has at least one prior recorded run in `ingestion_runs`.
-  - Proved by tests asserting `deriveConnectorHealth()` returns `'stalled'` when elapsed time since last attempt or success exceeds threshold.
+  - `deriveConnectorHealth()` enforces explicit derivation order:
+    1. `disconnected` (zero historical runs)
+    2. `reconnect_required` (credential failure on latest run or credential status expired/revoked)
+    3. `failing` (consecutive failures >= 20 or rate-based failure threshold breached)
+    4. `stalled` (active connector with valid credentials, not in 1–3, where `now - lastAttemptAt >= 3 * effectiveCadenceMs` or `now - lastSuccessfulFetchAt >= 24h` with >= 1 prior run)
+    5. `degraded` (recent failure with a success in the trailing hour)
+    6. `healthy` (normal operation).
+  - Proved by tests asserting `deriveConnectorHealth()` returns `'stalled'` when elapsed time breaches cadence/silence thresholds without overriding `failing` or `reconnect_required`.
 - **Service Bus Ingestion Alert Events (`ConnectorIngestionAlertEvent`):**
   - `src/events/connectorIngestionAlertEvent.ts` defines `ConnectorIngestionAlertEvent` (`tenantId`, `platformId`, `userId?`, `alertType`, `severity`, `message`, `occurredAt`, `metadata`).
-  - When the watchdog reconciles one or more stale runs, it publishes a `run_timed_out` alert event (severity `'warning'`).
-  - When derived health transitions into `stalled`, `failing`, or `reconnect_required`, `publishConnectorHealthEvents.ts` publishes `ConnectorIngestionAlertEvent` to Service Bus.
-- **Manual Force Retry API Endpoint:**
-  - `POST /v1/connectors/:id/retry` (and optional `?userId=` query param for Tier-3 connectors) is mounted behind `authMiddleware` and `requireTenantAdmin`.
-  - Reconciles any stale runs for that `(tenantId, platformId)`, bypasses scheduler cadence interval check, and triggers an immediate on-demand `connector.poll(tenantId)` / `connector.pollUser(tenantId, userId)`.
-  - Returns HTTP 200 with the freshly derived `ConnectorHealth` summary, or HTTP 409 if a legitimate run started within the last 60 seconds is still actively in progress.
+  - Emits `run_timed_out` (warning) per reconciled run (with `staleRunId`), throttled to at most once per `(tenantId, platformId[, userId])` per sweep.
+  - Emits `ingestion_stalled` (warning) when derived health transitions into `'stalled'`.
+  - Emits `connector_failing` / `reconnect_required` (critical) when derived health enters auto-disable or credential revocation.
+- **Idempotent Force Retry API Endpoint:**
+  - `POST /v1/connectors/:id/retry` and `/v1/connectors/:id/users/:userId/retry` mounted behind `authMiddleware` and `requireTenantAdmin` (or matching authenticated user for Tier-3).
+  - Reconciles any stale runs for that target, resets transient circuit-breaker counters (`consecutiveFailures = 0`, probe cooldown cleared), and triggers immediate `connector.poll(tenantId)` / `pollUser(tenantId, userId)`.
+  - Returns HTTP 200 with freshly derived `ConnectorHealth` summary, or HTTP 409 if a legitimate run started within the last 60 seconds is actively running.
 
 **Explicitly out of scope:** UI rendering in Next.js admin frontend (scoped to Story 6.29); third-party notification delivery channels (Slack/PagerDuty/Email — downstream consumers of the Service Bus event, not core pipeline scope).
 

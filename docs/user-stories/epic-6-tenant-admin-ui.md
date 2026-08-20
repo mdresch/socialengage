@@ -689,7 +689,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
 
-**Source:** ADR-0070 (Proposed 2026-08-20) · **Status:** Ready
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 1.16 (Ingestion watchdog, stalled status derivation, retry API endpoint in `social-listening-core`), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
@@ -703,11 +703,11 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
   - Widens `StatusBadge` variants to include `'stalled'` (rendered as Amber/Orange with label "Stalled / No Ingestion").
   - Renders explicit operational metrics for each Ingestion Connector card:
     - **Last Ingestion Attempt:** Relative timestamp (e.g. "10 mins ago") + ISO tooltip.
-    - **Last Successful Ingestion:** Relative timestamp (e.g. "25 mins ago") + ISO tooltip.
+    - **Last Successful Ingestion:** Relative timestamp (e.g. "25 mins ago") + ISO tooltip (reflecting `lastSuccessfulFetchAt`).
     - **Ingestion Cadence:** Displays platform poll cadence (e.g. "Poll interval: 15m").
 - **On-Demand "Force Retry / Re-sync" Button:**
-  - Rendered on each Ingestion Connector card for `tenant_admin` users when the connector is active.
-  - Clicking invokes `POST /v1/connectors/:id/retry` (via `/api/connectors/[id]/retry` proxy route).
+  - Rendered on each Ingestion Connector card for `tenant_admin` users (and for Tier-3 connectors, the user owning the credential) when the connector is active.
+  - Clicking invokes `POST /v1/connectors/:id/retry` (or `POST /v1/connectors/:id/users/:userId/retry` for Tier-3) via `/api/connectors/[id]/retry` proxy route.
   - While request is in-flight, displays a loading spinner and disables repeat clicks.
   - On success, displays a toast notification ("Ingestion run triggered") and refreshes connector metrics immediately.
   - On 409 conflict ("Run already in progress"), shows an informative message without failing abruptly.

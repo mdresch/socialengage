@@ -1,6 +1,6 @@
 # ADR-0070: Connector Ingestion Health Status, Hanging Run Watchdog Reconciliation, and Inactivity Alerting
 
-**Status:** Proposed (2026-08-20)
+**Status:** Accepted (2026-08-20)
 
 **Source:** Follow-up to ADR-0005 (`IngestionRun` as audit anchor), ADR-0009 (`ConnectorHealth` derived not stored), ADR-0010 (Error handling & auto-disable policy), ADR-0023 (Proportional failure threshold & circuit breaker), ADR-0052 (Live polling scheduler & in-flight guard §5b), ADR-0058 (Ingestion events & `ConnectorHealthChangedEvent`), and ADR-0061 (Tier-3 per-user scheduler).
 
@@ -42,29 +42,41 @@ When connector ingestion fails or stalls:
 
 ## Decision
 
-### 1. Automated Watchdog Run Reconciliation (`reconcileStaleIngestionRuns`)
+### 1. Lock-Safe Automated Watchdog Run Reconciliation (`reconcileStaleIngestionRuns`)
 
 A watchdog reconciliation function is introduced into `social-listening-core/src/ingestion/ingestionRunStore.ts` and executed automatically at the start of each scheduler tick in `pollScheduler.ts`:
 
 1. **Stale Run Timeout Threshold (`MAX_RUN_DURATION_MS`):**
    - A running run is defined as stale if:
      `status = 'running' AND started_at < (NOW() - MAX_RUN_DURATION_MS)`
-   - Default `MAX_RUN_DURATION_MS`: **15 minutes** (or `2 * connector.pollCadenceMs`, whichever is larger).
-2. **Atomic Reconciliation:**
-   - The watchdog executes an atomic SQL update:
+   - Timeout formula: `MAX_RUN_DURATION_MS = max(15 minutes, 2 * effectiveCadenceMs)` using the connector's effective poll cadence for that context (Tier-3 user-level cadence or Tier-2 platform/tenant cadence; default fallback: 15 minutes).
+2. **Lock-Safe Row-Level Atomic Reconciliation:**
+   - To prevent race conditions with legitimately completing runners, the watchdog uses a row-locked, non-blocking update:
      ```sql
      UPDATE ingestion_runs
      SET status = 'failed',
          completed_at = NOW(),
          error_summary = 'Ingestion run timed out or aborted (reconciled by watchdog)',
          retryable = true
-     WHERE status = 'running'
-       AND started_at < NOW() - INTERVAL '15 minutes';
+     WHERE id IN (
+       SELECT id FROM ingestion_runs
+       WHERE status = 'running'
+         AND started_at < NOW() - INTERVAL '15 minutes'
+       FOR UPDATE SKIP LOCKED
+     )
+     RETURNING id, tenant_id, platform_id, user_id, started_at;
      ```
-3. **Recovery:**
+   - If a concurrent worker finishes and sets `completed_at` right as the sweep runs, `FOR UPDATE SKIP LOCKED` safely ignores it.
+3. **Index Prerequisite:**
+   - A database migration adds a partial index:
+     ```sql
+     CREATE INDEX idx_ingestion_runs_stale_watchdog ON ingestion_runs(status, started_at) WHERE status = 'running';
+     ```
+     ensuring O(1) watchdog sweeps regardless of total historical table size.
+4. **Recovery & Scheduler Unblocking:**
    - Marking the run as `failed` (with `retryable = true`) immediately unlocks the Story 1.14/1.15 in-flight guard, allowing the scheduler to evaluate the connector on the next tick while preserving an honest audit trail in `ingestion_runs`.
 
-### 2. Extend Derived Connector Health with `'stalled'` Status
+### 2. Extend Derived Connector Health with `'stalled'` & Explicit Precedence
 
 The `ConnectorHealthStatus` union in `connectorHealth.ts` is extended:
 ```ts
@@ -77,13 +89,18 @@ export type ConnectorHealthStatus =
   | 'stalled';
 ```
 
-#### Derivation Rules for `'stalled'`:
-An active connector (`isConnectorActive === true` and `credentialStatus === 'valid'`) derives `status = 'stalled'` when:
-1. `lastAttemptAt` is older than `STALL_CADENCE_MULTIPLIER * pollCadenceMs` (default multiplier: **3×**, minimum 45 minutes); **OR**
-2. `lastSuccessfulFetchAt` is older than `MAX_INGESTION_SILENCE_MS` (default: **24 hours**) while `consecutiveFailures < 20` (not yet classified as `failing`); **AND**
-3. The connector has at least one recorded run in history (otherwise it remains `'disconnected'`).
+#### Strict Derivation Precedence Order:
+When deriving `deriveConnectorHealth(tenantId, platformId, pageId?, userId?)`:
 
-When a connector is `stalled`, it represents an actionable condition: the connector is configured and active, but no successful ingestion has taken place within the expected operational window.
+1. **`disconnected`:** If zero runs exist in history, return `'disconnected'`.
+2. **`reconnect_required`:** If the latest run failed with `is_credential_failure = true` OR `credentialStatus` is `'expired' | 'revoked'`, return `'reconnect_required'`.
+3. **`failing`:** If consecutive non-retryable failures reach `CONSECUTIVE_FAILURE_CEILING = 20` OR the failure rate in the trailing hour reaches `RATE_FAILURE_THRESHOLD = 0.5` (across `RATE_ATTEMPT_FLOOR = 5` attempts, ADR-0023), return `'failing'`.
+4. **`stalled`:** If active (`isConnectorActive === true`) with valid credentials (`credentialStatus === 'valid'`), not in 1–3, and either:
+   - `now - lastAttemptAt >= 3 * effectiveCadenceMs` (minimum 45 minutes); **OR**
+   - `now - lastSuccessfulFetchAt >= MAX_INGESTION_SILENCE_MS` (default: 24 hours),
+   return `'stalled'`.
+5. **`degraded`:** If recent failures occurred within the trailing 1 hour but a success also occurred, return `'degraded'`.
+6. **`healthy`:** Otherwise, return `'healthy'`.
 
 ### 3. Ingestion Alert Events on Service Bus
 
@@ -107,10 +124,10 @@ Building on ADR-0012 and ADR-0058, the core pipeline publishes structured alert 
      };
    }
    ```
-2. **Trigger Points:**
-   - **`run_timed_out` (Warning):** Emitted when the watchdog reconciles a hanging `running` run.
-   - **`ingestion_stalled` (Warning):** Emitted when derived health transitions to `stalled`.
-   - **`connector_failing` / `reconnect_required` (Critical):** Emitted when connector enters auto-disable or credential revocation states.
+2. **Emission Semantics:**
+   - **`run_timed_out` (Warning):** Emitted for each reconciled run row returned by the lock-safe watchdog sweep (`metadata.staleRunId` populated). Batched / throttled to at most once per `(tenantId, platformId[, userId])` per sweep window to avoid alert storms.
+   - **`ingestion_stalled` (Warning):** Emitted when derived health transitions into `'stalled'`.
+   - **`connector_failing` / `reconnect_required` (Critical):** Emitted when derived health transitions into auto-disable or credential revocation states.
 
 ### 4. Admin UI Ingestion Status & Actionable Alerts
 
@@ -120,19 +137,21 @@ In `social-listening-admin`:
    - The status badge renders explicit states:
      - `Healthy` (Green)
      - `Degraded` (Amber)
-     - `Stalled / Inactive Ingestion` (Amber-Red)
+     - `Stalled / No Ingestion` (Amber-Red)
      - `Failing / Suspended` (Red)
      - `Reconnect Required` (Red)
      - `Disconnected` (Gray)
    - Displays real operational timestamps:
-     - **Last Polled:** relative time (e.g. "5 minutes ago")
-     - **Last Ingested Post:** relative time (e.g. "12 minutes ago")
-     - **Next Estimated Poll:** derived from cadence + last attempt.
-2. **Manual "Force Retry / Re-sync" Trigger:**
-   - Adds a tenant-admin action `POST /v1/connectors/:id/retry` (and `/v1/connectors/:id/users/:userId/retry` for Tier-3) to allow immediate on-demand polling.
-   - The endpoint invokes `reconcileStaleIngestionRuns()`, resets circuit-breaker transient failure counters if valid credentials exist, and immediately triggers `connector.poll(tenantId)`.
+     - **Last Polling Attempt:** Relative time (e.g. "5 minutes ago") from `lastAttemptAt`.
+     - **Last Successful Ingestion:** Relative time (e.g. "12 minutes ago") from `lastSuccessfulFetchAt` (the timestamp of the most recent completed run where posts were acquired/processed).
+     - **Poll Cadence:** e.g. "Interval: 15m".
+2. **Idempotent "Force Retry / Re-sync" Endpoint:**
+   - `POST /v1/connectors/:id/retry` and `/v1/connectors/:id/users/:userId/retry`
+   - **Authorization:** Gated by `requireTenantAdmin` (or for Tier-3, the authenticated user themselves matching `:userId`), with strict tenant-isolation validation.
+   - **Semantics:** Reconciles any stale runs for that target, resets circuit-breaker transient failure counters (`consecutiveFailures = 0`, cooldown cleared), and triggers an immediate on-demand `connector.poll(tenantId)` / `pollUser(tenantId, userId)`.
+   - **Idempotency:** If a legitimate run is currently running and started within the last 60 seconds, returns HTTP 409 (`"Run already in progress"`) safely without failing abruptly.
 3. **Global Ingestion Alert Banner:**
-   - When any active connector is in `stalled`, `failing`, or `reconnect_required` state, a top-level alert banner is rendered on `/tenant/analytics` and `/tenant/connectors`:
+   - When any active connector is in `stalled`, `failing`, or `reconnect_required` state, a top-level alert banner is rendered on `/tenant/analytics` (Overview tab) and `/tenant/connectors`:
      > ⚠️ **Ingestion Alert:** 1 connector (Facebook) has stalled. No posts have been ingested for > 24 hours. [View Connectors & Re-sync]
 
 ---
@@ -140,14 +159,15 @@ In `social-listening-admin`:
 ## Consequences
 
 ### Positive
-- **Zero Ingestion Deadlocks:** Hanging runs caused by server restarts or crashes are automatically healed within 15 minutes by the watchdog sweep.
+- **Zero Ingestion Deadlocks:** Hanging runs caused by server restarts or crashes are automatically healed within 15 minutes by the lock-safe watchdog sweep.
+- **Race-Safe Execution:** `SKIP LOCKED` guarantees that legitimate long-running or finishing runs are not overwritten mid-transition.
+- **Unambiguous Health Precedence:** Explicit evaluation ordering ensures `failing` or `reconnect_required` are never masked by `stalled`.
 - **Proactive Inactivity Visibility:** Operators and tenant admins immediately see when ingestion has stopped rather than discovering silent gaps days later.
 - **Self-Healing & Actionable Manual Overrides:** The combination of automated watchdog reconciliation and manual "Force Retry" enables self-service recovery without direct database access.
-- **Event-Driven Integration:** Downstream alerting mechanisms (email notifications, webhook alerts, PagerDuty/Slack integrations) can consume `ConnectorIngestionAlertEvent` from Service Bus.
 
 ### Negative / Trade-offs
 - **Added Health State:** UI components and existing contracts asserting the `ConnectorHealthStatus` union must accommodate `'stalled'`.
-- **Watchdog Query Overhead:** Each scheduler tick performs an indexed sweep for stale `running` runs. (Negligible overhead with an index on `(status, started_at)`).
+- **Watchdog Query Overhead:** Solved with the partial index on `(status, started_at) WHERE status = 'running'`.
 
 ---
 
@@ -161,3 +181,4 @@ In `social-listening-admin`:
 ## Amendment Log
 
 - **2026-08-20:** Proposed by Menno Drescher. Drafted to eliminate in-flight deadlocks from orphaned runs and introduce proactive ingestion alerting.
+- **2026-08-20:** Accepted by Menno Drescher with critical clarifications: lock-safe `SKIP LOCKED` row-level watchdog updates, strict health derivation precedence, effective cadence calculations, partial index prerequisite, and idempotent retry endpoint authorization.
