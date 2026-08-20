@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (d0094f6) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (0052776) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (dca7b22) |
 | 2026-08-20 | 21:26 | — | — | Review | Story 6.33 | docs(reviews): sync review tracking for Story 6.33 (519fb4b) |

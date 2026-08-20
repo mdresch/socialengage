@@ -1965,3 +1965,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/jest.global-setup.js, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts
 - **Status:** Pending review
 
+## 2026-08-20 — d0094f6 — fix(core+admin): heal postgres connection pool deadlock and scope facebook page health
+
+- **Full commit:** `d0094f6abee8dedca9656280453003ea213596a5`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/jest.global-setup.js, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts
+- **Status:** Pending review
+
