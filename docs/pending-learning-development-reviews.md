@@ -1636,87 +1636,101 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-08-19 (Learning & Development Writer):** No user-facing change — accepts ADR-0059/0060/0061 (the last of these three, the Facebook connector ADR, documents a decision already reflected in the shipped Story 6.23 reviewed above; the other two — multiple connected Pages per user, Tier-3 per-user poll scheduling — are accepted decisions with no story built against them yet) and updates Story 6.27/1.15 governance bookkeeping. Acceptance and a drafted/Ready story are not yet shipped, contract-verified capability — correctly nothing added to either manual on this commit's own account.
 
-## 2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues
+## ~~2026-08-19 — 6080795 — Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues~~
 
 - **Full commit:** `608079561c17597c1bfec604ae57551b2e21a148`
 - **Files touched:** CLAUDE.md, README.md, docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Integration-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/project docs/Project Management Plans/Project-Work-Management-Plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/ingestion-events/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** This is this very role's own prior scheduled pass — its own commit message confirms real, substantial updates to both `docs/manuals/tenant-admin-manual.md` and `docs/manuals/user-manual.md` (Wikipedia/Facebook connectors, AI-provider personal-scope restriction, Story 6.14 access history, Team & Access redesign, post feed changes, the new Analytics dashboard, and a real correction reversing a prior claim about tenant-owned-feed monitoring's own tenant-admin-only scope). Spot-checked against current manual text — all named additions are present and accurate. Nothing further to add on this commit's own account; Story 6.24 (AI-provider grouping on the connector status screen), built the next day and still undocumented in either manual, is a real gap but stems from a later, unqueued commit — see the `17c563b` cross-reference in this pass's own Documentation Steward queue entry for the underlying hook-gap finding, not repeated here.
 
-## 2026-08-19 — 2c00920 — feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement
+## ~~2026-08-19 — 2c00920 — feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement~~
 
 - **Full commit:** `2c00920ee0755b4caf32b895e20b09bc6ed99c31`
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — drafts ADR-0062 (Analytics Dashboard Overview Tab Enhancement), Proposed only; Stories 8.7/8.8 drafted alongside, both Blocked. No code shipped, nothing to document until built and the ADR is accepted.
 
-## 2026-08-19 — 67c546f — chore: post-commit hook outputs for ADR-0062 commit (2c00920)
+## ~~2026-08-19 — 67c546f — chore: post-commit hook outputs for ADR-0062 commit (2c00920)~~
 
 - **Full commit:** `67c546f0ddcf7125c6860a304db1b711600712a6`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit, scripts/git-hooks/pre-commit
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping plus an internal hook touch-up, no product code or UI touched.
 
-## 2026-08-19 — 48f5cf3 — docs(adr-0062): replace selectedTopic with activeWatchlistFilter
+## ~~2026-08-19 — 48f5cf3 — docs(adr-0062): replace selectedTopic with activeWatchlistFilter~~
 
 - **Full commit:** `48f5cf3690c6f4d65175d148c8144f34e3495694`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — an in-place ADR-0062 revision (still Proposed) and matching Story 8.7 AC update. No code shipped.
 
-## 2026-08-19 — a5d0036 — chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3)
+## ~~2026-08-19 — a5d0036 — chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3)~~
 
 - **Full commit:** `a5d003631df657b9e89aeddbb17563de93faa7b0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — 23a6dca — chore: post-commit hook outputs for a5d0036
+## ~~2026-08-19 — 23a6dca — chore: post-commit hook outputs for a5d0036~~
 
 - **Full commit:** `23a6dcaca33d4d084bfb5baec261416c406d9caa`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — 2f605b6 — docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter
+## ~~2026-08-19 — 2f605b6 — docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter~~
 
 - **Full commit:** `2f605b667a26863f31dd28c7fa1d787c8b9471db`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/adr/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — drafts ADR-0063 (Proposed only), Story 3.11/8.9 drafted alongside, both Blocked. No backend or UI code shipped.
 
-## 2026-08-19 — 59356e6 — chore: post-commit hook outputs for 2f605b6
+## ~~2026-08-19 — 59356e6 — chore: post-commit hook outputs for 2f605b6~~
 
 - **Full commit:** `59356e60f2db66ec365cf7490059cc310a0e322d`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — 6f25f17 — chore: post-commit hook outputs for 59356e6
+## ~~2026-08-19 — 6f25f17 — chore: post-commit hook outputs for 59356e6~~
 
 - **Full commit:** `6f25f171c9700b084988ff5339bcd844f7a59661`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — 6eb6062 — docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9
+## ~~2026-08-19 — 6eb6062 — docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9~~
 
 - **Full commit:** `6eb6062b192135f8950e807ecb1d4e07c7360de2`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — a further in-place ADR-0062 revision (still Proposed) per Menno's own direction, plus matching Story 8.7/8.9 AC rewrites. No code shipped.
 
-## 2026-08-19 — 24adf6c — chore: post-commit hook outputs for 6eb6062
+## ~~2026-08-19 — 24adf6c — chore: post-commit hook outputs for 6eb6062~~
 
 - **Full commit:** `24adf6c546ffe6b108891ea52144bea41e3d7ba4`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — c1d6a44 — chore: post-commit hook outputs for 24adf6c
+## ~~2026-08-19 — c1d6a44 — chore: post-commit hook outputs for 24adf6c~~
 
 - **Full commit:** `c1d6a44f4ff89a6dc83cf509ff3f7105feaf6041`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
-## 2026-08-19 — 17c563b — docs(adr): accept ADR-0063; move Story 3.11 to Ready
+## ~~2026-08-19 — 17c563b — docs(adr): accept ADR-0063; move Story 3.11 to Ready~~
 
 - **Full commit:** `17c563b71264e47a833fded1df66facaa34ced98`
 - **Files touched:** docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/adr/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — accepts ADR-0063 and moves Story 3.11 to Ready; Story 8.9 remains Blocked pending Story 3.11's own implementation and Story 8.7's own build. Acceptance and a Ready story are not yet shipped, contract-verified capability — correctly nothing to document on this commit's own account. (This project's Documentation Steward pass the same day found and corrected a real traceability gap this ADR-0062/0063 drafting saga left in `docs/user-stories/README.md`/`docs/implementation-plan.md` — outside this role's own manual-only scope, not repeated here.)
 
-## 2026-08-19 — 31af056 — chore: post-commit hook outputs for 17c563b
+## ~~2026-08-19 — 31af056 — chore: post-commit hook outputs for 17c563b~~
 
 - **Full commit:** `31af056e5b52958cbf0eceb884f03aa1ce6eb1b1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-08-20 (Learning & Development Writer):** No user-facing change — queue/time-log bookkeeping.
 
