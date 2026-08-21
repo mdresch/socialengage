@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-21 | 10:19 | — | — | Documentation | — | fix(core): improve LinkedIn credential parsing, profile fetching, and version handling (e31fe98) |
+| 2026-08-21 | 09:40 | — | — | Documentation | — | docs: sync tracking records (3f9024c) |
 | 2026-08-21 | 09:40 | — | — | Documentation | — | fix(core): enable configurable lookback and ingest historical Instagram posts (1713a09) |
 | 2026-08-21 | 08:56 | — | — | Documentation | — | docs: sync tracking records (6d5f5b8) |
 | 2026-08-21 | 08:56 | — | — | Documentation | — | fix(core): update scheduler test provider roster, refine reconnect_required derivation, and handle Graph API error bodies (3318b2b) |

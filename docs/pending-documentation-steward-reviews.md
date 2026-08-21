@@ -2079,3 +2079,9 @@
 - **Files touched:** social-listening-core/src/connectors/instagram/pollInstagram.ts
 - **Status:** Pending review
 
+## 2026-08-21 — e31fe98 — fix(core): improve LinkedIn credential parsing, profile fetching, and version handling
+
+- **Full commit:** `e31fe98e69ea14dfa2867fb0dfe569a09848ea93`
+- **Files touched:** social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/linkedin/pollLinkedIn.ts
+- **Status:** Pending review
+
