@@ -2073,3 +2073,9 @@
 - **Files touched:** social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
 - **Status:** Pending review
 
+## 2026-08-21 — 1713a09 — fix(core): enable configurable lookback and ingest historical Instagram posts
+
+- **Full commit:** `1713a095ae74641e7a627bcbfee82e241ce61cad`
+- **Files touched:** social-listening-core/src/connectors/instagram/pollInstagram.ts
+- **Status:** Pending review
+
