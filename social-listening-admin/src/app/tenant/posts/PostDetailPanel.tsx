@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { extractFacebookPageContext, type PostEnrichmentSummary } from './postDisplay';
+import { extractFacebookPageContext, extractInstagramContext, extractLinkedInContext, extractUrl, type PostEnrichmentSummary } from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 
 // ---------------------------------------------------------------------------
@@ -86,6 +86,64 @@ export function PostDetailPanel({
 
   return (
     <div className="pf-detail-body">
+      {/* Instagram Media & Carousel Gallery (Story 6.34, ADR-0068) */}
+      {(() => {
+        const igContext = extractInstagramContext(post.rawPayload);
+        if (!igContext) return null;
+        const hasChildren = igContext.children && igContext.children.length > 0;
+        const hasSingleMedia = !hasChildren && (igContext.thumbnailUrl || igContext.mediaUrl);
+        if (!hasChildren && !hasSingleMedia) return null;
+
+        return (
+          <div className="pf-detail-media-section">
+            <h3 className="pf-detail-section-title">
+              {hasChildren ? `Instagram Carousel Gallery (${igContext.children.length} items)` : 'Instagram Media'}
+            </h3>
+            {hasChildren ? (
+              <div className="pf-carousel-gallery" role="group" aria-label="Instagram Carousel Items">
+                {igContext.children.map((child, idx) => (
+                  <div key={child.id || idx} className="pf-carousel-item-wrapper">
+                    {(child.thumbnailUrl || child.mediaUrl) ? (
+                      <img
+                        src={child.thumbnailUrl || child.mediaUrl}
+                        alt={`Carousel item ${idx + 1}`}
+                        className="pf-carousel-thumbnail"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="pf-carousel-placeholder">
+                        <span>{child.mediaType || 'MEDIA'}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="pf-single-media-wrapper">
+                <img
+                  src={igContext.thumbnailUrl || igContext.mediaUrl || ''}
+                  alt={post.snippet || 'Instagram media'}
+                  className="pf-detail-media-preview"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            {igContext.childrenTruncated && (
+              <div className="pf-carousel-truncated-notice">
+                <a
+                  href={igContext.permalink || extractUrl(post.rawPayload) || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pf-gallery-link"
+                >
+                  View full gallery on Instagram →
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Full body */}
       {(post.bodyMarkdown || post.snippet) && (
         <div>
@@ -250,6 +308,56 @@ export function PostDetailPanel({
                 {fbContext.pageId && <code className="pf-page-id-code">(ID: {fbContext.pageId})</code>}
               </span>
             </div>
+          );
+        })()}
+        {(() => {
+          const igContext = extractInstagramContext(post.rawPayload);
+          if (!igContext || (!igContext.username && !igContext.igUserId)) return null;
+          return (
+            <div className="pf-telemetry-row">
+              <span>Hosting Instagram Account</span>
+              <span>
+                <strong>@{igContext.username ?? 'unknown'}</strong>
+                {igContext.igUserId && <code className="pf-page-id-code">(ID: {igContext.igUserId})</code>}
+                {igContext.pageName && <span className="pf-page-name-secondary"> via {igContext.pageName}</span>}
+              </span>
+            </div>
+          );
+        })()}
+        {(() => {
+          const liContext = extractLinkedInContext(post.rawPayload);
+          if (post.provider !== 'linkedin' && !liContext) return null;
+          const authorId = liContext?.memberId
+            ? (liContext.memberId.startsWith('linkedin:') ? liContext.memberId : `linkedin:${liContext.memberId}`)
+            : (typeof (post.rawPayload as Record<string, unknown>)?.authorUrn === 'string'
+              ? (post.rawPayload as Record<string, unknown>).authorUrn
+              : (typeof (post.rawPayload as Record<string, unknown>)?.authorExternalId === 'string'
+                ? (post.rawPayload as Record<string, unknown>).authorExternalId
+                : null));
+          const permalink = liContext?.permalink || extractUrl(post.rawPayload);
+          return (
+            <>
+              {authorId && (
+                <div className="pf-telemetry-row">
+                  <span>Author ID</span>
+                  <code>{authorId as string}</code>
+                </div>
+              )}
+              {liContext?.authorName && (
+                <div className="pf-telemetry-row">
+                  <span>LinkedIn Author</span>
+                  <span><strong>{liContext.authorName}</strong></span>
+                </div>
+              )}
+              {permalink && (
+                <div className="pf-telemetry-row">
+                  <span>Permalink</span>
+                  <a href={permalink} target="_blank" rel="noreferrer" className="pf-footer-ext-link">
+                    {permalink}
+                  </a>
+                </div>
+              )}
+            </>
           );
         })()}
       </div>

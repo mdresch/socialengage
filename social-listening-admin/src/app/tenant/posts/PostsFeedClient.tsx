@@ -74,6 +74,11 @@ const PROVIDER_LABELS: Record<string, string> = {
   newswire: 'Newswire',
   'tenant-owned-feed': 'Tenant Feed',
   wikipedia: 'Wikipedia',
+  facebook: 'Facebook',
+  'brave-search': 'Brave Search',
+  'bing-search': 'Bing Search',
+  instagram: 'Instagram Business',
+  linkedin: 'LinkedIn',
 };
 
 function providerLabel(providerId: string): string {
@@ -324,7 +329,13 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
               <div className="pf-post-card-meta">
                 <div className="pf-post-card-meta-left">
                   <span className={providerClass(post.provider)}>
-                    {post.provider === 'facebook' ? 'Facebook Page' : post.provider.replace(/_/g, ' ')}
+                    {post.provider === 'facebook'
+                      ? 'Facebook Page'
+                      : post.provider === 'instagram'
+                      ? 'Instagram Business'
+                      : post.provider === 'linkedin'
+                      ? 'LinkedIn'
+                      : post.provider.replace(/_/g, ' ')}
                   </span>
                   {post.provider === 'facebook' && post.pageName ? (
                     <>
@@ -335,6 +346,12 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                         <span className="pf-post-author">By: {post.author}</span>
                       )}
                     </>
+                  ) : post.provider === 'instagram' ? (
+                    <span className="pf-post-page-badge" title={`Instagram Account: @${post.instagramContext?.username || post.author || ''}`}>
+                      📍 @{post.instagramContext?.username || post.author}
+                    </span>
+                  ) : post.provider === 'linkedin' && post.author ? (
+                    <span className="pf-post-author">By: {post.author}</span>
                   ) : (
                     post.author && <span className="pf-post-author">{post.author}</span>
                   )}
@@ -360,6 +377,16 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
 
               {/* Title & snippet */}
               <h2 className="pf-post-card-title">{post.title}</h2>
+              {(post.instagramContext?.thumbnailUrl || post.instagramContext?.mediaUrl) && (
+                <div className="pf-post-media-preview">
+                  <img
+                    src={post.instagramContext.thumbnailUrl || post.instagramContext.mediaUrl || ''}
+                    alt={post.title}
+                    className="pf-media-thumbnail"
+                    loading="lazy"
+                  />
+                </div>
+              )}
               {(post.bodyMarkdown || post.snippet) && (
                 <p className="pf-post-card-snippet">
                   {post.bodyMarkdown ? (
@@ -372,8 +399,18 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                 </p>
               )}
 
-              {/* Enrichment chips */}
+              {/* Enrichment chips & engagement */}
               <div className="pf-post-card-footer">
+                {post.provider === 'instagram' && (post.instagramContext?.likeCount != null || post.instagramContext?.commentsCount != null) && (
+                  <span className="pf-chip-engagement">
+                    ❤️ {post.instagramContext?.likeCount ?? 0} · 💬 {post.instagramContext?.commentsCount ?? 0}
+                  </span>
+                )}
+                {post.provider === 'linkedin' && (post.linkedinContext?.reactionsCount != null || post.linkedinContext?.commentsCount != null || post.linkedinContext?.sharesCount != null) && (
+                  <span className="pf-chip-engagement">
+                    👍 {post.linkedinContext?.reactionsCount ?? 0} · 💬 {post.linkedinContext?.commentsCount ?? 0} · 🔄 {post.linkedinContext?.sharesCount ?? 0}
+                  </span>
+                )}
                 {post.enrichmentSummary?.sentiment && (
                   <span className={sentimentChipClass(post.enrichmentSummary.sentiment)}>
                     <span className={sentimentDotClass(post.enrichmentSummary.sentiment)} />
@@ -387,13 +424,13 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                     })()}
                   </span>
                 )}
-                {post.enrichmentSummary?.entities.slice(0, 2).map((ent) => (
+                {post.enrichmentSummary?.entities.slice(0, 3).map((ent) => (
                   <span key={ent} className="pf-chip-entity">
                     <IconBuilding />
                     <span>{ent}</span>
                   </span>
                 ))}
-                {post.enrichmentSummary?.keyPhrases.slice(0, 2).map((phrase) => (
+                {post.enrichmentSummary?.keyPhrases.slice(0, 3).map((phrase) => (
                   <span key={phrase} className="pf-chip-phrase">#{phrase}</span>
                 ))}
 

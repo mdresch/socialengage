@@ -130,6 +130,7 @@ export interface SentimentPost {
   author: string | null;
   sentiment: string | null;
   keyPhrases: string[];
+  entities: string[];
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
   language: string | null;
@@ -153,6 +154,7 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       author: extractAuthor(post.rawPayload),
       sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
       keyPhrases: enrichment?.keyPhrases ?? [],
+      entities: enrichment?.entities ?? [],
       title,
       language: enrichment?.language ?? null,
       providerId: extractProviderBadge(post.rawPayload),

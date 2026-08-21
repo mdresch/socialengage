@@ -105,6 +105,7 @@ describe('Story 8.2 — Sentiment tab', () => {
       // 2026-08-20, Story 8.10: SentimentPost gained geo fields (geoCountry,
       // geoCountryName, geoRegion, geoSource, geoConfidence) per ADR-0064 —
       // null on this fixture, matching the same extend-don't-weaken precedent.
+      // 2026-08-21: SentimentPost gained entities for drawer chip preview.
       expect(flat).toEqual([
         {
           id: 'a',
@@ -112,6 +113,7 @@ describe('Story 8.2 — Sentiment tab', () => {
           author: 'Acme Corp',
           sentiment: 'positive',
           keyPhrases: ['x'],
+          entities: [],
           title: 'Post a',
           language: null,
           providerId: 'gnews',

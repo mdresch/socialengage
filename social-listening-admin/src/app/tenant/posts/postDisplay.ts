@@ -28,36 +28,22 @@ export function extractUrl(rawPayload: unknown): string | null {
     if (typeof p.url === 'string') return p.url;
     if (typeof p.link === 'string') return p.link;
     if (typeof p.permalink_url === 'string') return p.permalink_url;
+    if (typeof p.permalink === 'string') return p.permalink;
+    if (typeof p.postUrl === 'string') return p.postUrl;
   }
   return null;
 }
 
 /**
- * Extracts `author` (or `source.name`) from rawPayload, best-effort.
- *
- * Found live 2026-08-20 (real, confirmed regression, not previously caught
- * by any contract): the Newswire connector (ADR-0024, "issuer-as-Author")
- * deliberately treats the feed item's `<dc:contributor>` issuing
- * organization as the post's author — `rawPayload.issuer` — but this
- * function never read that field, so every real Newswire post's author was
- * silently rendering blank everywhere `extractAuthor()` feeds a display
- * (post cards, drawer rows, search-by-author). `story-6.11...contract.test`
- * even carried a fixture with `issuer: 'Acme Corp'` set for exactly this
- * case, unused until now.
- *
- * Same-day follow-up, also found live: Facebook's own `rawPayload` never
- * carried the connected Page's name at all (ADR-0059 Decision §5, "Page is
- * the Author" — the Page's name only ever reached the separate `authors`
- * table, which this admin has no endpoint to resolve). Fixed at the source
- * (`social-listening-core`'s `pollFacebook.ts` now denormalizes
- * `pageId`/`pageName` into `rawPayload`, the same connector-side change
- * that made Newswire's `issuer` fallback above meaningful) — this function
- * just needed the matching `pageName` branch to pick it up.
+ * Extracts `author` (or `source.name` / `username`) from rawPayload, best-effort.
  */
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.author === 'string') return p.author;
+    if (typeof p.authorName === 'string') return p.authorName;
+    if (typeof p.memberName === 'string') return p.memberName;
+    if (typeof p.username === 'string') return p.username;
     if (typeof p.issuer === 'string') return p.issuer;
     if (typeof p.pageName === 'string') return p.pageName;
     if (p.source && typeof p.source === 'object') {
@@ -70,21 +56,7 @@ export function extractAuthor(rawPayload: unknown): string | null {
 
 /**
  * `rawPayload` is heterogeneous per connector (GNews: title+description;
- * Newswire/tenant-owned-feed: title+link) — this only ever looks for a
- * `title` field (optionally `description`), never branches on providerId,
- * so any current or future connector whose posts have a title "just works"
- * without a new case here. Anything without a recognizable title falls back
- * to the raw JSON rather than rendering nothing.
- *
- * Found live 2026-08-18 (real, confirmed regression, not previously caught
- * by any contract): Facebook (Story 2.15/ADR-0059, shipped after this
- * function was written) has no `title` field at all — its own posts carry
- * `message` (the Page post's own text). Every real Facebook post in the
- * feed was silently falling all the way through to the raw-JSON fallback
- * — a genuinely new *shape* per this doc's own "how to extend this safely"
- * rule, not the "no recognizable title, degrade honestly" case the
- * fallback exists for. `permalink_url` (Facebook's own post URL) covers
- * the media-only-post edge case where `message` is empty/absent.
+ * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary).
  */
 export function extractDisplayText(rawPayload: unknown): DisplayText {
   if (rawPayload && typeof rawPayload === 'object') {
@@ -92,11 +64,20 @@ export function extractDisplayText(rawPayload: unknown): DisplayText {
     if (typeof p.title === 'string') {
       return { title: p.title, snippet: typeof p.description === 'string' ? p.description : null };
     }
+    if (typeof p.commentary === 'string' && p.commentary.length > 0) {
+      return { title: p.commentary, snippet: null };
+    }
+    if (typeof p.caption === 'string' && p.caption.length > 0) {
+      return { title: p.caption, snippet: null };
+    }
     if (typeof p.message === 'string' && p.message.length > 0) {
       return { title: p.message, snippet: null };
     }
     if (typeof p.permalink_url === 'string') {
       return { title: p.permalink_url, snippet: null };
+    }
+    if (typeof p.permalink === 'string') {
+      return { title: p.permalink, snippet: null };
     }
   }
   return { title: JSON.stringify(rawPayload), snippet: null };
@@ -279,6 +260,105 @@ export function extractFacebookPageContext(rawPayload: unknown): FacebookPageCon
   return null;
 }
 
+export interface InstagramMediaChild {
+  id: string;
+  mediaType: string;
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+}
+
+export interface InstagramContext {
+  igUserId: string | null;
+  username: string | null;
+  pageId: string | null;
+  pageName: string | null;
+  mediaType: string | null;
+  mediaUrl: string | null;
+  thumbnailUrl: string | null;
+  permalink: string | null;
+  likeCount: number | null;
+  commentsCount: number | null;
+  children: InstagramMediaChild[];
+  childrenTruncated: boolean;
+}
+
+/**
+ * Story 6.34 (ADR-0068) — extracts Instagram Business context and carousel items.
+ */
+export function extractInstagramContext(rawPayload: unknown): InstagramContext | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    const igUserId = typeof p.igUserId === 'string' ? p.igUserId : null;
+    const username = typeof p.username === 'string' ? p.username : null;
+    if (igUserId || username || p.providerId === 'instagram') {
+      const pageId = typeof p.pageId === 'string' ? p.pageId : null;
+      const pageName = typeof p.pageName === 'string' ? p.pageName : null;
+      const mediaType = typeof p.mediaType === 'string' ? p.mediaType : null;
+      const mediaUrl = typeof p.mediaUrl === 'string' ? p.mediaUrl : null;
+      const thumbnailUrl = typeof p.thumbnailUrl === 'string' ? p.thumbnailUrl : null;
+      const permalink = typeof p.permalink === 'string' ? p.permalink : null;
+      const likeCount = typeof p.likeCount === 'number' ? p.likeCount : null;
+      const commentsCount = typeof p.commentsCount === 'number' ? p.commentsCount : null;
+      const children = Array.isArray(p.children) ? (p.children as InstagramMediaChild[]) : [];
+      const childrenTruncated = p.childrenTruncated === true;
+      return {
+        igUserId,
+        username,
+        pageId,
+        pageName,
+        mediaType,
+        mediaUrl,
+        thumbnailUrl,
+        permalink,
+        likeCount,
+        commentsCount,
+        children,
+        childrenTruncated,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Story 6.35 — LinkedIn post and author metadata context.
+ */
+export interface LinkedInContext {
+  authorName?: string;
+  memberId?: string;
+  authorUrn?: string;
+  reactionsCount?: number;
+  commentsCount?: number;
+  sharesCount?: number;
+  permalink?: string;
+}
+
+export function extractLinkedInContext(rawPayload: unknown): LinkedInContext | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    if (p.providerId === 'linkedin' || typeof p.authorUrn === 'string' || typeof p.memberId === 'string') {
+      const authorName = typeof p.authorName === 'string' ? p.authorName : (typeof p.memberName === 'string' ? p.memberName : undefined);
+      const memberId = typeof p.memberId === 'string' ? p.memberId : (typeof p.authorExternalId === 'string' ? p.authorExternalId.replace(/^linkedin:/, '') : undefined);
+      const authorUrn = typeof p.authorUrn === 'string' ? p.authorUrn : (memberId ? `urn:li:person:${memberId}` : undefined);
+      const reactionsCount = typeof p.reactionsCount === 'number' ? p.reactionsCount : (typeof p.likeCount === 'number' ? p.likeCount : undefined);
+      const commentsCount = typeof p.commentsCount === 'number' ? p.commentsCount : undefined;
+      const sharesCount = typeof p.sharesCount === 'number' ? p.sharesCount : (typeof p.repostsCount === 'number' ? p.repostsCount : undefined);
+      const permalink = typeof p.permalink === 'string' ? p.permalink : (typeof p.url === 'string' ? p.url : undefined);
+
+      return {
+        authorName,
+        memberId,
+        authorUrn,
+        reactionsCount,
+        commentsCount,
+        sharesCount,
+        permalink,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * 2026-08-19 — moved here from PostsFeedClient.tsx (its original home) so the
  * Analytics Overview tab's own post-detail drawer, a second, sibling call
@@ -302,12 +382,16 @@ export interface FlatPost {
   author: string | null;
   pageName: string | null;
   pageId: string | null;
+  instagramContext: InstagramContext | null;
+  linkedinContext: LinkedInContext | null;
   enrichmentSummary: PostEnrichmentSummary | null;
 }
 
 export function flattenPost(post: SocialPostSummary): FlatPost {
   const { title, snippet } = extractDisplayText(post.rawPayload);
   const fbContext = extractFacebookPageContext(post.rawPayload);
+  const igContext = extractInstagramContext(post.rawPayload);
+  const liContext = extractLinkedInContext(post.rawPayload);
   return {
     ...post,
     bodyMarkdown: post.bodyMarkdown ?? null,
@@ -316,8 +400,10 @@ export function flattenPost(post: SocialPostSummary): FlatPost {
     provider: extractProviderBadge(post.rawPayload),
     url: extractUrl(post.rawPayload),
     author: extractAuthor(post.rawPayload),
-    pageName: fbContext?.pageName ?? null,
-    pageId: fbContext?.pageId ?? null,
+    pageName: fbContext?.pageName ?? igContext?.pageName ?? null,
+    pageId: fbContext?.pageId ?? igContext?.pageId ?? null,
+    instagramContext: igContext,
+    linkedinContext: liContext,
     enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,
   };
 }

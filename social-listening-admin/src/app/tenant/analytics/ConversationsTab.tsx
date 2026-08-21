@@ -13,6 +13,24 @@ interface ConversationsTabProps {
 
 const LINE_COLORS = ['#2563eb', '#15803d', '#d97706', '#7c3aed', '#dc2626'];
 
+function IconSparkles() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v1M12 20v1M4.22 4.22l.7.7M18.36 18.36l.7.7M1 12h1M21 12h1M4.22 19.78l.7-.7M18.36 5.64l.7-.7" />
+      <path d="M12 8a4 4 0 1 0 4 4A4 4 0 0 0 12 8z" />
+    </svg>
+  );
+}
+
+function IconTag() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </svg>
+  );
+}
+
 /** Word-cloud size tier — relative to the top (already sorted-descending) real count, never an absolute/fabricated scale. */
 function sizeTier(count: number, maxCount: number): 'an-phrase-cloud-xl' | 'an-phrase-cloud-lg' | 'an-phrase-cloud-md' | 'an-phrase-cloud-sm' {
   if (maxCount === 0) return 'an-phrase-cloud-sm';
@@ -159,14 +177,34 @@ export function ConversationsTab({ summary, range }: ConversationsTabProps) {
           <EmptyState heading="No matching posts" />
         ) : (
           <ul className="an-drawer-post-list">
-            {filteredPosts.map((post) => (
-              <li key={post.id} className="an-drawer-post-row">
-                <span className="an-drawer-post-title">{post.title}</span>
-                <span className="an-drawer-post-meta">
-                  {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
-                </span>
-              </li>
-            ))}
+            {filteredPosts.map((post) => {
+              const first3Entities = (post.entities ?? []).slice(0, 3);
+              const first3Phrases = (post.keyPhrases ?? []).slice(0, 3);
+              return (
+                <li key={post.id} className="an-drawer-post-row">
+                  <span className="an-drawer-post-title">{post.title}</span>
+                  <span className="an-drawer-post-meta">
+                    {post.author && <span className="an-drawer-post-author" title={`Author: ${post.author}`}>By {post.author}</span>}
+                    {post.sentiment && <span className={`an-sentiment-mini-${post.sentiment}`}>{post.sentiment}</span>}
+                    {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
+                  </span>
+                  {(first3Entities.length > 0 || first3Phrases.length > 0) && (
+                    <span className="an-drawer-post-chips">
+                      {first3Entities.map((ent, i) => (
+                        <span key={`ent-${i}`} className="an-drawer-chip an-drawer-chip-entity" title={`Entity: ${ent}`}>
+                          <IconTag /> {ent}
+                        </span>
+                      ))}
+                      {first3Phrases.map((phrase, i) => (
+                        <span key={`phr-${i}`} className="an-drawer-chip an-drawer-chip-phrase" title={`Key Phrase: ${phrase}`}>
+                          <IconSparkles /> #{phrase}
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </Slideover>
