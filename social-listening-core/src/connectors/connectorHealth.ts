@@ -179,13 +179,12 @@ export async function deriveConnectorHealth(
     const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
 
     // Strict precedence order (ADR-0070 §2):
-    // 1. reconnect_required (credential failure on runs[0] occurring AFTER current credential issuance OR revoked/expired credentialStatus)
-    const isCredentialRevoked = credentialStatus === 'expired' || credentialStatus === 'revoked';
+    // 1. reconnect_required (credential failure on runs[0] occurring AFTER current credential issuance)
     const isLatestRunCredentialFailure =
       runs[0].status === 'failed' &&
       runs[0].is_credential_failure === true &&
       (!credentialCreatedAt || runs[0].started_at >= credentialCreatedAt);
-    const isReconnectRequired = isLatestRunCredentialFailure || isCredentialRevoked;
+    const isReconnectRequired = isLatestRunCredentialFailure;
 
     // 2. failing (rate or ceiling)
     const isFailing = rateFailing || ceilingFailing;

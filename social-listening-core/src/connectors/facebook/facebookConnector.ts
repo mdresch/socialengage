@@ -100,15 +100,30 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
     throw new ClassifiableError('network', `Failed to reach Facebook Graph API (${context}): ${(err as Error).message}`);
   }
 
+  let body: Record<string, unknown> | null = null;
+  try {
+    body = (await response.json()) as Record<string, unknown>;
+  } catch {
+    // Non-JSON response, rely on classifyResponse below
+  }
+
+  if (body && typeof body === 'object' && 'error' in body) {
+    const error = (body as FacebookApiError).error;
+    if (error) {
+      const code = error.code;
+      if (code === 190 || code === 10 || code === 100) {
+        throw new ClassifiableError('http_401', `Facebook API auth error ${code} (${context}): ${error.type} — ${error.message}`);
+      }
+      if (code === 4 || code === 17) {
+        throw new ClassifiableError('rate_limit', `Facebook API rate limit error ${code} (${context}): ${error.type} — ${error.message}`);
+      }
+      throw new ClassifiableError('network', `Facebook API error (${context}): ${error.type} — ${error.message}`);
+    }
+  }
+
   classifyResponse(response, context);
 
-  const body = (await response.json()) as FacebookApiError;
-  if (body.error) {
-    const code = body.error.code;
-    if (code === 190) throw new ClassifiableError('http_401', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
-    throw new ClassifiableError('network', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
-  }
-  return body as Record<string, unknown>;
+  return (body ?? {}) as Record<string, unknown>;
 }
 
 /**

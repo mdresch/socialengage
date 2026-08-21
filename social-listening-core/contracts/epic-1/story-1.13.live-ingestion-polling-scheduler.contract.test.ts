@@ -61,6 +61,10 @@ import { TENANT_OWNED_FEED_PROVIDER_ID } from '../../src/connectors/tenantOwnedF
 import { pollTenantOwnedFeed } from '../../src/connectors/tenantOwnedFeed/pollTenantOwnedFeed';
 import { WIKIPEDIA_PROVIDER_ID } from '../../src/connectors/wikipedia/wikipediaConnector';
 import { FACEBOOK_PROVIDER_ID } from '../../src/connectors/facebook/facebookConnector';
+import { BRAVE_SEARCH_PROVIDER_ID } from '../../src/connectors/braveSearch/braveSearchConnector';
+import { BING_SEARCH_PROVIDER_ID } from '../../src/connectors/bingSearch/bingSearchConnector';
+import { INSTAGRAM_PROVIDER_ID } from '../../src/connectors/instagram/instagramConnector';
+import { LINKEDIN_PROVIDER_ID } from '../../src/connectors/linkedin/linkedinConnector';
 import { bootstrapConnectors } from '../../src/connectors/bootstrapConnectors';
 import { SocialConnector } from '../../src/connectors/types';
 import {
@@ -161,7 +165,17 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
       // check, it is the same invariant restated to admit the new,
       // ADR-0061-sanctioned shape.
       expect(providerIds).toEqual(
-        [GNEWS_PROVIDER_ID, NEWSWIRE_PROVIDER_ID, TENANT_OWNED_FEED_PROVIDER_ID, WIKIPEDIA_PROVIDER_ID, FACEBOOK_PROVIDER_ID].sort()
+        [
+          GNEWS_PROVIDER_ID,
+          NEWSWIRE_PROVIDER_ID,
+          TENANT_OWNED_FEED_PROVIDER_ID,
+          WIKIPEDIA_PROVIDER_ID,
+          FACEBOOK_PROVIDER_ID,
+          BRAVE_SEARCH_PROVIDER_ID,
+          BING_SEARCH_PROVIDER_ID,
+          INSTAGRAM_PROVIDER_ID,
+          LINKEDIN_PROVIDER_ID,
+        ].sort()
       );
       for (const connector of registered) {
         expect(connector.deliveryMode).toBe('poll');
