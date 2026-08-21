@@ -24,6 +24,7 @@ export function PlatformPreviewRails({
   selectedPlatforms,
   getTextForPlatform,
   getMediaForPlatform,
+  linkPreview,
 }: PlatformPreviewRailsProps) {
   const [layoutMode, setLayoutMode] = useState<'grid' | 'tabs'>('grid');
   const [activeTab, setActiveTab] = useState<SupportedPlatform>(

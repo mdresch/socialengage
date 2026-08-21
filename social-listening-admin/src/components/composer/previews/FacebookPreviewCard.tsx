@@ -4,13 +4,17 @@ import type { PlatformConfig, MediaAttachment } from '../types';
 import { flattenMentionTokens } from '../lib/mentions';
 import { countCharacters } from '../lib/counting';
 
+import { CardLinkPreview } from '../CardLinkPreview';
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface FacebookPreviewCardProps {
   config: PlatformConfig;
   text: string;
   media: MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
-export function FacebookPreviewCard({ config, text, media }: FacebookPreviewCardProps) {
+export function FacebookPreviewCard({ config, text, media, linkPreview }: FacebookPreviewCardProps) {
   const author = config.defaultAuthor;
 
   const processedText = flattenMentionTokens(text, { collapseSpaces: false });
@@ -75,8 +79,8 @@ export function FacebookPreviewCard({ config, text, media }: FacebookPreviewCard
         </div>
       </div>
 
-      {/* Media Box */}
-      {media && media.length > 0 && (
+      {/* Media Box or Link Preview */}
+      {media && media.length > 0 ? (
         <div className="preview-media-frame">
           <img
             src={media[0].url}
@@ -84,7 +88,11 @@ export function FacebookPreviewCard({ config, text, media }: FacebookPreviewCard
             style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
           />
         </div>
-      )}
+      ) : linkPreview ? (
+        <div style={{ padding: '0 var(--space-3)' }}>
+          <CardLinkPreview data={linkPreview} />
+        </div>
+      ) : null}
 
       {/* Facebook Actions Bar */}
       <div className="preview-actions-bar">

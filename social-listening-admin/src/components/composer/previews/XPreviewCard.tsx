@@ -4,13 +4,17 @@ import type { PlatformConfig, MediaAttachment } from '../types';
 import { flattenMentionTokens } from '../lib/mentions';
 import { countCharacters } from '../lib/counting';
 
+import { CardLinkPreview } from '../CardLinkPreview';
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface XPreviewCardProps {
   config: PlatformConfig;
   text: string;
   media: MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
-export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
+export function XPreviewCard({ config, text, media, linkPreview }: XPreviewCardProps) {
   const author = config.defaultAuthor;
 
   // Collapse spaces for X handle mentions (@Scott Hanselman -> @ScottHanselman)
@@ -116,12 +120,14 @@ export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
               )}
             </div>
 
-            {/* Media Attachment */}
-            {media && media.length > 0 && (
+            {/* Media Attachment or Link Preview */}
+            {media && media.length > 0 ? (
               <div style={{ marginTop: 'var(--space-2)', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
                 <img src={media[0].url} alt="Tweet attachment" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', display: 'block' }} />
               </div>
-            )}
+            ) : linkPreview ? (
+              <CardLinkPreview data={linkPreview} />
+            ) : null}
 
             {/* Tweet Action Icons */}
             <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: 'var(--space-4)', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>

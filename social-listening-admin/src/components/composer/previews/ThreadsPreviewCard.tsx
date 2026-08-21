@@ -4,13 +4,17 @@ import type { PlatformConfig, MediaAttachment } from '../types';
 import { flattenMentionTokens } from '../lib/mentions';
 import { countCharacters } from '../lib/counting';
 
+import { CardLinkPreview } from '../CardLinkPreview';
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface ThreadsPreviewCardProps {
   config: PlatformConfig;
   text: string;
   media: MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
-export function ThreadsPreviewCard({ config, text, media }: ThreadsPreviewCardProps) {
+export function ThreadsPreviewCard({ config, text, media, linkPreview }: ThreadsPreviewCardProps) {
   const author = config.defaultAuthor;
 
   const processedText = flattenMentionTokens(text, { collapseSpaces: true });
@@ -71,11 +75,14 @@ export function ThreadsPreviewCard({ config, text, media }: ThreadsPreviewCardPr
               {processedText ? processedText : <span style={{ color: 'var(--color-text-disabled)', fontStyle: 'italic' }}>Say more on Threads...</span>}
             </div>
 
-            {media && media.length > 0 && (
+            {/* Media or Link Preview */}
+            {media && media.length > 0 ? (
               <div style={{ marginTop: 'var(--space-2)', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
                 <img src={media[0].url} alt="Threads media" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', display: 'block' }} />
               </div>
-            )}
+            ) : linkPreview ? (
+              <CardLinkPreview data={linkPreview} />
+            ) : null}
 
             {/* Actions */}
             <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: 'var(--space-4)', fontSize: '0.875rem' }}>
