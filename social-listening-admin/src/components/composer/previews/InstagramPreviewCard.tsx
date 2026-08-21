@@ -5,13 +5,16 @@ import type { PlatformConfig, MediaAttachment } from '../types';
 import { flattenMentionTokens } from '../lib/mentions';
 import { countCharacters } from '../lib/counting';
 
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface InstagramPreviewCardProps {
   config: PlatformConfig;
   text: string;
   media: MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
-export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCardProps) {
+export function InstagramPreviewCard({ config, text, media, linkPreview }: InstagramPreviewCardProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const author = config.defaultAuthor;
 
@@ -102,6 +105,12 @@ export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCa
           <img
             src={media[activeSlide]?.url || media[0].url}
             alt="Instagram square media"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : linkPreview?.image ? (
+          <img
+            src={linkPreview.image}
+            alt={linkPreview.title}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (

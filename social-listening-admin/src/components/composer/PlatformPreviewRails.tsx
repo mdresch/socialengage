@@ -45,7 +45,7 @@ export function PlatformPreviewRails({
       case 'linkedin':
         return <LinkedInPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'instagram':
-        return <InstagramPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <InstagramPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'facebook':
         return <FacebookPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'twitter':

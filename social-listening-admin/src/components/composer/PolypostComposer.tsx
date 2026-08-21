@@ -50,6 +50,8 @@ export function PolypostComposer({
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const imageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Autosave on changes
   useEffect(() => {
@@ -257,6 +259,67 @@ export function PolypostComposer({
     }
   };
 
+  // Local Image File Upload
+  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          const newMedia: MediaAttachment = {
+            id: `media-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            url: result,
+            altText: file.name.replace(/\.[^/.]+$/, ''),
+            type: 'image',
+          };
+          setMedia((prev) => [...prev, newMedia]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            const newMedia: MediaAttachment = {
+              id: `media-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              url: result,
+              altText: file.name.replace(/\.[^/.]+$/, ''),
+              type: 'image',
+            };
+            setMedia((prev) => [...prev, newMedia]);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
+
   // Add media URL
   const handleAddMedia = () => {
     if (!mediaInputUrl.trim()) return;
@@ -288,6 +351,12 @@ export function PolypostComposer({
 
   const handleRemoveMedia = (id: string) => {
     setMedia((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleUpdateAltText = (id: string, altText: string) => {
+    setMedia((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, altText } : m))
+    );
   };
 
   // Quick insert hashtags
@@ -340,6 +409,16 @@ export function PolypostComposer({
         ref={fileInputRef}
         onChange={handleFileUpload}
         accept=".txt,.md,.markdown,.docx"
+        style={{ display: 'none' }}
+      />
+
+      {/* Hidden File Input for Images */}
+      <input
+        type="file"
+        ref={imageFileInputRef}
+        onChange={handleLocalImageUpload}
+        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
+        multiple
         style={{ display: 'none' }}
       />
 
@@ -665,16 +744,47 @@ export function PolypostComposer({
             </div>
           )}
 
-          {/* Text Area */}
-          <div>
+          {/* Text Area / Drag and Drop Zone */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+              position: 'relative',
+              borderRadius: 'var(--radius)',
+              border: isDragging ? '2px dashed var(--color-accent)' : 'none',
+              background: isDragging ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
+              transition: 'all 120ms ease',
+            }}
+          >
             <textarea
               ref={textareaRef}
               rows={7}
               value={currentText}
               onChange={(e) => updateCurrentText(e.target.value)}
-              placeholder="Draft your post once... Type @[Name] for cross-platform mentions, use the formatting bar for Unicode styling, or add media."
+              placeholder="Draft your post once... Type @[Name] for cross-platform mentions, use the formatting bar for Unicode styling, or drag & drop images."
               className="composer-textarea"
             />
+            {isDragging && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  backdropFilter: 'blur(2px)',
+                  borderRadius: 'var(--radius)',
+                  pointerEvents: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  color: 'var(--color-accent)',
+                }}
+              >
+                📸 Drop images to attach to post
+              </div>
+            )}
           </div>
 
           {/* Detected Link Preview Card */}
@@ -706,8 +816,20 @@ export function PolypostComposer({
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <button
                 type="button"
+                onClick={() => imageFileInputRef.current?.click()}
+                className="composer-btn-secondary"
+                style={{ fontWeight: 600, color: 'var(--color-accent)' }}
+                title="Upload images from your computer"
+              >
+                <span>📷</span>
+                <span>Upload Images</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowMediaInput(!showMediaInput)}
                 className="composer-btn-secondary"
+                title="Attach image from web URL"
               >
                 <span>🔗</span>
                 <span>Image URL</span>
@@ -717,6 +839,7 @@ export function PolypostComposer({
                 type="button"
                 onClick={handleAddSampleImage}
                 className="composer-btn-secondary"
+                title="Insert test photo"
               >
                 <span>🖼️</span>
                 <span>Sample Image</span>
@@ -752,16 +875,34 @@ export function PolypostComposer({
               </div>
               <div className="composer-media-strip">
                 {media.map((item, idx) => (
-                  <div key={item.id} className="composer-media-thumb">
-                    <img src={item.url} alt="Attachment" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMedia(item.id)}
-                      className="composer-media-remove"
-                      title="Remove"
-                    >
-                      ×
-                    </button>
+                  <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div className="composer-media-thumb">
+                      <img src={item.url} alt={item.altText || 'Attachment'} />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMedia(item.id)}
+                        className="composer-media-remove"
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={item.altText || ''}
+                      onChange={(e) => handleUpdateAltText(item.id, e.target.value)}
+                      placeholder="Alt text"
+                      style={{
+                        width: 72,
+                        fontSize: '0.625rem',
+                        padding: '1px 3px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg)',
+                        color: 'var(--color-text)',
+                      }}
+                      title="Describe this image (alt text)"
+                    />
                   </div>
                 ))}
               </div>
