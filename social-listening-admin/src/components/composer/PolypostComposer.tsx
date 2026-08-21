@@ -105,12 +105,11 @@ export function PolypostComposer({
     setPublishStatus(null);
 
     try {
-      // Simulate dispatching across connected platforms
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       setPublishStatus({
         type: 'success',
-        message: `Successfully scheduled/published post to ${selectedPlatforms
+        message: `Successfully dispatched post to ${selectedPlatforms
           .map((p) => PLATFORM_CONFIGS[p].name)
           .join(', ')}!`,
       });
@@ -126,21 +125,21 @@ export function PolypostComposer({
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start font-sans">
-      {/* Left Column: Authoring Studio (7 cols on desktop) */}
-      <div className="xl:col-span-7 space-y-5">
+    <div className="composer-root">
+      {/* Left Column: Authoring Studio */}
+      <div className="composer-studio">
         {/* Target Platforms Card */}
-        <div className="bg-white dark:bg-[#1c1f26] border border-slate-200 dark:border-[#30343d] rounded-lg p-4 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-[#9aa2b1]">
+        <div className="composer-card">
+          <div className="composer-card-header">
+            <h4 className="composer-section-title">
               Target Distribution Platforms
-            </label>
-            <span className="text-xs text-slate-500 dark:text-[#9aa2b1]">
-              {selectedPlatforms.length} of {Object.keys(PLATFORM_CONFIGS).length} selected
+            </h4>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+              {selectedPlatforms.length} of {Object.keys(PLATFORM_CONFIGS).length} active
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="composer-platform-chips">
             {(Object.keys(PLATFORM_CONFIGS) as SupportedPlatform[]).map((platformKey) => {
               const config = PLATFORM_CONFIGS[platformKey];
               const isSelected = selectedPlatforms.includes(platformKey);
@@ -149,22 +148,14 @@ export function PolypostComposer({
                   key={platformKey}
                   type="button"
                   onClick={() => togglePlatform(platformKey)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-2 ${
-                    isSelected
-                      ? `${config.badgeBg} font-semibold ring-1 ring-offset-0 ring-blue-500/40 shadow-xs`
-                      : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-[#141a29] dark:text-[#9aa2b1] dark:border-[#30343d] hover:bg-slate-100 dark:hover:bg-slate-800 opacity-70'
-                  }`}
+                  className={`composer-chip ${isSelected ? 'composer-chip-active' : ''}`}
                 >
                   <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: isSelected ? config.color : '#94a3b8' }}
+                    className="composer-chip-dot"
+                    style={{ backgroundColor: isSelected ? config.color : 'var(--color-text-disabled)' }}
                   />
                   <span>{config.name}</span>
-                  {isSelected && (
-                    <svg className="w-3.5 h-3.5 ml-0.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
+                  {isSelected && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>✓</span>}
                 </button>
               );
             })}
@@ -172,19 +163,21 @@ export function PolypostComposer({
         </div>
 
         {/* Main Editor Card */}
-        <div className="bg-white dark:bg-[#1c1f26] border border-slate-200 dark:border-[#30343d] rounded-lg p-4 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-[#eef0f3]">
+        <div className="composer-card">
+          <div className="composer-card-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <h4 className="composer-section-title" style={{ color: 'var(--color-text)' }}>
                 Primary Post Draft
+              </h4>
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                (Live syncs to all selected channels)
               </span>
-              <span className="text-xs text-slate-400 dark:text-[#9aa2b1]">(Syncs to all selected channels)</span>
             </div>
 
             {/* Platform Override Selector */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-slate-400 dark:text-[#9aa2b1]">Override:</span>
-              <div className="flex gap-1">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+              <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>Override:</span>
+              <div style={{ display: 'flex', gap: 4 }}>
                 {selectedPlatforms.map((p) => {
                   const hasOverride = platformOverrides[p]?.text !== undefined;
                   const isCurrent = activeOverrideTab === p;
@@ -194,13 +187,24 @@ export function PolypostComposer({
                       type="button"
                       onClick={() => setActiveOverrideTab(isCurrent ? null : p)}
                       title={`Customize copy for ${PLATFORM_CONFIGS[p].name}`}
-                      className={`text-xs px-2 py-0.5 rounded font-medium border transition-colors ${
-                        isCurrent
-                          ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent'
+                      style={{
+                        fontSize: '0.6875rem',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: isCurrent
+                          ? 'var(--color-accent)'
                           : hasOverride
-                          ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
-                          : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-[#141a29] dark:text-[#9aa2b1] dark:border-[#30343d]'
-                      }`}
+                          ? 'rgba(217, 119, 6, 0.15)'
+                          : 'var(--color-bg)',
+                        color: isCurrent
+                          ? 'var(--color-accent-contrast)'
+                          : hasOverride
+                          ? 'var(--color-warning)'
+                          : 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        fontWeight: isCurrent || hasOverride ? 600 : 400,
+                      }}
                     >
                       {PLATFORM_CONFIGS[p].name.split(' ')[0]}
                       {hasOverride && ' *'}
@@ -213,9 +217,9 @@ export function PolypostComposer({
 
           {/* Active Override Banner */}
           {activeOverrideTab && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-md p-2.5 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">⚡ Editing custom override for {PLATFORM_CONFIGS[activeOverrideTab].name}</span>
+            <div className="composer-override-banner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span>⚡ <strong>Editing custom copy for {PLATFORM_CONFIGS[activeOverrideTab].name}</strong></span>
               </div>
               <button
                 type="button"
@@ -227,7 +231,14 @@ export function PolypostComposer({
                   });
                   setActiveOverrideTab(null);
                 }}
-                className="text-amber-700 hover:text-amber-900 dark:text-amber-300 underline text-xs font-medium"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--color-warning)',
+                  textDecoration: 'underline',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                }}
               >
                 Reset to unified draft
               </button>
@@ -235,7 +246,7 @@ export function PolypostComposer({
           )}
 
           {/* Text Area */}
-          <div className="relative">
+          <div>
             <textarea
               rows={6}
               value={activeOverrideTab ? platformOverrides[activeOverrideTab]?.text ?? mainText : mainText}
@@ -254,21 +265,21 @@ export function PolypostComposer({
                 }
               }}
               placeholder="What would you like to share across your social channels? Type your post here..."
-              className="w-full bg-slate-50 dark:bg-[#14161a] border border-slate-200 dark:border-[#30343d] rounded-md p-3.5 text-sm text-slate-900 dark:text-[#eef0f3] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y leading-relaxed font-sans"
+              className="composer-textarea"
             />
           </div>
 
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-[#30343d]">
+          <div className="composer-toolbar">
             {/* Quick Hashtags */}
-            <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-1">
-              <span className="text-slate-400 dark:text-[#9aa2b1] font-medium">Add tag:</span>
+            <div className="composer-tag-list">
+              <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>Add tag:</span>
               {['#AI', '#SocialListening', '#Marketing', '#ProductUpdate', '#Innovation'].map((tag) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => insertHashtag(tag)}
-                  className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#141a29] dark:hover:bg-slate-800 text-slate-700 dark:text-[#9aa2b1] border border-slate-200 dark:border-[#30343d] transition-colors"
+                  className="composer-tag-chip"
                 >
                   {tag}
                 </button>
@@ -276,22 +287,20 @@ export function PolypostComposer({
             </div>
 
             {/* Media Upload Buttons */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <button
                 type="button"
                 onClick={() => setShowMediaInput(!showMediaInput)}
-                className="px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#30343d] bg-white dark:bg-[#1c1f26] text-xs font-medium text-slate-700 dark:text-[#eef0f3] hover:bg-slate-50 dark:hover:bg-[#141a29] transition-colors flex items-center gap-1.5"
+                className="composer-btn-secondary"
               >
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
+                <span>🔗</span>
                 <span>Image URL</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleAddSampleImage}
-                className="px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#30343d] bg-white dark:bg-[#1c1f26] text-xs font-medium text-slate-700 dark:text-[#eef0f3] hover:bg-slate-50 dark:hover:bg-[#141a29] transition-colors flex items-center gap-1.5"
+                className="composer-btn-secondary"
               >
                 <span>🖼️</span>
                 <span>Sample Image</span>
@@ -301,18 +310,18 @@ export function PolypostComposer({
 
           {/* Media URL Input Box */}
           {showMediaInput && (
-            <div className="flex gap-2 p-2.5 bg-slate-50 dark:bg-[#14161a] rounded-md border border-slate-200 dark:border-[#30343d]">
+            <div style={{ display: 'flex', gap: 'var(--space-2)', padding: 'var(--space-2)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
               <input
                 type="url"
                 value={mediaInputUrl}
                 onChange={(e) => setMediaInputUrl(e.target.value)}
                 placeholder="Paste image URL (https://...)"
-                className="flex-1 text-xs bg-white dark:bg-[#1c1f26] border border-slate-300 dark:border-[#30343d] rounded px-2.5 py-1.5 text-slate-900 dark:text-[#eef0f3] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                style={{ flex: 1, fontSize: '0.8125rem' }}
               />
               <button
                 type="button"
                 onClick={handleAddMedia}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition-colors"
+                className="composer-btn-primary"
               >
                 Add Image
               </button>
@@ -321,23 +330,22 @@ export function PolypostComposer({
 
           {/* Media Previews Strip */}
           {media.length > 0 && (
-            <div className="pt-2">
-              <div className="text-xs font-medium text-slate-500 dark:text-[#9aa2b1] mb-2">Attached Media ({media.length}):</div>
-              <div className="flex flex-wrap gap-2.5">
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-1)' }}>
+                Attached Media ({media.length}):
+              </div>
+              <div className="composer-media-strip">
                 {media.map((item, idx) => (
-                  <div key={item.id} className="relative group w-18 h-18 rounded-md overflow-hidden border border-slate-200 dark:border-[#30343d] bg-slate-100 dark:bg-[#14161a]">
-                    <img src={item.url} alt="Attachment" className="w-full h-full object-cover" />
+                  <div key={item.id} className="composer-media-thumb">
+                    <img src={item.url} alt="Attachment" />
                     <button
                       type="button"
                       onClick={() => handleRemoveMedia(item.id)}
-                      className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                      className="composer-media-remove"
                       title="Remove"
                     >
                       ×
                     </button>
-                    <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1 rounded">
-                      #{idx + 1}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -346,14 +354,21 @@ export function PolypostComposer({
         </div>
 
         {/* Publishing Actions Bar */}
-        <div className="bg-white dark:bg-[#1c1f26] border border-slate-200 dark:border-[#30343d] rounded-lg p-4 shadow-sm space-y-3">
+        <div className="composer-card">
           {publishStatus && (
             <div
-              className={`p-3 rounded-md text-xs font-medium flex items-center gap-2 ${
-                publishStatus.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
-              }`}
+              style={{
+                padding: 'var(--space-3)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8125rem',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                background: publishStatus.type === 'success' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                border: `1px solid ${publishStatus.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)'}`,
+                color: publishStatus.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
+              }}
             >
               <span>{publishStatus.type === 'success' ? '✅' : '⚠️'}</span>
               <span>{publishStatus.message}</span>
@@ -361,27 +376,23 @@ export function PolypostComposer({
           )}
 
           {showSchedulePicker && (
-            <div className="p-3 bg-slate-50 dark:bg-[#14161a] rounded-md border border-slate-200 dark:border-[#30343d] flex items-center gap-3">
-              <label className="text-xs font-medium text-slate-600 dark:text-[#9aa2b1]">Schedule Date & Time:</label>
+            <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Schedule Date &amp; Time:</label>
               <input
                 type="datetime-local"
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                className="text-xs bg-white dark:bg-[#1c1f26] border border-slate-300 dark:border-[#30343d] rounded px-2.5 py-1 text-slate-900 dark:text-[#eef0f3]"
+                style={{ fontSize: '0.8125rem' }}
               />
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <button
                 type="button"
                 onClick={() => setShowSchedulePicker(!showSchedulePicker)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-                  showSchedulePicker
-                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 font-semibold'
-                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 dark:bg-[#1c1f26] dark:text-[#eef0f3] dark:border-[#30343d]'
-                }`}
+                className="composer-btn-secondary"
               >
                 🗓️ {scheduleDate ? `Scheduled: ${scheduleDate.replace('T', ' ')}` : 'Schedule Post'}
               </button>
@@ -390,7 +401,8 @@ export function PolypostComposer({
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-[#9aa2b1] hover:bg-slate-100 dark:hover:bg-[#141a29] transition-colors"
+                  className="composer-btn-secondary"
+                  style={{ border: 'none' }}
                 >
                   Cancel
                 </button>
@@ -401,16 +413,10 @@ export function PolypostComposer({
               type="button"
               disabled={isPublishing}
               onClick={handlePublish}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md shadow-xs disabled:opacity-50 transition-colors flex items-center gap-2"
+              className="composer-btn-primary"
             >
               {isPublishing ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Dispatching to Channels...</span>
-                </>
+                <span>Dispatching to Channels...</span>
               ) : (
                 <>
                   <span>🚀</span>
@@ -422,8 +428,8 @@ export function PolypostComposer({
         </div>
       </div>
 
-      {/* Right Column: Live Multi-Platform Preview Rails (5 cols on desktop) */}
-      <div className="xl:col-span-5 sticky top-6">
+      {/* Right Column: Live Multi-Platform Preview Rails */}
+      <div className="rails-container">
         <PlatformPreviewRails
           selectedPlatforms={selectedPlatforms}
           getTextForPlatform={getTextForPlatform}

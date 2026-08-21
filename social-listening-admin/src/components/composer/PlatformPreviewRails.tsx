@@ -56,47 +56,68 @@ export function PlatformPreviewRails({
 
   if (selectedPlatforms.length === 0) {
     return (
-      <div className="bg-slate-50 dark:bg-[#141a29]/50 border border-dashed border-slate-300 dark:border-[#30343d] rounded-lg p-8 text-center text-slate-400 dark:text-[#9aa2b1]">
-        <svg className="w-9 h-9 mx-auto mb-2 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-        </svg>
-        <p className="text-xs font-medium">Select one or more platforms above to preview your post</p>
+      <div
+        style={{
+          background: 'var(--color-bg)',
+          border: '1px dashed var(--color-border)',
+          borderRadius: 'var(--radius)',
+          padding: 'var(--space-6)',
+          textAlign: 'center',
+          color: 'var(--color-text-secondary)',
+          fontSize: '0.8125rem',
+        }}
+      >
+        <p style={{ margin: 0 }}>Select one or more platforms above to preview your post</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 font-sans">
+    <div className="rails-container">
       {/* View Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-[#eef0f3] m-0">
+      <div className="rails-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <h4
+            style={{
+              margin: 0,
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: 'var(--color-text)',
+            }}
+          >
             Live Preview Rails
-          </h3>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+          </h4>
+          <span
+            style={{
+              fontSize: '0.6875rem',
+              fontWeight: 600,
+              background: 'rgba(22, 163, 74, 0.1)',
+              color: 'var(--color-success)',
+              border: '1px solid rgba(22, 163, 74, 0.3)',
+              borderRadius: 'var(--radius-full)',
+              padding: '1px 8px',
+              textTransform: 'uppercase',
+            }}
+          >
             Live Sync
           </span>
         </div>
 
         {/* Layout Toggle */}
-        <div className="flex items-center bg-slate-100 dark:bg-[#141a29] border border-slate-200 dark:border-[#30343d] p-0.5 rounded-md text-xs font-medium">
+        <div className="rails-toggle">
           <button
+            type="button"
             onClick={() => setLayoutMode('grid')}
-            className={`px-2.5 py-0.5 rounded transition-all ${
-              layoutMode === 'grid'
-                ? 'bg-white dark:bg-[#1c1f26] text-slate-900 dark:text-[#eef0f3] shadow-xs font-semibold'
-                : 'text-slate-500 hover:text-slate-900 dark:text-[#9aa2b1] dark:hover:text-[#eef0f3]'
-            }`}
+            className={`rails-toggle-btn ${layoutMode === 'grid' ? 'active' : ''}`}
           >
-            Grid View
+            Grid
           </button>
           <button
+            type="button"
             onClick={() => setLayoutMode('tabs')}
-            className={`px-2.5 py-0.5 rounded transition-all ${
-              layoutMode === 'tabs'
-                ? 'bg-white dark:bg-[#1c1f26] text-slate-900 dark:text-[#eef0f3] shadow-xs font-semibold'
-                : 'text-slate-500 hover:text-slate-900 dark:text-[#9aa2b1] dark:hover:text-[#eef0f3]'
-            }`}
+            className={`rails-toggle-btn ${layoutMode === 'tabs' ? 'active' : ''}`}
           >
             Single Tab
           </button>
@@ -105,19 +126,26 @@ export function PlatformPreviewRails({
 
       {/* Tabs Switcher (when in Tab mode) */}
       {layoutMode === 'tabs' && (
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
           {selectedPlatforms.map((p) => {
             const config = PLATFORM_CONFIGS[p];
             const isTabActive = p === effectiveTab;
             return (
               <button
                 key={p}
+                type="button"
                 onClick={() => setActiveTab(p)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 border ${
-                  isTabActive
-                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-200 dark:bg-[#1c1f26] dark:text-[#9aa2b1] dark:border-[#30343d] hover:bg-slate-50 dark:hover:bg-[#141a29]'
-                }`}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontWeight: isTabActive ? 600 : 400,
+                  border: '1px solid var(--color-border)',
+                  background: isTabActive ? 'var(--color-accent)' : 'var(--color-surface)',
+                  color: isTabActive ? 'var(--color-accent-contrast)' : 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 <span>{config.name}</span>
               </button>
@@ -128,15 +156,15 @@ export function PlatformPreviewRails({
 
       {/* Preview Output */}
       {layoutMode === 'grid' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-start">
+        <div className="rails-grid">
           {selectedPlatforms.map((p) => (
-            <div key={p} className="w-full">
+            <div key={p}>
               {renderCard(p)}
             </div>
           ))}
         </div>
       ) : (
-        <div className="w-full max-w-xl mx-auto">
+        <div>
           {renderCard(effectiveTab)}
         </div>
       )}
