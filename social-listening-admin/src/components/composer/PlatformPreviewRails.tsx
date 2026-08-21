@@ -11,10 +11,13 @@ import { ThreadsPreviewCard } from './previews/ThreadsPreviewCard';
 import { BlueskyPreviewCard } from './previews/BlueskyPreviewCard';
 import { MastodonPreviewCard } from './previews/MastodonPreviewCard';
 
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface PlatformPreviewRailsProps {
   selectedPlatforms: SupportedPlatform[];
   getTextForPlatform: (platform: SupportedPlatform) => string;
   getMediaForPlatform: (platform: SupportedPlatform) => MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
 export function PlatformPreviewRails({
@@ -39,19 +42,19 @@ export function PlatformPreviewRails({
 
     switch (platform) {
       case 'linkedin':
-        return <LinkedInPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <LinkedInPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'instagram':
         return <InstagramPreviewCard key={platform} config={config} text={text} media={media} />;
       case 'facebook':
-        return <FacebookPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <FacebookPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'twitter':
-        return <XPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <XPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'threads':
-        return <ThreadsPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <ThreadsPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'bluesky':
-        return <BlueskyPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <BlueskyPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       case 'mastodon':
-        return <MastodonPreviewCard key={platform} config={config} text={text} media={media} />;
+        return <MastodonPreviewCard key={platform} config={config} text={text} media={media} linkPreview={linkPreview} />;
       default:
         return null;
     }

@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { SupportedPlatform, MediaAttachment, PlatformOverride } from './types';
 import { PLATFORM_CONFIGS } from './types';
 import { PlatformPreviewRails } from './PlatformPreviewRails';
 import { styleText, applyStrikethrough, applyUnderline } from './lib/unicodeStyles';
 import { countCharacters } from './lib/counting';
+import { parseDocumentFile } from './lib/documentImport';
+import { saveDraft, saveAutoSave, getSavedDrafts, type SavedDraft } from './lib/draftStorage';
+import { DraftHistoryDrawer } from './DraftHistoryDrawer';
+import { CardLinkPreview } from './CardLinkPreview';
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
 
 interface PolypostComposerProps {
   initialText?: string;
@@ -27,6 +32,8 @@ export function PolypostComposer({
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMentionInput, setShowMentionInput] = useState(false);
+  const [showCustomAiInput, setShowCustomAiInput] = useState(false);
+  const [customAiPrompt, setCustomAiPrompt] = useState('');
   const [mentionName, setMentionName] = useState('');
   const [activeOverrideTab, setActiveOverrideTab] = useState<SupportedPlatform | null>(null);
   const [platformOverrides, setPlatformOverrides] = useState<Partial<Record<SupportedPlatform, PlatformOverride>>>({});
@@ -36,7 +43,53 @@ export function PolypostComposer({
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
+  // Drafts & Link Preview states
+  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<LinkPreviewData | null>(null);
+  const [lastScrapedUrl, setLastScrapedUrl] = useState('');
+
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Autosave on changes
+  useEffect(() => {
+    if (mainText || media.length > 0) {
+      saveAutoSave({
+        mainText,
+        selectedPlatforms,
+        media,
+        platformOverrides,
+      });
+    }
+  }, [mainText, selectedPlatforms, media, platformOverrides]);
+
+  // URL link preview detection
+  useEffect(() => {
+    const urlMatch = mainText.match(/https?:\/\/[^\s]+/i);
+    if (urlMatch) {
+      const foundUrl = urlMatch[0];
+      if (foundUrl !== lastScrapedUrl) {
+        setLastScrapedUrl(foundUrl);
+        fetch('/api/composer/link-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: foundUrl }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data: LinkPreviewData | null) => {
+            if (data && data.title) {
+              setLinkPreview(data);
+            }
+          })
+          .catch(() => {});
+      }
+    } else {
+      if (linkPreview) {
+        setLinkPreview(null);
+        setLastScrapedUrl('');
+      }
+    }
+  }, [mainText, lastScrapedUrl, linkPreview]);
 
   // Toggle platform selection
   const togglePlatform = (p: SupportedPlatform) => {
@@ -78,6 +131,43 @@ export function PolypostComposer({
     }
   };
 
+  // Save current draft
+  const handleSaveCurrentDraft = () => {
+    saveDraft({
+      mainText,
+      selectedPlatforms,
+      media,
+      platformOverrides,
+    });
+    setPublishStatus({ type: 'success', message: 'Draft saved successfully to local storage.' });
+    setTimeout(() => setPublishStatus(null), 3000);
+  };
+
+  // Restore draft
+  const handleSelectDraft = (draft: SavedDraft) => {
+    setMainText(draft.mainText);
+    setSelectedPlatforms(draft.selectedPlatforms);
+    setMedia(draft.media);
+    setPlatformOverrides(draft.platformOverrides || {});
+  };
+
+  // Document File Import
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const parsed = await parseDocumentFile(file);
+      if (parsed.text) {
+        updateCurrentText(parsed.text);
+      }
+    } catch {
+      setPublishStatus({ type: 'error', message: 'Failed to read file.' });
+    }
+    // reset input
+    e.target.value = '';
+  };
+
   // Formatting helpers for selected text or insertion
   const applyFormatting = (formatType: 'bold' | 'italic' | 'code' | 'underline' | 'strike') => {
     const textarea = textareaRef.current;
@@ -88,7 +178,6 @@ export function PolypostComposer({
     const selected = currentText.substring(start, end);
 
     if (!selected) {
-      // If nothing selected, format example word
       const placeholder = 'styled';
       let styled = placeholder;
       if (formatType === 'bold') styled = styleText(placeholder, { bold: true });
@@ -133,43 +222,36 @@ export function PolypostComposer({
     updateCurrentText(next);
   };
 
-  // AI Assist Action Simulations
-  const handleAiTransform = async (mode: 'autofit' | 'professional' | 'punchy' | 'hashtags') => {
+  // AI Assist API Call
+  const handleAiTransform = async (mode: 'autofit' | 'professional' | 'punchy' | 'hashtags' | 'custom') => {
     if (!currentText.trim()) return;
     setIsAiProcessing(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 600));
+      const maxChars = activeOverrideTab
+        ? PLATFORM_CONFIGS[activeOverrideTab].maxChars
+        : 280;
 
-      if (mode === 'autofit') {
-        const targetLimit = activeOverrideTab
-          ? PLATFORM_CONFIGS[activeOverrideTab].maxChars
-          : 280;
-        if (currentText.length > targetLimit) {
-          // Smartly compress sentences
-          const words = currentText.split(/\s+/);
-          let fitted = '';
-          for (const w of words) {
-            if ((fitted + ' ' + w).length <= targetLimit - 4) {
-              fitted += (fitted ? ' ' : '') + w;
-            } else {
-              break;
-            }
-          }
-          updateCurrentText(fitted + '...');
-        }
-      } else if (mode === 'professional') {
-        const lines = currentText.split('\n').filter(Boolean);
-        const structured = `Key insights on this milestone:\n\n` + lines.map(l => `• ${l.replace(/^[•\-*]\s*/, '')}`).join('\n') + `\n\nHow is your team addressing this in practice?`;
-        updateCurrentText(structured);
-      } else if (mode === 'punchy') {
-        updateCurrentText(`🚀 Big update:\n\n${currentText}\n\n👇 What do you think?`);
-      } else if (mode === 'hashtags') {
-        const autoTags = ' #Tech #Innovation #Data #Leadership #AI';
-        if (!currentText.includes('#')) {
-          updateCurrentText(currentText + '\n\n' + autoTags.trim());
-        }
+      const res = await fetch('/api/composer/ai-assist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: currentText,
+          mode,
+          targetPlatform: activeOverrideTab ? PLATFORM_CONFIGS[activeOverrideTab].name : undefined,
+          maxChars,
+          customPrompt: customAiPrompt || undefined,
+        }),
+      });
+
+      const body = await res.json();
+      if (body?.result) {
+        updateCurrentText(body.result);
+        setShowCustomAiInput(false);
+        setCustomAiPrompt('');
       }
+    } catch {
+      setPublishStatus({ type: 'error', message: 'AI assistance encountered an error.' });
     } finally {
       setIsAiProcessing(false);
     }
@@ -252,8 +334,48 @@ export function PolypostComposer({
 
   return (
     <div className="composer-root">
+      {/* Hidden File Input for .docx / .md / .txt */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        accept=".txt,.md,.markdown,.docx"
+        style={{ display: 'none' }}
+      />
+
       {/* Left Column: Authoring Studio */}
       <div className="composer-studio">
+        {/* Top Header: Draft Management Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => setIsDraftsOpen(true)}
+              className="composer-btn-secondary"
+              style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+            >
+              📁 Drafts ({getSavedDrafts().length})
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveCurrentDraft}
+              className="composer-btn-secondary"
+              style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+            >
+              💾 Save Draft
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="composer-btn-secondary"
+            style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+          >
+            📥 Import Doc / Markdown
+          </button>
+        </div>
+
         {/* Target Platforms Card */}
         <div className="composer-card">
           <div className="composer-card-header">
@@ -433,23 +555,23 @@ export function PolypostComposer({
               </button>
             </div>
 
-            {/* AI Assistant Quick Actions */}
+            {/* Azure OpenAI AI Assistant Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <button
                 type="button"
                 disabled={isAiProcessing}
                 onClick={() => handleAiTransform('autofit')}
-                title="Auto-fit length to current platform limits"
+                title="Auto-fit length via Azure OpenAI"
                 className="composer-tag-chip"
                 style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--color-accent)', fontWeight: 600 }}
               >
-                ✂️ Auto-fit
+                {isAiProcessing ? '...' : '✂️ Auto-fit'}
               </button>
               <button
                 type="button"
                 disabled={isAiProcessing}
                 onClick={() => handleAiTransform('professional')}
-                title="Polish into structured B2B thought-leadership format"
+                title="Polish into structured B2B thought-leadership via Azure OpenAI"
                 className="composer-tag-chip"
               >
                 💼 Polish
@@ -458,13 +580,48 @@ export function PolypostComposer({
                 type="button"
                 disabled={isAiProcessing}
                 onClick={() => handleAiTransform('punchy')}
-                title="Convert into punchy social hook"
+                title="Convert into punchy social hook via Azure OpenAI"
                 className="composer-tag-chip"
               >
                 ⚡ Punchy
               </button>
+              <button
+                type="button"
+                onClick={() => setShowCustomAiInput(!showCustomAiInput)}
+                title="Custom AI Prompt"
+                className="composer-tag-chip"
+              >
+                ✨ Prompt
+              </button>
             </div>
           </div>
+
+          {/* Custom AI Prompt Input Box */}
+          {showCustomAiInput && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', padding: 'var(--space-2)', background: 'rgba(37, 99, 235, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>
+              <input
+                type="text"
+                value={customAiPrompt}
+                onChange={(e) => setCustomAiPrompt(e.target.value)}
+                placeholder="Ask Azure OpenAI (e.g. Translate to Dutch, write 3 hooks, add bullet points...)"
+                style={{ flex: 1, fontSize: '0.8125rem' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAiTransform('custom');
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={isAiProcessing}
+                onClick={() => handleAiTransform('custom')}
+                className="composer-btn-primary"
+              >
+                {isAiProcessing ? 'Thinking...' : 'Generate'}
+              </button>
+            </div>
+          )}
 
           {/* Emoji Tray */}
           {showEmojiPicker && (
@@ -519,6 +676,14 @@ export function PolypostComposer({
               className="composer-textarea"
             />
           </div>
+
+          {/* Detected Link Preview Card */}
+          {linkPreview && (
+            <CardLinkPreview
+              data={linkPreview}
+              onRemove={() => setLinkPreview(null)}
+            />
+          )}
 
           {/* Toolbar */}
           <div className="composer-toolbar">
@@ -685,8 +850,16 @@ export function PolypostComposer({
           selectedPlatforms={selectedPlatforms}
           getTextForPlatform={getTextForPlatform}
           getMediaForPlatform={getMediaForPlatform}
+          linkPreview={linkPreview}
         />
       </div>
+
+      {/* Saved Drafts Drawer */}
+      <DraftHistoryDrawer
+        isOpen={isDraftsOpen}
+        onClose={() => setIsDraftsOpen(false)}
+        onSelectDraft={handleSelectDraft}
+      />
     </div>
   );
 }

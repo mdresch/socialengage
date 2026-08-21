@@ -5,10 +5,14 @@ import type { PlatformConfig, MediaAttachment } from '../types';
 import { flattenMentionTokens } from '../lib/mentions';
 import { countCharacters } from '../lib/counting';
 
+import { CardLinkPreview } from '../CardLinkPreview';
+import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+
 interface LinkedInPreviewCardProps {
   config: PlatformConfig;
   text: string;
   media: MediaAttachment[];
+  linkPreview?: LinkPreviewData | null;
 }
 
 export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCardProps) {
@@ -107,8 +111,8 @@ export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCard
         </div>
       </div>
 
-      {/* Media Attachments */}
-      {media && media.length > 0 && (
+      {/* Media Attachments or Link Preview */}
+      {media && media.length > 0 ? (
         <div className="preview-media-frame">
           <img
             src={media[0].url}
@@ -116,7 +120,11 @@ export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCard
             style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
           />
         </div>
-      )}
+      ) : linkPreview ? (
+        <div style={{ padding: '0 var(--space-3)' }}>
+          <CardLinkPreview data={linkPreview} />
+        </div>
+      ) : null}
 
       {/* Action Bar */}
       <div className="preview-actions-bar">
