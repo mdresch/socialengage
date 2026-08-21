@@ -3,18 +3,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
-import {
-  extractDisplayText,
-  extractProviderBadge,
-  extractEnrichmentSummary,
-  extractUrl,
-  extractAuthor,
-  type PostEnrichmentSummary,
-} from './postDisplay';
+import { flattenPost, type FlatPost } from './postDisplay';
 import { RelativeTime } from '@/components/ui';
 import { Slideover } from '@/components/ui';
 import { EmptyState } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
+import { PostDetailPanel } from './PostDetailPanel';
+import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
+import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-react is not installed)
@@ -57,66 +53,6 @@ function IconBuilding() {
   );
 }
 
-function IconTag() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
-    </svg>
-  );
-}
-
-function IconSparkles() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3v1M12 20v1M4.22 4.22l.7.7M18.36 18.36l.7.7M1 12h1M21 12h1M4.22 19.78l.7-.7M18.36 5.64l.7-.7" />
-      <path d="M12 8a4 4 0 1 0 4 4A4 4 0 0 0 12 8z" />
-    </svg>
-  );
-}
-
-function IconCode() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Derived type for flattened post display data
-// ---------------------------------------------------------------------------
-
-interface FlatPost {
-  id: string;
-  createdAt: string;
-  publishedAt: string | null;
-  rawPayload: unknown;
-  enrichment: unknown;
-  bodyMarkdown: string | null;
-  // derived
-  title: string;
-  snippet: string | null;
-  provider: string;
-  url: string | null;
-  author: string | null;
-  enrichmentSummary: PostEnrichmentSummary | null;
-}
-
-function flattenPost(post: SocialPostSummary): FlatPost {
-  const { title, snippet } = extractDisplayText(post.rawPayload);
-  return {
-    ...post,
-    title,
-    snippet,
-    provider: extractProviderBadge(post.rawPayload),
-    url: extractUrl(post.rawPayload),
-    author: extractAuthor(post.rawPayload),
-    enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -138,6 +74,11 @@ const PROVIDER_LABELS: Record<string, string> = {
   newswire: 'Newswire',
   'tenant-owned-feed': 'Tenant Feed',
   wikipedia: 'Wikipedia',
+  facebook: 'Facebook',
+  'brave-search': 'Brave Search',
+  'bing-search': 'Bing Search',
+  instagram: 'Instagram Business',
+  linkedin: 'LinkedIn',
 };
 
 function providerLabel(providerId: string): string {
@@ -176,7 +117,9 @@ interface PostsFeedClientProps {
  * what search/filter can actually see.
  */
 export function PostsFeedClient({ posts, watchlists, initialActivePostId }: PostsFeedClientProps) {
-  const flat = useMemo(() => posts.map(flattenPost), [posts]);
+  const [postList, setPostList] = useState<SocialPostSummary[]>(posts);
+  const flat = useMemo(() => postList.map(flattenPost), [postList]);
+  const [isEditingEnrichment, setIsEditingEnrichment] = useState(false);
 
   /**
    * Story 6.26 — derived from the real, already-fetched post set (Story
@@ -199,7 +142,6 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
   const [activePost, setActivePost] = useState<FlatPost | null>(
     () => (initialActivePostId && flat.find((p) => p.id === initialActivePostId)) || null
   );
-  const [showRawJson, setShowRawJson] = useState(false);
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
 
   const filteredPosts = useMemo(() => {
@@ -216,9 +158,10 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
         const inTitle = post.title.toLowerCase().includes(q);
         const inSnippet = post.snippet ? post.snippet.toLowerCase().includes(q) : false;
         const inAuthor = post.author ? post.author.toLowerCase().includes(q) : false;
+        const inPageName = post.pageName ? post.pageName.toLowerCase().includes(q) : false;
         const inPhrases = post.enrichmentSummary?.keyPhrases.some((kp) => kp.toLowerCase().includes(q)) ?? false;
         const inEntities = post.enrichmentSummary?.entities.some((e) => e.toLowerCase().includes(q)) ?? false;
-        if (!inTitle && !inSnippet && !inAuthor && !inPhrases && !inEntities) return false;
+        if (!inTitle && !inSnippet && !inAuthor && !inPageName && !inPhrases && !inEntities) return false;
       }
       return true;
     });
@@ -376,20 +319,41 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             <article
               key={post.id}
               className="pf-post-card"
-              onClick={() => { setShowRawJson(false); setActivePost(post); }}
+              onClick={() => setActivePost(post)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setShowRawJson(false); setActivePost(post); } }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePost(post); }}
               aria-label={`Inspect: ${post.title}`}
             >
               {/* Header row */}
               <div className="pf-post-card-meta">
                 <div className="pf-post-card-meta-left">
                   <span className={providerClass(post.provider)}>
-                    {post.provider.replace(/_/g, ' ')}
+                    {post.provider === 'facebook'
+                      ? 'Facebook Page'
+                      : post.provider === 'instagram'
+                      ? 'Instagram Business'
+                      : post.provider === 'linkedin'
+                      ? 'LinkedIn'
+                      : post.provider.replace(/_/g, ' ')}
                   </span>
-                  {post.author && (
-                    <span className="pf-post-author">{post.author}</span>
+                  {post.provider === 'facebook' && post.pageName ? (
+                    <>
+                      <span className="pf-post-page-badge" title={`Hosted on Facebook Page: ${post.pageName}`}>
+                        📍 Page: {post.pageName}
+                      </span>
+                      {post.author && post.author !== post.pageName && (
+                        <span className="pf-post-author">By: {post.author}</span>
+                      )}
+                    </>
+                  ) : post.provider === 'instagram' ? (
+                    <span className="pf-post-page-badge" title={`Instagram Account: @${post.instagramContext?.username || post.author || ''}`}>
+                      📍 @{post.instagramContext?.username || post.author}
+                    </span>
+                  ) : post.provider === 'linkedin' && post.author ? (
+                    <span className="pf-post-author">By: {post.author}</span>
+                  ) : (
+                    post.author && <span className="pf-post-author">{post.author}</span>
                   )}
                 </div>
                 <div className="pf-post-card-meta-right">
@@ -413,6 +377,16 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
 
               {/* Title & snippet */}
               <h2 className="pf-post-card-title">{post.title}</h2>
+              {(post.instagramContext?.thumbnailUrl || post.instagramContext?.mediaUrl) && (
+                <div className="pf-post-media-preview">
+                  <img
+                    src={post.instagramContext.thumbnailUrl || post.instagramContext.mediaUrl || ''}
+                    alt={post.title}
+                    className="pf-media-thumbnail"
+                    loading="lazy"
+                  />
+                </div>
+              )}
               {(post.bodyMarkdown || post.snippet) && (
                 <p className="pf-post-card-snippet">
                   {post.bodyMarkdown ? (
@@ -425,8 +399,18 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                 </p>
               )}
 
-              {/* Enrichment chips */}
+              {/* Enrichment chips & engagement */}
               <div className="pf-post-card-footer">
+                {post.provider === 'instagram' && (post.instagramContext?.likeCount != null || post.instagramContext?.commentsCount != null) && (
+                  <span className="pf-chip-engagement">
+                    ❤️ {post.instagramContext?.likeCount ?? 0} · 💬 {post.instagramContext?.commentsCount ?? 0}
+                  </span>
+                )}
+                {post.provider === 'linkedin' && (post.linkedinContext?.reactionsCount != null || post.linkedinContext?.commentsCount != null || post.linkedinContext?.sharesCount != null) && (
+                  <span className="pf-chip-engagement">
+                    👍 {post.linkedinContext?.reactionsCount ?? 0} · 💬 {post.linkedinContext?.commentsCount ?? 0} · 🔄 {post.linkedinContext?.sharesCount ?? 0}
+                  </span>
+                )}
                 {post.enrichmentSummary?.sentiment && (
                   <span className={sentimentChipClass(post.enrichmentSummary.sentiment)}>
                     <span className={sentimentDotClass(post.enrichmentSummary.sentiment)} />
@@ -440,13 +424,13 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                     })()}
                   </span>
                 )}
-                {post.enrichmentSummary?.entities.slice(0, 2).map((ent) => (
+                {post.enrichmentSummary?.entities.slice(0, 3).map((ent) => (
                   <span key={ent} className="pf-chip-entity">
                     <IconBuilding />
                     <span>{ent}</span>
                   </span>
                 ))}
-                {post.enrichmentSummary?.keyPhrases.slice(0, 2).map((phrase) => (
+                {post.enrichmentSummary?.keyPhrases.slice(0, 3).map((phrase) => (
                   <span key={phrase} className="pf-chip-phrase">#{phrase}</span>
                 ))}
 
@@ -477,171 +461,78 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
         </div>
       )}
 
-      {/* Detail Slideover */}
+      {/* Detail Slideover & Cascading Edit Drawer */}
       {activePost && (
-        <Slideover
-          isOpen={!!activePost}
-          onClose={() => setActivePost(null)}
-          title={activePost.title}
-          subtitle={
-            activePost.publishedAt
-              ? `Published ${new Date(activePost.publishedAt).toLocaleString()} · ${activePost.provider.replace(/_/g, ' ')}`
-              : activePost.provider.replace(/_/g, ' ')
-          }
-          width="lg"
-          footer={
-            <div className="pf-slideover-footer-inner">
-              {activePost.url ? (
-                <a
-                  href={activePost.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="pf-footer-ext-link"
-                >
-                  <IconExternalLink /> Open original article
-                </a>
-              ) : (
-                <span />
-              )}
-              <RunEnrichmentButton postId={activePost.id} />
-            </div>
-          }
-        >
-          <div className="pf-detail-body">
-            {/* Full body */}
-            {(activePost.bodyMarkdown || activePost.snippet) && (
-              <div>
-                <h3 className="pf-detail-section-title">Ingested Article Body</h3>
-                {activePost.bodyMarkdown ? (
-                  <div className="pf-detail-body-markdown">
-                    <ReactMarkdown>{activePost.bodyMarkdown}</ReactMarkdown>
-                  </div>
+        <>
+          <Slideover
+            isOpen={!!activePost}
+            onClose={() => {
+              setActivePost(null);
+              setIsEditingEnrichment(false);
+            }}
+            title={activePost.title}
+            subtitle={
+              activePost.provider === 'facebook' && activePost.pageName
+                ? `Published on Facebook Page: ${activePost.pageName}${activePost.publishedAt ? ` · ${new Date(activePost.publishedAt).toLocaleString()}` : ''}`
+                : activePost.publishedAt
+                ? `Published ${new Date(activePost.publishedAt).toLocaleString()} · ${activePost.provider.replace(/_/g, ' ')}`
+                : activePost.provider.replace(/_/g, ' ')
+            }
+            width="lg"
+            className={isEditingEnrichment ? 'slideover-shifted' : undefined}
+            footer={
+              <div className="pf-slideover-footer-inner">
+                {activePost.url ? (
+                  <a
+                    href={activePost.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="pf-footer-ext-link"
+                  >
+                    <IconExternalLink /> Open original article
+                  </a>
                 ) : (
-                  <div className="pf-detail-body-text">{activePost.snippet}</div>
+                  <span />
                 )}
+                <RunEnrichmentButton
+                  postId={activePost.id}
+                  isOverridden={activePost.enrichmentSummary?.override?.isOverridden === true}
+                />
               </div>
-            )}
+            }
+          >
+            <PostDetailPanel
+              key={activePost.id}
+              post={activePost}
+              onEdit={() => setIsEditingEnrichment(true)}
+            />
+          </Slideover>
 
-            {/* AI Enrichment Panel */}
-            {activePost.enrichmentSummary ? (
-              <div className="pf-enrichment-panel">
-                <div className="pf-enrichment-panel-header">
-                  <div className="pf-enrichment-panel-title">
-                    <IconSparkles />
-                    Azure AI Cognitive Analysis
-                  </div>
-                  {activePost.enrichmentSummary.modelUsed && (
-                    <span className="pf-enrichment-model">{activePost.enrichmentSummary.modelUsed}</span>
-                  )}
-                  {activePost.enrichmentSummary.language && (
-                    <span className="pf-enrichment-language">Language: {activePost.enrichmentSummary.language}</span>
-                  )}
-                </div>
-
-                {/* Sentiment scores */}
-                {activePost.enrichmentSummary.sentiment && (
-                  <div className="pf-sentiment-section">
-                    <div className="pf-sentiment-header">
-                      <span>Sentiment: <strong>{activePost.enrichmentSummary.sentiment}</strong></span>
-                      {activePost.enrichmentSummary.sentimentScores && (
-                        <span className="pf-sentiment-sub">Confidence Distribution</span>
-                      )}
-                    </div>
-                    {activePost.enrichmentSummary.sentimentScores && (
-                      <div className="pf-sentiment-bars">
-                        {(['positive', 'neutral', 'negative'] as const).map((key) => {
-                          const score = activePost.enrichmentSummary!.sentimentScores![key];
-                          const pct = (score * 100).toFixed(0);
-                          return (
-                            <div key={key} className="pf-bar-row">
-                              <span className={`pf-bar-label pf-bar-label-${key}`}>
-                                {key.charAt(0).toUpperCase() + key.slice(1)}
-                              </span>
-                              <div className="pf-bar-track">
-                                <div
-                                  className={`pf-bar-fill pf-bar-fill-${key}`}
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                              <span className="pf-bar-pct">{pct}%</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Named entities */}
-                {activePost.enrichmentSummary.entities.length > 0 && (
-                  <div>
-                    <span className="pf-detail-field-label">Extracted Named Entities</span>
-                    <div className="pf-chip-group">
-                      {activePost.enrichmentSummary.entities.map((ent) => (
-                        <span key={ent} className="pf-chip-entity-lg">
-                          <IconTag /> <strong>{ent}</strong>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Key phrases */}
-                {activePost.enrichmentSummary.keyPhrases.length > 0 && (
-                  <div>
-                    <span className="pf-detail-field-label">Extracted Key Phrases</span>
-                    <div className="pf-chip-group">
-                      {activePost.enrichmentSummary.keyPhrases.map((phrase) => (
-                        <span key={phrase} className="pf-chip-phrase-lg">#{phrase}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="pf-no-enrichment">
-                <p>This post has not been enriched yet.</p>
-                <RunEnrichmentButton postId={activePost.id} />
-              </div>
-            )}
-
-            {/* Ingestion telemetry */}
-            <div className="pf-telemetry">
-              <div className="pf-telemetry-row">
-                <span>Post ID</span>
-                <code>{activePost.id}</code>
-              </div>
-              <div className="pf-telemetry-row">
-                <span>Ingested At</span>
-                <code>{new Date(activePost.createdAt).toISOString()}</code>
-              </div>
-              <div className="pf-telemetry-row">
-                <span>Provider</span>
-                <code>{activePost.provider}</code>
-              </div>
-            </div>
-
-            {/* Raw JSON toggle */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowRawJson((v) => !v)}
-                className="pf-raw-toggle"
-              >
-                <span className="pf-raw-toggle-left">
-                  <IconCode />
-                  {showRawJson ? 'Hide Raw Ingestion JSON' : 'Inspect Raw Ingestion Payload'}
-                </span>
-                <span>{showRawJson ? '▲' : '▼'}</span>
-              </button>
-              {showRawJson && (
-                <pre className="pf-raw-json">
-                  {JSON.stringify(activePost.rawPayload, null, 2)}
-                </pre>
-              )}
-            </div>
-          </div>
-        </Slideover>
+          {/* Cascading Secondary Edit Drawer */}
+          {isEditingEnrichment && (
+            <EnrichmentEditDrawer
+              isOpen={isEditingEnrichment}
+              onClose={() => setIsEditingEnrichment(false)}
+              post={activePost}
+              onSave={async (updates: PostEnrichmentUpdateInput) => {
+                const response = await fetch(`/api/posts/${encodeURIComponent(activePost.id)}/enrichment`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(updates),
+                });
+                const body = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                  throw new Error(body?.error || 'Failed to save enrichment overrides.');
+                }
+                if (body.post) {
+                  const updatedSummary = body.post as SocialPostSummary;
+                  setPostList((prev) => prev.map((p) => (p.id === updatedSummary.id ? updatedSummary : p)));
+                  setActivePost(flattenPost(updatedSummary));
+                }
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

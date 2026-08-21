@@ -241,7 +241,7 @@
 
 ## Story 2.13 — Wikipedia connector: MediaWiki Action API, revision re-poll cadence, article-as-Author
 
-**Source:** ADR-0042 (Accepted 2026-08-08) · **Status:** Ready · **Built:** 2026-08-17 — social-listening-core@591b0b8. **A real, confirmed drafting gap, not a new decision:** ADR-0042's own acceptance note (2026-08-08) states directly that "a story would be added to Epic 2 only at this ADR's acceptance, not before," the same "no story until acceptance" precedent every connector-selection ADR in this series follows (ADR-0024/0026/0050) — but that story was never actually drafted, confirmed directly by grepping every `docs/user-stories/epic-*.md` file for `ADR-0042` and finding zero matches, four days after acceptance. Closed here.
+**Source:** ADR-0042 (Accepted 2026-08-08) · **Status:** Built 2026-08-17 · **Built:** 2026-08-17 — social-listening-core@591b0b8. **A real, confirmed drafting gap, not a new decision:** ADR-0042's own acceptance note (2026-08-08) states directly that "a story would be added to Epic 2 only at this ADR's acceptance, not before," the same "no story until acceptance" precedent every connector-selection ADR in this series follows (ADR-0024/0026/0050) — but that story was never actually drafted, confirmed directly by grepping every `docs/user-stories/epic-*.md` file for `ADR-0042` and finding zero matches, four days after acceptance. Closed here.
 
 **Drafted 2026-08-12**, found while checking every Accepted ADR in the series against every epic file's own `Source:` citations for exactly this category of gap, at Menno's own direct request ("im also missing the stories to build the wikipedia ingestion?"). Only one other Accepted ADR (ADR-0047) is similarly absent from every epic file, and that one is a deliberate, already-documented no-story meta-ADR (cross-story reference conventions) — ADR-0042 is the sole genuine gap.
 
@@ -268,7 +268,7 @@
 
 ## Story 2.14 — Wikipedia discovery search driven by the tenant's own watchlist terms
 
-**Source:** ADR-0042 §5 (Accepted 2026-08-08) · **Status:** Ready · **Built:** 2026-08-18 — social-listening-core@c802b64. No new ADR needed — ADR-0042 Decision §5 already named this directly as implementation-time work ("Exact AST-to-CirrusSearch-syntax translation is an implementation-time task, not fixed by this ADR"), the same "resolve an already-Accepted ADR's own named open item directly" precedent Story 5.8 (§5's `domain` column), Story 5.11 (§5's endpoint shape), and Story 5.17 (§9's audit mechanics) already established.
+**Source:** ADR-0042 §5 (Accepted 2026-08-08) · **Status:** Built 2026-08-18 · **Built:** 2026-08-18 — social-listening-core@c802b64. No new ADR needed — ADR-0042 Decision §5 already named this directly as implementation-time work ("Exact AST-to-CirrusSearch-syntax translation is an implementation-time task, not fixed by this ADR"), the same "resolve an already-Accepted ADR's own named open item directly" precedent Story 5.8 (§5's `domain` column), Story 5.11 (§5's endpoint shape), and Story 5.17 (§9's audit mechanics) already established.
 
 **Drafted 2026-08-18, at Menno's own direct request**, found live while activating the Wikipedia connector in the Tenant Admin UI: the connector has no way to be told which article/topic to track. Confirmed directly against the real code, not assumed: `pollWikipedia(tenantId, query = DEFAULT_QUERY)` (`src/connectors/wikipedia/pollWikipedia.ts:19,117-119`) defaults `query` to the module-level literal `DEFAULT_QUERY = 'Anthropic'`, and `bootstrapConnectors.ts:72` — the one real production call site (`live-ingestion-polling-scheduler` SKILL.md) — calls `pollWikipedia(tenantId)` with no query argument at all. Every tenant's every poll cycle searches the same hardcoded literal, regardless of what that tenant actually watches for. This is the exact, already-named gap Story 2.13's own SKILL.md "Known gaps" section flags: "No real per-watchlist discovery query — shared gap with GNews." This story closes it for Wikipedia only; GNews's identical gap (ADR-0026, `docs/open-items-and-deferred-work.md`) is unaffected and stays its own separate, undesigned item.
 
@@ -287,13 +287,15 @@
 
 **Explicitly out of scope:** full boolean AST-to-CirrusSearch operator translation (AND/OR/NOT, quoted phrases, `intitle:`/`insource:`) — named, not solved, matching ADR-0042's own still-open verification gap; `recentchanges`-driven re-poll behavior for already-tracked articles (Story 2.13 Phase 2) is unchanged; GNews's identical, separately-tracked `DEFAULT_QUERY` gap (`pollGNewsSearch.ts`) is not touched by this story.
 
+**Documentation Steward correction, 2026-08-19.** This story's own header, and Story 2.13's above it, both already carried a correct, real `**Built:**` field naming a real shipped commit (2.13: `social-listening-core@591b0b8`; 2.14: `@c802b64` — both confirmed directly against `docs/implementation-log.md`'s own matching 2026-08-17/2026-08-18 entries), but each `**Status:**` field still read "Ready" rather than "Built" — the same gap the "Built convention" exists to catch. Both now read "Built" with the matching date; no Acceptance Criteria text changed. (Story 2.13's own older 2026-08-17 correction note above, which reads "Status remains Ready, Built: not yet," is left untouched — it accurately describes this story's state at the moment it was written, earlier the same day the connector was actually built; per this file's own append-only convention, that note stays as history, not edited to match the now-current field above it.)
+
 ---
 
 ## Story 2.15 — Facebook connector: tenant's own connected Page, posts only, Tier 3 credential
 
 **Built:** 2026-08-18 — social-listening-core@50a5914
 
-**Source:** ADR-0059 (Accepted 2026-08-18) · **Status:** Ready — a real, unresolved precondition named up front, not a formality: ADR-0059 Decision §3 found that onboarding any real, unaffiliated tenant's Page requires SocialEngage's own registered Meta App to clear Business Verification and pass permission-by-permission App Review (`pages_show_list`, `pages_read_engagement`), neither of which is confirmed achievable for a solo-developer project — App Review approval is a discretionary human review, not a mechanical check (ADR-0059's own review-round addition). This story's own contract can be built and proven against a Menno-administered test Page under Standard Access (the degenerate, no-App-Review case ADR-0059 Decision §3 itself names) without either gate being cleared first; **onboarding any real tenant's Page beyond that test case is blocked on Business Verification/App Review succeeding, separately from this story's own build-and-test completion.** Named here rather than silently assumed resolved.
+**Source:** ADR-0059 (Accepted 2026-08-18) · **Status:** Built 2026-08-18 — a real, unresolved precondition named up front, not a formality: ADR-0059 Decision §3 found that onboarding any real, unaffiliated tenant's Page requires SocialEngage's own registered Meta App to clear Business Verification and pass permission-by-permission App Review (`pages_show_list`, `pages_read_engagement`), neither of which is confirmed achievable for a solo-developer project — App Review approval is a discretionary human review, not a mechanical check (ADR-0059's own review-round addition). This story's own contract can be built and proven against a Menno-administered test Page under Standard Access (the degenerate, no-App-Review case ADR-0059 Decision §3 itself names) without either gate being cleared first; **onboarding any real tenant's Page beyond that test case is blocked on Business Verification/App Review succeeding, separately from this story's own build-and-test completion.** Named here rather than silently assumed resolved.
 
 **As a** Tenant-Admin or Tenant User who personally administers a Facebook Page,
 **I want** to connect that Page as a `SocialConnector` source, using my own Facebook login,
@@ -319,7 +321,7 @@
 
 **Built:** 2026-08-18 — social-listening-core@3fedac3
 
-**Source:** No new ADR needed — this corrects an implementation gap against ADR-0038's own already-Accepted Decision text (enrichment is best-effort, additive, never a hard dependency of ingestion succeeding) and `enrichPost.ts`'s own already-stated contract ("Never throws... a programming error... all resolve to `undefined`"), the same "implementation catches up to an already-stated policy" category Story 2.12 already used for `deriveConnectorHealth()`. **Status:** Ready.
+**Source:** No new ADR needed — this corrects an implementation gap against ADR-0038's own already-Accepted Decision text (enrichment is best-effort, additive, never a hard dependency of ingestion succeeding) and `enrichPost.ts`'s own already-stated contract ("Never throws... a programming error... all resolve to `undefined`"), the same "implementation catches up to an already-stated policy" category Story 2.12 already used for `deriveConnectorHealth()`. **Status:** Built 2026-08-18.
 
 **Found live, 2026-08-18, while investigating why Wikipedia watchlists (Stories 2.13/2.14) return zero ingested posts despite the connector being activated and correctly discovering real articles.** Direct inspection of the persistent local dev database confirmed every real `ingestion_runs` row for `wikipedia` is permanently stuck at `status: 'running'`, `posts_ingested: 0` — no post has ever reached `social_posts` for this connector. Reproduced directly against the real Azure AI Language endpoint with a real ~37KB Wikipedia article body (the actual shape `ingestWikipediaRevisions()` sends, per `htmlToMarkdown()`'s own real output for a large article): `azureAiLanguageConnector.analyze()` throws a raw, unclassified `TypeError` — `Cannot read properties of undefined (reading 'entities')` — not a `ClassifiableError`. Root cause, confirmed by reading `callAnalyzeText()`/`analyze()` directly: Azure AI Language enforces a per-document size limit; when a document is rejected, `results.documents` comes back empty/undefined instead of containing an analyzed document, but `analyze()` unconditionally indexes `entitiesRes.results.documents[0]` (and the three sibling `Res.results.documents[0]` reads) with no check. `enrichPost.ts`'s own `tryProvider()` does catch this (`if (!(err instanceof ClassifiableError)) return undefined` — "a programming error must not break ingestion either"), so it fails over to Azure OpenAI silently, with **zero logging or visibility** — this has been happening for every real Wikipedia post ever processed, invisibly, until this session's direct investigation.
 
@@ -341,7 +343,7 @@
 
 **Built:** 2026-08-18 — social-listening-core@6a9b628
 
-**Source:** No new ADR needed — additive widening of `AnalyzeResult` (ADR-0002/ADR-0038's own already-Accepted `AIProviderConnector` interface), the same "widen the interface, existing callers unaffected" pattern Story 2.8/2.9 already established for `sentimentScores`/`entities`/`overallConfidence`. **Status:** Ready.
+**Source:** No new ADR needed — additive widening of `AnalyzeResult` (ADR-0002/ADR-0038's own already-Accepted `AIProviderConnector` interface), the same "widen the interface, existing callers unaffected" pattern Story 2.8/2.9 already established for `sentimentScores`/`entities`/`overallConfidence`. **Status:** Built 2026-08-18.
 
 **Requested directly by Menno, 2026-08-18, following this session's live Wikipedia-enrichment investigation (Story 2.16).** Azure OpenAI's existing single structured-output call (`azureOpenAiConnector.ts`'s `callChatCompletions()`) already reads the *entire* input text and returns `sentiment`/`sentimentScores`/`entities`/`keyPhrases`/`detectedLanguage`/`overallConfidence` in one real HTTP request — confirmed directly this session that it accepts a full ~37KB Wikipedia article body without any size-based rejection (unlike Azure AI Language's real, confirmed 5,120-character document limit, Story 2.16). Menno's own framing: extend that same call's JSON schema to also request a concise summary, so a real, human-readable summary becomes available on every post Azure OpenAI ends up enriching, at zero additional API calls — not a separate summarization pass.
 
@@ -361,24 +363,306 @@
 
 **Explicitly out of scope:** any UI surfacing of the new `summary` field (a separate, not-yet-scoped follow-on if wanted); giving Azure AI Language its own summarization capability (the real, separate, asynchronous Document Summarization endpoint named in this session's option discussion — a materially heavier build, not pursued here); reordering `PROVIDERS` so Azure OpenAI runs for every post (would make `summary` universal, but reverses Menno's own already-confirmed intentional provider-ordering default — a separate decision, not made by this story); correcting Story 2.16's own found-live retryable-classification inefficiency for oversized-document fail-over (named in this session's discussion, tracked separately, not bundled into this story's own scope).
 
+**Documentation Steward correction, 2026-08-19.** Stories 2.15, 2.16, and 2.17 above each already carried a correct, real `**Built:**` field naming a real shipped commit (2.15: `social-listening-core@50a5914`; 2.16: `@3fedac3`; 2.17: `@6a9b628` — every hash confirmed directly against `docs/implementation-log.md`'s own matching 2026-08-18 entries), but each `**Status:**` field still read "Ready." In all three, the `**Built:**` line was also placed *before* the `**Source:**/**Status:**` line rather than after it — the inverse of this file's own usual ordering (see Story 2.13/2.14 above), a likely reason this instance wasn't already caught by casual scanning. All three now read "Built 2026-08-18"; no Acceptance Criteria text changed.
+
 ---
 
-## Story 2.18 — Facebook connector: capture post-level engagement counts (reactions, comments, shares)
+## Story 2.18 — Facebook connector captures post-level engagement counts (reactions, comments, shares)
 
 **Built:** 2026-08-18 — social-listening-core@35e35c3
 
-**Source:** No new ADR needed — completes scope ADR-0059 Decision §2 already authorized ("including whatever engagement counts (reactions, comments, shares) the Page-feed response returns") but Story 2.15's own implementation never actually requested. **Status:** Ready.
+**Source:** ADR-0059 Decision §2 · **Status:** Built 2026-08-18
 
-**Found directly by Menno, 2026-08-18**, while working through the Analytics Dashboard tab specs and asking whether real engagement data (likes, shares/reposts, comments) is available for any connector. Investigated directly, not assumed: grepped every real connector's own source for reaction/like/comment/share fields — zero matches across GNews, Newswire, tenant-owned-feed, and Wikipedia (a real, structural fact about those sources — none of them carry engagement metrics as a platform concept, not a gap to close). **Facebook is the one exception, and a real, confirmed gap, not a structural non-fit:** `fetchFacebookPagePosts()`'s own Graph API call requests `fields=id,message,created_time,permalink_url` only — despite ADR-0059 Decision §2's own text explicitly naming engagement counts as v1 scope. Verified live against the real test Page (`developers.facebook.com`'s Graph API, plus a direct real call against `FACEBOOK_TEST_PAGE_ID`) before drafting: `reactions.summary(total_count)` and `comments.summary(total_count)` both work exactly as documented; `shares` is confirmed, live, to be **omitted from the response entirely when a post has zero shares** (not returned as `shares: {count: 0}`) — a real API behavior this story's own implementation must handle as optional, not assumed present.
-
-**As a** Tenant-Admin or future Analytics Dashboard consumer,
-**I want** the Facebook connector to actually capture each post's own reaction/comment/share counts, the same scope ADR-0059 already decided,
-**so that** this real, available engagement data isn't silently missing from `SocialPost.rawPayload` the way it is today.
+**As a** core backend engineer / downstream consumer of Facebook posts,
+**I want** post-level engagement counts (`reactions`, `comments`, `shares`) captured during Page post polling,
+**so that** engagement metrics are preserved in `rawPayload` for downstream analytics without schema changes.
 
 **Acceptance Criteria**
-- `fetchFacebookPagePosts()`'s Graph API request (`facebookConnector.ts`) widens its `fields` parameter to `id,message,created_time,permalink_url,reactions.summary(total_count),comments.summary(total_count),shares` — proven by a real call against the real test Page confirming the response includes populated `reactions`/`comments` objects, matching this story's own live pre-verification.
-- `FacebookPagePost` gains optional `reactions?: { summary: { total_count: number } }`, `comments?: { summary: { total_count: number } }`, and `shares?: { count: number } }` fields — all optional, since `shares` is confirmed absent at zero and a defensive-but-honest treatment extends the same optionality to `reactions`/`comments` rather than assuming Graph API always returns them.
-- No change to `normalize()`, `insertSocialPost()`, or any schema/migration — `rawPayload: post` already spreads the full post object unmodified into storage (ADR-0018's "full original platform JSON, never discarded" precedent, the same mechanism every other connector's own extra fields already rely on) — proven by a test confirming a real ingested post's `rawPayload` contains the new fields' real values, with zero other code path touched.
-- A post whose Graph API response omits `shares` entirely (the confirmed zero-shares case) ingests successfully with `rawPayload.shares` simply absent, not `null`/`0`/a crash — proven by a test using a fixture response shaped exactly like the real zero-shares response this story's own pre-verification captured.
+- `fetchFacebookPagePosts()` requests `reactions.summary(total_count).limit(0).as(reactions)` and `comments.summary(total_count).limit(0).as(comments)` alongside standard post fields.
+- `FacebookPagePost` interface in `facebookConnector.ts` gains optional `reactions`, `comments`, and `shares` summary objects.
+- `shares` is treated as optional/absent when a post has 0 shares (per Meta Graph API convention).
+- Raw engagement counts flow through `normalize()` into `SocialPost.rawPayload` unmodified.
 
-**Explicitly out of scope:** any structured, queryable exposure of these counts (a new `social_posts` column, `SocialPostSummary` widening, or Analytics Dashboard tab consumption) — `rawPayload` is an unindexed JSONB blob, and making engagement data usable by the Overview/Sentiment/Source tab specs is real, separate scope requiring its own decision once those specs are actually evaluated, not assumed here; extending the same widening to any other connector (GNews/Newswire/tenant-owned-feed/Wikipedia structurally don't carry this data — confirmed, not merely unchecked); comment/mention *content* ingestion (still deferred, ADR-0059 Decision §5's own unresolved third-party author-rights question — this story captures only aggregate *counts*, never individual comment text/authors).
+---
+
+## Story 2.19 — Tenant-owned feed: per-feed display name, and per-item author (byline) extraction
+
+**Built:** 2026-08-20 — social-listening-core@2f52c0f (backend half only — see Explicitly out of scope below for the admin-side UI, Story 6.28)
+
+**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Built 2026-08-20.
+
+**Requested directly by Menno, 2026-08-20**, having just been given the connector setup screen's own URL (`/tenant/connectors/tenant-owned-feed`): *"give feeds ... a name. Let the feed owner give the feed a separate name. This allow for a feed identification name instead of the generic tenant-owned-feed selection and review the feeds for a mandatory field that is designated to be the Author of the article/project/posts."* Clarified directly with Menno (`AskUserQuestion`) that "mandatory field... designated to be the Author" meant adding real per-article byline extraction from the feed itself (`<dc:creator>`/`<author>`), not merely confirming the already-existing domain-as-Author invariant — ADR-0050's own Consequences/Open Question 5 had explicitly reserved that as "a separate, named design decision... not in scope for this ADR," so a short Amendment Log entry was drafted (not a re-opened Decision) before implementing.
+
+**As a** tenant with more than one connected feed (Story 6.20/ADR-0057's own multi-feed support),
+**I want** to give each feed my own chosen name, and have each ingested post's real byline surfaced when the feed itself provides one,
+**so that** I can tell my feeds apart by something more meaningful than a raw domain string, and readers of the ingested content can see who actually wrote it, not just my organization's own domain-as-Author placeholder.
+
+**Acceptance Criteria**
+- `tenant_owned_feed_activations` gains an optional, nullable `name` column (`migrations/0037`) — never required, never defaulted; unset renders as `domain` in the setup UI.
+- `POST /v1/connectors/tenant-owned-feed/connect` accepts an optional `name` (a non-empty string when supplied — a `400` on an empty/whitespace-only value); the created activation's `name` is returned in the response and by `GET .../activations`.
+- `PATCH /v1/connectors/tenant-owned-feed/:id` accepts `feedUrl` and/or `name` independently — at least one must be present (`400` otherwise); `name: null` explicitly clears a previously-set name. `domain` remains permanently rejected, unchanged.
+- `feedItemParser.ts`'s `parseFeedItems()` extracts a per-item byline (`ParsedFeedItem.author`) when the feed provides one, tried in priority order: RSS's Dublin Core `<dc:creator>` (WordPress and most CMS platforms' own de facto standard), RSS 2.0's own flat `<author>` (extracted as-is — the spec says email, but real feeds often put a plain name there instead), Atom's nested `<author><name>`. `null`, never fabricated, when the feed provides none of these.
+- `ingestTenantOwnedFeedItems()` denormalizes `activation.name` into `rawPayload.feedName` (the key is genuinely absent, not `null`, when the activation has no name set) and the parsed item's own byline into `rawPayload.author` — while the post's real `authorId`/`Author` row still resolves to the verified domain, unchanged, proving both additions are display-only and do not touch Author/providerId modeling.
+- `social-listening-admin`'s `postDisplay.ts`: `extractAuthor()` already checks `rawPayload.author` first in its precedence chain (established by the same-day Newswire/Facebook fixes) — the byline above is picked up with zero admin-side code change. `extractUrl()`/provider-badge/Analytics-grouping behavior is unaffected; `rawPayload.feedName` is denormalized for possible future display use but nothing reads it for grouping/filtering yet.
+
+**Explicitly out of scope:** replacing organization-as-Author (the verified domain) with individual-as-Author for the `Author` entity/topic-signals/Analytics grouping — a real, separate, not-yet-decided design question named in ADR-0050's own Amendment Log entry, not resolved here; a name-uniqueness constraint (none decided — a label, not an id); using `name`/`feedName` as an Analytics Dashboard/Provider-filter grouping key (still keyed on the fixed `tenant-owned-feed` `providerId`); any admin-side UI surfacing of the feed's own `name` in the connector setup screen itself — that is a separate, admin-repo story (Story 6.28).
+
+---
+
+## Story 2.20 — Country-level geospatial extraction and normalization on post enrichment
+
+**Source:** ADR-0064 (Proposed 2026-08-19) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core
+
+**As a** core backend engineer,
+**I want** the ingestion and enrichment pipelines to extract, normalize, and store country-level geospatial metadata from connector payloads (`gnews`, `newswire`, `tenant-owned-feed`) into `social_posts.enrichment`,
+**so that** downstream consumers (such as the Analytics Dashboard) can query and aggregate post volume and sentiment by country without storing sensitive coordinate point data or executing ad-hoc geocoding.
+
+**Acceptance Criteria**
+- `AnalyzeResult` / enrichment contract in `social-listening-core/src/connectors/types.ts` is widened with optional, nullable geospatial fields in `camelCase`:
+  - `geoCountry?: string | null` (ISO 3166-1 alpha-2 uppercase, e.g. `'US'`, `'GB'`, `'NL'`)
+  - `geoCountryName?: string | null` (derived human-readable name, e.g. `'United States'`)
+  - `geoRegion?: string | null` (optional sub-region, e.g. `'EU'`, `'NA'`)
+  - `geoSource?: 'post' | 'source' | 'inferred' | 'unknown' | null` (provenance tracker)
+  - `geoConfidence?: 'high' | 'medium' | 'low' | null`
+- **GNews connector extraction (`pollGNewsSearch.ts`):**
+  - Reads `GNewsArticle.source.country` from the GNews search response.
+  - Normalizes country code to uppercase ISO 3166-1 alpha-2 (e.g. `'us'` → `'US'`).
+  - Sets `geoCountry: 'US'`, `geoCountryName: 'United States'`, `geoSource: 'source'`, `geoConfidence: 'high'`.
+- **Newswire connector extraction (`pollNewswireFeeds.ts`):**
+  - Inspects explicit `sourceCountry` or `country` if present in feed item: sets `geoSource: 'post'`, `geoConfidence: 'high'`.
+  - Fallback: maps unambiguous wire source domains to country where determined: sets `geoSource: 'source'`, `geoConfidence: 'medium'`.
+  - If no unambiguous country signal is found: leaves `geoCountry: null`, `geoCountryName: null`, `geoSource: null`, `geoConfidence: null`.
+- **Tenant-owned feed extraction (`pollTenantOwnedFeed.ts`):**
+  - Inspects explicit feed metadata/tag fields (`country`, `countryCode`, `geo.country`, `sourceCountry`).
+  - Normalizes explicit valid country codes to ISO 3166-1 alpha-2 uppercase; sets `geoSource: 'post'`, `geoConfidence: 'high'`.
+  - If absent/unstructured: leaves `geoCountry: null`. Does not attempt unstructured text geocoding in v1 (ADR-0064 §3).
+- **Facebook connector (`pollFacebookPage.ts`):**
+  - Leaves `geoCountry: null` (Page-level posts in standard feed do not carry reliable post coordinates).
+- **Storage & wire contract (zero migration):**
+  - Extracted geo fields are persisted directly inside `social_posts.enrichment` (`JSONB`), round-tripping through `insertSocialPost()`.
+  - `SocialPostSummary` returned by `GET /v1/posts` exposes `enrichment` containing the new geo fields with zero database schema migrations and zero SQL alterations.
+- Contract test verifies that GNews items with `source.country` and Newswire/Tenant-feed items with explicit country tags populate `enrichment.geoCountry`, `geoCountryName`, `geoSource`, and `geoConfidence` accurately, while feeds without country tags default to `null`/`undefined` without failure.
+
+**Explicitly out of scope:** Sub-national/city-level geocoding (Open Question 1); storing precise lat/lon points in `post_geo_location`; geocoding unstructured author profile location strings; any UI visualization changes (handled in Story 8.10).
+
+---
+
+## Story 2.21 — Active Watchlist Sourcing via Brave Search API: Polling connector, query transformation, and junction linking
+
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the platform to actively query the Brave Search API for my active watchlists, validate matching articles, and ingest them as social posts linked to their respective watchlists,
+**so that** my monitored topics are proactively discovered across the web and news index rather than waiting for them to randomly cross generic feeds.
+
+**Acceptance Criteria**
+- **Connector Implementation (`braveSearchConnector.ts`):**
+  - Implements `SocialConnector` with `providerId: 'brave-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, and `poll(tenantId: string)`.
+  - Registered in `connectorRegistry.ts` under `brave-search`.
+- **Active Watchlist Querying & Pacing Loop:**
+  - `poll(tenantId)` retrieves all active watchlists for the tenant (`listActiveWatchlistsForTenant(tenantId)`).
+  - Iterates over active watchlists sequentially with a **1.2-second pacing delay** between requests to strictly respect Brave's 1 req/sec rate limit and avoid HTTP 429 errors.
+  - Constructs queries per watchlist match type:
+    - `keyword`/`hashtag`/`account`: formats terms into an OR-expression (e.g. `"term1" OR "term2"`).
+    - `boolean_query`: passes the AST boolean expression formatted for Brave search syntax.
+  - Calls Brave Search endpoint (`/res/v1/news/search` by default, or `/res/v1/web/search`) with the tenant's `X-Subscription-Token` header, lookback `freshness` window, and result pagination.
+- **Dual Discovery & Validation Filter:**
+  - Discovered search result candidate items (title + snippet/description) are evaluated in-process against the triggering watchlist's exact rules (`matchesWatchlist()` or `matchesAst()`).
+  - Only candidate items that strictly satisfy the rule predicate are ingested, ensuring zero false-positive drift between active search and passive ingestion.
+- **Publication / Domain as Author (ADR-0004 Generalization):**
+  - Maps `Author` from the article's source domain and publication name:
+    - `author.id = 'brave-search:' + domain`
+    - `author.username = domain` (e.g. `bbc.com`, `techcrunch.com`)
+    - `author.displayName = sourceName || domain`
+    - `author.platform = 'brave-search'`
+- **Canonical Ingestion & Multi-Watchlist Junction Linking:**
+  - Normalizes article into `SocialPost` using canonicalized `url` as `externalId` on `(tenant_id, 'brave-search', externalId)` for deduplication.
+  - Links successfully ingested post to the triggering watchlist in `post_watchlist_matches` via `insertPostWatchlistMatches()`.
+  - Discovered articles immediately become queryable via `GET /v1/posts?watchlistId=<id>` (Story 3.11) and flow into standard AI enrichment.
+- **Quota & Error Handling:**
+  - Handles HTTP 401/403 by marking connector `failing` (invalid credential).
+  - Handles HTTP 429 with backoff and records quota telemetry.
+  - Staggers next poll cycle with 1–4 hour default cadence.
+
+**Explicitly out of scope:** Full-text scraping of external web pages; client-side web scraping; admin UI connector setup screen (handled in Story 6.30).
+
+---
+
+## Story 2.22 — Active Watchlist Sourcing via Bing Search API (Azure): Polling connector, candidate evaluation cap, and URL canonicalisation
+
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the platform to actively query the Bing Search API (Azure) for my active watchlists, validate matching news and web articles, and ingest them as social posts linked to their respective watchlists,
+**so that** my monitored topics benefit from Azure-aligned enterprise search discovery and index depth.
+
+**Acceptance Criteria**
+- **Connector Implementation (`bingSearchConnector.ts`):**
+  - Implements `SocialConnector` with `providerId: 'bing-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, and `poll(tenantId: string)`.
+  - Registered in `connectorRegistry.ts` under `bing-search`.
+- **Active Watchlist Querying & Pacing Loop:**
+  - `poll(tenantId)` retrieves all active watchlists for the tenant (`listActiveWatchlistsForTenant(tenantId)`).
+  - Iterates over active watchlists sequentially with a per-tenant pacing delay to respect Azure Cognitive Services rate limits and avoid cross-tenant thundering herds.
+  - Constructs queries per watchlist match type:
+    - `keyword`/`hashtag`/`account`: formats terms into an OR-expression (e.g. `"term1" OR "term2"`).
+    - `boolean_query`: passes the AST boolean expression formatted for Bing search syntax.
+  - Sets `mkt` and `setLang` based on tenant locale settings (defaulting to `en-US`).
+- **Deterministic Auto Endpoint Fallback (`endpoint: 'auto'`):**
+  - Calls `/v7.0/news/search` first with `count = 25` and mapped `freshness` (`Day` for lookback $\le$ 48h, `Week` for 3–7d, `Month` for $>$ 7d).
+  - If the news search yields **fewer than 5 validated results**, automatically falls back to `/v7.0/search` (Web) in the same tick to broaden candidate discovery.
+- **Candidate Evaluation Cap & Dual AST Validation:**
+  - Evaluates the top **25–50** candidate items (title + snippet/description) in-process against `matchesWatchlist()` or `matchesAst()`.
+  - Only candidates strictly meeting the rule criteria are ingested, guaranteeing 100% precision with passive feeds.
+- **Multi-Step URL Canonicalisation & Deduplication:**
+  - Unwraps/resolves redirects where available.
+  - Strips marketing/tracking parameters (`utm_*`, `fbclid`, `gclid`, `msclkid`, `ref`).
+  - Normalizes scheme/host (lowercase, standardizes `www.`) and strips trailing fragments.
+  - Deduplicates on `(tenant_id, 'bing-search', externalId)` using canonical URL.
+- **Publication / Base Domain as Author (ADR-0004 Generalization):**
+  - Maps `Author` from provider and base domain:
+    - `author.id = 'bing-search:' + baseDomain`
+    - `author.username = baseDomain` (e.g. `bbc.co.uk`, `reuters.com`)
+    - `author.displayName = provider[0].name || baseDomain`
+    - `author.platform = 'bing-search'`
+- **Canonical Ingestion, Multi-Watchlist Junction Linking & Telemetry:**
+  - Ingests normalized post into `social_posts` and writes `(post_id, watchlist_id, tenant_id)` to `post_watchlist_matches`.
+  - Emits tenant-scoped telemetry metrics: API call counts, query volume, endpoint used, candidate yield, and **estimated Azure cost** scoped by `tenantId`, `platformId='bing-search'`, and `watchlistId`.
+  - Staggers next poll cycle with 1–4 hour default cadence.
+
+**Explicitly out of scope:** Full-text scraping of external web pages; admin UI connector setup screen (handled in Story 6.32).
+
+---
+
+## Story 2.23 — Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution
+
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Facebook engagement counts), Story 6.27 (Facebook multiple Pages per user)
+
+**As a** core backend engineer / social listening analyst,
+**I want** `pollFacebookPage()` and `fetchFacebookPagePosts()` to extract the `from` object from Meta Graph API, record the explicit hosting Facebook Page ID/Name (`rawPayload.pageId`, `rawPayload.pageName`), and resolve post authorship using a two-tier hierarchy (`from.name` true author falling back to `pageName`),
+**so that** ingested Facebook posts accurately reflect who wrote the post and clearly link to the hosting Page that published it.
+
+**Acceptance Criteria**
+- **Graph API Field Widening (`facebookConnector.ts`):**
+  - `fetchFacebookPagePosts()` requests `from{id,name}` in its `fields` query parameter alongside standard post and engagement summary fields.
+  - `FacebookPagePost` interface in `facebookConnector.ts` gains optional `from?: { id: string; name: string }`.
+- **Hosting Page Post Dependency (`pollFacebook.ts`):**
+  - Every ingested post's `rawPayload` is populated unconditionally with `pageId: pageMeta.id` and `pageName: pageMeta.name`, establishing an explicit dependency on the hosting Facebook Page.
+- **Two-Tier Author Resolution Hierarchy (`pollFacebook.ts`):**
+  - **True Author (`from.name`):** When Graph API returns a distinct author object where `post.from?.id` exists and `post.from.name` is non-empty:
+    - Upserts/links `Author` with `authorExternalId = "facebook:" + post.from.id` and `displayName = post.from.name`.
+    - Sets `rawPayload.author = post.from.name` and `rawPayload.from = post.from`.
+  - **Page Name Fallback:** When `post.from` is absent, or `post.from.id === pageMeta.id` (published directly as the Page):
+    - Upserts/links `Author` with `authorExternalId = "facebook:" + pageMeta.id` and `displayName = pageMeta.name`.
+    - Sets `rawPayload.author = pageMeta.name`.
+- **Deduplication & Event Ingestion:**
+  - Preserves deduplication key on `(tenant_id, 'facebook', externalId)`.
+  - Emits `publishSocialPostIngestedEvents()` with the resolved `authorExternalId`.
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts` asserts:
+    - Post with individual `from` object maps `rawPayload.author` to the creator's name and `rawPayload.pageName` to the Page name.
+    - Post without `from` or with `from.id === pageMeta.id` falls back cleanly to `rawPayload.author = pageMeta.name` and `rawPayload.pageName = pageMeta.name`.
+    - `fetchFacebookPagePosts` correctly parses `from` object when returned by Graph API.
+
+**Explicitly out of scope:** Ingesting personal timeline feeds (`/me/posts`); admin UI post display enhancements (handled in Story 6.33).
+
+---
+
+## Story 2.24 — Instagram Business Connector: Tier-3 OAuth Poller, Single-Row Carousel Normalization, Lookback Pagination, and Error Reclassification
+
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Engagement counts), Story 2.20 (Country geospatial normalization), Story 6.27 (Multi-asset credential model), Story 1.16 (Watchdog reconciliation & alerts)
+
+**As a** core backend engineer / social listening analyst,
+**I want** a dedicated `instagram` ingestion connector in `social-listening-core` that queries the Instagram Graph API (`/{ig-user-id}/media`) for connected Instagram Business and Creator accounts,
+**so that** published photos, videos, Reels, and carousels are ingested with single-row carousel modeling, bounded lookback pagination, deterministic error handling, and hosting profile attribution.
+
+**Acceptance Criteria**
+
+- **Instagram Connector Client (`instagramConnector.ts`):**
+  - Implements `fetchInstagramMedia(igUserId, accessToken, options)` calling `GET /{ig-user-id}/media`.
+  - Requests fields: `id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,username,like_count,comments_count,children{id,media_type,media_url,thumbnail_url},location`.
+  - Supports cursor-based pagination with `limit = 25` (max 50).
+- **Lookback Bounds Precedence & Incremental Halting:**
+  - **Initial Ingestion Cap:** On initial account ingestion, paginates until **whichever condition is reached first**:
+    1. The oldest fetched item's `timestamp` is older than `(now - 30 days)`, **OR**
+    2. Total fetched items reach **100 media items**.
+  - **Incremental Short-Circuit:** Periodic scheduler ticks stop pagination immediately upon encountering an item whose `externalId` already exists in `social_posts` for that `(tenantId, 'instagram', igUserId)`.
+- **Single-Row Carousel Modeling & Gallery Persistence (`pollInstagram.ts`):**
+  - Creates exactly **one `SocialPostSummary` row** in `social_posts` per media item returned by `/media` (`externalId: instagram_{igUserId}_{mediaId}`).
+  - For `media_type === 'CAROUSEL_ALBUM'`, stores child media objects in `rawPayload.children` in the **exact original display order** returned by Meta Graph API, capped at 10 items (setting `rawPayload.childrenTruncated = true` if exceeding 10).
+- **Media Previews & URL Stability:**
+  - `permalink` is stored as the immutable canonical post URL (`SocialPost.url`).
+  - `media_url` and `thumbnail_url` are stored in `rawPayload` as best-effort preview URLs.
+  - Published Reels (`media_type === 'VIDEO'`) are ingested; ephemeral 24h Stories are excluded.
+- **Caption Fallback & Author Normalization:**
+  - `caption` is converted to canonical markdown. If empty, falls back deterministically to `[Instagram Photo]`, `[Instagram Video]`, or `[Instagram Carousel]`.
+  - Author mapped as `author.id = "instagram:" + igUserId`, `author.displayName = username`, `author.username = username`.
+  - Unconditionally stores `rawPayload.igUserId`, `rawPayload.username`, and parent `rawPayload.pageName`.
+- **Geospatial Normalization (ADR-0064):**
+  - If `location.country` is present, extracts uppercase ISO 3166-1 alpha-2 code (`geoCountry`), setting `geoSource: 'post'`, `geoConfidence: 'high'`. Discards raw coordinates. Defaults to `geoCountry = null`.
+- **Pacing & Rate Limiting:**
+  - Sequential polling across configured Instagram accounts within a user tick with 1.2s inter-account jitter.
+  - Honors `Retry-After` headers on HTTP 429/Error 4/17 with exponential backoff.
+- **Deterministic Error Reclassification & Alerts (ADR-0070):**
+  - Reclassifies Graph API errors `190` (expired/invalid token), `10` (permission revoked), and `100` (account unlinked) into `http_401` / `reconnect_required`.
+  - Marks account status in `instagram_connected_accounts` as requiring reconnect and emits `ConnectorIngestionAlertEvent` (`alertType: 'reconnect_required'`).
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.24.instagram-connector.contract.test.ts` asserts:
+    - Standard photo, video/Reel, and carousel media mapping.
+    - Carousel single-row creation with ordered `rawPayload.children` (and truncation flag if >10).
+    - 30-day / 100-item pagination precedence and newest-first halting.
+    - Graph API errors `190`/`10`/`100` reclassified to `reconnect_required` with alert emission.
+
+**Explicitly out of scope:** Personal Instagram timeline scraping (prohibited); ephemeral Stories ingestion; admin UI setup screens (handled in Story 6.34).
+
+---
+
+## Story 2.25 — LinkedIn Connector: Confidential Client OAuth, Token Lifecycle with Persisted Expiry, Rest.li Rate Limiting, and 1-Hour Poller Guardrails
+
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.1 (Unified connector interface), Story 2.2 (Rate limiting request gate), Story 1.16 / ADR-0070 (Watchdog reconciliation & alerts)
+
+**As a** core backend engineer / social listening analyst,
+**I want** a dedicated `linkedin` ingestion connector in `social-listening-core` implementing OAuth 2.0 confidential client flow, 60-day access token refresh with persisted `refreshTokenExpiresAt`, Rest.li rate-limit header parsing, scheduler-level 1-hour polling guardrails, and graceful scope degradation,
+**so that** our platform securely ingests LinkedIn posts and engagement while strictly adhering to LinkedIn Marketing API constraints and GDPR data retention policies.
+
+**Acceptance Criteria**
+
+- **LinkedIn Connector Client (`linkedinConnector.ts`):**
+  - Implements `SocialConnector` for `providerId = 'linkedin'` with `authMode: 'oauth'`, `deliveryMode: 'poll'`.
+  - Generates authorize URL with cryptographically secure, tenant-scoped `state` parameter cached server-side (TTL 10m).
+  - Validates `state` and exchanges authorization code for tokens using confidential client credentials (`client_id` + `client_secret`).
+  - Persists credential in Azure Key Vault via envelope encryption (ADR-0014) with explicit `refreshTokenExpiresAt` (now + 365 days).
+- **Token Refresh & Lifecycle Management (`refreshToken()`):**
+  - Invoked automatically before returning a 401 error.
+  - Updates `access_token` (60-day expiry). If a new `refresh_token` is present in the response, updates `refreshTokenExpiresAt` to `now + 365 days`; if omitted, retains existing refresh token and expiry.
+  - Surfaces `credentialStatus: 'expiring_soon'` when access token is within 7 days of expiry or refresh token is within 30 days of `refreshTokenExpiresAt`.
+  - On `invalid_grant` failure: evaluates `now > refreshTokenExpiresAt` to set `credentialStatus = 'expired'` (if expired) or `credentialStatus = 'revoked'` (if revoked/password changed), transitioning connector to `reconnect_required`.
+- **Rest.li Rate-Limit Header Extraction (`parseRateLimitHeaders()`):**
+  - Defensively parses `x-restli-gateway-ratelimit-remaining`, `x-restli-gateway-ratelimit-reset` (converting epoch seconds to milliseconds), and `x-restli-gateway-ratelimit-limit` (with fallbacks to standard `x-ratelimit-*`).
+  - Dynamic live header state overrides the baseline 100 requests/day config; queued runs create an `IngestionRun` audit record.
+- **Scheduler-Enforced Polling Guardrails:**
+  - The Tier-3 poll scheduler strictly rejects any configured polling interval < 3600 seconds (1 hour) unless `linkedin.org.enabled === true` AND partner tier is verified.
+- **Graceful Scope Degradation:**
+  - Supports member scopes (`openid`, `profile`, `email`, `w_member_social`, `r_member_social`).
+  - If organization scopes (`w_organization_social`, `r_organization_social`) are missing or partner approval is pending, continues member post polling without failing the connector.
+- **Best-Effort Idempotent Revocation & Disconnect:**
+  - `disconnect()` calls `https://www.linkedin.com/oauth/v2/revoke` passing the refresh token (fallback: access token).
+  - Logs non-200 responses at `WARN` level without blocking credential erasure or tenant-scoped data purging (ADR-0018).
+- **Data Normalization (`normalize()`):**
+  - Maps post to `SocialPost` and author to `Author` (`author.id = "linkedin:" + memberId`, `author.displayName = firstName + ' ' + lastName`).
+  - Discards raw JSON response payloads from permanent storage (ADR-0018).
+- **Contract Verification:**
+  - Jest contract test in `contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts` asserts:
+    - Confidential client code exchange and `refreshTokenExpiresAt` initialization.
+    - Refresh token retention logic and `invalid_grant` reason classification.
+    - Rest.li header parsing with epoch seconds to ms conversion.
+    - Scheduler rejection of <3600s interval without partner flag.
+    - Best-effort disconnect with non-blocking revoke failure handling.
+
+**Explicitly out of scope:** Public client PKCE flow; admin UI connection management screens (handled in Story 6.35).
+

@@ -33,9 +33,9 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
    
    **If Step 2 found no contract exists yet:** this is the case where a hook blocked a write because no contract was authored before implementation was attempted. This is not a special case — it means the real work of Steps 1–3 must be completed now, in order, before any code can be safely written. Complete them now: finalize the Intent (Step 1), create/finalize the contract (Step 2), update/create the component SKILL.md (Step 3). Only then return to this step and write the implementation to match the (now-existing) contract.
 
-5. **Validate.** Run the specific contract that was failing. Then run the full accumulated contract suite for the repo. Both must pass. If either still fails, this attempt is done and failed — see Step 6b before starting another. 
+5. **Validate.** Run the specific contract that was failing. Then run the failing contract's own epic's contract suite (`jest contracts/epic-<N>`, per `docs/implementation-methodology.md`'s Step 6) — or the full accumulated suite instead if the fix touched any file shared outside that epic (check the touched component's `SKILL.md` "Relations to other components" section; crosses epics, or any doubt, means run full). Both must pass. CI's own unconditional full-suite run on every push/PR is the real backstop regardless of which scope ran here. If either still fails, this attempt is done and failed — see Step 6b before starting another.
    
-   **If the full-suite run fails a contract you weren't targeting** (from a different story or component), stop before touching it. This is a cross-component regression — do not mix its repair into the current attempt counter. Instead, apply the **Cross-Component Regression Protocol** below, then return to Step 5 to re-validate the full suite.
+   **If this run fails a contract you weren't targeting** (from a different story or component), stop before touching it. This is a cross-component regression — do not mix its repair into the current attempt counter. Instead, apply the **Cross-Component Regression Protocol** below, then return to Step 5 and re-validate with the full suite (not the epic-scoped subset — a cross-component regression, by definition, already crossed the boundary the epic scope was meant to catch).
 
 ## Cross-Component Regression Protocol
 
@@ -57,13 +57,13 @@ Either 6a or 6b means: report to the user exactly what's blocking a safe repair 
 
 7. **Commit and log — only on a genuine pass, never after a 6a/6b stop.** Stage and commit the fix (and, if this was a 5b cross-component regression, note in the commit message which story's change caused it and which story's contract it restored). Run `git rev-parse HEAD` and `git show --stat --format= HEAD`, then append an entry to `docs/implementation-log.md` using its exact field format — commit hash, repo, the story/ADR whose contract was healed, files touched (from git's output, not memory), full suite result. Append only, per that file's own rule — never edit a prior entry, including one from an earlier attempt in this same session.
 
-8. **Report back.** State: which step(s) actually needed a fix and which didn't, what changed (file list), the commit hash and Implementation Log entry, and confirmation the full suite passes. For a Step 6a/6b stop, state plainly that no repair was completed, no commit was made, which stop condition applied, and — for 6b — a summary of all attempts tried. Never present a forced, partial, or non-converged fix as resolved, and never log a commit that doesn't exist.
+8. **Report back.** State: which step(s) actually needed a fix and which didn't, what changed (file list), the commit hash and Implementation Log entry, and which suite scope Step 5 actually ran (epic-scoped or full, and why) with confirmation it passed. For a Step 6a/6b stop, state plainly that no repair was completed, no commit was made, which stop condition applied, and — for 6b — a summary of all attempts tried. Never present a forced, partial, or non-converged fix as resolved, and never log a commit that doesn't exist.
 
 ## Definition of "healed" — all of these, not just the check that was red
 
 1. Steps 1–5 were actually walked, in order, this pass.
 2. The originally failing check now passes.
-3. The full accumulated contract suite still passes.
+3. Step 5's own suite scope passes — the failing contract's epic, or the full accumulated suite if the shared-file carve-out applied. CI's unconditional full-suite run on push/PR is the final, authoritative confirmation beyond that; the local bar is Step 5's scope, not a guarantee CI has already run.
 4. Nothing was weakened, skipped, `.skip`/`.todo`-marked, deleted, or bypassed (`--no-verify` etc.) to get here.
 5. Any file touched outside the original story's scope is explicitly flagged, not silent.
 6. `SKILL.md` and the traceability tables are accurate afterward.

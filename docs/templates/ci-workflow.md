@@ -2,6 +2,8 @@
 
 Copy to `<repo>/.github/workflows/contract-suite.yml` during Phase 0, for both `social-listening-core` and `social-listening-admin`. This is the real enforcement backstop — a required status check on branch protection (set that up manually in GitHub repo settings once the repo exists; it can't be configured from a file) means a PR literally cannot merge without the full accumulated contract suite passing, regardless of what any local hook did or didn't catch.
 
+**This workflow's own trigger — `pull_request` and `push: branches: [main]` — is unchanged by, and is the load-bearing reason for, `docs/implementation-methodology.md`'s 2026-08-19 local-validation split.** Since that change, a local `implement-story`/`heal-contract-failure` pass defaults to running only its own epic's contract subset, not the full accumulated suite, for iteration speed. This file is what makes that safe: it still runs the full suite unconditionally on every push and PR, so nothing merges to `main` without the full regression check — the epic-scoped local default only ever affects how fast the local loop is, never what actually gates `main`.
+
 ```yaml
 name: Contract Suite
 

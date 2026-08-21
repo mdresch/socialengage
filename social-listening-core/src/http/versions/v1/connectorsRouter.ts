@@ -6,9 +6,16 @@ import { requireTenantUser, requireTenantUserIdentity } from '../../auth/require
 import {
   setConnectorActivation,
   isConnectorActive,
+  listActiveUserActivations,
   ConnectorActivationOwnerType,
 } from '../../../connectors/connectorActivationStore';
 import { getSocialConnector, getAIProviderConnector } from '../../../connectors/registry';
+import {
+  reconcileStaleIngestionRuns,
+  getMostRecentRunStatus,
+  getMostRecentRunStatusForUser,
+} from '../../../ingestion/ingestionRunStore';
+import { deriveConnectorHealth } from '../../../connectors/connectorHealth';
 
 function parseOwnerType(value: unknown): CredentialOwnerType | null {
   if (value === undefined || value === 'tenant') return 'tenant';
@@ -33,14 +40,22 @@ export const connectorsRouter = Router();
  * fields or the cache itself.
  */
 connectorsRouter.get('/:platformId', async (req, res) => {
-  const tenantId = requireTenantUser(req, res);
-  if (!tenantId) return;
+  const caller = requireTenantUserIdentity(req as any, res);
+  if (!caller) return;
+  const { tenantId, userId: callerUserId } = caller;
 
   const platformId = req.params.platformId;
-  const [health, isActive] = await Promise.all([
+
+  const [tenantHealth, userHealth, isTenantActive, isCallerActive, activeUsers] = await Promise.all([
     getCachedConnectorHealth(tenantId, platformId),
+    callerUserId ? getCachedConnectorHealth(tenantId, platformId, undefined, callerUserId) : Promise.resolve(null),
     isConnectorActive(tenantId, platformId, 'tenant'),
+    callerUserId ? isConnectorActive(tenantId, platformId, 'user', callerUserId) : Promise.resolve(false),
+    listActiveUserActivations(tenantId, platformId).catch(() => []),
   ]);
+  // Use userHealth if user has a credential or activation, otherwise fallback to tenantHealth
+  const health = (userHealth && userHealth.credentialStatus !== null) ? userHealth : tenantHealth;
+  const isActive = isTenantActive || isCallerActive || activeUsers.length > 0;
   res.json({ ...health, isActive });
 });
 
@@ -313,3 +328,71 @@ connectorsRouter.post('/:platformId/deactivate', async (req, res) => {
     deactivatedAt: result.deactivatedAt,
   });
 });
+
+/**
+ * POST /v1/connectors/:platformId/retry
+ * POST /v1/connectors/:platformId/users/:userId/retry
+ * (Story 1.16, ADR-0070 §4) — Manual force retry / re-sync endpoint.
+ * Reconciles stale runs, verifies no run started < 60s ago is in progress (409),
+ * invokes on-demand poll, and returns refreshed ConnectorHealth.
+ */
+connectorsRouter.post(['/:platformId/retry', '/:platformId/users/:userId/retry'], async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId, role } = identity;
+
+  const platformId = Array.isArray(req.params.platformId) ? req.params.platformId[0] : req.params.platformId;
+  const rawUserId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
+  const targetUserId = rawUserId || (typeof req.query.userId === 'string' ? req.query.userId : undefined);
+
+  if (targetUserId) {
+    if (targetUserId !== userId && role !== 'tenant_admin') {
+      res.status(403).json({ error: 'Only the owning user or a tenant_admin may retry a user-bound connector.' });
+      return;
+    }
+  } else {
+    if (role !== 'tenant_admin') {
+      res.status(403).json({ error: 'Only a tenant_admin may trigger an on-demand connector retry.' });
+      return;
+    }
+  }
+
+  // 1. Reconcile any stale runs
+  await reconcileStaleIngestionRuns();
+
+  // 2. Check if a run is currently in progress
+  const currentStatus = targetUserId
+    ? await getMostRecentRunStatusForUser(tenantId, platformId, targetUserId)
+    : await getMostRecentRunStatus(tenantId, platformId);
+
+  if (currentStatus === 'running') {
+    res.status(409).json({ error: 'Ingestion run already in progress.' });
+    return;
+  }
+
+  const connector = getSocialConnector(platformId);
+  if (!connector) {
+    res.status(400).json({ error: `Connector '${platformId}' is not registered.` });
+    return;
+  }
+
+  try {
+    if (targetUserId && connector.pollUser) {
+      await connector.pollUser(tenantId, targetUserId);
+    } else if (connector.poll) {
+      await connector.poll(tenantId);
+    } else {
+      res.status(400).json({ error: `Connector '${platformId}' does not support polling.` });
+      return;
+    }
+
+    const health = await deriveConnectorHealth(tenantId, platformId, undefined, targetUserId);
+    res.status(200).json(health);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Failed to execute connector retry.',
+      details: err instanceof Error ? err.message : String(err),
+    });
+  }
+});
+

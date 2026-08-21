@@ -84,7 +84,7 @@ describe('Story 6.21 — Wikipedia connector exposed in the Tenant Admin UI', ()
   describe('AC2: ConnectorsClient.tsx gains a new, distinct icon/color pair', () => {
     it('PlatformDef icon union gains a new, distinct value; color union is unaffected (Wikipedia reused no existing color)', () => {
       const source = readSrc('app', 'tenant', 'connectors', 'ConnectorsClient.tsx');
-      const colorMatch = source.match(/color:\s*'blue'\s*\|\s*'indigo'\s*\|\s*'purple'\s*\|\s*'emerald'\s*\|\s*'(\w+)';/);
+      const colorMatch = source.match(/color:\s*'blue'\s*\|\s*'indigo'\s*\|\s*'purple'\s*\|\s*'emerald'\s*\|\s*'(\w+)'/);
       expect(colorMatch).not.toBeNull();
       const newColor = colorMatch![1];
       expect(['blue', 'indigo', 'purple', 'emerald']).not.toContain(newColor);
@@ -107,7 +107,7 @@ describe('Story 6.21 — Wikipedia connector exposed in the Tenant Admin UI', ()
     it('globals.css defines matching icon-background and subtitle-color rules for the new color', () => {
       const cssSource = fs.readFileSync(path.join(ADMIN_ROOT, 'src', 'app', 'globals.css'), 'utf8');
       const clientSource = readSrc('app', 'tenant', 'connectors', 'ConnectorsClient.tsx');
-      const colorMatch = clientSource.match(/color:\s*'blue'\s*\|\s*'indigo'\s*\|\s*'purple'\s*\|\s*'emerald'\s*\|\s*'(\w+)';/);
+      const colorMatch = clientSource.match(/color:\s*'blue'\s*\|\s*'indigo'\s*\|\s*'purple'\s*\|\s*'emerald'\s*\|\s*'(\w+)'/);
       const newColor = colorMatch![1];
 
       expect(cssSource).toMatch(new RegExp(`\\.cv-platform-icon-${newColor}\\s*\\{`));

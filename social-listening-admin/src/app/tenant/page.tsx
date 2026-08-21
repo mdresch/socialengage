@@ -19,6 +19,8 @@ import { extractDisplayText, extractProviderBadge, extractEnrichmentSummary } fr
 const PLATFORMS = [
   { id: 'gnews', name: 'GNews' },
   { id: 'newswire', name: 'Newswire' },
+  { id: 'wikipedia', name: 'Wikipedia' },
+  { id: 'facebook', name: 'Facebook Page' },
   { id: 'azure-ai-language', name: 'Azure AI Language' },
   { id: 'azure-openai', name: 'Azure OpenAI' },
   { id: 'tenant-owned-feed', name: 'Tenant Feed' },
@@ -49,7 +51,7 @@ export default async function TenantShellPage() {
   const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
 
   // Fetch all data in parallel — each source degrades independently on failure.
-  const [tenant, watchlists, connectors, postsPage] = await Promise.all([
+  const [tenant, watchlists, connectors, allPosts] = await Promise.all([
     getMyTenant().catch((): AdminTenant | null => null),
     listWatchlists().catch((): Watchlist[] => []),
     Promise.all(
@@ -59,17 +61,25 @@ export default async function TenantShellPage() {
           .catch((): ConnectorSummary => ({ id: p.id, name: p.name, status: 'disconnected' as ConnectorStatus['status'], isActive: false }))
       )
     ),
-    listPosts().catch(() => ({ posts: [] as SocialPostSummary[], nextCursor: null })),
+    (async () => {
+      try {
+        const page = await listPosts(undefined, 100);
+        return (page.posts ?? []).reverse();
+      } catch {
+        return [];
+      }
+    })(),
   ]);
 
   const activeWatchlists = watchlists.filter((w) => w.isActive).length;
-  const activeConnectors = connectors.filter((c) => c.isActive);
+  const activeConnectors = connectors.filter((c) => c.isActive || c.status !== 'disconnected');
   const activeConnectorsCount = activeConnectors.length;
   const degradedConnectors = connectors.filter(
-    (c) => c.isActive && (c.status === 'degraded' || c.status === 'failing')
+    (c) => (c.isActive || c.status !== 'disconnected') && (c.status === 'degraded' || c.status === 'failing')
   );
 
-  const recentPosts = postsPage.posts.slice(0, 3);
+  const totalPostsCount = allPosts.length;
+  const recentPosts = allPosts.slice(0, 3);
   const seatPercent =
     tenant && tenant.licenseSeatCount > 0
       ? Math.min(100, Math.round((tenant.activeSeatCount / tenant.licenseSeatCount) * 100))
@@ -122,67 +132,101 @@ export default async function TenantShellPage() {
       )}
 
       {/* Metric summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+      <div className="overview-cards-grid">
         {/* Active Watchlists */}
-        <a href="/tenant/watchlists" className="card" style={{ padding: 'var(--space-5)', textDecoration: 'none', display: 'block' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
-            Active Watchlists
+        <a href="/tenant/watchlists" className="overview-card">
+          <div className="overview-card-header">
+            <span className="overview-card-label">Active Watchlists</span>
+            <div className="overview-card-icon-badge overview-card-icon-watchlists" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>{activeWatchlists}</span>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>of {watchlists.length} configured</span>
+          <div className="overview-card-body">
+            <div className="overview-card-stat">
+              <span className="overview-card-count">{activeWatchlists}</span>
+              <span className="overview-card-sub">of {watchlists.length} configured</span>
+            </div>
           </div>
-          <div style={{ marginTop: 'var(--space-2)', fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500 }}>
-            Manage match rules →
+          <div className="overview-card-footer">
+            <span>Manage match rules →</span>
           </div>
         </a>
 
         {/* Ingestion Connectors */}
-        <a href="/tenant/connectors/status" className="card" style={{ padding: 'var(--space-5)', textDecoration: 'none', display: 'block' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
-            Ingestion Connectors
+        <a href="/tenant/connectors/status" className="overview-card">
+          <div className="overview-card-header">
+            <span className="overview-card-label">Ingestion Connectors</span>
+            <div className="overview-card-icon-badge overview-card-icon-connectors" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>{activeConnectorsCount}</span>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>active feeds</span>
+          <div className="overview-card-body">
+            <div className="overview-card-stat">
+              <span className="overview-card-count">{activeConnectorsCount}</span>
+              <span className="overview-card-sub">of {connectors.length} active feeds</span>
+            </div>
           </div>
-          <div style={{ marginTop: 'var(--space-2)', fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500 }}>
-            Inspect health status →
+          <div className="overview-card-footer">
+            <span>Inspect health status →</span>
           </div>
         </a>
 
         {/* Ingested Posts */}
-        <a href="/tenant/posts" className="card" style={{ padding: 'var(--space-5)', textDecoration: 'none', display: 'block' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
-            Ingested Posts
+        <a href="/tenant/posts" className="overview-card">
+          <div className="overview-card-header">
+            <span className="overview-card-label">Ingested Posts</span>
+            <div className="overview-card-icon-badge overview-card-icon-posts" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>{postsPage.posts.length}</span>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>matched items</span>
+          <div className="overview-card-body">
+            <div className="overview-card-stat">
+              <span className="overview-card-count">{totalPostsCount.toLocaleString()}</span>
+              <span className="overview-card-sub">matched items</span>
+            </div>
           </div>
-          <div style={{ marginTop: 'var(--space-2)', fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500 }}>
-            Browse enriched feed →
+          <div className="overview-card-footer">
+            <span>Browse enriched feed →</span>
           </div>
         </a>
 
-        {/* Seat utilization */}
-        <a href={isTenantAdmin ? '/tenant/users' : '/tenant/settings'} className="card" style={{ padding: 'var(--space-5)', textDecoration: 'none', display: 'block' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
-            Seat Utilization
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-              {tenant?.activeSeatCount ?? '—'}
-            </span>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
-              of {tenant?.licenseSeatCount ?? '—'} licensed
-            </span>
-          </div>
-          {tenant && (
-            <div style={{ marginTop: 'var(--space-3)', height: '6px', background: 'var(--color-border)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${seatPercent}%`, background: 'var(--color-accent)', borderRadius: 'var(--radius-full)', transition: 'width 300ms ease' }} />
+        {/* Seat Utilization */}
+        <a href={isTenantAdmin ? '/tenant/users' : '/tenant/settings'} className="overview-card">
+          <div className="overview-card-header">
+            <span className="overview-card-label">Seat Utilization</span>
+            <div className="overview-card-icon-badge overview-card-icon-seats" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
-          )}
+          </div>
+          <div className="overview-card-body">
+            <div className="overview-card-stat">
+              <span className="overview-card-count">{tenant?.activeSeatCount ?? '—'}</span>
+              <span className="overview-card-sub">of {tenant?.licenseSeatCount ?? '—'} licensed ({seatPercent}%)</span>
+            </div>
+            {tenant && (
+              <div className="overview-card-progress-track">
+                <div
+                  className="overview-card-progress-fill"
+                  style={{ width: `${seatPercent}%` }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="overview-card-footer">
+            <span>{isTenantAdmin ? 'Manage users & access →' : 'View license info →'}</span>
+          </div>
         </a>
       </div>
 
@@ -284,7 +328,7 @@ export default async function TenantShellPage() {
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    {connectors.filter((c) => c.isActive).map((c) => (
+                    {connectors.filter((c) => c.isActive || c.status !== 'disconnected').map((c) => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                         <span style={{ fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.name}

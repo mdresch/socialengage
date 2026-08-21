@@ -9,6 +9,7 @@ import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
 import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
+import { buildGeoEnrichment } from '../geo/geoCountryUtils';
 
 const DEFAULT_QUERY = 'technology';
 
@@ -103,13 +104,19 @@ export async function ingestGNewsArticles(
     const enrichmentText = [article.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
+    // Story 2.20 (ADR-0064) — country-level geospatial extraction from GNews source.country
+    const geoEnrichment = buildGeoEnrichment(article.source?.country, 'source', 'high');
+    const combinedEnrichment = (enrichment || Object.keys(geoEnrichment).length > 0)
+      ? { ...(enrichment ?? {}), ...geoEnrichment }
+      : undefined;
+
     const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
       rawPayload: { providerId: GNEWS_PROVIDER_ID, externalId: normalized.externalId, ...article },
       publishedAt: normalized.publishedAt,
-      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      enrichment: combinedEnrichment as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
     });

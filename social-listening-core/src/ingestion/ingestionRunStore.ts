@@ -1,7 +1,19 @@
+import { Pool } from 'pg';
 import { withTenant } from '../db/withTenant';
+import { getAdminPool } from '../db/adminPool';
 
 export type TriggerType = 'poll' | 'webhook';
 export type IngestionRunStatus = 'running' | 'succeeded' | 'failed';
+
+export interface ReconciledStaleRun {
+  id: string;
+  tenantId: string;
+  platformId: string;
+  userId?: string;
+  startedAt: string;
+}
+
+export const DEFAULT_MAX_RUN_DURATION_MS = 15 * 60 * 1000;
 
 export interface StartIngestionRunInput {
   platformId: string;
@@ -112,4 +124,52 @@ export async function completeIngestionRun(
       ]
     );
   });
+}
+
+/**
+ * Story 1.16 (ADR-0070 §1) — Lock-safe watchdog reconciliation of orphaned
+ * or hung `running` ingestion runs. Sweeps `ingestion_runs` using
+ * `FOR UPDATE SKIP LOCKED` and transitions stale rows older than
+ * `maxDurationMs` to `status = 'failed'`, `retryable = true`, unblocking
+ * the Story 1.14/1.15 in-flight guards.
+ */
+export async function reconcileStaleIngestionRuns(
+  maxDurationMs: number = DEFAULT_MAX_RUN_DURATION_MS,
+  pool: Pool = getAdminPool()
+): Promise<ReconciledStaleRun[]> {
+  const client = await pool.connect();
+  try {
+    const cutoffDate = new Date(Date.now() - maxDurationMs);
+    const { rows } = await client.query<{
+      id: string;
+      tenant_id: string;
+      platform_id: string;
+      user_id: string | null;
+      started_at: Date;
+    }>(
+      `UPDATE ingestion_runs
+       SET status = 'failed',
+           completed_at = now(),
+           error_summary = 'Ingestion run timed out or aborted (reconciled by watchdog)',
+           retryable = true
+       WHERE id IN (
+         SELECT id FROM ingestion_runs
+         WHERE status = 'running'
+           AND started_at < $1
+         FOR UPDATE SKIP LOCKED
+       )
+       RETURNING id, tenant_id, platform_id, user_id, started_at`,
+      [cutoffDate]
+    );
+
+    return rows.map((r) => ({
+      id: r.id,
+      tenantId: r.tenant_id,
+      platformId: r.platform_id,
+      userId: r.user_id ?? undefined,
+      startedAt: r.started_at.toISOString(),
+    }));
+  } finally {
+    client.release();
+  }
 }

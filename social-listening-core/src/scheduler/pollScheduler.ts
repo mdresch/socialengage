@@ -3,8 +3,15 @@ import { listTenants } from '../tenants/tenantStore';
 import { listSocialConnectors } from '../connectors/registry';
 import { shouldAttemptIngestion, deriveConnectorHealth } from '../connectors/connectorHealth';
 import { listActiveUserActivations } from '../connectors/connectorActivationStore';
-import { getMostRecentRunStatus, getMostRecentRunStatusForUser, IngestionRunStatus } from '../ingestion/ingestionRunStore';
+import {
+  getMostRecentRunStatus,
+  getMostRecentRunStatusForUser,
+  reconcileStaleIngestionRuns,
+  ReconciledStaleRun,
+  IngestionRunStatus,
+} from '../ingestion/ingestionRunStore';
 import { SocialConnector } from '../connectors/types';
+import { publishConnectorAlertEvent } from '../events/publishConnectorAlertEvents';
 
 /** Implementation default (ADR-0052 §9) — a real guess, revisable via Amendment Log. */
 export const DEFAULT_TICK_INTERVAL_MS = 60 * 1000;
@@ -60,6 +67,8 @@ export interface SchedulerDeps {
   listActiveUserActivations: (tenantId: string, platformId: string) => Promise<string[]>;
   /** Story 1.15 (ADR-0061 Decision §2) — the Tier-3 in-flight guard, scoped to one user's own runs (Story 1.14's tenant-wide parity). */
   getMostRecentRunStatusForUser: (tenantId: string, platformId: string, userId: string) => Promise<IngestionRunStatus | null>;
+  /** Story 1.16 (ADR-0070 §1) — Watchdog sweep of stale running runs before evaluating due pairs. */
+  reconcileStaleRuns: (maxDurationMs?: number) => Promise<ReconciledStaleRun[]>;
   now: () => number;
   onPollError: (err: unknown, tenantId: string, platformId: string) => void;
 }
@@ -74,6 +83,7 @@ const defaultDeps: SchedulerDeps = {
   listActiveUserActivations: (tenantId, platformId) => listActiveUserActivations(tenantId, platformId),
   getMostRecentRunStatusForUser: (tenantId, platformId, userId) =>
     getMostRecentRunStatusForUser(tenantId, platformId, userId),
+  reconcileStaleRuns: () => reconcileStaleIngestionRuns(),
   now: () => Date.now(),
   onPollError: (err, tenantId, platformId) => {
     // eslint-disable-next-line no-console
@@ -108,6 +118,27 @@ export interface SchedulerPairOutcome {
  */
 export async function runSchedulerTick(overrides: Partial<SchedulerDeps> = {}): Promise<SchedulerPairOutcome[]> {
   const deps: SchedulerDeps = { ...defaultDeps, ...overrides };
+
+  // Story 1.16 (ADR-0070 §1) — Watchdog stale run reconciliation:
+  // sweeps orphaned 'running' rows before evaluating due connectors.
+  try {
+    const reconciled = await deps.reconcileStaleRuns();
+    for (const run of reconciled) {
+      await publishConnectorAlertEvent({
+        tenantId: run.tenantId,
+        platformId: run.platformId,
+        userId: run.userId,
+        alertType: 'run_timed_out',
+        severity: 'warning',
+        message: `Ingestion run timed out after exceeding max duration (reconciled by watchdog)`,
+        metadata: { staleRunId: run.id, lastAttemptAt: run.startedAt },
+      });
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[pollScheduler] watchdog reconciliation failed:', err);
+  }
+
   const tenants = await deps.listTenants();
   const connectors = deps.listPollConnectors();
   const now = deps.now();

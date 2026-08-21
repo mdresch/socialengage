@@ -88,6 +88,11 @@ function activation(overrides: Record<string, unknown> = {}) {
     tokenExpiresAt: '2026-08-24T00:00:00.000Z',
     verifiedAt: '2026-08-17T00:00:00.000Z',
     createdAt: '2026-08-16T00:00:00.000Z',
+    // Story 6.28 (ADR-0050's 2026-08-20 Amendment Log entry) added this
+    // required field — null here is correct, not a stand-in: this
+    // fixture's own activation never had a name set, unrelated to what
+    // this story's own ACs actually test.
+    name: null,
     ...overrides,
   };
 }
@@ -309,11 +314,17 @@ describe('Story 6.20 — tenant-owned-feed multi-feed administration (admin)', (
       });
     });
 
-    it('updateTenantOwnedFeedActivation() PATCHes /v1/connectors/tenant-owned-feed/:id with {feedUrl} and returns the raw status/body', async () => {
+    // 2026-08-20, dated note (Story 6.28): updateTenantOwnedFeedActivation()
+    // widened from a positional (id, feedUrl) signature to (id, updates)
+    // so it can also carry `name` independently — the same widening the
+    // backend PATCH route itself gained. This is the same call, updated to
+    // match; the real behavior asserted (a PATCH with the given body,
+    // bearer-attached, raw status/body returned) is unchanged.
+    it('updateTenantOwnedFeedActivation() PATCHes /v1/connectors/tenant-owned-feed/:id with the given updates and returns the raw status/body', async () => {
       const outcome = await withAuthenticatedFetch(async (fetchSpy) => {
         fetchSpy.mockResolvedValue(new Response(JSON.stringify(activation({ feedUrl: 'https://blog.example.com/new' })), { status: 200 }));
         const { updateTenantOwnedFeedActivation } = await import('../../src/lib/core-client');
-        const result = await updateTenantOwnedFeedActivation('act-1', 'https://blog.example.com/new');
+        const result = await updateTenantOwnedFeedActivation('act-1', { feedUrl: 'https://blog.example.com/new' });
         expect(fetchSpy).toHaveBeenCalledWith(
           expect.stringContaining('/v1/connectors/tenant-owned-feed/act-1'),
           expect.objectContaining({

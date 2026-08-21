@@ -7,6 +7,9 @@ import { connectorsRouter } from './connectorsRouter';
 import { tenantOwnedFeedRouter } from './tenantOwnedFeedRouter';
 import { facebookOAuthRouter } from './facebookOAuthRouter';
 import { facebookPagesRouter } from './facebookPagesRouter';
+import { instagramOAuthRouter } from './instagramOAuthRouter';
+import { instagramAccountsRouter } from './instagramAccountsRouter';
+import { linkedinOAuthRouter } from './linkedinOAuthRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
@@ -84,6 +87,19 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
    * as tenant-owned-feed/facebook/oauth above.
    */
   v1Router.use('/connectors/facebook/pages', authMiddleware, facebookPagesRouter);
+
+  /**
+   * Story 2.24/6.34 (ADR-0068) — Instagram Business OAuth & Account Management.
+   * Mounted BEFORE the generic /connectors router below.
+   */
+  v1Router.use('/connectors/instagram/oauth', authMiddleware, instagramOAuthRouter);
+  v1Router.use('/connectors/instagram/accounts', authMiddleware, instagramAccountsRouter);
+
+  /**
+   * Story 2.25/6.35 (ADR-0069) — LinkedIn OAuth Connect Flow.
+   * Mounted BEFORE the generic /connectors router below.
+   */
+  v1Router.use('/connectors/linkedin/oauth', authMiddleware, linkedinOAuthRouter);
 
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);

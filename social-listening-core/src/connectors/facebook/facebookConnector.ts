@@ -18,6 +18,11 @@ export interface FacebookPagePost {
   created_time: string;
   permalink_url?: string;
   /**
+   * Story 2.23 (ADR-0067) — true author attribution when a post is created
+   * on the Page by a specific user/creator rather than directly as the Page entity.
+   */
+  from?: { id: string; name: string };
+  /**
    * Story 2.18 (ADR-0059 Decision §2) — aggregate engagement counts only,
    * never individual comment/reaction content (ADR-0059 Decision §5's own
    * author-rights boundary). All three optional: `shares` is confirmed,
@@ -95,15 +100,30 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
     throw new ClassifiableError('network', `Failed to reach Facebook Graph API (${context}): ${(err as Error).message}`);
   }
 
+  let body: Record<string, unknown> | null = null;
+  try {
+    body = (await response.json()) as Record<string, unknown>;
+  } catch {
+    // Non-JSON response, rely on classifyResponse below
+  }
+
+  if (body && typeof body === 'object' && 'error' in body) {
+    const error = (body as FacebookApiError).error;
+    if (error) {
+      const code = error.code;
+      if (code === 190 || code === 10 || code === 100) {
+        throw new ClassifiableError('http_401', `Facebook API auth error ${code} (${context}): ${error.type} — ${error.message}`);
+      }
+      if (code === 4 || code === 17) {
+        throw new ClassifiableError('rate_limit', `Facebook API rate limit error ${code} (${context}): ${error.type} — ${error.message}`);
+      }
+      throw new ClassifiableError('network', `Facebook API error (${context}): ${error.type} — ${error.message}`);
+    }
+  }
+
   classifyResponse(response, context);
 
-  const body = (await response.json()) as FacebookApiError;
-  if (body.error) {
-    const code = body.error.code;
-    if (code === 190) throw new ClassifiableError('http_401', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
-    throw new ClassifiableError('network', `Facebook API error (${context}): ${body.error.type} — ${body.error.message}`);
-  }
-  return body as Record<string, unknown>;
+  return (body ?? {}) as Record<string, unknown>;
 }
 
 /**
@@ -119,7 +139,7 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
  * pull in individual identifiable people.
  */
 export async function fetchFacebookPagePosts(pageId: string, pageAccessToken: string, limit = 25): Promise<FacebookPagePost[]> {
-  const fields = 'id,message,created_time,permalink_url,reactions.summary(total_count),comments.summary(total_count),shares';
+  const fields = 'id,message,created_time,permalink_url,from{id,name},reactions.summary(total_count),comments.summary(total_count),shares';
   const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=${fields}&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
   const body = await graphApiFetch(url, 'feed');
   const data = (body as { data?: FacebookPagePost[] }).data;

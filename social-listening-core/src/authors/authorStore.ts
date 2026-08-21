@@ -78,3 +78,54 @@ export async function listAuthorsByPlatform(tenantId: string, platformId: string
     }));
   });
 }
+
+export interface AuthorRecord {
+  id: string;
+  tenantId: string;
+  platformId: string;
+  authorExternalId: string;
+  handle: string | null;
+  displayName: string | null;
+  followerCount: number | null;
+  profileLocation: string | null;
+  rawProfile: unknown;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+}
+
+/** Story 2.23 (ADR-0067) — fetches a single Author by primary key id within tenant boundary */
+export async function getAuthorById(tenantId: string, authorId: string): Promise<AuthorRecord | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{
+      id: string;
+      tenant_id: string;
+      platform_id: string;
+      external_author_id: string;
+      handle: string | null;
+      display_name: string | null;
+      follower_count: number | null;
+      profile_location: string | null;
+      raw_profile: unknown;
+      first_seen_at: Date;
+      last_seen_at: Date;
+    }>(
+      `SELECT id, tenant_id, platform_id, external_author_id, handle, display_name, follower_count, profile_location, raw_profile, first_seen_at, last_seen_at FROM authors WHERE id = $1`,
+      [authorId]
+    );
+    if (rows.length === 0) return null;
+    const r = rows[0];
+    return {
+      id: r.id,
+      tenantId: r.tenant_id,
+      platformId: r.platform_id,
+      authorExternalId: r.external_author_id,
+      handle: r.handle,
+      displayName: r.display_name,
+      followerCount: r.follower_count,
+      profileLocation: r.profile_location,
+      rawProfile: r.raw_profile,
+      firstSeenAt: r.first_seen_at,
+      lastSeenAt: r.last_seen_at,
+    };
+  });
+}

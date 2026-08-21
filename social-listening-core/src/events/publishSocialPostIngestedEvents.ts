@@ -1,6 +1,7 @@
 import { Watchlist } from '../watchlists/watchlistStore';
 import { AstNode, AstNodeType, parseBooleanQuery } from '../watchlists/ast';
 import { matchesAst, MatchablePost } from '../watchlists/matcher';
+import { insertPostWatchlistMatches } from '../watchlists/postWatchlistMatchStore';
 import { publishEvent } from './serviceBusPublisher';
 import { buildSocialPostIngestedEvent } from './socialPostIngestedEvent';
 
@@ -34,6 +35,7 @@ export interface IngestedPostForEventPublishing {
   authorExternalId?: string;
   sentiment?: string | null;
   publishedAt?: string | null;
+  discoveringWatchlistId?: string;
 }
 
 /**
@@ -76,12 +78,17 @@ export async function publishSocialPostIngestedEvents(
     authorExternalId: post.authorExternalId,
   };
 
-  for (const watchlist of watchlists) {
-    const ast = watchlistToAst(watchlist);
-    if (!ast) continue;
+  const matchedWatchlistIds: string[] = [];
 
-    const matched = matchesAst(ast, matchablePost);
+  for (const watchlist of watchlists) {
+    const isDiscoveringWatchlist = Boolean(
+      post.discoveringWatchlistId && watchlist.id === post.discoveringWatchlistId
+    );
+    const ast = watchlistToAst(watchlist);
+    const matched = isDiscoveringWatchlist || (ast ? matchesAst(ast, matchablePost) : false);
     if (!matched) continue;
+
+    matchedWatchlistIds.push(watchlist.id);
 
     const event = buildSocialPostIngestedEvent({
       tenantId,
@@ -103,5 +110,25 @@ export async function publishSocialPostIngestedEvents(
         err
       );
     }
+  }
+
+  if (matchedWatchlistIds.length === 0) return;
+
+  // Story 3.11 (ADR-0063 Decision §2) — persists the same matched-watchlist
+  // set just computed above for event publishing, so GET /v1/posts?
+  // watchlistId=<id> can filter server-side. Best-effort, same precedent as
+  // publishEvent()'s own catch above: a store-layer failure must never fail
+  // or roll back real ingestion. See
+  // .claude/skills/post-watchlist-match-persistence/SKILL.md.
+  try {
+    await insertPostWatchlistMatches(
+      tenantId,
+      matchedWatchlistIds.map((watchlistId) => ({ postId: post.postId, watchlistId }))
+    );
+  } catch (err) {
+    console.error(
+      `[ingestion-events] Failed to persist post_watchlist_matches (tenant=${tenantId} post=${post.postId}):`,
+      err
+    );
   }
 }

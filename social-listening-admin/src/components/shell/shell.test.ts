@@ -46,7 +46,7 @@ describe('App Shell Layout Components (Design Spec §4)', () => {
   });
 
   describe('AppSidebar (§4.3 & §4.4)', () => {
-    it('renders all tenant nav items for tenant shell', () => {
+    it('renders all tenant nav items with icons and collapse toggle for tenant shell', () => {
       const html = renderToStaticMarkup(
         React.createElement(AppSidebar, { shellType: 'tenant', identity: TENANT_ADMIN })
       );
@@ -57,14 +57,19 @@ describe('App Shell Layout Components (Design Spec §4)', () => {
       expect(html).toContain('href="/tenant/users"');
       expect(html).toContain('href="/tenant/invite-assist"');
       expect(html).toContain('href="/tenant/settings"');
+      expect(html).toContain('nav-icon');
+      expect(html).toContain('id="btn-toggle-sidebar"');
+      expect(html).toContain('sidebar-toggle-btn');
     });
 
-    it('renders platform admin console link for platform-admin shell', () => {
+    it('renders platform admin console link with icon and toggle for platform-admin shell', () => {
       const html = renderToStaticMarkup(
         React.createElement(AppSidebar, { shellType: 'platform-admin', identity: PLATFORM_ADMIN })
       );
       expect(html).toContain('href="/platform-admin"');
       expect(html).toContain('Console Overview');
+      expect(html).toContain('nav-icon');
+      expect(html).toContain('id="btn-toggle-sidebar"');
       expect(html).not.toContain('href="/tenant/watchlists"');
     });
   });

@@ -7,3 +7,5 @@ playwright-report/
 test-results/
 .vercel
 .env*
+
+certificates

@@ -115,4 +115,18 @@ describe('Story 1.12 — GET /v1/connectors/:platformId includes isActive', () =
       .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: adminUserId, role: 'tenant_admin' }));
     expect(after.body.isActive).toBe(true);
   });
+
+  it('reflects user-level activation for Tier-3 connectors (ADR-0059/0067)', async () => {
+    const { tenantId, adminUserId } = await makeTenantWithAdmin();
+    const platformId = 'facebook';
+
+    await setConnectorActivation(tenantId, platformId, 'user', true, adminUserId, adminUserId);
+
+    const res = await request(app)
+      .get(`/v1/connectors/${platformId}`)
+      .set('X-Test-Identity', testIdentityHeaderValue(tenantId, { userId: adminUserId, role: 'tenant_admin' }));
+
+    expect(res.status).toBe(200);
+    expect(res.body.isActive).toBe(true);
+  });
 });

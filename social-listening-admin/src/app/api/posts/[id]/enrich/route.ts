@@ -11,8 +11,10 @@
 import { NextResponse } from 'next/server';
 import { runPostEnrichment } from '@/lib/core-client';
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const outcome = await runPostEnrichment(id);
+  const body = await request.json().catch(() => ({}));
+  const force = body?.force === true;
+  const outcome = await runPostEnrichment(id, { force });
   return NextResponse.json(outcome.body, { status: outcome.status });
 }

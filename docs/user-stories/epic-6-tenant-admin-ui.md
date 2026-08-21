@@ -172,7 +172,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.8 — Tenant-Admin: user invitation and management screen
 
-**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.9's real REST surface · **Status:** Ready — no new ADR needed, Story 1.5/6.3/6.4's own precedent for ordinary CRUD/UI surface against an already-real REST surface. Practically sequenced after Stories 1.9 and 6.2 (role-gating) both existing.
+**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.9's real REST surface · **Status:** Built 2026-08-10 — no new ADR needed, Story 1.5/6.3/6.4's own precedent for ordinary CRUD/UI surface against an already-real REST surface. Practically sequenced after Stories 1.9 and 6.2 (role-gating) both existing.
 **Built:** 2026-08-10 — social-listening-admin@6b7fc00 (backfilled 2026-08-17, per the Built convention's forward-only rule, while touching this story again — the field records the original build commit only, per its own fixed two-shape format; this screen has since been extended multiple times, most recently a 2026-08-17 visual redesign — see `docs/implementation-log.md` for the full commit history, not this single field)
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: no Epic 6 screen lets a Tenant-Admin invite anyone, despite the flow being designed at ADR level (ADR-0032 §6) and referenced as already-working in Story 5.9's own Acceptance Criteria — no screen exists to actually drive it.
@@ -313,7 +313,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.14 — Access-history view (extends Story 6.8's user management screen)
 
-**Source:** ADR-0032 §9 (Accepted), against Story 5.17's real REST surface · **Status:** Ready — no new ADR needed. Already named as a real, deliberate gap in Story 6.8's own text ("a natural companion, not required by this story's own Acceptance Criteria to ship in the same pass") and its own 2026-08-10 build note ("remains unbuilt, per this story's own named scope limit") — this story closes that named gap, it doesn't discover a new one.
+**Source:** ADR-0032 §9 (Accepted), against Story 5.17's real REST surface · **Status:** Built 2026-08-17 — no new ADR needed. Already named as a real, deliberate gap in Story 6.8's own text ("a natural companion, not required by this story's own Acceptance Criteria to ship in the same pass") and its own 2026-08-10 build note ("remains unbuilt, per this story's own named scope limit") — this story closes that named gap, it doesn't discover a new one.
 **Built:** 2026-08-17 — social-listening-admin@a27aa10
 
 **Drafted 2026-08-12**, same exhaustive sweep as Story 6.13 above. `GET /v1/tenants/users/:id/access-history` (Story 5.17) is real, `tenant_admin`-scoped, RLS-filtered, and has no frontend caller anywhere.
@@ -390,7 +390,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.19 — Render the post detail body as real, formatted Markdown
 
-**Source:** Story 3.10/ADR-0053's already-built `body_markdown` field, against Story 6.11's own post detail screen · **Status:** Ready — no new ADR needed, exposes an already-real, already-populated column over REST (`SocialPostSummary`/`SocialPostFull`, unmodified queries widened, not a new endpoint), the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 6.16 already established for this exact pair of screens.
+**Source:** Story 3.10/ADR-0053's already-built `body_markdown` field, against Story 6.11's own post detail screen · **Status:** Built 2026-08-17 — no new ADR needed, exposes an already-real, already-populated column over REST (`SocialPostSummary`/`SocialPostFull`, unmodified queries widened, not a new endpoint), the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 6.16 already established for this exact pair of screens.
 **Built:** 2026-08-17 — social-listening-admin@4f099a6 (core half: social-listening-core@aa4f317)
 
 **Requested directly by Menno** ("could you ensure the body that is presented in the UI is rendered to Markdown language? it now displays raw markdown"), found to be a real, confirmed gap on investigation, not a rendering-only bug: `social_posts.body_markdown` (Story 3.10, all three real connectors' `ingestX()` functions already populate it — clean prose, HTML stripped, converted via the canonical `htmlToMarkdown()` pipeline) has never been exposed by `GET /v1/posts`/`GET /v1/posts/:id` at all — confirmed directly against `socialPostStore.ts`'s `SocialPostSummary`/`SocialPostFull` interfaces and their own SQL queries, neither of which selects `body_markdown`. What the UI shows today is `rawPayload.description` — for Newswire/tenant-owned-feed, confirmed live to still contain raw, un-stripped HTML tags (`<p>...</p>`), rendered as literal escaped text since React never treats a string prop as HTML. No Markdown-rendering library exists anywhere in `social-listening-admin` today either — even once fetched, `body_markdown` would need real rendering, not just display.
@@ -446,7 +446,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.18 — Post feed search/filter operates over all matched posts, not just the current page
 
-**Source:** ADR-0011 (cursor pagination, Accepted) — no new ADR needed; `GET /v1/posts` itself is unchanged, this is purely a client-side data-fetching pattern change, the same "page through everything client-side, no new backend endpoint" shape ADR-0054 Decision §3 already established for the Analytics Dashboard (Story 8.1's `fetchAnalyticsSummary.ts`) · **Status:** Ready
+**Source:** ADR-0011 (cursor pagination, Accepted) — no new ADR needed; `GET /v1/posts` itself is unchanged, this is purely a client-side data-fetching pattern change, the same "page through everything client-side, no new backend endpoint" shape ADR-0054 Decision §3 already established for the Analytics Dashboard (Story 8.1's `fetchAnalyticsSummary.ts`) · **Status:** Built 2026-08-17
 **Built:** 2026-08-17 — social-listening-admin@a97cf30
 
 **Context found while scoping this story, at Menno's own direct request:** `PostsFeedClient.tsx`'s search box and Provider/Sentiment/Watchlist filters (added during this session's earlier healing pass, not part of Story 6.11's own original Acceptance Criteria — that story explicitly named "filtering... full-text or date-range search" as out of scope, since no such filter exists on `GET /v1/posts` itself) operate entirely client-side over whatever `page.tsx` fetches — a single, default-sized page (20 posts) via `listPosts(cursor)`. The header text is honest about this today ("X of Y **on this page**... more pages available") but that's exactly the gap Menno flagged: search/filter only ever sees the current page, not the tenant's full matched post set.
@@ -468,7 +468,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.20 — Multi-feed administration for the tenant-owned-feed connector (list, edit, remove)
 
-**Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Ready
+**Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Built 2026-08-17
 **Built:** 2026-08-17 — social-listening-admin@be1764d (core half: social-listening-core@e9d797f)
 
 **Requested directly by Menno** ("what needs to change to enable the feeds to be administered?", then "let's build the new ADR"). The storage/polling layers already supported multiple feeds per tenant (`tenant_owned_feed_activations` has no uniqueness constraint; `getVerifiedActivations()`/`pollTenantOwnedFeed()` already iterate every verified row) — but nothing above them exposed it: `tenantOwnedFeedRouter.ts` had exactly two routes (`connect`, `verify-domain`), and `TenantOwnedFeedSetup.tsx` was a single-activation state machine with no path to a second feed once one was verified.
@@ -493,7 +493,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.21 — Expose the Wikipedia connector in the Tenant Admin UI
 
-**Source:** Story 2.13's own real, generic `POST/DELETE /v1/connectors/:platformId/activate|deactivate` surface (ADR-0051), against a connector that already exists (`wikipedia`, `authMode: 'none'`) · **Status:** Ready · **Built:** 2026-08-18 — social-listening-admin@21c30bf — no new ADR needed, the same "ordinary UI/CRUD surface, exposes an already-built, already-generic mechanism" category Stories 6.15/6.16/6.18/6.19/6.20 already established.
+**Source:** Story 2.13's own real, generic `POST/DELETE /v1/connectors/:platformId/activate|deactivate` surface (ADR-0051), against a connector that already exists (`wikipedia`, `authMode: 'none'`) · **Status:** Built 2026-08-18 · **Built:** 2026-08-18 — social-listening-admin@21c30bf — no new ADR needed, the same "ordinary UI/CRUD surface, exposes an already-built, already-generic mechanism" category Stories 6.15/6.16/6.18/6.19/6.20 already established.
 
 **Drafted and requested directly by Menno, 2026-08-17/18, immediately after Story 2.13 (Wikipedia connector) was built** — confirmed directly, not assumed: `tenant/connectors/page.tsx`'s and `tenant/connectors/status/page.tsx`'s own hand-curated `PLATFORMS` arrays (Stories 6.3/6.5/6.15) list `gnews`/`newswire`/`azure-ai-language`/`azure-openai` only. Neither array has a `wikipedia` entry, so a Tenant-Admin has no way to see the connector exists or activate it — even though the backend's own connect/activate/deactivate REST surface is already fully generic on `platformId` (ADR-0051) and needs no change at all. This is the exact, already-named limitation both components' own SKILL.mds state plainly: "there is no 'list all registered connectors' backend endpoint... a new core connector must be added here by hand."
 
@@ -514,7 +514,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.22 — Add Wikipedia to the watchlist screen's platform-source list
 
-**Source:** Story 2.13's own real, generic `SocialConnector` (`wikipedia`, `authMode: 'none'`) · **Status:** Ready · **Built:** 2026-08-18 — social-listening-admin@8182706 — no new ADR needed, the same "ordinary UI/CRUD surface, exposes an already-built, already-generic mechanism" category Story 6.21 already established for this exact connector on a different screen.
+**Source:** Story 2.13's own real, generic `SocialConnector` (`wikipedia`, `authMode: 'none'`) · **Status:** Built 2026-08-18 · **Built:** 2026-08-18 — social-listening-admin@8182706 — no new ADR needed, the same "ordinary UI/CRUD surface, exposes an already-built, already-generic mechanism" category Story 6.21 already established for this exact connector on a different screen.
 
 **Drafted and requested directly by Menno, 2026-08-18, immediately after Story 2.14 (Wikipedia watchlist-driven discovery) shipped** — Menno activated the connector, tried to point a watchlist at it, and found Wikipedia isn't offered as a platform source when creating or editing a watchlist at all. Confirmed directly against the real code, not assumed: `tenant/watchlists/page.tsx`'s own `SOCIAL_PLATFORMS` constant — a separate, independently-maintained hardcoded list from `tenant/connectors/page.tsx`'s `PLATFORMS` array (`watchlist-management/SKILL.md`'s own "Governing decisions" section names this as deliberate — a watchlist can only legitimately target real `SocialConnector` platforms, not AI enrichment providers) — still reads `[{ id: 'gnews', ... }, { id: 'newswire', ... }]` only. It was correct when Story 6.4 was rebuilt (2026-08-12), the day before Wikipedia (Story 2.13, built 2026-08-17) existed as a real `SocialConnector` at all — nobody has updated it since, so Story 2.14's own new watchlist-driven discovery (which depends entirely on a tenant being able to create a `wikipedia`-targeted watchlist) has no way to be exercised from the UI.
 
@@ -536,7 +536,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Built:** 2026-08-18 — social-listening-admin@535338f
 
-**Source:** ADR-0059 (Accepted 2026-08-18), against Story 2.15's real backend surface · **Status:** Ready, with the same precondition Story 2.15 itself carries, inherited rather than repeated in full: this story's own OAuth flow and Page picker can be built and proven against a Menno-administered test Page under Meta's Standard Access (no App Review needed for that degenerate case, per ADR-0059 Decision §3) — onboarding any real, unaffiliated tenant's Page still requires SocialEngage's own Meta App to separately clear Business Verification and App Review first. Not blocked on Story 2.15 being fully built first — both can be developed in parallel against the same ADR, but this story's own end-to-end proof needs Story 2.15's OAuth exchange/token storage to exist.
+**Source:** ADR-0059 (Accepted 2026-08-18), against Story 2.15's real backend surface · **Status:** Built 2026-08-18, with the same precondition Story 2.15 itself carries, inherited rather than repeated in full: this story's own OAuth flow and Page picker can be built and proven against a Menno-administered test Page under Meta's Standard Access (no App Review needed for that degenerate case, per ADR-0059 Decision §3) — onboarding any real, unaffiliated tenant's Page still requires SocialEngage's own Meta App to separately clear Business Verification and App Review first. Not blocked on Story 2.15 being fully built first — both can be developed in parallel against the same ADR, but this story's own end-to-end proof needs Story 2.15's OAuth exchange/token storage to exist.
 
 **Drafted 2026-08-18, at Menno's own direct request**, immediately after ADR-0059's acceptance: Facebook is this project's first `authMode: 'oauth'` connector (every existing connector uses `'none'` or `'apiKey'`) and its first Tier-3-only connector (ADR-0059 Decision §4 — no `ownerType: 'tenant'` path exists for it at all, unlike every platform Story 6.3's existing `ConnectForm` already handles). Story 6.3's own connect flow assumes a single-step form submission (an API key field, or nothing for `authMode: 'none'`) — it has no redirect-based OAuth mechanism, and no concept of a provider returning a *list* of connectable assets (Meta's `/me/accounts`, the Pages the authenticating individual's own account administers) that the caller must choose among before a connection is actually made. Both gaps are real, not cosmetic — a plain reuse of `ConnectForm` cannot represent either. This story also gives ADR-0028's own still-open, named UX question (`docs/open-decisions.md`: "the user-activation flow's exact UX — how a user learns a tier-3/user-bound credential is available to activate — undesigned, blocks Story 6.3") its first concrete, built instance, though it resolves that question only for this one connector, not as a general pattern — named here, not overclaimed.
 
@@ -562,6 +562,13 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.24 — Connector status screen groups Connectors and AI Providers into separate sections, with honest AI-provider metrics
 
 **Source:** No new ADR needed — resolves `connector-status-view/SKILL.md`'s own already-named "Known gaps" entry from 2026-08-12 ("a real UX mismatch, deliberately left unaddressed for now... options considered, not decided: reword the copy for AI providers specifically, or give them real success/failure tracking"), the same "resolve an already-named, deliberately-deferred gap directly" category Story 2.14/6.22 already established for ADR-level open items, applied here to a SKILL.md-documented one instead. **Status:** Ready.
+**Built:** 2026-08-19 — social-listening-admin@5d76e44
+
+**Built 2026-08-19.** `ConnectorStatusClient.tsx` now partitions `rows` into two visually separate, headed sections — "Connectors" (`category === 'Ingestion'`) and "AI Providers" (`category === 'Enrichment'`) — via a single pass over the real, unfiltered `rows` prop that buckets each row's card into one of two arrays (never two separately-filtered `.map()` calls — see the regression note below for why). AI Provider cards render a plain `active`/`inactive` `StatusBadge` off real `isActive` with an explicit `'Active'`/`'Inactive'` label override (never the health-derived variant, since an `AIProviderConnector`'s `health.status` is permanently `'disconnected'`), and no metrics grid — a one-line `cs-ai-note` explains it's invoked on demand instead. Connector cards keep the real metrics grid, now showing each platform's own real poll interval (`POLL_INTERVAL_MINUTES`, mirroring `bootstrapConnectors.ts`'s real `pollCadenceMs` constants) instead of a universal wrong "2 minutes," and the real global retry ceiling ("Threshold: 20 retries before alert," mirroring `CONSECUTIVE_FAILURE_CEILING`) instead of a wrong "5." The KPI strip's "Total Feeds" now counts the Connectors section only. New contract: `contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts` (9/9).
+
+**A real cross-component regression was found and healed via `heal-contract-failure` during this same build, not folded in silently.** The first implementation pass split rendering into two separately-named, separately-`.filter()`'d arrays (`connectorRows.map(renderConnectorCard)` / `aiProviderRows.map(renderAIProviderCard)`), which broke two pre-existing, already-shipped contracts: Story 6.5 AC6 (`expect(source).toMatch(/rows\.map/)`, asserting every platform is still mapped from the real `rows` prop, not a pre-filtered subset) and Story 6.15 AC3 (`rowsBlock = source.slice(source.indexOf('rows.map('))`, asserting `ActivateDeactivateButton` renders before `cs-metrics-grid` within the per-row block) — both real, source-text-anchored checks this new structure no longer satisfied, since neither array was literally named/derived via `rows.map(`. Per the Cross-Component Regression Protocol (never weaken the foreign contract; narrow the new change instead), the implementation was restructured to a single `rows.map((row) => { ... })` callback that inlines each card's markup (both the AI and Connector branches) and pushes the result into the correct bucket array — genuinely satisfying both older contracts' real intent (every row is still processed by one real `rows.map(` call; `ActivateDeactivateButton` still textually precedes `cs-metrics-grid` in source) rather than gaming the check. Confirmed via `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` and `contracts/epic-6/story-6.15.connector-activation-controls.contract.test.ts`, both green after.
+
+**Full `social-listening-admin` suite at merge: 35/35 suites minus Story 6.1's own already-documented Entra-sign-in suite (see `docs/implementation-log.md` for the full account) — 34/35 suites, 502/521 tests.** Story 6.1's failure was more extensive this session (19/19 tests in that file, not the narrower 3-test `.env`-redirect-URI failure logged against Stories 6.27/6.11) — the real, spawned `next dev --experimental-https -H socialengage.test` server never became reachable at all in this environment. Confirmed unrelated by direct attribution, not assumed: Story 6.24's own diff touches only `ConnectorStatusClient.tsx`, `globals.css`, and this story's own new contract — nothing in the sign-in/session/dev-server-spawn surface that file exercises. Left uninvestigated further as out of this story's own scope (a local HTTPS-cert/dev-server environment dependency, not a code regression) — named here for whoever next touches Story 6.1's own area, since this is a materially different failure shape than the two prior sessions' narrower one.
 
 **Requested directly by Menno, 2026-08-18**, after observing the real, structural cause of the "Paused"-badge-next-to-"Deactivate"-button contradiction on the connector status screen: `deriveConnectorHealth()` (`social-listening-core/src/connectors/connectorHealth.ts`) returns `status: 'disconnected'` whenever a `platformId` has zero `ingestion_runs` rows — correct for `SocialConnector`s (real poll history), but `azure-ai-language`/`azure-openai` are `AIProviderConnector`s, invoked inline by `enrichPost()` and structurally never accumulate their own `ingestion_runs` row, ever, regardless of real usage. The status page's `deriveVariant()` (`ConnectorStatusClient.tsx`) maps that permanent `'disconnected'` to the `'inactive'` badge variant, whose design-system default label is "Paused" — a genuinely permanent, misleading reading for either AI provider, confirmed live (Azure OpenAI showing real `isActive: true`/"Deactivate" next to a "Paused" badge that can never say otherwise). Menno's own direction: group the two kinds of platform into visually separate, clearly labeled sections on this screen ("Connectors" vs. "AI Providers") "to highlight the differences," rather than trying to force AI providers into polling-connector badge semantics that don't describe them.
 
@@ -586,7 +593,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Built:** 2026-08-18 — social-listening-admin@6550716
 
-**Source:** No new ADR needed — a display-order fix over data ADR-0011's already-Accepted cursor pagination already provides in full; no change to the pagination mechanism itself. **Status:** Ready.
+**Source:** No new ADR needed — a display-order fix over data ADR-0011's already-Accepted cursor pagination already provides in full; no change to the pagination mechanism itself. **Status:** Built 2026-08-18.
 
 **Requested directly by Menno, 2026-08-18.** Confirmed directly against the real backend, not assumed: `GET /v1/posts` (`socialPostStore.ts`'s `queryFirstPage`/`queryAfterCursor`) orders every page `ORDER BY seq ASC` — `seq` is a monotonic, insertion-ordered identity column (ADR-0011/Story 3.4), so the very first page returned is the **oldest**-ingested posts, and cursor-following walks toward progressively newer ones. `social-listening-admin`'s own `fetchAllPosts()` (`tenant/posts/page.tsx`, Story 6.18) already pages through the tenant's **entire** post set into memory before `PostsFeedClient` ever renders or filters anything — it hands that array through unmodified, so the feed's card order (and the order "Show more" reveals further posts in) is oldest-ingested-first today, the opposite of what a Tenant-Admin scanning for new activity wants.
 
@@ -610,7 +617,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Built:** 2026-08-18 — social-listening-admin@03c37c9
 
-**Source:** No new ADR needed — an ordinary CRUD/UI-surface fix, the same category Story 6.21/6.22 already established for the identical bug on two other screens. **Status:** Ready.
+**Source:** No new ADR needed — an ordinary CRUD/UI-surface fix, the same category Story 6.21/6.22 already established for the identical bug on two other screens. **Status:** Built 2026-08-18.
 
 **Requested directly by Menno, 2026-08-18**, after real Wikipedia posts started landing in the feed (following this session's Story 2.16/2.17 fixes and a stale-credential correction) but Wikipedia had no way to be selected in the post feed's own Provider filter. Confirmed directly against the real code: `PostsFeedClient.tsx`'s Provider `<select>` is three static `<option>` elements — `gnews`, `newswire`, `tenant-owned-feed` — Wikipedia was never added, and no future connector will appear either unless someone remembers to hardcode it in yet again. **This is the third real instance of the identical bug category**, not a one-off: Story 6.21 found the same drift in `tenant/connectors/page.tsx`'s `PLATFORMS` array, Story 6.22 found it again in `tenant/watchlists/page.tsx`'s separately-maintained `SOCIAL_PLATFORMS` list. A third hand-maintained list on a third screen is the pattern itself being the problem, not a missing entry — Menno's own framing ("I would expect the connector [to] become available automatically") names the actual fix directly: derive the filter's own options from the real, already-fetched post data, not a list that has to be remembered.
 
@@ -678,10 +685,290 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 - The existing per-user `ActivateDeactivateButton` (`ownerType: 'user'`) stays exactly where it is — one switch covering all of that user's connected Pages collectively. When `parentConnectionActive` (from the new `GET .../pages` response) is `false`, the per-Page list renders an explicit banner (e.g. *"N Pages connected, but your personal Facebook connection is currently deactivated — none of them are being polled"*) rather than showing every row as if it were actively polling — proven by a test toggling `parentConnectionActive` and confirming the banner's presence/absence.
 - **A judgment call this story makes that ADR-0060 itself left undesigned, flagged for Menno's review before this is built:** the card-level `reconnect_required` action is redesigned so the per-Page list's own row-level action carries the actual remediation (re-entering the OAuth flow scoped to reconnecting that one Page), while the card-level badge becomes a pure rollup signal ("one or more Pages need attention — see your Page list") rather than a single "Reconnect Facebook" link that forces re-selecting every already-healthy Page again — proven by a test confirming the card-level action no longer restarts the full multi-Page flow when only one Page is unhealthy.
 
-**Explicitly out of scope** (per ADR-0060's own named Open Questions — not solved here, not invented as new scope):
-- Re-keying `RequestGate` beyond `(tenantId, providerId)` (e.g. to include `userId`/`credentialId`) — named, not designed, in ADR-0060; revisit only once real fan-out volume demonstrates the shared budget is actually insufficient.
-- The real per-Page, Engaged-Users-relative Graph API rate ceiling — `getRateLimitConfig()`'s flat placeholder is unchanged by this story.
-- The two-different-users-connecting-the-same-underlying-Page health-blending edge case (ADR-0060 Decision §4's own named blind spot) — not solved.
-- Pagination on `GET /v1/connectors/facebook/pages` — not needed at any Page count seen so far.
-- Comment/mention ingestion — remains out of scope per ADR-0059 Decision §5, unaffected by this story.
-- Any proactive notification (email, in-app alert) when a Page becomes `orphaned` — this story surfaces it only passively, in the per-Page list, the next time the tenant views that screen; a push-style nudge is not designed here.
+---
+
+## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
+
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 (`social-listening-admin`)
+**Depends on:** Story 1.16 (Ingestion watchdog, stalled status derivation, retry API endpoint in `social-listening-core`), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant-Admin or Tenant User,
+**I want** to see clear, real-time ingestion status badges (including `Stalled`), actionable alert banners when ingestion stops, and an on-demand "Force Retry / Re-sync" action,
+**so that** I am immediately aware when ingestion has stalled and can proactively trigger a recovery attempt without database intervention.
+
+**Acceptance Criteria**
+
+- **Connector Status View (`/tenant/connectors/status` & `/tenant/connectors`):**
+  - Widens `StatusBadge` variants to include `'stalled'` (rendered as Amber/Orange with label "Stalled / No Ingestion").
+  - Renders explicit operational metrics for each Ingestion Connector card:
+    - **Last Ingestion Attempt:** Relative timestamp (e.g. "10 mins ago") + ISO tooltip.
+    - **Last Successful Ingestion:** Relative timestamp (e.g. "25 mins ago") + ISO tooltip (reflecting `lastSuccessfulFetchAt`).
+    - **Ingestion Cadence:** Displays platform poll cadence (e.g. "Poll interval: 15m").
+- **On-Demand "Force Retry / Re-sync" Button:**
+  - Rendered on each Ingestion Connector card for `tenant_admin` users (and for Tier-3 connectors, the user owning the credential) when the connector is active.
+  - Clicking invokes `POST /v1/connectors/:id/retry` (or `POST /v1/connectors/:id/users/:userId/retry` for Tier-3) via `/api/connectors/[id]/retry` proxy route.
+  - While request is in-flight, displays a loading spinner and disables repeat clicks.
+  - On success, displays a toast notification ("Ingestion run triggered") and refreshes connector metrics immediately.
+  - On 409 conflict ("Run already in progress"), shows an informative message without failing abruptly.
+- **Global Ingestion Alert Banner:**
+  - If any active connector for the tenant is in `stalled`, `failing`, or `reconnect_required` status, renders a prominent alert banner at the top of `/tenant/analytics` (Overview tab) and `/tenant/connectors`.
+  - Banner details the affected platform(s), reason (e.g. "Ingestion stalled — no posts received in > 24 hours"), and provides direct actions ("Re-sync now" or "Reconnect account").
+  - Dismissible for the current browser session, but reappears if status remains unresolved on next page load.
+
+**Explicitly out of scope:** External push notifications (email/SMS/Slack alerts — downstream services, not admin UI scope).
+
+---
+
+## Story 6.30 — Brave Search API Connector Setup, Activation, and Status Screen
+
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.21 (`brave-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant Administrator,
+**I want** to connect, activate, manage, and monitor the Brave Search API connector using my organization's Brave API key from the admin portal,
+**so that** our tenant can actively discover web and news content for our watchlists without backend developer assistance.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `brave-search` to `PLATFORMS` array in both client components:
+    - `id: 'brave-search'`, `name: 'Brave Search'`, `description: 'Active web & news search discovery for watchlists'`
+    - `category: 'Ingestion'`, `authMode: 'api_key'`
+    - `tenantScopeAllowed: true`, `personalScopeAllowed: false` (Tier-2 platform credential, ADR-0028)
+    - `icon: 'search'` or dedicated Brave icon glyph
+- **Connect Modal & Credential Submission (`ConnectModal`):**
+  - When clicking "Connect" on the Brave Search card, opens `ConnectModal` with:
+    - Dedicated field for Brave Search API Key (`X-Subscription-Token`).
+    - Explicit ADR-0027 billing disclaimer noting that the tenant creates their own API account directly with Brave Search.
+  - Submits credential to `/api/connectors/brave-search/connect` via `POST` with `ownerType: 'tenant'`.
+  - On success, updates card state to connected with a masked credential indicator.
+- **Activation & Deactivation Controls:**
+  - Renders `ActivateDeactivateButton` (`ownerType: 'tenant'`) gated on `tenant_admin` role.
+  - Toggling active state correctly calls `/api/connectors/brave-search/activate` or `/api/connectors/brave-search/deactivate`.
+- **Connector Status & Telemetry (`/tenant/connectors/status`):**
+  - Renders `brave-search` in the "Connectors" section (Ingestion), distinct from "AI Providers".
+  - Shows operational metrics: Last Ingestion Attempt, Last Successful Ingestion, and polling cadence (e.g. "Poll interval: 1h–4h").
+  - Displays health status badge (`Healthy`, `Degraded`, `Failing`, `Stalled`).
+  - Gated on `tenant_admin`: renders "Re-sync now" button (Story 6.29) triggering on-demand retry for active Brave Search connector.
+
+**Explicitly out of scope:** Billing/reselling Brave Search credits (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.21).
+
+---
+
+## Story 6.31 — Human-in-the-Loop Post Enrichment Cascading Edit Drawer
+
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 3.13 (Post enrichment override API & precedence guard in `social-listening-core`), Story 6.15 (Post detail panel), Story 6.16 (Post enrichment display & re-enrichment action)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** to click an edit button on the post details enrichment card to open an Enrichment Details drawer side-by-side with the post,
+**so that** I can correct sentiment, add/remove key phrases, and update country or language attributes with real-time feedback and audit history.
+
+**Acceptance Criteria**
+
+- **Edit Trigger on Enrichment Card (`PostDetailPanel.tsx`):**
+  - Renders an edit icon button (`aria-label="Edit enrichment details"`, pencil icon) in the header of the AI Enrichment card.
+  - Clicking "Edit" opens the secondary `EnrichmentEditDrawer` without dismissing the active post drawer.
+- **Cascading Multi-Drawer Layout & Responsive Behavior:**
+  - **Large Viewports (`>= 1200px`):** The primary `PostDetailPanel` translates leftward smoothly (`transform: translateX(-420px)` or side-by-side container) while `EnrichmentEditDrawer` slides in flush to the right viewport edge.
+  - **Compact Viewports (`< 1200px`):** `EnrichmentEditDrawer` renders as a full-width overlay over the post panel with a back navigation arrow returning to the post details view.
+- **Enrichment Form Controls (`EnrichmentEditDrawer.tsx`):**
+  - **Sentiment Segmented Control:** Interactive toggle buttons for `Positive` (green), `Neutral` (slate), `Negative` (red).
+  - **Key Phrases Tag Editor:** Tag pills with remove (`×`) buttons, plus a text input and "+ Add" button to append new phrases (with duplicate prevention and max 50 phrase ceiling).
+  - **Language Selector:** Dropdown of standard ISO 639-1 languages.
+  - **Country / Region Selector:** Country dropdown supporting ISO 3166-1 alpha-2 codes or "Unknown / Unmapped".
+  - **Summary / Notes Field:** Multi-line textarea for analyst notes / corrected summary (max 1,000 characters).
+- **Optimistic Update, Submission, & Rollback:**
+  - Submitting "Save Changes" invokes `PATCH /api/posts/[id]/enrichment` (Next.js proxy route) with the modified fields.
+  - Optimistically updates the post's enrichment in `PostsFeedClient` and closes the secondary edit drawer.
+  - While saving, the button shows a loading spinner and is disabled against double-clicks.
+  - On failure, rolls back local state and displays an error toast notification.
+- **Visual "Edited by user" Badge & Lineage Indicator:**
+  - When a post has `enrichment.override.isOverridden === true`, the enrichment card displays an amber/blue "Edited by user" pill badge with a tooltip showing who edited the post and when (`overriddenAt`).
+- **Accessibility (a11y) & Keyboard Flow:**
+  - Both drawers carry `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`.
+  - Focus is trapped within `EnrichmentEditDrawer` while open.
+  - Pressing `Escape` closes **only** the `EnrichmentEditDrawer`, returns the primary post drawer to resting position, and returns focus to the Edit button.
+- **Re-Enrichment Conflict Handling:**
+  - If a user triggers `RunEnrichmentButton` on an overridden post, a confirmation modal is shown before proceeding.
+  - Confirming passes `force: true` to `/api/posts/[id]/enrich`.
+
+**Explicitly out of scope:** Batch multi-post enrichment editing (deferred); custom training-set export UI.
+
+---
+
+## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
+
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**As a** Tenant Administrator,
+**I want** to connect, activate, manage, and monitor the Bing Search API connector using my organization's Azure subscription key from the admin portal,
+**so that** our tenant can actively discover web and news content for our watchlists via Azure-aligned search infrastructure.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `bing-search` to `PLATFORMS` array in both client components:
+    - `id: 'bing-search'`, `name: 'Bing Search (Azure)'`, `description: 'Azure AI Services active web & news search discovery for watchlists'`
+    - `category: 'Ingestion'`, `authMode: 'api_key'`
+    - `tenantScopeAllowed: true`, `personalScopeAllowed: false` (Tier-2 platform credential, ADR-0028)
+    - `icon: 'search'` or dedicated Microsoft / Bing icon glyph
+- **Connect Modal & Credential Submission (`ConnectModal`):**
+  - When clicking "Connect" on the Bing Search card, opens `ConnectModal` with:
+    - Dedicated field for Azure Cognitive Services / Bing Search API Key (`Ocp-Apim-Subscription-Key`).
+    - Optional Azure custom endpoint URL input (defaulting to standard Bing Search v7 endpoint).
+    - Explicit ADR-0027 billing disclaimer noting that the tenant provisions their own Azure Cognitive Services resource directly with Microsoft.
+  - Submits credential to `/api/connectors/bing-search/connect` via `POST` with `ownerType: 'tenant'`.
+  - On success, updates card state to connected with a masked credential indicator.
+- **Activation & Deactivation Controls:**
+  - Renders `ActivateDeactivateButton` (`ownerType: 'tenant'`) gated on `tenant_admin` role.
+  - Toggling active state correctly calls `/api/connectors/bing-search/activate` or `/api/connectors/bing-search/deactivate`.
+- **Connector Status & Telemetry (`/tenant/connectors/status`):**
+  - Renders `bing-search` in the "Connectors" section (Ingestion), distinct from "AI Providers".
+  - Shows operational metrics: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 1h–4h"), and estimated Azure call volume.
+  - Displays health status badge (`Healthy`, `Degraded`, `Failing`, `Stalled`).
+  - Gated on `tenant_admin`: renders "Re-sync now" button (Story 6.29) triggering on-demand retry for active Bing Search connector.
+
+**Explicitly out of scope:** Billing/reselling Azure transactions (prohibited by ADR-0027); client-side search query execution (runs purely in backend scheduler, Story 2.22).
+
+---
+
+## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
+
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
+
+**As a** Tenant User or Tenant-Admin reviewing ingested social posts,
+**I want** Facebook posts in the feed and details drawer to clearly indicate which Facebook Page published the post and show the post's author,
+**so that** I can easily distinguish content published across our organization's various connected brand/regional Facebook Pages and understand whether a post was authored by a specific creator or by the Page itself.
+
+**Acceptance Criteria**
+
+- **Display Derivation Helpers (`postDisplay.ts`):**
+  - `extractFacebookPageContext(rawPayload)` (or equivalent helper) parses `pageId`, `pageName`, `author`, and detects if authorship is identical to the hosting Page (`author === pageName`).
+  - `extractAuthor(rawPayload)` cleanly resolves `rawPayload.author` (the true author or page name set by Story 2.23) as the top priority.
+- **Post Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'facebook'`, the post card header renders:
+    - Platform badge (`Facebook Page`).
+    - Explicit hosting Page attribution tag/badge (e.g. `📍 Page: Acme Global`).
+    - Author attribution (e.g. `By: John Doe` when the author differs from the Page, or `Acme Global` when published directly as the Page).
+- **Post Detail Panel & Slideover (`PostDetailPanel.tsx` & `PostsFeedClient.tsx`):**
+  - Renders a prominent **Hosting Facebook Page** row in the Ingestion Telemetry / Details section showing `pageName` and Meta `pageId`.
+  - In the Slideover header subtitle, displays `Published on Facebook Page: [Page Name]` alongside publication time.
+- **Post Feed Search Matching:**
+  - `searchQuery` filter in `PostsFeedClient` matches against `pageName` (in addition to existing `title`, `snippet`, `author`, and key phrases), enabling users to search for posts from a specific Facebook Page.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts` asserts:
+    - Post card renders hosting Page name and author distinction cleanly.
+    - Post detail panel renders hosting Page ID and name in metadata view.
+    - Post feed search query filtering matches on Facebook Page name.
+
+**Explicitly out of scope:** Filtering by Facebook Page ID via a dedicated dropdown (future extension); editing Facebook Page connection settings from the feed.
+
+---
+
+## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
+
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
+
+**As a** Tenant Administrator or User,
+**I want** to connect our organization's Instagram Business and Creator accounts via Meta OAuth, select which accounts to ingest using an account picker modal, monitor connector health on the status screen, and review rich Instagram posts (including carousel galleries and Reels) in the post feed and details drawer,
+**so that** our team can easily manage visual brand listening alongside our other social channels.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `instagram` to `PLATFORMS` definition:
+    - `id: 'instagram'`, `name: 'Instagram Business'`, `subtitle: 'Meta Graph API Ingestion Source'`
+    - `description: 'Ingests published photos, videos, carousels, and reels directly from your connected Instagram Business and Creator accounts via Meta Graph API.'`
+    - `category: 'Ingestion'`, `authMode: 'oauth'`
+    - `personalScopeAllowed: true`, `tenantScopeAllowed: false` (Tier-3 user credential)
+    - `icon: 'instagram'`, `color: 'pink'` (or gradient-aligned badge)
+- **OAuth Connect Flow & Multi-Account Picker Modal (`InstagramAccountPickerModal.tsx`):**
+  - Initiates OAuth via `/api/connectors/instagram/connect` with required scopes (`instagram_basic`, `pages_show_list`, `pages_read_engagement`).
+  - Upon OAuth callback, queries `GET /me/accounts?fields=id,name,instagram_business_account{id,username,name,profile_picture_url,followers_count}`.
+  - Displays modal listing all discovered Instagram Business/Creator accounts linked to the user's Facebook Pages, with account avatar, handle (`@username`), parent Facebook Page name, and checkboxes.
+  - Submits selected accounts to `/api/connectors/instagram/accounts` (`POST`) to register them in `instagram_connected_accounts`.
+- **Connector Status, Health, & Alerts (`/tenant/connectors/status`):**
+  - Renders `instagram` in the "Connectors" (Ingestion) section with connected account count.
+  - Shows operational telemetry: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 15m").
+  - Displays `reconnect_required` badge (and surfaces global `IngestionAlertBanner`) when Graph API returns errors `190`/`10`/`100`.
+  - Gated on credential owner or `tenant_admin`: renders "Re-sync now" button for on-demand polling.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'instagram'`, post card header displays:
+    - `Instagram Business` badge.
+    - Hosting account badge (e.g. `📍 @acmeglobal`).
+    - Publication timestamp.
+  - Renders visual media preview if `mediaUrl` or `thumbnailUrl` is available in `rawPayload` (with graceful fallback to canonical link).
+  - Displays engagement counters (`❤️ {likeCount}` · `💬 {commentsCount}`).
+- **Post Detail Panel & Carousel Gallery (`PostDetailPanel.tsx`):**
+  - For `mediaType === 'CAROUSEL_ALBUM'`, renders an interactive or multi-thumbnail carousel gallery derived from `rawPayload.children` (in preserved display order).
+  - If `rawPayload.childrenTruncated === true`, displays a subtle "View full gallery on Instagram" link pointing to `url`.
+  - Details telemetry row displays **Hosting Instagram Account:** `@username (ID: {igUserId})` and parent Facebook Page name.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts` asserts:
+    - Platform definition registers `instagram` with Tier-3 scope and correct metadata.
+    - Post card renders hosting handle `@username` and media preview gracefully.
+    - Post detail panel renders carousel gallery from `rawPayload.children`.
+    - Connector status screen displays operational metrics and `reconnect_required` badge.
+
+**Explicitly out of scope:** Ingesting personal Instagram account timelines; direct publishing/replying from admin UI.
+
+---
+
+## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
+
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
+
+**As a** Tenant Administrator or User,
+**I want** to connect our organization's LinkedIn member and company accounts via OAuth, view connector operational health and scope availability on the status screen, and view ingested LinkedIn posts in the post feed and details drawer,
+**so that** our team can monitor professional network discussions and company page interactions seamlessly.
+
+**Acceptance Criteria**
+
+- **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**
+  - Adds `linkedin` to `PLATFORMS` definition:
+    - `id: 'linkedin'`, `name: 'LinkedIn'`, `subtitle: 'OAuth Ingestion Source'`
+    - `description: 'Ingests published posts, comments, reactions, and company page analytics via LinkedIn REST API.'`
+    - `category: 'Ingestion'`, `authMode: 'oauth'`
+    - `personalScopeAllowed: true`, `tenantScopeAllowed: false` (Tier-3 user credential)
+    - `icon: 'linkedin'`, `color: 'blue'`
+- **OAuth Connect & Callback Flow:**
+  - Initiates OAuth via `/api/connectors/linkedin/connect`, generating cryptographically secure `state` parameter cached server-side (TTL 10m).
+  - Handles callback at `/api/connectors/linkedin/callback`, verifying `state` and linking credential to tenant and user.
+- **Graceful Scope Degradation & Status Screen (`/tenant/connectors/status`):**
+  - Renders `linkedin` in the "Connectors" (Ingestion) section.
+  - If organization scopes (`w_organization_social`, `r_organization_social`) are pending or missing, displays a non-blocking informational badge / callout:
+    > *"Organization features unavailable — partner scope approval pending."*
+  - Shows operational telemetry: Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 1h").
+  - Surfaces `expiring_soon` badge when token is within 7 days of 60-day expiry or refresh token is within 30 days of 1-year ceiling.
+  - Displays `reconnect_required` badge and alert banner if token is revoked or refresh fails.
+  - Gated on credential owner or `tenant_admin`: renders "Re-sync now" button for on-demand polling.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`):**
+  - For posts where `provider === 'linkedin'`, post card header displays:
+    - `LinkedIn` badge.
+    - Author attribution (e.g. `By: John Smith` or `Acme Corp`).
+    - Publication timestamp.
+  - Renders body text from canonical markdown.
+  - Displays engagement counters (reactions, comments, shares).
+- **Post Detail Panel & Drawer (`PostDetailPanel.tsx`):**
+  - Details telemetry row displays **Provider:** `LinkedIn`, **Author ID:** `linkedin:{memberId}`, and post permalink.
+- **Contract Verification:**
+  - Jest contract test in `social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts` asserts:
+    - Platform definition registers `linkedin` with Tier-3 scope and correct metadata.
+    - Post card renders LinkedIn badge, author name, and engagement counts.
+    - Status screen displays scope degradation notice when organization scopes are missing.
+    - Connector status screen displays operational metrics and `reconnect_required` badge on token revocation.
+
+**Explicitly out of scope:** In-app LinkedIn ad campaign creation; direct message monitoring.
+
+---
+
+**Documentation Steward correction, 2026-08-19.** Ten stories in this epic — 6.8, 6.14, 6.18, 6.19, 6.20, 6.21, 6.22, 6.23, 6.25, and 6.26 — each already carried a correct, real `**Built:**` field naming a real shipped commit (6.8: `social-listening-admin@6b7fc00`; 6.14: `@a27aa10`; 6.18: `@a97cf30`; 6.19: `@4f099a6`/core `@aa4f317`; 6.20: `@be1764d`/core `@e9d797f`; 6.21: `@21c30bf`; 6.22: `@8182706`; 6.23: `@535338f`; 6.25: `@6550716`; 6.26: `@03c37c9` — every hash confirmed directly against `docs/implementation-log.md`'s own matching entries), but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone — the same class of drift `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13) already names for Stories 5.18/6.7. For 6.23/6.25/6.26 specifically, the `**Built:**` field was placed *before* the `**Source:**/**Status:**` line rather than after it, the inverse of every other story's own ordering in this file — a likely reason this specific instance wasn't already caught by casual visual scanning. All ten Status lines now read "Built <date>," matching each story's own `**Built:**` field and the Log; no Acceptance Criteria text changed. (Story 6.8's own narrative context — a 2026-08-10 original build, `**Built:**` field date backfilled 2026-08-17 per the field's own forward-only, single-commit convention — is unaffected; only the Status word itself was stale.)
+
+
+

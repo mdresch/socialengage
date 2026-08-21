@@ -14,11 +14,15 @@ export interface TenantOwnedFeedActivationRow {
   verified_at: Date | null;
   created_at: Date;
   updated_at: Date;
+  /** Story 2.19 (ADR-0050's 2026-08-20 Amendment Log entry) — optional, tenant-owner-set display label; null when unset (the setup UI falls back to `domain`). Never used for Author/providerId modeling. */
+  name: string | null;
 }
 
 export interface CreateActivationInput {
   domain: string;
   feedUrl: string;
+  /** Story 2.19 — optional at connect time; omit or pass undefined to leave unset. */
+  name?: string;
 }
 
 /**
@@ -39,10 +43,10 @@ export async function createActivation(
   return withTenant(tenantId, async (client) => {
     const { rows } = await client.query<TenantOwnedFeedActivationRow>(
       `INSERT INTO tenant_owned_feed_activations (
-        tenant_id, domain, feed_url, verification_token, txt_record_host, token_expires_at
-      ) VALUES ($1, $2, $3, $4, $5, $6)
+        tenant_id, domain, feed_url, verification_token, txt_record_host, token_expires_at, name
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`,
-      [tenantId, input.domain, input.feedUrl, token, txtRecordHost, tokenExpiresAt]
+      [tenantId, input.domain, input.feedUrl, token, txtRecordHost, tokenExpiresAt, input.name ?? null]
     );
     return rows[0];
   });
@@ -129,6 +133,23 @@ export async function updateFeedUrl(tenantId: string, id: string, feedUrl: strin
     const { rows } = await client.query<TenantOwnedFeedActivationRow>(
       `UPDATE tenant_owned_feed_activations SET feed_url = $1 WHERE id = $2 RETURNING *`,
       [feedUrl, id]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  });
+}
+
+/**
+ * Story 2.19 (ADR-0050's 2026-08-20 Amendment Log entry) — updates the
+ * feed's own display `name` only, independent of `updateFeedUrl()` above
+ * (the router may call either or both in one PATCH). A `null` clears it
+ * back to "unset" (setup UI falls back to `domain`) rather than being
+ * rejected — this is a display label, not a required field.
+ */
+export async function updateFeedName(tenantId: string, id: string, name: string | null): Promise<TenantOwnedFeedActivationRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<TenantOwnedFeedActivationRow>(
+      `UPDATE tenant_owned_feed_activations SET name = $1 WHERE id = $2 RETURNING *`,
+      [name, id]
     );
     return rows.length > 0 ? rows[0] : null;
   });

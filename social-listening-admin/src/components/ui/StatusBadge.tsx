@@ -10,7 +10,9 @@ export type StatusBadgeVariant =
   | 'verified'
   | 'pending'
   /** Story 6.23 (Story 2.15 AC7, ADR-0059 Decision §4) — a credential-invalidation failure, distinct from ordinary 'failing' (rate-limit/network). */
-  | 'reconnect_required';
+  | 'reconnect_required'
+  /** Story 6.29 (Story 1.16, ADR-0070 §2) — an active connector with no ingestion for >= 3*cadence or >= 24h. */
+  | 'stalled';
 
 export interface StatusBadgeProps {
   variant: StatusBadgeVariant;
@@ -28,6 +30,7 @@ const DEFAULT_LABELS: Record<StatusBadgeVariant, string> = {
   verified: 'Verified',
   pending: 'Pending',
   reconnect_required: 'Reconnect Required',
+  stalled: 'Stalled / No Ingestion',
 };
 
 /**

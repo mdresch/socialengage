@@ -9,6 +9,7 @@ import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
 import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
+import { buildGeoEnrichment } from '../geo/geoCountryUtils';
 
 /**
  * acquireForProvider() has no ingestion-domain knowledge of its own (see
@@ -81,13 +82,25 @@ export async function ingestNewswireItems(
     const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
+    // Story 2.20 (ADR-0064) — country-level geospatial extraction from explicit country tag or wire domain fallback
+    let geoEnrichment = buildGeoEnrichment(item.country, 'post', 'high');
+    if (Object.keys(geoEnrichment).length === 0) {
+      const url = item.link || item.guid || '';
+      if (/prnewswire\.com|globenewswire\.com/i.test(url)) {
+        geoEnrichment = buildGeoEnrichment('US', 'source', 'medium');
+      }
+    }
+    const combinedEnrichment = (enrichment || Object.keys(geoEnrichment).length > 0)
+      ? { ...(enrichment ?? {}), ...geoEnrichment }
+      : undefined;
+
     const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
       rawPayload: { providerId: NEWSWIRE_PROVIDER_ID, externalId: normalized.externalId, ...item },
       publishedAt: normalized.publishedAt,
-      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      enrichment: combinedEnrichment as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
     });

@@ -203,7 +203,8 @@
 
 ## Story 3.11 — Post-watchlist match persistence: `post_watchlist_matches` junction table, ingestion write, and `GET /v1/posts?watchlistId` filter
 
-**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Ready
+**Source:** ADR-0063 (Accepted 2026-08-19) · **Status:** Built 2026-08-19 — resumed mid-implementation from a prior session via `heal-contract-failure` (real schema conflict, ambiguous-column SQL bug, and fixture bug found and fixed — see ADR-0063's own Amendment Log and `docs/implementation-log.md`).
+**Built:** 2026-08-19 — social-listening-core@63902a1
 
 **As a** Tenant User or Tenant-Admin,
 **I want** `GET /v1/posts` to accept a `watchlistId` filter parameter so that I can retrieve only the posts that matched a specific watchlist at ingestion time,
@@ -211,12 +212,92 @@
 
 **Acceptance Criteria**
 
-1. A new migration creates the `post_watchlist_matches` table: columns `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `post_id UUID NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE`, `watchlist_id UUID NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE`, `tenant_id UUID NOT NULL`, `matched_at TIMESTAMPTZ NOT NULL DEFAULT now()`, plus a `UNIQUE (post_id, watchlist_id)` constraint, two named indexes (`idx_pwm_watchlist_id` on `(watchlist_id, tenant_id, matched_at DESC)`; `idx_pwm_post_id` on `(post_id, tenant_id)`), and a Row-Level Security policy using the existing `app.tenant_id` session predicate — same pattern as `watchlists` itself (ADR-0063 Decision §1). Proven by schema inspection in the contract test: the table, indexes, constraint, and RLS policy all exist after migrations run.
+1. A new migration creates the `post_watchlist_matches` table: columns `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`, `post_id UUID NOT NULL` (deliberately no DB-enforced foreign key into `social_posts` — see the Note below), `watchlist_id UUID NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE`, `tenant_id UUID NOT NULL`, `matched_at TIMESTAMPTZ NOT NULL DEFAULT now()`, plus a `UNIQUE (post_id, watchlist_id)` constraint, two named indexes (`idx_pwm_watchlist_id` on `(watchlist_id, tenant_id, matched_at DESC)`; `idx_pwm_post_id` on `(post_id, tenant_id)`), and a Row-Level Security policy using the existing `app.tenant_id` session predicate — same pattern as `watchlists` itself (ADR-0063 Decision §1, corrected by that ADR's own Amendment Log). Proven by schema inspection in the contract test: the table, indexes, constraint, and RLS policy all exist after migrations run.
 2. A new store function `insertPostWatchlistMatches(tenantId, pairs: Array<{ postId: string; watchlistId: string }>)` issues a batch `INSERT INTO post_watchlist_matches ... ON CONFLICT (post_id, watchlist_id) DO NOTHING` — idempotent on retry, proven by calling the function twice with the same pairs and confirming the row count does not grow on the second call.
-3. `runIngestionAttempt()` calls `insertPostWatchlistMatches()` with the match pairs already computed for ADR-0058's event-publishing path. The call is best-effort: a failure inside `insertPostWatchlistMatches()` is logged (same telemetry path as connector health errors, ADR-0009/ADR-0010) but does not throw and does not fail the ingestion attempt. Proven by a contract test that injects a store-function error and confirms the ingesting post is still returned by `GET /v1/posts`.
+3. `publishSocialPostIngestedEvents()` calls `insertPostWatchlistMatches()` with the same matched-watchlist set it already computes for ADR-0058's event-publishing loop — the real, single choke point every connector's own per-post loop already calls, not `runIngestionAttempt()` itself (a generic, connector-agnostic attempt/retry state machine with no knowledge of posts or watchlists — verified directly, not assumed). The call is best-effort: a failure inside `insertPostWatchlistMatches()` is logged (same telemetry path as connector health errors, ADR-0009/ADR-0010) but does not throw and does not fail the ingestion attempt. Proven by a contract test that injects a store-function error and confirms the ingesting post is still returned by `GET /v1/posts`.
 4. `postsRouter.ts` accepts an optional `watchlistId` query parameter (valid UUID). When present: validates UUID format (returns `400 INVALID_WATCHLIST_ID` on malformed input); verifies a matching row exists in `post_watchlist_matches` under the caller's RLS context (returns `404 WATCHLIST_NOT_FOUND` if none — same 404-vs-403 split as ADR-0044 Decision §5c); joins `post_watchlist_matches` on `post_id = social_posts.id AND watchlist_id = $watchlistId`; returns the filtered `SocialPostSummary[]` with cursor-based pagination preserved (ADR-0011). Proven by contract tests covering: a valid `watchlistId` returns only the matched posts; a UUID that belongs to a different tenant returns `404`; a malformed string returns `400`; cursor pagination still works when `watchlistId` is present.
 5. `SocialPostSummary` is not changed — no new field is added. The filter is server-side; the response shape is unchanged.
 6. No change to `matchesWatchlist()`, `matchesAst()`, `resolveWatchlistDispatch()`, or any other matching logic — this story writes match results, it does not change how they are computed (ADR-0063 Decision §1 note).
 7. No retroactive backfill of existing `social_posts` rows — posts ingested before this migration have no `post_watchlist_matches` rows, and `GET /v1/posts?watchlistId=<id>` returns an empty set for those posts. The empty result is honest; it is not an error. Confirmed by a contract test that seeds a post without a match row and verifies the filtered result is empty, not an error.
 
 **Explicitly out of scope:** retroactive backfill of historical posts (ADR-0063 Open Question 1 — deliberately not built; a future `POST /v1/watchlists/:id/reindex` endpoint is the named design direction); re-matching on watchlist update when `terms[]` or `boolean_query` changes (ADR-0063 Open Question 2 — accepted staleness at v1); `GET /v1/watchlists` response `postCount` field (ADR-0063 Open Question 4 — left to Story 8.9's judgment); any `social-listening-admin` change (Story 8.9).
+
+**Note:** AC1's `post_id` column deliberately carries no DB-enforced foreign key into `social_posts`, discovered at implementation time and corrected in ADR-0063's own Amendment Log — `social_posts` has been partitioned by `created_at` since migration `0012` (Story 3.5, ADR-0018), which forced its primary key to become composite (`id`, `created_at`); Postgres requires a partitioned table's unique/PK constraints to include the partition key, so `social_posts.id` alone has no unique constraint to reference. This is the same conflict already resolved once for `social_posts.acquisition_id → ingestion_runs(id)` (`data-retention-and-archival/SKILL.md`) — `post_id` is app-enforced only, the same tier `acquisition_id`/`author_id` already partly rely on. No code path in this repo hard-deletes an individual `social_posts` row today, so the `ON DELETE CASCADE` guarantee this trades away is currently theoretical, not active. `watchlist_id`'s own `ON DELETE CASCADE` is unaffected — `watchlists` is not partitioned.
+
+---
+
+## Story 3.12 — Post-watchlist match historical backfill and discovery-driven watchlist attribution
+
+**Source:** ADR-0063 (2026-08-20 Amendment Log entry) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@3adc060
+**Depends on:** Story 3.11 (`post_watchlist_matches` table, **Built** 2026-08-19); Story 2.14 (Wikipedia watchlist-driven discovery, **Built** 2026-08-18)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** historical posts ingested before Story 3.11 to be matched against active watchlists in `post_watchlist_matches`, and Wikipedia posts discovered via a specific watchlist to be attributed directly to that watchlist,
+**so that** historical and discovered posts accurately populate the watchlist coverage charts and topic filters on the analytics dashboard.
+
+**Acceptance Criteria**
+
+1. **Backfill function / operation:** A new function `backfillPostWatchlistMatches(tenantId?: string)` in `social-listening-core/src/watchlists/postWatchlistMatchStore.ts`:
+   - Iterates through existing `social_posts` across all tenants (or scoped to `tenantId` if provided).
+   - For each post, loads the tenant's active watchlists via `listActiveWatchlistsForTenant(tenantId)`.
+   - Converts each watchlist to an AST (`watchlistToAst(watchlist)`) and runs the fallback AST evaluator `matchesAst(ast, { id: post.id, text, authorExternalId })` against the post's text (composed from title/snippet and `body_markdown`).
+   - Inserts the resulting pairs into `post_watchlist_matches` using `insertPostWatchlistMatches()` (`ON CONFLICT (post_id, watchlist_id) DO NOTHING`), ensuring idempotency and zero duplicate match records.
+   - Proven by a contract test verifying that historical posts unlinked in `post_watchlist_matches` become linked after running `backfillPostWatchlistMatches()`, without creating duplicate rows on repeated runs.
+2. **Backfill migration execution:** A new migration (`0038_backfill_post_watchlist_matches.sql` or equivalent runner step) runs the retroactive backfill pass during database migration so that existing databases automatically populate `post_watchlist_matches` upon upgrade.
+3. **Wikipedia discovery-driven attribution:** In `pollWikipedia.ts` (Story 2.14), when articles are fetched during Phase 1 (discovery) for a specific watchlist's discovery query:
+   - The discovering watchlist's `watchlist.id` is explicitly passed into `ingestWikipediaRevisions()`.
+   - `publishSocialPostIngestedEvents()` guarantees that the discovering `watchlistId` is included in the persisted `matchedWatchlistIds` sent to `insertPostWatchlistMatches()`, while continuing to evaluate all other active tenant watchlists via `matchesAst()`.
+   - Proven by a contract test confirming that an article discovered via a watchlist query is always recorded in `post_watchlist_matches` for that watchlist even if specific sub-phrasing varies.
+4. **Re-poll preserved:** Re-polling already-tracked Wikipedia articles (Phase 2 of `pollWikipedia.ts`) continues to evaluate all active tenant watchlists via `publishSocialPostIngestedEvents()`.
+5. **No breaking changes:** `GET /v1/posts?watchlistId=<id>` response shape, RLS policies, and error handling remain unchanged.
+
+**Explicitly out of scope:** Automatic re-matching triggers on live watchlist term update (ADR-0063 Open Question 2 — accepted staleness at v1; can be invoked via manual backfill if needed); any change to `social-listening-admin`.
+
+---
+
+## Story 3.13 — Post Enrichment Overrides API and Re-Enrichment Precedence Guard
+
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
+**Depends on:** Story 1.1 (Posts router and RLS context), Story 2.20 (Geospatial enrichment normalization), Story 3.5 (Post storage schema), Story 3.8 (AI Language enrichment)
+
+**As a** core backend engineer,
+**I want** a `PATCH /v1/posts/:id/enrichment` endpoint allowing authorized tenant users to modify post enrichment attributes with full audit lineage, and an explicit re-enrichment precedence guard,
+**so that** human corrections are immediately reflected across the system while preventing automated AI re-runs from silently overwriting human edits.
+
+**Acceptance Criteria**
+
+1. **Enrichment Update Endpoint (`PATCH /v1/posts/:id/enrichment`):**
+   - Implemented in `postsRouter.ts`, authenticated with bearer session, and scoped by PostgreSQL Row-Level Security (`tenant_id`). Authorized for `tenant_user` and `tenant_admin` roles.
+   - Accepts request payload `UpdatePostEnrichmentRequest`:
+     - `sentiment?: 'positive' | 'neutral' | 'negative'`
+     - `sentimentScore?: number` (optional float clamped between `0.0..1.0`)
+     - `keyPhrases?: string[]` (allows empty array `[]`)
+     - `detectedLanguage?: string | null`
+     - `geoCountry?: string | null`
+     - `geoCountryName?: string | null`
+     - `summary?: string | null`
+2. **Payload Validation & Sanitization:**
+   - **Sentiment Score Consistency:** If `sentiment` is modified and `sentimentScore` is omitted, the backend auto-assigns a default score (`positive` → `0.8`, `neutral` → `0.5`, `negative` → `0.2`).
+   - **Key Phrases Sanitization:** Strips HTML, trims whitespace, removes empty entries, deduplicates case-insensitively while preserving first-seen casing, caps at max 50 phrases and max 200 chars per phrase.
+   - **Language Validation:** Validates `detectedLanguage` against ISO 639-1 two-letter lowercase allowlist or `null`. Rejects invalid codes with `400 Bad Request`.
+   - **Geospatial Cross-Field Validation:** Normalizes `geoCountry` to uppercase ISO 3166-1 alpha-2 or `null`. If `geoCountry` is `null`, clears `geoCountryName` to `null`. If `geoCountry` is set, resolves/validates `geoCountryName`.
+3. **Audit History & Override Schema:**
+   - Updates `social_posts.enrichment` in-place.
+   - Sets `enrichment.override`:
+     - `isOverridden: true`
+     - `overriddenAt: string` (ISO 8601 UTC)
+     - `overriddenByUserId: string` (from authenticated session)
+     - `overriddenFields: string[]` (exact list of keys modified in this request)
+     - `originalValues: Record<string, any>` (snapshot of initial values prior to the first human override)
+     - `aiHistory: Array<{ generatedAt: string, model?: string, values: Record<string, any> }>` (preserves prior automated outputs)
+4. **Re-Enrichment Precedence Guard (`POST /v1/posts/:id/enrich` & AI Runners):**
+   - Any re-enrichment operation checks `enrichment->'override'->>'isOverridden'`.
+   - If `isOverridden === true` and `force !== true`: rejects with **`409 Conflict`** and payload `{ error: 'Post enrichment has been manually overridden', code: 'ENRICHMENT_MANUALLY_OVERRIDDEN', override: {...} }`.
+   - If `force === true`: overwrites top-level values, archives previous AI values into `override.aiHistory[]`, updates `override.originalValues` to the new AI output, and resets `override.isOverridden = false`.
+5. **Response & Error Handling:**
+   - Returns HTTP `200 OK` with full updated `SocialPostSummary`.
+   - Returns `404 Not Found` if the post ID does not exist or belongs to another tenant.
+
+**Explicitly out of scope:** Admin UI components (Story 6.31); batch enrichment endpoint (deferred).
+

@@ -11,7 +11,13 @@ import { isConnectorActive, ConnectorActivationOwnerType } from './connectorActi
  * individual to actually reconnect (ADR-0059 Decision §4's own named silent-
  * failure problem this status exists to surface honestly).
  */
-export type ConnectorHealthStatus = 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+export type ConnectorHealthStatus =
+  | 'healthy'
+  | 'degraded'
+  | 'failing'
+  | 'disconnected'
+  | 'reconnect_required'
+  | 'stalled';
 export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
 
 export interface ConnectorHealth {
@@ -20,7 +26,19 @@ export interface ConnectorHealth {
   lastAttemptAt: string | null;
   consecutiveFailures: number;
   credentialStatus: CredentialStatus | null;
+  lastSuccessfulPostsIngested?: number | null;
 }
+
+export interface DeriveConnectorHealthOptions {
+  effectiveCadenceMs?: number;
+  isConnectorActive?: boolean;
+  now?: number;
+}
+
+export const DEFAULT_EFFECTIVE_CADENCE_MS = 15 * 60 * 1000;
+export const STALL_CADENCE_MULTIPLIER = 3;
+export const MIN_STALL_CADENCE_MS = 45 * 60 * 1000;
+export const MAX_INGESTION_SILENCE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * `failing` derivation (Story 2.5, ADR-0023) — supersedes the original flat
@@ -53,6 +71,7 @@ interface IngestionRunRow {
   error_summary: string | null;
   retryable: boolean | null;
   is_credential_failure: boolean | null;
+  posts_ingested: number;
 }
 
 /**
@@ -77,12 +96,16 @@ interface IngestionRunRow {
  * `platform_credentials` has no `page_id` column, so `pageId` never filters
  * the credentialStatus sub-query — only `userId` does, unchanged from
  * Story 1.15.
+ *
+ * Story 1.16 (ADR-0070 §2) — derives 'stalled' status with strict precedence:
+ * disconnected -> reconnect_required -> failing -> stalled -> degraded -> healthy.
  */
 export async function deriveConnectorHealth(
   tenantId: string,
   platformId: string,
   pageId?: string,
-  userId?: string
+  userId?: string,
+  options?: DeriveConnectorHealthOptions
 ): Promise<ConnectorHealth> {
   return withTenant(tenantId, async (client) => {
     const runConditions = ['platform_id = $1'];
@@ -96,22 +119,23 @@ export async function deriveConnectorHealth(
       runConditions.push(`user_id = $${runParams.length}`);
     }
     const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
+      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure, posts_ingested FROM ingestion_runs
        WHERE ${runConditions.join(' AND ')} ORDER BY started_at DESC`,
       runParams
     );
 
     const { rows: credentialRows } = userId
-      ? await client.query<{ status: CredentialStatus }>(
-          `SELECT status FROM platform_credentials
+      ? await client.query<{ status: CredentialStatus; created_at: Date }>(
+          `SELECT status, created_at FROM platform_credentials
            WHERE platform_id = $1 AND owner_type = 'user' AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
           [platformId, userId]
         )
-      : await client.query<{ status: CredentialStatus }>(
-          `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      : await client.query<{ status: CredentialStatus; created_at: Date }>(
+          `SELECT status, created_at FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
           [platformId]
         );
     const credentialStatus = credentialRows.length > 0 ? credentialRows[0].status : null;
+    const credentialCreatedAt = credentialRows.length > 0 ? credentialRows[0].created_at : null;
 
     if (runs.length === 0) {
       return {
@@ -120,6 +144,7 @@ export async function deriveConnectorHealth(
         lastAttemptAt: null,
         consecutiveFailures: 0,
         credentialStatus,
+        lastSuccessfulPostsIngested: null,
       };
     }
 
@@ -127,27 +152,24 @@ export async function deriveConnectorHealth(
     let recentFailures = 0;
     let recentSuccesses = 0;
     let lastSuccessfulFetchAt: string | null = null;
+    let lastSuccessfulPostsIngested: number | null = null;
     let consecutiveFailures = 0;
     let sawSuccess = false;
 
     for (const run of runs) {
-      // Story 2.12 (ADR-0010/ADR-0023 Clarification, 2026-08-12): a
-      // retryable failure (rate-limit/network/5xx) never counts toward
-      // this derivation, on its own — treated as fully invisible here,
-      // the same way runIngestionAttempt() already retries it
-      // automatically rather than surfacing it as a connector-level
-      // problem. A NULL retryable value (an unclassified failure, e.g.
-      // a fixture row) is treated conservatively, as non-retryable.
-      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true;
+      // If the credential was renewed/reconnected after this run, past failure does not count against new credential
+      const isBeforeCurrentCredential = credentialCreatedAt ? run.started_at < credentialCreatedAt : false;
+      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true && !isBeforeCurrentCredential;
       const withinWindow = run.started_at.getTime() >= cutoff;
       if (isNonRetryableFailure && withinWindow) recentFailures += 1;
       if (run.status === 'succeeded' && withinWindow) recentSuccesses += 1;
       if (run.status === 'succeeded' && lastSuccessfulFetchAt === null) {
         lastSuccessfulFetchAt = run.completed_at ? run.completed_at.toISOString() : null;
+        lastSuccessfulPostsIngested = run.posts_ingested ?? 0;
       }
       if (!sawSuccess) {
         if (isNonRetryableFailure) consecutiveFailures += 1;
-        else if (run.status === 'succeeded') sawSuccess = true;
+        else if (run.status === 'succeeded' || isBeforeCurrentCredential) sawSuccess = true;
       }
     }
 
@@ -156,26 +178,62 @@ export async function deriveConnectorHealth(
       recentAttempts >= RATE_ATTEMPT_FLOOR && recentFailures / recentAttempts >= RATE_FAILURE_THRESHOLD;
     const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
 
-    /**
-     * Story 2.15 (ADR-0059 Decision §4) — 'reconnect_required' overrides
-     * the ordinary rate/ceiling-derived status when the single most recent
-     * run (runs[0], already ordered DESC) was a credential-class failure —
-     * but every other field (consecutiveFailures, recentFailures/Successes,
-     * lastSuccessfulFetchAt) is still computed by the exact same loop
-     * above, unchanged. A prior version of this derivation short-circuited
-     * before that loop ran at all, hardcoding consecutiveFailures to 0 —
-     * a real, found-live regression (Story 1.13's own GNews credential-
-     * failure test, whose missing-credential path is *also* http_401,
-     * expects consecutiveFailures to still increment normally). Overriding
-     * only the label, never bypassing the counting, is what keeps that
-     * already-established behavior intact for every connector, Facebook
-     * included.
-     */
-    const status: ConnectorHealthStatus =
-      runs[0].status === 'failed' && runs[0].is_credential_failure === true
-        ? 'reconnect_required'
-        : rateFailing || ceilingFailing
-          ? 'failing'
+    // Strict precedence order (ADR-0070 §2):
+    // 1. reconnect_required (credential failure on runs[0] occurring AFTER current credential issuance)
+    const isLatestRunCredentialFailure =
+      runs[0].status === 'failed' &&
+      runs[0].is_credential_failure === true &&
+      (!credentialCreatedAt || runs[0].started_at >= credentialCreatedAt);
+    const isReconnectRequired = isLatestRunCredentialFailure;
+
+    // 2. failing (rate or ceiling)
+    const isFailing = rateFailing || ceilingFailing;
+
+    // 3. stalled (active connector, valid credentials, not failing or reconnect_required, and cadence or silence breached)
+    let isStalled = false;
+    if (!isReconnectRequired && !isFailing) {
+      let isConnectorActiveState = options?.isConnectorActive;
+      if (isConnectorActiveState === undefined) {
+        if (userId) {
+          const { rows: actRows } = await client.query<{ is_active: boolean }>(
+            `SELECT is_active FROM connector_user_activations
+             WHERE tenant_id = $1 AND platform_id = $2 AND user_id = $3`,
+            [tenantId, platformId, userId]
+          );
+          isConnectorActiveState = actRows.length > 0 ? actRows[0].is_active : false;
+        } else {
+          const { rows: actRows } = await client.query<{ is_active: boolean }>(
+            `SELECT is_active FROM connector_activations
+             WHERE tenant_id = $1 AND platform_id = $2`,
+            [tenantId, platformId]
+          );
+          isConnectorActiveState = actRows.length > 0 ? actRows[0].is_active : false;
+        }
+      }
+
+      const hasValidCredentials = credentialStatus === null || credentialStatus === 'valid' || credentialStatus === 'expiring_soon';
+
+      if (isConnectorActiveState && hasValidCredentials) {
+        const now = options?.now ?? Date.now();
+        const effectiveCadenceMs = options?.effectiveCadenceMs ?? DEFAULT_EFFECTIVE_CADENCE_MS;
+        const stallCadenceThreshold = Math.max(MIN_STALL_CADENCE_MS, STALL_CADENCE_MULTIPLIER * effectiveCadenceMs);
+        const lastAttemptMs = runs[0].started_at.getTime();
+        const lastSuccessMs = lastSuccessfulFetchAt ? new Date(lastSuccessfulFetchAt).getTime() : -Infinity;
+
+        const isCadenceBreached = (now - lastAttemptMs) >= stallCadenceThreshold;
+        const isSilenceBreached = (now - lastSuccessMs) >= MAX_INGESTION_SILENCE_MS;
+        if (isCadenceBreached || isSilenceBreached) {
+          isStalled = true;
+        }
+      }
+    }
+
+    const status: ConnectorHealthStatus = isReconnectRequired
+      ? 'reconnect_required'
+      : isFailing
+        ? 'failing'
+        : isStalled
+          ? 'stalled'
           : recentFailures > 0 && recentSuccesses > 0
             ? 'degraded'
             : 'healthy';
@@ -186,6 +244,7 @@ export async function deriveConnectorHealth(
       lastAttemptAt: runs[0].started_at.toISOString(),
       consecutiveFailures,
       credentialStatus,
+      lastSuccessfulPostsIngested,
     };
   });
 }

@@ -16,6 +16,11 @@ import {
   WikipediaRevision,
 } from './wikipediaConnector';
 
+interface DiscoveryQueryItem {
+  watchlistId?: string;
+  query: string;
+}
+
 /**
  * Story 2.14 (ADR-0042 §5) — one discovery query per active watchlist
  * targeting 'wikipedia' whose matchType is keyword/hashtag/account, built
@@ -25,10 +30,13 @@ import {
  * remain fully evaluated for event-matching once content is discovered by
  * some other watchlist's own query.
  */
-function buildDiscoveryQueries(watchlists: Watchlist[]): string[] {
+function buildDiscoveryQueries(watchlists: Watchlist[]): DiscoveryQueryItem[] {
   return watchlists
     .filter((w) => w.matchType !== 'boolean' && w.terms && w.terms.length > 0)
-    .map((w) => (w.terms as string[]).join(' '));
+    .map((w) => ({
+      watchlistId: w.id,
+      query: (w.terms as string[]).join(' '),
+    }));
 }
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
@@ -58,7 +66,8 @@ export async function ingestWikipediaRevisions(
   tenantId: string,
   runId: string,
   revisions: WikipediaRevision[],
-  watchlists: Watchlist[]
+  watchlists: Watchlist[],
+  discoveringWatchlistId?: string
 ): Promise<IngestionAttemptResult> {
   let postsIngested = 0;
   let postsSkipped = 0;
@@ -95,20 +104,21 @@ export async function ingestWikipediaRevisions(
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
-      rawPayload: { providerId: WIKIPEDIA_PROVIDER_ID, externalId: normalized.externalId, ...revision },
+      rawPayload: { providerId: WIKIPEDIA_PROVIDER_ID, externalId: normalized.externalId, discoveringWatchlistId, ...revision },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
     });
 
-    // ADR-0058 Decision §1/§5/§6 — post-commit, adopting Story 5.19's
+    // ADR-0058 Decision §1/§5/§6 & Story 3.12 — post-commit, adopting Story 5.19's
     // already-built wiring as part of this connector's own original build.
     await publishSocialPostIngestedEvents(tenantId, WIKIPEDIA_PROVIDER_ID, watchlists, {
       postId: inserted.id,
       text: enrichmentText,
       authorExternalId: normalized.authorExternalId,
       publishedAt: normalized.publishedAt,
+      discoveringWatchlistId,
     });
 
     postsIngested += 1;
@@ -153,17 +163,24 @@ export async function pollWikipedia(
       const alreadyTracked = await listAuthorsByPlatform(tenantId, WIKIPEDIA_PROVIDER_ID);
       const trackedPageIds = new Set(alreadyTracked.map((a) => a.externalAuthorId));
 
-      const discoveryQueries = query !== undefined ? [query] : buildDiscoveryQueries(watchlists);
-      for (const discoveryQuery of discoveryQueries) {
+      const discoveryQueries: DiscoveryQueryItem[] =
+        query !== undefined ? [{ query }] : buildDiscoveryQueries(watchlists);
+      for (const discoveryItem of discoveryQueries) {
         await gatedAcquire(tenantId);
-        const searchResults = await fetchWikipediaSearch(discoveryQuery);
+        const searchResults = await fetchWikipediaSearch(discoveryItem.query);
         for (const result of searchResults) {
           const pageIdStr = String(result.pageid);
           if (trackedPageIds.has(pageIdStr)) continue;
 
           await gatedAcquire(tenantId);
           const revision = await fetchWikipediaRevision(result.title);
-          const discovered = await ingestWikipediaRevisions(tenantId, runId, [revision], watchlists);
+          const discovered = await ingestWikipediaRevisions(
+            tenantId,
+            runId,
+            [revision],
+            watchlists,
+            discoveryItem.watchlistId
+          );
           postsIngested += discovered.postsIngested;
           postsSkipped += discovered.postsSkipped;
           trackedPageIds.add(pageIdStr);

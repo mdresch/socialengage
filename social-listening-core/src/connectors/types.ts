@@ -175,6 +175,16 @@ export interface AnalyzeResult {
    * `overallConfidence` already established for that provider.
    */
   summary?: string;
+  /** Story 2.20 (ADR-0064) — ISO 3166-1 alpha-2 country code (e.g. "US", "GB", "NL"). */
+  geoCountry?: string | null;
+  /** Story 2.20 (ADR-0064) — English country name (e.g. "United States", "United Kingdom"). */
+  geoCountryName?: string | null;
+  /** Story 2.20 (ADR-0064) — optional sub-region (e.g. "EU", "NA"). */
+  geoRegion?: string | null;
+  /** Story 2.20 (ADR-0064) — provenance of the country signal: post, source, inferred, or unknown. */
+  geoSource?: 'post' | 'source' | 'inferred' | 'unknown' | null;
+  /** Story 2.20 (ADR-0064) — confidence level of the country mapping: high, medium, low. */
+  geoConfidence?: 'high' | 'medium' | 'low' | null;
 }
 
 export interface AIProviderConnector extends ProviderConnector {

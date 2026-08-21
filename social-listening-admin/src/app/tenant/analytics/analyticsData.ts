@@ -130,11 +130,18 @@ export interface SentimentPost {
   author: string | null;
   sentiment: string | null;
   keyPhrases: string[];
+  entities: string[];
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
   language: string | null;
   /** Real providerId (e.g. "gnews") — Story 8.6, needed to bucket by source and day simultaneously. */
   providerId: string;
+  /** ISO 3166-1 alpha-2 country code (e.g. "US"), or null when unmapped — Story 8.10 (ADR-0064). */
+  geoCountry: string | null;
+  geoCountryName: string | null;
+  geoRegion: string | null;
+  geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null;
+  geoConfidence: 'high' | 'medium' | 'low' | null;
 }
 
 export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
@@ -147,11 +154,45 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       author: extractAuthor(post.rawPayload),
       sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
       keyPhrases: enrichment?.keyPhrases ?? [],
+      entities: enrichment?.entities ?? [],
       title,
       language: enrichment?.language ?? null,
       providerId: extractProviderBadge(post.rawPayload),
+      geoCountry: enrichment?.geoCountry ?? null,
+      geoCountryName: enrichment?.geoCountryName ?? null,
+      geoRegion: enrichment?.geoRegion ?? null,
+      geoSource: enrichment?.geoSource ?? null,
+      geoConfidence: enrichment?.geoConfidence ?? null,
     };
   });
+}
+
+/**
+ * Same grouping rule as computeSourceBreakdown(), over the already-flattened
+ * SentimentPost shape — needed by OverviewTab.tsx (Story 8.7), whose
+ * multi-dimension applyOverviewFilters() output is SentimentPost[], not raw
+ * SocialPostSummary[]. Never a fixed list padded with zero-count rows for a
+ * connector this tenant has no posts from, same as computeSourceBreakdown().
+ */
+export function computeSourceBreakdownFromFlat(posts: SentimentPost[]): SourceBreakdownEntry[] {
+  const byProvider = new Map<string, SentimentPost[]>();
+  for (const post of posts) {
+    const bucket = byProvider.get(post.providerId);
+    if (bucket) bucket.push(post);
+    else byProvider.set(post.providerId, [post]);
+  }
+  return Array.from(byProvider.entries())
+    .map(([providerId, providerPosts]) => {
+      const sentiment = computeSentimentSplitFromFlat(providerPosts);
+      return {
+        providerId,
+        label: PROVIDER_LABELS[providerId] ?? providerId,
+        count: providerPosts.length,
+        sentiment,
+        sentimentIndex: computeSentimentIndex(sentiment),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
 }
 
 /** Same counting rule as `computeSentimentSplit()`, over the already-flattened shape (used when a client-side author/phrase filter is applied). */
@@ -417,6 +458,155 @@ export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakd
     .sort((a, b) => b.count - a.count);
 }
 
+/** Standard ISO 3166-1 alpha-2 country code lookup table — Story 8.10 (ADR-0064). */
+export const COUNTRY_NAMES: Record<string, string> = {
+  US: 'United States',
+  GB: 'United Kingdom',
+  NL: 'Netherlands',
+  DE: 'Germany',
+  FR: 'France',
+  CA: 'Canada',
+  AU: 'Australia',
+  JP: 'Japan',
+  CN: 'China',
+  IN: 'India',
+  BR: 'Brazil',
+  IT: 'Italy',
+  ES: 'Spain',
+  MX: 'Mexico',
+  KR: 'South Korea',
+  RU: 'Russia',
+  CH: 'Switzerland',
+  SE: 'Sweden',
+  NO: 'Norway',
+  DK: 'Denmark',
+  FI: 'Finland',
+  BE: 'Belgium',
+  AT: 'Austria',
+  IE: 'Ireland',
+  NZ: 'New Zealand',
+  SG: 'Singapore',
+  ZA: 'South Africa',
+  AR: 'Argentina',
+  CL: 'Chile',
+  CO: 'Colombia',
+  IL: 'Israel',
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  PL: 'Poland',
+  PT: 'Portugal',
+  GR: 'Greece',
+  CZ: 'Czech Republic',
+  HU: 'Hungary',
+  RO: 'Romania',
+  TR: 'Turkey',
+  TH: 'Thailand',
+  ID: 'Indonesia',
+  MY: 'Malaysia',
+  PH: 'Philippines',
+  VN: 'Vietnam',
+  TW: 'Taiwan',
+  HK: 'Hong Kong',
+  UNKNOWN: 'Unknown / Unmapped',
+};
+
+export function getCountryDisplayName(code: string): string {
+  if (code === 'UNKNOWN') return 'Unknown / Unmapped';
+  return COUNTRY_NAMES[code] ?? code;
+}
+
+export interface CountryBreakdownItem {
+  countryCode: string;
+  name: string;
+  count: number;
+  share: number;
+  sentiment: SentimentSplit | null;
+  sentimentIndex: number | null;
+}
+
+/**
+ * Story 8.10 (ADR-0064) — groups posts by country, calculates volume share,
+ * and ranks countries descending by post count.
+ * - Explicitly creates an UNKNOWN bucket for unmapped posts without omitting or averaging them away (AC3).
+ * - Suppression threshold: countries with < 3 posts have sentiment: null and sentimentIndex: null
+ *   to prevent small-sample bias (ADR-0064 §4).
+ */
+export function computeCountryBreakdown(posts: (SentimentPost | SocialPostSummary)[]): CountryBreakdownItem[] {
+  if (!posts || posts.length === 0) return [];
+  const totalCount = posts.length;
+  const groups = new Map<string, { name: string | null; items: (SentimentPost | SocialPostSummary)[] }>();
+
+  for (const post of posts) {
+    let countryCode: string | null = null;
+    let countryName: string | null = null;
+
+    if ('geoCountry' in post) {
+      countryCode = (post as SentimentPost).geoCountry;
+      countryName = (post as SentimentPost).geoCountryName;
+    } else if ('enrichment' in post) {
+      const summary = extractEnrichmentSummary((post as SocialPostSummary).enrichment);
+      countryCode = summary?.geoCountry ?? null;
+      countryName = summary?.geoCountryName ?? null;
+    }
+
+    const key = countryCode ?? 'UNKNOWN';
+    const entry = groups.get(key);
+    if (entry) {
+      entry.items.push(post);
+      if (!entry.name && countryName) entry.name = countryName;
+    } else {
+      groups.set(key, { name: countryName, items: [post] });
+    }
+  }
+
+  return Array.from(groups.entries())
+    .map(([code, { name, items: groupItems }]) => {
+      const count = groupItems.length;
+      const share = totalCount > 0 ? (count / totalCount) * 100 : 0;
+      const displayName =
+        code === 'UNKNOWN' ? 'Unknown / Unmapped' : name || COUNTRY_NAMES[code] || code;
+
+      // Small-sample suppression threshold (< 3 posts)
+      if (count < 3) {
+        return {
+          countryCode: code,
+          name: displayName,
+          count,
+          share,
+          sentiment: null,
+          sentimentIndex: null,
+        };
+      }
+
+      // Compute sentiment split for group items
+      const split: SentimentSplit = { positive: 0, neutral: 0, negative: 0 };
+      for (const item of groupItems) {
+        let sent: string | null = null;
+        if ('sentiment' in item && typeof (item as SentimentPost).sentiment === 'string') {
+          sent = (item as SentimentPost).sentiment;
+        } else if ('enrichment' in item) {
+          const summary = extractEnrichmentSummary((item as SocialPostSummary).enrichment);
+          sent = summary?.sentiment ?? null;
+        }
+        const lower = sent?.toLowerCase();
+        if (lower && RECOGNIZED_SENTIMENTS.has(lower)) {
+          split[lower as keyof SentimentSplit] += 1;
+        }
+      }
+      const sentimentIndex = computeSentimentIndex(split);
+
+      return {
+        countryCode: code,
+        name: displayName,
+        count,
+        share,
+        sentiment: split,
+        sentimentIndex,
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+}
+
 export interface SourceVolumeHistoryPoint {
   date: string;
   [providerId: string]: number | string;
@@ -461,6 +651,337 @@ export interface AnalyticsSummary {
   sourceVolumeHistory: SourceVolumeHistoryPoint[];
   /** The flattened, date-filtered post set — Story 8.2/8.3's own widgets recompute from this client-side when an author/phrase filter is toggled. */
   posts: SentimentPost[];
+}
+
+// ---------------------------------------------------------------------------
+// Story 8.7 (ADR-0062) — Overview Tab Enhancement: the 7-dimension client-
+// side filter model, deep-link parse/serialize, statistical volume
+// forecast, Crisis Alert Radar, Sentiment Trajectory, Authors by Source,
+// and Top Authors Feed. All pure — no next/* import, no fetch — reused by
+// OverviewTab.tsx the same way every earlier tab's own aggregation is.
+// ---------------------------------------------------------------------------
+
+/**
+ * Overview's own filter-state shape — six nullable dimensions, deliberately
+ * a flat object rather than SentimentTab/ConversationsTab's own
+ * `{ type, value }` union, because Overview needs several dimensions active
+ * *simultaneously* (AND-composed), which a single-slot union can't express.
+ * `selectedDateRange` is not a member here — it's the already-applied
+ * GlobalDateRangePicker range every AnalyticsSummary is computed against
+ * before OverviewTab ever sees it; `activeDateFilter` is the finer-grained,
+ * single-day drill-down within that range.
+ */
+export interface OverviewFilters {
+  activeDateFilter: string | null;
+  activeSourceFilter: string | null;
+  activeAuthorFilter: string | null;
+  activeKeywordFilter: string | null;
+  activeLanguageFilter: string | null;
+  activeSentimentFilter: 'positive' | 'neutral' | 'negative' | null;
+  /** Story 8.9 (ADR-0063) — server-side filtered watchlist id (?watchlist= in deep-link). */
+  activeWatchlistFilter: string | null;
+  /** Story 8.10 (ADR-0064) — client-side country ISO filter or 'UNKNOWN' (?country= in deep-link). */
+  activeCountryFilter: string | null;
+}
+
+export const EMPTY_OVERVIEW_FILTERS: OverviewFilters = {
+  activeDateFilter: null,
+  activeSourceFilter: null,
+  activeAuthorFilter: null,
+  activeKeywordFilter: null,
+  activeLanguageFilter: null,
+  activeSentimentFilter: null,
+  activeWatchlistFilter: null,
+  activeCountryFilter: null,
+};
+
+/**
+ * All client-side dimensions compose with AND semantics — every widget on the
+ * Overview tab recomputes from this same single filtered set, including the
+ * widget that is itself the click target for a given dimension (a
+ * deliberate, simpler-than-standard-faceted-search choice — see this
+ * component's own SKILL.md).
+ * Note: activeWatchlistFilter is filtered server-side via GET /v1/posts?watchlistId= (Story 8.9).
+ */
+export function applyOverviewFilters(posts: SentimentPost[], filters: OverviewFilters): SentimentPost[] {
+  if (!posts || !Array.isArray(posts)) return [];
+  return posts.filter((post) => {
+    if (filters.activeDateFilter && post.publishedAt?.slice(0, 10) !== filters.activeDateFilter) return false;
+    if (filters.activeSourceFilter && post.providerId !== filters.activeSourceFilter) return false;
+    if (filters.activeAuthorFilter && post.author !== filters.activeAuthorFilter) return false;
+    if (filters.activeKeywordFilter && !post.keyPhrases.includes(filters.activeKeywordFilter)) return false;
+    if (filters.activeLanguageFilter && post.language !== filters.activeLanguageFilter) return false;
+    if (filters.activeSentimentFilter && post.sentiment !== filters.activeSentimentFilter) return false;
+    if (filters.activeCountryFilter) {
+      if (filters.activeCountryFilter === 'UNKNOWN') {
+        if (post.geoCountry !== null) return false;
+      } else if (post.geoCountry !== filters.activeCountryFilter) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
+export interface OverviewFilterChip {
+  type: keyof OverviewFilters;
+  label: string;
+  value: string;
+}
+
+/** One chip per currently-active dimension — never one for a dimension at its default (null) value. */
+export function computeActiveChips(
+  filters: OverviewFilters,
+  watchlists: Array<{ id: string; name: string }> = []
+): OverviewFilterChip[] {
+  const chips: OverviewFilterChip[] = [];
+  if (filters.activeDateFilter) chips.push({ type: 'activeDateFilter', label: 'Date', value: filters.activeDateFilter });
+  if (filters.activeSourceFilter) chips.push({ type: 'activeSourceFilter', label: 'Source', value: PROVIDER_LABELS[filters.activeSourceFilter] ?? filters.activeSourceFilter });
+  if (filters.activeAuthorFilter) chips.push({ type: 'activeAuthorFilter', label: 'Author', value: filters.activeAuthorFilter });
+  if (filters.activeKeywordFilter) chips.push({ type: 'activeKeywordFilter', label: 'Keyword', value: filters.activeKeywordFilter });
+  if (filters.activeLanguageFilter) chips.push({ type: 'activeLanguageFilter', label: 'Language', value: LANGUAGE_LABELS[filters.activeLanguageFilter] ?? filters.activeLanguageFilter });
+  if (filters.activeSentimentFilter) chips.push({ type: 'activeSentimentFilter', label: 'Sentiment', value: filters.activeSentimentFilter });
+  if (filters.activeWatchlistFilter) {
+    const wl = watchlists.find((w) => w.id === filters.activeWatchlistFilter);
+    chips.push({ type: 'activeWatchlistFilter', label: 'Watchlist', value: wl?.name ?? filters.activeWatchlistFilter });
+  }
+  if (filters.activeCountryFilter) {
+    chips.push({
+      type: 'activeCountryFilter',
+      label: 'Country',
+      value: getCountryDisplayName(filters.activeCountryFilter),
+    });
+  }
+  return chips;
+}
+
+const RECOGNIZED_SENTIMENT_FILTER_VALUES = new Set(['positive', 'neutral', 'negative']);
+
+/**
+ * Deep-link share state (ADR-0062 Decision §4; Story 8.9 / ADR-0063 adds ?watchlist; Story 8.10 / ADR-0064 adds ?country) —
+ * an invalid or unrecognised param value silently falls back to the default (null), never an error.
+ */
+export function parseOverviewFiltersFromSearchParams(params: URLSearchParams): OverviewFilters {
+  const sentiment = params.get('sentiment');
+  return {
+    activeDateFilter: params.get('date') || null,
+    activeSourceFilter: params.get('source') || null,
+    activeAuthorFilter: params.get('author') || null,
+    activeKeywordFilter: params.get('keyword') || null,
+    activeLanguageFilter: params.get('language') || null,
+    activeSentimentFilter: sentiment && RECOGNIZED_SENTIMENT_FILTER_VALUES.has(sentiment) ? (sentiment as OverviewFilters['activeSentimentFilter']) : null,
+    activeWatchlistFilter: params.get('watchlist') || null,
+    activeCountryFilter: params.get('country') || null,
+  };
+}
+
+/** The inverse of parseOverviewFiltersFromSearchParams() — round-trips exactly including ?watchlist and ?country. */
+export function serializeOverviewFiltersToSearchString(filters: OverviewFilters): string {
+  const params = new URLSearchParams();
+  if (filters.activeDateFilter) params.set('date', filters.activeDateFilter);
+  if (filters.activeSourceFilter) params.set('source', filters.activeSourceFilter);
+  if (filters.activeAuthorFilter) params.set('author', filters.activeAuthorFilter);
+  if (filters.activeKeywordFilter) params.set('keyword', filters.activeKeywordFilter);
+  if (filters.activeLanguageFilter) params.set('language', filters.activeLanguageFilter);
+  if (filters.activeSentimentFilter) params.set('sentiment', filters.activeSentimentFilter);
+  if (filters.activeWatchlistFilter) params.set('watchlist', filters.activeWatchlistFilter);
+  if (filters.activeCountryFilter) params.set('country', filters.activeCountryFilter);
+  return params.toString();
+}
+
+export interface WatchlistCoverageEntry {
+  id: string;
+  name: string;
+  matchType: string;
+  count: number;
+}
+
+export function computeWatchlistCoverage(
+  watchlists: Array<{ id: string; name: string; matchType: string; isActive: boolean }>,
+  countsByWatchlistId: Record<string, number>
+): WatchlistCoverageEntry[] {
+  return watchlists
+    .filter((w) => w.isActive)
+    .map((w) => ({
+      id: w.id,
+      name: w.name,
+      matchType: w.matchType,
+      count: countsByWatchlistId[w.id] ?? 0,
+    }));
+}
+
+/** Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment(). */
+export function computeTopAuthorsByVolume(posts: SentimentPost[], limit = 5): AuthorRanking[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    if (!post.author) continue;
+    counts.set(post.author, (counts.get(post.author) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([author, count]) => ({ author, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+export interface AuthorsBySourceEntry {
+  providerId: string;
+  label: string;
+  uniqueAuthorCount: number;
+}
+
+export interface AuthorsBySourceSummary {
+  totalUniqueAuthors: number;
+  bySource: AuthorsBySourceEntry[];
+}
+
+/** This project's three real connectors, always all three rows — the deliberate opposite of computeSourceBreakdown()'s own "never a padded fixed list" rule (see this component's own SKILL.md for why both are correct). */
+const REAL_CONNECTOR_PROVIDER_IDS = ['gnews', 'newswire', 'tenant-owned-feed'];
+
+/**
+ * Authors by Source (ADR-0062 Decision §8) — real unique-author reach via
+ * Set size, not raw post count; a source with zero matching posts renders a
+ * real 0, never an omitted row.
+ */
+export function computeAuthorsBySource(posts: SentimentPost[]): AuthorsBySourceSummary {
+  const totalUniqueAuthors = new Set(posts.filter((p) => p.author).map((p) => p.author)).size;
+  const bySource = REAL_CONNECTOR_PROVIDER_IDS.map((providerId) => {
+    const authors = new Set(posts.filter((p) => p.providerId === providerId && p.author).map((p) => p.author));
+    return { providerId, label: PROVIDER_LABELS[providerId] ?? providerId, uniqueAuthorCount: authors.size };
+  });
+  return { totalUniqueAuthors, bySource };
+}
+
+export interface ForecastPoint {
+  date: string;
+  projectedVolume: number;
+}
+
+/**
+ * Statistical volume forecast (ADR-0062 Decision §5) — client-side,
+ * synchronous, no server round-trip: v(n) = lastVolume × 0.85ⁿ +
+ * 850 × (1 − 0.85ⁿ), a simple exponential mean-reversion model. An empty
+ * volume history produces an empty forecast, never a fabricated projection.
+ */
+export function computeVolumeForecast(volumeHistory: VolumeHistoryPoint[], days = 7): ForecastPoint[] {
+  if (volumeHistory.length === 0) return [];
+  const last = volumeHistory[volumeHistory.length - 1];
+  const lastVolume = last.count;
+  const lastDate = new Date(`${last.date}T00:00:00.000Z`);
+  const points: ForecastPoint[] = [];
+  for (let n = 1; n <= days; n++) {
+    const decay = Math.pow(0.85, n);
+    const projectedVolume = Math.round(lastVolume * decay + 850 * (1 - decay));
+    const date = new Date(lastDate.getTime() + n * 86_400_000).toISOString().slice(0, 10);
+    points.push({ date, projectedVolume });
+  }
+  return points;
+}
+
+export interface MovingAveragePoint {
+  date: string;
+  average: number;
+}
+
+/**
+ * Story 8.7 review follow-up (2026-08-19) — a trailing N-day moving average
+ * over the real volume history, requested directly by Menno as a steadier
+ * reference line alongside the day-to-day actual-volume series. Each day's
+ * value is the mean of that day and the (windowDays - 1) days before it,
+ * clamped to however many real days are actually available so far (the
+ * first day in range is its own 1-day average, not padded with zeros or
+ * left blank) — never a fabricated look-ahead, since only already-known
+ * days are ever averaged.
+ */
+export function computeMovingAverage(volumeHistory: VolumeHistoryPoint[], windowDays = 7): MovingAveragePoint[] {
+  return volumeHistory.map((point, i) => {
+    const windowStart = Math.max(0, i - windowDays + 1);
+    const window = volumeHistory.slice(windowStart, i + 1);
+    const sum = window.reduce((total, p) => total + p.count, 0);
+    return { date: point.date, average: sum / window.length };
+  });
+}
+
+export type CrisisAlertLevel = 'stable' | 'elevated' | 'crisis';
+
+export interface CrisisAlertRadar {
+  changePct: number;
+  level: CrisisAlertLevel;
+}
+
+/**
+ * 48-hour negative-sentiment momentum (ADR-0062 Decision §5) — the two most
+ * recent 48h windows within the selected range, anchored at range.endDate
+ * 23:59:59. Returns null ("No data") when either window has zero total
+ * posts, or when the prior window has zero negative posts (a zero baseline
+ * would otherwise force a fabricated "infinite % increase" — the same
+ * computePercentDelta()-style discipline this codebase already applies).
+ */
+export function computeCrisisAlertRadar(posts: SentimentPost[], range: DateRangeFilter): CrisisAlertRadar | null {
+  const endOfRange = new Date(`${range.endDate}T23:59:59.999Z`).getTime();
+  const windowMs = 48 * 3600_000;
+  const currentStart = endOfRange - windowMs;
+  const previousStart = endOfRange - 2 * windowMs;
+
+  let currentTotal = 0;
+  let currentNegative = 0;
+  let previousTotal = 0;
+  let previousNegative = 0;
+
+  for (const post of posts) {
+    if (!post.publishedAt) continue;
+    const t = new Date(post.publishedAt).getTime();
+    if (t > currentStart && t <= endOfRange) {
+      currentTotal += 1;
+      if (post.sentiment === 'negative') currentNegative += 1;
+    } else if (t > previousStart && t <= currentStart) {
+      previousTotal += 1;
+      if (post.sentiment === 'negative') previousNegative += 1;
+    }
+  }
+
+  if (currentTotal === 0 || previousTotal === 0) return null;
+
+  const delta = computePercentDelta(currentNegative, previousNegative);
+  if (delta.pct === null) return null;
+
+  const level: CrisisAlertLevel = delta.pct > 50 ? 'crisis' : delta.pct > 10 ? 'elevated' : 'stable';
+  return { changePct: delta.pct, level };
+}
+
+export interface SentimentTrajectoryPoint {
+  date: string;
+  /** −10 (fully negative) to +10 (fully positive), zero at the neutral midpoint. null when the day has zero enriched posts — a gap, never a fabricated 0. */
+  score: number | null;
+}
+
+export interface SentimentTrajectory {
+  points: SentimentTrajectoryPoint[];
+  /** Compares the most recent scored day against the preceding scored day. null when fewer than two scored days exist. */
+  trend: 'up' | 'down' | 'flat' | null;
+}
+
+/**
+ * Sentiment Trajectory (ADR-0062 Decision §5) — a per-day series, reusing
+ * computeSentimentHistory()'s own day-bucketing directly rather than
+ * collapsing the range into one flattened number. Each day's score is the
+ * weighted mean (positive×10 + neutral×0 + negative×−10) / total.
+ */
+export function computeSentimentTrajectory(history: SentimentHistoryPoint[]): SentimentTrajectory {
+  const points: SentimentTrajectoryPoint[] = history.map(({ date, positive, neutral, negative }) => {
+    const total = positive + neutral + negative;
+    const score = total === 0 ? null : (positive * 10 + neutral * 0 + negative * -10) / total;
+    return { date, score };
+  });
+
+  const scored = points.filter((p) => p.score !== null) as Array<{ date: string; score: number }>;
+  let trend: SentimentTrajectory['trend'] = null;
+  if (scored.length >= 2) {
+    const last = scored[scored.length - 1].score;
+    const prev = scored[scored.length - 2].score;
+    trend = last > prev ? 'up' : last < prev ? 'down' : 'flat';
+  }
+
+  return { points, trend };
 }
 
 /**

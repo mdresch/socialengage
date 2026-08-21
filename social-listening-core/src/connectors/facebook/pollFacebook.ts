@@ -34,9 +34,8 @@ async function gatedAcquire(tenantId: string): Promise<void> {
 }
 
 /**
- * ADR-0060 Decision §3 — one connected Page's full ingest cycle
- * (credential read → fetch → author upsert → per-post insert/enrich/
- * publish), as its own, independent `runIngestionAttempt()` call carrying
+ * Story 6.27 (ADR-0060 Decision §3) / Story 2.23 (ADR-0067) — runs a single poll cycle against one
+ * connected Page, creating one IngestionRun record carrying the specific
  * `pageId` in `connectorInfo` — the load-bearing piece that makes Decision
  * §4's per-Page health possible. This is the exact body `pollFacebook()`'s
  * own single-Page version already ran; only the credential lookup changed
@@ -44,7 +43,7 @@ async function gatedAcquire(tenantId: string): Promise<void> {
  * directly, never `getLatestCredentialId()` — this function's own caller
  * already knows exactly which credential belongs to which Page).
  */
-async function pollFacebookPage(tenantId: string, userId: string, page: FacebookConnectedPage): Promise<RunIngestionAttemptResult> {
+export async function pollFacebookPage(tenantId: string, userId: string, page: FacebookConnectedPage): Promise<RunIngestionAttemptResult> {
   return runIngestionAttempt({
     tenantId,
     connectorInfo: {
@@ -76,7 +75,7 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
         fetchFacebookPageMetadata(pageId, pageAccessToken),
       ]);
 
-      // ADR-0059 Decision §5 — the Page is the Author (organization-as-
+      // ADR-0059 Decision §5 — default Page Author (organization-as-
       // Author, a fourth instance of ADR-0004's already-generalized
       // clause), upserted once per poll regardless of how many posts this
       // batch contains — the same "author upserted once, reused per post"
@@ -84,7 +83,7 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
       // ADR-0060's own "A standing check applied, not skipped: author
       // rights" section confirms this stays per-Page and unmerged across a
       // user's several connected Pages.
-      const author = await upsertAuthor(tenantId, FACEBOOK_PROVIDER_ID, pageMeta.id, {
+      const defaultPageAuthor = await upsertAuthor(tenantId, FACEBOOK_PROVIDER_ID, pageMeta.id, {
         displayName: pageMeta.name,
         followerCount: typeof pageMeta.fan_count === 'number' ? pageMeta.fan_count : undefined,
         rawProfile: { id: pageMeta.id, name: pageMeta.name, fan_count: pageMeta.fan_count },
@@ -102,6 +101,23 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
           continue;
         }
 
+        // Story 2.23 (ADR-0067) — Two-tier author resolution hierarchy:
+        // Tier 1: True Author (from.name) when Graph API returns a distinct creator
+        // Tier 2: Page Fallback when from is absent or from.id === pageMeta.id
+        let resolvedAuthorId = defaultPageAuthor.id;
+        let resolvedAuthorName = pageMeta.name;
+        let resolvedAuthorExternalId = normalized.authorExternalId;
+
+        if (post.from?.id && post.from.name && post.from.id !== pageMeta.id) {
+          const individualAuthor = await upsertAuthor(tenantId, FACEBOOK_PROVIDER_ID, post.from.id, {
+            displayName: post.from.name,
+            rawProfile: post.from,
+          });
+          resolvedAuthorId = individualAuthor.id;
+          resolvedAuthorName = post.from.name;
+          resolvedAuthorExternalId = `facebook:${post.from.id}`;
+        }
+
         const convertedBody = post.message ? htmlToMarkdown(post.message) : '';
         const bodyMarkdown = convertedBody.length > 0 ? convertedBody : undefined;
         const bodyMarkdownVersion = bodyMarkdown !== undefined ? BODY_MARKDOWN_VERSION : undefined;
@@ -111,9 +127,19 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
 
         const inserted = await insertSocialPost({
           tenantId,
-          authorId: author.id,
+          authorId: resolvedAuthorId,
           acquisitionId: runId,
-          rawPayload: { providerId: FACEBOOK_PROVIDER_ID, externalId: normalized.externalId, ...post },
+          // Story 2.23 (ADR-0067) — Explicit hosting Facebook Page dependency (pageId/pageName)
+          // and resolved author recorded in rawPayload.
+          rawPayload: {
+            providerId: FACEBOOK_PROVIDER_ID,
+            externalId: normalized.externalId,
+            pageId: pageMeta.id,
+            pageName: pageMeta.name,
+            author: resolvedAuthorName,
+            ...(post.from ? { from: post.from } : {}),
+            ...post,
+          },
           publishedAt: normalized.publishedAt,
           enrichment: enrichment as unknown as Record<string, unknown> | undefined,
           bodyMarkdown,
@@ -123,7 +149,7 @@ async function pollFacebookPage(tenantId: string, userId: string, page: Facebook
         await publishSocialPostIngestedEvents(tenantId, FACEBOOK_PROVIDER_ID, watchlists, {
           postId: inserted.id,
           text: enrichmentText || post.permalink_url || normalized.externalId,
-          authorExternalId: normalized.authorExternalId,
+          authorExternalId: resolvedAuthorExternalId,
           publishedAt: normalized.publishedAt,
         });
 

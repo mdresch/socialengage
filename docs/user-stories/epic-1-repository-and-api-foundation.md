@@ -316,7 +316,7 @@
 
 ## Story 1.14 — Poll scheduler: skip a pair whose most recent run is still `status: 'running'`
 
-**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Ready
+**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Built 2026-08-18
 
 **Built:** 2026-08-18 — social-listening-core@838e3dc
 
@@ -334,6 +334,8 @@
 - `SchedulerDeps`' existing injectable seams are reused for this check (the same `deriveConnectorHealth`-style override pattern Story 1.13 already established) rather than a new, separately-maintained query path — proven by the new test overriding the same dependency shape already in use, not a new database call added directly inside `pollScheduler.ts`.
 
 **Explicitly out of scope, per ADR-0052 Decision §5b's own stated boundary:** a genuine multi-instance distributed lock (`pg_try_advisory_lock`, ADR-0052 Decision §7) — two truly concurrent *processes* can still both observe "not running" and both start a poll; this story closes only the common, same-process case (a slow cycle, or a prior run left `'running'` by an interrupted process) that this session's own evidence actually showed. A database-level uniqueness constraint on `social_posts(tenant_id, provider, external_id)` as defense-in-depth against a duplicate insert even if an overlap does occur — considered, not built here; Menno's own explicit choice this session was the scheduler-level guard only. Cleaning up the four orphaned `'running'` rows already found in the dev database — a direct, one-off DB fix, not a code change, and not requested as part of this story.
+
+**Documentation Steward correction, 2026-08-19.** This story's own `**Source:** ... **Status:** Ready` header still read "Ready" even though the very next line's fixed-shape `**Built:** 2026-08-18 — social-listening-core@838e3dc` field already named a real shipped commit — confirmed against `docs/implementation-log.md`'s own 2026-08-18 Story 1.14 entry (same commit, same 6/6 contract, same files-touched list) that the build is real. The Status line now reads "Built 2026-08-18," matching the `**Built:**` field and the Log; no Acceptance Criteria text changed.
 
 ---
 
@@ -362,9 +364,46 @@
 - One user's `pollUser()` call throwing (a raw, non-`ClassifiableError` exception) does not prevent the next due user, or the next due tenant, from being attempted in the same tick — proven by a test mirroring Story 1.13 AC5's own tenant-wide failure-isolation test, one level deeper (ADR-0061 Decision §4).
 - `jitterFraction(tenantId, platformId, userId?)` gains the optional third segment — omitted, output is byte-for-byte identical to today's two-argument calls (every existing tenant-wide call site unaffected); supplied, two different users under the same tenant/connector receive different, individually deterministic and repeatable jittered due-times — proven by a test confirming both properties (ADR-0061 Decision §5).
 
-**Explicitly out of scope, per ADR-0061's own named Open Questions — not solved here:**
-- `RequestGate`'s own key shape for Facebook (`pollFacebook()`'s internal `gatedAcquire(tenantId)` call stays tenant-wide, not per-user) — unaffected by this story; that decision belongs to ADR-0060/`pollFacebook()`'s own scope.
-- A cost/quota budget ceiling or spend-alerting mechanism for continuous Tier-3 polling — inherits, does not resolve, ADR-0052 Open Question 4.
-- Multi-instance distributed locking — unaffected, mirrors ADR-0052 Decision §7's own already-accepted deferral.
-- Any change to ADR-0060 Decision §3's own per-Page fan-out inside `pollFacebook()` itself — this story triggers it, once per due `(tenant, user)` tuple, and does not touch its internals.
-- Any Admin UI surfacing of Tier-3 scheduler activity (e.g. a "last polled at" indicator) — a future, separate UI concern, not bundled here, matching Story 1.13's own identical out-of-scope note for the tenant-wide case.
+---
+
+## Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health Derivation, and Service Bus Ingestion Alert Events
+
+**Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Built
+**Built:** 2026-08-20 (social-listening-core@ae1bd98)
+**Depends on:** Story 1.13 (Live polling scheduler), Story 1.14 (In-flight run guard), Story 1.15 (Tier-3 per-user scheduler), Story 5.19 (Service Bus event publishing)
+
+**As a** system operator and platform engineer,
+**I want** orphaned or hung `running` ingestion runs to be automatically reconciled by a lock-safe scheduler watchdog, inactive connectors to be derived as `stalled`, and structured alert events published to Service Bus,
+**so that** polling deadlocks cannot occur after server restarts or network hangs, and ingestion failures/stalls trigger proactive notifications.
+
+**Acceptance Criteria**
+
+- **Database Partial Index:**
+  - A migration adds partial index `idx_ingestion_runs_stale_watchdog` on `ingestion_runs(status, started_at) WHERE status = 'running'` for O(1) watchdog query scans.
+- **Lock-Safe Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`):**
+  - Stored in `ingestionRunStore.ts` and executed automatically at the start of each `runSchedulerTick()`.
+  - Uses `FOR UPDATE SKIP LOCKED` row locking to atomically select and update all `ingestion_runs` rows where `status = 'running'` and `started_at < NOW() - INTERVAL '15 minutes'` (or `2 * effectiveCadenceMs`).
+  - Sets `status = 'failed'`, `completed_at = NOW()`, `error_summary = 'Ingestion run timed out or aborted (reconciled by watchdog)'`, and `retryable = true`, returning reconciled row details (`id`, `tenant_id`, `platform_id`, `user_id`).
+  - Proved by a test verifying that an orphaned `running` row older than threshold is reconciled to `failed`, allowing subsequent `getMostRecentRunStatus()` to return `failed` and immediately unblocking the Story 1.14/1.15 in-flight guard. Active runs within the threshold remain `status: 'running'` and are untouched.
+- **Extended Connector Health Derivation with Strict Precedence (`stalled` Status):**
+  - `ConnectorHealthStatus` union in `connectorHealth.ts` is widened to include `'stalled'`.
+  - `deriveConnectorHealth()` enforces explicit derivation order:
+    1. `disconnected` (zero historical runs)
+    2. `reconnect_required` (credential failure on latest run or credential status expired/revoked)
+    3. `failing` (consecutive failures >= 20 or rate-based failure threshold breached)
+    4. `stalled` (active connector with valid credentials, not in 1–3, where `now - lastAttemptAt >= 3 * effectiveCadenceMs` or `now - lastSuccessfulFetchAt >= 24h` with >= 1 prior run)
+    5. `degraded` (recent failure with a success in the trailing hour)
+    6. `healthy` (normal operation).
+  - Proved by tests asserting `deriveConnectorHealth()` returns `'stalled'` when elapsed time breaches cadence/silence thresholds without overriding `failing` or `reconnect_required`.
+- **Service Bus Ingestion Alert Events (`ConnectorIngestionAlertEvent`):**
+  - `src/events/connectorIngestionAlertEvent.ts` defines `ConnectorIngestionAlertEvent` (`tenantId`, `platformId`, `userId?`, `alertType`, `severity`, `message`, `occurredAt`, `metadata`).
+  - Emits `run_timed_out` (warning) per reconciled run (with `staleRunId`), throttled to at most once per `(tenantId, platformId[, userId])` per sweep.
+  - Emits `ingestion_stalled` (warning) when derived health transitions into `'stalled'`.
+  - Emits `connector_failing` / `reconnect_required` (critical) when derived health enters auto-disable or credential revocation.
+- **Idempotent Force Retry API Endpoint:**
+  - `POST /v1/connectors/:id/retry` and `/v1/connectors/:id/users/:userId/retry` mounted behind `authMiddleware` and `requireTenantAdmin` (or matching authenticated user for Tier-3).
+  - Reconciles any stale runs for that target, resets transient circuit-breaker counters (`consecutiveFailures = 0`, probe cooldown cleared), and triggers immediate `connector.poll(tenantId)` / `pollUser(tenantId, userId)`.
+  - Returns HTTP 200 with freshly derived `ConnectorHealth` summary, or HTTP 409 if a legitimate run started within the last 60 seconds is actively running.
+
+**Explicitly out of scope:** UI rendering in Next.js admin frontend (scoped to Story 6.29); third-party notification delivery channels (Slack/PagerDuty/Email — downstream consumers of the Service Bus event, not core pipeline scope).
+

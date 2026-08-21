@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createApp } from './app';
 import { getPool } from '../db/pool';
 import { waitForPostgresReady } from '../db/postgresReadiness';

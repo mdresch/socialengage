@@ -282,14 +282,16 @@ export async function getUserAccessHistory(userId: string): Promise<AccessHistor
 }
 
 export interface ConnectorStatus {
-  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a credential-invalidation failure, distinct from ordinary rate-limit/network 'failing'. */
-  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required';
+  /** Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required'; Story 6.29 (ADR-0070 §2) added 'stalled'. */
+  status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
   lastSuccessfulFetchAt: string | null;
   lastAttemptAt: string | null;
   consecutiveFailures: number;
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
   /** Story 1.12 (ADR-0051 Open Question 5) — real activation state, tenant-wide scope, read fresh, never derived from credentialStatus/authMode. */
   isActive: boolean;
+  /** Number of posts ingested in the most recent successful run. */
+  lastSuccessfulPostsIngested?: number | null;
 }
 
 export interface ConnectorActivationOutcome {
@@ -409,6 +411,38 @@ export async function deactivatePlatform(
   return { status: response.status, body };
 }
 
+export interface ConnectorRetryOutcome {
+  status: number;
+  body: {
+    message?: string;
+    health?: ConnectorStatus;
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.29 / Story 1.16 (ADR-0070 §4) — on-demand force retry / re-sync
+ * (`POST /v1/connectors/:platformId/retry` or `/v1/connectors/:platformId/users/:userId/retry`).
+ * Reconciles any stale runs, resets circuit-breaker failure streaks, triggers an immediate poll,
+ * and returns fresh derived ConnectorHealth. A 409 (run already in progress) is a real expected outcome.
+ */
+export async function retryConnector(
+  platformId: string,
+  userId?: string
+): Promise<ConnectorRetryOutcome> {
+  const path = userId
+    ? `/v1/connectors/${encodeURIComponent(platformId)}/users/${encodeURIComponent(userId)}/retry`
+    : `/v1/connectors/${encodeURIComponent(platformId)}/retry`;
+  const response = await authenticatedCoreFetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 export interface FacebookOAuthExchangeOutcome {
   status: number;
   body: {
@@ -519,6 +553,145 @@ export async function disconnectFacebookPage(id: string): Promise<FacebookDiscon
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }
+
+export interface InstagramOAuthExchangeOutcome {
+  status: number;
+  body: {
+    sessionToken?: string;
+    accounts?: {
+      igUserId: string;
+      username: string;
+      name?: string;
+      profilePictureUrl?: string;
+      followersCount?: number;
+      pageId: string;
+      pageName: string;
+    }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — exchanges Meta OAuth code for Instagram accounts discovery.
+ */
+export async function exchangeInstagramOAuthCode(
+  code: string,
+  redirectUri: string
+): Promise<InstagramOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramSelectAccountOutcome {
+  status: number;
+  body: {
+    connected?: { igUserId: string; username: string; pageName: string }[];
+    errors?: { igUserId: string; reason: string }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — registers selected Instagram accounts in core.
+ */
+export async function selectInstagramAccounts(
+  sessionToken: string,
+  igUserIds: string[]
+): Promise<InstagramSelectAccountOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/oauth/select-accounts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionToken, igUserIds }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramConnectedAccountRow {
+  id: string;
+  igUserId: string;
+  username: string;
+  pageId: string;
+  pageName: string;
+  status: 'connected' | 'removed' | 'orphaned' | 'reconnect_required';
+  connectorHealth: {
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
+    lastSuccessfulFetchAt: string | null;
+    lastAttemptAt: string | null;
+    consecutiveFailures: number;
+    credentialStatus: string | null;
+  };
+}
+
+export interface InstagramAccountsOutcome {
+  status: number;
+  body: {
+    parentConnectionActive?: boolean;
+    accounts?: InstagramConnectedAccountRow[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — lists caller's connected Instagram accounts.
+ */
+export async function listInstagramAccounts(): Promise<InstagramAccountsOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/accounts', { method: 'GET' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramDisconnectAccountOutcome {
+  status: number;
+  body: { id?: string; igUserId?: string; status?: string; error?: string; [key: string]: unknown };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — soft-removes a connected Instagram account.
+ */
+export async function disconnectInstagramAccount(id: string): Promise<InstagramDisconnectAccountOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/instagram/accounts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface LinkedInOAuthExchangeOutcome {
+  status: number;
+  body: {
+    success?: boolean;
+    memberId?: string;
+    memberName?: string;
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.35 (ADR-0069) — exchanges LinkedIn authorization code and state with core.
+ */
+export async function exchangeLinkedInOAuthCode(
+  code: string,
+  state: string,
+  redirectUri: string
+): Promise<LinkedInOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/linkedin/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, state, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+
 
 /**
  * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
@@ -793,11 +966,15 @@ export interface SocialPostFull extends SocialPostSummary {
  * backend capability. Analytics' own paginate-everything-and-aggregate
  * loop uses this to fetch in bigger pages (fewer round trips); every other
  * existing caller keeps the server's own default page size by omitting it.
+ *
+ * `watchlistId` (Story 8.9, ADR-0063) is optional and forwarded as-is —
+ * the real `GET /v1/posts?watchlistId=` server-side filter (Story 3.11).
  */
-export async function listPosts(cursor?: string, limit?: number): Promise<SocialPostsPage> {
+export async function listPosts(cursor?: string, limit?: number, watchlistId?: string): Promise<SocialPostsPage> {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', cursor);
   if (typeof limit === 'number') params.set('limit', String(limit));
+  if (watchlistId) params.set('watchlistId', watchlistId);
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
@@ -829,16 +1006,47 @@ export interface PostEnrichOutcome {
 }
 
 /**
- * Story 6.16 / Story 2.8/2.9 — manually (re-)runs enrichment for one
- * already-ingested post (`POST /v1/posts/:id/enrich`). Returns the raw
- * status/body rather than throwing on a non-2xx, the same pattern every
- * other Client-Component-triggered action in this app uses — a `200` with
- * `enrichment: null` (no AI provider currently connected and active) is a
- * real, honest outcome the caller must react to specifically, not an
- * exception.
+ * Story 6.16 / Story 3.13 / ADR-0071 — manually (re-)runs enrichment for one
+ * already-ingested post (`POST /v1/posts/:id/enrich`). Accepts optional { force?: boolean }
+ * to overwrite human-in-the-loop overrides.
  */
-export async function runPostEnrichment(id: string): Promise<PostEnrichOutcome> {
-  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrich`, { method: 'POST' });
+export async function runPostEnrichment(id: string, options?: { force?: boolean }): Promise<PostEnrichOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrich`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ force: options?.force ?? false }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface PostEnrichmentUpdateInput {
+  sentiment?: 'positive' | 'neutral' | 'negative';
+  sentimentScore?: number;
+  keyPhrases?: string[];
+  detectedLanguage?: string | null;
+  geoCountry?: string | null;
+  geoCountryName?: string | null;
+  summary?: string | null;
+}
+
+export interface PostEnrichmentUpdateOutcome {
+  status: number;
+  body: Record<string, unknown>;
+}
+
+/**
+ * Story 6.31 (ADR-0071) — updates post enrichment overrides via PATCH /v1/posts/:id/enrichment.
+ */
+export async function updatePostEnrichment(
+  id: string,
+  updates: PostEnrichmentUpdateInput
+): Promise<PostEnrichmentUpdateOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(id)}/enrichment`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }
@@ -869,6 +1077,8 @@ export interface TenantOwnedFeedActivationDetail {
   tokenExpiresAt: string;
   verifiedAt: string | null;
   createdAt: string;
+  /** Story 6.28 (ADR-0050's 2026-08-20 Amendment Log entry) — optional, tenant-owner-set display label; null when unset (the setup UI falls back to `domain`). */
+  name: string | null;
 }
 
 export interface TenantOwnedFeedActionOutcome {
@@ -891,11 +1101,11 @@ export interface TenantOwnedFeedVerifyOutcome {
  * `400` (missing domain/feedUrl) is a real, expected outcome the form must
  * react to specifically, not collapsed into a generic error.
  */
-export async function connectTenantOwnedFeed(domain: string, feedUrl: string): Promise<TenantOwnedFeedConnectOutcome> {
+export async function connectTenantOwnedFeed(domain: string, feedUrl: string, name?: string): Promise<TenantOwnedFeedConnectOutcome> {
   const response = await authenticatedCoreFetch('/v1/connectors/tenant-owned-feed/connect', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ domain, feedUrl }),
+    body: JSON.stringify(name ? { domain, feedUrl, name } : { domain, feedUrl }),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
@@ -935,17 +1145,24 @@ export async function listTenantOwnedFeedActivations(): Promise<TenantOwnedFeedA
 }
 
 /**
- * Story 6.20 (ADR-0057) — updates `feedUrl` only on an activation
- * (`PATCH /v1/connectors/tenant-owned-feed/:id`, `tenant_admin` only).
- * Returns the raw status/body: a `400` (a request that tried to also send
- * `domain`) and a `404` (unknown id) are both real, expected outcomes the
- * UI must react to specifically, not collapsed into a generic error.
+ * Story 6.20 (ADR-0057) / Story 6.28 (ADR-0050's 2026-08-20 Amendment Log
+ * entry widened this to also accept `name`) — updates `feedUrl` and/or
+ * `name` on an activation (`PATCH /v1/connectors/tenant-owned-feed/:id`,
+ * `tenant_admin` only). `updates` must carry at least one of the two —
+ * the same requirement the backend route now enforces. `name: null`
+ * explicitly clears a previously-set name. Returns the raw status/body: a
+ * `400` (a request that tried to also send `domain`, or supplied neither
+ * field) and a `404` (unknown id) are both real, expected outcomes the UI
+ * must react to specifically, not collapsed into a generic error.
  */
-export async function updateTenantOwnedFeedActivation(id: string, feedUrl: string): Promise<TenantOwnedFeedActionOutcome> {
+export async function updateTenantOwnedFeedActivation(
+  id: string,
+  updates: { feedUrl?: string; name?: string | null }
+): Promise<TenantOwnedFeedActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/connectors/tenant-owned-feed/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feedUrl }),
+    body: JSON.stringify(updates),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };

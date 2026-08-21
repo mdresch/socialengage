@@ -366,7 +366,7 @@
 
 ## Story 5.19 — Wire `SocialPostIngestedEvent`/`ConnectorHealthChangedEvent` publishing into the real ingestion pipeline
 
-**Source:** ADR-0058 (Accepted 2026-08-17) · **Status:** Ready · **Built:** 2026-08-17 — social-listening-core@3ef32ad
+**Source:** ADR-0058 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 · **Built:** 2026-08-17 — social-listening-core@3ef32ad
 
 **Added 2026-08-17, at ADR-0058's own acceptance**, per this series' own "no story until acceptance" precedent (ADR-0024/0026). Closes a real, project-wide gap `ingestion-events/SKILL.md`'s own "Known gaps" section already named plainly: `publishEvent()` (`serviceBusPublisher.ts`, real, contract-tested since Stories 5.1/5.2/5.5) has no real caller anywhere in the actual ingestion pipeline — confirmed directly via a repo-wide grep of `src/connectors/`, `src/posts/`, and `src/ingestion/` finding zero matches. Found live while scoping Story 2.13 (Wikipedia connector, paused pending this story); Menno flagged the gap directly. Story 2.13 resumes and adopts this story's own `SocialPostIngestedEvent` wiring pattern once this story is built, per ADR-0058 Decision §5.
 
@@ -384,3 +384,5 @@
 - `docs/adr/README.md`, `docs/user-stories/README.md`'s Epic 5 row, and `ingestion-events/SKILL.md`'s own "Known gaps" section are all updated to reflect real publishing now exists — the SKILL.md gap this story closes must actually say so, not be left describing a state this story has already fixed.
 
 **Explicitly out of scope (per ADR-0058 Decision §6's own naming, not silently deferred):** throttling or batching multiple `SocialPostIngestedEvent`s from a single post matching many watchlists — real Service Bus message-throughput is watched during this story's own staging validation instead, not solved architecturally here. Wikipedia's own connector (Story 2.13) is not touched by this story — it adopts this same pattern as part of its own separate, still-paused build.
+
+**Documentation Steward correction, 2026-08-19.** This story's own header already carried a correct, real `**Built:** 2026-08-17 — social-listening-core@3ef32ad` field (confirmed directly against `docs/implementation-log.md`'s own matching 2026-08-17 entry), but `**Status:**` still read "Ready." Now reads "Built 2026-08-17," matching the `**Built:**` field and the Log; no Acceptance Criteria text changed.

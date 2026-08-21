@@ -34,6 +34,8 @@ export interface ParsedRssItem {
    * raw_payload under-capture gap named in ADR-0053's own Context.
    */
   rawXml: string;
+  /** Story 2.20 (ADR-0064) — explicit country tag if present in item; null otherwise. */
+  country?: string | null;
 }
 
 const ITEM_RE = /<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi;
@@ -84,6 +86,7 @@ export function parseRssItems(xml: string): ParsedRssItem[] {
     const issuer = extractTag(block, 'dc:contributor');
     const description = extractTag(block, 'description');
     const contentEncoded = extractTag(block, 'content:encoded');
+    const country = extractTag(block, 'country') ?? extractTag(block, 'sourceCountry') ?? extractTag(block, 'dc:coverage');
 
     if (!title || !pubDate || !(guid || link)) continue;
 
@@ -96,6 +99,7 @@ export function parseRssItems(xml: string): ParsedRssItem[] {
       description,
       contentEncoded,
       rawXml: block,
+      country,
     });
   }
   return items;

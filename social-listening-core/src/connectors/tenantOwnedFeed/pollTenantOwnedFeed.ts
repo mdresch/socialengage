@@ -10,6 +10,7 @@ import { enrichPost } from '../azureAiLanguage/enrichPost';
 import { htmlToMarkdown, BODY_MARKDOWN_VERSION } from '../../content/htmlToMarkdown';
 import { listActiveWatchlistsForTenant } from '../../watchlists/watchlistStore';
 import { publishSocialPostIngestedEvents } from '../../events/publishSocialPostIngestedEvents';
+import { buildGeoEnrichment } from '../geo/geoCountryUtils';
 
 /** Same reclassification pattern every other real connector's own poll function establishes. */
 async function gatedAcquire(tenantId: string): Promise<void> {
@@ -76,13 +77,29 @@ export async function ingestTenantOwnedFeedItems(
     const enrichmentText = [item.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
+    // Story 2.20 (ADR-0064) — country-level geospatial extraction from explicit country feed tags
+    const geoEnrichment = buildGeoEnrichment(item.country, 'post', 'high');
+    const combinedEnrichment = (enrichment || Object.keys(geoEnrichment).length > 0)
+      ? { ...(enrichment ?? {}), ...geoEnrichment }
+      : undefined;
+
     const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
-      rawPayload: { providerId: TENANT_OWNED_FEED_PROVIDER_ID, externalId: normalized.externalId, ...item },
+      // Story 2.19 — activation.name (when the tenant set one) is
+      // denormalized alongside item.author (the per-item byline, already
+      // present on `item` via feedItemParser.ts) — display-only, matching
+      // the same pattern Facebook's pageName/Newswire's issuer already
+      // establish. Never overrides Author/providerId modeling.
+      rawPayload: {
+        providerId: TENANT_OWNED_FEED_PROVIDER_ID,
+        externalId: normalized.externalId,
+        feedName: activation.name ?? undefined,
+        ...item,
+      },
       publishedAt: normalized.publishedAt,
-      enrichment: enrichment as unknown as Record<string, unknown> | undefined,
+      enrichment: combinedEnrichment as Record<string, unknown> | undefined,
       bodyMarkdown,
       bodyMarkdownVersion,
     });

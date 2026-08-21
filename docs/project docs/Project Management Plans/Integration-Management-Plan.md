@@ -248,6 +248,19 @@ Integration happens at **every level**, with verification at each step.
 | Enrichment not wired | social-post-enrichment ↔ ingestion pipeline | High | ⏳ Open | Phase 2 start |
 | Service Bus not integrated | ingestion-events ↔ azure-service-bus | Medium | ⏳ Deferred | Phase 3 start |
 
+**Documentation Steward correction, 2026-08-19.** This section's "Known Integration Gaps" table above, §5.2.1's Component Integration Matrix, §5.2.2's External Integration Matrix, and the "Current Integration Test Status (last verified 2026-08-03)" line have not been touched since this plan's original drafting and are now substantially stale against real, shipped git state — confirmed directly, not assumed:
+- **Watchlist matching → post enrichment/event publishing:** real and wired. Watchlist-driven `SocialPostIngestedEvent` publishing is built and contract-verified (Story 5.19/ADR-0058, `social-listening-core@3ef32ad`, 2026-08-17) — the table's "⚠️ Not yet wired"/"Phase 1 completion" resolution is stale.
+- **`publishEvent()` → Service Bus:** real and wired, same Story 5.19/ADR-0058 — not "Future (Phase 3)."
+- **Entra sign-in / bearer-token identity resolution:** real and shipped for a very long time before this correction (Phase 4.5, Stories 5.9–5.11, ADR-0029–0033) — not "Open."
+- **Enrichment (`social-post-enrichment`) wired into the ingestion pipeline:** real and shipped (Phase 2, Story 2.8/2.9, extended since by Stories 2.16/2.17) — not "Open."
+- **Azure Service Bus integration:** real, provisioned, and contract-tested since Stories 5.1/5.2/5.5, and now actually publishing from the real ingestion pipeline (Story 5.19 above) — not "Deferred."
+- **Azure AI Language:** real and integrated since Phase 2 (Story 2.8) — not "Future (Phase 2)."
+- **Connector ownership authorization (ADR-0034):** real and shipped (Story 1.7) — not "Open."
+- **Connector OAuth token exchange:** real and shipped — Facebook (Story 2.15/6.23, ADR-0059) is this project's first `authMode: 'oauth'` connector, not Reddit as this row's own "first OAuth connector, such as Reddit" framing assumed; Reddit itself has still not been started.
+- The "159/159 passing, 32/32 suites" test-status line is from 2026-08-03 and reflects neither repo's current suite size (`social-listening-core`'s last full suite, as of Story 1.14, 2026-08-18: 68/68 suites, 537/537 tests; `social-listening-admin`'s, as of Story 6.23, same day: 35/35 suites, 519/519 tests — see `docs/implementation-log.md`'s own last entries).
+
+This plan's own external-integration roster is also incomplete against the real, current connector count: five real connectors now exist (GNews, Newswire, tenant-owned-feed, Wikipedia, Facebook), and a real live ingestion-polling scheduler (Story 1.13/1.14) now drives all of them on a real recurring cadence — none of which this section names. **Not corrected cell-by-cell above** — the volume of stale rows here exceeds what this pass's own time budget supports doing individually without rushing; flagged as a real, substantial backlog item for a dedicated future Documentation Steward pass (or Menno directly) rather than a partial, potentially-inconsistent patch job. The specific claims cited above are the ones independently verified against real git state for this correction; treat the rest of §5.2/§5.3 as unverified pending that pass.
+
 **Integration Issue Resolution:**
 1. Identify the gap in integration testing
 2. Trace the expected data/event flow

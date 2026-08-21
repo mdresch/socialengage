@@ -15,20 +15,112 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-08-19 | 12:15 | — | — | Infrastructure | — | chore: post-commit hook outputs for 31af056 (53dc527) |
-| 2026-08-19 | 12:15 | — | — | Infrastructure | — | chore: post-commit hook outputs for 17c563b (31af056) |
-| 2026-08-19 | 12:14 | — | — | Documentation | ADR-0063 | docs(adr): accept ADR-0063; move Story 3.11 to Ready (17c563b) |
-| 2026-08-19 | 11:55 | — | — | Infrastructure | — | chore: post-commit hook outputs for 24adf6c (c1d6a44) |
-| 2026-08-19 | 11:54 | — | — | Infrastructure | — | chore: post-commit hook outputs for 6eb6062 (24adf6c) |
-| 2026-08-19 | 11:54 | — | — | Documentation | ADR-0063 | docs(adr): block selectedTopic/Watchlist on ADR-0063 in ADR-0062, Story 8.7, Story 8.9 (6eb6062) |
-| 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 59356e6 (6f25f17) |
-| 2026-08-19 | 11:44 | — | — | Infrastructure | — | chore: post-commit hook outputs for 2f605b6 (59356e6) |
-| 2026-08-19 | 11:43 | — | — | Documentation | ADR-0063 | docs(adr): draft ADR-0063 — post_watchlist_matches junction table and GET /v1/posts?watchlistId server-side filter (2f605b6) |
-| 2026-08-19 | 10:56 | — | — | Infrastructure | — | chore: post-commit hook outputs for a5d0036 (23a6dca) |
-| 2026-08-19 | 10:56 | — | — | Infrastructure | — | chore: post-commit hook outputs for activeWatchlistFilter revision (48f5cf3) (a5d0036) |
-| 2026-08-19 | 10:55 | — | — | Documentation | — | docs(adr-0062): replace selectedTopic with activeWatchlistFilter (48f5cf3) |
-| 2026-08-19 | 10:24 | — | — | Infrastructure | ADR-0062 | chore: post-commit hook outputs for ADR-0062 commit (2c00920) (67c546f) |
-| 2026-08-19 | 10:22 | — | — | Documentation | ADR-0062 | feat(docs): draft ADR-0062 — Analytics Dashboard Overview Tab Enhancement (2c00920) |
+| 2026-08-21 | 08:56 | — | — | Documentation | — | docs: sync tracking records (6d5f5b8) |
+| 2026-08-21 | 08:56 | — | — | Documentation | — | fix(core): update scheduler test provider roster, refine reconnect_required derivation, and handle Graph API error bodies (3318b2b) |
+| 2026-08-21 | 08:38 | — | — | Review | — | docs: finalize review queues and time tracking records (cd8e624) |
+| 2026-08-21 | 08:38 | — | — | Documentation | — | docs: sync user stories, implementation log, and time tracking (9510c47) |
+| 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): enhance Analytics drawer and post list cards with author, top entities, and key phrases (6d3169e) |
+| 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): display ingested post count on last successful run and render connector status indicators (2f428e0) |
+| 2026-08-21 | 08:37 | — | — | Documentation | — | feat(core): isolate historical credential failures, record posts ingested count, and mount instagram & linkedin routers (5d56919) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 6.35 | feat(admin): implement LinkedIn connector UI and OAuth proxy (Story 6.35, ADR-0069) (89eb97c) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 2.25 | feat(core): implement LinkedIn REST API connector and OAuth flow (Story 2.25, ADR-0069) (513b125) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 6.32 | test(admin): add contract test for Bing Search connector UI (Story 6.32, ADR-0066) (0c24532) |
+| 2026-08-21 | 08:36 | — | — | Documentation | Story 6.34 | feat(admin): implement Instagram Business connector UI and OAuth proxy (Story 6.34, ADR-0068) (986a93c) |
+| 2026-08-21 | 08:36 | — | — | Documentation | Story 2.24 | feat(core): implement Instagram Business Graph API connector and OAuth flow (Story 2.24, ADR-0068) (86f093b) |
+| 2026-08-20 | 00:57 | — | — | Documentation | Story 2.22 | feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066) (8de21b3) |
+| 2026-08-20 | 00:57 | — | — | Documentation | Story 2.22 | feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066) (bb34673) |
+| 2026-08-20 | 00:33 | — | — | Documentation | Story 3.13 | docs(stories): mark Story 3.13 and Story 6.31 as Implemented (ADR-0071) (cede597) |
+| 2026-08-20 | 00:24 | — | — | Documentation | Story 6.30 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) (5ff540a) |
+| 2026-08-20 | 00:18 | — | — | Documentation | Story 6.30 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) (dedfb6b) |
+| 2026-08-20 | 00:01 | — | — | Documentation | Story 2.21 | feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065) (16a47d8) |
+| 2026-08-20 | 00:01 | — | — | Documentation | Story 2.21 | feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065) (4df8d6d) |
+| 2026-08-20 | 23:50 | — | — | Review | — | docs: sync review and time tracking for healing pass (e67a53d) |
+| 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (d0094f6) |
+| 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (0052776) |
+| 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (dca7b22) |
+| 2026-08-20 | 21:26 | — | — | Review | Story 6.33 | docs(reviews): sync review tracking for Story 6.33 (519fb4b) |
+| 2026-08-20 | 21:26 | — | — | Documentation | Story 6.33 | feat(admin): implement Facebook hosting Page attribution and author distinction display (Story 6.33 / ADR-0067) (b0dc89e) |
+| 2026-08-20 | 21:11 | — | — | Review | Story 2.23 | docs(reviews): sync review tracking for Story 2.23 (2b908be) |
+| 2026-08-20 | 21:11 | — | — | Documentation | Story 2.23 | feat(core): implement Facebook Graph API from extraction and two-tier author resolution (Story 2.23 / ADR-0067) (450fffc) |
+| 2026-08-20 | 20:57 | — | — | Review | — | docs(reviews): update pending reviews with latest story commits (9e6c2c4) |
+| 2026-08-20 | 20:57 | — | — | Documentation | — | chore: update tracking docs and apply UI connector label refinements (c1c7b2f) |
+| 2026-08-20 | 20:57 | — | — | Documentation | Story 6.31 | feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071) (9260f6f) |
+| 2026-08-20 | 20:57 | — | — | Documentation | Story 3.13 | feat(core): implement post enrichment overrides API and precedence guard (Story 3.13 / ADR-0071) (d9639df) |
+| 2026-08-20 | 19:53 | — | — | Documentation | ADR-0068 | docs(adr): accept ADR-0068 (Instagram) & ADR-0069 (LinkedIn); draft Stories 2.24, 2.25, 6.34, 6.35 (9617cec) |
+| 2026-08-20 | 19:35 | — | — | Documentation | ADR-0067 | docs(adr): accept ADR-0067 and draft Story 2.23 and Story 6.33 (1c47d9e) |
+| 2026-08-20 | 19:15 | — | — | Documentation | — | fix(analytics): add resilient error handling for watchlist coverage and analytics initial load (30ed2df) |
+| 2026-08-20 | 19:11 | — | — | Documentation | — | feat(tenant): include Facebook connector and display connected status in Active Connectors card (7cd9cf9) |
+| 2026-08-20 | 19:01 | — | — | Infrastructure | ADR-0067 | docs(adr): update ADR-0067 with modernized catalog description, active ingestion clarification, and personal intent sharing (b26cc4f) |
+| 2026-08-20 | 18:55 | — | — | Documentation | — | docs(deferred): document personal account outbound post authoring and browser intent URI sharing (e2802f2) |
+| 2026-08-20 | 18:44 | — | — | Documentation | ADR-0067 | docs(adr): update ADR-0067 with Personal Account analysis, Tier-3 OAuth alignment, and ADR-0064 geo normalization (Proposed) (a697749) |
+| 2026-08-20 | 18:38 | — | — | Documentation | ADR-0066 | docs(adr): accept ADR-0066 and draft Story 2.22 and Story 6.32 for Bing Search connector (1872453) |
+| 2026-08-20 | 18:35 | — | — | Documentation | ADR-0066 | docs(adr): update ADR-0066 with Author mapping, AST validation, pacing loop, and direct Azure billing (Proposed) (b6631ad) |
+| 2026-08-20 | 18:30 | — | — | Documentation | Story 3.13 | docs(stories): draft Story 3.13 (backend enrichment overrides API) and Story 6.31 (cascading drawer UI) for ADR-0071 (761a25a) |
+| 2026-08-20 | 18:29 | — | — | Documentation | ADR-0071 | docs(adr): update ADR-0071 with re-enrichment precedence, audit history, a11y, and mark as Accepted (210f063) |
+| 2026-08-20 | 18:26 | — | — | Documentation | ADR-0071 | docs(adr): draft ADR-0071 Human-in-the-Loop Post Enrichment Overrides and Cascading Drawer UI (dae4b78) |
+| 2026-08-20 | 18:18 | — | — | Documentation | Story 2.21 | docs(stories): draft Story 2.21 (Brave Search backend connector) and Story 6.30 (Brave Search admin UI) for ADR-0065 (49760f7) |
+| 2026-08-20 | 18:16 | — | — | Review | ADR-0065 | docs(adr): update ADR-0065 with review recommendations and mark as Accepted (1dd76ef) |
+| 2026-08-20 | 18:07 | — | — | Documentation | ADR-0064 | docs(adr): mark ADR-0064 as Accepted and Story 8.10 as Built (3ee2b75) |
+| 2026-08-20 | 18:02 | — | — | Documentation | Story 6.29 | docs: record Story 6.29 implementation in log and user story metadata (8930de7) |
+| 2026-08-20 | 18:02 | — | — | Documentation | Story 6.29 | feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070) (be6c4cd) |
+| 2026-08-20 | 17:29 | — | — | Infrastructure | Story 1.16 | chore: record post-commit hook outputs for Story 1.16 (3df6e74) |
+| 2026-08-20 | 17:28 | — | — | Documentation | Story 1.16 | docs: record Story 1.16 implementation in log and user story metadata (e40d3e5) |
+| 2026-08-20 | 17:27 | — | — | Documentation | Story 1.16 | feat(core): implement Story 1.16 ingestion watchdog, stalled health, and alert events (ADR-0070) (ae1bd98) |
+| 2026-08-20 | 16:45 | — | — | Infrastructure | ADR-0070 | chore: record post-commit hook outputs for ADR-0070 acceptance (39211ac) |
+| 2026-08-20 | 16:44 | — | — | Documentation | ADR-0070 | docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence (f00b34c) |
+| 2026-08-20 | 16:43 | — | — | Infrastructure | ADR-0070 | chore: record post-commit hook outputs for ADR-0070 (79da4c8) |
+| 2026-08-20 | 16:42 | — | — | Documentation | ADR-0070 | docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts (70035d7) |
+| 2026-08-20 | 16:39 | — | — | Infrastructure | Story 8.10 | chore: record post-commit hook outputs for Story 8.10 (07a885b) |
+| 2026-08-20 | 16:39 | — | — | Documentation | Story 8.10 | docs: record Story 8.10 implementation in user stories and log (168e5f7) |
+| 2026-08-20 | 16:38 | — | — | Documentation | Story 8.10 | Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064) (75a0a4a) |
+| 2026-08-20 | 16:25 | — | — | Infrastructure | — | chore: record post-commit hook outputs for merge (4740537) |
+| 2026-08-20 | 16:24 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (93dadab) |
+| 2026-08-20 | 16:20 | — | — | Documentation | Story 2.20 | Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064) (8bc60a1) |
+| 2026-08-20 | 14:05 | — | — | Review | — | docs: update review logs (ad3e8be) |
+| 2026-08-20 | 14:03 | — | — | Documentation | — | feat(analytics): add platform icons and brand coloring to Authors by Source widget (d2dff0d) |
+| 2026-08-20 | 13:49 | — | — | Review | — | docs: update review tracking (624c626) |
+| 2026-08-20 | 13:48 | — | — | Documentation | — | feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget (8cbb71a) |
+| 2026-08-20 | 13:42 | — | — | Review | — | docs: update review logs (034e968) |
+| 2026-08-20 | 13:42 | — | — | Documentation | — | feat(analytics): place Sources and Authors widgets underneath volume graph in centre column (72a15c9) |
+| 2026-08-20 | 12:46 | — | — | Review | — | docs: update review logs (c3044d0) |
+| 2026-08-20 | 12:46 | — | — | Documentation | — | fix(tenant): show most-recently ingested posts first in recent ingestion stream (cb953f1) |
+| 2026-08-20 | 12:43 | — | — | Review | — | docs: update review logs (142638c) |
+| 2026-08-20 | 12:42 | — | — | Documentation | — | feat(tenant): update overview metric cards with icons, full-width grid, and real actuals (8d9b6f3) |
+| 2026-08-20 | 12:38 | — | — | Review | — | docs: update review tracking (6115e1b) |
+| 2026-08-20 | 12:38 | — | — | Documentation | — | feat(shell): add icons to sidebar navigation items and make sidebar collapsable (76941c0) |
+| 2026-08-20 | 12:31 | — | — | Review | — | docs: update reviews and time tracking (8e50e38) |
+| 2026-08-20 | 12:30 | — | — | Documentation | — | feat(analytics): promote toolbar items to header for persistent visibility across all tabs (1edd1e7) |
+| 2026-08-20 | 12:20 | — | — | Review | — | docs: update review logs and time tracking (ee03f09) |
+| 2026-08-20 | 12:20 | — | — | Documentation | — | fix(analytics): align topic selector, date range picker, and matching posts count on a single control line (3d7d743) |
+| 2026-08-20 | 12:05 | — | — | Review | — | docs: update review logs and time tracking (3e3c352) |
+| 2026-08-20 | 12:05 | — | — | Documentation | — | fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items (aa1e7f5) |
+| 2026-08-20 | 12:00 | — | — | Documentation | Story 3.12 | docs(story-3.12): record Story 3.12 implementation and update traceability (af83d18) |
+| 2026-08-20 | 11:59 | — | — | Documentation | — | feat(story-3.12): post-watchlist match historical backfill and discovery attribution (3adc060) |
+| 2026-08-20 | 11:40 | — | — | Documentation | Story 3.12 | docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution (1320adb) |
+| 2026-08-20 | 11:24 | — | — | Documentation | Story 8.9 | docs(story-8.9): record implementation and traceability for Story 8.9 (1fee797) |
+| 2026-08-20 | 11:23 | — | — | Documentation | — | feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget (605e5a4) |
+| 2026-08-20 | 09:55 | — | — | Review | — | docs: sync tracking and review registers (983ae70) |
+| 2026-08-20 | 09:54 | — | — | Review | — | docs: ADR filename fixes and governance review updates (1bb19f7) |
+| 2026-08-20 | 09:54 | — | — | Documentation | — | feat(story-6.28): tenant-owned-feed friendly naming in setup UI (cc38b6a) |
+| 2026-08-20 | 09:21 | — | — | Documentation | Story 2.19 | docs: implementation log entry for Story 2.19, Built hash finalized (e54f937) |
+| 2026-08-20 | 09:20 | — | — | Documentation | — | feat(story-2.19): tenant-owned-feed per-feed name + per-item byline (2f52c0f) |
+| 2026-08-20 | 08:39 | — | — | Documentation | — | fix(post-feed): surface Facebook Page author and original-post link (2fa45ba) |
+| 2026-08-20 | 08:33 | — | — | Documentation | — | fix(facebook-connector): denormalize Page id/name into rawPayload (75362d3) |
+| 2026-08-20 | 08:13 | — | — | Documentation | — | fix(post-feed): allocate the Newswire issuer to the author position (cd6f41e) |
+| 2026-08-20 | 08:09 | — | — | Documentation | — | fix(analytics-overview): unreadable white-on-white post title in drawer rows (efa96e8) |
+| 2026-08-20 | 07:58 | — | — | Documentation | — | feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer (2859a76) |
+| 2026-08-20 | 05:18 | — | — | Infrastructure | — | chore: post-commit hook outputs for 6673537 (ab41a7c) |
+| 2026-08-20 | 05:18 | — | — | Infrastructure | — | fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits (6673537) |
+| 2026-08-20 | 05:16 | — | — | Infrastructure | — | chore: post-commit hook outputs for d5ef459 (d4c8ca0) |
+| 2026-08-20 | 05:15 | — | — | Infrastructure | — | chore: post-commit hook outputs for 532e713 (d5ef459) |
+| 2026-08-20 | 05:13 | — | — | Review | — | Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues (532e713) |
+| 2026-08-19 | 20:52 | — | — | Documentation | Story 8.7 | docs: implementation log entry for Story 8.7, Built hash finalized (6a59885) |
+| 2026-08-19 | 20:51 | — | — | Documentation | Story 8.7 | feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance (7698563) |
+| 2026-08-19 | 20:06 | — | — | Documentation | — | docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate (1d550a1) |
+| 2026-08-19 | 19:54 | — | — | Documentation | Story 3.11 | docs: implementation log entry for Story 3.11 healing pass (6e6755e) |
+| 2026-08-19 | 19:52 | — | — | Documentation | Story 3.11 | fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo (63902a1) |
+| 2026-08-19 | 17:15 | — | — | Documentation | — | Writen the ADRs 0064 0065 0066 0067 0068 0069 (5d3ec45) |
+| 2026-08-19 | 05:28 | — | — | Review | — | Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues (6080795) |
 | 2026-08-18 | — | — | auto | Documentation | ADR-0059 | docs: ADR-0059/0060/0061 acceptance and Story 6.27/1.15 governance update (7c0572c) |
 | 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.23): implementation log entry and Built field (f6a1794) |
 | 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.23): Facebook OAuth connect flow with Page selection (535338f) |

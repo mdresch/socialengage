@@ -17,6 +17,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 | ADR-0017 | Every route lives under `/v1/` | 1.3 (cross-cutting — this endpoint follows that pattern) |
 | ADR-0012 | Full post data is fetched via REST on demand (`GET /posts/:id`), not carried in Service Bus events | 5.1 |
 | ADR-0053 (Story 3.10) | `body_markdown`'s own canonical Markdown decision — this component only exposes it, doesn't decide its content | 6.19 |
+| ADR-0071 | Human-in-the-Loop Post Enrichment Overrides API (`PATCH /v1/posts/:id/enrichment`) and re-enrichment precedence guard on `POST /v1/posts/:id/enrich` | 3.13 |
 
 ## Contracts that constrain this component
 
@@ -25,6 +26,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 - `contracts/epic-5/story-5.1.thin-events.contract.test.ts` — `GET /v1/posts/:id` returns full post data for a known id, 404s for an unknown one, and never returns another tenant's post even by the right id (RLS).
 - `contracts/epic-3/story-6.16.post-manual-enrich-endpoint.contract.test.ts` — `POST /v1/posts/:id/enrich` derives the same enrichment text a real connector's own ingest function would (title, plus description when present), calls the real, unmodified `enrichPost()`, persists a real result, 404s the same way `GET /v1/posts/:id` does, and returns a real `200` with `enrichment: null` (not an error) when no AI provider is currently connected and active.
 - `contracts/epic-3/story-6.19.post-body-markdown-exposure.contract.test.ts` — both `GET /v1/posts` and `GET /v1/posts/:id` return a real, non-null `bodyMarkdown` for a post that has one stored; a post that never had one returns `bodyMarkdown: null` honestly (present, never omitted, never defaulted to empty string).
+- `contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts` — `PATCH /v1/posts/:id/enrichment` applies validation and sanitization, persists `enrichment.override` audit metadata, and ensures `POST /v1/posts/:id/enrich` rejects re-enrichment of manually overridden posts with `409 Conflict` unless `force: true` is passed.
 
 ## How to extend this safely
 

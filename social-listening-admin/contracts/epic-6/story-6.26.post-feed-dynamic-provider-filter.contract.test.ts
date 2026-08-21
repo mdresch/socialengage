@@ -65,6 +65,7 @@ function post(id: string, providerId: string) {
     createdAt: '2026-08-18T09:00:00.000Z',
     publishedAt: '2026-08-18T08:00:00.000Z',
     enrichment: null,
+    bodyMarkdown: null,
     rawPayload: { providerId, title: `Post ${id}` },
   };
 }

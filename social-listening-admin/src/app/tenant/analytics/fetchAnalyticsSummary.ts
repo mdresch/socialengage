@@ -10,8 +10,14 @@
  */
 
 import { listPosts } from '@/lib/core-client';
-import type { SocialPostSummary } from '@/lib/core-client';
-import { computeAnalyticsSummary, type AnalyticsSummary, type DateRangeFilter } from './analyticsData';
+import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
+import {
+  computeAnalyticsSummary,
+  filterPostsByDateRange,
+  type AnalyticsSummary,
+  type DateRangeFilter,
+  type WatchlistCoverageEntry,
+} from './analyticsData';
 
 const PAGE_LIMIT = 100;
 /**
@@ -23,13 +29,13 @@ const PAGE_LIMIT = 100;
  */
 const MAX_PAGES = 500;
 
-async function fetchAllPosts(): Promise<SocialPostSummary[]> {
+async function fetchAllPosts(watchlistId?: string): Promise<SocialPostSummary[]> {
   const posts: SocialPostSummary[] = [];
   let cursor: string | undefined;
   let pages = 0;
 
   do {
-    const page = await listPosts(cursor, PAGE_LIMIT);
+    const page = await listPosts(cursor, PAGE_LIMIT, watchlistId);
     posts.push(...page.posts);
     cursor = page.nextCursor ?? undefined;
     pages += 1;
@@ -38,8 +44,8 @@ async function fetchAllPosts(): Promise<SocialPostSummary[]> {
   return posts;
 }
 
-export async function fetchAnalyticsSummary(range: DateRangeFilter): Promise<AnalyticsSummary> {
-  const posts = await fetchAllPosts();
+export async function fetchAnalyticsSummary(range: DateRangeFilter, watchlistId?: string): Promise<AnalyticsSummary> {
+  const posts = await fetchAllPosts(watchlistId);
   return computeAnalyticsSummary(posts, range);
 }
 
@@ -56,14 +62,50 @@ export interface AnalyticsComparison {
  * the round-trip cost ADR-0054 Open Question 2 already names as a real
  * scale concern. previousRange: null means comparison is genuinely off —
  * `previous` is null, never silently computed anyway.
+ *
+ * Story 8.9 (ADR-0063) — forwards optional watchlistId filter to fetchAllPosts().
  */
 export async function fetchAnalyticsComparison(
   range: DateRangeFilter,
-  previousRange: DateRangeFilter | null
+  previousRange: DateRangeFilter | null,
+  watchlistId?: string
 ): Promise<AnalyticsComparison> {
-  const posts = await fetchAllPosts();
+  const posts = await fetchAllPosts(watchlistId);
   return {
     current: computeAnalyticsSummary(posts, range),
     previous: previousRange ? computeAnalyticsSummary(posts, previousRange) : null,
   };
+}
+
+/**
+ * Story 8.9 (ADR-0063) — fetches real post counts per active watchlist within the given date range.
+ * Zero-count active watchlists return an honest 0 count.
+ */
+export async function fetchWatchlistCoverage(
+  range: DateRangeFilter,
+  watchlists: Watchlist[]
+): Promise<WatchlistCoverageEntry[]> {
+  const activeWatchlists = watchlists.filter((w) => w.isActive);
+  const coverage = await Promise.all(
+    activeWatchlists.map(async (w) => {
+      try {
+        const posts = await fetchAllPosts(w.id);
+        const inRange = filterPostsByDateRange(posts, range);
+        return {
+          id: w.id,
+          name: w.name,
+          matchType: w.matchType,
+          count: inRange.length,
+        };
+      } catch {
+        return {
+          id: w.id,
+          name: w.name,
+          matchType: w.matchType,
+          count: 0,
+        };
+      }
+    })
+  );
+  return coverage;
 }

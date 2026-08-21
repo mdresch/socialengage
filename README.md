@@ -22,7 +22,7 @@ Both repos are already independent packages (separate `package.json`s, no cross-
 
 - **Azure-native**: Postgres with row-level security, Key Vault (credential storage), Service Bus (event publishing), Entra External ID (authentication), Azure AI Language and Azure OpenAI (swappable enrichment providers). These are real provisioned Azure resources the test suite runs contracts against — not mocks.
 - **Multi-tenant with database-level isolation** as a from-day-one property, not retrofitted. Every tenant-scoped table enforces RLS; a `Bearer` token (Entra External ID) is resolved server-side against real `tenants`/`users` tables — there is no client-supplied tenant header anywhere in the trust path.
-- **Real connectors**: GNews (general-news search API), Newswire (GlobeNewswire + PR Newswire public RSS), and a tenant-owned-domain RSS/content-feed connector (a tenant's own blog or press-release feed, DNS-TXT-verified). Reddit is the next connector on the roadmap; Wikipedia has emerged as a stronger near-term candidate on licensing/access grounds — see [`docs/open-decisions.md`](docs/open-decisions.md).
+- **Real connectors**: GNews (general-news search API), Newswire (GlobeNewswire + PR Newswire public RSS), a tenant-owned-domain RSS/content-feed connector (a tenant's own blog or press-release feed, DNS-TXT-verified), Wikipedia (MediaWiki Action API, no account/key), and Facebook (a tenant's own connected Page, OAuth, this project's first Tier-3-only connector) — five in total, all polled by a real live ingestion-polling scheduler. Reddit has still not been started. *(Documentation Steward correction, 2026-08-19: this bullet previously said "Reddit is the next connector on the roadmap; Wikipedia has emerged as a stronger near-term candidate" — both Wikipedia and Facebook have since actually shipped; corrected to reflect the real roster rather than the roadmap framing.)*
 - **TypeScript throughout.** `social-listening-core` runs on Express + `pg`; `social-listening-admin` runs on Next.js 16 with a server-side (BFF) session — no bearer token ever reaches browser JS.
 
 ## How this project is built
@@ -38,7 +38,7 @@ In order:
 1. [`docs/implementation-methodology.md`](docs/implementation-methodology.md) — **how** work gets done.
 2. [`docs/implementation-plan.md`](docs/implementation-plan.md) — **what and when**: phases, story-by-story, dependency-ordered.
 3. [`docs/adr/README.md`](docs/adr/README.md) — every architecture decision, all Accepted, with the governance conventions for changing one.
-4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — stories across 7 epics, each tracing back to its source ADR.
+4. [`docs/user-stories/README.md`](docs/user-stories/README.md) — stories across 8 epics, each tracing back to its source ADR.
 
 [`CLAUDE.md`](CLAUDE.md) is the fuller operational entry point (written for an AI coding agent picking up work in this repo, but equally useful as a human map of the project).
 

@@ -267,5 +267,13 @@ describe('Story 6.2 — role-gated routing shell', () => {
       await expect(Page()).rejects.toThrow('NEXT_REDIRECT:/sign-in');
       expect(redirectMock).toHaveBeenCalledWith('/sign-in');
     });
+
+    it('tenant overview dashboard source includes Facebook Page platform (ADR-0059/0067)', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const source = fs.readFileSync(path.resolve(__dirname, '../../src/app/tenant/page.tsx'), 'utf8');
+      expect(source).toContain("name: 'Facebook Page'");
+      expect(source).toContain("Active Connectors");
+    });
   });
 });

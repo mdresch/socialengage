@@ -74,6 +74,7 @@ function post(id: string, providerId: string, publishedAt: string | null, sentim
     createdAt: '2026-08-01T00:00:00.000Z',
     publishedAt,
     enrichment: sentiment ? { sentiment, keyPhrases, entities: [] } : null,
+    bodyMarkdown: null,
     rawPayload: { providerId, title: `Post ${id}`, author },
   };
 }
@@ -101,7 +102,28 @@ describe('Story 8.2 — Sentiment tab', () => {
       // 2026-08-17, Story 8.6: SentimentPost also gained a real providerId
       // (extractProviderBadge()) — this fixture post uses 'gnews', same
       // anticipated in-epic widening precedent as the language fix above.
-      expect(flat).toEqual([{ id: 'a', publishedAt: '2026-08-01T09:00:00.000Z', author: 'Acme Corp', sentiment: 'positive', keyPhrases: ['x'], title: 'Post a', language: null, providerId: 'gnews' }]);
+      // 2026-08-20, Story 8.10: SentimentPost gained geo fields (geoCountry,
+      // geoCountryName, geoRegion, geoSource, geoConfidence) per ADR-0064 —
+      // null on this fixture, matching the same extend-don't-weaken precedent.
+      // 2026-08-21: SentimentPost gained entities for drawer chip preview.
+      expect(flat).toEqual([
+        {
+          id: 'a',
+          publishedAt: '2026-08-01T09:00:00.000Z',
+          author: 'Acme Corp',
+          sentiment: 'positive',
+          keyPhrases: ['x'],
+          entities: [],
+          title: 'Post a',
+          language: null,
+          providerId: 'gnews',
+          geoCountry: null,
+          geoCountryName: null,
+          geoRegion: null,
+          geoSource: null,
+          geoConfidence: null,
+        },
+      ]);
     });
 
     it('computeSentimentHistory() buckets by day across the whole range, including zero-post days, never omitted', async () => {

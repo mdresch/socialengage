@@ -99,7 +99,7 @@ This is the **`implement-story` workflow**, operationalized as a Claude Code ski
 |------|------------------|------------|
 | **AI Delivery Agent** | Executes `implement-story` skill end-to-end | Per story |
 | **AI QA/Contract Author** | Writes/reviews contracts independently | Not yet exercised separately |
-| **AI Documentation Steward** | Audits traceability matrices | Not yet exercised |
+| **AI Documentation Steward** | Audits traceability matrices | ~~Not yet exercised~~ **Documentation Steward correction, 2026-08-19:** real, repeated exercise — see `docs/pending-documentation-steward-reviews.md`'s own dozens of dated, resolved entries since 2026-08-06, this pass included (same correction already made to `Planning-Management-Plan.md` and `Stakeholder-Register.md`'s own S-13 row on 2026-08-06/13; this file's own matching row was missed at the time) |
 | **AI Security Reviewer** | Flags security concerns during implementation | Episodic |
 
 ---

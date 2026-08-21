@@ -9,6 +9,7 @@ import {
   hasVerifiedDomain,
   listActivations,
   updateFeedUrl,
+  updateFeedName,
   removeActivation,
 } from '../../../connectors/tenantOwnedFeed/tenantOwnedFeedStore';
 import { checkTxtRecord } from '../../../connectors/tenantOwnedFeed/dnsVerification';
@@ -27,6 +28,8 @@ function serializeActivation(activation: TenantOwnedFeedActivationRow) {
     tokenExpiresAt: activation.token_expires_at.toISOString(),
     verifiedAt: activation.verified_at ? activation.verified_at.toISOString() : null,
     createdAt: activation.created_at.toISOString(),
+    // Story 2.19 — optional, tenant-owner-set display label; null when unset.
+    name: activation.name,
   };
 }
 
@@ -56,7 +59,7 @@ tenantOwnedFeedRouter.post('/connect', async (req, res) => {
     return;
   }
 
-  const { domain, feedUrl } = req.body ?? {};
+  const { domain, feedUrl, name } = req.body ?? {};
   if (!domain || typeof domain !== 'string') {
     res.status(400).json({ error: 'domain is required.' });
     return;
@@ -65,9 +68,14 @@ tenantOwnedFeedRouter.post('/connect', async (req, res) => {
     res.status(400).json({ error: 'feedUrl is required.' });
     return;
   }
+  // Story 2.19 — name is optional; when supplied it must be a non-empty string.
+  if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
+    res.status(400).json({ error: 'name must be a non-empty string when supplied.' });
+    return;
+  }
 
   const alreadyVerifiedForDomain = await hasVerifiedDomain(identity.tenantId, domain);
-  let activation = await createActivation(identity.tenantId, { domain, feedUrl });
+  let activation = await createActivation(identity.tenantId, { domain, feedUrl, name });
   if (alreadyVerifiedForDomain) {
     activation = (await markVerified(identity.tenantId, activation.id))!;
   }
@@ -79,6 +87,7 @@ tenantOwnedFeedRouter.post('/connect', async (req, res) => {
     expiresAt: activation.token_expires_at.toISOString(),
     feedUrl: activation.feed_url,
     status: activation.status,
+    name: activation.name,
   });
 });
 
@@ -153,10 +162,17 @@ tenantOwnedFeedRouter.get('/activations', async (req, res) => {
 
 /**
  * PATCH /v1/connectors/tenant-owned-feed/:id (Story 6.20/ADR-0057 Decision
- * §1) — updates `feedUrl` only, `tenant_admin` only. `domain` is never
- * accepted here — it is the exact claim DNS TXT verification proves, and
- * an in-place domain change would silently invalidate a completed
- * verification. Works regardless of the activation's current status.
+ * §1; Story 2.19 widened this to also accept `name`) — updates `feedUrl`
+ * and/or `name`, `tenant_admin` only. `domain` is never accepted here — it
+ * is the exact claim DNS TXT verification proves, and an in-place domain
+ * change would silently invalidate a completed verification. Works
+ * regardless of the activation's current status.
+ *
+ * Story 2.19: at least one of `feedUrl`/`name` must be present (previously
+ * `feedUrl` alone was required on every call — no existing contract
+ * exercised that specific 400 case, confirmed directly before widening it,
+ * so this is a genuine, safe extension, not a silently broken guarantee).
+ * `name: null` explicitly clears a previously-set name back to "unset."
  */
 tenantOwnedFeedRouter.patch('/:id', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
@@ -172,18 +188,35 @@ tenantOwnedFeedRouter.patch('/:id', async (req, res) => {
     res.status(400).json({ error: 'domain cannot be edited — remove this activation and connect the new domain instead.' });
     return;
   }
-  if (!body.feedUrl || typeof body.feedUrl !== 'string') {
-    res.status(400).json({ error: 'feedUrl is required.' });
+
+  const hasFeedUrl = Object.prototype.hasOwnProperty.call(body, 'feedUrl');
+  const hasName = Object.prototype.hasOwnProperty.call(body, 'name');
+  if (!hasFeedUrl && !hasName) {
+    res.status(400).json({ error: 'feedUrl or name is required.' });
+    return;
+  }
+  if (hasFeedUrl && (!body.feedUrl || typeof body.feedUrl !== 'string')) {
+    res.status(400).json({ error: 'feedUrl must be a non-empty string.' });
+    return;
+  }
+  if (hasName && body.name !== null && (typeof body.name !== 'string' || body.name.trim().length === 0)) {
+    res.status(400).json({ error: 'name must be a non-empty string, or null to clear it.' });
     return;
   }
 
-  const updated = await updateFeedUrl(identity.tenantId, req.params.id, body.feedUrl);
+  let updated: TenantOwnedFeedActivationRow | null = await getActivation(identity.tenantId, req.params.id);
   if (!updated) {
     res.status(404).json({ error: 'Activation not found.' });
     return;
   }
+  if (hasFeedUrl) {
+    updated = await updateFeedUrl(identity.tenantId, req.params.id, body.feedUrl);
+  }
+  if (hasName && updated) {
+    updated = await updateFeedName(identity.tenantId, req.params.id, body.name);
+  }
 
-  res.json(serializeActivation(updated));
+  res.json(serializeActivation(updated!));
 });
 
 /**
