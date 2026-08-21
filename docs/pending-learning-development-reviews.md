@@ -2286,3 +2286,9 @@
 - **Files touched:** .agents/mcp_config.json, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-21 — 3318b2b — fix(core): update scheduler test provider roster, refine reconnect_required derivation, and handle Graph API error bodies
+
+- **Full commit:** `3318b2b6f356dd7f634b21f7a85cef4e67671e41`
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Status:** Pending review
+
