@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostDetailPanel } from './PostDetailPanel';
 import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
+import { ComposePostModal } from '@/components/composer';
 import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
@@ -143,6 +144,7 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
     () => (initialActivePostId && flat.find((p) => p.id === initialActivePostId)) || null
   );
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const filteredPosts = useMemo(() => {
     return flat.filter((post) => {
@@ -212,22 +214,32 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             Real-time ingested articles, releases, and social mentions enriched with Azure AI
           </p>
         </div>
-        <div className="pf-header-count">
-          {(() => {
-            const filtersActive = searchQuery.trim() || selectedProvider !== 'ALL' || selectedSentiment !== 'ALL' || selectedWatchlist !== 'ALL';
-            if (filtersActive) {
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsComposeOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow transition-all"
+          >
+            <span>✍️</span>
+            <span>Compose Post</span>
+          </button>
+          <div className="pf-header-count">
+            {(() => {
+              const filtersActive = searchQuery.trim() || selectedProvider !== 'ALL' || selectedSentiment !== 'ALL' || selectedWatchlist !== 'ALL';
+              if (filtersActive) {
+                return (
+                  <>
+                    <strong>{filteredPosts.length}</strong> of {flat.length} match
+                  </>
+                );
+              }
               return (
                 <>
-                  <strong>{filteredPosts.length}</strong> of {flat.length} match
+                  <strong>{flat.length}</strong> post{flat.length !== 1 ? 's' : ''}
                 </>
               );
-            }
-            return (
-              <>
-                <strong>{flat.length}</strong> post{flat.length !== 1 ? 's' : ''}
-              </>
-            );
-          })()}
+            })()}
+          </div>
         </div>
       </div>
 
@@ -534,6 +546,12 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
           )}
         </>
       )}
+
+      {/* Compose & Multi-Platform Publishing Modal */}
+      <ComposePostModal
+        isOpen={isComposeOpen}
+        onClose={() => setIsComposeOpen(false)}
+      />
     </div>
   );
 }

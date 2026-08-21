@@ -43,6 +43,15 @@ export function AppHeader({ identity, shellType }: AppHeaderProps): ReactElement
       </div>
 
       <div className="topbar-right">
+        {shellType === 'tenant' && (
+          <a
+            href="/tenant/compose"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all mr-2"
+          >
+            <span>✍️</span>
+            <span>Compose</span>
+          </a>
+        )}
         <div className="topbar-user">
           <span className="topbar-role-tag" data-testid="topbar-role-tag">
             {roleLabel}
