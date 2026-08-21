@@ -74,36 +74,52 @@ export async function pollLinkedIn(
       // Proactive token refresh if access token is expired or within 5 minutes of expiry
       const tokenExpiryMs = new Date(credential.accessTokenExpiresAt).getTime();
       if (tokenExpiryMs - now <= 5 * 60 * 1000) {
-        try {
-          credential = await refreshToken(credential, {
-            clientId: process.env.LINKEDIN_CLIENT_ID || '',
-            clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
-            now,
-          });
-          // Persist refreshed credential
-          await storeCredential(
-            tenantId,
-            LINKEDIN_PROVIDER_ID,
-            JSON.stringify(credential),
-            process.env.KEY_VAULT_KEY_ID || 'social-listening-key',
-            'user',
-            userId
-          );
-        } catch (refreshErr) {
-          const classification = classifyInvalidGrant(credential.refreshTokenExpiresAt, now);
+        if (credential.refreshToken) {
+          try {
+            credential = await refreshToken(credential, {
+              clientId: process.env.LINKEDIN_CLIENT_ID || '',
+              clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+              now,
+            });
+            // Persist refreshed credential
+            await storeCredential(
+              tenantId,
+              LINKEDIN_PROVIDER_ID,
+              JSON.stringify(credential),
+              process.env.KEY_VAULT_KEY_ID || 'social-listening-key',
+              'user',
+              userId
+            );
+          } catch (refreshErr) {
+            const classification = classifyInvalidGrant(credential.refreshTokenExpiresAt, now);
+            await publishConnectorAlertEvent({
+              tenantId,
+              platformId: LINKEDIN_PROVIDER_ID,
+              userId,
+              alertType: 'reconnect_required',
+              severity: 'warning',
+              message: `LinkedIn authorization ${classification.credentialStatus}: ${classification.reason}`,
+              metadata: {
+                credentialStatus: classification.credentialStatus,
+                reason: classification.reason,
+              },
+            });
+            throw refreshErr;
+          }
+        } else {
           await publishConnectorAlertEvent({
             tenantId,
             platformId: LINKEDIN_PROVIDER_ID,
             userId,
             alertType: 'reconnect_required',
             severity: 'warning',
-            message: `LinkedIn authorization ${classification.credentialStatus}: ${classification.reason}`,
+            message: 'LinkedIn authorization expired: reconnect required',
             metadata: {
-              credentialStatus: classification.credentialStatus,
-              reason: classification.reason,
+              credentialStatus: 'expired',
+              reason: 'access_token_expired',
             },
           });
-          throw refreshErr;
+          throw new ClassifiableError('http_401', 'LinkedIn access token expired. Reconnection required.');
         }
       }
 

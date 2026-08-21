@@ -102,18 +102,18 @@ export function parseLinkedInCredential(credential: string | Record<string, unkn
     parsed = credential as Partial<LinkedInCredential>;
   }
 
-  if (!parsed.accessToken || !parsed.refreshToken || !parsed.refreshTokenExpiresAt) {
+  if (!parsed.accessToken) {
     throw new ClassifiableError(
       'http_401',
-      'LinkedIn credential missing required fields (accessToken, refreshToken, refreshTokenExpiresAt).'
+      'LinkedIn credential missing required accessToken field.'
     );
   }
 
   return {
     accessToken: parsed.accessToken,
     accessTokenExpiresAt: parsed.accessTokenExpiresAt || new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
-    refreshToken: parsed.refreshToken,
-    refreshTokenExpiresAt: parsed.refreshTokenExpiresAt,
+    refreshToken: parsed.refreshToken || '',
+    refreshTokenExpiresAt: parsed.refreshTokenExpiresAt || new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
     memberId: parsed.memberId,
     memberName: parsed.memberName,
     scopes: parsed.scopes || LINKEDIN_MEMBER_SCOPES,
@@ -553,8 +553,25 @@ export async function fetchLinkedInProfile(
   options?: { fetchImpl?: typeof fetch }
 ): Promise<{ id: string; localizedFirstName?: string; localizedLastName?: string }> {
   const customFetch = options?.fetchImpl || fetch;
-  const url = 'https://api.linkedin.com/v2/me';
 
+  // Try OpenID Connect /v2/userinfo first (standard for modern LinkedIn OAuth tokens)
+  try {
+    const userinfoRes = await customFetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (userinfoRes.ok) {
+      const u = (await userinfoRes.json()) as { sub: string; given_name?: string; family_name?: string; name?: string };
+      return {
+        id: u.sub,
+        localizedFirstName: u.given_name || u.name || '',
+        localizedLastName: u.family_name || '',
+      };
+    }
+  } catch {
+    // fallback to /v2/me
+  }
+
+  const url = 'https://api.linkedin.com/v2/me';
   const response = await customFetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -580,13 +597,16 @@ export async function fetchLinkedInMemberPosts(
   }
 ): Promise<{ posts: RawLinkedInPost[]; rateLimitHeaders?: Headers }> {
   const customFetch = options?.fetchImpl || fetch;
-  const url = 'https://api.linkedin.com/rest/posts';
+  const apiVersion = process.env.LINKEDIN_API_VERSION || '202601';
+  const url = options?.memberId
+    ? `https://api.linkedin.com/rest/posts?author=${encodeURIComponent(`urn:li:person:${options.memberId}`)}&q=author`
+    : 'https://api.linkedin.com/rest/posts';
 
   try {
     const response = await customFetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'LinkedIn-Version': '202401',
+        'LinkedIn-Version': apiVersion,
         'X-Restli-Protocol-Version': '2.0.0',
       },
     });
