@@ -15,7 +15,7 @@ interface LinkedInPreviewCardProps {
   linkPreview?: LinkPreviewData | null;
 }
 
-export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCardProps) {
+export function LinkedInPreviewCard({ config, text, media, linkPreview }: LinkedInPreviewCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const author = config.defaultAuthor;
 
