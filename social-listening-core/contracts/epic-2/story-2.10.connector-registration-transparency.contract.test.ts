@@ -128,6 +128,20 @@ const REAL_CONNECTORS: RealConnector[] = [
     kind: 'social',
     skillPath: '.claude/skills/bing-search-connector/SKILL.md',
   },
+  // 2026-08-21 (Story 2.24, ADR-0068) — extended for Instagram Business connector.
+  {
+    name: 'Instagram',
+    providerId: 'instagram',
+    kind: 'social',
+    skillPath: '.claude/skills/instagram-connector/SKILL.md',
+  },
+  // 2026-08-21 (Story 2.25, ADR-0069) — extended for LinkedIn connector.
+  {
+    name: 'LinkedIn',
+    providerId: 'linkedin',
+    kind: 'social',
+    skillPath: '.claude/skills/linkedin-connector/SKILL.md',
+  },
 ];
 
 function readCore(relativePath: string): string {

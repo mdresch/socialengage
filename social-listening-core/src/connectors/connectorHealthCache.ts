@@ -24,14 +24,14 @@ export class ConnectorHealthCache {
     this.ttlMs = ttlMs;
   }
 
-  async get(tenantId: string, platformId: string): Promise<ConnectorHealth> {
-    const key = `${tenantId}:${platformId}`;
+  async get(tenantId: string, platformId: string, pageId?: string, userId?: string): Promise<ConnectorHealth> {
+    const key = `${tenantId}:${platformId}:${pageId ?? ''}:${userId ?? ''}`;
     const now = Date.now();
     const cached = this.entries.get(key);
     if (cached && cached.expiresAt > now) {
       return cached.value;
     }
-    const value = await deriveConnectorHealth(tenantId, platformId);
+    const value = await deriveConnectorHealth(tenantId, platformId, pageId, userId);
     this.entries.set(key, { value, expiresAt: now + this.ttlMs });
     return value;
   }
@@ -50,8 +50,13 @@ const sharedCache = new ConnectorHealthCache(
   Number(process.env.CONNECTOR_HEALTH_CACHE_TTL_MS ?? DEFAULT_TTL_MS)
 );
 
-export function getCachedConnectorHealth(tenantId: string, platformId: string): Promise<ConnectorHealth> {
-  return sharedCache.get(tenantId, platformId);
+export function getCachedConnectorHealth(
+  tenantId: string,
+  platformId: string,
+  pageId?: string,
+  userId?: string
+): Promise<ConnectorHealth> {
+  return sharedCache.get(tenantId, platformId, pageId, userId);
 }
 
 export function flushConnectorHealthCache(): void {

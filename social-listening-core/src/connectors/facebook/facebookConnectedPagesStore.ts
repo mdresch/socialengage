@@ -129,13 +129,23 @@ export async function markMissingPagesOrphaned(tenantId: string, userId: string,
  */
 export async function removeConnectedPage(tenantId: string, userId: string, id: string): Promise<FacebookConnectedPage | null> {
   return withTenant(tenantId, async (client) => {
+    const { rows: existing } = await client.query<{ credential_id: string | null }>(
+      `SELECT credential_id FROM facebook_connected_pages WHERE tenant_id = $1 AND user_id = $2 AND id = $3`,
+      [tenantId, userId, id]
+    );
+    if (existing.length === 0) return null;
+    const oldCredentialId = existing[0].credential_id;
+
     const { rows } = await client.query<RawRow>(
       `UPDATE facebook_connected_pages
-       SET status = 'removed'
+       SET status = 'removed', credential_id = NULL
        WHERE tenant_id = $1 AND user_id = $2 AND id = $3
        RETURNING ${ROW_COLUMNS}`,
       [tenantId, userId, id]
     );
-    return rows.length > 0 ? toPage(rows[0]) : null;
+    if (rows.length === 0) return null;
+    const res = toPage(rows[0]);
+    res.credentialId = oldCredentialId;
+    return res;
   });
 }

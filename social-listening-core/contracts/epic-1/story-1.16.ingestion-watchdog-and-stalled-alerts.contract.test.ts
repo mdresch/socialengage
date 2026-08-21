@@ -242,6 +242,7 @@ describe('Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health D
         isConnectorActive: true,
       });
       expect(health.status).toBe('stalled');
+      expect(health.lastSuccessfulPostsIngested).toBe(5);
     });
 
     it('derives stalled when active and lastSuccessfulFetchAt is >= 24h', async () => {

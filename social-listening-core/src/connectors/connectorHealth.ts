@@ -26,6 +26,7 @@ export interface ConnectorHealth {
   lastAttemptAt: string | null;
   consecutiveFailures: number;
   credentialStatus: CredentialStatus | null;
+  lastSuccessfulPostsIngested?: number | null;
 }
 
 export interface DeriveConnectorHealthOptions {
@@ -70,6 +71,7 @@ interface IngestionRunRow {
   error_summary: string | null;
   retryable: boolean | null;
   is_credential_failure: boolean | null;
+  posts_ingested: number;
 }
 
 /**
@@ -117,22 +119,23 @@ export async function deriveConnectorHealth(
       runConditions.push(`user_id = $${runParams.length}`);
     }
     const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure FROM ingestion_runs
+      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure, posts_ingested FROM ingestion_runs
        WHERE ${runConditions.join(' AND ')} ORDER BY started_at DESC`,
       runParams
     );
 
     const { rows: credentialRows } = userId
-      ? await client.query<{ status: CredentialStatus }>(
-          `SELECT status FROM platform_credentials
+      ? await client.query<{ status: CredentialStatus; created_at: Date }>(
+          `SELECT status, created_at FROM platform_credentials
            WHERE platform_id = $1 AND owner_type = 'user' AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
           [platformId, userId]
         )
-      : await client.query<{ status: CredentialStatus }>(
-          `SELECT status FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      : await client.query<{ status: CredentialStatus; created_at: Date }>(
+          `SELECT status, created_at FROM platform_credentials WHERE platform_id = $1 ORDER BY created_at DESC LIMIT 1`,
           [platformId]
         );
     const credentialStatus = credentialRows.length > 0 ? credentialRows[0].status : null;
+    const credentialCreatedAt = credentialRows.length > 0 ? credentialRows[0].created_at : null;
 
     if (runs.length === 0) {
       return {
@@ -141,6 +144,7 @@ export async function deriveConnectorHealth(
         lastAttemptAt: null,
         consecutiveFailures: 0,
         credentialStatus,
+        lastSuccessfulPostsIngested: null,
       };
     }
 
@@ -148,27 +152,24 @@ export async function deriveConnectorHealth(
     let recentFailures = 0;
     let recentSuccesses = 0;
     let lastSuccessfulFetchAt: string | null = null;
+    let lastSuccessfulPostsIngested: number | null = null;
     let consecutiveFailures = 0;
     let sawSuccess = false;
 
     for (const run of runs) {
-      // Story 2.12 (ADR-0010/ADR-0023 Clarification, 2026-08-12): a
-      // retryable failure (rate-limit/network/5xx) never counts toward
-      // this derivation, on its own — treated as fully invisible here,
-      // the same way runIngestionAttempt() already retries it
-      // automatically rather than surfacing it as a connector-level
-      // problem. A NULL retryable value (an unclassified failure, e.g.
-      // a fixture row) is treated conservatively, as non-retryable.
-      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true;
+      // If the credential was renewed/reconnected after this run, past failure does not count against new credential
+      const isBeforeCurrentCredential = credentialCreatedAt ? run.started_at < credentialCreatedAt : false;
+      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true && !isBeforeCurrentCredential;
       const withinWindow = run.started_at.getTime() >= cutoff;
       if (isNonRetryableFailure && withinWindow) recentFailures += 1;
       if (run.status === 'succeeded' && withinWindow) recentSuccesses += 1;
       if (run.status === 'succeeded' && lastSuccessfulFetchAt === null) {
         lastSuccessfulFetchAt = run.completed_at ? run.completed_at.toISOString() : null;
+        lastSuccessfulPostsIngested = run.posts_ingested ?? 0;
       }
       if (!sawSuccess) {
         if (isNonRetryableFailure) consecutiveFailures += 1;
-        else if (run.status === 'succeeded') sawSuccess = true;
+        else if (run.status === 'succeeded' || isBeforeCurrentCredential) sawSuccess = true;
       }
     }
 
@@ -178,9 +179,12 @@ export async function deriveConnectorHealth(
     const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
 
     // Strict precedence order (ADR-0070 §2):
-    // 1. reconnect_required (credential failure on runs[0] OR revoked/expired credentialStatus)
+    // 1. reconnect_required (credential failure on runs[0] occurring AFTER current credential issuance OR revoked/expired credentialStatus)
     const isCredentialRevoked = credentialStatus === 'expired' || credentialStatus === 'revoked';
-    const isLatestRunCredentialFailure = runs[0].status === 'failed' && runs[0].is_credential_failure === true;
+    const isLatestRunCredentialFailure =
+      runs[0].status === 'failed' &&
+      runs[0].is_credential_failure === true &&
+      (!credentialCreatedAt || runs[0].started_at >= credentialCreatedAt);
     const isReconnectRequired = isLatestRunCredentialFailure || isCredentialRevoked;
 
     // 2. failing (rate or ceiling)
@@ -241,6 +245,7 @@ export async function deriveConnectorHealth(
       lastAttemptAt: runs[0].started_at.toISOString(),
       consecutiveFailures,
       credentialStatus,
+      lastSuccessfulPostsIngested,
     };
   });
 }

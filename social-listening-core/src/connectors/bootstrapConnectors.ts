@@ -14,6 +14,10 @@ import { braveSearchConnector } from './braveSearch/braveSearchConnector';
 import { pollBraveSearch } from './braveSearch/pollBraveSearch';
 import { bingSearchConnector } from './bingSearch/bingSearchConnector';
 import { pollBingSearch } from './bingSearch/pollBingSearch';
+import { instagramConnector } from './instagram/instagramConnector';
+import { pollInstagram } from './instagram/pollInstagram';
+import { linkedinConnector } from './linkedin/linkedinConnector';
+import { pollLinkedIn } from './linkedin/pollLinkedIn';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
@@ -107,6 +111,23 @@ export function bootstrapConnectors(): void {
   registerSocialConnector({
     ...bingSearchConnector,
     poll: (tenantId: string) => pollBingSearch(tenantId),
+    pollCadenceMs: ONE_HOUR_MS,
+  });
+
+  // Story 2.24 (ADR-0068) — Instagram Business connector.
+  // Tier-3 user-bound connector registered with pollUser.
+  registerSocialConnector({
+    ...instagramConnector,
+    pollUser: pollInstagram,
+    pollCadenceMs: THIRTY_MINUTES_MS,
+  });
+
+  // Story 2.25 (ADR-0069) — LinkedIn connector.
+  // Tier-3 user-bound connector registered with pollUser.
+  // 1-hour cadence guardrail enforces Marketing API rate limit bounds.
+  registerSocialConnector({
+    ...linkedinConnector,
+    pollUser: pollLinkedIn,
     pollCadenceMs: ONE_HOUR_MS,
   });
 

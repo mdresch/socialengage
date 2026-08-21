@@ -46,12 +46,15 @@ connectorsRouter.get('/:platformId', async (req, res) => {
 
   const platformId = req.params.platformId;
 
-  const [health, isTenantActive, isCallerActive, activeUsers] = await Promise.all([
+  const [tenantHealth, userHealth, isTenantActive, isCallerActive, activeUsers] = await Promise.all([
     getCachedConnectorHealth(tenantId, platformId),
+    callerUserId ? getCachedConnectorHealth(tenantId, platformId, undefined, callerUserId) : Promise.resolve(null),
     isConnectorActive(tenantId, platformId, 'tenant'),
     callerUserId ? isConnectorActive(tenantId, platformId, 'user', callerUserId) : Promise.resolve(false),
     listActiveUserActivations(tenantId, platformId).catch(() => []),
   ]);
+  // Use userHealth if user has a credential or activation, otherwise fallback to tenantHealth
+  const health = (userHealth && userHealth.credentialStatus !== null) ? userHealth : tenantHealth;
   const isActive = isTenantActive || isCallerActive || activeUsers.length > 0;
   res.json({ ...health, isActive });
 });
