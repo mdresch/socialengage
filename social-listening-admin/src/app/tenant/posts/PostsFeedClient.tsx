@@ -218,7 +218,7 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
           <button
             type="button"
             onClick={() => setIsComposeOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow transition-all"
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
           >
             <span>✍️</span>
             <span>Compose Post</span>

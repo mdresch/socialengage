@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SupportedPlatform, PlatformConfig, MediaAttachment } from './types';
+import type { SupportedPlatform, MediaAttachment } from './types';
 import { PLATFORM_CONFIGS } from './types';
 import { LinkedInPreviewCard } from './previews/LinkedInPreviewCard';
 import { InstagramPreviewCard } from './previews/InstagramPreviewCard';
@@ -56,46 +56,46 @@ export function PlatformPreviewRails({
 
   if (selectedPlatforms.length === 0) {
     return (
-      <div className="bg-zinc-50 dark:bg-zinc-900/50 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-400">
-        <svg className="w-10 h-10 mx-auto mb-2 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="bg-slate-50 dark:bg-[#141a29]/50 border border-dashed border-slate-300 dark:border-[#30343d] rounded-lg p-8 text-center text-slate-400 dark:text-[#9aa2b1]">
+        <svg className="w-9 h-9 mx-auto mb-2 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
         </svg>
-        <p className="text-sm font-medium">Select one or more platforms above to preview your post</p>
+        <p className="text-xs font-medium">Select one or more platforms above to preview your post</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 font-sans">
       {/* View Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-[#eef0f3] m-0">
             Live Preview Rails
           </h3>
-          <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
             Live Sync
           </span>
         </div>
 
         {/* Layout Toggle */}
-        <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg text-xs font-medium">
+        <div className="flex items-center bg-slate-100 dark:bg-[#141a29] border border-slate-200 dark:border-[#30343d] p-0.5 rounded-md text-xs font-medium">
           <button
             onClick={() => setLayoutMode('grid')}
-            className={`px-2.5 py-1 rounded-md transition-all ${
+            className={`px-2.5 py-0.5 rounded transition-all ${
               layoutMode === 'grid'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                ? 'bg-white dark:bg-[#1c1f26] text-slate-900 dark:text-[#eef0f3] shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-[#9aa2b1] dark:hover:text-[#eef0f3]'
             }`}
           >
             Grid View
           </button>
           <button
             onClick={() => setLayoutMode('tabs')}
-            className={`px-2.5 py-1 rounded-md transition-all ${
+            className={`px-2.5 py-0.5 rounded transition-all ${
               layoutMode === 'tabs'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                ? 'bg-white dark:bg-[#1c1f26] text-slate-900 dark:text-[#eef0f3] shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-[#9aa2b1] dark:hover:text-[#eef0f3]'
             }`}
           >
             Single Tab
@@ -113,10 +113,10 @@ export function PlatformPreviewRails({
               <button
                 key={p}
                 onClick={() => setActiveTab(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 border ${
                   isTabActive
-                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-sm'
-                    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 dark:bg-[#1c1f26] dark:text-[#9aa2b1] dark:border-[#30343d] hover:bg-slate-50 dark:hover:bg-[#141a29]'
                 }`}
               >
                 <span>{config.name}</span>
@@ -128,7 +128,7 @@ export function PlatformPreviewRails({
 
       {/* Preview Output */}
       {layoutMode === 'grid' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-start">
           {selectedPlatforms.map((p) => (
             <div key={p} className="w-full">
               {renderCard(p)}
