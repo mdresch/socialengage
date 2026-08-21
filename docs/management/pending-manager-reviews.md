@@ -2349,3 +2349,93 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/jest.global-setup.js, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts
 - **Status:** Pending review
 
+## 2026-08-20 — 4df8d6d — feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065)
+
+- **Full commit:** `4df8d6d9d4ed670bf52b586059ee2705e8c43b21`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.21.brave-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchQueryBuilder.ts, social-listening-core/src/connectors/braveSearch/pollBraveSearch.ts
+- **Status:** Pending review
+
+## 2026-08-20 — 16a47d8 — feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065)
+
+- **Full commit:** `16a47d8a291e55fbb0d2aa84f5bd41bb629c8409`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.21.brave-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchQueryBuilder.ts, social-listening-core/src/connectors/braveSearch/pollBraveSearch.ts
+- **Status:** Pending review
+
+## 2026-08-20 — dedfb6b — feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065)
+
+- **Full commit:** `dedfb6b31c9ec4f1ea38cc324807d6d183e17453`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.30.brave-search-connector-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Status:** Pending review
+
+## 2026-08-20 — 5ff540a — feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065)
+
+- **Full commit:** `5ff540ae9c284abb0cc9e348ae4ef10234df9ffd`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-6/story-6.30.brave-search-connector-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Status:** Pending review
+
+## 2026-08-20 — cede597 — docs(stories): mark Story 3.13 and Story 6.31 as Implemented (ADR-0071)
+
+- **Full commit:** `cede59798ec9982e50f76cd080d4d023e1fd3378`
+- **Files touched:** docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-20 — bb34673 — feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066)
+
+- **Full commit:** `bb3467300413a27ae0f4735e6b944d6993611d36`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.22.bing-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/bingSearch/bingSearchQueryBuilder.ts, social-listening-core/src/connectors/bingSearch/pollBingSearch.ts, social-listening-core/src/connectors/bootstrapConnectors.ts
+- **Status:** Pending review
+
+## 2026-08-20 — 8de21b3 — feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066)
+
+- **Full commit:** `8de21b3754eae64da3173fb5cf416b1f4078ceea`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.22.bing-search-active-watchlist-connector.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/bingSearch/bingSearchQueryBuilder.ts, social-listening-core/src/connectors/bingSearch/pollBingSearch.ts, social-listening-core/src/connectors/bootstrapConnectors.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 86f093b — feat(core): implement Instagram Business Graph API connector and OAuth flow (Story 2.24, ADR-0068)
+
+- **Full commit:** `86f093b06ed48571bbb94dcfb69ac4a5dac36a98`
+- **Files touched:** social-listening-core/.claude/skills/instagram-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.24.instagram-connector.contract.test.ts, social-listening-core/migrations/0040_create_instagram_connected_accounts.sql, social-listening-core/src/connectors/instagram/instagramConnectedAccountsStore.ts, social-listening-core/src/connectors/instagram/instagramConnector.ts, social-listening-core/src/connectors/instagram/pollInstagram.ts, social-listening-core/src/http/versions/v1/instagramAccountsRouter.ts, social-listening-core/src/http/versions/v1/instagramOAuthRouter.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 986a93c — feat(admin): implement Instagram Business connector UI and OAuth proxy (Story 6.34, ADR-0068)
+
+- **Full commit:** `986a93cb25ced727d3ec9be6fb2fc4b41a2cf105`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/instagram/accounts/[id]/route.ts, social-listening-admin/src/app/api/connectors/instagram/accounts/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/callback/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/pending/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/select-accounts/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/start/route.ts, social-listening-admin/src/lib/instagramOAuth.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 0c24532 — test(admin): add contract test for Bing Search connector UI (Story 6.32, ADR-0066)
+
+- **Full commit:** `0c24532d8f96e7140fa363683e38479b14de6533`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.32.bing-search-connector-ui.contract.test.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 513b125 — feat(core): implement LinkedIn REST API connector and OAuth flow (Story 2.25, ADR-0069)
+
+- **Full commit:** `513b12543dc46527545aef2bdcf0a39c23573dff`
+- **Files touched:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/linkedin/pollLinkedIn.ts, social-listening-core/src/http/versions/v1/linkedinOAuthRouter.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 89eb97c — feat(admin): implement LinkedIn connector UI and OAuth proxy (Story 6.35, ADR-0069)
+
+- **Full commit:** `89eb97c22b115c76e058d241a275a8e26fa0b377`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/linkedin/oauth/callback/route.ts, social-listening-admin/src/app/api/connectors/linkedin/oauth/start/route.ts, social-listening-admin/src/lib/linkedinOAuth.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 5d56919 — feat(core): isolate historical credential failures, record posts ingested count, and mount instagram & linkedin routers
+
+- **Full commit:** `5d56919ce1c2218b53388429592c8b812409f5d0`
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/connectorHealthCache.ts, social-listening-core/src/connectors/facebook/facebookConnectedPagesStore.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 2f428e0 — feat(admin): display ingested post count on last successful run and render connector status indicators
+
+- **Full commit:** `2f428e0c5d2d9bc6131f8062d54a1d511d600c46`
+- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.21.wikipedia-connector-ui.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-21 — 6d3169e — feat(admin): enhance Analytics drawer and post list cards with author, top entities, and key phrases
+
+- **Full commit:** `6d3169ea49e142552f0035cb6be76af7f1a2c9dc`
+- **Files touched:** social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+

@@ -800,7 +800,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
 
-**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant Administrator,
@@ -837,7 +837,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
 
-**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
 
 **As a** Tenant User or Tenant-Admin reviewing ingested social posts,
@@ -871,7 +871,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
 
 **As a** Tenant Administrator or User,
@@ -921,7 +921,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
 
 **As a** Tenant Administrator or User,

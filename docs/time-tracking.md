@@ -15,6 +15,21 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): enhance Analytics drawer and post list cards with author, top entities, and key phrases (6d3169e) |
+| 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): display ingested post count on last successful run and render connector status indicators (2f428e0) |
+| 2026-08-21 | 08:37 | — | — | Documentation | — | feat(core): isolate historical credential failures, record posts ingested count, and mount instagram & linkedin routers (5d56919) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 6.35 | feat(admin): implement LinkedIn connector UI and OAuth proxy (Story 6.35, ADR-0069) (89eb97c) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 2.25 | feat(core): implement LinkedIn REST API connector and OAuth flow (Story 2.25, ADR-0069) (513b125) |
+| 2026-08-21 | 08:37 | — | — | Documentation | Story 6.32 | test(admin): add contract test for Bing Search connector UI (Story 6.32, ADR-0066) (0c24532) |
+| 2026-08-21 | 08:36 | — | — | Documentation | Story 6.34 | feat(admin): implement Instagram Business connector UI and OAuth proxy (Story 6.34, ADR-0068) (986a93c) |
+| 2026-08-21 | 08:36 | — | — | Documentation | Story 2.24 | feat(core): implement Instagram Business Graph API connector and OAuth flow (Story 2.24, ADR-0068) (86f093b) |
+| 2026-08-20 | 00:57 | — | — | Documentation | Story 2.22 | feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066) (8de21b3) |
+| 2026-08-20 | 00:57 | — | — | Documentation | Story 2.22 | feat(core): implement bing search active watchlist sourcing connector (Story 2.22, ADR-0066) (bb34673) |
+| 2026-08-20 | 00:33 | — | — | Documentation | Story 3.13 | docs(stories): mark Story 3.13 and Story 6.31 as Implemented (ADR-0071) (cede597) |
+| 2026-08-20 | 00:24 | — | — | Documentation | Story 6.30 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) (5ff540a) |
+| 2026-08-20 | 00:18 | — | — | Documentation | Story 6.30 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) (dedfb6b) |
+| 2026-08-20 | 00:01 | — | — | Documentation | Story 2.21 | feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065) (16a47d8) |
+| 2026-08-20 | 00:01 | — | — | Documentation | Story 2.21 | feat(core): implement brave search active watchlist sourcing connector (Story 2.21, ADR-0065) (4df8d6d) |
 | 2026-08-20 | 23:50 | — | — | Review | — | docs: sync review and time tracking for healing pass (e67a53d) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (d0094f6) |
 | 2026-08-20 | 23:50 | — | — | Documentation | — | fix(core+admin): heal postgres connection pool deadlock and scope facebook page health (0052776) |

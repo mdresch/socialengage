@@ -2848,7 +2848,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-08-21 — Story 2.22: Active Watchlist Sourcing via Bing Search API (Azure) — socialengage@bb34673
+## 2026-08-21 — Story 2.22: Active Watchlist Sourcing via Bing Search API (Azure) — socialengage@8de21b3
 
 - **Repo:** social-listening-core
 - **Story / ADR:** 2.22 / ADR-0066 (Active Watchlist Sourcing via Bing Search API (Azure))
@@ -2866,6 +2866,187 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Deduplication, Junction Linking & Cost Telemetry (`pollBingSearch.ts`, AC5):** Deduplicated posts on canonical URL, ingested into `social_posts`, and linked to `post_watchlist_matches` via `publishSocialPostIngestedEvents()`. Calculated tenant-scoped Azure search telemetry and transaction cost ($14.00 per 1,000 transactions = $0.014/call).
 - **Sequential Pacing Loop & Error Classification (`pollBingSearch.ts`, AC6):** Paced queries sequentially across active watchlists with 1.2s delay. Classified API errors into `http_401`, `http_403`, `rate_limit`, `http_5xx`, and `network`.
 - **Bootstrap Registration (`bootstrapConnectors.ts`, AC7):** Registered `bingSearchConnector` in `bootstrapConnectors()` with 1-hour polling cadence. Verified registration transparency via `story-2.10.connector-registration-transparency.contract.test.ts`.
+
+---
+
+## 2026-08-21 — Story 6.32: Bing Search API (Azure) Connector Setup, Activation, and Status Screen — socialengage@pending
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.32 / ADR-0066 (Bing Search API (Azure) Connector Setup, Activation, and Status Screen)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.32.bing-search-connector-ui.contract.test.ts (5/5 passed)
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md (updated)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.32.bing-search-connector-ui.contract.test.ts, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx
+- **Full suite at merge:** PASS (33/33 suites in epic-6; typecheck clean with 0 errors)
+
+**Delivered Story 6.32 following the contract-first methodology per ADR-0066:**
+- **Connector Definition & Branding (`ConnectorsClient.tsx`, `page.tsx`, AC1/AC2):** Added `IconBingSearch` glyph, extended `PlatformDef['icon']` with `'bing-search'`, and added `bing-search` to `PLATFORMS` with `authMode: 'api_key'`, `color: 'blue'`, `apiKey` (`Ocp-Apim-Subscription-Key`) credential field, `adNotice: 'billing'`, `personalScopeAllowed: false`, and `tenantScopeAllowed: true`.
+- **Status Screen Integration (`status/page.tsx`, AC3):** Added `bing-search` to `PLATFORMS` in category `Ingestion` with `tenantScopeAllowed: true` and Tier-2 scoping.
+- **Watchlist Platform Source Connection (`watchlists/page.tsx`, AC4):** Added `bing-search` to `SOCIAL_PLATFORMS` (`authMode: 'api_key'`), enabling tenants to select Bing Search as an active platform source.
+
+---
+
+## 2026-08-21 — Story 2.23: Facebook Connector Graph API from Extraction & Two-Tier Author Resolution — socialengage@pending
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.23 / ADR-0067 (Facebook Connector Scope Reconfirmation, Managed Pages vs. Personal User Profiles, Hosting Page Dependency, and Two-Tier Author Resolution)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts (3/3 passed)
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md (updated)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
+- **Full suite at merge:** PASS (3/3 passed; typecheck clean with 0 errors)
+
+**Delivered Story 2.23 following the contract-first methodology per ADR-0067:**
+- **Graph API Field Widening (`facebookConnector.ts`, AC1):** Widened `fetchFacebookPagePosts()` request fields to include `from{id,name}` and updated `FacebookPagePost` interface with `from?: { id: string; name: string }`.
+- **Hosting Facebook Page Dependency (`pollFacebook.ts`, AC2):** Recorded explicit hosting Page dependency (`pageId: pageMeta.id`, `pageName: pageMeta.name`) unconditionally in `rawPayload`.
+- **Two-Tier Author Resolution Hierarchy (`pollFacebook.ts`, AC3/AC4):** Resolved true post creator (`Author.displayName = post.from.name`, `authorExternalId = "facebook:" + post.from.id`, `rawPayload.author = post.from.name`) when `from.id !== pageMeta.id`, falling back to the hosting Page author (`pageMeta.name`) when published directly as the Page or when `from` is absent.
+- **Event Emission & Deduplication (`pollFacebook.ts`, AC5):** Maintained deduplication key and emitted `publishSocialPostIngestedEvents()` carrying the resolved `authorExternalId`.
+
+---
+
+## 2026-08-21 — Story 6.33: Facebook Connector Hosting Page Attribution & Author Distinction Display — socialengage@pending
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.33 / ADR-0067 (Facebook Connector Scope Reconfirmation, Managed Pages vs. Personal User Profiles, Hosting Page Dependency, and Two-Tier Author Resolution)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts (5/5 passed)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/.claude/skills/post-details/SKILL.md
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx
+- **Full suite at merge:** PASS (5/5 passed; typecheck clean with 0 errors)
+
+**Delivered Story 6.33 following the contract-first methodology per ADR-0067:**
+- **Display Derivation Helpers (`postDisplay.ts`, AC1):** Added `extractFacebookPageContext()` extracting `pageId`, `pageName`, `author`, and `isPageAuthor` distinction, denormalizing them into `FlatPost`.
+- **Post Card Attribution (`PostsFeedClient.tsx`, AC2):** Rendered hosting Page badge (`📍 Page: <Name>`) and distinct author attribution (`By: <Author>`) on Facebook post cards.
+- **Detail Panel & Slideover Telemetry (`PostDetailPanel.tsx`, `PostsFeedClient.tsx`, AC3):** Added dedicated Hosting Facebook Page row with Meta `pageId` in telemetry view and slideover header subtitle.
+- **Search Matching (`PostsFeedClient.tsx`, AC4):** Included `pageName` in the feed search filter query predicate.
+
+---
+
+## 2026-08-21 — Story 2.24: Instagram Business Connector: Tier-3 OAuth Poller, Carousel Normalization, Lookback Pagination, and Error Reclassification — socialengage@pending
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.24 / ADR-0068 (Instagram Connector Scope, Business/Creator Account Model, Hosting Profile Dependency, and Tier-3 OAuth Harmonization)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.24.instagram-connector.contract.test.ts (8/8 passed)
+- **SKILL.md:** social-listening-core/.claude/skills/instagram-connector/SKILL.md (new)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, migrations/0040_create_instagram_connected_accounts.sql, social-listening-core/.claude/skills/instagram-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.24.instagram-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/instagram/instagramConnectedAccountsStore.ts, social-listening-core/src/connectors/instagram/instagramConnector.ts, social-listening-core/src/connectors/instagram/pollInstagram.ts
+- **Full suite at merge:** PASS (8/8 in story-2.24, 22/22 in story-2.10; typecheck clean with 0 errors)
+
+**Delivered Story 2.24 following the contract-first methodology per ADR-0068:**
+- **Connector Definition & Graph API Client (`instagramConnector.ts`, AC1):** Implemented `SocialConnector` for `providerId: 'instagram'`, `authMode: 'oauth'`, `deliveryMode: 'poll'`. Built `fetchInstagramMedia()` requesting `children{id,media_type,media_url,thumbnail_url}`, `location`, `caption`, `like_count`, `comments_count`, and `permalink`.
+- **Single-Row Carousel Normalization (`pollInstagram.ts`, AC2):** Normalized `CAROUSEL_ALBUM` media items to a single parent row with child elements in `rawPayload.children` in original Meta display order (capped at 10 items, flagging `rawPayload.childrenTruncated = true`).
+- **Lookback Bounds & Incremental Halting (`pollInstagram.ts`, AC3):** Enforced 30-day lookback ceiling and 100-item hard ceiling on initial ingestion, and short-circuited pagination immediately upon encountering an existing post ID on incremental ticks.
+- **Geospatial & Caption Normalization (`pollInstagram.ts`, AC4):** Extracted country ISO 3166-1 alpha-2 from `location.country` (`geoSource: 'post'`, `geoConfidence: 'high'`) per ADR-0064, and formatted captions into canonical markdown with deterministic fallback summaries.
+- **Error Reclassification & Alert Emission (`pollInstagram.ts`, AC5):** Reclassified Graph API errors `190`, `10`, and `100` to `http_401` / `reconnect_required`, updated `instagram_connected_accounts.status = 'reconnect_required'`, and published `ConnectorIngestionAlertEvent`.
+- **Bootstrap Registration (`bootstrapConnectors.ts`):** Registered `instagramConnector` with `pollUser: pollInstagram` (Tier-3 user-bound connector). Verified registration transparency via `story-2.10.connector-registration-transparency.contract.test.ts`.
+
+---
+
+## 2026-08-21 — Story 6.34: Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation — socialengage@pending
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.34 / ADR-0068 (Instagram Business Connector Scope, Business/Creator Account Model, Hosting Profile Dependency, and Tier-3 OAuth Harmonization)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts (8/8 passed)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/.claude/skills/post-details/SKILL.md
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.21.wikipedia-connector-ui.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx
+- **Full suite at merge:** PASS (8/8 in story-6.34; typecheck clean with 0 errors)
+
+**Delivered Story 6.34 following the contract-first methodology per ADR-0068:**
+- **Platform Definition & Branding (`ConnectorsClient.tsx`, `connectors/page.tsx`, `status/page.tsx`, AC1):** Added `instagram` as Tier-3 user credential connector (`personalScopeAllowed: true`, `tenantScopeAllowed: false`, `color: 'pink'`, `icon: 'instagram'`). Added `IconInstagram` SVG glyph and pink styling in `globals.css`.
+- **Display Derivation Helpers (`postDisplay.ts`, AC2):** Implemented `extractInstagramContext()` extracting `igUserId`, `username`, `pageName`, `mediaType`, `mediaUrl`, `thumbnailUrl`, `likeCount`, `commentsCount`, `children`, and `childrenTruncated`. Updated `extractUrl()` for `permalink`, `extractAuthor()` for `username`, `extractDisplayText()` for `caption`, and denormalized into `FlatPost`.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`, AC3):** Rendered `Instagram Business` badge, hosting handle badge (`📍 @<username>`), visual media preview thumbnail, and engagement counter chip (`❤️ {likeCount} · 💬 {commentsCount}`).
+- **Post Detail Panel & Carousel Gallery (`PostDetailPanel.tsx`, AC4):** Rendered interactive multi-item carousel gallery for `CAROUSEL_ALBUM` media with truncated gallery link notice pointing to live Instagram post, and added **Hosting Instagram Account** telemetry row.
+- **Connector Status Telemetry (`ConnectorStatusClient.tsx`, AC5):** Added 30m polling cadence mapping and status telemetry monitoring for Instagram Business with `reconnect_required` support.
+
+---
+
+## 2026-08-21 — Story 2.25: LinkedIn Connector: Confidential Client OAuth, Token Lifecycle with Persisted Expiry, Rest.li Rate Limiting, and 1-Hour Poller Guardrails — socialengage@pending
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.25 / ADR-0069 (LinkedIn Connector Architecture, OAuth 2.0 Token Lifecycle, Rest.li Rate Limits, and Compliance)
+- **Contract:** social-listening-core/contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts (15/15 passed)
+- **SKILL.md:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md (new)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts, social-listening-core/contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/linkedin/pollLinkedIn.ts
+- **Full suite at merge:** PASS (15/15 in story-2.25, 24/24 in story-2.10; typecheck clean with 0 errors)
+
+**Delivered Story 2.25 following the contract-first methodology per ADR-0069:**
+- **Connector Definition & Confidential Client OAuth (`linkedinConnector.ts`, AC1):** Implemented `SocialConnector` for `providerId: 'linkedin'`, `authMode: 'oauth'`, `deliveryMode: 'poll'`. Implemented cryptographically secure, tenant-scoped OAuth state generation/validation with 10-minute TTL. Built `exchangeAuthorizationCode()` initializing `refreshTokenExpiresAt = now + 365 days`.
+- **Token Refresh & Lifecycle Management (`linkedinConnector.ts`, AC2):** Implemented `refreshToken()` with 60-day access token refresh, retaining existing refresh token and 365-day expiry when omitted by LinkedIn, and rotating refresh token with reset expiry when provided. Implemented `evaluateCredentialStatus()` (triggering `expiring_soon` for $\le 7$d access token or $\le 30$d refresh token) and `classifyInvalidGrant()` (`expired` vs `revoked`).
+- **Rest.li Rate-Limit Header Extraction (`linkedinConnector.ts`, AC3):** Implemented `parseRateLimitHeaders()` defensively parsing `x-restli-gateway-ratelimit-remaining`, `x-restli-gateway-ratelimit-limit`, and converting `x-restli-gateway-ratelimit-reset` epoch seconds to epoch milliseconds.
+- **Scheduler-Enforced Polling Guardrails (`linkedinConnector.ts`, `bootstrapConnectors.ts`, AC4):** Validated and registered 1-hour default polling cadence (`ONE_HOUR_MS`), rejecting intervals $< 3600$s unless `linkedin.org.enabled` and partner status are verified.
+- **Graceful Scope Degradation (`linkedinConnector.ts`, `pollLinkedIn.ts`, AC5):** Supported member scopes (`openid`, `profile`, `email`, `w_member_social`, `r_member_social`) and handled 403 on organization scopes non-fatally to ensure continuous member ingestion.
+- **Best-Effort Idempotent Revocation & Disconnect (`linkedinConnector.ts`, AC6):** Built `disconnectLinkedIn()` preferring refresh token for revocation, logging non-200 responses as `WARN` without blocking credential erasure or data purging.
+- **Data Normalization & Poller (`pollLinkedIn.ts`, `linkedinConnector.ts`, AC7):** Normalized posts to `SocialPost` and `Author` (`linkedin:<memberId>`), discarding raw JSON response payloads from permanent storage (ADR-0018).
+
+---
+
+## 2026-08-21 — Story 6.35: LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation — socialengage@pending
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.35 / ADR-0069 (LinkedIn Connector Architecture, OAuth 2.0 Token Lifecycle, Rest.li Rate Limits, and Compliance)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts (7/7 passed)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/.claude/skills/post-details/SKILL.md
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx
+- **Full suite at merge:** PASS (7/7 in story-6.35; full 48 suites, 675/675 tests passed; typecheck clean with 0 errors)
+
+**Delivered Story 6.35 following the contract-first methodology per ADR-0069:**
+- **Platform Definition & Branding (`ConnectorsClient.tsx`, `connectors/page.tsx`, `status/page.tsx`, AC1):** Added `linkedin` as Tier-3 user credential connector (`personalScopeAllowed: true`, `tenantScopeAllowed: false`, `color: 'blue'`, `icon: 'linkedin'`). Added `IconLinkedIn` SVG glyph in `ConnectorsClient.tsx`.
+- **Display Derivation Helpers (`postDisplay.ts`, AC2):** Implemented `extractLinkedInContext()` extracting `authorName`, `memberId`, `authorUrn`, `permalink`, `reactionsCount`, `commentsCount`, and `sharesCount`. Updated `extractAuthor()` to parse `authorName` and `memberName`, and `extractDisplayText()` to parse LinkedIn `commentary`.
+- **Post Feed Card Presentation (`PostsFeedClient.tsx`, `globals.css`, AC3):** Rendered `LinkedIn` provider badge (`.provider-pill-linkedin`), `By: <author>` attribution, publication timestamp, and LinkedIn engagement counter chips (`👍 {reactions} · 💬 {comments} · 🔄 {shares}`).
+- **Post Detail Panel & Drawer (`PostDetailPanel.tsx`, AC4):** Rendered **Author ID:** `linkedin:{memberId}`, **LinkedIn Author:** `<span><strong>{authorName}</strong></span>`, and clickable permalink link in the ingestion telemetry row.
+- **Graceful Scope Degradation & Status Telemetry (`ConnectorStatusClient.tsx`, AC5):** Added 60m polling cadence mapping (`linkedin: 60`), non-blocking scope degradation callout banner (*"Organization features unavailable — partner scope approval pending."*), and status telemetry monitoring for LinkedIn with `reconnect_required` support.
+
+---
+
+## 2026-08-21 — Connector Status Telemetry: Posts Ingested Count on Last Successful Ingestion
+
+- **Repos:** social-listening-core, social-listening-admin
+- **Contracts:** `social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts`, `social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/connector-status-view/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/src/connectors/connectorHealth.ts`
+  - `social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts`
+  - `social-listening-admin/src/lib/core-client.ts`
+  - `social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx`
+  - `social-listening-admin/contracts/epic-6/story-6.5.connector-status-view.contract.test.ts`
+  - `social-listening-admin/.claude/skills/connector-status-view/SKILL.md`
+- **Full suite at merge:** PASS (all contract tests passing)
+
+**Delivered telemetry enhancement for connector health status screen:**
+- Extended `deriveConnectorHealth()` in `social-listening-core` to read `posts_ingested` from `ingestion_runs` for the most recent successful run and expose `lastSuccessfulPostsIngested?: number | null` on `ConnectorHealth`.
+- Extended `ConnectorStatus` in `social-listening-admin/src/lib/core-client.ts` with `lastSuccessfulPostsIngested`.
+- Updated `ConnectorStatusClient.tsx` to display `{count} post(s) ingested · {time}` under the **Last Successful Ingestion** metric card whenever post count data is available.
+- Updated contract tests and component skill documentation across both repositories.
+
+---
+
+## 2026-08-21 — Analytics Post Card Drawer & List Details Enhancement
+
+- **Repos:** social-listening-admin
+- **Feature / Request:** Surface post author, top 3 named entities, and top 3 key phrases directly in the Analytics drawer & post list cards.
+- **Contracts:** `social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts`, `social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts`
+- **Files touched:**
+  - `social-listening-admin/src/app/tenant/analytics/analyticsData.ts`
+  - `social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx`
+  - `social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx`
+  - `social-listening-admin/src/app/globals.css`
+  - `social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts`
+- **Full suite at merge:** PASS (all contract tests passing)
+
+**Delivered post card details enhancement for Analytics drawer and post lists:**
+- Added `entities: string[]` to `SentimentPost` and populated it in `flattenForSentiment()` from `enrichment.entities`.
+- Updated drawer post rows across Overview, Sentiment, Conversations tabs and `AnalyticsClient` to render:
+  - `By {post.author}` in post metadata.
+  - The first 3 entity chips with `<IconTag />` and category tooltips.
+  - The first 3 key phrase chips with `<IconSparkles />` and `#phrase` styling.
+- Updated main post feed list (`PostsFeedClient.tsx`) to show up to 3 entity chips and 3 key phrases.
+- Added custom CSS styles for `.an-drawer-post-author`, `.an-drawer-post-chips`, `.an-drawer-chip`, `.an-drawer-chip-entity`, and `.an-drawer-chip-phrase` in `globals.css`.
+
+
+
+
+
+
+
 
 
 

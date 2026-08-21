@@ -538,7 +538,7 @@
 
 ## Story 2.23 — Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution
 
-**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Facebook engagement counts), Story 6.27 (Facebook multiple Pages per user)
 
 **As a** core backend engineer / social listening analyst,
@@ -573,7 +573,7 @@
 
 ## Story 2.24 — Instagram Business Connector: Tier-3 OAuth Poller, Single-Row Carousel Normalization, Lookback Pagination, and Error Reclassification
 
-**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Engagement counts), Story 2.20 (Country geospatial normalization), Story 6.27 (Multi-asset credential model), Story 1.16 (Watchdog reconciliation & alerts)
 
 **As a** core backend engineer / social listening analyst,
@@ -623,7 +623,7 @@
 
 ## Story 2.25 — LinkedIn Connector: Confidential Client OAuth, Token Lifecycle with Persisted Expiry, Rest.li Rate Limiting, and 1-Hour Poller Guardrails
 
-**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
 **Depends on:** Story 2.1 (Unified connector interface), Story 2.2 (Rate limiting request gate), Story 1.16 / ADR-0070 (Watchdog reconciliation & alerts)
 
 **As a** core backend engineer / social listening analyst,
