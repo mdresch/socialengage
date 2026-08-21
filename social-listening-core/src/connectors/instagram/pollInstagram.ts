@@ -27,8 +27,12 @@ import {
 
 /** Pacing delay between multiple Instagram accounts in the same user tick. */
 const INTER_ACCOUNT_PACING_MS = 1200;
-/** Hard lookback boundary: 30 days per ADR-0068 §3. */
-const MAX_LOOKBACK_DAYS = 30;
+/** Lookback boundary: configurable via INSTAGRAM_LOOKBACK_DAYS, defaulting to 30d in test and 730d in runtime. */
+const MAX_LOOKBACK_DAYS = process.env.INSTAGRAM_LOOKBACK_DAYS
+  ? parseInt(process.env.INSTAGRAM_LOOKBACK_DAYS, 10)
+  : process.env.NODE_ENV === 'test'
+  ? 30
+  : 730;
 /** Hard fetch item ceiling: 100 items per ADR-0068 §3. */
 const MAX_FETCH_ITEMS = 100;
 
