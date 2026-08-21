@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-21 | 08:38 | — | — | Review | — | docs: finalize review queues and time tracking records (cd8e624) |
 | 2026-08-21 | 08:38 | — | — | Documentation | — | docs: sync user stories, implementation log, and time tracking (9510c47) |
 | 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): enhance Analytics drawer and post list cards with author, top entities, and key phrases (6d3169e) |
 | 2026-08-21 | 08:38 | — | — | Documentation | — | feat(admin): display ingested post count on last successful run and render connector status indicators (2f428e0) |
