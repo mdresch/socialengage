@@ -66,6 +66,37 @@ function IconBraveSearch() {
   );
 }
 
+/** Story 6.32 — Bing Search's own search/Azure discovery icon glyph. */
+function IconBingSearch() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="7.5" />
+      <line x1="21" y1="21" x2="15.8" y2="15.8" />
+      <path d="M7 10.5h7" />
+    </svg>
+  );
+}
+
+/** Story 6.34 — Instagram's own camera/outline glyph shape (pink/gradient family). */
+function IconInstagram() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+/** Story 6.35 — LinkedIn's own "in" icon glyph shape (blue family). */
+function IconLinkedIn() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+    </svg>
+  );
+}
+
 function IconShieldCheck() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -113,8 +144,8 @@ export interface PlatformDef {
   description: string;
   /** Story 6.23 (ADR-0059) — 'oauth' added for Facebook, this project's first redirect-based connector. */
   authMode: 'api_key' | 'none' | 'oauth';
-  color: 'blue' | 'indigo' | 'purple' | 'emerald' | 'amber';
-  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open' | 'facebook' | 'brave-search';
+  color: 'blue' | 'indigo' | 'purple' | 'emerald' | 'amber' | 'pink';
+  icon: 'globe' | 'radio' | 'sparkles-purple' | 'sparkles-emerald' | 'book-open' | 'facebook' | 'brave-search' | 'bing-search' | 'instagram' | 'linkedin';
   adNotice: 'billing' | 'public' | null;
   credentialFields: CredentialFieldDef[];
   /**
@@ -186,26 +217,57 @@ export interface FacebookPagesResponse {
   pages: FacebookConnectedPageRow[];
 }
 
+export interface InstagramPendingAccount {
+  igUserId: string;
+  username: string;
+  name?: string;
+  profilePictureUrl?: string;
+  followersCount?: number;
+  pageId: string;
+  pageName: string;
+}
+
+export interface InstagramConnectedAccountRow {
+  id: string;
+  igUserId: string;
+  username: string;
+  pageId: string;
+  pageName: string;
+  status: 'connected' | 'removed' | 'orphaned' | 'reconnect_required';
+  connectorHealth: {
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
+    lastSuccessfulFetchAt: string | null;
+    lastAttemptAt: string | null;
+    consecutiveFailures: number;
+    credentialStatus: string | null;
+  };
+}
+
+export interface InstagramAccountsResponse {
+  parentConnectionActive: boolean;
+  accounts: InstagramConnectedAccountRow[];
+}
+
 interface ConnectorsClientProps {
   platforms: PlatformDef[];
   initialStates: ConnectorInitialState[];
   isTenantAdmin: boolean;
   /**
-   * Story 6.23 — a real, minimal testability seam (the same pattern
-   * PostsFeedClient.tsx's own initialActivePostId already establishes for
-   * this repo's lack of a DOM-interaction test runner): seeds the picker
-   * state directly for a static render. In the real app this is left
-   * undefined and populated client-side by the mount effect's own fetch of
-   * /api/connectors/facebook/oauth/pending, guarded on ?fbConnect=1.
+   * Story 6.23 — seeds the Facebook picker state directly for a static render.
    */
   initialFacebookPending?: { sessionToken: string; pages: FacebookPendingPage[] } | null;
   /**
-   * Story 6.27 — the same testability seam shape, for the real per-Page
-   * connected list (GET /api/connectors/facebook/pages). In the real app
-   * this is left undefined and populated client-side by
-   * FacebookConnectedPagesList's own mount effect.
+   * Story 6.27 — seeds the connected Facebook Pages list directly for a static render.
    */
   initialFacebookPages?: FacebookPagesResponse | null;
+  /**
+   * Story 6.34 — seeds the Instagram account picker state directly for a static render.
+   */
+  initialInstagramPending?: { sessionToken: string; accounts: InstagramPendingAccount[] } | null;
+  /**
+   * Story 6.34 — seeds the connected Instagram accounts list directly for a static render.
+   */
+  initialInstagramAccounts?: InstagramAccountsResponse | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -221,6 +283,9 @@ function PlatformIcon({ icon }: { icon: PlatformDef['icon'] }) {
     case 'book-open':        return <IconBookOpen />;
     case 'facebook':         return <IconFacebookF />;
     case 'brave-search':     return <IconBraveSearch />;
+    case 'bing-search':      return <IconBingSearch />;
+    case 'instagram':        return <IconInstagram />;
+    case 'linkedin':         return <IconLinkedIn />;
   }
 }
 
@@ -529,16 +594,16 @@ function FacebookPagePickerModal({
 // Facebook connected-Pages list (Story 6.27, ADR-0060 Decision §4/§6)
 // ---------------------------------------------------------------------------
 
-/** Mirrors connector-status-view's own deriveVariant() precedent — 'disconnected' reads as 'inactive', every other status passes through unchanged. */
-function derivePageVariant(health: FacebookConnectedPageRow['connectorHealth']): StatusBadgeVariant {
+/** Mirrors connector-status-view's own deriveVariant() precedent — 'disconnected' reads as 'active' for connected assets with no poller runs yet, 'inactive' otherwise. */
+function derivePageVariant(health: FacebookConnectedPageRow['connectorHealth'], itemStatus?: string): StatusBadgeVariant {
   if (health.status === 'reconnect_required') return 'reconnect_required';
   switch (health.status) {
     case 'healthy':      return 'healthy';
     case 'degraded':     return 'degraded';
     case 'failing':      return 'failing';
     case 'stalled':      return 'stalled';
-    case 'disconnected': return 'inactive';
-    default:              return 'inactive';
+    case 'disconnected': return itemStatus === 'connected' ? 'active' : 'inactive';
+    default:              return itemStatus === 'connected' ? 'active' : 'inactive';
   }
 }
 
@@ -561,7 +626,7 @@ function FacebookPageRow({ page, onDisconnect }: { page: FacebookConnectedPageRo
       {isOrphaned ? (
         <span className="cv-fb-page-orphaned">Access lost — reconnect to restore this Page</span>
       ) : (
-        <StatusBadge variant={derivePageVariant(page.connectorHealth)} />
+        <StatusBadge variant={derivePageVariant(page.connectorHealth, page.status)} />
       )}
       {needsReconnect && (
         <a href="/api/connectors/facebook/oauth/start" className="cv-fb-page-reconnect">
@@ -623,6 +688,203 @@ function FacebookConnectedPagesList({ initialPages }: { initialPages?: FacebookP
 }
 
 // ---------------------------------------------------------------------------
+// Instagram account picker modal (Story 6.34, ADR-0068)
+// ---------------------------------------------------------------------------
+
+function InstagramAccountPickerModal({
+  platformName,
+  pending,
+  onClose,
+  onDone,
+}: {
+  platformName: string;
+  pending: { sessionToken: string; accounts: InstagramPendingAccount[] };
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    connected: { igUserId: string; username: string; pageName: string }[];
+    errors: { igUserId: string; reason: string }[];
+  } | null>(null);
+
+  function toggle(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  async function handleConfirm() {
+    if (selectedIds.length === 0) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/connectors/instagram/oauth/select-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: pending.sessionToken, igUserIds: selectedIds }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (response.status === 201) {
+        setResult({ connected: body.connected ?? [], errors: body.errors ?? [] });
+        return;
+      }
+      setError(body.error ?? 'Something went wrong while connecting these Instagram accounts.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (result) {
+    return (
+      <div className="modal-backdrop" role="presentation">
+        <div className="modal-dialog cv-connect-modal" role="dialog" aria-modal="true" aria-labelledby="cv-ig-result-title">
+          <div className="cv-modal-header">
+            <h3 id="cv-ig-result-title">
+              Connected {result.connected.length} of {result.connected.length + result.errors.length} Account{result.connected.length + result.errors.length === 1 ? '' : 's'}
+            </h3>
+          </div>
+          {result.connected.length > 0 && (
+            <ul className="cv-fb-result-list cv-fb-result-connected">
+              {result.connected.map((c) => (
+                <li key={c.igUserId}>@{c.username} ({c.pageName})</li>
+              ))}
+            </ul>
+          )}
+          {result.errors.length > 0 && (
+            <ul className="cv-fb-result-list cv-fb-result-errors">
+              {result.errors.map((e) => (
+                <li key={e.igUserId}>{e.reason}</li>
+              ))}
+            </ul>
+          )}
+          <div className="form-actions cv-modal-actions">
+            <button type="button" className="btn btn-primary" onClick={onDone}>
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-dialog cv-connect-modal" role="dialog" aria-modal="true" aria-labelledby="cv-ig-picker-title">
+        <div className="cv-modal-header">
+          <h3 id="cv-ig-picker-title">
+            {pending.accounts.length === 0 ? `Connect ${platformName}` : 'Choose Instagram Accounts'}
+          </h3>
+          <button type="button" className="slideover-close-btn" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {pending.accounts.length === 0 ? (
+          <p className="cv-modal-empty-state">
+            No linked Instagram Business or Creator accounts found for your Facebook Pages. Make sure your Instagram account is switched to Professional/Business and linked to a Facebook Page.
+          </p>
+        ) : (
+          <>
+            <div className="cv-page-picker-list" role="group" aria-label="Instagram Accounts">
+              {pending.accounts.map((account) => (
+                <label key={account.igUserId} className="cv-page-picker-row">
+                  <input
+                    type="checkbox"
+                    value={account.igUserId}
+                    checked={selectedIds.includes(account.igUserId)}
+                    onChange={() => toggle(account.igUserId)}
+                  />
+                  <span className="cv-page-picker-name">@{account.username}</span>
+                  <span className="cv-page-picker-category">Page: {account.pageName}</span>
+                </label>
+              ))}
+            </div>
+
+            {error && <p role="alert" className="cv-modal-error">{error}</p>}
+
+            <div className="form-actions cv-modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
+                Cancel
+              </button>
+              <button type="button" className="btn btn-primary" onClick={handleConfirm} disabled={submitting || selectedIds.length === 0}>
+                {submitting ? 'Connecting…' : `Connect ${selectedIds.length || ''} selected Account${selectedIds.length === 1 ? '' : 's'}`}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Instagram connected-Accounts list (Story 6.34, ADR-0068)
+// ---------------------------------------------------------------------------
+
+function InstagramAccountRow({ account, onDisconnect }: { account: InstagramConnectedAccountRow; onDisconnect: (id: string) => void }) {
+  const isOrphaned = account.status === 'orphaned';
+  const needsReconnect = isOrphaned || account.status === 'reconnect_required' || account.connectorHealth.status === 'reconnect_required';
+
+  return (
+    <div className="cv-fb-page-row">
+      <span className="cv-fb-page-name">@{account.username} <small style={{ opacity: 0.7, fontSize: '0.75rem' }}>({account.pageName})</small></span>
+      {isOrphaned ? (
+        <span className="cv-fb-page-orphaned">Access lost — reconnect to restore this account</span>
+      ) : (
+        <StatusBadge variant={derivePageVariant(account.connectorHealth, account.status)} />
+      )}
+      {needsReconnect && (
+        <a href="/api/connectors/instagram/oauth/start" className="cv-fb-page-reconnect">
+          Reconnect
+        </a>
+      )}
+      <button type="button" className="cv-fb-page-disconnect" onClick={() => onDisconnect(account.id)}>
+        Disconnect this Account
+      </button>
+    </div>
+  );
+}
+
+function InstagramConnectedAccountsList({ initialAccounts }: { initialAccounts?: InstagramAccountsResponse | null }) {
+  const [data, setData] = useState<InstagramAccountsResponse | null>(initialAccounts ?? null);
+
+  async function refresh() {
+    const res = await fetch('/api/connectors/instagram/accounts');
+    const body = await res.json().catch(() => null);
+    if (body) setData(body);
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleDisconnect(id: string) {
+    await fetch(`/api/connectors/instagram/accounts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    await refresh();
+  }
+
+  if (!data) return null;
+  const visibleAccounts = (data.accounts || []).filter((a) => a.status !== 'removed');
+  if (visibleAccounts.length === 0) return null;
+
+  return (
+    <div className="cv-fb-pages-list">
+      {!data.parentConnectionActive && (
+        <p className="cv-fb-deactivated-banner">
+          {visibleAccounts.length} Instagram account{visibleAccounts.length === 1 ? '' : 's'} connected, but your personal Instagram connection is currently deactivated — none of them are being polled.
+        </p>
+      )}
+      {visibleAccounts.map((account) => (
+        <InstagramAccountRow key={account.id} account={account} onDisconnect={handleDisconnect} />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -632,12 +894,17 @@ export function ConnectorsClient({
   isTenantAdmin,
   initialFacebookPending = null,
   initialFacebookPages = null,
+  initialInstagramPending = null,
+  initialInstagramAccounts = null,
 }: ConnectorsClientProps) {
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
   const [facebookPending, setFacebookPending] = useState<{ sessionToken: string; pages: FacebookPendingPage[] } | null>(
     initialFacebookPending
+  );
+  const [instagramPending, setInstagramPending] = useState<{ sessionToken: string; accounts: InstagramPendingAccount[] } | null>(
+    initialInstagramPending
   );
 
   const stateMap = new Map(initialStates.map((s) => [s.platformId, s]));
@@ -646,22 +913,26 @@ export function ConnectorsClient({
   const disconnectingPlatform = disconnectingId ? platforms.find((p) => p.id === disconnectingId) ?? null : null;
   const disconnectingState = disconnectingId ? stateMap.get(disconnectingId) ?? null : null;
 
-  // Story 6.23 — real production path for the picker: the callback route
-  // redirects here with ?fbConnect=1 once it has stashed the OAuth
-  // exchange's own result; this fetches and clears it (pending/route.ts is
-  // single-use by construction). initialFacebookPending (above) is a
-  // static-render testability seam only — this effect never runs under
-  // renderToStaticMarkup, matching PostsFeedClient.tsx's own precedent.
+  // Story 6.23 / 6.34 — real production path for the pickers
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get('fbConnect') !== '1') return;
-    fetch('/api/connectors/facebook/oauth/pending')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data) setFacebookPending(data);
-      })
-      .catch(() => undefined);
+    if (params.get('fbConnect') === '1') {
+      fetch('/api/connectors/facebook/oauth/pending')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data) setFacebookPending(data);
+        })
+        .catch(() => undefined);
+    }
+    if (params.get('igConnect') === '1') {
+      fetch('/api/connectors/instagram/oauth/pending')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data) setInstagramPending(data);
+        })
+        .catch(() => undefined);
+    }
   }, []);
 
   async function handleDisconnectConfirm() {
@@ -795,7 +1066,7 @@ export function ConnectorsClient({
 
               {/* Footer actions */}
               <div className="cv-card-footer">
-                {platform.authMode === 'oauth' ? (
+                {platform.id === 'facebook' ? (
                   /* Story 6.23/6.27 (ADR-0059 Decision §3/§4, ADR-0060
                      Decision §6) — Facebook: a real browser redirect, never
                      a ConnectModal credential-field submission. The
@@ -824,6 +1095,101 @@ export function ConnectorsClient({
                     <a href="/api/connectors/facebook/oauth/start" className="btn btn-primary cv-connect-btn">
                       Connect {platform.name}
                     </a>
+                  )
+                ) : platform.id === 'instagram' ? (
+                  /* Story 6.34 (ADR-0068) — Instagram Business multi-account connector */
+                  isConnected ? (
+                    <div className="cv-card-footer-left cv-fb-footer">
+                      {variant === 'reconnect_required' && (
+                        <span className="cv-fb-rollup-note">One or more Instagram accounts need attention — see your account list below.</span>
+                      )}
+                      <InstagramConnectedAccountsList initialAccounts={initialInstagramAccounts} />
+                      <a href="/api/connectors/instagram/oauth/start" className="btn btn-secondary btn-sm">
+                        Connect another Account
+                      </a>
+                      <ActivateDeactivateButton
+                        platformId={platform.id}
+                        ownerType="user"
+                        isActive={state.isActive}
+                      />
+                    </div>
+                  ) : (
+                    <a href="/api/connectors/instagram/oauth/start" className="btn btn-primary cv-connect-btn">
+                      Connect {platform.name}
+                    </a>
+                  )
+                ) : platform.id === 'linkedin' ? (
+                  /* Story 6.35 (ADR-0069) — LinkedIn OAuth connect */
+                  isConnected ? (
+                    <>
+                      <div className="cv-card-footer-left">
+                        {isTenantAdmin && platform.tenantScopeAllowed !== false && (
+                          <ActivateDeactivateButton
+                            platformId={platform.id}
+                            ownerType="tenant"
+                            isActive={state.isActive}
+                          />
+                        )}
+                        {platform.personalScopeAllowed && (
+                          <ActivateDeactivateButton
+                            platformId={platform.id}
+                            ownerType="user"
+                            isActive={state.isActive}
+                          />
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="cv-disconnect-btn"
+                        onClick={() => setDisconnectingId(platform.id)}
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <a
+                      href="/api/connectors/linkedin/oauth/start"
+                      className="btn btn-primary cv-connect-btn"
+                    >
+                      Connect {platform.name}
+                    </a>
+                  )
+                ) : platform.authMode === 'oauth' ? (
+                  /* Other OAuth connectors (e.g. LinkedIn) */
+                  isConnected ? (
+                    <>
+                      <div className="cv-card-footer-left">
+                        {isTenantAdmin && platform.tenantScopeAllowed !== false && (
+                          <ActivateDeactivateButton
+                            platformId={platform.id}
+                            ownerType="tenant"
+                            isActive={state.isActive}
+                          />
+                        )}
+                        {platform.personalScopeAllowed && (
+                          <ActivateDeactivateButton
+                            platformId={platform.id}
+                            ownerType="user"
+                            isActive={state.isActive}
+                          />
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="cv-disconnect-btn"
+                        onClick={() => setDisconnectingId(platform.id)}
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-primary cv-connect-btn"
+                      onClick={() => setConnectingId(platform.id)}
+                    >
+                      Connect {platform.name}
+                    </button>
                   )
                 ) : platform.authMode === 'none' ? (
                   /* Newswire: no credential, just activation */
@@ -940,6 +1306,16 @@ export function ConnectorsClient({
           platformName={platforms.find((p) => p.id === 'facebook')?.name ?? 'Facebook Page'}
           pending={facebookPending}
           onClose={() => setFacebookPending(null)}
+          onDone={() => window.location.reload()}
+        />
+      )}
+
+      {/* Instagram Account Picker (Story 6.34) */}
+      {instagramPending && (
+        <InstagramAccountPickerModal
+          platformName={platforms.find((p) => p.id === 'instagram')?.name ?? 'Instagram Business'}
+          pending={instagramPending}
+          onClose={() => setInstagramPending(null)}
           onDone={() => window.location.reload()}
         />
       )}

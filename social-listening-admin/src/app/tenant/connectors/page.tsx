@@ -164,6 +164,56 @@ const PLATFORMS: PlatformDef[] = [
     personalScopeAllowed: false,
     tenantScopeAllowed: true,
   },
+  {
+    id: 'bing-search',
+    name: 'Bing Search (Azure)',
+    subtitle: 'Active Web & News Discovery',
+    description: 'Azure AI Services active web & news search discovery for tenant watchlists with in-process AST validation.',
+    authMode: 'api_key',
+    color: 'blue',
+    icon: 'bing-search',
+    adNotice: 'billing',
+    credentialFields: [
+      {
+        key: 'apiKey',
+        label: 'Azure Bing Search API Key (Ocp-Apim-Subscription-Key)',
+        type: 'password',
+        placeholder: '32-character hexadecimal key',
+        hint: 'Obtained from your Azure Portal Cognitive Services / Bing Search resource (Keys and Endpoint).',
+      },
+    ],
+    // ADR-0028 / ADR-0066 — Tier 2 (tenant-wide) only.
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram Business',
+    subtitle: 'Meta Graph API Ingestion Source',
+    description: 'Ingests published photos, videos, carousels, and reels directly from your connected Instagram Business and Creator accounts via Meta Graph API.',
+    authMode: 'oauth',
+    color: 'pink',
+    icon: 'instagram',
+    adNotice: null,
+    credentialFields: [],
+    // ADR-0068 — Tier 3 (personal, self-activated) only, no tenant-wide credential path exists.
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    subtitle: 'OAuth Ingestion Source',
+    description: 'Ingests published posts, comments, reactions, and company page analytics via LinkedIn REST API.',
+    authMode: 'oauth',
+    color: 'blue',
+    icon: 'linkedin',
+    adNotice: null,
+    credentialFields: [],
+    // ADR-0069 — Tier 3 (personal, self-activated) only, no tenant-wide credential path exists.
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
+  },
 ];
 
 /**

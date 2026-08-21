@@ -85,6 +85,33 @@ const PLATFORMS: PlatformDefinition[] = [
     personalScopeAllowed: false,
     tenantScopeAllowed: true,
   },
+  {
+    id: 'bing-search',
+    name: 'Bing Search (Azure)',
+    authMode: 'api_key',
+    category: 'Ingestion',
+    description: 'Active discovery connector querying the Bing Search API for tenant active watchlists with strict AST validation.',
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram Business',
+    authMode: 'oauth',
+    category: 'Ingestion',
+    description: 'Ingests published photos, videos, carousels, and reels directly from your connected Instagram Business and Creator accounts via Meta Graph API.',
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    authMode: 'oauth',
+    category: 'Ingestion',
+    description: 'Ingests published posts, comments, reactions, and company page analytics via LinkedIn REST API.',
+    personalScopeAllowed: true,
+    tenantScopeAllowed: false,
+  },
 ];
 
 async function loadRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {

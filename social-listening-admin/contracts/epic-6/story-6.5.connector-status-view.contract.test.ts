@@ -150,12 +150,13 @@ describe('Story 6.5 — connector status view, real rework (2026-08-12, re-heale
     it('a real render gives a failing connector a distinct data-variant/card class from a healthy one', () => {
       const rows = [
         { platform: { id: 'gnews', name: 'GNews API', authMode: 'api_key', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'failing', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 4, credentialStatus: 'valid', isActive: true } },
-        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'healthy', lastSuccessfulFetchAt: null, lastAttemptAt: null, consecutiveFailures: 0, credentialStatus: null, isActive: true } },
+        { platform: { id: 'newswire', name: 'Global Newswire Feeds', authMode: 'none', category: 'Ingestion', description: 'x' }, isActive: true, health: { status: 'healthy', lastSuccessfulFetchAt: '2026-08-20T10:00:00.000Z', lastAttemptAt: '2026-08-20T10:00:00.000Z', consecutiveFailures: 0, credentialStatus: null, isActive: true, lastSuccessfulPostsIngested: 42 } },
       ];
       const html = renderComponent('../../src/app/tenant/connectors/status/ConnectorStatusClient', 'ConnectorStatusClient', { rows, isTenantAdmin: false });
       expect(html).toContain('data-variant="failing"');
       expect(html).toContain('data-variant="healthy"');
       expect(html).toContain('cs-card-failing');
+      expect(html).toContain('42 posts ingested');
     });
   });
 

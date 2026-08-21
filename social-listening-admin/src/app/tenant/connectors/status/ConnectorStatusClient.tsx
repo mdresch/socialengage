@@ -135,6 +135,8 @@ const POLL_INTERVAL_MINUTES: Record<string, number> = {
   wikipedia: 30,
   'tenant-owned-feed': 30,
   facebook: 30,
+  instagram: 30,
+  linkedin: 60,
 };
 
 /** Story 6.24 — mirrors `CONSECUTIVE_FAILURE_CEILING` (`social-listening-core/src/connectors/connectorHealth.ts`), the real, single global ceiling. Not importable across the repo boundary; restated here, kept in sync by hand. */
@@ -335,6 +337,13 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
         <div key={platform.id} className={cardBorderClass(row)}>
           {header}
 
+          {platform.id === 'linkedin' && (
+            <div className="cs-scope-degraded-notice" style={{ margin: '0.75rem 1.25rem 0', padding: '0.5rem 0.75rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', fontSize: '0.8125rem', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <IconAlertTriangle />
+              <span>Organization features unavailable — partner scope approval pending.</span>
+            </div>
+          )}
+
           <div className="cs-metrics-grid">
             <div className="cs-metric">
               <div className="cs-metric-label">
@@ -349,7 +358,9 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
               </div>
               {health?.lastSuccessfulFetchAt && (
                 <div className="cs-metric-sub">
-                  {new Date(health.lastSuccessfulFetchAt).toLocaleTimeString()}
+                  {typeof health.lastSuccessfulPostsIngested === 'number'
+                    ? `${health.lastSuccessfulPostsIngested} post${health.lastSuccessfulPostsIngested === 1 ? '' : 's'} ingested · ${new Date(health.lastSuccessfulFetchAt).toLocaleTimeString()}`
+                    : new Date(health.lastSuccessfulFetchAt).toLocaleTimeString()}
                 </div>
               )}
             </div>

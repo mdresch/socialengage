@@ -290,6 +290,8 @@ export interface ConnectorStatus {
   credentialStatus: 'valid' | 'expiring_soon' | 'expired' | 'revoked' | null;
   /** Story 1.12 (ADR-0051 Open Question 5) — real activation state, tenant-wide scope, read fresh, never derived from credentialStatus/authMode. */
   isActive: boolean;
+  /** Number of posts ingested in the most recent successful run. */
+  lastSuccessfulPostsIngested?: number | null;
 }
 
 export interface ConnectorActivationOutcome {
@@ -551,6 +553,145 @@ export async function disconnectFacebookPage(id: string): Promise<FacebookDiscon
   const body = await response.json().catch(() => ({}));
   return { status: response.status, body };
 }
+
+export interface InstagramOAuthExchangeOutcome {
+  status: number;
+  body: {
+    sessionToken?: string;
+    accounts?: {
+      igUserId: string;
+      username: string;
+      name?: string;
+      profilePictureUrl?: string;
+      followersCount?: number;
+      pageId: string;
+      pageName: string;
+    }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — exchanges Meta OAuth code for Instagram accounts discovery.
+ */
+export async function exchangeInstagramOAuthCode(
+  code: string,
+  redirectUri: string
+): Promise<InstagramOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramSelectAccountOutcome {
+  status: number;
+  body: {
+    connected?: { igUserId: string; username: string; pageName: string }[];
+    errors?: { igUserId: string; reason: string }[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — registers selected Instagram accounts in core.
+ */
+export async function selectInstagramAccounts(
+  sessionToken: string,
+  igUserIds: string[]
+): Promise<InstagramSelectAccountOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/oauth/select-accounts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionToken, igUserIds }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramConnectedAccountRow {
+  id: string;
+  igUserId: string;
+  username: string;
+  pageId: string;
+  pageName: string;
+  status: 'connected' | 'removed' | 'orphaned' | 'reconnect_required';
+  connectorHealth: {
+    status: 'healthy' | 'degraded' | 'failing' | 'disconnected' | 'reconnect_required' | 'stalled';
+    lastSuccessfulFetchAt: string | null;
+    lastAttemptAt: string | null;
+    consecutiveFailures: number;
+    credentialStatus: string | null;
+  };
+}
+
+export interface InstagramAccountsOutcome {
+  status: number;
+  body: {
+    parentConnectionActive?: boolean;
+    accounts?: InstagramConnectedAccountRow[];
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — lists caller's connected Instagram accounts.
+ */
+export async function listInstagramAccounts(): Promise<InstagramAccountsOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/instagram/accounts', { method: 'GET' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface InstagramDisconnectAccountOutcome {
+  status: number;
+  body: { id?: string; igUserId?: string; status?: string; error?: string; [key: string]: unknown };
+}
+
+/**
+ * Story 6.34 (ADR-0068 Decision §2) — soft-removes a connected Instagram account.
+ */
+export async function disconnectInstagramAccount(id: string): Promise<InstagramDisconnectAccountOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/instagram/accounts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface LinkedInOAuthExchangeOutcome {
+  status: number;
+  body: {
+    success?: boolean;
+    memberId?: string;
+    memberName?: string;
+    error?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Story 6.35 (ADR-0069) — exchanges LinkedIn authorization code and state with core.
+ */
+export async function exchangeLinkedInOAuthCode(
+  code: string,
+  state: string,
+  redirectUri: string
+): Promise<LinkedInOAuthExchangeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/connectors/linkedin/oauth/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, state, redirectUri }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+
 
 /**
  * Story 6.6 / ADR-0030, ADR-0031 — Platform Admin tenant registry surface.
