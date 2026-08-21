@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { SupportedPlatform, MediaAttachment, PlatformOverride } from './types';
 import { PLATFORM_CONFIGS } from './types';
 import { PlatformPreviewRails } from './PlatformPreviewRails';
+import { styleText, applyStrikethrough, applyUnderline } from './lib/unicodeStyles';
+import { countCharacters } from './lib/counting';
 
 interface PolypostComposerProps {
   initialText?: string;
@@ -14,7 +16,7 @@ interface PolypostComposerProps {
 
 export function PolypostComposer({
   initialText = '',
-  initialPlatforms = ['linkedin', 'instagram', 'facebook', 'twitter'],
+  initialPlatforms = ['linkedin', 'instagram', 'facebook', 'twitter', 'threads', 'bluesky'],
   onPublishSuccess,
   onCancel,
 }: PolypostComposerProps) {
@@ -23,12 +25,18 @@ export function PolypostComposer({
   const [media, setMedia] = useState<MediaAttachment[]>([]);
   const [mediaInputUrl, setMediaInputUrl] = useState('');
   const [showMediaInput, setShowMediaInput] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showMentionInput, setShowMentionInput] = useState(false);
+  const [mentionName, setMentionName] = useState('');
   const [activeOverrideTab, setActiveOverrideTab] = useState<SupportedPlatform | null>(null);
   const [platformOverrides, setPlatformOverrides] = useState<Partial<Record<SupportedPlatform, PlatformOverride>>>({});
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [scheduleDate, setScheduleDate] = useState('');
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Toggle platform selection
   const togglePlatform = (p: SupportedPlatform) => {
@@ -49,6 +57,122 @@ export function PolypostComposer({
     return platformOverrides[platform]?.media !== undefined
       ? platformOverrides[platform]!.media!
       : media;
+  };
+
+  // Active target text to modify
+  const currentText = activeOverrideTab
+    ? platformOverrides[activeOverrideTab]?.text ?? mainText
+    : mainText;
+
+  const updateCurrentText = (newText: string) => {
+    if (activeOverrideTab) {
+      setPlatformOverrides((prev) => ({
+        ...prev,
+        [activeOverrideTab]: {
+          ...prev[activeOverrideTab],
+          text: newText,
+        },
+      }));
+    } else {
+      setMainText(newText);
+    }
+  };
+
+  // Formatting helpers for selected text or insertion
+  const applyFormatting = (formatType: 'bold' | 'italic' | 'code' | 'underline' | 'strike') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = currentText.substring(start, end);
+
+    if (!selected) {
+      // If nothing selected, format example word
+      const placeholder = 'styled';
+      let styled = placeholder;
+      if (formatType === 'bold') styled = styleText(placeholder, { bold: true });
+      if (formatType === 'italic') styled = styleText(placeholder, { italic: true });
+      if (formatType === 'code') styled = styleText(placeholder, { code: true });
+      if (formatType === 'underline') styled = applyUnderline(placeholder);
+      if (formatType === 'strike') styled = applyStrikethrough(placeholder);
+
+      const next = currentText.slice(0, start) + styled + currentText.slice(end);
+      updateCurrentText(next);
+      return;
+    }
+
+    let formatted = selected;
+    if (formatType === 'bold') formatted = styleText(selected, { bold: true });
+    if (formatType === 'italic') formatted = styleText(selected, { italic: true });
+    if (formatType === 'code') formatted = styleText(selected, { code: true });
+    if (formatType === 'underline') formatted = applyUnderline(selected);
+    if (formatType === 'strike') formatted = applyStrikethrough(selected);
+
+    const next = currentText.slice(0, start) + formatted + currentText.slice(end);
+    updateCurrentText(next);
+  };
+
+  // Insert mention token
+  const handleInsertMention = () => {
+    if (!mentionName.trim()) return;
+    const token = `@[${mentionName.trim()}]`;
+    const textarea = textareaRef.current;
+    const pos = textarea ? textarea.selectionStart : currentText.length;
+    const next = currentText.slice(0, pos) + ` ${token} ` + currentText.slice(pos);
+    updateCurrentText(next);
+    setMentionName('');
+    setShowMentionInput(false);
+  };
+
+  // Insert emoji
+  const insertEmoji = (emoji: string) => {
+    const textarea = textareaRef.current;
+    const pos = textarea ? textarea.selectionStart : currentText.length;
+    const next = currentText.slice(0, pos) + emoji + currentText.slice(pos);
+    updateCurrentText(next);
+  };
+
+  // AI Assist Action Simulations
+  const handleAiTransform = async (mode: 'autofit' | 'professional' | 'punchy' | 'hashtags') => {
+    if (!currentText.trim()) return;
+    setIsAiProcessing(true);
+
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+
+      if (mode === 'autofit') {
+        const targetLimit = activeOverrideTab
+          ? PLATFORM_CONFIGS[activeOverrideTab].maxChars
+          : 280;
+        if (currentText.length > targetLimit) {
+          // Smartly compress sentences
+          const words = currentText.split(/\s+/);
+          let fitted = '';
+          for (const w of words) {
+            if ((fitted + ' ' + w).length <= targetLimit - 4) {
+              fitted += (fitted ? ' ' : '') + w;
+            } else {
+              break;
+            }
+          }
+          updateCurrentText(fitted + '...');
+        }
+      } else if (mode === 'professional') {
+        const lines = currentText.split('\n').filter(Boolean);
+        const structured = `Key insights on this milestone:\n\n` + lines.map(l => `• ${l.replace(/^[•\-*]\s*/, '')}`).join('\n') + `\n\nHow is your team addressing this in practice?`;
+        updateCurrentText(structured);
+      } else if (mode === 'punchy') {
+        updateCurrentText(`🚀 Big update:\n\n${currentText}\n\n👇 What do you think?`);
+      } else if (mode === 'hashtags') {
+        const autoTags = ' #Tech #Innovation #Data #Leadership #AI';
+        if (!currentText.includes('#')) {
+          updateCurrentText(currentText + '\n\n' + autoTags.trim());
+        }
+      }
+    } finally {
+      setIsAiProcessing(false);
+    }
   };
 
   // Add media URL
@@ -87,7 +211,7 @@ export function PolypostComposer({
   // Quick insert hashtags
   const insertHashtag = (tag: string) => {
     const formatted = tag.startsWith('#') ? tag : `#${tag}`;
-    setMainText((prev) => (prev ? `${prev} ${formatted}` : formatted));
+    updateCurrentText(currentText ? `${currentText} ${formatted}` : formatted);
   };
 
   // Simulated Publish
@@ -123,6 +247,8 @@ export function PolypostComposer({
       setIsPublishing(false);
     }
   };
+
+  const popularEmojis = ['🔥', '🚀', '💡', '📊', '✨', '📈', '💬', '🎯', '👇', '👍', '👏', '🎉', '🧠', '🛡️', '⚡', '🌐'];
 
   return (
     <div className="composer-root">
@@ -167,17 +293,17 @@ export function PolypostComposer({
           <div className="composer-card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <h4 className="composer-section-title" style={{ color: 'var(--color-text)' }}>
-                Primary Post Draft
+                {activeOverrideTab ? `${PLATFORM_CONFIGS[activeOverrideTab].name} Override` : 'Primary Post Draft'}
               </h4>
               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                (Live syncs to all selected channels)
+                ({countCharacters(currentText)} chars)
               </span>
             </div>
 
             {/* Platform Override Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>Override:</span>
-              <div style={{ display: 'flex', gap: 4 }}>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {selectedPlatforms.map((p) => {
                   const hasOverride = platformOverrides[p]?.text !== undefined;
                   const isCurrent = activeOverrideTab === p;
@@ -245,26 +371,151 @@ export function PolypostComposer({
             </div>
           )}
 
+          {/* Polypost Formatting Toolbar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, padding: '4px 8px', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+            {/* Unicode Stylers */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <button
+                type="button"
+                onClick={() => applyFormatting('bold')}
+                title="Bold (Unicode)"
+                style={{ fontWeight: 800, padding: '2px 7px', fontSize: '0.8125rem', background: 'transparent', border: 'none', color: 'var(--color-text)', cursor: 'pointer' }}
+              >
+                𝗕
+              </button>
+              <button
+                type="button"
+                onClick={() => applyFormatting('italic')}
+                title="Italic (Unicode)"
+                style={{ fontStyle: 'italic', padding: '2px 7px', fontSize: '0.8125rem', background: 'transparent', border: 'none', color: 'var(--color-text)', cursor: 'pointer' }}
+              >
+                𝘐
+              </button>
+              <button
+                type="button"
+                onClick={() => applyFormatting('underline')}
+                title="Underline (Unicode)"
+                style={{ textDecoration: 'underline', padding: '2px 7px', fontSize: '0.8125rem', background: 'transparent', border: 'none', color: 'var(--color-text)', cursor: 'pointer' }}
+              >
+                U̲
+              </button>
+              <button
+                type="button"
+                onClick={() => applyFormatting('strike')}
+                title="Strikethrough (Unicode)"
+                style={{ textDecoration: 'line-through', padding: '2px 7px', fontSize: '0.8125rem', background: 'transparent', border: 'none', color: 'var(--color-text)', cursor: 'pointer' }}
+              >
+                S̶
+              </button>
+              <button
+                type="button"
+                onClick={() => applyFormatting('code')}
+                title="Monospace (Unicode)"
+                style={{ fontFamily: 'var(--font-mono)', padding: '2px 7px', fontSize: '0.75rem', background: 'transparent', border: 'none', color: 'var(--color-text)', cursor: 'pointer' }}
+              >
+                𝙲𝚘𝚍𝚎
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMentionInput(!showMentionInput)}
+                title="Mention Person (@[Name])"
+                style={{ padding: '2px 7px', fontSize: '0.75rem', fontWeight: 600, background: 'transparent', border: 'none', color: 'var(--color-accent)', cursor: 'pointer' }}
+              >
+                @[Mention]
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                title="Emoji Picker"
+                style={{ padding: '2px 6px', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              >
+                😀
+              </button>
+            </div>
+
+            {/* AI Assistant Quick Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <button
+                type="button"
+                disabled={isAiProcessing}
+                onClick={() => handleAiTransform('autofit')}
+                title="Auto-fit length to current platform limits"
+                className="composer-tag-chip"
+                style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--color-accent)', fontWeight: 600 }}
+              >
+                ✂️ Auto-fit
+              </button>
+              <button
+                type="button"
+                disabled={isAiProcessing}
+                onClick={() => handleAiTransform('professional')}
+                title="Polish into structured B2B thought-leadership format"
+                className="composer-tag-chip"
+              >
+                💼 Polish
+              </button>
+              <button
+                type="button"
+                disabled={isAiProcessing}
+                onClick={() => handleAiTransform('punchy')}
+                title="Convert into punchy social hook"
+                className="composer-tag-chip"
+              >
+                ⚡ Punchy
+              </button>
+            </div>
+          </div>
+
+          {/* Emoji Tray */}
+          {showEmojiPicker && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '6px 10px', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+              {popularEmojis.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => insertEmoji(e)}
+                  style={{ fontSize: '1.125rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Mention Input Box */}
+          {showMentionInput && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', padding: 'var(--space-2)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+              <input
+                type="text"
+                value={mentionName}
+                onChange={(e) => setMentionName(e.target.value)}
+                placeholder="Type full person name (e.g. Scott Hanselman)"
+                style={{ flex: 1, fontSize: '0.8125rem' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleInsertMention();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleInsertMention}
+                className="composer-btn-primary"
+              >
+                Insert Mention
+              </button>
+            </div>
+          )}
+
           {/* Text Area */}
           <div>
             <textarea
-              rows={6}
-              value={activeOverrideTab ? platformOverrides[activeOverrideTab]?.text ?? mainText : mainText}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (activeOverrideTab) {
-                  setPlatformOverrides((prev) => ({
-                    ...prev,
-                    [activeOverrideTab]: {
-                      ...prev[activeOverrideTab],
-                      text: val,
-                    },
-                  }));
-                } else {
-                  setMainText(val);
-                }
-              }}
-              placeholder="What would you like to share across your social channels? Type your post here..."
+              ref={textareaRef}
+              rows={7}
+              value={currentText}
+              onChange={(e) => updateCurrentText(e.target.value)}
+              placeholder="Draft your post once... Type @[Name] for cross-platform mentions, use the formatting bar for Unicode styling, or add media."
               className="composer-textarea"
             />
           </div>
@@ -273,8 +524,8 @@ export function PolypostComposer({
           <div className="composer-toolbar">
             {/* Quick Hashtags */}
             <div className="composer-tag-list">
-              <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>Add tag:</span>
-              {['#AI', '#SocialListening', '#Marketing', '#ProductUpdate', '#Innovation'].map((tag) => (
+              <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>Tags:</span>
+              {['#AI', '#SocialListening', '#Marketing', '#PMBOK', '#BABOK', '#DMBOK', '#DataGovernance'].map((tag) => (
                 <button
                   key={tag}
                   type="button"

@@ -1,6 +1,8 @@
 'use client';
 
 import type { PlatformConfig, MediaAttachment } from '../types';
+import { flattenMentionTokens } from '../lib/mentions';
+import { countCharacters } from '../lib/counting';
 
 interface ThreadsPreviewCardProps {
   config: PlatformConfig;
@@ -10,8 +12,17 @@ interface ThreadsPreviewCardProps {
 
 export function ThreadsPreviewCard({ config, text, media }: ThreadsPreviewCardProps) {
   const author = config.defaultAuthor;
-  const charCount = text.length;
+
+  const processedText = flattenMentionTokens(text, { collapseSpaces: true });
+  const charCount = countCharacters(processedText, config.countingMethod);
   const isOverLimit = charCount > config.maxChars;
+
+  const handleCopyOpen = () => {
+    navigator.clipboard.writeText(processedText);
+    if (config.getOpenUrl) {
+      window.open(config.getOpenUrl(processedText), '_blank');
+    }
+  };
 
   return (
     <div className="preview-card">
@@ -21,9 +32,27 @@ export function ThreadsPreviewCard({ config, text, media }: ThreadsPreviewCardPr
           <span style={{ fontSize: '1rem', fontWeight: 800 }}>@</span>
           <span>Threads Post</span>
         </div>
-        <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
-          {charCount} / {config.maxChars}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
+            {charCount} / {config.maxChars}
+          </span>
+          <button
+            type="button"
+            onClick={handleCopyOpen}
+            style={{
+              fontSize: '0.6875rem',
+              padding: '1px 6px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+            }}
+            title="Copy text & open Threads"
+          >
+            Copy &amp; Open
+          </button>
+        </div>
       </div>
 
       <div className="preview-card-body">
@@ -39,7 +68,7 @@ export function ThreadsPreviewCard({ config, text, media }: ThreadsPreviewCardPr
             </div>
 
             <div className="preview-text">
-              {text ? text : <span style={{ color: 'var(--color-text-disabled)', fontStyle: 'italic' }}>Say more on Threads...</span>}
+              {processedText ? processedText : <span style={{ color: 'var(--color-text-disabled)', fontStyle: 'italic' }}>Say more on Threads...</span>}
             </div>
 
             {media && media.length > 0 && (

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import type { PlatformConfig, MediaAttachment } from '../types';
+import { flattenMentionTokens } from '../lib/mentions';
+import { countCharacters } from '../lib/counting';
 
 interface InstagramPreviewCardProps {
   config: PlatformConfig;
@@ -13,8 +15,16 @@ export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCa
   const [activeSlide, setActiveSlide] = useState(0);
   const author = config.defaultAuthor;
 
-  const charCount = text.length;
+  const processedText = flattenMentionTokens(text, { collapseSpaces: false });
+  const charCount = countCharacters(processedText, config.countingMethod);
   const isOverLimit = charCount > config.maxChars;
+
+  const handleCopyOpen = () => {
+    navigator.clipboard.writeText(processedText);
+    if (config.getOpenUrl) {
+      window.open(config.getOpenUrl(processedText), '_blank');
+    }
+  };
 
   return (
     <div className="preview-card" style={{ maxWidth: 420, margin: '0 auto' }}>
@@ -26,9 +36,27 @@ export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCa
           </svg>
           <span>Instagram Feed</span>
         </div>
-        <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
-          {charCount} / {config.maxChars.toLocaleString()}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
+            {charCount} / {config.maxChars.toLocaleString()}
+          </span>
+          <button
+            type="button"
+            onClick={handleCopyOpen}
+            style={{
+              fontSize: '0.6875rem',
+              padding: '1px 6px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+            }}
+            title="Copy caption & open Instagram"
+          >
+            Copy &amp; Open
+          </button>
+        </div>
       </div>
 
       {/* Author Header */}
@@ -77,7 +105,7 @@ export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCa
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <div style={{ textAlign: 'center', color: 'var(--color-text-disabled)', padding: var_space_4 }}>
+          <div style={{ textAlign: 'center', color: 'var(--color-text-disabled)', padding: 'var(--space-4)' }}>
             <p style={{ fontSize: '0.75rem', margin: 0 }}>Add an image to preview Instagram square layout</p>
           </div>
         )}
@@ -129,11 +157,9 @@ export function InstagramPreviewCard({ config, text, media }: InstagramPreviewCa
       <div style={{ padding: '4px 12px 12px', fontSize: '0.8125rem' }}>
         <span style={{ fontWeight: 600, marginRight: 6 }}>{author.handle.replace('@', '')}</span>
         <span style={{ color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}>
-          {text || 'Your Instagram caption will appear here...'}
+          {processedText || 'Your Instagram caption will appear here...'}
         </span>
       </div>
     </div>
   );
 }
-
-const var_space_4 = 'var(--space-4)';

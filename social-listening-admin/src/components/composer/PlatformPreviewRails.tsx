@@ -9,6 +9,7 @@ import { FacebookPreviewCard } from './previews/FacebookPreviewCard';
 import { XPreviewCard } from './previews/XPreviewCard';
 import { ThreadsPreviewCard } from './previews/ThreadsPreviewCard';
 import { BlueskyPreviewCard } from './previews/BlueskyPreviewCard';
+import { MastodonPreviewCard } from './previews/MastodonPreviewCard';
 
 interface PlatformPreviewRailsProps {
   selectedPlatforms: SupportedPlatform[];
@@ -49,6 +50,8 @@ export function PlatformPreviewRails({
         return <ThreadsPreviewCard key={platform} config={config} text={text} media={media} />;
       case 'bluesky':
         return <BlueskyPreviewCard key={platform} config={config} text={text} media={media} />;
+      case 'mastodon':
+        return <MastodonPreviewCard key={platform} config={config} text={text} media={media} />;
       default:
         return null;
     }

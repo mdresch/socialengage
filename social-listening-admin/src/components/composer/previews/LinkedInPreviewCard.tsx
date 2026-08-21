@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import type { PlatformConfig, MediaAttachment } from '../types';
+import { flattenMentionTokens } from '../lib/mentions';
+import { countCharacters } from '../lib/counting';
 
 interface LinkedInPreviewCardProps {
   config: PlatformConfig;
@@ -13,10 +15,18 @@ export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCard
   const [isExpanded, setIsExpanded] = useState(false);
   const author = config.defaultAuthor;
 
-  const charCount = text.length;
+  const processedText = flattenMentionTokens(text, { collapseSpaces: false });
+  const charCount = countCharacters(processedText, config.countingMethod);
   const isOverLimit = charCount > config.maxChars;
-  const shouldTruncate = text.length > 210 && !isExpanded;
-  const displayText = shouldTruncate ? text.slice(0, 210) + '...' : text;
+  const shouldTruncate = processedText.length > 210 && !isExpanded;
+  const displayText = shouldTruncate ? processedText.slice(0, 210) + '...' : processedText;
+
+  const handleCopyOpen = () => {
+    navigator.clipboard.writeText(processedText);
+    if (config.getOpenUrl) {
+      window.open(config.getOpenUrl(processedText), '_blank');
+    }
+  };
 
   return (
     <div className="preview-card">
@@ -28,9 +38,27 @@ export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCard
           </svg>
           <span>LinkedIn Feed Post</span>
         </div>
-        <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
-          {charCount} / {config.maxChars.toLocaleString()}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: isOverLimit ? 'var(--color-danger)' : 'var(--color-text-secondary)', fontWeight: isOverLimit ? 700 : 400 }}>
+            {charCount} / {config.maxChars.toLocaleString()}
+          </span>
+          <button
+            type="button"
+            onClick={handleCopyOpen}
+            style={{
+              fontSize: '0.6875rem',
+              padding: '1px 6px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+            }}
+            title="Copy text & open LinkedIn"
+          >
+            Copy &amp; Open
+          </button>
+        </div>
       </div>
 
       <div className="preview-card-body">
@@ -51,7 +79,7 @@ export function LinkedInPreviewCard({ config, text, media }: LinkedInPreviewCard
 
         {/* Post Text */}
         <div className="preview-text">
-          {text ? (
+          {processedText ? (
             <>
               <span>{displayText}</span>
               {shouldTruncate && (

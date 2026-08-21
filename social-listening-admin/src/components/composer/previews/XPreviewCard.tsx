@@ -1,6 +1,8 @@
 'use client';
 
 import type { PlatformConfig, MediaAttachment } from '../types';
+import { flattenMentionTokens } from '../lib/mentions';
+import { countCharacters } from '../lib/counting';
 
 interface XPreviewCardProps {
   config: PlatformConfig;
@@ -10,12 +12,22 @@ interface XPreviewCardProps {
 
 export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
   const author = config.defaultAuthor;
-  const charCount = text.length;
+
+  // Collapse spaces for X handle mentions (@Scott Hanselman -> @ScottHanselman)
+  const processedText = flattenMentionTokens(text, { collapseSpaces: true });
+  const charCount = countCharacters(processedText, config.countingMethod);
   const isOverLimit = charCount > config.maxChars;
 
   // Real-time limit highlight
-  const validText = isOverLimit ? text.slice(0, config.maxChars) : text;
-  const overflowText = isOverLimit ? text.slice(config.maxChars) : '';
+  const validText = isOverLimit ? processedText.slice(0, config.maxChars) : processedText;
+  const overflowText = isOverLimit ? processedText.slice(config.maxChars) : '';
+
+  const handleCopyOpen = () => {
+    navigator.clipboard.writeText(processedText);
+    if (config.getOpenUrl) {
+      window.open(config.getOpenUrl(processedText), '_blank');
+    }
+  };
 
   return (
     <div className="preview-card">
@@ -28,7 +40,7 @@ export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
           <span>X / Post</span>
         </div>
 
-        {/* Character Counter with Overflow Warning */}
+        {/* Character Counter with Overflow Warning & Copy-Open */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span
             style={{
@@ -51,9 +63,25 @@ export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
                 borderRadius: 'var(--radius-sm)',
               }}
             >
-              +{charCount - config.maxChars} overflow
+              +{charCount - config.maxChars}
             </span>
           )}
+          <button
+            type="button"
+            onClick={handleCopyOpen}
+            style={{
+              fontSize: '0.6875rem',
+              padding: '1px 6px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+            }}
+            title="Copy text & open Tweet composer"
+          >
+            Copy &amp; Open
+          </button>
         </div>
       </div>
 
@@ -72,7 +100,7 @@ export function XPreviewCard({ config, text, media }: XPreviewCardProps) {
 
             {/* Tweet Body with Over-limit Highlighting */}
             <div className="preview-text">
-              {text ? (
+              {processedText ? (
                 <>
                   <span>{validText}</span>
                   {overflowText && (
