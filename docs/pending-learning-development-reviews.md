@@ -2304,3 +2304,45 @@
 - **Files touched:** social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/linkedin/pollLinkedIn.ts
 - **Status:** Pending review
 
+## 2026-08-22 — f459114 — feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer
+
+- **Full commit:** `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59`
+- **Files touched:** docs/adr/0072-cross-platform-polypost-composer-and-multi-network-preview-engine.md, docs/adr/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts, social-listening-admin/src/components/composer/previews/InstagramPreviewCard.tsx, social-listening-admin/src/components/composer/previews/LinkedInPreviewCard.tsx
+- **Status:** Pending review
+
+## 2026-08-22 — ef24e9d — docs: finalize Story 6.36 traceability and Implementation Log
+
+- **Full commit:** `ef24e9d1440a25f543f93737cf244e6dc452900d`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — 3d16bf1 — docs(adr): amend ADR-0067 with admin-side Facebook Page and matched watchlist attribution
+
+- **Full commit:** `3d16bf193ce4e33d7792f4e747ff4e977e665172`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
+- **Status:** Pending review
+
+## 2026-08-22 — 5f962e8 — docs(user-stories): add Story 6.37 for ADR-0067 admin-side Facebook Page and watchlist attribution
+
+- **Full commit:** `5f962e893fd003babf94885321b738ae23c7180f`
+- **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — b40041f — feat: Story 6.37 — admin post-feed Facebook Page and matched watchlist attribution (ADR-0067)
+
+- **Full commit:** `b40041fc87d2d6d2e8820e709375630a3918b325`
+- **Files touched:** docs/adr/README.md, docs/user-stories/README.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts
+- **Status:** Pending review
+
+## 2026-08-22 — 6f6990f — docs: Implementation Log and Built field for Story 6.37
+
+- **Full commit:** `6f6990ff1623e3d2c390cc9458a971e2b3d023d1`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — f9273d5 — docs(adr): accept ADR-0073 and add user stories for outbound reply to ingested posts
+
+- **Full commit:** `f9273d560ee3807f3e177149ca641f8dfaa3deb4`
+- **Files touched:** docs/adr/0073-outbound-reply-to-ingested-posts.md, docs/adr/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
