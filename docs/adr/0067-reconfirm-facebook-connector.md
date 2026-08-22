@@ -1,6 +1,6 @@
 # ADR-0067: Facebook Connector (`facebook`) — Platform Connector Scope Reconfirmation, Managed Pages vs. Personal User Profiles, Hosting Page Dependency, and Two-Tier Author Resolution
 
-**Status:** Accepted (2026-08-20)
+**Status:** Accepted (2026-08-20; amended 2026-08-22)
 
 **Accepted by Menno 2026-08-20.** Reconfirms Facebook Page connector boundaries, establishes explicit post dependency on the hosting Facebook Page (`pageId`/`pageName`) with clear post-level UI attribution, defines a two-tier author resolution strategy (`from.name` true author falling back to `pageName`), aligns Tier-3 user-delegated OAuth credentials, and harmonizes with ADR-0064 (country-level geospatial normalization) and ADR-0070 (watchdog reconciliation).
 
@@ -118,6 +118,22 @@ flowchart TD
 
 ---
 
+### 5. Admin-Side Post Feed and Post Detail Facebook Page Attribution
+
+- The `/tenant/posts` page loads the caller's own connected Facebook Pages via `listFacebookPages()` (ADR-0060 / Story 6.27) and passes the list as a `facebookPages` prop through `page.tsx` to `PostsFeedClient.tsx` and `PostDetailPanel.tsx`.
+- `extractFacebookPageContext()` in `postDisplay.ts` resolves the hosting Page for a given `rawPayload` using, in order: explicit `rawPayload.pageId`/`pageName`, the `from` object, the `externalId` prefix (`{pageId}_{postId}`), a lookup against the caller's connected Pages list, and a final extraction from `permalink_url` / `url` if present.
+- The post list badge and detail drawer display `📍 Page: <PageName>` with a link to `https://facebook.com/<pageId>`, plus `By: <author>` when a distinct author is present. This keeps the two-tier author resolution from Decision §3 visible in the UI.
+- If a connected-Page list is unavailable or the post predates ADR-0060's multi-Page storage, the resolution falls back to whatever page name exists in `rawPayload`. The generic `Facebook Page` label is used only as an explicit last resort, not as a primary replacement for a missing name.
+
+### 6. Matched Watchlist Attribution in Post List and Detail
+
+- `postDisplay.ts` gains `extractWatchlistId()` to read `watchlistId`, `discoveringWatchlistId`, `matchedWatchlistId`, and legacy snake_case variants from `rawPayload`.
+- `flattenPost()` receives `watchlists` and `facebookPages` props and computes the matched watchlist name; if no explicit watchlist id is present, it falls back to a safe local term-match search against the caller's own watchlists scoped by platform, with a Wikipedia-specific fallback for posts from the Wikipedia connector.
+- `PostsFeedClient.tsx` and `PostDetailPanel.tsx` render a `🎯 <watchlistName>` chip that links to `/tenant/watchlists` and helps analysts trace which listening target surfaced a given post.
+- `pollWikipedia.ts` denormalizes `watchlistId` and `discoveringWatchlistId` into `rawPayload` at ingestion time when the revision title matches a watchlist term or when a generic Wikipedia-scoped watchlist is present, ensuring the UI does not have to re-derive it for older posts.
+
+---
+
 ## Consequences
 
 ### Positive
@@ -157,6 +173,14 @@ flowchart TD
 4. **Credential Ownership:** Formally reaffirmed as Tier-3 user-delegated OAuth credentials (`owner_type = 'user'`).
 5. **Geospatial Processing:** Mapped strictly to country-level ISO 3166-1 alpha-2 when `place.country` is present, discarding coordinates per ADR-0064.
 6. **Active Ingestion State:** Confirmed active and continuous upon Page authentication, with status badges reflecting real operational health.
+7. **Admin-Side Page Attribution:** The post feed and detail panel resolve the hosting Facebook Page from the caller's connected Pages list and `permalink_url` / `externalId` / `from` fields, not from a static `rawPayload.pageName` alone. The Page name is a clickable link; a distinct author is shown separately.
+8. **Matched Watchlist Attribution:** The post list and detail panel display the watchlist that surfaced the post, with ingestion-time `watchlistId` denormalization for Wikipedia and a local term-matching fallback for legacy posts.
+
+---
+
+## Amendment Log
+
+- **2026-08-22:** Added Decision §5 (admin-side Facebook Page attribution using the caller's connected Pages list and canonical URL extraction) and Decision §6 (matched watchlist chips in post list/detail, including ingestion-time `watchlistId` denormalization for Wikipedia) to document the uncommitted UI/connector changes already built in this session. Requested by Menno.
 
 ---
 
