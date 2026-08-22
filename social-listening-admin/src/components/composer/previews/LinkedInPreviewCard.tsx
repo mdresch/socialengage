@@ -116,7 +116,7 @@ export function LinkedInPreviewCard({ config, text, media, linkPreview }: Linked
         <div className="preview-media-frame">
           <img
             src={media[0].url}
-            alt="LinkedIn attachment"
+            alt={media[0].altText || "LinkedIn attachment"}
             style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
           />
         </div>

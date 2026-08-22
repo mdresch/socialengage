@@ -104,7 +104,7 @@ export function InstagramPreviewCard({ config, text, media, linkPreview }: Insta
         {media && media.length > 0 ? (
           <img
             src={media[activeSlide]?.url || media[0].url}
-            alt="Instagram square media"
+            alt={media[activeSlide]?.altText || media[0]?.altText || "Instagram square media"}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : linkPreview?.image ? (

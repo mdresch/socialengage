@@ -968,6 +968,51 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ---
 
+## Story 6.36 — Cross-Platform Polypost Composer & Multi-Network Preview Engine
+
+**Source:** ADR-0072 (Accepted 2026-08-22) · **Status:** Ready
+**Built:** not yet
+**Depends on:** Story 6.2 (Role-gated routing shell), Story 6.11 (Post feed)
+
+**As a** Tenant Administrator or Content Marketer,
+**I want** a unified, real-time cross-platform social post composition workspace with side-by-side network preview rails, OpenGraph link card scraping, drag-and-drop media attachments with accessibility Alt-Text, document importing, and generative AI copy assistance,
+**so that** I can draft, proof, refine, and adapt social content accurately across all target networks without leaving the application.
+
+**Acceptance Criteria**
+
+- **Dedicated Route & Modal Integration:**
+  - Standalone page accessible at `/tenant/compose` in the tenant navigation shell.
+  - On-demand modal overlay (`ComposePostModal.tsx`) accessible via the "✍️ Compose Post" button on `/tenant/posts`.
+- **Synchronous Multi-Network Preview Rails (`PlatformPreviewRails.tsx`):**
+  - Renders 7 dedicated, pixel-accurate platform preview cards:
+    - **LinkedIn (`LinkedInPreviewCard.tsx`):** Professional avatar header, connection degree badge, 3,000-char tracking, formatted commentary with truncation, media gallery, and interactive OpenGraph link card.
+    - **Instagram (`InstagramPreviewCard.tsx`):** Mobile profile header, location chip, aspect-ratio-scaled media container, interactive like/comment action bar, and caption formatting.
+    - **Facebook (`FacebookPreviewCard.tsx`):** Page header with verified badge, post message body, rich OpenGraph card, and engagement metrics.
+    - **Bluesky (`BlueskyPreviewCard.tsx`):** AT Protocol handle formatting, domain link previews, and strict 300-grapheme counter.
+    - **Mastodon (`MastodonPreviewCard.tsx`):** Federated handle layout, optional Content Warning (CW) folding, and 500-char counter.
+    - **Threads (`ThreadsPreviewCard.tsx`):** Meta Threads clean typography, reply line styling, and media containers.
+    - **X/Twitter (`XPreviewCard.tsx`):** Handle layout, verified badge, circular 280-char progress ring, and link summary cards.
+- **Media Upload, Drag-and-Drop, and Accessibility Alt-Text (`PolypostComposer.tsx`):**
+  - Toolbar **"📷 Upload Images"** button invoking native file picker (`image/png, image/jpeg, image/webp, image/gif`).
+  - Native drag-and-drop file dropzone over the draft text area with visual drop indicators.
+  - Image thumbnails with individual editable **"Alt text (for accessibility)"** input fields, file size indicators, and removal controls.
+- **Automated OpenGraph Link Card Previews (`CardLinkPreview.tsx`):**
+  - Auto-detects URLs within post text and asynchronously scrapes OpenGraph metadata (`og:title`, `og:description`, `og:image`, `og:site_name`).
+  - Displays rich visual card preview across LinkedIn, Facebook, X, and Bluesky preview rails with graceful fallback.
+- **Document & Markdown File Importer (`documentImport.ts`):**
+  - Imports `.md`, `.markdown`, `.txt`, and `.docx` (Microsoft Word) files directly into the active draft.
+  - Provides options to **"Replace Draft"** or **"Append to Draft"**.
+- **Multi-Draft Management & Resilient Local Autosave (`draftStorage.ts` & `DraftHistoryDrawer.tsx`):**
+  - Multi-draft tabs allowing authors to create, switch, rename, duplicate, and delete concurrent drafts.
+  - Debounced (500ms) automatic persistence to browser `localStorage` isolated per tenant (`socialengage:drafts:${tenantId}`).
+- **Azure OpenAI Copywriter Assistant (`/api/ai/compose-assist`):**
+  - Provides pre-engineered generative AI prompts: Fix Spelling & Grammar, Make Concise, Generate Viral Hook, Expand & Elaborate, Professional Tone, and Hashtag Suggestions.
+  - Displays real-time suggestions with one-click **"Apply to Draft"** or **"Discard"** options.
+
+**Explicitly out of scope:** Direct automated scheduled posting (social network write APIs / webhooks); paid ad placement.
+
+---
+
 **Documentation Steward correction, 2026-08-19.** Ten stories in this epic — 6.8, 6.14, 6.18, 6.19, 6.20, 6.21, 6.22, 6.23, 6.25, and 6.26 — each already carried a correct, real `**Built:**` field naming a real shipped commit (6.8: `social-listening-admin@6b7fc00`; 6.14: `@a27aa10`; 6.18: `@a97cf30`; 6.19: `@4f099a6`/core `@aa4f317`; 6.20: `@be1764d`/core `@e9d797f`; 6.21: `@21c30bf`; 6.22: `@8182706`; 6.23: `@535338f`; 6.25: `@6550716`; 6.26: `@03c37c9` — every hash confirmed directly against `docs/implementation-log.md`'s own matching entries), but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone — the same class of drift `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13) already names for Stories 5.18/6.7. For 6.23/6.25/6.26 specifically, the `**Built:**` field was placed *before* the `**Source:**/**Status:**` line rather than after it, the inverse of every other story's own ordering in this file — a likely reason this specific instance wasn't already caught by casual visual scanning. All ten Status lines now read "Built <date>," matching each story's own `**Built:**` field and the Log; no Acceptance Criteria text changed. (Story 6.8's own narrative context — a 2026-08-10 original build, `**Built:**` field date backfilled 2026-08-17 per the field's own forward-only, single-commit convention — is unaffected; only the Status word itself was stale.)
 
 
