@@ -1,0 +1,521 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-22",
+  "sources": [
+    "https://worldmetrics.org/best/social-media-listening-software/",
+    "https://www.sprinklr.com/products/consumer-intelligence/social-listening/",
+    "https://blog.hootsuite.com/ai-social-listening/",
+    "https://orichi.info/5-best-social-monitoring-tools/",
+    "Project knowledge: Microsoft Social Engagement was a Dynamics 365 social listening/engagement add-on discontinued in 2023."
+  ],
+  "feature_definitions": {
+    "multi_source_ingestion": "Monitors more than one type of source (e.g. social networks, news, blogs, RSS, review sites) in addition to a single platform.",
+    "boolean_query_builder": "Supports advanced query construction with AND, OR, NOT and other operators for precise mention filtering.",
+    "ai_sentiment_analysis": "Uses AI to classify mention sentiment (positive, negative, neutral, emotional tone).",
+    "ai_topic_clustering": "Uses AI to group mentions into topics, themes or trends automatically.",
+    "influencer_discovery": "Identifies influential accounts or authors based on reach, engagement or topical relevance.",
+    "unified_social_inbox": "Provides a shared inbox to triage, assign and reply to mentions/messages.",
+    "publishing_scheduling": "Allows users to compose, schedule and publish outbound posts.",
+    "dashboards_analytics": "Offers dashboards, charts and reporting for listening data.",
+    "real_time_alerts": "Sends real-time or near-real-time alerts for spikes, keywords or crises.",
+    "data_export": "Supports exporting data or reports to files (CSV, PDF, PowerPoint, etc.).",
+    "api_integrations": "Exposes an API or pre-built integrations for third-party tools.",
+    "multi_user_workspaces": "Supports multiple users, roles, workspaces or client separation."
+  },
+  "products": [
+    {
+      "name": "Brandwatch",
+      "category": "Enterprise consumer intelligence",
+      "best_for": "Large marketing teams needing high-precision social listening and analytics workflows",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "yes",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "yes",
+        "unified_social_inbox": "no",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Strong on query depth, influencer discovery and enterprise dashboards; action/inbox features are secondary."
+    },
+    {
+      "name": "Talkwalker",
+      "category": "Enterprise social listening",
+      "best_for": "Mid-market and enterprise teams needing cross-channel listening analytics",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "yes",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "yes",
+        "unified_social_inbox": "limited",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "AI sentiment and topic clustering across social, news and web; visual/analytics focus."
+    },
+    {
+      "name": "Sprinklr",
+      "category": "Unified customer experience / enterprise listening",
+      "best_for": "Large brands needing listening + publishing + customer care in one CXM platform",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "yes",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "yes",
+        "unified_social_inbox": "yes",
+        "publishing_scheduling": "yes",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Widest channel coverage (30+) plus visual listening; also a full social management suite."
+    },
+    {
+      "name": "Meltwater",
+      "category": "Media intelligence",
+      "best_for": "Enterprise brand and communications teams running continuous listening and reporting",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "yes",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "limited",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Blends social listening with broader PR/media intelligence; strong reporting, less on publishing."
+    },
+    {
+      "name": "Sprout Social",
+      "category": "All-in-one social management",
+      "best_for": "Marketing and community teams needing listening tied to publishing and inbox workflows",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "yes",
+        "publishing_scheduling": "yes",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Listening is an add-on to a strong publishing and engagement platform; less deep than dedicated listeners."
+    },
+    {
+      "name": "Hootsuite Insights",
+      "category": "All-in-one social management",
+      "best_for": "Social teams needing listening signals tied to publishing and engagement workflows",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "yes",
+        "publishing_scheduling": "yes",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Listening (via Insights and Talkwalker acquisition) is integrated with publishing; more management than pure research."
+    },
+    {
+      "name": "Mention",
+      "category": "Budget-friendly listening",
+      "best_for": "Marketing and support teams monitoring keywords with shared inbox workflows and alerts",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "limited",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "yes",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Fast alert-driven monitoring with a collaborative inbox; lighter on deep research."
+    },
+    {
+      "name": "Brand24",
+      "category": "Budget-friendly listening",
+      "best_for": "Marketing and PR teams monitoring brands and competitors across social channels",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "limited",
+        "influencer_discovery": "yes",
+        "unified_social_inbox": "limited",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Always-on brand monitoring with alerts, sentiment and influence scoring; less query depth."
+    },
+    {
+      "name": "SentiOne",
+      "category": "Enterprise listening",
+      "best_for": "Mid-size brands needing sentiment-focused listening with team workflows",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "limited",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "AI sentiment and topic detection with dashboards and routing workflows."
+    },
+    {
+      "name": "Sysomos",
+      "category": "Analytics platform",
+      "best_for": "Enterprise marketing and research teams running ongoing listening programs",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "yes",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "no",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Structured enterprise listening and reporting; heavier setup, less self-serve exploration."
+    },
+    {
+      "name": "Social Animal",
+      "category": "Listening platform",
+      "best_for": "Marketing teams needing structured social listening and research lists without heavy analysis tooling",
+      "features": {
+        "multi_source_ingestion": "limited",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "limited",
+        "ai_topic_clustering": "limited",
+        "influencer_discovery": "yes",
+        "unified_social_inbox": "no",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "limited",
+        "data_export": "limited",
+        "api_integrations": "unknown",
+        "multi_user_workspaces": "limited"
+      },
+      "notes": "Visual saved-list workflow for keyword and topic monitoring; lighter coverage."
+    },
+    {
+      "name": "Microsoft Social Engagement",
+      "category": "Discontinued Microsoft social listening add-on",
+      "best_for": "Legacy Dynamics 365 customers needing social listening and engagement within CRM",
+      "features": {
+        "multi_source_ingestion": "yes",
+        "boolean_query_builder": "limited",
+        "ai_sentiment_analysis": "yes",
+        "ai_topic_clustering": "yes",
+        "influencer_discovery": "limited",
+        "unified_social_inbox": "yes",
+        "publishing_scheduling": "no",
+        "dashboards_analytics": "yes",
+        "real_time_alerts": "yes",
+        "data_export": "yes",
+        "api_integrations": "yes",
+        "multi_user_workspaces": "yes"
+      },
+      "notes": "Discontinued 2023; provided sentiment, trending topics, social care cases and integrations to Dynamics 365."
+    }
+  ],
+  "feature_to_products": {
+    "multi_source_ingestion": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "boolean_query_builder": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sysomos"
+      ],
+      "limited": [
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Social Animal",
+        "Microsoft Social Engagement"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "ai_sentiment_analysis": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "ai_topic_clustering": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Mention",
+        "Brand24",
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "influencer_discovery": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Brand24",
+        "Social Animal"
+      ],
+      "limited": [
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "unified_social_inbox": {
+      "yes": [
+        "Sprinklr",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Talkwalker",
+        "Meltwater",
+        "Brand24",
+        "SentiOne"
+      ],
+      "add-on": [],
+      "no": [
+        "Brandwatch",
+        "Sysomos",
+        "Social Animal"
+      ],
+      "unknown": []
+    },
+    "publishing_scheduling": {
+      "yes": [
+        "Sprinklr",
+        "Sprout Social",
+        "Hootsuite Insights"
+      ],
+      "limited": [],
+      "add-on": [],
+      "no": [
+        "Brandwatch",
+        "Talkwalker",
+        "Meltwater",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Social Animal",
+        "Microsoft Social Engagement"
+      ],
+      "unknown": []
+    },
+    "dashboards_analytics": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Social Animal",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "real_time_alerts": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "data_export": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    },
+    "api_integrations": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [],
+      "add-on": [],
+      "no": [],
+      "unknown": [
+        "Social Animal"
+      ]
+    },
+    "multi_user_workspaces": {
+      "yes": [
+        "Brandwatch",
+        "Talkwalker",
+        "Sprinklr",
+        "Meltwater",
+        "Sprout Social",
+        "Hootsuite Insights",
+        "Mention",
+        "Brand24",
+        "SentiOne",
+        "Sysomos",
+        "Microsoft Social Engagement"
+      ],
+      "limited": [
+        "Social Animal"
+      ],
+      "add-on": [],
+      "no": [],
+      "unknown": []
+    }
+  }
+}
