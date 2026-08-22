@@ -1037,5 +1037,32 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Documentation Steward correction, 2026-08-19.** Ten stories in this epic — 6.8, 6.14, 6.18, 6.19, 6.20, 6.21, 6.22, 6.23, 6.25, and 6.26 — each already carried a correct, real `**Built:**` field naming a real shipped commit (6.8: `social-listening-admin@6b7fc00`; 6.14: `@a27aa10`; 6.18: `@a97cf30`; 6.19: `@4f099a6`/core `@aa4f317`; 6.20: `@be1764d`/core `@e9d797f`; 6.21: `@21c30bf`; 6.22: `@8182706`; 6.23: `@535338f`; 6.25: `@6550716`; 6.26: `@03c37c9` — every hash confirmed directly against `docs/implementation-log.md`'s own matching entries), but each story's own `**Status:**` line still read "Ready," giving no hint of that from the fixed-shape header alone — the same class of drift `docs/user-stories/README.md`'s "Built convention" (added 2026-08-13) already names for Stories 5.18/6.7. For 6.23/6.25/6.26 specifically, the `**Built:**` field was placed *before* the `**Source:**/**Status:**` line rather than after it, the inverse of every other story's own ordering in this file — a likely reason this specific instance wasn't already caught by casual visual scanning. All ten Status lines now read "Built <date>," matching each story's own `**Built:**` field and the Log; no Acceptance Criteria text changed. (Story 6.8's own narrative context — a 2026-08-10 original build, `**Built:**` field date backfilled 2026-08-17 per the field's own forward-only, single-commit convention — is unaffected; only the Status word itself was stale.)
 
+---
+
+## Story 6.38 — Post Detail Reply Action, Composer Drawer, and Replies Tab
+
+**Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
+**Built:** not yet
+
+**As a** Tenant User or Tenant-Admin,
+**I want** to click "Reply" on a post, compose the reply in a drawer, and see it listed,
+**so that** I can engage with my own posts without leaving the SocialEngage admin UI.
+
+**Acceptance Criteria**
+
+1. `PostDetailPanel` shows a "Reply" button only when the post's `provider_id` is supported *and* the caller has an active Tier-3 credential for that provider. Otherwise the button is disabled with a tooltip explaining the missing credential.
+
+2. Clicking "Reply" opens a cascading `ReplyComposerDrawer` (same slide/push pattern as `EnrichmentEditDrawer`) with a text composer reusing `PolypostComposer`'s platform-aware text area and character counter. Media upload and AI assist are disabled for v1 replies.
+
+3. Submitting the reply calls `POST /v1/posts/:id/replies`. On `201 Created` the drawer closes, the reply is optimistically appended to a new "Replies" tab, and a success toast appears. On failure an error toast appears and the row is shown with status `failed`.
+
+4. A "Replies" tab in `PostDetailPanel` fetches `GET /v1/posts/:id/replies` and displays each reply's body, `sent`/`failed` badge, timestamp, and a link to the live reply (`externalUrl`) when `status === 'sent'`.
+
+5. The component handles loading, empty, and error states; empty state reads "No replies yet."
+
+6. Jest page/contract test asserts: button hidden for unsupported/unconnected providers, composer submits and updates the list, and failed replies display the error status.
+
+**Explicitly out of scope:** Media/attachment replies; editing or deleting sent replies; bulk reply; Instagram/LinkedIn-specific UI differences (use the generic composer for v1).
+
 
 

@@ -301,3 +301,32 @@
 
 **Explicitly out of scope:** Admin UI components (Story 6.31); batch enrichment endpoint (deferred).
 
+---
+
+## Story 3.14 — Outbound Reply Audit Table and `POST /v1/posts/:id/replies` API
+
+**Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
+**Built:** not yet
+
+**As a** Tenant User or Tenant-Admin,
+**I want** a tenant-scoped record of every reply attempt and a REST endpoint to create one against an ingested post,
+**so that** outbound engagement is auditable, retryable, and tied to the credential and user that performed it.
+
+**Acceptance Criteria**
+
+1. A new migration creates `outbound_activities` with columns: `id`, `tenant_id` (RLS predicate), `post_id`, `provider_id`, `user_id`, `credential_id`, `activity_type`, `body`, `status`, `external_id`, `external_url`, `error_code`, `created_at`, `sent_at`, `failed_at`. No DB-enforced FK into `social_posts` (partitioned) or `platform_credentials`; enforcement is app-layer, matching `post_watchlist_matches` precedent.
+
+2. `POST /v1/posts/:id/replies` is mounted under the `/v1` router, authenticated, and RLS-scoped. It validates the `post_id` exists for the tenant and that `body` is non-empty; returns `404 Not Found` for cross-tenant posts.
+
+3. The endpoint loads the caller's active Tier-3 `platform_credentials` for the post's `provider_id`. If none exists, the connector lacks `reply?()`, or the caller is not the credential owner, it returns `422 Unprocessable Entity` with code `REPLY_NOT_AVAILABLE`.
+
+4. On success the endpoint inserts an `outbound_activities` row with `status = 'sent'`, `external_id`, and `external_url`. On failure it inserts `status = 'failed'` with a normalized `error_code` and returns `502`/`504`/provider-appropriate status.
+
+5. `GET /v1/posts/:id/replies` returns the tenant-scoped list of `outbound_activities` for that post, ordered `created_at DESC`, with cursor pagination if the list is expected to exceed 50 rows.
+
+6. Outbound `reply()` calls consume a separate `RequestGate` key per `(tenantId, providerId, 'outbound')` so that write rate limits do not starve ingestion polls.
+
+7. Jest contract test asserts: successful reply creation, `404` for cross-tenant post, `422` for missing/unsupported credential, `429` handling when the gate is exhausted, and the returned row matches the persisted row.
+
+**Explicitly out of scope:** Connector-specific `reply()` implementations (Stories 2.26–2.27); admin UI (Story 6.38); editing/deleting sent replies.
+

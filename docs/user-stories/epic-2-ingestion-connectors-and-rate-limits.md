@@ -666,3 +666,67 @@
 
 **Explicitly out of scope:** Public client PKCE flow; admin UI connection management screens (handled in Story 6.35).
 
+---
+
+## Story 2.26 — Connector Reply Framework and Outbound Rate Gate
+
+**Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
+**Built:** not yet
+
+**As a** core backend engineer,
+**I want** an optional `reply?()` method on `SocialConnector` and an outbound execution path,
+**so that** connectors can implement reply behavior without forcing every existing connector to support it.
+
+**Acceptance Criteria**
+
+1. `SocialConnector` interface gains an optional method:
+
+   ```ts
+   reply?(
+     post: SocialPostSummary,
+     body: string,
+     credential: Credential
+   ): Promise<{ externalId: string; externalUrl: string }>
+   ```
+
+2. A new `outboundEngagementService` (or equivalent) in `social-listening-core` invokes the optional `reply()`, catches `ClassifiableError`, and maps results to the `outbound_activities` row shape. Connectors without `reply()` immediately fail with code `reply_not_supported`.
+
+3. The existing `errorClassification.ts` gains reply-specific codes (`missing_permission`, `post_not_found`, `reconnect_required`, `rate_limited`) without changing ingest error handling.
+
+4. The `RequestGate` is extended (or a sibling `outboundGate` is added) to track `outbound` calls separately per `(tenantId, providerId)`. Connectors may optionally expose `getOutboundRateLimitConfig?()`; if absent, `getRateLimitConfig()` is reused for the outbound gate as a conservative fallback.
+
+5. Jest contract test uses a stub `SocialConnector` that implements `reply()` returning a mock `externalId`/`externalUrl`, and a second stub without `reply()` to assert `reply_not_supported`.
+
+**Explicitly out of scope:** Facebook/Instagram/LinkedIn-specific reply logic; admin UI; `GET /v1/posts/:id/replies` (Story 3.14).
+
+---
+
+## Story 2.27 — Facebook Page Reply Implementation
+
+**Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
+**Built:** not yet
+
+**As a** Tenant User managing a connected Facebook Page,
+**I want** the `facebook` connector to implement `reply()`,
+**so that** I can post a comment on an ingested Facebook Page post from within SocialEngage.
+
+**Acceptance Criteria**
+
+1. `facebookConnector.ts` implements `reply()` using the stored long-lived Page access token. Before or during this story, the exact Meta Graph API permission required (likely `pages_manage_engagement`) is primary-source verified and added to the OAuth scope list; `facebook-connector/SKILL.md` and Story 6.23/6.27 UI copy are updated to reflect the final permission.
+
+2. `reply()` calls `POST /{post-id}/comments` with `message` and the Page access token, then maps the response to `externalId` and an `externalUrl` of the form `https://www.facebook.com/{post-id}/?comment_id={externalId}` (or equivalent verified permalink).
+
+3. Meta error codes are reclassified:
+   - `190`, `10` → `reconnect_required`
+   - Permission-denied / insufficient scope → `missing_permission`
+   - `4`, `17`, `32`, `80000` → `rate_limited`
+   - Invalid post id / `803` → `post_not_found`
+
+4. Existing Facebook Page credentials that predate the new scope return `missing_permission` cleanly, so the UI can prompt the user to reconnect.
+
+5. `pollFacebook.ts` and ingestion are unaffected; `reply()` is reachable only via the outbound engagement path.
+
+6. Jest contract test verifies the request body, token usage, and successful mapping. If the test Meta App does not hold the write scope, the Graph API call is HTTP-mocked and the test asserts the generated request shape and `externalUrl` construction.
+
+**Explicitly out of scope:** Instagram, LinkedIn, or any other platform reply; replies to public/third-party posts; media or attachment replies; automated scheduled replies.
+
