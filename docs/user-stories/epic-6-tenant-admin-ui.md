@@ -1015,8 +1015,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.37 — Post Feed and Post Detail Facebook Page & Matched Watchlist Attribution
 
-**Source:** ADR-0067 (Accepted 2026-08-20; amended 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Source:** ADR-0067 (Accepted 2026-08-20; amended 2026-08-22) · **Status:** Built 2026-08-22
+**Built:** 2026-08-22 — social-listening-admin@b40041f (core half: social-listening-core@b40041f)
 
 **As a** Tenant Administrator or Content Analyst,
 **I want** the post feed and detail drawer to show the hosting Facebook Page for a post and the watchlist that matched it,

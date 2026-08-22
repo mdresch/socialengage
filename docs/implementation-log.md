@@ -3058,6 +3058,26 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - Committed the ADR, contract, traceability, and alt-text preview card fixes.
 - Epic-6 contract suite green after the change.
 
+---
+
+## 2026-08-22 — Story 6.37 — social-listening-admin@b40041f
+
+- **Full commit:** `b40041fc87d2d6d2e8820e709375630a3918b325`
+- **Repo:** social-listening-admin (with social-listening-core support)
+- **Story / ADR:** 6.37 / ADR-0067
+- **Contracts:** social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md
+- **Files touched:** docs/adr/README.md, docs/user-stories/README.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts
+- **Epic-6 suite at merge:** PASS (38/38 suites, 512/512 tests)
+- **social-listening-core full suite at merge:** PASS (82/82 suites, 700/700 tests)
+
+**Delivered Story 6.37 / ADR-0067 — Post Feed and Post Detail Facebook Page & Matched Watchlist Attribution.**
+- Resolved the hosting Facebook Page in `postDisplay.ts` from connected Pages, explicit rawPayload fields, `externalId` prefix, and canonical URL.
+- Added `extractWatchlistId` and `flattenPost` watchlist fallback so posts show the matched watchlist name in feed and detail.
+- Wired `facebookPages` and `watchlists` props through `page.tsx`, `PostsFeedClient`, and `PostDetailPanel`.
+- Denormalized `watchlistId` and `discoveringWatchlistId` in `pollWikipedia.ts` for Wikipedia revisions.
+- Admin epic-6 and full social-listening-core contract suites green at merge.
+
 
 
 
