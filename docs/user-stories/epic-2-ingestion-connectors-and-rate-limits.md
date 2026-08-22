@@ -730,3 +730,163 @@
 
 **Explicitly out of scope:** Instagram, LinkedIn, or any other platform reply; replies to public/third-party posts; media or attachment replies; automated scheduled replies.
 
+---
+
+## Story 2.28 — Connector Publish Framework and Outbound Post Rate Gate
+
+**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Built:** not yet
+**Depends on:** Story 3.14 (base `outbound_activities` table)
+
+**As a** core backend engineer,
+**I want** an optional `publish?()` method on `SocialConnector` and a dedicated outbound post execution path,
+**so that** connectors can implement real post publishing without forcing every existing connector to support it.
+
+**Acceptance Criteria**
+
+1. `SocialConnector` interface gains an optional method:
+
+   ```ts
+   publish?(
+     tenantId: string,
+     userId: string,
+     payload: OutboundPostPayload,
+     credential: Credential
+   ): Promise<{ externalId: string; externalUrl: string }>
+   ```
+
+   where `OutboundPostPayload` contains `text`, `perPlatformOverrides`, `media`, `linkPreview`, `targetAssetId`, and `targetAssetType`.
+
+2. A new `outboundPublishService` (or an extension of `outboundEngagementService`) invokes the optional `publish()`, catches `ClassifiableError`, and maps results to the `outbound_activities` row shape. Connectors without `publish()` immediately fail with code `publish_not_supported`.
+
+3. `errorClassification.ts` gains post-specific codes (`missing_permission`, `target_asset_not_found`, `reconnect_required`, `rate_limited`, `media_not_supported`) without changing ingest/reply error handling.
+
+4. The `RequestGate` is extended (or a sibling `outboundPostGate` is added) to track `outbound_post` calls separately per `(tenantId, providerId)`. Connectors may optionally expose `getOutboundRateLimitConfig?()`; if absent, `getRateLimitConfig()` is reused for the post gate as a conservative fallback.
+
+5. Jest contract test uses a stub `SocialConnector` that implements `publish()` returning a mock `externalId`/`externalUrl`, and a second stub without `publish()` to assert `publish_not_supported`.
+
+**Explicitly out of scope:** Facebook/Instagram/LinkedIn-specific publish logic; admin UI; `GET /v1/outbound/posts`; `POST /v1/outbound/posts` endpoint (Story 3.15); scheduled dispatch processing; image/video media upload.
+
+---
+
+## Story 2.29 — Facebook Page Post Publishing
+
+**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Built:** not yet
+**Depends on:** Story 2.28 (connector publish framework), Story 6.23/6.27 (Facebook Page credential and enumeration)
+
+**As a** Tenant User managing a connected Facebook Page,
+**I want** the `facebook` connector to implement `publish()`,
+**so that** I can publish a new post to one of my connected Facebook Pages from within SocialEngage.
+
+**Acceptance Criteria**
+
+1. `facebookConnector.ts` implements `publish()`. Before or during this story, the exact Meta Graph API permission required for Page feed publishing (likely `pages_manage_posts`) is primary-source verified and added to the OAuth scope list; `facebook-connector/SKILL.md` and Story 6.23/6.27 UI copy are updated to reflect the final permission.
+2. `publish()` resolves the Page access token from the stored credential, calls `POST /{page-id}/feed` with `message`, and maps the returned post id to `externalId` and an `externalUrl` of the form `https://www.facebook.com/{page-id}/posts/{externalId}` (or equivalent verified permalink).
+3. Meta error codes are reclassified:
+   - `190`, `10` → `reconnect_required`
+   - Permission-denied / insufficient scope → `missing_permission`
+   - `4`, `17`, `32`, `80000` → `rate_limited`
+   - Invalid page id / `803` → `target_asset_not_found`
+4. Existing Facebook Page credentials that predate the new scope return `missing_permission` cleanly, so the UI can prompt the user to reconnect.
+5. `pollFacebook.ts` and ingestion are unaffected; `publish()` is reachable only via the outbound post path.
+6. Jest contract test verifies the request body, token usage, and successful mapping. If the test Meta App does not hold the write scope, the Graph API call is HTTP-mocked and the test asserts the generated request shape and `externalUrl` construction.
+
+**Explicitly out of scope:** Instagram or any other platform publish; publishing to third-party Pages; media or attachment posts; scheduled posts; editing or deleting a published post.
+
+---
+
+## Story 2.30 — LinkedIn Post Publishing
+
+**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Built:** not yet
+**Depends on:** Story 2.28 (connector publish framework), Story 2.25 (LinkedIn connector and token lifecycle)
+
+**As a** Tenant User with a connected LinkedIn profile or organization,
+**I want** the `linkedin` connector to implement `publish()`,
+**so that** I can publish a new post to my own LinkedIn profile or organization from within SocialEngage.
+
+**Acceptance Criteria**
+
+1. `linkedinConnector.ts` implements `publish()`. Before or during this story, the exact LinkedIn UGC Posts API and required scopes (`w_member_social` and/or `w_organization_social`) are primary-source verified; the existing scope-degradation logic is updated if the new scopes are not already requested.
+2. `publish()` calls `POST /v2/ugcPosts` (or the successor primary-source-verified endpoint) with the `target_asset_id` as the author URN and the outgoing `text` as commentary. It maps the returned `id` to `externalId` and to an `externalUrl` of the form `https://www.linkedin.com/feed/update/urn:li:share:{externalId}` (or equivalent verified permalink).
+3. LinkedIn/Rest.li error codes are reclassified:
+   - token/permission failures → `reconnect_required` or `missing_permission`
+   - `403` quota/rate limit → `rate_limited`
+   - invalid author URN → `target_asset_not_found`
+4. Existing LinkedIn credentials that predate the required scope return `missing_permission` cleanly, so the UI can prompt the user to reconnect.
+5. `pollLinkedIn.ts` and ingestion are unaffected; `publish()` is reachable only via the outbound post path.
+6. Jest contract test verifies the request body, token usage, and successful mapping. The live Graph API call is HTTP-mocked unless the test LinkedIn App holds the write scope.
+
+**Explicitly out of scope:** Instagram or any other platform publish; publishing to third-party profiles/organizations; media or attachment posts; scheduled posts; editing or deleting a published post; organization share targeting.
+
+---
+
+## Story 2.31 — Brave and Bing one-off research search helpers
+
+**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Built:** not yet
+**Depends on:** Story 2.21 (Brave Search active watchlist connector), Story 2.22 (Bing Search active watchlist connector)
+
+**As a** core backend engineer,
+**I want** internal one-off search helpers inside the Brave and Bing connectors,
+**so that** the composer deep research endpoint can run live web searches without re-implementing polling loops.
+
+**Acceptance Criteria**
+
+1. A new `searchForResearch(query, limit)` function is added inside the Brave Search and Bing Search connector code. It reuses the existing credential retrieval (`getLatestCredentialId`), query builder, and HTTP fetch machinery.
+
+2. It returns an array of search result objects with `title`, `url` (canonicalized), `snippet` (Markdown/normalized), and `provider` (`'brave-search'` or `'bing-search'`).
+
+3. It does not persist posts, touch `post_watchlist_matches`, or emit `SocialPostIngestedEvent`. It is a read-only, ephemeral research helper.
+
+4. It consumes a tenant-scoped `RequestGate` key per `(tenantId, providerId, 'research')`, distinct from the `poll` gate, so research calls do not starve ingestion.
+
+5. It handles the same error classifications as the polling connector (`http_401`, `http_403`, `rate_limited`, `http_5xx`) and maps them to `ClassifiableError` for the research endpoint to surface.
+
+6. Jest contract test asserts the request shape, the URL canonicalization, the `provider` field, and that `social_posts` and `post_watchlist_matches` are not modified.
+
+**Explicitly out of scope:** A generic `SearchProvider` interface; real-time streaming; persistence of search results; media or image search.
+
+---
+
+## Story 2.32 — Azure OpenAI `research?()` capability
+
+**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Built:** not yet
+**Depends on:** Story 2.9 (Azure OpenAI as second `AIProviderConnector`)
+
+**As a** core backend engineer,
+**I want** an optional `research?()` method on `AIProviderConnector` that Azure OpenAI implements,
+**so that** the composer deep research endpoint can extract key phrases and synthesize a context summary.
+
+**Acceptance Criteria**
+
+1. `AIProviderConnector` interface gains an optional method:
+
+   ```ts
+   research?(
+     text: string,
+     searchSnippets: Array<{ title: string; url: string; snippet: string; provider: string }>,
+     options: { maxKeyPhrases: number; maxRelatedTopics: number; maxSearchQueries: number }
+   ): Promise<{
+     keyPhrases: string[];
+     relatedTopics: string[];
+     searchQueries: string[];
+     contextSummary: string;
+     comparison: string;
+   }>
+   ```
+
+2. `azureOpenAiConnector` implements `research()` using a single `chat/completions` structured-output call (JSON schema). The implementation may split the work into two calls in v1 — one for extraction/query generation and one for final synthesis — but the contract test only asserts the final shape.
+
+3. `azureAiLanguageConnector` does not implement `research()` (leaves it undefined), because the task requires generative synthesis.
+
+4. The prompt instructs the model to: (a) extract `keyPhrases` and `relatedTopics` from the input, (b) generate `searchQueries` for the search helpers, and (c) given the search result snippets, produce a `contextSummary` of the public conversation and a `comparison` to the user's original post.
+
+5. The call uses the tenant's own Azure OpenAI credential (endpoint, key, deployment) and is gated by the `isConnectorActive(tenantId, 'azure-openai', 'tenant')` check already in `enrichPost.ts`.
+
+6. Jest contract test asserts the shape and that a tenant without a connected Azure OpenAI credential gets `undefined` from `research()` (same `ClassifiableError` path as `analyze()`).
+
+**Explicitly out of scope:** Streaming research output; multi-turn conversation; other AI providers; media or image analysis.
+

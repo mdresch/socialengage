@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-22 | 01:13 | — | — | Documentation | — | docs: capture v1.5/v2 feature roadmap with ADRs 0077-0117 and user stories (658b392) |
+| 2026-08-22 | 18:47 | — | — | Review | — | Merge origin/main and keep local review tracking copies (298411d) |
+| 2026-08-22 | 18:16 | — | — | Review | — | docs: preserve local management and steward review tracking (c9b06b4) |
 | 2026-08-21 | 10:19 | — | — | Documentation | — | docs: sync tracking records (4af9dda) |
 | 2026-08-21 | 10:19 | — | — | Documentation | — | fix(core): improve LinkedIn credential parsing, profile fetching, and version handling (e31fe98) |
 | 2026-08-21 | 09:40 | — | — | Documentation | — | docs: sync tracking records (3f9024c) |

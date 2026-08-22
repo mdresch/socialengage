@@ -330,3 +330,91 @@
 
 **Explicitly out of scope:** Connector-specific `reply()` implementations (Stories 2.26–2.27); admin UI (Story 6.38); editing/deleting sent replies.
 
+---
+
+## Story 3.15 — Outbound Post Publishing Audit Table and `POST /v1/outbound/posts` API
+
+**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Built:** not yet
+**Depends on:** Story 3.14 (base `outbound_activities` table and `POST /v1/posts/:id/replies`), Story 2.28 (connector `publish?()` framework)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** a tenant-scoped record of every outbound post attempt and a REST endpoint to dispatch new posts to my connected platform assets,
+**so that** the Polypost Composer's dispatch becomes real, auditable, and retryable.
+
+**Acceptance Criteria**
+
+1. A migration adds the following columns to `outbound_activities` (or creates them in the same migration if it runs alongside Story 3.14): `target_asset_id TEXT`, `target_asset_type TEXT`, `payload JSONB`, `scheduled_for TIMESTAMPTZ`, `cancelled_at TIMESTAMPTZ`.
+2. The `activity_type` check constraint (or type) is widened to include `'post'`; the `status` constraint is widened to include `'cancelled'`.
+3. `POST /v1/outbound/posts` is mounted under the `/v1` router, authenticated, and RLS-scoped. It accepts a JSON body: `text` (non-empty, per-platform limits checked), `perPlatformOverrides` (optional partial record), `media` (optional array of media refs), `linkPreview` (optional), `targets` (array of `{ providerId, targetAssetId }`), and `scheduledFor` (optional ISO 8601 timestamp).
+4. For each target, the endpoint loads the caller's active Tier-3 `platform_credentials` for `provider_id`. If `SocialConnector.publish?()` is missing, the credential is not active, the caller does not own the credential, or `target_asset_id` is not in the caller's enumerated asset list, the endpoint returns `422 Unprocessable Entity` with code `PUBLISH_NOT_AVAILABLE`.
+5. If `scheduledFor` is present, the endpoint inserts an `outbound_activities` row per target with `status = 'pending'`, `activity_type = 'post'`, `scheduled_for` set, and returns `201 Created` with the created rows.
+6. If `scheduledFor` is absent, the endpoint calls `outboundPublishService.publish()` for each target, catches `ClassifiableError`, and updates each row to `sent` (with `external_id`, `external_url`) or `failed` (with `error_code`). The HTTP response is `201 Created` when every target succeeds; `207 Multi-Status` (or provider-appropriate status) is used for partial failures, with the per-target results in the response body.
+7. `GET /v1/outbound/posts` returns the tenant-scoped list of `outbound_activities` where `activity_type = 'post'`, ordered `created_at DESC`, filterable by `status` and `providerId`, with cursor pagination if the list is expected to exceed 50 rows.
+8. `DELETE /v1/outbound/posts/:id` is allowed only when the row is `status = 'pending'`, the `scheduled_for` has not yet passed, and the row belongs to the caller's tenant. It sets `status = 'cancelled'` and `cancelled_at = NOW()`; otherwise it returns `409 Conflict`.
+9. Outbound `publish()` calls consume a separate `RequestGate` key per `(tenantId, providerId, 'outbound_post')` so that post writes do not starve ingestion polls.
+10. Jest contract test asserts: successful immediate dispatch, scheduled dispatch, `404` for cross-tenant target, `422` for missing/unsupported credential, `429` handling when the gate is exhausted, and `DELETE` cancellation.
+
+**Explicitly out of scope:** Connector-specific `publish()` implementations (Stories 2.29–2.30); image/video media upload (v1 is text/link-card only); the background scheduler that will eventually process `scheduled_for` rows; admin UI (Story 6.39); editing/deleting already-sent posts.
+
+---
+
+## Story 3.16 — Tenant-facing workspace and matched-posts export endpoints
+
+**Source:** ADR-0074 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0074 acceptance
+**Built:** not yet
+
+**As a** Tenant-Admin or tenant user,
+**I want** to download a full workspace JSON archive and a CSV of matched posts on demand from `social-listening-core`,
+**so that** I can back up or analyze my tenant's data without going through the deletion/offboarding flow.
+
+**Acceptance Criteria**
+
+1. `GET /v1/tenants/me/export/workspace` is mounted under the `/v1` router, authenticated, and returns a JSON archive of the caller's own tenant. It is restricted to `tenant_admin` resolved identities; `tenant_user` receives `403 Forbidden`.
+
+2. The workspace JSON includes: tenant metadata (`name`, `domain`, `licenseSeatCount`, `activeSeatCount`, `status`, `createdAt`), tenant users, watchlists (all users' watchlists — requires the same `getAdminPool()` exception as `exportTenantData()`), connector activations, `platform_credentials` metadata (no secrets or encrypted envelopes), `social_posts` with resolved archived `rawPayload`, `authors`, and `ingestion_runs`. The exact column set is contract-tested and versioned.
+
+3. `GET /v1/posts` supports `?format=csv` (or a sibling `GET /v1/posts/export.csv` route), authenticated, available to both `tenant_admin` and `tenant_user`. It accepts the same filter/query parameters as the existing `GET /v1/posts` JSON endpoint (search, provider, author, watchlistId, date range, cursor) and returns a flat CSV with a header row and one row per post.
+
+4. The CSV columns include at minimum: `id`, `published_at`, `provider`, `author_name`, `author_url`, `title`, `body_markdown`, `url`, `sentiment`, `keywords`, `watchlist_ids`. UTF-8 with BOM, RFC 4180-ish quoting.
+
+5. Both exports are synchronous, bounded, and fail safely: workspace JSON has a response-size cap; posts CSV has a row cap (e.g. 10,000). Exceeding the cap returns `413 Payload Too Large` or `422 Request Entity Too Large` with code `EXPORT_TOO_LARGE`, never an unbounded stream.
+
+6. No `platform_admin` identity may call either export endpoint — the zero-tenant-content boundary (ADR-0030 §2) is preserved.
+
+7. Jest contract tests assert: workspace export returns the correct tenant, includes expected tables, excludes credential secrets, rejects `tenant_user`; posts CSV returns the same rows as the equivalent JSON request, respects filters, and enforces the row cap.
+
+**Explicitly out of scope:** Async background export with Azure Blob Storage; on-demand full workspace CSV; deleting/altering data through the export endpoint; adding the dependency `lucide-react` (a separate UI decision).
+
+---
+
+## Story 3.17 — Composer deep research REST endpoint
+
+**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Built:** not yet
+**Depends on:** Story 2.31 (Brave/Bing one-off research search helpers), Story 2.32 (Azure OpenAI `research?()` capability), Story 5.10/5.11 (tenant auth and `GET /v1/me`)
+
+**As a** tenant user,
+**I want** a `POST /v1/composer/research` endpoint in `social-listening-core`,
+**so that** I can submit my draft post text and receive a deep-research summary I can compare to my own message.
+
+**Acceptance Criteria**
+
+1. `POST /v1/composer/research` is mounted under the `/v1` router, authenticated, and RLS-scoped. It accepts `{ text: string, targetPlatforms?: string[], maxSearchResultsPerQuery?: number }` and returns the `ComposerResearchResult` shape from ADR-0076 §1.
+
+2. The endpoint extracts `keyPhrases`, `relatedTopics`, and `searchQueries` by calling the active `AIProviderConnector.research?()` for the tenant. If no capable AI provider is connected and active, it returns `422 AI_PROVIDER_NOT_CAPABLE`.
+
+3. For each generated `searchQueries` entry, the endpoint calls the tenant's active Brave/Bing search helper(s) (Story 2.31) and collects up to `maxSearchResultsPerQuery` results per query (default 5, hard cap 10). If no search provider is connected and active, it returns `422 SEARCH_PROVIDER_UNAVAILABLE`.
+
+4. The endpoint passes the original text, key phrases, related topics, and collected search result snippets back to `AIProviderConnector.research?()` (or the same connector's second research stage) to produce `contextSummary` and `comparison`.
+
+5. The endpoint enforces caps: max 10 key phrases, max 5 search queries, and max 10 search results per query. Exceeding these caps returns `422 RESEARCH_TOO_LARGE`.
+
+6. The endpoint is gated to `tenant_admin` and `tenant_user` resolved identities; `platform_admin` receives `403` (ADR-0030 §2).
+
+7. Outbound `research()` calls consume a separate `RequestGate` key per `(tenantId, providerId, 'research')`.
+
+8. Jest contract tests assert: a valid request returns all `ComposerResearchResult` fields; missing AI provider returns `422` with `AI_PROVIDER_NOT_CAPABLE`; missing search provider returns `422` with `SEARCH_PROVIDER_UNAVAILABLE`; `platform_admin` receives `403`; caps are enforced; no `social_posts` or `post_watchlist_matches` rows are created.
+
+**Explicitly out of scope:** Caching results; async background jobs; media or image analysis; persistence of research results; scheduled/repeated research.
+

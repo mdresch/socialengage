@@ -1064,5 +1064,90 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Explicitly out of scope:** Media/attachment replies; editing or deleting sent replies; bulk reply; Instagram/LinkedIn-specific UI differences (use the generic composer for v1).
 
+---
+
+## Story 6.39 — Polypost Composer Real Publish Flow
+
+**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Built:** not yet
+**Depends on:** Story 3.15 (`POST /v1/outbound/posts` endpoint), Story 2.29 (Facebook Page `publish()`)
+
+**As a** Tenant User or Tenant-Admin,
+**I want** the Polypost Composer's Publish button to create real outbound posts on my selected Facebook Pages instead of simulating,
+**so that** the posts I author in the composer actually go live on the platform.
+
+**Acceptance Criteria**
+
+1. `src/lib/core-client.ts` gains `publishPost(payload): Promise<{ rows: OutboundActivity[]; status: number }>` calling `POST /v1/outbound/posts`, and a same-origin proxy `src/app/api/outbound/posts/route.ts` is added to attach the session and forward to core.
+2. `PolypostComposer.tsx` is updated: the `PublishTargetsDialog` collects selected Facebook Page `targetAssetId`s and the `handleConfirmPublish` function calls `publishPost()` with the composer state (text, overrides, selected Pages, optional link preview). On `201`/`207` the dialog closes and a per-Page status toast/list is shown; on `422`/`429`/`5xx` a per-Page error toast is shown.
+3. Non-Facebook selected platforms (LinkedIn, etc.) are rendered in the `PublishTargetsDialog` as disabled with an explanatory note until their connector `publish()` is implemented (Story 2.30 and later).
+4. The success message lists the actual `external_url` for each successfully published Page, or the normalized `error_code` for each failed one.
+5. The composer still validates platform selection and content before opening the dialog, and `handleOpenPublishDialog` now also fails early if no active Facebook Pages are available.
+6. Jest contract test asserts that `PolypostComposer` renders the platform-aware publish button and that the `PublishTargetsDialog` is wired to a `publishPost`-shaped fetch, either by source inspection or a server-renderable mock that does not call real networks.
+
+**Explicitly out of scope:** Scheduled posts (the UI can still capture a `scheduleDate` but the API uses it only if the backend scheduler exists); image media upload in published posts; outbound post history screen; editing/deleting sent posts; LinkedIn publish in the composer (Story 2.30 and a follow-up UI story).
+
+---
+
+## Story 6.40 — Tenant settings screen: styled workspace profile, export actions, and offboarding link
+
+**Source:** ADR-0074 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0074 acceptance and backend endpoints (Story 3.16)
+**Built:** not yet
+**Depends on:** Story 3.16 (`/v1/tenants/me/export/workspace` and posts CSV), existing `GET /v1/tenants/me` (Story 1.8), existing `/tenant/settings/delete` (Story 6.13)
+
+**As a** Tenant-Admin or tenant user,
+**I want** the Tenant Settings page to present workspace metadata in styled cards and offer real export/offboarding actions,
+**so that** the Google AI Studio design is implemented using only real `social-listening-core` data.
+
+**Acceptance Criteria**
+
+1. The `/tenant/settings` page renders the tenant's `name`, `domain`, `activeSeatCount`/`licenseSeatCount` (as "N of M active"), and `createdAt` inside a styled "Workspace Configuration" card, using only `getMyTenant()` data. No mock/fallback values are used.
+
+2. The page is gated only on the ordinary `'tenant'` shell (Story 6.2) and remains visible to both `tenant_admin` and `tenant_user`. The offboarding/decommission section is rendered only when `session.identity.role === 'tenant_admin'`, linking to the existing `/tenant/settings/delete` page (Story 6.13) — a role-gated affordance, not a role gate on the page itself.
+
+3. Two export buttons are offered: "Export Full Workspace (JSON)" and "Export Matched Posts (CSV)". They initiate downloads from the real `social-listening-core` endpoints built by Story 3.16. They are disabled with an explanatory state (not hidden) when the endpoints are unreachable or the caller lacks `tenant_admin` role for the full-workspace export.
+
+4. The export buttons are not implemented through any client-side `useApp()` context or `exportTenantData()` helper; they are real links/proxy handlers via `core-client.ts` (ADR-0036 §2), using the session bearer token server-side or a same-origin proxy.
+
+5. The `createdAt` date is formatted with `toLocaleDateString()`; `domain` renders as plain text, with a fallback to "—" when null.
+
+6. Jest contract test asserts: the page renders all workspace metadata; `tenant_admin` sessions see the offboarding card and workspace export button; `tenant_user` sessions see the settings page but are not offered the full-workspace export or offboarding link; no `<form>`/`<input>` edit affordance exists.
+
+**Explicitly out of scope:** Editing tenant metadata; client-side `lucide-react` icons unless the dependency is added separately; workspace export for `tenant_user`; any behavior that does not map to a real `social-listening-core` endpoint.
+
+---
+
+## Story 6.41 — Composer Deep Research panel UI
+
+**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance and Story 3.17
+**Built:** not yet
+**Depends on:** Story 6.36 (Polypost Composer), Story 3.17 (`POST /v1/composer/research`)
+
+**As a** tenant user,
+**I want** a "Deep Research" button and panel inside the Polypost Composer,
+**so that** I can compare my draft post against the public conversation surfaced by the deep research agent.
+
+**Acceptance Criteria**
+
+1. `PolypostComposer.tsx` gains a new toolbar button labeled **"Deep Research"** (to the right of the existing AI assist and document-import controls). It is disabled when the draft text is empty or too short (< 10 non-whitespace characters).
+
+2. A new `DeepResearchPanel.tsx` renders below the editor text area when the user triggers research. It displays:
+   - a collapsible list of `keyPhrases` and `relatedTopics`,
+   - the `contextSummary` as formatted Markdown,
+   - the `comparison` as formatted Markdown,
+   - an expandable `sources` list with `title`, `snippet`, and `url` (external link).
+
+3. A new same-origin proxy route `POST /api/composer/research` attaches the session bearer token and forwards the request to `POST /v1/composer/research` in `social-listening-core`.
+
+4. The panel handles the three main states: `loading` (with a spinner and cancel timeout), `error` (422 `AI_PROVIDER_NOT_CAPABLE`, 422 `SEARCH_PROVIDER_UNAVAILABLE`, network/5xx, with actionable helper text), and `success` (rendering the result).
+
+5. The button is disabled with a tooltip for `platform_admin` sessions, preserving the zero-tenant-content boundary. The composer page itself remains visible to all roles.
+
+6. The research result is not persisted to `localStorage` draft state. It is ephemeral and disappears when the user closes the panel or refreshes the page.
+
+7. Jest contract test asserts: the "Deep Research" button is present in `PolypostComposer`; `DeepResearchPanel` renders all `ComposerResearchResult` fields when given a mock result; the proxy route is wired to `POST /v1/composer/research`; and the component tree does not call `fetch` during synchronous render.
+
+**Explicitly out of scope:** Media analysis; real-time research updates; research history/permalink; client-side `lucide-react` icons unless the dependency is added separately.
+
 
 
