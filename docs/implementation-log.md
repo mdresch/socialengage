@@ -3041,6 +3041,24 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - Updated main post feed list (`PostsFeedClient.tsx`) to show up to 3 entity chips and 3 key phrases.
 - Added custom CSS styles for `.an-drawer-post-author`, `.an-drawer-post-chips`, `.an-drawer-chip`, `.an-drawer-chip-entity`, and `.an-drawer-chip-phrase` in `globals.css`.
 
+---
+
+## 2026-08-22 — Story 6.36 — social-listening-admin@f459114
+
+- **Full commit:** `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.36 / ADR-0072
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts
+- **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
+- **Files touched:** docs/adr/0072-cross-platform-polypost-composer-and-multi-network-preview-engine.md, docs/adr/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts, social-listening-admin/src/components/composer/previews/InstagramPreviewCard.tsx, social-listening-admin/src/components/composer/previews/LinkedInPreviewCard.tsx
+- **Epic-6 suite at merge:** PASS (37/37 suites, 503/503 tests)
+
+**Delivered Story 6.36 / ADR-0072 — Cross-Platform Polypost Composer and Multi-Network Preview Engine.**
+- Finalized the contract test and component SKILL.md for the Polypost composer.
+- Committed the ADR, contract, traceability, and alt-text preview card fixes.
+- Epic-6 contract suite green after the change.
+
+
 
 
 

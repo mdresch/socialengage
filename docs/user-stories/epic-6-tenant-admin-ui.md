@@ -970,8 +970,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.36 — Cross-Platform Polypost Composer & Multi-Network Preview Engine
 
-**Source:** ADR-0072 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Source:** ADR-0072 (Accepted 2026-08-22) · **Status:** Built 2026-08-22
+**Built:** 2026-08-22 — social-listening-admin@f459114
 **Depends on:** Story 6.2 (Role-gated routing shell), Story 6.11 (Post feed)
 
 **As a** Tenant Administrator or Content Marketer,
