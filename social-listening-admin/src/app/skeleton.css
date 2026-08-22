@@ -1,0 +1,37 @@
+/* =========================================================================
+   Skeleton / loading placeholders
+   Used by loading.tsx fallbacks so the requested page appears instantly
+   while the real data streams in behind React Suspense.
+   ========================================================================= */
+
+.skeleton {
+  display: block;
+  background: var(--color-surface-page);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}

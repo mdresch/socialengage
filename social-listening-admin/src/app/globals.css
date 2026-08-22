@@ -6484,12 +6484,6 @@ button:disabled {
   gap: var(--space-3);
 }
 
-@media (min-width: 1400px) {
-  .rails-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 .preview-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

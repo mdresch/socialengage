@@ -10,7 +10,9 @@ import { parseDocumentFile } from './lib/documentImport';
 import { saveDraft, saveAutoSave, getSavedDrafts, type SavedDraft } from './lib/draftStorage';
 import { DraftHistoryDrawer } from './DraftHistoryDrawer';
 import { CardLinkPreview } from './CardLinkPreview';
+import { PublishTargetsDialog } from './PublishTargetsDialog';
 import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
+import type { FacebookConnectedPageRow } from '@/lib/core-client';
 
 interface PolypostComposerProps {
   initialText?: string;
@@ -42,6 +44,7 @@ export function PolypostComposer({
   const [scheduleDate, setScheduleDate] = useState('');
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
 
   // Drafts & Link Preview states
   const [isDraftsOpen, setIsDraftsOpen] = useState(false);
@@ -365,8 +368,7 @@ export function PolypostComposer({
     updateCurrentText(currentText ? `${currentText} ${formatted}` : formatted);
   };
 
-  // Simulated Publish
-  const handlePublish = async () => {
+  const handleOpenPublishDialog = () => {
     if (selectedPlatforms.length === 0) {
       setPublishStatus({ type: 'error', message: 'Please select at least one platform.' });
       return;
@@ -375,18 +377,37 @@ export function PolypostComposer({
       setPublishStatus({ type: 'error', message: 'Please enter content or attach media.' });
       return;
     }
+    setShowPublishDialog(true);
+  };
 
+  // Simulated Publish
+  const handlePublish = async (selectedPages: FacebookConnectedPageRow[]) => {
     setIsPublishing(true);
     setPublishStatus(null);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
 
+      const facebookPageNames = selectedPages.map((p) => p.pageName);
+      const targetNames = selectedPlatforms
+        .filter((p) => p !== 'facebook' || facebookPageNames.length > 0)
+        .map((p) =>
+          p === 'facebook' && facebookPageNames.length > 0
+            ? `${PLATFORM_CONFIGS[p].name} (${facebookPageNames.join(', ')})`
+            : PLATFORM_CONFIGS[p].name
+        );
+
+      if (targetNames.length === 0) {
+        setPublishStatus({
+          type: 'error',
+          message: 'Please select at least one active Facebook Page or a non-Facebook platform.',
+        });
+        return;
+      }
+
       setPublishStatus({
         type: 'success',
-        message: `Successfully dispatched post to ${selectedPlatforms
-          .map((p) => PLATFORM_CONFIGS[p].name)
-          .join(', ')}!`,
+        message: `Successfully dispatched post to ${targetNames.join(', ')}!`,
       });
 
       if (onPublishSuccess) {
@@ -397,6 +418,11 @@ export function PolypostComposer({
     } finally {
       setIsPublishing(false);
     }
+  };
+
+  const handleConfirmPublish = async (selectedPages: FacebookConnectedPageRow[]) => {
+    await handlePublish(selectedPages);
+    setShowPublishDialog(false);
   };
 
   const popularEmojis = ['🔥', '🚀', '💡', '📊', '✨', '📈', '💬', '🎯', '👇', '👍', '👏', '🎉', '🧠', '🛡️', '⚡', '🌐'];
@@ -969,7 +995,7 @@ export function PolypostComposer({
             <button
               type="button"
               disabled={isPublishing}
-              onClick={handlePublish}
+              onClick={handleOpenPublishDialog}
               className="composer-btn-primary"
             >
               {isPublishing ? (
@@ -977,7 +1003,7 @@ export function PolypostComposer({
               ) : (
                 <>
                   <span>🚀</span>
-                  <span>{scheduleDate ? 'Schedule Publication' : 'Publish to All Channels'}</span>
+                  <span>{scheduleDate ? 'Schedule Publication' : 'Publish to Selected'}</span>
                 </>
               )}
             </button>
@@ -1000,6 +1026,15 @@ export function PolypostComposer({
         isOpen={isDraftsOpen}
         onClose={() => setIsDraftsOpen(false)}
         onSelectDraft={handleSelectDraft}
+      />
+
+      {/* Publish Target Pages Dialog */}
+      <PublishTargetsDialog
+        isOpen={showPublishDialog}
+        onClose={() => setShowPublishDialog(false)}
+        selectedPlatforms={selectedPlatforms}
+        onConfirm={handleConfirmPublish}
+        isPublishing={isPublishing}
       />
     </div>
   );

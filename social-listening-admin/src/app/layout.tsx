@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import './skeleton.css';
 
 const inter = Inter({
   subsets: ['latin'],
