@@ -2517,3 +2517,20 @@
 - **Files touched:** docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0075-outbound-social-post-publishing.md, docs/adr/0076-composer-deep-research-agent.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-22 — 6a8b69e — feat(admin): wire Polypost Composer to real publish target dialog and loading states
+
+- **Full commit:** `6a8b69e31f7caee97c6999bee8bc193013c2c91f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/layout.tsx, social-listening-admin/src/app/loading.tsx, social-listening-admin/src/app/page.module.css, social-listening-admin/src/app/platform-admin/loading.tsx, social-listening-admin/src/app/skeleton.css, social-listening-admin/src/app/tenant/loading.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/components/ui/Skeleton.tsx, social-listening-admin/src/components/ui/index.ts
+- **Status:** Pending review
+
+## 2026-08-22 — 5c1e521 — devin: add research skills for feature design and comparison
+
+- **Full commit:** `5c1e521e0b293a06fe78bc06843a81b9fd24438d`
+- **Files touched:** .devin/skills/competitor-query/SKILL.md, .devin/skills/deep-feature-research/SKILL.md, .devin/skills/product-comparison/SKILL.md
+- **Status:** Pending review
+
+## 2026-08-23 — Session note — roadmap brainstorming and ADR expansion
+
+- **Session:** feature-design and ADR drafting pass (no single commit; see `658b392` for the roadmap documentation batch and `5c1e521` for the supporting `.devin` research skills).
+- **Note for review:** This session intentionally expanded the ADR count far beyond the prior `0059` ceiling through a focused brainstorm of the full v1.5/v2 feature set. The volume of new ADRs (`0077–0117`, 41 records) and supporting user stories (`Epics 9–13`) was a deliberate investment: the clarity, traceability, and implementation-ready backlog produced is judged to be far more valuable than a hard limit on ADR count. No code or contracts were changed; both `social-listening-core` and `social-listening-admin` contract suites remain green (1.10 timeout isolated to full-suite environmental contention; passes in isolation).
+
