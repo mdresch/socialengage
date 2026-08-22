@@ -100,11 +100,26 @@ export async function ingestWikipediaRevisions(
     const enrichmentText = [revision.title, bodyMarkdown].filter(Boolean).join('. ');
     const enrichment = await enrichPost(tenantId, enrichmentText);
 
+    const effectiveWatchlistId =
+      discoveringWatchlistId ||
+      watchlists.find(
+        (w) =>
+          w.platformIds.includes(WIKIPEDIA_PROVIDER_ID) &&
+          (w.terms || []).some((t) => revision.title.toLowerCase().includes(t.toLowerCase()))
+      )?.id ||
+      watchlists.find((w) => w.platformIds.includes(WIKIPEDIA_PROVIDER_ID))?.id;
+
     const inserted = await insertSocialPost({
       tenantId,
       authorId: author.id,
       acquisitionId: runId,
-      rawPayload: { providerId: WIKIPEDIA_PROVIDER_ID, externalId: normalized.externalId, discoveringWatchlistId, ...revision },
+      rawPayload: {
+        providerId: WIKIPEDIA_PROVIDER_ID,
+        externalId: normalized.externalId,
+        discoveringWatchlistId: effectiveWatchlistId,
+        watchlistId: effectiveWatchlistId,
+        ...revision,
+      },
       publishedAt: normalized.publishedAt,
       enrichment: enrichment as unknown as Record<string, unknown> | undefined,
       bodyMarkdown,
@@ -118,7 +133,7 @@ export async function ingestWikipediaRevisions(
       text: enrichmentText,
       authorExternalId: normalized.authorExternalId,
       publishedAt: normalized.publishedAt,
-      discoveringWatchlistId,
+      discoveringWatchlistId: effectiveWatchlistId,
     });
 
     postsIngested += 1;

@@ -40,12 +40,16 @@ export function extractUrl(rawPayload: unknown): string | null {
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    if (typeof p.author === 'string') return p.author;
-    if (typeof p.authorName === 'string') return p.authorName;
+    if (typeof p.author === 'string' && p.author !== 'Facebook Page') return p.author;
+    if (typeof p.authorName === 'string' && p.authorName !== 'Facebook Page') return p.authorName;
+    if (p.from && typeof p.from === 'object') {
+      const from = p.from as Record<string, unknown>;
+      if (typeof from.name === 'string' && from.name !== 'Facebook Page') return from.name;
+    }
     if (typeof p.memberName === 'string') return p.memberName;
     if (typeof p.username === 'string') return p.username;
     if (typeof p.issuer === 'string') return p.issuer;
-    if (typeof p.pageName === 'string') return p.pageName;
+    if (typeof p.pageName === 'string' && p.pageName !== 'Facebook Page') return p.pageName;
     if (p.source && typeof p.source === 'object') {
       const src = p.source as Record<string, unknown>;
       if (typeof src.name === 'string') return src.name;
@@ -238,22 +242,84 @@ export interface FacebookPageContext {
   isPageAuthor: boolean;
 }
 
+function extractFacebookPageFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes('facebook.com')) return null;
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length > 0) {
+      const first = parts[0];
+      const excluded = ['posts', 'permalink.php', 'photo.php', 'story.php', 'groups', 'watch', 'events', 'media', 'sharer', 'dialog'];
+      if (!excluded.includes(first) && !first.startsWith('profile.php')) {
+        if (first === 'pages' && parts.length > 1) {
+          return parts[1] !== 'category' ? decodeURIComponent(parts[1]) : (parts[2] ? decodeURIComponent(parts[2]) : null);
+        }
+        return decodeURIComponent(first);
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 /**
  * Story 6.33 (ADR-0067) — extracts Facebook Page context and detects
  * whether post author is distinct from the hosting Page entity.
  */
-export function extractFacebookPageContext(rawPayload: unknown): FacebookPageContext | null {
+export function extractFacebookPageContext(
+  rawPayload: unknown,
+  facebookPages?: { pageId: string; pageName: string }[]
+): FacebookPageContext | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    const pageId = typeof p.pageId === 'string' ? p.pageId : null;
-    const pageName = typeof p.pageName === 'string' ? p.pageName : null;
+    const page = p.page && typeof p.page === 'object' ? (p.page as Record<string, unknown>) : null;
+
+    // Parse pageId from post ID (e.g. "123456789_987654321") or externalId ("facebook:123456789_987654321")
+    const idStr = typeof p.externalId === 'string' ? p.externalId.replace(/^facebook:/, '') : (typeof p.id === 'string' ? p.id : '');
+    const idParts = idStr.split('_');
+    const extractedPageIdFromPostId = idParts.length >= 2 && /^\d+$/.test(idParts[0]) ? idParts[0] : null;
+
+    const pageId =
+      typeof p.pageId === 'string'
+        ? p.pageId
+        : typeof p.page_id === 'string'
+        ? p.page_id
+        : page && typeof page.id === 'string'
+        ? (page.id as string)
+        : extractedPageIdFromPostId;
+
+    const matchedFbPage = facebookPages && pageId ? facebookPages.find((fp) => fp.pageId === pageId) : undefined;
+    const singleFbPage = facebookPages && facebookPages.length === 1 ? facebookPages[0] : undefined;
+
+    const rawPageName =
+      typeof p.pageName === 'string' && p.pageName !== 'Facebook Page' && p.pageName.trim().length > 0
+        ? p.pageName
+        : typeof p.page_name === 'string' && p.page_name !== 'Facebook Page' && p.page_name.trim().length > 0
+        ? p.page_name
+        : page && typeof page.name === 'string' && page.name !== 'Facebook Page'
+        ? (page.name as string)
+        : null;
+
+    const urlPageName = extractFacebookPageFromUrl(extractUrl(rawPayload));
     const author = extractAuthor(rawPayload);
-    if (pageId || pageName) {
+    const isFacebook = p.providerId === 'facebook' || p.provider === 'facebook' || pageId !== null || rawPageName !== null;
+
+    if (pageId || rawPageName || isFacebook) {
+      const resolvedPageName =
+        matchedFbPage?.pageName ||
+        rawPageName ||
+        singleFbPage?.pageName ||
+        urlPageName ||
+        (isFacebook && author && author !== 'Facebook Page' ? author : null) ||
+        (pageId ? `Facebook Page (${pageId})` : 'Facebook Page');
+
       return {
-        pageId,
-        pageName,
+        pageId: pageId || matchedFbPage?.pageId || singleFbPage?.pageId || null,
+        pageName: resolvedPageName,
         author,
-        isPageAuthor: author === pageName || !author,
+        isPageAuthor: author === resolvedPageName || !author,
       };
     }
   }
@@ -360,6 +426,21 @@ export function extractLinkedInContext(rawPayload: unknown): LinkedInContext | n
 }
 
 /**
+ * Extracts matched or discovering watchlistId from rawPayload.
+ */
+export function extractWatchlistId(rawPayload: unknown): string | null {
+  if (rawPayload && typeof rawPayload === 'object') {
+    const p = rawPayload as Record<string, unknown>;
+    if (typeof p.watchlistId === 'string') return p.watchlistId;
+    if (typeof p.discoveringWatchlistId === 'string') return p.discoveringWatchlistId;
+    if (typeof p.matchedWatchlistId === 'string') return p.matchedWatchlistId;
+    if (typeof p.watchlist_id === 'string') return p.watchlist_id;
+    if (typeof p.discovering_watchlist_id === 'string') return p.discovering_watchlist_id;
+  }
+  return null;
+}
+
+/**
  * 2026-08-19 — moved here from PostsFeedClient.tsx (its original home) so the
  * Analytics Overview tab's own post-detail drawer, a second, sibling call
  * site, can derive the identical shape without importing a Client Component
@@ -382,26 +463,59 @@ export interface FlatPost {
   author: string | null;
   pageName: string | null;
   pageId: string | null;
+  watchlistId: string | null;
+  watchlistName?: string | null;
   instagramContext: InstagramContext | null;
   linkedinContext: LinkedInContext | null;
   enrichmentSummary: PostEnrichmentSummary | null;
 }
 
-export function flattenPost(post: SocialPostSummary): FlatPost {
+export function flattenPost(
+  post: SocialPostSummary,
+  watchlists?: { id: string; name?: string; terms?: string[] | null; platformIds?: string[] }[],
+  facebookPages?: { pageId: string; pageName: string }[]
+): FlatPost {
   const { title, snippet } = extractDisplayText(post.rawPayload);
-  const fbContext = extractFacebookPageContext(post.rawPayload);
+  const fbContext = extractFacebookPageContext(post.rawPayload, facebookPages);
   const igContext = extractInstagramContext(post.rawPayload);
   const liContext = extractLinkedInContext(post.rawPayload);
+  const provider = extractProviderBadge(post.rawPayload);
+
+  let watchlistId = extractWatchlistId(post.rawPayload);
+  let matchedWatchlist = watchlists && watchlistId ? watchlists.find((w) => w.id === watchlistId) : undefined;
+
+  // Fallback: If watchlistId wasn't explicitly saved in rawPayload (e.g. older Wikipedia re-polls), resolve from watchlists
+  if (!matchedWatchlist && watchlists && watchlists.length > 0) {
+    const textToMatch = `${title} ${snippet || ''} ${post.bodyMarkdown || ''}`.toLowerCase();
+    const termMatch = watchlists.find((w) => {
+      const targetsPlatform = !w.platformIds || w.platformIds.length === 0 || w.platformIds.includes(provider);
+      return targetsPlatform && (w.terms || []).some((term) => term && textToMatch.includes(term.toLowerCase()));
+    });
+
+    if (termMatch) {
+      matchedWatchlist = termMatch;
+      watchlistId = termMatch.id;
+    } else if (provider === 'wikipedia') {
+      const wikiWatchlist = watchlists.find((w) => w.platformIds?.includes('wikipedia'));
+      if (wikiWatchlist) {
+        matchedWatchlist = wikiWatchlist;
+        watchlistId = wikiWatchlist.id;
+      }
+    }
+  }
+
   return {
     ...post,
     bodyMarkdown: post.bodyMarkdown ?? null,
     title,
     snippet,
-    provider: extractProviderBadge(post.rawPayload),
+    provider,
     url: extractUrl(post.rawPayload),
     author: extractAuthor(post.rawPayload),
     pageName: fbContext?.pageName ?? igContext?.pageName ?? null,
     pageId: fbContext?.pageId ?? igContext?.pageId ?? null,
+    watchlistId,
+    watchlistName: matchedWatchlist?.name ?? null,
     instagramContext: igContext,
     linkedinContext: liContext,
     enrichmentSummary: post.enrichment ? extractEnrichmentSummary(post.enrichment) : null,

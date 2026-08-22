@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity, isShellAllowed } from '@/lib/role-routing';
-import { listPosts, listWatchlists } from '@/lib/core-client';
+import { listPosts, listWatchlists, listFacebookPages } from '@/lib/core-client';
 import type { SocialPostSummary } from '@/lib/core-client';
 import { PostsFeedClient } from './PostsFeedClient';
 
@@ -54,15 +54,18 @@ export default async function PostFeedPage() {
     redirect('/');
   }
 
-  // Fetch posts and watchlists in parallel; watchlists failing is non-fatal.
-  const [posts, watchlists] = await Promise.all([
+  // Fetch posts, watchlists, and connected Facebook pages in parallel; failures are non-fatal.
+  const [posts, watchlists, fbPagesRes] = await Promise.all([
     fetchAllPosts(),
     listWatchlists().catch(() => []),
+    listFacebookPages().catch(() => ({ status: 500, body: {} })),
   ]);
+
+  const facebookPages = (fbPagesRes.body?.pages as { pageId: string; pageName: string }[]) || [];
 
   return (
     <main>
-      <PostsFeedClient posts={posts} watchlists={watchlists} />
+      <PostsFeedClient posts={posts} watchlists={watchlists} facebookPages={facebookPages} />
     </main>
   );
 }

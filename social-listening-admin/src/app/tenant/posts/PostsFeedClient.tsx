@@ -99,6 +99,7 @@ const CARD_SNIPPET_SOURCE_LENGTH = 500;
 interface PostsFeedClientProps {
   posts: SocialPostSummary[];
   watchlists: Watchlist[];
+  facebookPages?: { pageId: string; pageName: string }[];
   /**
    * Story 6.19 testability seam only — same precedent as Story 6.14's
    * `initialEntries`. Seeds the Slideover open with a matching post's id so
@@ -117,9 +118,9 @@ interface PostsFeedClientProps {
  * (`visibleCount`, "Show more") purely for DOM/perf reasons, never to limit
  * what search/filter can actually see.
  */
-export function PostsFeedClient({ posts, watchlists, initialActivePostId }: PostsFeedClientProps) {
+export function PostsFeedClient({ posts, watchlists, facebookPages, initialActivePostId }: PostsFeedClientProps) {
   const [postList, setPostList] = useState<SocialPostSummary[]>(posts);
-  const flat = useMemo(() => postList.map(flattenPost), [postList]);
+  const flat = useMemo(() => postList.map((p) => flattenPost(p, watchlists, facebookPages)), [postList, watchlists, facebookPages]);
   const [isEditingEnrichment, setIsEditingEnrichment] = useState(false);
 
   /**
@@ -151,9 +152,9 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
       if (selectedProvider !== 'ALL' && post.provider.toLowerCase() !== selectedProvider.toLowerCase()) return false;
       if (selectedSentiment !== 'ALL' && post.enrichmentSummary?.sentiment?.toLowerCase() !== selectedSentiment.toLowerCase()) return false;
       if (selectedWatchlist !== 'ALL') {
-        // rawPayload may carry matchedWatchlistId
         const p = post.rawPayload && typeof post.rawPayload === 'object' ? post.rawPayload as Record<string, unknown> : {};
-        if (p.matchedWatchlistId !== selectedWatchlist) return false;
+        const wId = post.watchlistId || (typeof p.matchedWatchlistId === 'string' ? p.matchedWatchlistId : (typeof p.watchlistId === 'string' ? p.watchlistId : (typeof p.discoveringWatchlistId === 'string' ? p.discoveringWatchlistId : null)));
+        if (wId !== selectedWatchlist) return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -349,12 +350,16 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                       ? 'LinkedIn'
                       : post.provider.replace(/_/g, ' ')}
                   </span>
-                  {post.provider === 'facebook' && post.pageName ? (
+                  {post.provider === 'facebook' ? (
                     <>
-                      <span className="pf-post-page-badge" title={`Hosted on Facebook Page: ${post.pageName}`}>
-                        📍 Page: {post.pageName}
+                      <span
+                        className="pf-post-page-badge"
+                        title={`Hosted on Facebook Page: ${post.pageName || post.author || 'Facebook Page'}`}
+                        style={{ background: 'rgba(24, 119, 242, 0.1)', color: '#1877f2', fontWeight: 600 }}
+                      >
+                        📍 Page: {post.pageName || post.author || 'Facebook Page'}
                       </span>
-                      {post.author && post.author !== post.pageName && (
+                      {post.author && post.pageName && post.author !== post.pageName && (
                         <span className="pf-post-author">By: {post.author}</span>
                       )}
                     </>
@@ -434,6 +439,19 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                         ? ` (${(score * 100).toFixed(0)}%)`
                         : null;
                     })()}
+                  </span>
+                )}
+                {post.watchlistName && (
+                  <span
+                    className="pf-chip-entity"
+                    title={`Matched Watchlist: ${post.watchlistName}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedWatchlist(post.watchlistId || 'ALL');
+                    }}
+                    style={{ cursor: 'pointer', background: 'rgba(37, 99, 235, 0.08)', color: 'var(--color-accent)' }}
+                  >
+                    🎯 <span>{post.watchlistName}</span>
                   </span>
                 )}
                 {post.enrichmentSummary?.entities.slice(0, 3).map((ent) => (
@@ -516,6 +534,8 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
             <PostDetailPanel
               key={activePost.id}
               post={activePost}
+              watchlists={watchlists}
+              facebookPages={facebookPages}
               onEdit={() => setIsEditingEnrichment(true)}
             />
           </Slideover>
@@ -539,7 +559,7 @@ export function PostsFeedClient({ posts, watchlists, initialActivePostId }: Post
                 if (body.post) {
                   const updatedSummary = body.post as SocialPostSummary;
                   setPostList((prev) => prev.map((p) => (p.id === updatedSummary.id ? updatedSummary : p)));
-                  setActivePost(flattenPost(updatedSummary));
+                  setActivePost(flattenPost(updatedSummary, watchlists, facebookPages));
                 }
               }}
             />

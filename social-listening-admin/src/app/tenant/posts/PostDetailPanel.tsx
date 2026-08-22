@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { extractFacebookPageContext, extractInstagramContext, extractLinkedInContext, extractUrl, type PostEnrichmentSummary } from './postDisplay';
+import {
+  extractFacebookPageContext,
+  extractInstagramContext,
+  extractLinkedInContext,
+  extractUrl,
+  extractWatchlistId,
+  type PostEnrichmentSummary,
+} from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 
 // ---------------------------------------------------------------------------
@@ -56,31 +63,23 @@ export interface PostDetailPanelPost {
   bodyMarkdown: string | null;
   snippet: string | null;
   provider: string;
+  pageName?: string | null;
+  pageId?: string | null;
+  watchlistId?: string | null;
+  watchlistName?: string | null;
   enrichmentSummary: PostEnrichmentSummary | null;
 }
 
-/**
- * 2026-08-19 — extracted from PostsFeedClient.tsx's own detail Slideover
- * body, requested directly by Menno so the Analytics Overview tab's own
- * post-detail drawer (a new, second call site) renders the identical rich
- * view — full body, AI enrichment panel (sentiment bars, entities, key
- * phrases, executive summary — Story 2.17), ingestion telemetry, and raw
- * JSON toggle — rather than a second, drifting copy of the same ~140 lines.
- * Deliberately excludes the outer Slideover chrome (title/subtitle/footer):
- * PostsFeedClient.tsx still wraps this in the shared `Slideover` component;
- * OverviewTab.tsx wraps it in its own stacked-panel markup instead (the
- * shared `Slideover` assumes exactly one full-screen backdrop, which a
- * second, side-by-side panel can't use without breaking every other
- * existing Slideover call site) — see `.claude/skills/analytics-dashboard/
- * SKILL.md`'s own Relations section for the real, contract-verified caller
- * list this extraction is asserted against.
- */
 export function PostDetailPanel({
   post,
   onEdit,
+  watchlists,
+  facebookPages,
 }: {
   post: PostDetailPanelPost;
   onEdit?: () => void;
+  watchlists?: { id: string; name?: string }[];
+  facebookPages?: { pageId: string; pageName: string }[];
 }) {
   const [showRawJson, setShowRawJson] = useState(false);
 
@@ -298,16 +297,42 @@ export function PostDetailPanel({
           <code>{post.provider}</code>
         </div>
         {(() => {
-          const fbContext = extractFacebookPageContext(post.rawPayload);
-          if (!fbContext || (!fbContext.pageName && !fbContext.pageId)) return null;
+          const fbContext = extractFacebookPageContext(post.rawPayload, facebookPages);
+          if (post.provider !== 'facebook' && (!fbContext || (!fbContext.pageName && !fbContext.pageId))) return null;
+          const pageName = fbContext?.pageName || post.pageName || (post.provider === 'facebook' && post.snippet ? 'Facebook Page' : 'Unknown Page');
+          const pageId = fbContext?.pageId || post.pageId;
+          const author = fbContext?.author;
+          const isDistinctAuthor = author && pageName && author !== pageName && author !== 'Facebook Page';
+          const pageUrl = pageId ? `https://facebook.com/${pageId}` : null;
+
           return (
-            <div className="pf-telemetry-row">
-              <span>Hosting Facebook Page</span>
-              <span>
-                <strong>{fbContext.pageName ?? 'Unknown Page'}</strong>
-                {fbContext.pageId && <code className="pf-page-id-code">(ID: {fbContext.pageId})</code>}
-              </span>
-            </div>
+            <>
+              <div className="pf-telemetry-row">
+                <span>Hosting Facebook Page</span>
+                <span>
+                  {pageUrl ? (
+                    <a
+                      href={pageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="pf-footer-ext-link"
+                      style={{ fontWeight: 600, color: 'var(--color-accent)' }}
+                    >
+                      📘 {pageName} ↗
+                    </a>
+                  ) : (
+                    <strong>📘 {pageName}</strong>
+                  )}
+                  {pageId && <code className="pf-page-id-code" style={{ marginLeft: 6 }}>(ID: {pageId})</code>}
+                </span>
+              </div>
+              {isDistinctAuthor && (
+                <div className="pf-telemetry-row">
+                  <span>Post Creator / Author</span>
+                  <span><strong>👤 {author}</strong></span>
+                </div>
+              )}
+            </>
           );
         })()}
         {(() => {
@@ -355,6 +380,94 @@ export function PostDetailPanel({
                   <a href={permalink} target="_blank" rel="noreferrer" className="pf-footer-ext-link">
                     {permalink}
                   </a>
+                </div>
+              )}
+            </>
+          );
+        })()}
+        {/* Matched Watchlist Link (Wikipedia, Brave Search, Bing Search, etc.) */}
+        {(() => {
+          let wId = post.watchlistId || extractWatchlistId(post.rawPayload);
+          let matchedWl = watchlists?.find((w) => w.id === wId);
+
+          if (!matchedWl && watchlists && watchlists.length > 0) {
+            const textToMatch = `${post.snippet || ''} ${post.bodyMarkdown || ''}`.toLowerCase();
+            matchedWl = watchlists.find((w) => {
+              const targetsPlatform = !(w as any).platformIds || (w as any).platformIds.length === 0 || (w as any).platformIds.includes(post.provider);
+              return targetsPlatform && ((w as any).terms || []).some((term: string) => term && textToMatch.includes(term.toLowerCase()));
+            }) || (post.provider === 'wikipedia' ? watchlists.find((w) => (w as any).platformIds?.includes('wikipedia')) : undefined);
+            if (matchedWl) {
+              wId = matchedWl.id;
+            }
+          }
+
+          const wName = post.watchlistName || matchedWl?.name || (wId ? `Watchlist (${wId.slice(0, 8)})` : null);
+          if (!wName) return null;
+
+          return (
+            <div className="pf-telemetry-row">
+              <span>Matched Watchlist</span>
+              <span>
+                <a
+                  href={`/tenant/watchlists`}
+                  className="pf-footer-ext-link"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    color: 'var(--color-accent)',
+                    fontWeight: 600,
+                  }}
+                  title={`View watchlist settings for ${wName}`}
+                >
+                  🎯 {wName}
+                </a>
+                {wId && <code className="pf-page-id-code" style={{ marginLeft: 6 }}>(ID: {wId})</code>}
+              </span>
+            </div>
+          );
+        })()}
+        {/* Wikipedia Article Metadata */}
+        {(() => {
+          if (post.provider !== 'wikipedia') return null;
+          const p = post.rawPayload && typeof post.rawPayload === 'object' ? (post.rawPayload as Record<string, unknown>) : {};
+          const title = typeof p.title === 'string' ? p.title : null;
+          const pageId = p.pageid ? String(p.pageid) : null;
+          const revId = p.revid ? String(p.revid) : null;
+          const wikiUrl = title ? `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/\s+/g, '_'))}` : null;
+          return (
+            <>
+              {title && wikiUrl && (
+                <div className="pf-telemetry-row">
+                  <span>Wikipedia Article</span>
+                  <span>
+                    <a
+                      href={wikiUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="pf-footer-ext-link"
+                    >
+                      <strong>{title}</strong> ↗
+                    </a>
+                    {pageId && <code className="pf-page-id-code" style={{ marginLeft: 6 }}>(Page: {pageId})</code>}
+                    {revId && <code className="pf-page-id-code" style={{ marginLeft: 4 }}>(Rev: {revId})</code>}
+                  </span>
+                </div>
+              )}
+            </>
+          );
+        })()}
+        {/* Brave / Bing Search Query Metadata */}
+        {(() => {
+          if (post.provider !== 'brave-search' && post.provider !== 'bing-search') return null;
+          const p = post.rawPayload && typeof post.rawPayload === 'object' ? (post.rawPayload as Record<string, unknown>) : {};
+          const query = typeof p.query === 'string' ? p.query : (typeof p.searchQuery === 'string' ? p.searchQuery : null);
+          return (
+            <>
+              {query && (
+                <div className="pf-telemetry-row">
+                  <span>Search Query</span>
+                  <code>{query}</code>
                 </div>
               )}
             </>
