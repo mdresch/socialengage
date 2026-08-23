@@ -3136,3 +3136,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/outbound-post/SKILL.md; social-listening-core/.claude/skills/provider-connector-framework/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundPublishService.ts
 - **Epic-2 suite at merge:** PASS (32/32 suites, 296/296 tests)
+---
+
+## 2026-08-23 — Story 2.29 — social-listening-core@4234834
+
+- **Full commit:** `4234834a9af2e0c7411aaa34b376343249e34ec5`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.29 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Epic-2 suite at merge:** PASS (33/33 suites, 305/305 tests)

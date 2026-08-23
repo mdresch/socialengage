@@ -785,7 +785,7 @@
 ## Story 2.29 — Facebook Page Post Publishing
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@4234834
 **Depends on:** Story 2.28 (connector publish framework), Story 6.23/6.27 (Facebook Page credential and enumeration)
 
 **As a** Tenant User managing a connected Facebook Page,
