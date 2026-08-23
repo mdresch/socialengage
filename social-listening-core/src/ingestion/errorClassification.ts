@@ -12,7 +12,10 @@ export type ErrorKind =
   | 'post_not_found'
   | 'reconnect_required'
   | 'rate_limited'
-  | 'reply_not_supported';
+  | 'reply_not_supported'
+  | 'publish_not_supported'
+  | 'target_asset_not_found'
+  | 'media_not_supported';
 
 const RETRYABLE_KINDS: ReadonlySet<ErrorKind> = new Set(['rate_limit', 'network', 'http_5xx']);
 const CREDENTIAL_KINDS: ReadonlySet<ErrorKind> = new Set(['http_401', 'http_403']);

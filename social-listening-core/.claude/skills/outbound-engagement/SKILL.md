@@ -38,9 +38,11 @@ The `outboundEngagementService` in `src/outbound/outboundEngagementService.ts` e
 - **Real connector-specific reply implementations (Facebook, Instagram, LinkedIn) are not yet built.** Story 2.27 begins the Facebook `reply()` implementation; other platforms are deferred to their own stories.
 - **REST endpoint `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are Story 3.14**, not built in this component.
 - **The `outbound_activities` table is created in Story 3.14**; `outboundEngagementService` only returns a row-shaped object that matches its intended contents.
+- **The separate `outbound-post` component (new post publishing, Story 2.28) uses a sibling service in `src/outbound/outboundPublishService.ts` and a separate `RequestGate` key `outbound_post` — it is not built by this component.
 
 ## Relations to other components
 
 - Calls into `src/connectors/requestGate.ts` (`acquireForOutbound()`) — relationship asserted by `story-2.26` contract's AC4 gate isolation tests.
 - Calls into `src/connectors/types.ts` (`SocialConnector.reply?()`) — relationship asserted by `story-2.26` contract's AC1 and AC2.
 - Calls into `src/ingestion/errorClassification.ts` (`ClassifiableError`) — relationship asserted by `story-2.26` contract's AC2 and AC3.
+- Sibling to `src/outbound/outboundPublishService.ts` (new post publishing, Story 2.28) — both use the same row-shape pattern but separate `RequestGate` keys and `activity_type` values.

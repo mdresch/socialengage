@@ -170,6 +170,17 @@ export async function acquireForOutbound(tenantId: string, connector: SocialConn
   return acquire(key, config);
 }
 
+export function outboundPostKey(tenantId: string, connector: ProviderConnector): string {
+  return `${tenantId}:${connector.providerId}:outbound_post`;
+}
+
+/** Gates per (tenantId, providerId, 'outbound_post') — separate from replies and from ingestion (ADR-0075). */
+export async function acquireForOutboundPost(tenantId: string, connector: SocialConnector): Promise<void> {
+  const key = outboundPostKey(tenantId, connector);
+  const config = connector.getOutboundRateLimitConfig?.() ?? connector.getRateLimitConfig();
+  return acquire(key, config);
+}
+
 /** Test-only: isolates contract tests that would otherwise share gate state by key collision. */
 export function __resetGateForTests(): void {
   state.clear();
