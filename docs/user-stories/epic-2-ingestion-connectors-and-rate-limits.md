@@ -3,6 +3,7 @@
 ## Story 2.1 — Unified provider connector framework
 
 **Source:** ADR-0002 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@7604c25
 
 **As a** core backend engineer,
 **I want** a shared `ProviderConnector` base contract specialized into `SocialConnector` and `AIProviderConnector`,
@@ -19,6 +20,7 @@
 ## Story 2.2 — Per-tenant, per-provider rate limiting
 
 **Source:** ADR-0003 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@00322f2
 
 **As a** multi-tenant platform operator,
 **I want** every outbound platform/AI request gated by a shared `RequestGate` scoped to `(tenantId, providerId)` — and `(tenantId, providerId, modelId)` for AI enrichment — with live rate-limit headers taking priority over static declared config,
@@ -35,6 +37,7 @@
 ## Story 2.3 — Retryable/non-retryable error handling with per-tenant auto-disable
 
 **Source:** ADR-0010 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@10e7c43
 *(Story 2.5 / ADR-0023, accepted 2026-07-29 and implemented 2026-07-30, supersedes the flat threshold this story originally shipped with — per ADR-0010's "Supersession update" note. AC4 below reflects the current, rate-relative behavior; see `docs/user-stories/README.md`'s "Known cross-story conflict" note for what did and didn't change in this story's own contract.)*
 
 **As a** tenant relying on continuous ingestion,
@@ -47,12 +50,14 @@
 - An OAuth connector attempts token refresh automatically before surfacing a credential failure to the tenant; only a failed refresh surfaces.
 - A connector auto-disables once the connector-level failure threshold is crossed (originally the flat ≥10/hour placeholder; superseded 2026-07-30 by Story 2.5's rate-relative rule — see that story below), with a clear reason recorded and visible to that tenant.
 - A second tenant's connector for the same platform is provably unaffected by the first tenant's auto-disable (isolation test: disable tenant A's X connector, confirm tenant B's X ingestion continues).
+- `deriveConnectorHealth()` selects `retryable` from `ingestion_runs` and counts only non-retryable failures toward the rate-relative and consecutive-failure thresholds.
 
 ---
 
 ## Story 2.4 — Bounded rate-limit queues, request-level dead-lettering, and distributed gate state
 
 **Source:** ADR-0020 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; numbers kept flat and queue-depth rejection folds into existing `ConnectorHealth` states, per ADR-0020's Acceptance note)
+**Built:** 2026-07-30 — social-listening-core@6a21c8b
 **Solo-project note:** this story bundles two independent concerns — queue TTL/depth/dead-lettering (relevant even on a single instance, once real traffic exists) and distributed gate state (only load-bearing once more than one `social-listening-core` instance runs concurrently, which may not happen for a long time on a solo-operated deployment — see `docs/implementation-plan.md` Phase 4). The first half can be picked up on its own merits; the second half specifically should wait for an actual multi-instance need, not be built speculatively.
 
 **As a** platform operator running `social-listening-core` across more than one process instance,
@@ -63,6 +68,8 @@
 - A queued request older than its TTL (default 6 hours) is abandoned, not delivered, and the abandonment is recorded via the relevant `IngestionRun`'s `postsSkipped`/`errorSummary`.
 - A queue for a given `(tenantId, providerId)` rejects new requests outright once it reaches its depth ceiling (default 1,000), rather than growing further.
 - A single request that fails 3 consecutive execution attempts routes to a dead-letter path, independent of whether that tenant-platform pair has crossed the connector-level auto-disable threshold (Story 2.3/2.5).
+- Two concurrent `social-listening-core` instances enforcing the same `(tenantId, providerId)` limit behave correctly — verified by a test that would fail under an in-memory gate.
+- No request is silently dropped: every TTL abandonment, depth rejection, and dead-letter leaves an auditable record.
 - Running two `social-listening-core` process instances concurrently, both handling requests for the same `(tenantId, providerId)`, enforces the same rate limit correctly (verified by a test that would fail under a local-in-memory gate).
 
 ---
@@ -70,6 +77,7 @@
 ## Story 2.5 — Proportional, rate-relative connector failure threshold
 
 **Source:** ADR-0023 · **Status:** Ready — implemented 2026-07-30 (50%/5-attempt floor/20-consecutive kept as launch defaults, per ADR-0023's Acceptance note)
+**Built:** 2026-07-30 — social-listening-core@fc4245c
 *(Supersedes the flat threshold in Story 2.3 / ADR-0009-0010, per each ADR's "Supersession update" note — now in effect; see `docs/user-stories/README.md`'s "Known cross-story conflict" note for what changed in those stories' own contracts.)*
 
 **As a** tenant with connectors polling at very different frequencies,
@@ -87,6 +95,7 @@
 ## Story 2.6 — Newswire connector: direct wire-service RSS, issuer-as-Author
 
 **Source:** ADR-0024 · **Status:** Ready — accepted 2026-07-30 (GlobeNewswire + PR Newswire v1 scope, AccessWire/Business Wire deferred, per ADR-0024's Acceptance note)
+**Built:** 2026-07-30 — social-listening-core@0169143
 
 **As a** tenant tracking companies via press releases,
 **I want** a real `SocialConnector` that polls GlobeNewswire's and PR Newswire's free public RSS feeds and normalizes each item into a `SocialPost` whose `Author` is the issuing organization,
@@ -104,6 +113,7 @@
 ## Story 2.7 — RSS/News connector: GNews API, publication-as-Author
 
 **Source:** ADR-0026 · **Status:** Ready (drafted 2026-07-31 by the AI Business & Requirements Analyst persona, left Proposed rather than self-accepted the same day since that persona doesn't hold ADR-acceptance authority — see ADR-0026's own Status line; accepted by Menno later the same day, 2026-07-31)
+**Built:** 2026-08-01 — social-listening-core@8e3a54d
 
 **As a** tenant tracking general news coverage of a topic, company, or organization,
 **I want** a real `SocialConnector` that polls GNews API's Search endpoint using a per-tenant API key and normalizes each returned article into a `SocialPost` whose `Author` is the source publication,
@@ -120,7 +130,8 @@
 
 ## Story 2.8 — Concrete AI enrichment provider connector: Azure AI Language
 
-**Source:** ADR-0038 (Accepted 2026-08-06) · **Status:** Built 2026-08-10 (`social-listening-core`, real Azure AI Language endpoint — see `docs/implementation-log.md`). Sourced from a new ADR because the concrete provider choice, once Menno's own follow-up widened the comparison to include general-purpose-LLM structured extraction, is a genuine, hard-to-reverse, primary-source-researched selection — the same bar ADR-0024/0026 already established for connector-provider selection, not ordinary CRUD/UI surface.
+**Source:** ADR-0038 (Accepted 2026-08-06) · **Status:** Ready. Sourced from a new ADR because the concrete provider choice, once Menno's own follow-up widened the comparison to include general-purpose-LLM structured extraction, is a genuine, hard-to-reverse, primary-source-researched selection — the same bar ADR-0024/0026 already established for connector-provider selection, not ordinary CRUD/UI surface.
+**Built:** 2026-08-10 — social-listening-core@f70b07d
 
 **2026-08-10 — a real, confirmed AC drift, corrected here rather than silently patched.** AC3 below claims `analyze()` maps into `SocialPost.enrichment`'s "exact existing shape... no reshaping of the already-shipped type." That claim was checked directly against the real, shipped code at implementation time and found false: the only shipped, contract-tested shape before this story was `entities: string[]` (Story 4.2's own fixture), and `AIProviderConnector.analyze()`'s return type (Story 2.1) had no `sentimentScores`, no per-entity `category`/`confidenceScore`, and no `modelUsed` at all. Real calls against the live Azure AI Language endpoint (`AZURE_AI_LANGUAGE_ENDPOINT`/`KEY` in `.env`) confirmed entities are naturally `{text, category, confidenceScore}[]`, not bare strings — this story widened `AnalyzeResult`/`enrichment.entities` to that real shape (additive change to `src/connectors/types.ts`), with Menno's explicit sign-off after reviewing the real API research. Story 4.2's own already-passing contract required a corresponding, dated, explicitly-authorized edit (its AC3 SQL moved from `jsonb_array_elements_text` to `jsonb_array_elements` + `->>'text'`) — see that story's own file and `.claude/skills/provider-connector-framework/SKILL.md`'s Load-bearing constraints for the full account. AC3's bullet text below is left as originally drafted, per this doc series' "don't rewrite history" convention — this note is the correction of record.
 
@@ -704,7 +715,7 @@
 ## Story 2.27 — Facebook Page Reply Implementation
 
 **Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@2da26eb
 
 **As a** Tenant User managing a connected Facebook Page,
 **I want** the `facebook` connector to implement `reply()`,

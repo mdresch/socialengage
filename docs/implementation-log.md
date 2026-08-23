@@ -3114,3 +3114,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/brave-search-connector/SKILL.md; social-listening-core/.claude/skills/bing-search-connector/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts
 - **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)
+---
+
+## 2026-08-23 — Story 2.27 — social-listening-core@2da26eb
+
+- **Full commit:** `2da26ebee9508980771f1aca99641eceffce44d9`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.27 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Epic-2 suite at merge:** PASS (31/31 suites, 289/289 tests)
