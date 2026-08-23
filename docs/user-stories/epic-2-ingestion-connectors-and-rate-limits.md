@@ -174,7 +174,8 @@
 
 ## Story 2.10 — Connector Registration Transparency
 
-**Source:** ADR-0048 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12.
+**Source:** ADR-0048 (Accepted 2026-08-11) · **Status:** Ready
+**Built:** 2026-08-12 — social-listening-core@f2c7788
 
 **As a developer integrating new connectors into SocialEngage,**
 **I want robust automated checks ensuring that connector registration does not alter core pipeline paths,**
@@ -197,7 +198,8 @@
 
 ## Story 2.11 — Tenant-owned-domain RSS/content-feed connector with DNS TXT verification
 
-**Source:** ADR-0050 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12
+**Source:** ADR-0050 (Accepted 2026-08-11) · **Status:** Ready
+**Built:** 2026-08-12 — social-listening-core@afcb59e
 
 **Drafted 2026-08-11, at ADR-0050's acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent this ADR's own Status line named ahead of time. Follows Story 2.6 (Newswire/ADR-0024) and Story 2.7 (GNews/ADR-0026) as the established shape for a connector-selection story sourced from a connector-selection ADR.
 
@@ -252,7 +254,7 @@
 
 ## Story 2.13 — Wikipedia connector: MediaWiki Action API, revision re-poll cadence, article-as-Author
 
-**Source:** ADR-0042 (Accepted 2026-08-08) · **Status:** Built 2026-08-17 · **Built:** 2026-08-17 — social-listening-core@591b0b8. **A real, confirmed drafting gap, not a new decision:** ADR-0042's own acceptance note (2026-08-08) states directly that "a story would be added to Epic 2 only at this ADR's acceptance, not before," the same "no story until acceptance" precedent every connector-selection ADR in this series follows (ADR-0024/0026/0050) — but that story was never actually drafted, confirmed directly by grepping every `docs/user-stories/epic-*.md` file for `ADR-0042` and finding zero matches, four days after acceptance. Closed here.
+**Source:** ADR-0042 (Accepted 2026-08-08) · **Status:** Ready · **Built:** 2026-08-17 — social-listening-core@591b0b8. **A real, confirmed drafting gap, not a new decision:** ADR-0042's own acceptance note (2026-08-08) states directly that "a story would be added to Epic 2 only at this ADR's acceptance, not before," the same "no story until acceptance" precedent every connector-selection ADR in this series follows (ADR-0024/0026/0050) — but that story was never actually drafted, confirmed directly by grepping every `docs/user-stories/epic-*.md` file for `ADR-0042` and finding zero matches, four days after acceptance. Closed here.
 
 **Drafted 2026-08-12**, found while checking every Accepted ADR in the series against every epic file's own `Source:` citations for exactly this category of gap, at Menno's own direct request ("im also missing the stories to build the wikipedia ingestion?"). Only one other Accepted ADR (ADR-0047) is similarly absent from every epic file, and that one is a deliberate, already-documented no-story meta-ADR (cross-story reference conventions) — ADR-0042 is the sole genuine gap.
 
@@ -279,7 +281,7 @@
 
 ## Story 2.14 — Wikipedia discovery search driven by the tenant's own watchlist terms
 
-**Source:** ADR-0042 §5 (Accepted 2026-08-08) · **Status:** Built 2026-08-18 · **Built:** 2026-08-18 — social-listening-core@c802b64. No new ADR needed — ADR-0042 Decision §5 already named this directly as implementation-time work ("Exact AST-to-CirrusSearch-syntax translation is an implementation-time task, not fixed by this ADR"), the same "resolve an already-Accepted ADR's own named open item directly" precedent Story 5.8 (§5's `domain` column), Story 5.11 (§5's endpoint shape), and Story 5.17 (§9's audit mechanics) already established.
+**Source:** ADR-0042 §5 (Accepted 2026-08-08) · **Status:** Ready · **Built:** 2026-08-18 — social-listening-core@c802b64. No new ADR needed — ADR-0042 Decision §5 already named this directly as implementation-time work ("Exact AST-to-CirrusSearch-syntax translation is an implementation-time task, not fixed by this ADR"), the same "resolve an already-Accepted ADR's own named open item directly" precedent Story 5.8 (§5's `domain` column), Story 5.11 (§5's endpoint shape), and Story 5.17 (§9's audit mechanics) already established.
 
 **Drafted 2026-08-18, at Menno's own direct request**, found live while activating the Wikipedia connector in the Tenant Admin UI: the connector has no way to be told which article/topic to track. Confirmed directly against the real code, not assumed: `pollWikipedia(tenantId, query = DEFAULT_QUERY)` (`src/connectors/wikipedia/pollWikipedia.ts:19,117-119`) defaults `query` to the module-level literal `DEFAULT_QUERY = 'Anthropic'`, and `bootstrapConnectors.ts:72` — the one real production call site (`live-ingestion-polling-scheduler` SKILL.md) — calls `pollWikipedia(tenantId)` with no query argument at all. Every tenant's every poll cycle searches the same hardcoded literal, regardless of what that tenant actually watches for. This is the exact, already-named gap Story 2.13's own SKILL.md "Known gaps" section flags: "No real per-watchlist discovery query — shared gap with GNews." This story closes it for Wikipedia only; GNews's identical gap (ADR-0026, `docs/open-items-and-deferred-work.md`) is unaffected and stays its own separate, undesigned item.
 
@@ -306,7 +308,7 @@
 
 **Built:** 2026-08-18 — social-listening-core@50a5914
 
-**Source:** ADR-0059 (Accepted 2026-08-18) · **Status:** Built 2026-08-18 — a real, unresolved precondition named up front, not a formality: ADR-0059 Decision §3 found that onboarding any real, unaffiliated tenant's Page requires SocialEngage's own registered Meta App to clear Business Verification and pass permission-by-permission App Review (`pages_show_list`, `pages_read_engagement`), neither of which is confirmed achievable for a solo-developer project — App Review approval is a discretionary human review, not a mechanical check (ADR-0059's own review-round addition). This story's own contract can be built and proven against a Menno-administered test Page under Standard Access (the degenerate, no-App-Review case ADR-0059 Decision §3 itself names) without either gate being cleared first; **onboarding any real tenant's Page beyond that test case is blocked on Business Verification/App Review succeeding, separately from this story's own build-and-test completion.** Named here rather than silently assumed resolved.
+**Source:** ADR-0059 (Accepted 2026-08-18) · **Status:** Ready — a real, unresolved precondition named up front, not a formality: ADR-0059 Decision §3 found that onboarding any real, unaffiliated tenant's Page requires SocialEngage's own registered Meta App to clear Business Verification and pass permission-by-permission App Review (`pages_show_list`, `pages_read_engagement`), neither of which is confirmed achievable for a solo-developer project — App Review approval is a discretionary human review, not a mechanical check (ADR-0059's own review-round addition). This story's own contract can be built and proven against a Menno-administered test Page under Standard Access (the degenerate, no-App-Review case ADR-0059 Decision §3 itself names) without either gate being cleared first; **onboarding any real tenant's Page beyond that test case is blocked on Business Verification/App Review succeeding, separately from this story's own build-and-test completion.** Named here rather than silently assumed resolved.
 
 **As a** Tenant-Admin or Tenant User who personally administers a Facebook Page,
 **I want** to connect that Page as a `SocialConnector` source, using my own Facebook login,
@@ -382,7 +384,7 @@
 
 **Built:** 2026-08-18 — social-listening-core@35e35c3
 
-**Source:** ADR-0059 Decision §2 · **Status:** Built 2026-08-18
+**Source:** ADR-0059 Decision §2 · **Status:** Ready
 
 **As a** core backend engineer / downstream consumer of Facebook posts,
 **I want** post-level engagement counts (`reactions`, `comments`, `shares`) captured during Page post polling,
@@ -400,7 +402,7 @@
 
 **Built:** 2026-08-20 — social-listening-core@2f52c0f (backend half only — see Explicitly out of scope below for the admin-side UI, Story 6.28)
 
-**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Built 2026-08-20.
+**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Ready
 
 **Requested directly by Menno, 2026-08-20**, having just been given the connector setup screen's own URL (`/tenant/connectors/tenant-owned-feed`): *"give feeds ... a name. Let the feed owner give the feed a separate name. This allow for a feed identification name instead of the generic tenant-owned-feed selection and review the feeds for a mandatory field that is designated to be the Author of the article/project/posts."* Clarified directly with Menno (`AskUserQuestion`) that "mandatory field... designated to be the Author" meant adding real per-article byline extraction from the feed itself (`<dc:creator>`/`<author>`), not merely confirming the already-existing domain-as-Author invariant — ADR-0050's own Consequences/Open Question 5 had explicitly reserved that as "a separate, named design decision... not in scope for this ADR," so a short Amendment Log entry was drafted (not a re-opened Decision) before implementing.
 
@@ -746,7 +748,7 @@
 ## Story 2.28 — Connector Publish Framework and Outbound Post Rate Gate
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@f1e0f9b
 **Depends on:** Story 3.14 (base `outbound_activities` table)
 
 **As a** core backend engineer,
