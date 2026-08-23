@@ -21,6 +21,7 @@ The `outboundPublishService` in `src/outbound/outboundPublishService.ts` execute
 
 - `contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts` (ADR-0075) — `SocialConnector` accepts an optional `publish?()`; `outboundPublishService.invoke()` calls it and returns `sent`/`failed` rows with `activityType='post'`; connectors without `publish()` fail with `publish_not_supported`; `ClassifiableError` thrown from `publish()` maps to the row's `errorCode`; `RequestGate` tracks `outbound_post` separately from `outbound` (reply).
 - `contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts` (ADR-0075) — the first real `SocialConnector.publish()` call site; `outboundPublishService.invoke()` with `facebookConnector` exercises the full outbound post path from gate to `POST /{page-id}/feed` and back.
+- `contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts` (ADR-0075) — the second real `SocialConnector.publish()` call site; `outboundPublishService.invoke()` with `linkedinConnector` exercises the full outbound post path from gate to `POST /v2/ugcPosts` and back.
 
 ## How to extend this safely
 
