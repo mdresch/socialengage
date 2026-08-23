@@ -3092,3 +3092,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 
 
+---
+
+## 2026-08-23 — Story 2.26 — social-listening-core@e3df7d9
+
+- **Full commit:** `e3df7d9efc085605355668be047f5b78b8425d65`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.26 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md; social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md (new)
+- **Files touched:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundEngagementService.ts
+- **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)

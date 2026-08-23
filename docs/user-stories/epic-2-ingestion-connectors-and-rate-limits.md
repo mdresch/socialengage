@@ -671,7 +671,7 @@
 ## Story 2.26 — Connector Reply Framework and Outbound Rate Gate
 
 **Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@e3df7d9
 
 **As a** core backend engineer,
 **I want** an optional `reply?()` method on `SocialConnector` and an outbound execution path,
@@ -734,7 +734,7 @@
 
 ## Story 2.28 — Connector Publish Framework and Outbound Post Rate Gate
 
-**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 3.14 (base `outbound_activities` table)
 
@@ -771,7 +771,7 @@
 
 ## Story 2.29 — Facebook Page Post Publishing
 
-**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 2.28 (connector publish framework), Story 6.23/6.27 (Facebook Page credential and enumeration)
 
@@ -798,7 +798,7 @@
 
 ## Story 2.30 — LinkedIn Post Publishing
 
-**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 2.28 (connector publish framework), Story 2.25 (LinkedIn connector and token lifecycle)
 
@@ -824,7 +824,7 @@
 
 ## Story 2.31 — Brave and Bing one-off research search helpers
 
-**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 2.21 (Brave Search active watchlist connector), Story 2.22 (Bing Search active watchlist connector)
 
@@ -852,7 +852,7 @@
 
 ## Story 2.32 — Azure OpenAI `research?()` capability
 
-**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 2.9 (Azure OpenAI as second `AIProviderConnector`)
 
