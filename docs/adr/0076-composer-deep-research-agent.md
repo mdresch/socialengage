@@ -1,8 +1,8 @@
 # ADR-0076: Composer Deep Research Agent — Context Summary from Post Text, Key Phrases, and Search Results
 
-**Status:** Proposed (2026-08-22)
+**Status:** Accepted (2026-08-23)
 
-**Drafted for Menno's review 2026-08-22.** Authorizes a new on-demand "Deep Research" capability inside the Polypost Composer that reads the post the user is drafting, extracts key phrases and topics, runs one-off search queries through the tenant's connected Brave/Bing search providers, and returns a concise context summary the author can compare against their own message.
+**Accepted by Menno 2026-08-23.** Authorizes a new on-demand "Deep Research" capability inside the Polypost Composer that reads the post the user is drafting, extracts key phrases and topics, runs one-off search queries through the tenant's connected Brave/Bing search providers, and returns a concise context summary the author can compare against their own message.
 
 **Source:** Menno request (2026-08-22): *"in the composer page have a deep research AI Agent review the post message and underneath have the deep research findings summarized for the end user to compare to their own post. The deep research agent should pull the details from the post message in the composer and perform some key phrasses found in the message and do search queiries on similarity and related topics and the topics that are described in the posts. The outcome from the search agents should be used by the deep research agent to search for relevant context in the final summary for the end users."*
 
@@ -147,6 +147,16 @@ Deep research consumes a separate `RequestGate` key per `(tenantId, providerId, 
 3. **Azure OpenAI `reasoning_effort` setting:** Research may benefit from a higher reasoning effort than `enrichPost()`; whether to make this a tenant setting or a fixed default is left for the implementation contract.
 4. **Citation rendering in the UI:** Whether sources are shown as a simple list, expandable cards, or linked inline within the `contextSummary` is a UI/UX decision, not an architectural one.
 5. **Caching and re-trigger:** Should repeated research for the same text be cached per tenant? v1 says no; a later ADR can decide if costs justify it.
+
+## Resolved Questions
+
+Resolved 2026-08-23:
+
+1. **Exact endpoint path:** `POST /v1/composer/research`. The `PolypostComposer` calls it through a same-origin proxy at `/api/composer/research`.
+2. **Generalize search to a shared `SearchProvider` interface?** Defer to ADR-0120 *SearchProviderConnector*, which designs the shared one-off search abstraction for Brave, Bing, and future providers.
+3. **Azure OpenAI `reasoning_effort` setting:** Make it a tenant-scoped setting `tenant_settings.research_reasoning_effort` with values `low` | `medium` | `high` and default `medium`. The composer UI shows it as an advanced option when Azure OpenAI is active.
+4. **Citation rendering in the UI:** Use expandable cards (`<details>`/accordion-style `SourceCard`s) for `sources` in `DeepResearchPanel`. Each card shows title, provider, and a snippet; the full URL is a link. Inline citations inside `contextSummary` are deferred.
+5. **Caching and re-trigger:** Defer to ADR-0121 *Composer Deep Research Caching, Re-Trigger, and Cost Justification*.
 
 ---
 

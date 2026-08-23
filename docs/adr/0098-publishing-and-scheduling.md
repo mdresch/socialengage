@@ -126,6 +126,18 @@ ALTER TABLE outbound_activities ADD COLUMN published_at timestamptz;
 - Should the scheduler run in-process (like the ingestion scheduler) or as a separate worker/function?
 - What is the maximum scheduling window (e.g. 30 days)?
 
+## Resolved questions
+
+Resolved 2026-08-23: **How are failed scheduled posts surfaced?**
+
+When the scheduling worker marks an `outbound_activities` row as `failed`, the failure is surfaced in three places:
+
+1. `GET /v1/outbound/posts?status=failed` (or `GET /v1/outbound/activities?status=failed`) returns the failed rows, including `error_code`, `failed_at`, and the originating `scheduled_for`.
+2. A dedicated **Outbound Activity Log** screen or tab in the Tenant Admin UI reuses the same list and is filterable by `status`.
+3. An optional, tenant-scoped in-app notification is generated when a scheduled post fails.
+
+The scheduler itself is not expected to retry `failed` scheduled posts beyond the existing retry policy; a failed scheduled post must be corrected, rescheduled, or cancelled by the user.
+
 ---
 
 ## Footnotes

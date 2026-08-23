@@ -1,8 +1,8 @@
 # ADR-0075: Outbound Social Post Publishing via Platform APIs
 
-**Status:** Proposed (2026-08-22)
+**Status:** Accepted (2026-08-23)
 
-**Drafted for Menno's review 2026-08-22.** Authorizes the real outbound post publishing path that turns ADR-0072's Polypost Composer from a simulated dispatch into a system that can create new posts on connected social platform assets (Facebook Pages, LinkedIn profiles/organizations, etc.), using the same `outbound_activities` audit trail introduced in ADR-0073.
+**Accepted by Menno 2026-08-23.** Authorizes the real outbound post publishing path that turns ADR-0072's Polypost Composer from a simulated dispatch into a system that can create new posts on connected social platform assets (Facebook Pages, LinkedIn profiles/organizations, etc.), using the same `outbound_activities` audit trail introduced in ADR-0073.
 
 **Source:** Menno request (2026-08-22): *"Could you write the required ADR for outbound social write APIs to become available?"*
 
@@ -135,6 +135,12 @@ async publish?(
 1. **Which platforms ship `publish()` first?** Likely Facebook and LinkedIn first, because the tenant already has asset enumeration and OAuth credential machinery for them.
 2. **Does `outbound_activities` need an `edited_at` / `deleted_at` in the future?** v1 excludes editing/deleting; leave for a later ADR.
 3. **How are failed scheduled posts surfaced?** UI/notification story to be designed alongside the scheduler.
+
+## Resolved Questions
+
+Resolved 2026-08-23:
+
+3. **How are failed scheduled posts surfaced?** The concrete surfacing contract belongs to the future scheduling ADR (ADR-0098). When the scheduler is built, scheduled post failures will be exposed through `GET /v1/outbound/posts?status=failed`, an Outbound Activity Log screen in the Tenant Admin UI, and optional tenant-scoped in-app notifications.
 
 ---
 
