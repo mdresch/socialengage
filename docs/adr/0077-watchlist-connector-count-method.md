@@ -1,6 +1,6 @@
 # ADR-0077: Watchlist connector count and preview endpoint
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted 2026-08-23 (review adjustments incorporated 2026-08-23)
 
 **Authorizes:** a `POST /v1/watchlists/preview-volume` endpoint and an optional `SocialConnector.count?()` method that estimates how many posts a watchlist query would match on each selected connector before the user activates the watchlist.
 
@@ -38,21 +38,36 @@ interface SocialConnector {
 interface ConnectorCountResult {
   count: number;
   confidence: 'exact' | 'estimate';
+  sampleSize?: number;
+  rateLimitCost?: number;
+  unsupportedOperators?: string[];
 }
 ```
 
 - `count?()` is **optional**. If a connector does not implement it, the backend falls back to a limited preview sample.
 - The method receives the same `WatchlistAST` and `timeWindow` used for `poll()`.
 - The result must be tenant-scoped and use the connector's existing credentials and `RequestGate`.
+- `rateLimitCost` is the estimated number of API request units the preview check itself consumed (e.g., `1` for a count API, `1` for a sample page). If the connector also wishes to surface a future ingestion cost, it must use a separate `projectedIngestionRateLimitCost` field to avoid ambiguity.
+- `unsupportedOperators` lets the connector report which AST operators it cannot evaluate, supporting the `unsupported_query` warning in the breakdown.
 
-### 2. Fallback to a limited preview sample for non-count connectors
-When `count?()` is absent or returns `null`:
+### 2. Avoid side-effects in preview calls
+Preview calls must not mutate connector state. To guarantee this:
 
-- Call `connector.poll({ limit: previewSampleSize, ast, timeWindow })` with a small, fixed `previewSampleSize` (default 100).
-- Extrapolate the total from the sample using the time window and the connector's known publishing cadence.
-- Return `confidence: 'estimate'` and the `sampleSize`.
+- If the connector implements an explicit `sample?()` method, the preview controller calls `sample?()` instead of `poll()`.
+- If the preview controller falls back to `poll()`, it must pass `mode: 'preview'` (or `isDryRun: true`) in `ConnectorContext` / `pollArgs`. Connector `poll()` implementations must skip watermark, cursor, checkpoint, and high-water-mark updates when preview mode is active.
+- Posts fetched for the preview sample are **not** written to `social_posts`, `post_watchlist_matches`, or `outbound_activities`. They are discarded after counting.
 
-### 3. New `POST /v1/watchlists/preview-volume` endpoint
+### 3. Fallback to a limited preview sample for non-count connectors
+When `count?()` is absent or the connector cannot count the supplied AST:
+
+- Use `sample?()` if implemented; otherwise call `poll()` in `mode: 'preview'` with a small, fixed `previewSampleSize` (default **50**).
+- Extrapolate using the sample's time span and the requested time window:
+  - `Cadence (r) = sampleSize / Δt_sample`, where `Δt_sample` is the time between the oldest and newest sampled post.
+  - `Estimated Posts = r × Δt_requested_window`.
+  - If the returned sample is smaller than `previewSampleSize`, the sample's size is the **exact** count for that window and `confidence` is `exact`.
+- Return `confidence: 'estimate'` (or `exact` for the short-sample edge case), the `sampleSize`, and the `rateLimitCost` supplied by the connector.
+
+### 4. New `POST /v1/watchlists/preview-volume` endpoint
 ```ts
 // Request
 {
@@ -72,19 +87,27 @@ When `count?()` is absent or returns `null`:
     sampleSize?: number;
     rateLimitCost: number;
     warning: 'none' | 'high_volume' | 'quota_risk' | 'unsupported_query';
+    errorCode?: string;
+    errorMessage?: string;
   }>;
 }
 ```
 
-### 4. Quota and warning thresholds
+- Connector previews are executed concurrently. The controller must not fail the whole HTTP request when a single connector fails; instead, it treats the failing connector as `confidence: 'unavailable'` with `errorCode` and `errorMessage` in the breakdown item.
+- Users may preview against inactive connectors as long as they are credentialed and the caller has authority to activate them under the existing RLS/RBAC rules.
+
+### 5. Quota and warning thresholds
+- Before executing `count()` or a preview `poll()`, the preview controller calls `RequestGate.checkAvailability(connectorId, estimatedUnits)`.
+- If the remaining budget is below the required units, the controller throws a `QuotaExceededPreviewError`, which maps the connector's breakdown item to `warning: 'quota_risk'` and `confidence: 'unavailable'` rather than failing the entire request.
 - A preview call may not consume more than 5% of the connector's remaining rate-limit budget.
 - Warnings are triggered by:
   - `> 100,000` estimated posts per connector → `high_volume`
-  - `> 80%` of the connector's rate-limit budget at risk → `quota_risk`
-  - query uses operators the connector cannot evaluate → `unsupported_query`
+  - The preview would consume more than 80% of the connector's remaining rate-limit budget → `quota_risk`
+  - Query uses operators the connector cannot evaluate → `unsupported_query`
 
-### 5. No preview posts are persisted
-Posts fetched for the preview sample are **not** written to `social_posts`, `post_watchlist_matches`, or `outbound_activities`. They are discarded after counting.
+### 6. Unsupported-query detection
+- Run a shared `astCapabilityCheck(ast, connector.supportedOperators)` first (fast, static, zero API cost).
+- The connector validates platform-specific syntax constraints during `count()` or `sample()` and may return `unsupportedOperators` in `ConnectorCountResult`.
 
 ---
 
@@ -94,6 +117,7 @@ Posts fetched for the preview sample are **not** written to `social_posts`, `pos
 2. **Connector heterogeneity is exposed honestly:** some connectors will show exact counts, others estimates; the UI must render the confidence for each.
 3. **New endpoint surface:** `POST /v1/watchlists/preview-volume` must be added to the auth/RLS pipeline, contract-tested, and documented.
 4. **Optional method keeps churn low:** connectors that cannot count simply do not implement the method.
+5. **Preview calls are safe by contract:** the `mode: 'preview'` flag and `sample?()` alternative prevent cursor and checkpoint mutation, and partial failures are isolated per connector.
 
 ---
 
@@ -110,12 +134,14 @@ Posts fetched for the preview sample are **not** written to `social_posts`, `pos
 
 ---
 
-## Open questions
+## Open questions (answered)
 
-- What is the right default `previewSampleSize` for connectors that cannot count? 50, 100, or 250?
-- Should `unsupported_query` be detected by the connector or by a shared `astCapabilityCheck()`?
-- Should the preview endpoint require the connector to be already active, or can a user preview against any connector they have the authority to activate?
-- How is the `rateLimitCost` computed for connector-specific cost models (per-request vs. per-result)?
+| Open question | Decision |
+|---|---|
+| What is the right default `previewSampleSize`? | **50 posts.** Most search/social APIs return 25–100 results per page/call. A sample of 50 is usually achievable in a single HTTP request without triggering pagination loops, minimizing quota burn. |
+| Should `unsupported_query` be detected by the connector or a shared `astCapabilityCheck()`? | **Two-phase approach:** 1) Run a shared `astCapabilityCheck(ast, connector.supportedOperators)` first (fast, static, zero API cost). 2) The connector validates platform-specific syntax constraints during `count()` / `sample()`. |
+| Can users preview against inactive connectors? | **Yes, if configured and credentialed.** Users preview watchlists to decide whether to activate them. As long as credentials exist and RLS/RBAC allows access, previewing inactive connectors is permitted. |
+| How is `rateLimitCost` computed? | `rateLimitCost` is the estimated API request units the preview check itself consumed (e.g., `1` for a count API, `1` for a sample page). If the connector also wants to display future ingestion cost, that field is named `projectedIngestionRateLimitCost` to avoid ambiguity. |
 
 ---
 

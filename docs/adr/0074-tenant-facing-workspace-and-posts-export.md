@@ -1,6 +1,8 @@
 # ADR-0074: Tenant-Facing Workspace and Matched-Posts Export
 
-**Status:** Proposed
+**Status:** Accepted (2026-08-23)
+
+**Accepted by Menno 2026-08-23.** Authorizes two new tenant-facing `GET` endpoints in `social-listening-core` — a full workspace JSON archive (`/v1/tenants/me/export/workspace`) and a matched-posts CSV export (`/v1/posts/export.csv`) — powering the `/tenant/settings` export buttons with real API calls and no mock/fallback values.
 
 **Source:** User request to implement `docs/design/Google AI Studio/src/views/TenantSettingsView.tsx` on the real `/tenant/settings` page, with the explicit constraint that all UI data must come from real `social-listening-core` API calls and no mock/fallback values.
 
@@ -102,3 +104,12 @@ ADR-0043's deletion export (Decision §4) remains the sole offboarding/deletion 
 2. **Async export for large tenants:** Synchronous v1 is capped. Whether to build a background job + Azure Blob Storage + polling endpoint for unbounded exports is deferred to a later ADR/story.
 3. **Workspace JSON exact column set:** The precise inclusion/exclusion of `ingestion_runs` archived rows, `watchlists` full query AST text, and `platform_credentials` non-secret metadata is left for the implementation contract.
 4. **CSV watchlist match expansion:** Whether `watchlist_ids` is a single column, a one-row-per-match expansion, or omitted for the initial version is left to the frontend story's contract.
+
+## Resolved Questions
+
+Resolved during acceptance review on 2026-08-23:
+
+1. **Endpoint naming:** `GET /v1/tenants/me/export/workspace` is chosen for consistency with `GET /v1/tenants/me`. `GET /v1/posts/export.csv` is chosen for the posts CSV export (a dedicated path rather than `?format=csv` on the paginated `GET /v1/posts` endpoint).
+2. **Async export for large tenants:** V1 remains synchronous and capped. Async background export to Azure Blob Storage is deferred to a later ADR/story (see ADR-0111).
+3. **Workspace JSON exact column set:** Export is a "safe metadata" archive, not a raw dump. Include tenant, users list, watchlists with full query AST, connector activations, and `platform_credentials` non-secret metadata (provider, `owner_type`, active/inactive, created date). For posts, include the same canonical fields as the CSV (`id`, `published_at`, `provider`, `author_name`, `author_url`, `title`, `body_markdown`, `url`, `sentiment`, `keywords`, `watchlist_ids`). Exclude `rawPayload`, full `enrichment` JSONB internals, credential secrets, OAuth refresh tokens, and Key Vault envelopes. Exclude archived `ingestion_runs` raw rows; include only run summary rows if audit continuity is required.
+4. **CSV watchlist match expansion:** A single `watchlist_ids` column with comma-separated watchlist IDs. One-row-per-match expansion is deferred to a future "exploded export" option.

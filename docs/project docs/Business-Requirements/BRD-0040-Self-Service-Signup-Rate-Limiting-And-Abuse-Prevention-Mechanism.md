@@ -1,0 +1,262 @@
+# BRD-0040: Self-Service Sign-up Rate Limiting and Abuse Prevention Mechanism
+
+## 1. Document Control
+
+| Field | Value |
+|---|---|
+| Document Title | Self-Service Sign-up Rate Limiting and Abuse Prevention Mechanism – Business Requirements Document |
+| Version | 1.0 |
+| Date | 2026-08-19 |
+| Author(s) | AI Business & Requirements Analyst |
+| Approver(s) | Menno, Product Owner / Sponsor |
+| Status | Approved |
+
+### Revision History
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-19 | AI Business & Requirements Analyst | Initial BRD based on ADR-0040 and Story 5.18 |
+
+---
+
+## 2. Executive Summary
+
+The `POST /v1/tenants/self-service-signup` endpoint is, by design, the one route in the SocialEngage project that accepts a caller who has a validly-signed Entra token but does not yet resolve to any existing `tenants` or `users` row. This creates a genuine abuse-prevention gap: a script or a distributed actor could repeatedly create new tenants before any tenant-level identity exists on which an ordinary rate limiter could key. The existing `RequestGate` mechanism is intentionally keyed by `(tenantId, providerId)` and therefore cannot operate at this pre-identity boundary.
+
+This BRD describes a new, narrowly-scoped rate-limiting and abuse-prevention mechanism dedicated to that one endpoint. The mechanism will track sign-up attempts in two independent rolling windows—one keyed by the caller's source IP address and one keyed by the verified email domain from the Entra token—and will reject further attempts with HTTP `429` when either window's threshold is crossed. The numeric defaults are explicitly template values and are expected to be tuned as real sign-up traffic emerges.
+
+The expected business value is the closure of ADR-0037 §7's named precondition, protection of platform availability against cheap and naive volumetric attacks, and a deliberately narrow scope that avoids retrofitting the wrong mechanism or adding unnecessary third-party services.
+
+---
+
+## 3. Business Objectives
+
+| # | Objective | Success Measure |
+|---|---|---|
+| 1 | Close ADR-0037 §7's precondition before the self-service sign-up endpoint is exposed to real, untrusted traffic | Story 5.18 built and contract-verified; `docs/open-decisions.md` §1 gap resolved |
+| 2 | Prevent cheap, naive sign-up abuse without relying solely on email-OTP verification | A single IP or a single verified domain cannot exceed its rolling-window allowance undetected |
+| 3 | Preserve architectural separation between tenant/provider gating and pre-identity gating | `RequestGate` remains scoped to `(tenantId, providerId)` and is not reused or widened |
+| 4 | Keep the solution self-contained and free of new external vendor machinery | No third-party CAPTCHA, WAF, or bot-detection service is introduced in v1 |
+| 5 | Provide revisable numeric defaults without requiring a new ADR | Thresholds are configuration-driven and can be tuned via ADR-0040's Amendment Log |
+
+---
+
+## 4. Scope
+
+### 4.1 In Scope
+
+- A new, dedicated rate-limiting mechanism for `POST /v1/tenants/self-service-signup`, structurally independent of `RequestGate`.
+- Per-IP-address rolling-window rate limiting with a configurable default of 10 attempts per 24 hours.
+- Per-verified-email-domain rolling-window rate limiting with a configurable default of 5 attempts per 24 hours.
+- Keying the domain limit on the raw domain captured from the token's OTP-verified `email` claim, before public-email-provider denylist filtering.
+- Returning HTTP `429` once either threshold is crossed.
+- Keeping the `429` rejection path distinct from ADR-0037 §3's domain-match `409` rejection and from ADR-0037 §8c's escalation logic.
+- Reading thresholds and window durations from environment configuration, not hardcoding them.
+- In-process storage for the attempt counters for the current single-instance deployment posture.
+
+### 4.2 Out of Scope
+
+- Reuse or modification of `RequestGate` to handle pre-identity sign-up attempts.
+- Introduction of third-party CAPTCHA, managed WAF, or dedicated bot-detection services in v1.
+- Real-time alerting or paging for rate-limit rejections.
+- Writing rejected-attempt records to `platform_admin_audit_log` (a possible future enhancement, not required here).
+- Distributed or shared storage for the counter state (deferred until a multi-instance deployment need is demonstrated).
+- Per-user or per-tenant rate limiting, which is impossible at this pre-identity boundary.
+
+### 4.3 Assumptions
+
+- The project remains a single-instance deployment, consistent with the posture that deferred `RequestGate` distributed state in ADR-0020.
+- `POST /v1/tenants/self-service-signup` already exists and accepts callers with no resolved `tenants`/`users` row (ADR-0037, Story 5.15).
+- Entra External ID already returns a token with an OTP-verified `email` claim as required by ADR-0037 §8a.
+- `domain_signup_attempts` (Story 5.16) already captures the domain-match concept and is available as a contextual reference, but the rate-limit counter is a separate, in-process construct.
+
+### 4.4 Constraints
+
+- The rate-limit check must not require a resolved `tenantId` or `providerId` at invocation time.
+- The mechanism must not conflate a `429` rate-limit outcome with the `409` domain-match/escalation outcome.
+- No new external vendor contracts, credentials, or service dependencies may be added for v1.
+- The project is a solo, self-funded effort, so the solution must be minimal and maintainable.
+
+---
+
+## 5. Stakeholders
+
+| Stakeholder | Role / Interest | Impact | Key Needs |
+|---|---|---|---|
+| Menno (Product Owner / Business Sponsor) | Sole sponsor and decision authority | High | A minimal, self-contained mechanism that closes the open decision and unblocks public exposure |
+| Platform Operator | Operates the `social-listening-core` service | High | Availability protection and clear, tunable thresholds |
+| Platform Admin | Reviews platform-level audit and escalation signals | Medium | Future visibility into rejected attempts; clear distinction from domain-match escalations |
+| Tenant Admin (prospective) | Legitimate self-service sign-up user | Medium | Ability to complete sign-up without being blocked by a falsely tight threshold |
+| Security / Architecture Reviewer | Validates design safety | High | Architectural separation from `RequestGate` and correct pre-identity keying |
+
+---
+
+## 6. Current State (As-Is)
+
+The project has implemented `POST /v1/tenants/self-service-signup` (Story 5.15), the one endpoint that accepts a caller holding a validly-signed Entra token that does not yet map to any `users` or `platform_admins` row. All other routes reject such a caller outright (ADR-0029 §4).
+
+The existing `RequestGate` mechanism (ADR-0003, ADR-0020) is the project's only prior rate-limiting mechanism. It is keyed by `(tenantId, providerId)` and is therefore structurally inapplicable before a tenant or provider identity has been resolved.
+
+The absence of a pre-identity rate limit leaves the self-service sign-up endpoint exposed to volumetric abuse. ADR-0037 §7 explicitly identified this gap as a precondition, not an optional hardening pass, and `docs/open-decisions.md` §1 tracked it as blocking work already queued next.
+
+---
+
+## 7. Future State (To-Be)
+
+After implementation, every request to `POST /v1/tenants/self-service-signup` will first be evaluated by a new, dedicated rate-limiting check keyed on the caller's source IP address and the raw domain of the token's verified `email` claim.
+
+The new process:
+
+1. The caller's source IP and verified email domain are extracted from the incoming request.
+2. Two independent rolling-window attempt counters are consulted: one for the IP and one for the domain.
+3. If either counter exceeds its configured threshold, the request is rejected with HTTP `429` and no further database work occurs.
+4. If neither threshold is exceeded, the request proceeds to the existing self-service sign-up logic.
+5. A `429` rejection does not write a `domain_signup_attempts` row and does not trigger the domain-match escalation logic.
+
+Expected capabilities:
+- Cheap, single-source-IP abuse is blocked by the per-IP limit.
+- Distributed but same-domain abuse is blocked by the per-domain limit.
+- Thresholds and window lengths can be tuned without superseding the ADR.
+- The mechanism remains cleanly separated from `RequestGate` and from the `domain_signup_attempts` escalation path.
+
+---
+
+## 8. Business Requirements
+
+### 8.1 Functional Requirements
+
+| ID | Requirement | Priority | Acceptance Criteria | Owner |
+|---|---|---|---|---|
+| BR-001 | The system shall track self-service sign-up attempts per source IP address in a rolling 24-hour window | Must | A caller exceeding the configured IP threshold receives `429`; a caller from a different IP is unaffected | Technical Lead |
+| BR-002 | The system shall track self-service sign-up attempts per verified email domain in a rolling 24-hour window | Must | Several distinct verified emails at one domain, exceeding the threshold, are rejected; a different domain is unaffected | Technical Lead |
+| BR-003 | The system shall reject `POST /v1/tenants/self-service-signup` with HTTP `429` once either the IP or the domain threshold is crossed | Must | Contract test confirms `429` returned before any tenant/user database work begins | Technical Lead |
+| BR-004 | The system shall keep the `429` rate-limit rejection path independent of the `409` domain-match rejection and escalation path | Must | A `429` does not write a `domain_signup_attempts` row or trigger the escalation logic in Story 5.16 | Technical Lead |
+| BR-005 | The system shall read the rate-limit thresholds and window durations from configuration | Should | Environment variables or equivalent config exist for IP threshold, domain threshold, and window length; defaults match ADR-0040 §3 | Technical Lead |
+| BR-006 | The system shall use in-process storage for the attempt counters for the current single-instance deployment posture | Should | Counter state is held in process memory; multi-instance limitations are documented | Technical Lead |
+| BR-007 | The system shall key the domain limit on the raw domain extracted from the token's `email` claim, before any public-email-provider denylist is applied | Must | Attempts against a denylisted public domain such as `gmail.com` are rate-limited by that domain key | Technical Lead |
+
+Priority levels: Must / Should / Could / Won't (MoSCoW)
+
+### 8.2 Non-Functional Requirements
+
+| ID | Requirement | Category | Priority | Acceptance Criteria |
+|---|---|---|---|---|
+| NFR-001 | The rate-limit check must not materially increase end-to-end sign-up latency | Performance | Should | p95 latency of the sign-up endpoint remains within the same order of magnitude as before the mechanism was added |
+| NFR-002 | The mechanism must be a separately maintained component, not a special case inside `RequestGate` | Maintainability | Must | No `RequestGate` code path is modified to accept a synthetic or null `tenantId`/`providerId` |
+| NFR-003 | The mechanism must be safe to expose before the self-service sign-up endpoint is opened to untrusted traffic | Security | Must | The two-key design is implemented and contract-verified before public exposure |
+| NFR-004 | The solution must operate without new external vendor dependencies | Security / Cost | Must | No new third-party CAPTCHA, WAF, or bot-detection service is used in v1 |
+| NFR-005 | Numeric defaults must be revisable without an ADR supersession | Maintainability | Should | Thresholds are configuration-driven and the ADR Amendment Log can record any tune |
+
+Categories include: Performance, Security, Reliability, Scalability, Usability, Compliance, Maintainability, Accessibility.
+
+---
+
+## 9. Business Rules
+
+| ID | Rule |
+|---|---|
+| BRU-001 | Both per-IP and per-verified-email-domain rate limiting are enforced; neither key alone is treated as sufficient. |
+| BRU-002 | A `429` rejection under the rate-limit mechanism is a distinct outcome from the `409` domain-match rejection in ADR-0037 §3. |
+| BRU-003 | A `429` rejection does not write a `domain_signup_attempts` row and does not trigger Story 5.16's escalation logic. |
+| BRU-004 | The raw domain from the token's `email` claim is used for the domain-keyed limit, before public-email-provider denylist filtering. |
+| BRU-005 | The numeric thresholds may be revised via the ADR-0040 Amendment Log without requiring a new ADR. |
+| BRU-006 | `RequestGate` remains scoped to `(tenantId, providerId)` outbound-request gating and is not repurposed for self-service sign-up rate limiting. |
+| BRU-007 | In-process counter storage is acceptable only while the deployment remains a single concurrent instance. |
+
+---
+
+## 10. Data Requirements
+
+| Data Element | Description | Source | Owner | Sensitivity |
+|---|---|---|---|---|
+| In-process per-IP attempt counter | Rolling count of sign-up attempts keyed by caller source IP | Runtime request metadata | Technical Lead | Operational |
+| In-process per-domain attempt counter | Rolling count of sign-up attempts keyed by raw verified email domain | Entra token `email` claim | Technical Lead | Operational |
+| `domain_signup_attempts` table | Persists domain-match rejection history for Tenant-Admin visibility and escalation (referenced conceptually, not used as the rate-limit store) | Story 5.15 / 5.16 | Technical Lead | Tenant-scoped |
+| Rate-limit configuration | Environment variables or equivalent holding IP threshold, domain threshold, and window length | Deployment configuration | Platform Operator | Operational |
+
+---
+
+## 11. Reporting and Analytics
+
+| Report / Metric | Purpose | Audience | Frequency |
+|---|---|---|---|
+| Self-service sign-up `429` rejections | Track abuse-prevention effectiveness | Platform Operator | Daily / On demand |
+| Sign-up attempts by source IP | Identify concentrated single-source abuse | Platform Operator | Daily / On demand |
+| Sign-up attempts by verified email domain | Identify concentrated same-domain abuse | Platform Operator | Daily / On demand |
+| Threshold-hit distribution | Inform threshold tuning decisions | Product Owner / Technical Lead | Weekly |
+
+---
+
+## 12. Risks and Mitigations
+
+| ID | Risk | Likelihood | Impact | Mitigation | Owner |
+|---|---|---|---|---|---|
+| R-001 | A determined attacker controlling many real mailboxes across many domains and rotating source IPs is not fully stopped | Medium | Medium | Accept the residual risk; note that a newly-created tenant is an empty shell with no ambient external access (ADR-0037 §7) | Menno |
+| R-002 | Default thresholds are too tight and reject legitimate sign-up bursts (e.g., several employees from one company) | Medium | High | Make thresholds configuration-driven and revisable via the ADR Amendment Log; monitor real traffic after launch | Product Owner |
+| R-003 | In-process counter storage cannot support a future multi-instance deployment | Low | Medium | Document the limitation; defer distributed store until a real second concurrent instance need is demonstrated | Technical Lead |
+| R-004 | The rate-limit mechanism is accidentally conflated with `RequestGate` or `domain_signup_attempts` | Low | High | Maintain explicit separation in the ADR, story, and code; verify with contract tests | Technical Lead |
+
+---
+
+## 13. Dependencies
+
+| ID | Dependency | Type | Owner | Expected Resolution |
+|---|---|---|---|---|
+| D-001 | `POST /v1/tenants/self-service-signup` endpoint built (Story 5.15) | Internal | Technical Lead | Resolved 2026-08-06 |
+| D-002 | ADR-0037 accepted and the `domain_signup_attempts` concept defined | Internal | Product Owner | Resolved 2026-08-04 |
+| D-003 | Entra token with verified `email` claim available at the sign-up endpoint | External (Entra) | Platform Operator | Resolved |
+| D-004 | `domain_signup_attempts` table and Tenant-Admin read path (Story 5.16) | Internal | Technical Lead | Resolved / Ready |
+
+---
+
+## 14. Acceptance Criteria
+
+- A new, dedicated rate-limiting mechanism is added for `POST /v1/tenants/self-service-signup`, independent of `RequestGate`.
+- Per-IP limit: a caller exceeding the configured default (10 attempts per rolling 24-hour window) receives `429`, while a caller from a different IP is unaffected.
+- Per-domain limit: several distinct verified emails at one domain exceeding the configured default (5 attempts per rolling 24-hour window) are rejected, while a different domain is unaffected.
+- A `429` rejection does not write a `domain_signup_attempts` row and does not trigger Story 5.16's escalation logic.
+- The IP threshold, domain threshold, and window length are read from configuration, not hardcoded.
+- The attempt-counter storage is in-process, consistent with the single-instance deployment posture, with the multi-instance limitation documented.
+- The full contract suite for Story 5.18 passes.
+
+---
+
+## 15. Glossary
+
+| Term | Definition |
+|---|---|
+| `domain_signup_attempts` | Postgres table that records same-domain sign-up attempts that were rejected because the domain already matches an existing tenant, used by the Same-Domain Invite Assist feature. |
+| `RequestGate` | The project's existing rate-limiting mechanism, keyed by `(tenantId, providerId)` and scoped to outbound connector requests. |
+| Rolling window | A time-bounded counter that resets or ages out attempts as the window advances, as opposed to a fixed calendar window. |
+| Self-service sign-up | The flow in which a brand-new, unassociated Entra user creates a new tenant and becomes its first Tenant-Admin. |
+| Verified email domain | The domain extracted from the Entra token's `email` claim after OTP verification, before any public-email-provider denylist filtering. |
+| HTTP `429` | The "Too Many Requests" status code returned when a rate limit is exceeded. |
+| In-process storage | Counter state held in the memory of the running application process, not in a shared database or cache. |
+| Public-email-provider denylist | A static list of free/public email domains that ADR-0037 §4 rejects for tenant creation. |
+
+---
+
+## 16. Appendices
+
+### Reference documents
+
+- `docs/adr/0040-self-service-signup-rate-limiting-and-abuse-prevention-mechanism.md` — source ADR (Accepted 2026-08-06).
+- `docs/adr/0037-self-service-tenant-signup-and-domain-handling.md` — the ADR that named this rate-limiting mechanism as a precondition.
+- `docs/user-stories/epic-5-security-isolation-and-messaging.md` — Story 5.18 (rate-limiting and abuse prevention) and Story 5.15 (the self-service sign-up endpoint).
+- `docs/user-stories/epic-6-tenant-admin-ui.md` — Story 6.7 (self-service sign-up UI), which explicitly disclaims building this rate-limit mechanism on the UI side.
+- `docs/open-decisions.md` — tracks this gap as resolved.
+
+### Note on related feature-design and deep-research files
+
+No dedicated `docs/product-research/feature-designs/<feature>.md` or `docs/product-research/reports/<feature>-deep-research.md` file was found for ADR-0040's rate-limiting and abuse-prevention mechanism. This BRD is therefore synthesized directly from the ADR, the related user stories, and the BRD template.
+
+---
+
+## 17. Approval
+
+| Role | Name | Signature | Date |
+|---|---|---|---|
+| Business Sponsor | Menno | | 2026-08-19 |
+| Product Owner | Menno | | 2026-08-19 |
+| Technical Lead | Menno | | 2026-08-19 |
+| Other Stakeholder | | | |

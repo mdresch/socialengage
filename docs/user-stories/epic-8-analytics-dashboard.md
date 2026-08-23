@@ -28,7 +28,7 @@
 
 ## Story 8.1 — Analytics dashboard shell, global date-range filter, Overview tab, Sources tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17, via a structured approval decision in the orchestrating session ("Approve as summarized" — see ADR-0054's own Acceptance note), accepted as drafted, no revisions.
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17, via a structured approval decision in the orchestrating session ("Approve as summarized" — see ADR-0054's own Acceptance note), accepted as drafted, no revisions.
 **Built:** 2026-08-17 — social-listening-admin@5558e11
 
 **As a** Tenant User or Tenant-Admin,
@@ -51,7 +51,7 @@
 
 ## Story 8.2 — Sentiment tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
 **Built:** 2026-08-17 — social-listening-admin@a54bf05
 
 **As a** Tenant User or Tenant-Admin,
@@ -72,7 +72,7 @@
 
 ## Story 8.3 — Conversations tab
 
-**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
+**Source:** ADR-0054 (Accepted 2026-08-17) · **Status:** Ready — ADR-0054 accepted 2026-08-17 (see ADR-0054's own Acceptance note). Practically sequenced after Story 8.1 (tab shell, date-range wiring, and the paginated fetch-and-aggregate loop this story reuses).
 **Built:** 2026-08-17 — social-listening-admin@5fed9dd
 
 **As a** Tenant User or Tenant-Admin,
@@ -92,7 +92,7 @@
 
 ## Story 8.4 — Overview enrichment: volume chart, sentiment donut, period-over-period comparison
 
-**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; both pieces below stay inside Decision §2's already-accepted Overview scope ("reusing the same computed aggregates... not a novel widget of its own") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Built 2026-08-17
+**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; both pieces below stay inside Decision §2's already-accepted Overview scope ("reusing the same computed aggregates... not a novel widget of its own") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Ready
 **Built:** 2026-08-17 — social-listening-admin@ae015e0
 
 **As a** Tenant User or Tenant-Admin,
@@ -115,7 +115,7 @@
 
 ## Story 8.5 — Languages breakdown widget
 
-**Source:** ADR-0055 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 — ADR-0055 accepted 2026-08-17, via a structured approval decision in the orchestrating session (Menno: "yes please extend the language field" — see ADR-0055's own Acceptance note), accepted as drafted, no revisions.
+**Source:** ADR-0055 (Accepted 2026-08-17) · **Status:** Ready — ADR-0055 accepted 2026-08-17, via a structured approval decision in the orchestrating session (Menno: "yes please extend the language field" — see ADR-0055's own Acceptance note), accepted as drafted, no revisions.
 **Built:** 2026-08-17 — social-listening-admin@8b8bb14
 
 **As a** Tenant User or Tenant-Admin,
@@ -135,7 +135,7 @@
 
 ## Story 8.6 — Sources tab enrichment: per-source sentiment score, per-source volume-over-time
 
-**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; stays inside Decision §2's already-accepted Sources scope ("post-volume and sentiment breakdown per real `providerId`") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Built 2026-08-17
+**Source:** ADR-0054 (Accepted 2026-08-17) — no new ADR needed; stays inside Decision §2's already-accepted Sources scope ("post-volume and sentiment breakdown per real `providerId`") and Decision §3's data-source strategy (100% client-side, zero new backend surface) · **Status:** Ready
 **Built:** 2026-08-17 — social-listening-admin@a17af3f
 
 **As a** Tenant User or Tenant-Admin,

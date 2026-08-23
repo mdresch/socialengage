@@ -3,6 +3,7 @@
 ## Story 5.1 — Thin ingestion events with REST fetch on demand
 
 **Source:** ADR-0012 · **Status:** Ready
+**Built:** 2026-07-30 — social-listening-core@1e4e7d2
 
 **As a** downstream subsystem developer (e.g. Brand Reputation & Alerts),
 **I want** `SocialPostIngestedEvent`/`ConnectorHealthChangedEvent` to carry only IDs and the minimal fields needed to decide whether to act, with full post data fetched via REST on demand,
@@ -12,12 +13,15 @@
 - `SocialPostIngestedEvent` contains `tenantId`, `postId`, `platformId`, `watchlistId`, `sentiment`, `publishedAt`, `occurredAt` — no post text, engagement metrics, or raw payload.
 - `ConnectorHealthChangedEvent` contains only status-transition fields (`previousStatus`, `newStatus`, `tenantId`, `platformId`, `occurredAt`).
 - A subscriber can retrieve full post data for any `postId` received in an event via `GET /posts/:id`.
+- The full post content is not duplicated or held as authoritative in any downstream system based on the event alone.
+- Adding a new `SocialPost` field does not require a change to the thin event payload contract.
 
 ---
 
 ## Story 5.2 — Per-tenant event filtering via Service Bus subscription rules
 
 **Source:** ADR-0013 · **Status:** Ready
+**Built:** 2026-07-30 — social-listening-core@e2dd7d7
 
 **As a** downstream subsystem serving only a subset of tenants,
 **I want** my Service Bus subscription to receive events only for the tenants I actually serve, filtered at the messaging layer,
@@ -27,12 +31,14 @@
 - `tenantId` is emitted as a Service Bus application property on every event message, not only inside the JSON payload body (required for SQL subscription filters to evaluate it at all — see ADR-0013's Clarification).
 - A subscription with a SQL filter on `tenantId` receives events only for matching tenants, verified by publishing events for two tenants and confirming a single-tenant-scoped subscription receives only one tenant's events.
 - Adding a new downstream subsystem with a different tenant subset requires only a new subscription filter — no change to the publisher.
+- Events for an unentitled tenant are not delivered to a single-tenant-scoped subscription.
 
 ---
 
 ## Story 5.3 — Envelope-encrypted credential storage with OAuth-first auth
 
 **Source:** ADR-0014 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@133b0cb
 
 **As a** tenant connecting a social platform or AI provider,
 **I want** my OAuth tokens and API keys encrypted at rest via Azure Key Vault–backed envelope encryption, with OAuth used wherever the platform supports it,
@@ -42,12 +48,17 @@
 - Credential values are never stored or logged in plaintext at any point in the write path — verified by inspecting stored rows and application logs.
 - Connecting a platform that supports OAuth (X, LinkedIn, YouTube/Google, Meta) uses the OAuth flow; API-key entry is only offered for platforms without OAuth support (e.g. some RSS/newswire providers).
 - Revoking a Key Vault key renders previously-stored credentials unreadable, confirming the envelope-encryption dependency is real, not cosmetic.
+- `POST /v1/connectors/:platformId/connect` stores the credential using envelope encryption and returns `201` with the credential id, `platformId`, and `authMethod`.
+- `DELETE /v1/connectors/:platformId/disconnect` removes the stored credential for the calling tenant and platform.
+- The connect route returns a clear, actionable error and refuses storage when the Key Vault key is not genuinely configured.
+- Connector retrieval and use decrypts the credential through Azure Key Vault before each poll, webhook registration, or enrichment call.
 
 ---
 
 ## Story 5.4 — Tenant isolation via Postgres Row-Level Security
 
 **Source:** ADR-0015 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@bce8cfc
 
 **As a** platform operator responsible for multi-tenant data isolation,
 **I want** every table carrying `tenantId` protected by a Postgres RLS policy, not only by application-level `WHERE tenantId = ?` filtering,
@@ -57,12 +68,14 @@
 - Every table with a `tenantId` column has an active RLS policy before it accepts writes — enforced by a CI/migration check that fails if a new `tenantId`-bearing table lacks one.
 - A query executed without setting the expected tenant session context returns zero rows (fails closed), not another tenant's data.
 - A deliberately-unfiltered test query (no `WHERE tenantId`) against a table with two tenants' data returns only the session's own tenant's rows.
+- Legitimate background or platform-administrative processes that operate across tenants use an explicit, audited, narrowly scoped path.
 
 ---
 
 ## Story 5.5 — Event schema versioning via Service Bus message property
 
 **Source:** ADR-0019 · **Status:** Ready (accepted 2026-07-29, ahead of its natural phase — see ADR-0019's Acceptance note); implementation still waits for Phase 3, when events are first published
+**Built:** 2026-07-30 — social-listening-core@914dfce
 
 **As a** downstream subsystem consuming ingestion events long-term,
 **I want** every event to carry a `schemaVersion` as a Service Bus application property (not only in the payload), with additive changes leaving it unchanged and breaking changes bumping it through a coordinated cutover,
@@ -79,6 +92,7 @@
 ## Story 5.6 — Authentication via Microsoft Entra External ID
 
 **Source:** ADR-0029 · **Status:** Ready — ADR-0029 accepted 2026-08-03 ("reviewed ADR 0029 and approved"). Scheduled in Phase 4.5, first in that phase's own dependency chain (`docs/implementation-plan.md`) — Story 5.7 depends on this story's caller identity and is also Ready — ADR-0030 accepted 2026-08-03.
+**Built:** 2026-08-03 — socialengage@caa4c57
 
 **As a** person signing in to SocialEngage (an invited tenant user, a Tenant-Admin, or Platform Admin),
 **I want** to authenticate through Microsoft Entra External ID rather than a self-declared header,
@@ -96,6 +110,7 @@
 ## Story 5.7 — Platform Admin's audited, narrowly-scoped RLS bypass
 
 **Source:** ADR-0030 · **Status:** Ready — ADR-0030 accepted 2026-08-03, revised at review to add a narrow break-glass mechanism (Tenant-Admin credential reset only, no other tenant-data access). Scheduled in Phase 4.5 (`docs/implementation-plan.md`), second in that phase's dependency chain — depends on Story 5.6 (Ready) for the caller identity a Platform Admin action authenticates; Story 5.8 is also Ready — ADR-0031 accepted 2026-08-03.
+**Built:** 2026-08-03 — social-listening-core@3378e00
 
 **Acceptance Criteria note, added 2026-08-03:** this story's contract must also cover ADR-0030 §3's break-glass addition — a test that a Platform-Admin-authenticated caller can trigger a credential reset for a named tenant's Tenant-Admin identity, that the action is logged per the same audit requirement as tenant-creation/suspension writes, and that no code path this story adds grants Platform Admin read/write access to `users`, `watchlists`, `social_posts`, or `platform_credentials` beyond that one narrow action.
 
@@ -118,6 +133,7 @@
 ## Story 5.8 — `tenants` table with its own RLS policy
 
 **Source:** ADR-0031 · **Status:** Ready — ADR-0031 accepted 2026-08-03, revised at review to add sign-up domain capture (`tenants.domain`, for future same-domain sign-up routing). Scheduled in Phase 4.5 (`docs/implementation-plan.md`), third in that phase's dependency chain — depends on Story 5.7 (Ready) for the bypass role; Story 5.9 is also Ready — ADR-0032 accepted 2026-08-03.
+**Built:** 2026-08-03 — social-listening-core@e6de8df
 
 **Acceptance Criteria note, added 2026-08-03:** this story's contract must also cover ADR-0031 §5's `domain` column — nullable, a partial unique index enforcing uniqueness only when non-null, and a test confirming the column exists and accepts `NULL`. The public-email-provider exclusion and the sign-up "rerouting" UX itself are explicitly **not** this story's job (ADR-0031's own Open Questions defer both to whoever builds candidate ADR #4's story) — this story only needs to prove the column and its constraint, not domain-matching logic.
 
@@ -137,6 +153,7 @@
 ## Story 5.9 — `users` table, RLS, and request-time identity resolution
 
 **Source:** ADR-0032 · **Status:** Ready — ADR-0032 accepted 2026-08-03, revised at review to replace `status`'s `'suspended'` value with a nullable `access_ends_at` timestamp (§9). Scheduled in Phase 4.5 (`docs/implementation-plan.md`), fourth in that phase's dependency chain — depends on Story 5.8 (Ready) for the `tenants.id` foreign-key target; Story 5.10 is also Ready — ADR-0033 accepted 2026-08-03.
+**Built:** 2026-08-03 — social-listening-core@b0839ed
 
 **As an** authenticated caller,
 **I want** my Entra identity resolved to my SocialEngage tenant, role, and status before any tenant-scoped query runs,
@@ -157,6 +174,7 @@
 ## Story 5.10 — Retire `X-Tenant-Id` as a trust mechanism
 
 **Source:** ADR-0033 · **Status:** Ready — ADR-0033 accepted 2026-08-03, as drafted, no revisions. Scheduled in Phase 4.5 (`docs/implementation-plan.md`), fifth and last of that phase's own dependency chain — depends on Story 5.9 (Ready) for the resolution path it relies on. Story 1.7 (Epic 1) is also Ready — ADR-0034 accepted 2026-08-03; Phase 4.5 has no Blocked stories left.
+**Built:** 2026-08-03 — social-listening-core@3580687
 
 **As a** platform operator responsible for this project's own stated security posture,
 **I want** every `/v1` endpoint to derive tenant identity exclusively from a validated bearer token, never from a client-supplied header,
@@ -345,6 +363,7 @@
 ## Story 5.18 — Self-service sign-up rate limiting and abuse prevention
 
 **Source:** ADR-0040 (Accepted 2026-08-06) · **Status:** Ready. A genuinely undecided, hard-to-reverse new mechanism (a new keying scheme, real DoS/availability stakes if built wrong) — ADR-0037 §7 itself already named this as "not designed here... a precondition, not an optional hardening pass," the same bar that earned ADR-0020 its own ADR for an analogous rate-limit-mechanism decision.
+**Built:** 2026-08-10 — social-listening-core@7a2466d
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes ADR-0037 §7's own named, undesigned precondition and `docs/open-decisions.md` §1's matching entry. Story 6.7 explicitly disclaims building this on the UI side; this is the backend mechanism gating the one endpoint (Story 5.15) reachable without a resolved identity.
 
@@ -366,7 +385,7 @@
 
 ## Story 5.19 — Wire `SocialPostIngestedEvent`/`ConnectorHealthChangedEvent` publishing into the real ingestion pipeline
 
-**Source:** ADR-0058 (Accepted 2026-08-17) · **Status:** Built 2026-08-17 · **Built:** 2026-08-17 — social-listening-core@3ef32ad
+**Source:** ADR-0058 (Accepted 2026-08-17) · **Status:** Ready · **Built:** 2026-08-17 — social-listening-core@3ef32ad
 
 **Added 2026-08-17, at ADR-0058's own acceptance**, per this series' own "no story until acceptance" precedent (ADR-0024/0026). Closes a real, project-wide gap `ingestion-events/SKILL.md`'s own "Known gaps" section already named plainly: `publishEvent()` (`serviceBusPublisher.ts`, real, contract-tested since Stories 5.1/5.2/5.5) has no real caller anywhere in the actual ingestion pipeline — confirmed directly via a repo-wide grep of `src/connectors/`, `src/posts/`, and `src/ingestion/` finding zero matches. Found live while scoping Story 2.13 (Wikipedia connector, paused pending this story); Menno flagged the gap directly. Story 2.13 resumes and adopts this story's own `SocialPostIngestedEvent` wiring pattern once this story is built, per ADR-0058 Decision §5.
 

@@ -13,9 +13,10 @@ Actively query the Bing Search API (Azure AI Services / Azure AI Foundry Groundi
 - **ADR-0028:** Tier-2 tenant credential (`ownerType: 'tenant'`) storing `Ocp-Apim-Subscription-Key`.
 - **ADR-0048:** Connector registration transparency — registration touches only connector-internal code and `bootstrapConnectors.ts`.
 - **ADR-0063:** Multi-watchlist junction linking in `post_watchlist_matches`.
+- **ADR-0076:** Composer Deep Research one-off search helpers reuse Bing Search credentials and query machinery, but do not persist posts (Story 2.31).
 
 ## Architecture
-- `bingSearchConnector.ts` — `SocialConnector` definition (`providerId: 'bing-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`), URL canonicalisation, domain extraction, freshness mapping, publication date parsing, and Azure API HTTP fetch with error classification.
+- `bingSearchConnector.ts` — `SocialConnector` definition (`providerId: 'bing-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`), URL canonicalisation, domain extraction, freshness mapping, publication date parsing, Azure API HTTP fetch with error classification, and `searchForResearch(tenantId, query, limit)` for one-off composer research.
 - `bingSearchQueryBuilder.ts` — Watchlist query string formatting (quoted terms OR-expression or boolean expression) and in-process AST candidate matching.
 - `pollBingSearch.ts` — Scheduled polling loop across tenant active watchlists, 1.2s sequential pacing delay, deterministic auto endpoint fallback, candidate evaluation cap, post deduplication, event emission, `post_watchlist_matches` junction insertion, and Azure cost telemetry.
 
@@ -26,3 +27,4 @@ Actively query the Bing Search API (Azure AI Services / Azure AI Foundry Groundi
 
 ## Contracts
 - `contracts/epic-2/story-2.22.bing-search-active-watchlist-connector.contract.test.ts`
+- `contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` — one-off `searchForResearch()` helper, research RequestGate key, no persistence, and error classification.

@@ -1,5 +1,8 @@
 import { SocialConnector, NormalizedPost } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
+import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
+import { acquire, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
+import { htmlToMarkdown } from '../../content/htmlToMarkdown';
 
 export const BING_SEARCH_PROVIDER_ID = 'bing-search';
 
@@ -226,4 +229,47 @@ export async function fetchBingSearch(
     return data.webPages?.value ?? [];
   }
   return data.value ?? [];
+}
+
+export interface ResearchSearchResult {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+}
+
+/**
+ * Story 2.31 (ADR-0076) — one-off web search helper for composer Deep Research.
+ * Reuses the tenant credential and the existing fetch; does not persist posts.
+ */
+export async function searchForResearch(
+  tenantId: string,
+  query: string,
+  limit: number
+): Promise<ResearchSearchResult[]> {
+  const credentialId = await getLatestCredentialId(tenantId, BING_SEARCH_PROVIDER_ID, 'tenant');
+  if (!credentialId) {
+    throw new ClassifiableError('http_401', `No Bing Search credential registered for tenant ${tenantId}`);
+  }
+  const apiKey = await readCredential(tenantId, credentialId);
+
+  try {
+    await acquire(`${tenantId}:${BING_SEARCH_PROVIDER_ID}:research`, bingSearchConnector.getRateLimitConfig());
+  } catch (err) {
+    if (err instanceof QueueTtlExceededError) {
+      throw new ClassifiableError('queue_ttl_exceeded', err.message);
+    }
+    if (err instanceof QueueDepthExceededError) {
+      throw new ClassifiableError('queue_depth_exceeded', err.message);
+    }
+    throw err;
+  }
+
+  const rawResults = await fetchBingSearch(query, apiKey, { endpoint: 'web', count: limit, mkt: 'en-US' });
+  return rawResults.slice(0, limit).map((item) => ({
+    title: item.name,
+    url: canonicalizeUrl(item.url),
+    snippet: htmlToMarkdown(item.snippet ?? item.description ?? item.name),
+    provider: BING_SEARCH_PROVIDER_ID,
+  }));
 }

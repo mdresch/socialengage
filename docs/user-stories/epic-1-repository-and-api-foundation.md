@@ -3,6 +3,7 @@
 ## Story 1.1 — Core REST API access for the admin UI
 
 **Source:** ADR-0001 · **Status:** Ready
+**Built:** 2026-07-29 — socialengage@8fa7a66
 
 **As an** admin UI developer,
 **I want** `social-listening-admin` to talk to `social-listening-core` strictly through its REST API, never directly to the database,
@@ -18,6 +19,7 @@
 ## Story 1.2 — Postgres as the database engine
 
 **Source:** ADR-0016 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@bce8cfc
 
 **As a** backend engineer setting up the data layer,
 **I want** `social-listening-core` provisioned against Azure Database for PostgreSQL, using native JSONB for `rawPayload` and native Row-Level Security for tenant isolation,
@@ -33,6 +35,7 @@
 ## Story 1.3 — REST API versioning and compatibility policy
 
 **Source:** ADR-0017 · **Status:** Ready (accepted 2026-07-29, ahead of its natural phase — see ADR-0017's Acceptance note)
+**Built:** 2026-07-29 — social-listening-core@1ebc971
 
 **As an** API consumer (admin UI or a future downstream subsystem),
 **I want** `social-listening-core`'s REST API served behind a `/v1/` path prefix, with breaking changes only ever shipped as a new version kept live alongside the old one for a deprecation window,
@@ -42,12 +45,14 @@
 - Every REST endpoint is reachable under `/v1/...`; no unversioned route exists.
 - A deprecated version continues serving unmodified traffic and returns `Deprecation`/`Sunset` response headers (RFC 8594) for at least 90 days after its successor version ships (implementation default — see ADR-0017's Amendment Log for the current number).
 - CI includes a contract check that fails the build if a change to a `/v1/` response shape would break a documented consumer expectation (i.e., catches the kind of change that should have been a `/v2/` bump).
+- Version forking is confined to the specific endpoints that changed; unchanged endpoints are not duplicated across version routers.
 
 ---
 
 ## Story 1.4 — Persistent local dev database, separate from the ephemeral test database
 
 **Source:** ADR-0025 · **Status:** Ready — accepted 2026-07-30, the same day it was built and verified (see ADR-0025's Acceptance note on why this is a deliberate exception to Phase 0's "also build, not storied" classification of local dev tooling)
+**Built:** 2026-07-30 — social-listening-core@5f43ca9
 
 **As a** developer running `social-listening-core` locally to see it actually work (not just pass its contract suite),
 **I want** a persistent dev Postgres database, fully independent from the ephemeral one Jest owns for the contract suite,
@@ -63,7 +68,8 @@
 
 ## Story 1.5 — Watchlist CRUD REST surface, personal/per-user, with ADR-0044's PATCH/error/locking contract
 
-**Source:** ADR-0044 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12
+**Source:** ADR-0044 (Accepted 2026-08-11) · **Status:** Ready
+**Built:** 2026-08-12 — social-listening-core@aaf6bd7
 
 **As a** tenant user or Tenant-Admin,
 **I want** to create, read, update, and delete my own watchlists via REST endpoints, using standardized PATCH semantics, error codes, and optimistic locking, with real caller identity (not a self-declared header) determining what I can see,
@@ -150,6 +156,7 @@
 ## Story 1.7 — Ownership-tier-aware connector connect/disconnect, superseding Story 1.6
 
 **Source:** ADR-0034 · **Status:** Ready — ADR-0034 accepted 2026-08-03, its own flagged interpretive question (Tenant-Admin's offboarding revocation authority) confirmed as drafted. All dependencies (ADR-0028–0033) now Accepted. Scheduled last in Phase 4.5 (`docs/implementation-plan.md`) — the only remaining Blocked-to-Ready transition in that phase; Phase 4.5 now has no Blocked stories left.
+**Built:** 2026-08-04 — social-listening-core@82c2d68
 
 **As a** Tenant-Admin or an individual tenant user,
 **I want** connecting or disconnecting a platform credential to respect who is actually allowed to create or remove it — a tenant-wide credential only by Tenant-Admin, a personal credential only by the user themself — with real caller identity instead of a self-declared tenant header,
@@ -240,7 +247,8 @@
 
 ## Story 1.11 — Connector activation, decoupled from credential presence
 
-**Source:** ADR-0051 (Accepted 2026-08-12) · **Status:** Built 2026-08-12 — ADR-0051 accepted the same day it was drafted, after seven in-place revisions during live review (see ADR-0051's own Amendment Log). All dependencies (ADR-0028, ADR-0034/Story 1.7) already Accepted/built.
+**Source:** ADR-0051 (Accepted 2026-08-12) · **Status:** Ready — ADR-0051 accepted the same day it was drafted, after seven in-place revisions during live review (see ADR-0051's own Amendment Log). All dependencies (ADR-0028, ADR-0034/Story 1.7) already Accepted/built.
+**Built:** 2026-08-12 — social-listening-core@703e755
 
 **Drafted 2026-08-12, at ADR-0051's own acceptance**, per this series' own "no story until acceptance" precedent (ADR-0024/0026). Closes two real gaps ADR-0051 names directly: Newswire (`authMode: 'none'`) is hardcoded `connected: true` for every tenant with no opt-out (`social-listening-admin`'s connector/status screens); and credentialed connectors conflate "has a stored credential" with "is turned on," so pausing one today means hard-deleting the credential via `deleteCredential()` and re-entering it later — the exact category of failure Menno described from the discontinued Microsoft Social Engagement product (a connector disconnected merely for exhausting quota).
 
@@ -267,7 +275,8 @@
 
 ## Story 1.12 — `GET /v1/connectors/:platformId` combines activation state with derived health
 
-**Source:** ADR-0051 Open Question 5 (Accepted 2026-08-12) · **Status:** Built 2026-08-12 — no new ADR needed. This is an additive response-shape extension of an already-decided, already-shipped endpoint (Story 4.4/ADR-0022), the same "ordinary surface work" category Stories 1.5/1.8/1.9 already established as not needing one. Depends on Story 1.11 (`connector_activations`/`connector_user_activations`, built).
+**Source:** ADR-0051 Open Question 5 (Accepted 2026-08-12) · **Status:** Ready — no new ADR needed. This is an additive response-shape extension of an already-decided, already-shipped endpoint (Story 4.4/ADR-0022), the same "ordinary surface work" category Stories 1.5/1.8/1.9 already established as not needing one. Depends on Story 1.11 (`connector_activations`/`connector_user_activations`, built).
+**Built:** 2026-08-12 — social-listening-core@c3af2a7
 
 **Drafted 2026-08-12, at Menno's own direct request while scoping the admin-UI wiring story (6.15) that depends on it.** Confirmed directly: Story 1.11 built the write side of activation (`POST .../activate|deactivate`) but no endpoint anywhere lets a caller *read* current activation state — `GET /v1/connectors/:platformId` (`connectorsRouter.ts`) still returns only `ConnectorHealth`'s own four fields (`status`, `lastSuccessfulFetchAt`, `lastAttemptAt`, `consecutiveFailures`, `credentialStatus`), with no `isActive` anywhere in the response. Without this, no UI can show real activation state on page load — only immediately after a POST, from that call's own response. This is exactly the gap ADR-0051 named as Open Question 5 and ADR-0022's own dated note on relation to ADR-0051 already anticipated ("activation can simply be read fresh (uncached) alongside the cached health value... not decided here").
 
@@ -290,7 +299,8 @@
 
 ## Story 1.13 — Live ingestion-polling scheduler: registry bootstrap, generic per-connector `poll()`, derived-cadence loop
 
-**Source:** ADR-0052 (Accepted 2026-08-13) · **Status:** Built 2026-08-13 — ADR-0052 accepted the same day it was drafted, after four in-place revisions during live review (see ADR-0052's own Amendment Log). Depends on Story 1.11 (`connector_activations`/`shouldAttemptIngestion()`, built) and Story 1.12 (`isActive` read, built) — both already Accepted/built; no new ADR-0029–0034-style dependency chain.
+**Source:** ADR-0052 (Accepted 2026-08-13) · **Status:** Ready — ADR-0052 accepted the same day it was drafted, after four in-place revisions during live review (see ADR-0052's own Amendment Log). Depends on Story 1.11 (`connector_activations`/`shouldAttemptIngestion()`, built) and Story 1.12 (`isActive` read, built) — both already Accepted/built; no new ADR-0029–0034-style dependency chain.
+**Built:** 2026-08-13 — social-listening-core@a479383
 
 **Drafted 2026-08-13, at ADR-0052's own acceptance**, per this series' own "no story until acceptance" precedent (ADR-0024/0026). Closes the real, live gap ADR-0052 itself found and named this session: a DNS-verified `tenant-owned-feed` connector (Story 6.12/ADR-0050) and an active, credentialed GNews connector both ingested zero posts in the running server, because no code path anywhere invokes `pollGNewsSearch()`, `pollNewswireFeeds()`, or `pollTenantOwnedFeed()` outside their own Jest contract tests — the 66 `SocialPost` rows the tenant's own self-service export (Story 6.13) actually showed were incidental Newswire contract-test artifacts, not live polling.
 
@@ -316,7 +326,7 @@
 
 ## Story 1.14 — Poll scheduler: skip a pair whose most recent run is still `status: 'running'`
 
-**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Built 2026-08-18
+**Source:** ADR-0052 Decision §5b (Clarification, 2026-08-18) · **Status:** Ready
 
 **Built:** 2026-08-18 — social-listening-core@838e3dc
 

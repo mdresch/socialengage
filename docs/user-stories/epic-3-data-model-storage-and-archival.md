@@ -3,6 +3,7 @@
 ## Story 3.1 — Normalized author entity
 
 **Source:** ADR-0004 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@34264e6
 
 **As a** data engineer,
 **I want** authors normalized into their own `Author` entity, upserted by `(tenantId, platformId, externalAuthorId)`, with `SocialPost` referencing it via `authorId`,
@@ -18,6 +19,7 @@
 ## Story 3.2 — IngestionRun as the audit anchor for every post
 
 **Source:** ADR-0005 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@34264e6
 
 **As an** operations engineer investigating a data issue,
 **I want** every `SocialPost` linked via `acquisitionId` to the `IngestionRun` that produced it, with that run recording trigger type, connector version, and outcome,
@@ -27,12 +29,14 @@
 - Every `SocialPost` insert has a non-null `acquisitionId` referencing an existing `IngestionRun`.
 - `IngestionRun` records `triggerType` (`poll`/`webhook`), `connectorVersion`, `startedAt`/`completedAt`, `status`, `postsIngested`, `postsSkipped`, and `errorSummary` when applicable.
 - Given a `SocialPost` ID, a support engineer can retrieve its originating run's connector version and trigger type in a single query.
+- `IngestionRun` rows are immutable once created.
 
 ---
 
 ## Story 3.3 — Connector-side watchlist filtering with post-fetch fallback
 
 **Source:** ADR-0006 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@f3254d9
 
 **As a** tenant configuring a watchlist,
 **I want** matching to happen on the platform's own server when it supports query filtering, falling back to post-fetch matching in the core when it doesn't,
@@ -42,12 +46,17 @@
 - For a platform whose connector translates watchlist terms into native query parameters, requests sent to that platform include the translated filter.
 - For a platform without native filtering support, the core evaluates the watchlist against every fetched post before persisting matches.
 - A given `Watchlist` produces the same matched posts regardless of which platform sourced them — proven for this story's own `WatchlistTerms` (keyword/hashtag/account, OR-only) shape by this story's contract; Story 3.6 (ADR-0021, shipped 2026-07-30) closes the same consistency question more rigorously for a `booleanQuery`'s AST, as an independent parallel matching mode, not a replacement of this one.
+- No matching posts are lost due to translation errors for connectors with native query translation.
+- Rate-limit cost and bandwidth are not spent fetching posts that would be discarded where native filtering is available.
+- The matching path used for a given `IngestionRun` is recorded and queryable.
+- Malformed or non-translatable watchlists fail with a clear, non-retryable error and are surfaced to the tenant.
 
 ---
 
 ## Story 3.4 — Cursor-based pagination for the posts API
 
 **Source:** ADR-0011 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@a5399d5
 
 **As an** API consumer paging through a tenant's posts,
 **I want** `GET /posts` paginated by opaque cursor rather than offset,
@@ -57,12 +66,15 @@
 - `GET /posts` accepts a `cursor` query parameter and returns a cursor for the next page; it does not accept `page`/`offset` parameters.
 - Paging through results while new posts are being ingested concurrently produces no duplicate or skipped posts across pages (verified by a test that inserts rows mid-pagination).
 - Query latency for a page near the "end" of a multi-million-row table is comparable to a page near the "start" (no linear degradation with depth).
+- `watchlistId`, `platformId`, `from`/`to`, and `sentiment` filters continue to work correctly when combined with `cursor`.
+- The `nextCursor` token is opaque; clients pass it verbatim and never construct or decode it.
 
 ---
 
 ## Story 3.5 — Tiered data retention and archival
 
 **Source:** ADR-0018 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`, since storage volume rather than correctness is the driver)
+**Built:** 2026-07-30 — social-listening-core@f4bd93c
 
 **As a** platform operator managing storage cost on an unbounded, high-volume table,
 **I want** `rawPayload` and `IngestionRun` moved to cheaper archival storage after a bounded hot-storage window, while analytically-relevant fields stay indefinitely in primary storage,
@@ -74,12 +86,14 @@
 - Both retention windows are read from configuration rather than hardcoded, so changing either is an operational change, not a code change.
 - `SocialPost` and `IngestionRun` are partitioned monthly, and archival operates by detaching/exporting the oldest partition rather than a row-by-row delete sweep.
 - Fetching an archived `rawPayload` (e.g., for a support investigation) succeeds via the archival pointer, confirming the "never discarded" guarantee (§4.2) still holds post-archival.
+- For active tenants, no `IngestionRun` row is hard-deleted.
 
 ---
 
 ## Story 3.6 — Unified boolean-query AST for watchlist matching
 
 **Source:** ADR-0021 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; whole-query degradation kept for v1, per ADR-0021's Acceptance note)
+**Built:** 2026-07-30 — social-listening-core@5c375ec
 
 **As a** tenant with a watchlist using a boolean query,
 **I want** that query parsed once into a canonical AST that every connector's native translation and the shared post-fetch fallback both evaluate identically, with unsupported query features surfaced to me rather than silently degrading,
@@ -119,7 +133,8 @@
 
 ## Story 3.8 — Self-service, Tenant-Admin-initiated tenant deletion: request, export, grace period, confirmation
 
-**Source:** ADR-0043 (Accepted 2026-08-07) · **Status:** Done — built 2026-08-07. Now the sole tenant-deletion mechanism (Story 3.7 retired, above) — ADR-0043 was corrected in place before acceptance to supersede ADR-0039 Decision §1 in full, not narrowly on its "cannot self-delete" sentence, once Story 3.7's own build surfaced the collision described in its retirement note.
+**Source:** ADR-0043 (Accepted 2026-08-07) · **Status:** Ready. Now the sole tenant-deletion mechanism (Story 3.7 retired, above) — ADR-0043 was corrected in place before acceptance to supersede ADR-0039 Decision §1 in full, not narrowly on its "cannot self-delete" sentence, once Story 3.7's own build surfaced the collision described in its retirement note.
+**Built:** 2026-08-07 — social-listening-core@9a99257
 
 **Built-vs-drafted note, 2026-08-07.** The shipped implementation differs from AC6 below in one deliberate way, decided during a security review while building this story: the final, irreversible hard-delete step runs under a dedicated, narrowly-scoped `tenant_deletion_role` (mirroring `tenant_signup_role`'s own precedent, Story 5.15) rather than a standing `app_user` grant — `app_user` is one shared Postgres role every `tenant_admin` AND every `tenant_user` session uses concurrently, so a standing `DELETE` grant on `users`/`tenants` there would be constantly present across every session, not a narrow, code-path-only privilege. `tenant_deletion_role` deliberately does not `BYPASSRLS`, unlike every other specialized role in this project, for defense-in-depth. `app_user` itself only ever gets the two narrow, per-column `UPDATE` grants (`deletion_requested_at`/`deletion_confirmed_at`) plus `INSERT` on `platform_admin_audit_log`, as AC6 originally specified, for the request/export/cancel steps. AC4's "invokes the same internal deletion-execution function Story 3.7 builds" is moot since Story 3.7 was never built as such — `executeTenantDeletion()` is this story's own function now, not a reused one. See `.claude/skills/self-service-tenant-deletion/SKILL.md`.
 
@@ -142,7 +157,8 @@
 
 ## Story 3.9 — Point-in-time author follower count on `SocialPost`
 
-**Source:** ADR-0049 (Accepted 2026-08-11) · **Status:** Ready — built 2026-08-12
+**Source:** ADR-0049 (Accepted 2026-08-11) · **Status:** Ready
+**Built:** 2026-08-12 — social-listening-core@34e9dfb
 
 **Drafted 2026-08-11, at ADR-0049's acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent ADR-0049's own Status line named ahead of time. Closes the specific, named gap ADR-0004's own Negative consequences flagged at its 2026-07-28 acceptance ("historical accuracy of 'follower count at time of post' is not preserved") and `docs/adr/README.md`'s "Still outstanding, not yet drafted" section carried until ADR-0049 was drafted 2026-08-10.
 
@@ -171,7 +187,8 @@
 
 ## Story 3.10 — Canonical Markdown post-body storage and enrichment input (`body_markdown`, `body_markdown_version`)
 
-**Source:** ADR-0053 (Accepted 2026-08-13) · **Status:** Ready — built 2026-08-13
+**Source:** ADR-0053 (Accepted 2026-08-13) · **Status:** Ready
+**Built:** 2026-08-13 — social-listening-core@dcec172
 
 **Drafted 2026-08-13, at ADR-0053's own acceptance**, per the ADR-0024/0026 "no story until acceptance" precedent. Closes the real, live gap ADR-0053 itself found this session: Newswire and tenant-owned-feed posts enrich on title text alone, and GNews on title+description alone, because none of the three connectors' own parsers ever captured the source's actual body content, and `social_posts` had no column to hold it even if they did.
 
@@ -334,7 +351,7 @@
 
 ## Story 3.15 — Outbound Post Publishing Audit Table and `POST /v1/outbound/posts` API
 
-**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 3.14 (base `outbound_activities` table and `POST /v1/posts/:id/replies`), Story 2.28 (connector `publish?()` framework)
 
@@ -361,7 +378,7 @@
 
 ## Story 3.16 — Tenant-facing workspace and matched-posts export endpoints
 
-**Source:** ADR-0074 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0074 acceptance
+**Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 
 **As a** Tenant-Admin or tenant user,
@@ -390,7 +407,7 @@
 
 ## Story 3.17 — Composer deep research REST endpoint
 
-**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance
+**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 2.31 (Brave/Bing one-off research search helpers), Story 2.32 (Azure OpenAI `research?()` capability), Story 5.10/5.11 (tenant auth and `GET /v1/me`)
 

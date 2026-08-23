@@ -19,11 +19,19 @@ description: The LinkedIn SocialConnector (LinkedIn REST API v2, confidential cl
 | ADR-0061 | Real Tier-3 poll scheduling (`pollUser(tenantId, userId)`) | 1.15 / 2.25 |
 | ADR-0018 | Data retention policy: raw API response JSON discarded from permanent storage | 2.25 |
 | ADR-0070 | Ingestion watchdog timeout and stalled/reconnect alert publishing | 1.16 / 2.25 |
+|| ADR-0075 | `SocialConnector.publish?()` outbound framework; `linkedinConnector.publish()` implements `POST /v2/ugcPosts` for a person or organization author URN, reclassifies Rest.li errors to `reconnect_required`/`missing_permission`/`rate_limited`/`target_asset_not_found`, and constructs `https://www.linkedin.com/feed/update/{externalId}` | 2.30 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.25.linkedin-connector.contract.test.ts` — verifies confidential client code exchange, `refreshTokenExpiresAt` initialization (365 days), token refresh lifecycle with refresh token retention, `invalid_grant` classification (`expired` vs `revoked`), Rest.li header parsing with epoch seconds conversion, 1-hour cadence guardrail validation, and best-effort disconnect handling.
+- `contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts` (ADR-0075) — `linkedinConnector.publish()` posts to `POST /v2/ugcPosts` with the stored access token and the caller's chosen person or organization URN as author; `externalUrl` is `https://www.linkedin.com/feed/update/{externalId}`; Rest.li errors reclassify to `reconnect_required`/`missing_permission`/`rate_limited`/`target_asset_not_found`; `pollLinkedIn()` and `normalize()` are unaffected.
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves `LINKEDIN_PROVIDER_ID` (`'linkedin'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
+
+## How to extend this safely
+
+- **Publishing to a LinkedIn profile or organization:** implement the `publish?()` method on `linkedinConnector`, reusing `parseLinkedInCredential()` for token/scope validation. The `w_member_social` scope is required for person author URNs (`urn:li:person:{id}`); `w_organization_social` is required for organization author URNs (`urn:li:organization:{id}`). Missing scopes throw `ClassifiableError('missing_permission')` cleanly so the UI can prompt reconsent; 401 token failures throw `reconnect_required`.
+- **Rest.li 403 semantics:** a 403 from LinkedIn may mean either a permission error or a quota/rate-limit error. `publishToLinkedIn()` inspects the response message for `quota|rate|throttle|limit` and classifies as `rate_limited`; any other 403 is `missing_permission`. Re-verify this heuristic against live responses before relying on it for real traffic.
+- **`linkedinConnector.publish()` is the first real non-Facebook call site for `outboundPublishService.invoke()` (`outbound-post`)**, which gates the request under the `outbound_post` key and returns an `outbound_activities`-shaped `post` row.
 
 ## Registration transparency (ADR-0048)
 

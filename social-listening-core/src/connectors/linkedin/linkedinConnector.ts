@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { SocialConnector, RateLimitConfig, NormalizedPost } from '../types';
+import { SocialConnector, RateLimitConfig, NormalizedPost, OutboundPostPayload } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 
 export const LINKEDIN_PROVIDER_ID = 'linkedin';
@@ -636,6 +636,110 @@ export async function fetchLinkedInMemberPosts(
 }
 
 /**
+ * Story 2.30 (ADR-0075) — publish a new post to a LinkedIn profile or
+ * organization via the UGC Posts API. Requires the credential to include
+ * `w_member_social` for person targets or `w_organization_social` for
+ * organization targets (working assumption; verify live before any real tenant
+ * goes live).
+ */
+export async function publishToLinkedIn(
+  tenantId: string,
+  userId: string,
+  payload: OutboundPostPayload,
+  credential: string
+): Promise<{ externalId: string; externalUrl: string }> {
+  const cred = parseLinkedInCredential(credential);
+  const authorUrn = payload.targetAssetId;
+
+  const isOrganization = authorUrn.startsWith('urn:li:organization:');
+  const requiredScope = isOrganization ? 'w_organization_social' : 'w_member_social';
+  if (!cred.scopes.includes(requiredScope)) {
+    throw new ClassifiableError(
+      'missing_permission',
+      `LinkedIn credential missing required scope: ${requiredScope}`
+    );
+  }
+
+  const body = {
+    author: authorUrn,
+    lifecycleState: 'PUBLISHED',
+    specificContent: {
+      'com.linkedin.ugc.ShareContent': {
+        shareCommentary: {
+          text: payload.text,
+        },
+        shareMediaCategory: 'NONE',
+      },
+    },
+    visibility: {
+      'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+    },
+  };
+
+  const apiVersion = process.env.LINKEDIN_API_VERSION || '202601';
+  const url = 'https://api.linkedin.com/v2/ugcPosts';
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${cred.accessToken}`,
+        'Content-Type': 'application/json',
+        'LinkedIn-Version': apiVersion,
+        'X-Restli-Protocol-Version': '2.0.0',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    throw new ClassifiableError('network', `Failed to reach LinkedIn UGC Posts endpoint: ${(err as Error).message}`);
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    const errorJson = safeJsonParse(text) as { message?: string; code?: string; status?: number } | null;
+    const message = errorJson?.message || text || response.statusText;
+    const code = errorJson?.code || '';
+
+    if (response.status === 401) {
+      throw new ClassifiableError('reconnect_required', `LinkedIn returned 401: ${message}`);
+    }
+    if (response.status === 403) {
+      if (/quota|rate|throttle|limit/i.test(message)) {
+        throw new ClassifiableError('rate_limited', `LinkedIn returned 403 quota/rate: ${message}`);
+      }
+      throw new ClassifiableError('missing_permission', `LinkedIn returned 403: ${message}`);
+    }
+    if (response.status === 429) {
+      throw new ClassifiableError('rate_limited', `LinkedIn returned 429: ${message}`);
+    }
+    if (response.status === 422 || response.status === 400 || /invalid.*urn|author|not found/i.test(`${message} ${code}`)) {
+      throw new ClassifiableError('target_asset_not_found', `LinkedIn returned invalid author: ${message}`);
+    }
+    if (response.status >= 500) {
+      throw new ClassifiableError('http_5xx', `LinkedIn returned ${response.status}: ${message}`);
+    }
+    throw new ClassifiableError('network', `LinkedIn returned ${response.status}: ${message}`);
+  }
+
+  const data = (await response.json().catch(() => ({}))) as { id?: string };
+  if (!data.id) {
+    throw new ClassifiableError('network', 'LinkedIn publish response did not contain an id.');
+  }
+
+  const externalId = data.id;
+  const externalUrl = `https://www.linkedin.com/feed/update/${externalId}`;
+  return { externalId, externalUrl };
+}
+
+function safeJsonParse(text: string): unknown | null {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Standard SocialConnector implementation for LinkedIn (ADR-0069 §1).
  */
 export const linkedinConnector: SocialConnector = {
@@ -657,6 +761,13 @@ export const linkedinConnector: SocialConnector = {
     }
     return undefined;
   },
+
+  /**
+   * Story 2.30 (ADR-0075) — optional outbound post publishing. This is the
+   * first LinkedIn `SocialConnector.publish()` implementation, gated on a
+   * valid `w_member_social` or `w_organization_social` scope.
+   */
+  publish: publishToLinkedIn,
 
   normalize(rawItem: unknown): NormalizedPost {
     const raw = rawItem as RawLinkedInPost;

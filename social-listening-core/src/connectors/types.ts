@@ -1,6 +1,7 @@
 import { WatchlistTerms } from '../watchlists/types';
 import { AstNodeType } from '../watchlists/ast';
 import { RunIngestionAttemptResult } from '../ingestion/runIngestionAttempt';
+import { SocialPostSummary } from '../posts/socialPostStore';
 
 export type AuthMode = 'oauth' | 'api_key' | 'none';
 
@@ -43,6 +44,21 @@ export interface NativeQueryTranslation {
   queryParams?: Record<string, string>;
 }
 
+/**
+ * Story 2.28 (ADR-0075) — payload for a new outbound post. Carries the final
+ * text, per-asset targeting, and optional per-platform overrides / link card /
+ * media refs. Media upload itself is explicitly deferred (v1 is text/link-card
+ * only); `media` here is a placeholder for future media references.
+ */
+export interface OutboundPostPayload {
+  text: string;
+  perPlatformOverrides?: Record<string, string>;
+  media?: unknown[];
+  linkPreview?: unknown;
+  targetAssetId: string;
+  targetAssetType: string;
+}
+
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
   normalize(rawItem: unknown): NormalizedPost;
@@ -75,6 +91,24 @@ export interface SocialConnector extends ProviderConnector {
    * *will*.
    */
   canProvideFollowerCountAtPublish?: boolean;
+  /**
+   * Story 2.26 (ADR-0073) — optional outbound reply/comment capability. Connectors
+   * that do not implement it fail with `reply_not_supported` through the
+   * outbound service.
+   */
+  getOutboundRateLimitConfig?(): RateLimitConfig;
+  reply?(post: SocialPostSummary, body: string, credential: string): Promise<{ externalId: string; externalUrl: string }>;
+  /**
+   * Story 2.28 (ADR-0075) — optional outbound post/publish capability. Connectors
+   * that do not implement it fail with `publish_not_supported` through the
+   * outbound post service.
+   */
+  publish?(
+    tenantId: string,
+    userId: string,
+    payload: OutboundPostPayload,
+    credential: string
+  ): Promise<{ externalId: string; externalUrl: string }>;
   /**
    * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
    * deliveryMode: 'poll'. The scheduler's one generic invocation surface —

@@ -3092,3 +3092,69 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 
 
+---
+
+## 2026-08-23 — Story 2.26 — social-listening-core@e3df7d9
+
+- **Full commit:** `e3df7d9efc085605355668be047f5b78b8425d65`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.26 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md; social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md (new)
+- **Files touched:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundEngagementService.ts
+- **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)
+---
+
+## 2026-08-23 — Story 2.31 — social-listening-core@4949200
+
+- **Full commit:** `494920053530aeb41f30ff023d9fa47291b675f3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.31 / ADR-0076
+- **Contract:** social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/brave-search-connector/SKILL.md; social-listening-core/.claude/skills/bing-search-connector/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts
+- **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)
+---
+
+## 2026-08-23 — Story 2.27 — social-listening-core@2da26eb
+
+- **Full commit:** `2da26ebee9508980771f1aca99641eceffce44d9`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.27 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Epic-2 suite at merge:** PASS (31/31 suites, 289/289 tests)
+---
+
+## 2026-08-23 — Story 2.28 — social-listening-core@f1e0f9b
+
+- **Full commit:** `f1e0f9ba465d557483c7f52f696b6c746c6c6480`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.28 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/outbound-post/SKILL.md; social-listening-core/.claude/skills/provider-connector-framework/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundPublishService.ts
+- **Epic-2 suite at merge:** PASS (32/32 suites, 296/296 tests)
+---
+
+## 2026-08-23 — Story 2.29 — social-listening-core@4234834
+
+- **Full commit:** `4234834a9af2e0c7411aaa34b376343249e34ec5`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.29 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Epic-2 suite at merge:** PASS (33/33 suites, 305/305 tests)
+---
+
+## 2026-08-23 — Story 2.30 — social-listening-core@3a65691
+
+- **Full commit:** `3a656912c77195a2dda7201d403c82141e7a078c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.30 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts
+- **Epic-2 suite at merge:** PASS (34/34 suites, 315/315 tests)
