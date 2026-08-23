@@ -3103,3 +3103,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md; social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md; social-listening-core/.claude/skills/outbound-engagement/SKILL.md (new)
 - **Files touched:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundEngagementService.ts
 - **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)
+---
+
+## 2026-08-23 — Story 2.31 — social-listening-core@4949200
+
+- **Full commit:** `494920053530aeb41f30ff023d9fa47291b675f3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.31 / ADR-0076
+- **Contract:** social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/brave-search-connector/SKILL.md; social-listening-core/.claude/skills/bing-search-connector/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts
+- **Epic-2 suite at merge:** PASS (30/30 suites, 280/280 tests)

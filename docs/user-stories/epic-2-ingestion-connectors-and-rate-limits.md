@@ -825,7 +825,7 @@
 ## Story 2.31 — Brave and Bing one-off research search helpers
 
 **Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@4949200
 **Depends on:** Story 2.21 (Brave Search active watchlist connector), Story 2.22 (Bing Search active watchlist connector)
 
 **As a** core backend engineer,
