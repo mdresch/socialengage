@@ -173,6 +173,27 @@ export interface SentimentScores {
  * to compile and pass unmodified. See
  * .claude/skills/azure-ai-language-connector/SKILL.md.
  */
+export interface ResearchResult {
+  keyPhrases: string[];
+  relatedTopics: string[];
+  searchQueries: string[];
+  contextSummary: string;
+  comparison: string;
+}
+
+export interface ResearchOptions {
+  maxKeyPhrases: number;
+  maxRelatedTopics: number;
+  maxSearchQueries: number;
+}
+
+export interface SearchSnippet {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+}
+
 export interface AnalyzeResult {
   sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
   sentimentScores?: SentimentScores;
@@ -235,4 +256,15 @@ export interface AIProviderConnector extends ProviderConnector {
    * credential first (ADR-0027: never a SocialEngage-held key).
    */
   analyze(modelId: string, text: string, credential?: string): Promise<AnalyzeResult>;
+  /**
+   * Story 2.32 (ADR-0076) — optional deep-research capability. Only
+   * generative providers (Azure OpenAI in v1) implement it; classifiers
+   * such as Azure AI Language correctly leave it undefined.
+   */
+  research?(
+    text: string,
+    searchSnippets: SearchSnippet[],
+    options: ResearchOptions,
+    credential?: string
+  ): Promise<ResearchResult>;
 }

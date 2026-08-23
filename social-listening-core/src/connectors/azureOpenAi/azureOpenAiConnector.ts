@@ -1,4 +1,4 @@
-import { AIProviderConnector, AnalyzeResult, EnrichmentEntity } from '../types';
+import { AIProviderConnector, AnalyzeResult, EnrichmentEntity, ResearchOptions, ResearchResult, SearchSnippet } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 
 export const AZURE_OPENAI_PROVIDER_ID = 'azure-openai';
@@ -123,6 +123,24 @@ const ENRICHMENT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+/**
+ * Story 2.32 (ADR-0076) — structured output for the composer deep-research
+ * capability: key phrases, related topics, generated search queries, a public-
+ * conversation context summary, and a comparison of the draft to that context.
+ */
+const RESEARCH_SCHEMA = {
+  type: 'object',
+  properties: {
+    keyPhrases: { type: 'array', items: { type: 'string' } },
+    relatedTopics: { type: 'array', items: { type: 'string' } },
+    searchQueries: { type: 'array', items: { type: 'string' } },
+    contextSummary: { type: 'string' },
+    comparison: { type: 'string' },
+  },
+  required: ['keyPhrases', 'relatedTopics', 'searchQueries', 'contextSummary', 'comparison'],
+  additionalProperties: false,
+} as const;
+
 interface ChatCompletionsResponse {
   model: string;
   choices: Array<{ message: { content: string } }>;
@@ -167,6 +185,70 @@ async function callChatCompletions(
         response_format: {
           type: 'json_schema',
           json_schema: { name: 'post_enrichment', strict: true, schema: ENRICHMENT_SCHEMA },
+        },
+      }),
+    });
+  } catch (err) {
+    throw new ClassifiableError('network', `Failed to reach Azure OpenAI: ${(err as Error).message}`);
+  }
+
+  if (response.status === 401) throw new ClassifiableError('http_401', 'Azure OpenAI returned 401 (invalid key)');
+  if (response.status === 403) throw new ClassifiableError('http_403', 'Azure OpenAI returned 403');
+  if (response.status === 429) throw new ClassifiableError('rate_limit', 'Azure OpenAI returned 429 (rate limit exceeded)');
+  if (response.status >= 500) throw new ClassifiableError('http_5xx', `Azure OpenAI returned ${response.status}`);
+  if (!response.ok) {
+    throw new ClassifiableError('network', `Azure OpenAI returned ${response.status}`);
+  }
+
+  return (await response.json()) as ChatCompletionsResponse;
+}
+
+/**
+ * Story 2.32 (ADR-0076) — single chat/completions call for deep research.
+ * The model is asked to extract key phrases, related topics, and candidate
+ * search queries from the draft, then, using the supplied search snippets,
+ * synthesize a public-conversation context summary and a comparison to the
+ * user's own draft. All output is constrained to the RESEARCH_SCHEMA.
+ */
+async function callResearchCompletions(
+  endpoint: string,
+  key: string,
+  deployment: string,
+  text: string,
+  searchSnippets: SearchSnippet[],
+  options: ResearchOptions
+): Promise<ChatCompletionsResponse> {
+  const url = `${endpoint.replace(/\/+$/, '')}/openai/deployments/${deployment}/chat/completions?api-version=${API_VERSION}`;
+
+  const systemPrompt =
+    'You are a deep-research assistant for a social-media composer. ' +
+    'Your task has three parts: (1) extract the most relevant key phrases and related topics from the user\'s draft post, ' +
+    '(2) generate a small set of web search queries that would help research those topics, and ' +
+    '(3) using the provided web-search snippets, write a concise context summary of what the public conversation currently says, ' +
+    'and a comparison of the user\'s draft to that conversation (angles covered, missing angles, tone differences, claims to verify). ' +
+    'Stay faithful to the provided snippets; do not invent sources. ' +
+    'Respond only via the provided JSON schema.';
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'api-key': key },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: `Draft post:\n${text}\n\n` +
+              `Search snippets:\n${JSON.stringify(searchSnippets)}\n\n` +
+              `Constraints: at most ${options.maxKeyPhrases} key phrases, ` +
+              `${options.maxRelatedTopics} related topics, and ` +
+              `${options.maxSearchQueries} search queries.`,
+          },
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: 'deep_research', strict: true, schema: RESEARCH_SCHEMA },
         },
       }),
     });
@@ -256,6 +338,28 @@ export const azureOpenAiConnector: AIProviderConnector = {
       summary: structured.summary,
       modelUsed: `${AZURE_OPENAI_PROVIDER_ID}:${deployment}`,
     };
+    return result;
+  },
+
+  /**
+   * Story 2.32 (ADR-0076) — optional deep-research capability for the
+   * composer. Returns key phrases, related topics, generated search queries,
+   * a context summary, and a comparison of the draft to the public
+   * conversation, all from a single structured-output call.
+   */
+  research: async (text, searchSnippets, options, credential) => {
+    if (!credential) {
+      throw new ClassifiableError('http_401', 'No Azure OpenAI credential supplied.');
+    }
+    const { endpoint, key, deployment } = parseCredential(credential);
+
+    const response = await callResearchCompletions(endpoint, key, deployment, text, searchSnippets, options);
+    const content = response.choices[0]?.message.content;
+    if (!content) {
+      throw new ClassifiableError('network', 'Azure OpenAI returned no structured-output content.');
+    }
+
+    const result = JSON.parse(content) as ResearchResult;
     return result;
   },
 };
