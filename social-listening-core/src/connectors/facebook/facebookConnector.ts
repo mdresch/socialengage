@@ -1,5 +1,6 @@
 import { SocialConnector } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
+import { SocialPostSummary } from '../../posts/socialPostStore';
 
 export const FACEBOOK_PROVIDER_ID = 'facebook';
 
@@ -127,6 +128,86 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
 }
 
 /**
+ * Story 2.27 (ADR-0073) — dedicated POST helper for outbound replies. Graph
+ * API returns error codes in the JSON body (including inside a 200 response),
+ * so this is kept separate from the GET-oriented `graphApiFetch()` used for
+ * ingestion. The classifications are intentionally reply-specific.
+ */
+async function postToFacebookGraphApi(url: string, context: string, body?: URLSearchParams): Promise<Record<string, unknown>> {
+  let response: Response;
+  try {
+    response = await fetch(url, { method: 'POST', body });
+  } catch (err) {
+    throw new ClassifiableError('network', `Failed to reach Facebook Graph API (${context}): ${(err as Error).message}`);
+  }
+
+  let parsedBody: Record<string, unknown> | null = null;
+  try {
+    parsedBody = (await response.json()) as Record<string, unknown>;
+  } catch {
+    // Non-JSON response; rely on HTTP classification below
+  }
+
+  if (parsedBody && typeof parsedBody === 'object' && 'error' in parsedBody) {
+    const error = (parsedBody as FacebookApiError).error;
+    if (error) {
+      const code = error.code;
+      const message = error.message ?? '';
+      const type = error.type ?? 'OAuthException';
+      if (code === 190 || code === 10) {
+        throw new ClassifiableError('reconnect_required', `Facebook auth error ${code} (${context}): ${type} — ${message}`);
+      }
+      if (code === 4 || code === 17 || code === 32 || code === 80000) {
+        throw new ClassifiableError('rate_limited', `Facebook rate limit error ${code} (${context}): ${type} — ${message}`);
+      }
+      if (code === 803) {
+        throw new ClassifiableError('post_not_found', `Facebook post not found ${code} (${context}): ${type} — ${message}`);
+      }
+      if (code === 200 || /permission|insufficient scope/i.test(message)) {
+        throw new ClassifiableError('missing_permission', `Facebook permission error ${code} (${context}): ${type} — ${message}`);
+      }
+      throw new ClassifiableError('network', `Facebook API error (${context}): ${type} — ${message}`);
+    }
+  }
+
+  if (response.status === 401) throw new ClassifiableError('reconnect_required', `Facebook returned 401 (${context})`);
+  if (response.status === 403) throw new ClassifiableError('missing_permission', `Facebook returned 403 (${context})`);
+  if (response.status === 429) throw new ClassifiableError('rate_limited', `Facebook returned 429 (${context})`);
+  if (response.status >= 500) throw new ClassifiableError('http_5xx', `Facebook returned ${response.status} (${context})`);
+  if (!response.ok) throw new ClassifiableError('network', `Facebook returned ${response.status} (${context})`);
+
+  return (parsedBody ?? {}) as Record<string, unknown>;
+}
+
+/**
+ * Story 2.27 (ADR-0073) — post a comment on an ingested Facebook Page post.
+ * Requires the Page credential to include the `pages_manage_engagement`
+ * permission (working assumption; verify live before any real tenant goes live).
+ */
+export async function replyToFacebookPost(
+  post: SocialPostSummary,
+  body: string,
+  credential: string
+): Promise<{ externalId: string; externalUrl: string }> {
+  const { pageId, pageAccessToken } = parseFacebookCredential(credential);
+  const rawPayload = (post.rawPayload ?? {}) as { id?: string; pageId?: string };
+  const postId = rawPayload.id;
+  if (!postId) {
+    throw new ClassifiableError('post_not_found', 'Facebook post rawPayload has no Graph API id.');
+  }
+
+  const url = `${GRAPH_API_BASE}/${encodeURIComponent(postId)}/comments?access_token=${encodeURIComponent(pageAccessToken)}`;
+  const result = await postToFacebookGraphApi(url, 'reply to post', new URLSearchParams({ message: body }));
+  const comment = result as unknown as { id?: string };
+  if (!comment.id) {
+    throw new ClassifiableError('network', 'Facebook reply response did not contain a comment id.');
+  }
+
+  const externalUrl = `https://www.facebook.com/${postId}/?comment_id=${comment.id}`;
+  return { externalId: comment.id, externalUrl };
+}
+
+/**
  * ADR-0059 Decision §2 — the Page's own published posts only, no comment/
  * mention *content* (Decision §5's deferred third-party author-rights
  * question). `fields` deliberately requests only what normalize()/
@@ -194,6 +275,16 @@ export const facebookConnector: SocialConnector = {
    * shape exists (named, not designed, in this ADR's own Open Questions).
    */
   getRateLimitConfig: () => ({ requestsPerWindow: 200, windowSeconds: 24 * 60 * 60 }),
+
+  /**
+   * Story 2.27 (ADR-0073) — conservative outbound rate-limit for replies.
+   * Falls back to `getRateLimitConfig()` if this connector were not to set it.
+   * This is the same flat placeholder used for ingestion until a real per-Page
+   * dynamic shape is designed.
+   */
+  getOutboundRateLimitConfig: () => ({ requestsPerWindow: 200, windowSeconds: 24 * 60 * 60 }),
+
+  reply: replyToFacebookPost,
 
   normalize: (rawItem) => {
     const post = rawItem as FacebookPagePost & { pageId: string };

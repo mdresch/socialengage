@@ -18,6 +18,7 @@ The `outboundEngagementService` in `src/outbound/outboundEngagementService.ts` e
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts` — `SocialConnector` accepts an optional `reply?()`; `outboundEngagementService.invoke()` calls it and returns `sent`/`failed` rows; connectors without `reply()` fail with `reply_not_supported`; `ClassifiableError` thrown from `reply()` maps to the row's `errorCode`.
+- `contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts` — the first real `SocialConnector.reply()` call site; `outboundEngagementService.invoke()` with `facebookConnector` exercises the full outbound path from gate to `POST /{post-id}/comments` and back.
 
 ## How to extend this safely
 
