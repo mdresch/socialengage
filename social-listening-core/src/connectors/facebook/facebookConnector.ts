@@ -1,4 +1,4 @@
-import { SocialConnector } from '../types';
+import { SocialConnector, OutboundPostPayload } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 import { SocialPostSummary } from '../../posts/socialPostStore';
 
@@ -133,7 +133,12 @@ async function graphApiFetch(url: string, context: string): Promise<Record<strin
  * so this is kept separate from the GET-oriented `graphApiFetch()` used for
  * ingestion. The classifications are intentionally reply-specific.
  */
-async function postToFacebookGraphApi(url: string, context: string, body?: URLSearchParams): Promise<Record<string, unknown>> {
+async function postToFacebookGraphApi(
+  url: string,
+  context: string,
+  body?: URLSearchParams,
+  notFoundKind: 'post_not_found' | 'target_asset_not_found' = 'post_not_found'
+): Promise<Record<string, unknown>> {
   let response: Response;
   try {
     response = await fetch(url, { method: 'POST', body });
@@ -161,7 +166,7 @@ async function postToFacebookGraphApi(url: string, context: string, body?: URLSe
         throw new ClassifiableError('rate_limited', `Facebook rate limit error ${code} (${context}): ${type} — ${message}`);
       }
       if (code === 803) {
-        throw new ClassifiableError('post_not_found', `Facebook post not found ${code} (${context}): ${type} — ${message}`);
+        throw new ClassifiableError(notFoundKind, `Facebook asset not found ${code} (${context}): ${type} — ${message}`);
       }
       if (code === 200 || /permission|insufficient scope/i.test(message)) {
         throw new ClassifiableError('missing_permission', `Facebook permission error ${code} (${context}): ${type} — ${message}`);
@@ -205,6 +210,43 @@ export async function replyToFacebookPost(
 
   const externalUrl = `https://www.facebook.com/${postId}/?comment_id=${comment.id}`;
   return { externalId: comment.id, externalUrl };
+}
+
+/**
+ * Story 2.29 (ADR-0075) — publish a new post to a connected Facebook Page.
+ * Requires the Page credential to include the `pages_manage_posts`
+ * permission (working assumption; verify live before any real tenant goes live).
+ */
+export async function publishToFacebookPage(
+  tenantId: string,
+  userId: string,
+  payload: OutboundPostPayload,
+  credential: string
+): Promise<{ externalId: string; externalUrl: string }> {
+  const { pageId, pageAccessToken } = parseFacebookCredential(credential);
+
+  // The caller's chosen Page must match the credential the outbound path resolved.
+  if (payload.targetAssetId !== pageId) {
+    throw new ClassifiableError(
+      'missing_permission',
+      `Credential is for Page ${pageId}, not the requested Page ${payload.targetAssetId}.`
+    );
+  }
+
+  const url = `${GRAPH_API_BASE}/${encodeURIComponent(payload.targetAssetId)}/feed?access_token=${encodeURIComponent(pageAccessToken)}`;
+  const result = await postToFacebookGraphApi(
+    url,
+    'publish to page',
+    new URLSearchParams({ message: payload.text }),
+    'target_asset_not_found'
+  );
+  const post = result as unknown as { id?: string };
+  if (!post.id) {
+    throw new ClassifiableError('network', 'Facebook publish response did not contain a post id.');
+  }
+
+  const externalUrl = `https://www.facebook.com/${payload.targetAssetId}/posts/${post.id}`;
+  return { externalId: post.id, externalUrl };
 }
 
 /**
@@ -285,6 +327,13 @@ export const facebookConnector: SocialConnector = {
   getOutboundRateLimitConfig: () => ({ requestsPerWindow: 200, windowSeconds: 24 * 60 * 60 }),
 
   reply: replyToFacebookPost,
+
+  /**
+   * Story 2.29 (ADR-0075) — optional outbound post publishing. This is the
+   * first real `SocialConnector.publish()` implementation, gated on the same
+   * Page credential `reply()` uses.
+   */
+  publish: publishToFacebookPage,
 
   normalize: (rawItem) => {
     const post = rawItem as FacebookPagePost & { pageId: string };

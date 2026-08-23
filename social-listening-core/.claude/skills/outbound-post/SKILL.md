@@ -20,6 +20,7 @@ The `outboundPublishService` in `src/outbound/outboundPublishService.ts` execute
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts` (ADR-0075) — `SocialConnector` accepts an optional `publish?()`; `outboundPublishService.invoke()` calls it and returns `sent`/`failed` rows with `activityType='post'`; connectors without `publish()` fail with `publish_not_supported`; `ClassifiableError` thrown from `publish()` maps to the row's `errorCode`; `RequestGate` tracks `outbound_post` separately from `outbound` (reply).
+- `contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts` (ADR-0075) — the first real `SocialConnector.publish()` call site; `outboundPublishService.invoke()` with `facebookConnector` exercises the full outbound post path from gate to `POST /{page-id}/feed` and back.
 
 ## How to extend this safely
 
@@ -38,7 +39,7 @@ The `outboundPublishService` in `src/outbound/outboundPublishService.ts` execute
 
 ## Known gaps / deferred work
 
-- **Real connector-specific `publish()` implementations (Facebook, Instagram, LinkedIn) are not yet built.** Story 2.29 begins the Facebook `publish()` implementation; other platforms are deferred to their own stories.
+- **Real connector-specific `publish()` implementations: Facebook Page posts are built by Story 2.29; Instagram, LinkedIn, and other platform `publish()` implementations are deferred to their own stories.**
 - **REST endpoint `POST /v1/outbound/posts` and `GET /v1/outbound/posts` are Story 3.15**, not built in this component.
 - **The `outbound_activities` table extension for `activity_type='post'` is created in Story 3.15**; `outboundPublishService` only returns a row-shaped object that matches its intended contents.
 - **Media upload, scheduled dispatch, bulk publishing, and third-party assets are out of scope for v1** (ADR-0075 §7).
