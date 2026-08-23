@@ -3169,3 +3169,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md; social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts
 - **Epic-2 suite at merge:** 34/35 suites, 317/318 tests (story-2.14 live MediaWiki AC3 exceeded 60s on the first epic-2 run; retested story-2.14 individually: PASS 8/8)
+---
+
+## 2026-08-24 — Story 3.14 — social-listening-core@e3e661b
+
+- **Full commit:** `e3e661b2c0129fb8762f5eaf172a8ae3cc75fee8`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.14 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts, social-listening-core/migrations/0041_create_outbound_activities.sql, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/outbound/outboundActivityStore.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Epic-3 suite at merge:** PASS (16/16 suites, 115/115 tests)

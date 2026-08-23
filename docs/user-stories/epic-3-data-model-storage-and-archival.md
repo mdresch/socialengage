@@ -323,7 +323,7 @@
 ## Story 3.14 — Outbound Reply Audit Table and `POST /v1/posts/:id/replies` API
 
 **Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@e3e661b
 
 **As a** Tenant User or Tenant-Admin,
 **I want** a tenant-scoped record of every reply attempt and a REST endpoint to create one against an ingested post,
