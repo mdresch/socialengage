@@ -1,231 +1,303 @@
-# BRD-0042: Wikipedia Connector — MediaWiki API, Revision Re-poll, Article-as-Author
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | BRD-0042: Wikipedia Connector — MediaWiki API, Revision Re-poll, Article-as-Author |
+| Document Title | FDD-0042 Wikipedia Connector — MediaWiki API, Revision Re-poll, Article-as-Author — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0042-wikipedia-connector-mediawiki-api-article-as-author.md, ../Business-Requirements/BRD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0042-wikipedia-connector-mediawiki-api-article-as-author.md and the business requirements in BRD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md into functional design for **Wikipedia Connector MediaWiki API Article As Author**.
-SocialEngage needs a new, legally clean, self-service content source that can monitor public Wikipedia articles about a tenant's brand, organization, or topics. Reddit, X, and Meta were evaluated and found unsuitable or unverifiable, while Wikimedia's own primary sources confirm that the MediaWiki API is open, requires no account or key, and permits commercial reuse under CC BY-SA/GFDL terms. This BRD defines the business need, scope, and acceptance criteria for the Wikipedia connector.
-
-The problem is two-fold: other connector candidates are blocked by closed registration (Reddit), paid-only access (X), or unverified capabilities (Meta); and Wikipedia's value is not a one-shot article snapshot but a living document that can change in reputation-relevant ways. The proposed solution is a `SocialConnector` that targets the MediaWiki Action API directly, polls `recentchanges` for already-tracked articles, normalizes each qualifying revision into a `SocialPost`, and models `Author` as the specific Wikipedia article (stable `pageid`) while keeping attribution on `SocialPost.url`.
-
-The expected business value is expanded platform coverage with a no-account, no-key source; a novel "article just changed" reputation signal; and continued compliance with the open-content licensing requirements that Wikipedia content carries.
+| Author(s) | AI Delivery Agent (FDD synthesis pass) |
+| Reviewer(s) | Menno (Sponsor / Technical Lead) |
+| Status | Approved (ADR-0042 Accepted 2026-08-08; connector built via Story 2.13/2.14, UI via Story 6.21/6.22) |
+| Related Documents | ADR-0042, BRD-0042, ADR-0004, ADR-0021, ADR-0027, ADR-0018, ADR-0015, Story 2.13, Story 2.14, Story 6.21, Story 6.22 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- A `SocialConnector` for Wikipedia (`providerId` distinct from existing connectors) using the MediaWiki Action API directly.
-- `authMode: 'none'` and `deliveryMode: 'poll'` with a compliant, connector-identifying `User-Agent` header.
-- Re-polling already-tracked articles via the `recentchanges` API and creating one `SocialPost` per qualifying revision.
-- Modeling `Author` as the specific Wikipedia article: `externalAuthorId` = stable `pageid`, `handle`/`displayName` = current article title, `followerCount` unpopulated.
-- Attribution through `SocialPost.url` set to the specific revision permalink (`?oldid=<revid>`).
-- New-article discovery via the `search` API for a watchlist's query; current content is ingested at discovery with no historical backfill.
-- Watchlist keyword/hashtag/boolean matching with native CirrusSearch operators where confirmed and whole-article post-fetch fallback for unconfirmed operators.
-- Tenant-scoped copies of ingested revisions under existing RLS (ADR-0015).
-- Exposing the connector in the Tenant Admin UI connector list and the watchlist source list.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- One-shot static snapshot ingestion (explicitly rejected in ADR-0042).
-- A single, connector-wide "Wikipedia" `Author` reused for every article (explicitly rejected).
-- Modeling `Author` as the article's contributor list or contributor-history page.
-- RAG/embedding-oriented chunked ingestion in this release.
-- Backfilling a newly discovered article's full revision history beyond its current content.
-- A materiality threshold for re-ingestion (e.g., edit size, minor-edit flag) in v1.
-- Cross-source de-duplication of the Newswire/GNews kind (not applicable to Wikipedia).
-- External redistribution of AI-enrichment output derived from Wikipedia text without a later CC BY-SA "Adapted Material" review.
+### 2.1 Purpose
+
+This document translates ADR-0042's architecture decision and BRD-0042's business requirements into the functional design of the Wikipedia connector: a self-service, keyless `SocialConnector` that polls the MediaWiki Action API, re-ingests already-tracked articles as they are edited, and models `Author` as the tracked article itself. The connector is already built (Story 2.13/2.14 in `social-listening-core`; Story 6.21/6.22 in `social-listening-admin`); this FDD documents the shipped functional behavior derived from ADR-0042's Decision, for traceability and future maintenance.
+
+### 2.2 Scope
+
+- **In scope:** connector registration and configuration (`authMode: 'none'`, `deliveryMode: 'poll'`, compliant `User-Agent`); article discovery via `search`; revision re-poll via `recentchanges`; `SocialPost` normalization (including the revision-permalink attribution mechanism); `Author` modeling keyed by `pageid`; watchlist matching with CirrusSearch push-down and whole-article fallback; Tenant Admin UI exposure as a connector and as a watchlist source.
+- **Out of scope:** one-shot static snapshot ingestion (rejected); a single connector-wide "Wikipedia" `Author` (rejected); historical revision backfill beyond current content at discovery; a materiality threshold for re-ingestion; RAG/embedding-oriented chunked ingestion; CC BY-SA "Adapted Material" review of AI-enrichment output redistribution (flagged for a future pass, not designed here).
+
+### 2.3 Target Audience
+
+Backend engineers extending or maintaining the Wikipedia connector; frontend engineers maintaining its Tenant Admin UI surfaces; QA writing/maintaining its contract tests; Platform Operations monitoring its volume and rate-limit posture.
+
+---
 
 ## 3. Context and Background
-`docs/open-decisions.md`'s 2026-08-06 connector-comparison entry vetted Reddit, X, YouTube, Meta, and Wikipedia against this project's own established evaluation discipline (ADR-0024/0026's primary-source verification bar, ADR-0027's technical-intermediary-only posture). Reddit — the informally "next" connector per `docs/implementation-plan.md`'s Phase 1 note — was found to have closed self-service registration since late 2025 (approval-gated, "slow and often silent" for commercial use per community reporting) and a 48-hour content-deletion-propagation obligation that does not fit ADR-0018's/ADR-0039's current retention design. X requires a paid tier with no free path at all. Meta's actual social-listening capability (monitoring *other* accounts' public posts, not a tenant's own Page) is unconfirmed either way. Wikipedia came back clean on every axis this project actually screens for.
 
-**Verified directly against Wikimedia's own primary sources, 2026-08-06** (not secondhand — every claim below was fetched from `foundation.wikimedia.org`, `meta.wikimedia.org`, or `mediawiki.org` directly, the same discipline ADR-0024/0026 held themselves to after RTPR's and Currents API's claims failed to survive direct verification):
-
-- **Self-service, no approval gate.** The Wikimedia Foundation's own API Usage Guidelines (`foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_API_Usage_Guidelines`) state directly: *"the existence of this policy does not require members of the Wikimedia community to get prior permission from the Wikimedia Foundation before using the APIs in a manner consistent with this policy."* No account, no API key, no developer application review — a materially different posture from Reddit's now-closed registration.
-- **Commercial reuse explicitly permitted.** The Foundation's Terms of Use §7 ("Licensing of Content"), fetched directly: contributed text is dual-licensed CC BY-SA 4.0 and GFDL, and *"these licenses do allow commercial uses of your contributions, as long as such uses are compliant with the terms of the respective licenses."* No commercial/non-commercial split exists in the API Usage Guidelines either — unlike GNews's free tier (ADR-0026), which is explicitly non-commercial-only.
-- **Attribution mechanism, stated by Wikimedia itself.** Terms of Use §7 names three acceptable attribution methods; the first, verbatim: *"Through hyperlink (where possible) or URL to the article to which you contributed (since each article has a history page that lists all contributors, authors and editors)."* This is the mechanism this ADR's Decision adopts below — see the "Attribution mechanism" implementation default.
-- **Only real restriction: no sublicensing/reselling/white-labeling of the API itself**, not a restriction on using it. The API Usage Guidelines, fetched directly: *"Operators (or those acting on their behalf) may not sublicense, lease, assign, or guarantee the availability or functionality of a Wikimedia Foundation-managed API to any third party,"* and *"It is not permissible to implement an API client that white labels in a manner that obscures the identity of the ultimate service provider of the APIs (the Wikimedia Foundation)."* This restricts reselling Wikimedia's own API access to a third party while hiding that it's Wikimedia's — it does not restrict SocialEngage from using the API internally to power its own ingestion pipeline, the same posture ADR-0027 already establishes for every connector: SocialEngage is a technical consumer of the source, never a reseller of it.
-- **ShareAlike triggers on modification-and-redistribution, not passive storage.** CC BY-SA 4.0's own legal text (`creativecommons.org/licenses/by-sa/4.0/legalcode.en`), fetched directly: the ShareAlike obligation (§3(b)) applies only when a licensee *"Share[s] Adapted Material,"* where "Adapted Material" (§1) requires the licensed material to be *"translated, altered, arranged, transformed, or otherwise modified."* Reproducing, storing, or displaying the unmodified text — which is all this connector's v1 scope does — does not trigger it. Named explicitly here, per this ADR's own task, so a future contributor does not assume SocialEngage's own database storage of raw article text is itself a "modification."
-
-This is the same rigor bar ADR-0024 (Newswire) and ADR-0026 (GNews) already established for a connector-selection ADR — this ADR follows their structure directly, not a lighter-weight decision.
-
-**The entity-modeling question this ADR must resolve, not defer a third time.** The Knowledge-Graph & Semantic Data Modeling Reviewer reviewed this exact question on 2026-08-06 (`docs/architecture/knowledge-graph-register.md`) and found: relational storage remains sufficient (no graph-shaped traversal or dense many-to-many pattern is implied by anything proposed); but the floated framing — "`Author` = the article's own contributor-history page, a dynamic reference, not one fixed organization" — does **not** cleanly extend ADR-0024's/ADR-0026's issuer-as-Author pattern the way it first looked like it might. A per-article history-page reference is 1:1 with the `SocialPost` being ingested, which collapses `Author` normalization to exactly the "embed author fields per post" alternative ADR-0004's own Alternatives Considered section already rejected — **unless** a real many-post-to-one-`Author` reuse pattern exists. The reviewer named the open question directly: does this connector re-poll/re-ingest an article as it gets edited over time (producing multiple `SocialPost` rows over time, all pointing at the same `Author`), or is each article ingested once as a static snapshot? This ADR's Decision, below, makes that call.
-SocialEngage needs a new, legally clean, self-service content source that can monitor public Wikipedia articles about a tenant's brand, organization, or topics. Reddit, X, and Meta were evaluated and found unsuitable or unverifiable, while Wikimedia's own primary sources confirm that the MediaWiki API is open, requires no account or key, and permits commercial reuse under CC BY-SA/GFDL terms. This BRD defines the business need, scope, and acceptance criteria for the Wikipedia connector.
-
-The problem is two-fold: other connector candidates are blocked by closed registration (Reddit), paid-only access (X), or unverified capabilities (Meta); and Wikipedia's value is not a one-shot article snapshot but a living document that can change in reputation-relevant ways. The proposed solution is a `SocialConnector` that targets the MediaWiki Action API directly, polls `recentchanges` for already-tracked articles, normalizes each qualifying revision into a `SocialPost`, and models `Author` as the specific Wikipedia article (stable `pageid`) while keeping attribution on `SocialPost.url`.
-
-The expected business value is expanded platform coverage with a no-account, no-key source; a novel "article just changed" reputation signal; and continued compliance with the open-content licensing requirements that Wikipedia content carries.
+Reddit (the originally planned next connector) closed self-service registration; X requires a paid tier; Meta's non-Page listening capability is unverified. Wikipedia, verified directly against Wikimedia's own primary sources, requires no account or API key, explicitly permits commercial reuse under CC BY-SA 4.0/GFDL, and is gated only by a compliant `User-Agent` header. Unlike GNews/Newswire content (published once, effectively immutable), a Wikipedia article is a living document that can be edited — including adversarially, in ways directly relevant to reputation monitoring. The Knowledge-Graph & Semantic Data Modeling Reviewer flagged an unresolved `Author`-modeling question: does the connector re-poll an article over time (real many-post-to-one-`Author` reuse) or ingest it once (a 1:1 collapse, functionally equivalent to embedding author fields per post, which ADR-0004 already rejected)? ADR-0042 resolves this by choosing re-poll-on-edit as the connector's primary cadence, making `Author` = the tracked article (keyed by stable `pageid`) a genuine, if structurally distinct, third instance of the issuer-as-Author pattern established by ADR-0024 (Newswire) and ADR-0026 (GNews).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
-| --- | --- | --- |
-| 1 | Add a self-service, no-approval Wikipedia ingestion source to the connector roster | Wikipedia is registered as a `SocialConnector` and can be activated in the Tenant Admin UI |
-| 2 | Deliver reputation-relevant edit monitoring for tracked Wikipedia articles | Each qualifying revision of a tracked article produces a new `SocialPost` and the tenant can see when an article changed |
-| 3 | Satisfy Wikimedia attribution and licensing obligations | Every Wikipedia-sourced `SocialPost.url` points to the specific revision permalink and storage of unmodified text is documented |
-| 4 | Preserve a meaningful, reusable `Author` entity model | Multiple revisions of the same article share a single `Author` keyed by `pageid` |
-| 5 | Keep implementation honest about known gaps | Open questions (exact CirrusSearch surface, exact rate limit, materiality threshold) are explicitly documented rather than invented |
+
+| ID | Goal | Success Criteria |
+|---|---|---|
+| G1 | Add a self-service, no-approval-gate ingestion source | `wikipedia` connector registered with `authMode: 'none'` |
+| G2 | Surface reputation-relevant edit activity, not just first discovery | Each qualifying revision of a tracked article produces a new `SocialPost` |
+| G3 | Satisfy Wikimedia's attribution obligation | `SocialPost.url` is the specific revision permalink (`?oldid=<revid>`) on every ingested post |
+| G4 | Keep `Author` a meaningful, reusable entity | Multiple revisions of the same article resolve to one `Author` row keyed by `pageid` |
+| G5 | Avoid inventing unverified operational numbers | `getRateLimitConfig()` uses either a verified Wikimedia limit or an explicitly-labeled conservative placeholder |
+| G6 | Expose the connector to tenants | Wikipedia appears as an activatable connector and as a watchlist platform source in the Tenant Admin UI |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-
-- The best-grounded connector candidate this project has vetted since GNews/Newswire — self-service with no approval gate (unlike Reddit's now-closed registration), commercial reuse explicitly permitted (unlike GNews's non-commercial-only free tier), every material claim verified directly against Wikimedia's own primary sources rather than secondhand summaries.
-- Resolves, with reasoning rather than a third deferral, the entity-modeling open question the Knowledge-Graph reviewer explicitly declined to answer — a genuine, if structurally distinct, third instance of the issuer-as-Author pattern, giving `docs/adr/README.md`'s and ADR-0004's own "rule of three" trigger a real third data point (see the accompanying Pending supersession note on ADR-0004).
-- Cleanly separates the entity-reuse question (`Author` = the article) from the legal-attribution question (`SocialPost.url` = the specific revision permalink) — avoids conflating two different concerns into one field, per this ADR's own explicit task framing.
-- Storing whole, unchunked article text in `SocialPost.text` at each qualifying revision keeps the future RAG/embedding direction Menno has already named as anticipated (not designed here — see Open questions) structurally open rather than foreclosed: a later chunking/indexing pass can operate on the stored raw text without this ADR having pre-committed to any particular chunk boundary.
-- `recentchanges`-driven re-polling is a genuinely novel monitoring signal none of this project's other connectors offer — "your own Wikipedia article just changed" — closer to the actual reputation-monitoring use case than a one-shot article snapshot would be.
-
-**Negative**
-
-- **`Author`'s reused shape here is not identical to Newswire's/GNews's**, and treating it as a mechanical "third instance, therefore generalize ADR-0004 without further thought" would overstate the similarity — see the Pending supersession note on ADR-0004 for the narrower, honestly-scoped generalization this ADR actually recommends.
-- **A re-poll-per-revision cadence can generate real per-tenant volume** for an actively-edited article, a cumulative storage/retention driver ADR-0018's existing tiers were not sized against; named here, not yet resolved.
-- **No confirmed, published rate limit** at the exact numeric level — same honest gap ADR-0024 disclosed for Newswire; the connector must poll conservatively by default until verified.
-- **CirrusSearch's exact native-query-parameter surface through the standard API endpoint was not fully confirmed** in this pass — a real verification gap before `supportedQueryFeatures` can be finalized, named rather than glossed over.
-- **`recentchanges`'s 30-day rolling window** means an already-tracked article's edit history beyond 30 days back is not retroactively discoverable through that endpoint alone — a real, if partial (revision-history walking can go further), limitation.
-- Every qualifying revision re-ingests the article's current full text, not a diff — Wikipedia's own API does not expose a plain "what changed" field suitable for direct ingestion (per-diff attribution isn't cleanly available either, confirmed by the Knowledge-Graph reviewer's own finding) — meaning a large, mostly-unrelated edit to an otherwise-matching article still produces a full-text re-ingestion, a real noise/volume trade-off left for implementation-time tuning (e.g., a materiality threshold), not resolved here.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-| --- | --- | --- | --- | --- |
-| BR-001 | The system shall register Wikipedia as a `SocialConnector` with `authMode: 'none'` and `deliveryMode: 'poll'`. | Must | `wikipedia` is a distinct registered connector; no change to the core ingestion orchestration path is required. | Engineering |
-| BR-002 | The system shall set a compliant, connector-identifying `User-Agent` header on every MediaWiki API request. | Must | The header identifies the client and includes contact information on every real or fixture request. | Engineering |
-| BR-003 | The system shall re-poll already-tracked articles via the `recentchanges` API and create one `SocialPost` per qualifying revision. | Must | A test with two distinct revisions of the same article across two poll cycles produces two `SocialPost` rows that resolve to the same `Author`. | Engineering |
-| BR-004 | The system shall model `Author` as the Wikipedia article using the stable `pageid` and current title. | Must | `Author.externalAuthorId` = `pageid`; `Author.handle`/`displayName` = current title; `followerCount` is unpopulated. | Engineering |
-| BR-005 | The system shall set `SocialPost.url` to the specific revision permalink (`?oldid=<revid>`). | Must | Stored URL includes the revision id and is distinct from the bare article URL. | Engineering |
-| BR-006 | The system shall ingest only the current revision of a newly discovered article and shall not backfill prior history. | Must | First discovery of an article produces one `SocialPost` for the current revision only. | Engineering |
-| BR-007 | The system shall support watchlist matching with confirmed CirrusSearch operators and fallback to whole-article matching. | Must | `supportedQueryFeatures` is declared conservatively; unconfirmed operators fall back to post-fetch matching. | Engineering |
-| BR-008 | The Tenant Admin UI shall list Wikipedia as an activatable connector and as a watchlist source. | Should | `tenant/connectors/page.tsx` and `tenant/watchlists/page.tsx` include a `wikipedia` entry with a distinct icon and color. | Engineering |
-| BR-009 | A poll cycle with zero qualifying `recentchanges` entries since the last check shall be a no-op. | Must | Two consecutive poll cycles with no new edits produce no duplicate `SocialPost` rows. | Engineering |
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+### 5.1 Feature / Capability: Wikipedia `SocialConnector` Registration
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-| --- | --- | --- | --- |
-| Menno (Sponsor / Product Owner / Technical Lead) | Decision owner and approver | High | Defensible licensing, clean scope, and honest known gaps |
-| Tenant Admin | Activates and manages the connector | High | Simple, no-credential activation and clear UI placement |
-| Brand / Reputation Manager | Uses the data to monitor public perception | High | Timely notification when a Wikipedia article changes |
-| Knowledge Graph & Semantic Data Modeling Reviewer | `Author` modeling and normalization | Medium | Reusable entity without 1:1 collapse per revision |
-| Engineering (backend) | Implements the connector and ingestion logic | High | Clear defaults, explicit placeholders, and validation targets |
-| Engineering (frontend) | Surfaces the connector in the admin UI | Medium | Hand-curated `PLATFORMS` and `SOCIAL_PLATFORMS` entries |
-| Platform Operations | Monitors connector health, volume, and rate limits | Medium | Volume and rate-limit observability |
+- **Description:** Registers Wikipedia as a distinct `SocialConnector` targeting the MediaWiki Action API directly (`en.wikipedia.org/w/api.php` and per-language equivalents), with no aggregator or wrapper.
+- **Triggers:** Connector registry initialization at application start; Tenant Admin activation via the generic activate/deactivate surface (ADR-0051).
+- **Inputs:** None required from the tenant — no account, no API key, no OAuth flow.
+- **Processing:** `authMode: 'none'`; `deliveryMode: 'poll'` (MediaWiki has no push/webhook mechanism); every outbound request carries a compliant, connector-identifying `User-Agent` header (client identity plus contact information) per the Wikimedia User-Agent Policy.
+- **Outputs:** A registered, activatable `SocialConnector` with `providerId: 'wikipedia'`.
+- **Error handling:** A non-compliant `User-Agent` may cause Wikimedia to return HTTP 403 without notice; the connector must always send the compliant header, never an empty or generic default.
+- **Edge cases:** No credential-pooling concern applies (ADR-0027) — there is no account or key to pool; the shared `User-Agent` string identifies the software, not a tenant relationship.
+
+### 5.2 Feature / Capability: New-Article Discovery
+
+- **Description:** Finds Wikipedia articles matching a tenant's watchlist query for the first time, using the MediaWiki `search` API, driven by the tenant's own watchlist terms (not a shared hardcoded literal, per Story 2.14).
+- **Triggers:** Scheduled poll cycle for a watchlist targeting the Wikipedia connector.
+- **Inputs:** The watchlist's query terms (keyword/hashtag/boolean AST).
+- **Processing:** Issues a `search` request using the watchlist's own terms; on a match, fetches the article's current full content and metadata (`pageid`, title).
+- **Outputs:** One `SocialPost` for the article's current revision at time of discovery; one `Author` row created or resolved for that `pageid`.
+- **Error handling:** No results returns a no-op poll outcome, not an error.
+- **Edge cases:** Full boolean AST-to-CirrusSearch operator translation (AND/OR/NOT, quoted phrases, `intitle:`/`insource:`) is not fully implemented — named as an explicit, ongoing verification gap, not silently assumed complete. No historical backfill is performed at discovery — only the current revision is ingested.
+
+### 5.3 Feature / Capability: Revision Re-Poll of Tracked Articles
+
+- **Description:** Re-ingests an already-tracked article as it is edited, using the `recentchanges` API, producing a new `SocialPost` per qualifying revision rather than a single static snapshot.
+- **Triggers:** Scheduled poll cycle for articles already known to a tenant's watchlist(s).
+- **Inputs:** The article's `pageid`/title; the timestamp of the last successful poll (`rcstart`/`rcend` windowing).
+- **Processing:** Queries `recentchanges` filtered by page and time range since the last poll; for each qualifying entry, fetches the revision's full current text and metadata; creates a new `SocialPost` linked to the article's existing `Author` row (resolved by `pageid`, not recreated).
+- **Outputs:** Zero or more new `SocialPost` rows per poll cycle, each with `Author` resolved to the same row across all revisions of the same article; `Author.lastSeenAt` updated to reflect the most recent qualifying revision.
+- **Error handling:** A poll cycle with zero qualifying entries is a no-op — no duplicate `SocialPost` rows are created.
+- **Edge cases:** `recentchanges` cannot enumerate edits more than 30 days into the past (`$wgRCMaxAge`) — an already-tracked article's older, unpolled edit history beyond that window is not retroactively discoverable through this endpoint (the underlying `revisions` API can be walked further back, but this is not designed as an automatic behavior). Every qualifying revision re-ingests the article's full current text, not a diff — a large, mostly-unrelated edit to an otherwise-matching article still produces a full-text re-ingestion (a known noise/volume trade-off, left for future materiality-threshold tuning).
+
+### 5.4 Feature / Capability: `Author` Modeling as the Tracked Article
+
+- **Description:** Models `Author` as the specific Wikipedia article being tracked, not the platform, a contributor, or a contributor-history page.
+- **Triggers:** First ingestion of any revision of a given article (discovery or re-poll).
+- **Inputs:** The article's stable `pageid`, current title.
+- **Processing:** `Author.externalAuthorId` = `pageid` (stable across page moves, unlike title); `Author.handle`/`displayName` = the article's current title; `Author.followerCount` left unpopulated (as with Newswire/GNews); `Author.firstSeenAt` set on first ingestion, `Author.lastSeenAt` updated on every subsequent qualifying revision.
+- **Outputs:** One `Author` row per distinct `pageid`, reused across every `SocialPost` derived from that article's revisions.
+- **Error handling:** N/A — resolution is a lookup-or-create keyed by `pageid`; no ambiguous-match case exists given a stable numeric key.
+- **Edge cases:** An article's title changes (page move) — `Author.handle`/`displayName` is expected to be refreshed to the current title on next ingestion while `externalAuthorId` (`pageid`) remains stable, preserving the same `Author` row's identity across the rename.
+
+### 5.5 Feature / Capability: Attribution via `SocialPost.url`
+
+- **Description:** Satisfies Wikimedia's CC BY-SA/GFDL attribution requirement (a hyperlink to the article, which itself links to its own contributor-history page) through the existing `SocialPost.url` field, deliberately kept separate from the `Author` entity.
+- **Triggers:** Creation of any `SocialPost` from a Wikipedia revision.
+- **Inputs:** The revision's `revid` and the article's title.
+- **Processing:** `SocialPost.url` is set to `https://en.wikipedia.org/w/index.php?title=<Title>&oldid=<revid>` — the specific revision's own permalink, never the bare, revision-less article URL.
+- **Outputs:** A `SocialPost.url` that satisfies the attribution mechanism independently of what `Author` represents.
+- **Error handling:** N/A — a derived, deterministic field.
+- **Edge cases:** None beyond title-encoding correctness in the URL.
+
+### 5.6 Feature / Capability: Watchlist Matching (Native Push-Down with Fallback)
+
+- **Description:** Matches watchlist queries against Wikipedia content, pushing down to CirrusSearch operators where confirmed reachable through the standard API endpoint, and falling back to whole-article post-fetch matching for anything unconfirmed — the same connector-side-with-fallback pattern (ADR-0006) and capability-matrix declaration (ADR-0021) used by every other connector.
+- **Triggers:** Any poll cycle evaluating fetched or discovered content against a tenant's watchlist AST.
+- **Inputs:** The watchlist's AST (keyword/hashtag/boolean, including quoted phrases and exclusions where supported).
+- **Processing:** `supportedQueryFeatures` is declared conservatively; features not confirmed reachable via `action=query&list=search` fall back to full whole-article text evaluation, exactly as the discovery-search call (Story 2.14) leaves the full boolean AST evaluated against fetched content regardless of what drove the initial search call.
+- **Outputs:** A boolean match/no-match decision per watchlist per candidate post, and (on match) a published ingestion event, unchanged from every other connector's event-publishing path.
+- **Error handling:** An unrecognized or unsupported operator never silently drops a candidate; it falls back to whole-content matching rather than being skipped.
+- **Edge cases:** CirrusSearch's exact native-query-parameter surface through the standard endpoint was not fully confirmed at ADR-0042's acceptance — a named, ongoing verification gap that governs how conservative `supportedQueryFeatures` must stay.
+
+### 5.7 Feature / Capability: Tenant Admin UI Exposure
+
+- **Description:** Surfaces the Wikipedia connector as an activatable connector on the connectors screen, and as a selectable platform source on the watchlist creation/edit screen.
+- **Triggers:** Tenant-Admin visits `tenant/connectors` or `tenant/watchlists`.
+- **Inputs:** N/A — a UI listing, driven by the already-registered connector's static configuration.
+- **Processing:** Adds a `wikipedia` entry with a distinct icon/color to both the connectors list and the watchlist platform-source list, using the same generic activate/deactivate mechanism (ADR-0051) already used by other connectors — no new backend surface required.
+- **Outputs:** Tenant-Admin can activate/deactivate Wikipedia with no credential entry, and can target a new or existing watchlist at Wikipedia as a source.
+- **Error handling:** Standard connector activate/deactivate error handling (already generic, not connector-specific) applies unchanged.
+- **Edge cases:** None specific to Wikipedia beyond the no-credential activation flow already common to `authMode: 'none'` connectors.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 2.13 | epic-2-ingestion-connectors-and-rate-limits.md | As tenant tracking public perception of their own brand, organization, or a topic with a Wikipedia presence, I want a real `SocialConnector` that re-polls a ... | A registered `SocialConnector` (`providerId` distinct from every existing connector, `authMode: 'none'`, `deliveryMode: 'poll'`, per ADR-0042 Decision §1) ta... |
-| Story 2.14 | epic-2-ingestion-connectors-and-rate-limits.md | As tenant who has activated the Wikipedia connector, I want its discovery search to use the topic(s) I've actually defined in my own watchlist(s) targeting W... | `pollWikipedia()`'s discovery phase no longer calls `fetchWikipediaSearch()` with a fixed, shared `DEFAULT_QUERY` — it derives its search query from the tena... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Tenant-Admin | Activates/deactivates the Wikipedia connector; creates/edits watchlists targeting it |
+| Brand / Reputation Manager (tenant user) | Reviews ingested posts and reputation-relevant edit activity |
+| Live ingestion-polling scheduler | Drives discovery and re-poll cycles automatically |
+| Wikimedia MediaWiki API | External system providing `search`, `recentchanges`, and `revisions` data |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| Story 2.13 | Tenant tracking public perception of a brand/topic with a Wikipedia presence | ...have the connector re-poll and discover Wikipedia articles | ...I see reputation-relevant edits, not just a one-time snapshot | Re-poll via `recentchanges` produces one `SocialPost` per qualifying revision, sharing one `Author` per `pageid`; `SocialPost.url` carries the revision permalink; whole-article fallback matching used for event publishing |
+| Story 2.14 | Tenant who has activated the Wikipedia connector | ...have discovery search use my own watchlist terms | ...activating the connector lets me track my own brand/topic, not a shared hardcoded literal | Discovery search call uses the tenant's own watchlist query terms; full boolean AST is still evaluated against fetched content regardless of what drove the search call; `recentchanges`-driven re-poll of already-tracked articles is unchanged |
+| Story 6.21 | Tenant-Admin | ...see Wikipedia listed as an activatable connector | ...I can turn it on without needing engineering involvement | Wikipedia appears in `tenant/connectors` with activate/deactivate via the existing generic surface (ADR-0051) |
+| Story 6.22 | Tenant who wants to track a Wikipedia article | ...have Wikipedia offered as a platform source when creating/editing a watchlist | ...I can actually point a watchlist at it | Wikipedia appears as a selectable platform source in `tenant/watchlists` |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Workflow: new-article discovery**
+
+1. Scheduled poll cycle runs for a watchlist targeting the Wikipedia connector.
+2. Connector issues a `search` request to the MediaWiki API using the watchlist's own query terms, with a compliant `User-Agent` header.
+3. On a match not previously known to the connector, fetch the article's current full content, `pageid`, and title.
+4. Resolve or create an `Author` row keyed by `pageid`.
+5. Create a `SocialPost` with `url` set to the current revision's permalink, `text` set to the full article content, and link to the resolved `Author`.
+6. Evaluate the post against every matching watchlist's full AST; on match, publish an ingestion event (unchanged from the standard pipeline).
+
+**Workflow: revision re-poll of a tracked article**
+
+1. Scheduled poll cycle runs for an article already known to the tenant (previously discovered).
+2. Connector queries `recentchanges` filtered by the article's page and the time window since the last successful poll.
+3. If zero qualifying entries: no-op, poll cycle ends.
+4. If one or more qualifying entries: for each, fetch the revision's full current text and `revid`.
+5. Resolve the existing `Author` row by `pageid` (never create a new one for the same article).
+6. Create a new `SocialPost` per qualifying revision, with `url` set to that revision's own permalink; update `Author.lastSeenAt`.
+7. Evaluate each new post against matching watchlists; publish ingestion events on match.
+
+**Workflow: Tenant Admin activation**
+
+1. Tenant-Admin opens `tenant/connectors`.
+2. Sees Wikipedia listed with a distinct icon/color, no credential fields.
+3. Activates it via the generic `POST /v1/connectors/wikipedia/activate` endpoint (ADR-0051) — no credential submission required.
+4. Creates or edits a watchlist, selecting Wikipedia as a platform source (`tenant/watchlists`).
+5. Ingestion begins on the next scheduled poll cycle.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-| --- | --- | --- | --- | --- |
-| `Author.externalAuthorId` | Stable Wikipedia `pageid` for the tracked article | MediaWiki `action=query&prop=info` | Backend | Public |
-| `Author.handle` / `Author.displayName` | Current article title (may change on page move) | MediaWiki `action=query&prop=info` | Backend | Public |
-| `Author.followerCount` | Not populated for Wikipedia articles (same as Newswire/GNews) | — | Backend | — |
-| `SocialPost.url` | Permalink to the specific revision: `https://en.wikipedia.org/w/index.php?title=<Title>&oldid=<revid>` | Derived from MediaWiki revision id | Backend | Public |
-| `SocialPost.text` | Full, unmodified article text for the revision | MediaWiki `action=query&prop=revisions&rvprop=content` | Backend | Public (open-licensed) |
-| `SocialPost.publishedAt` | Revision timestamp from `recentchanges` or `revisions` | MediaWiki API | Backend | Public |
-| RecentChanges timestamp | Time of the latest edit for re-poll windowing | MediaWiki `action=query&list=recentchanges` | Backend | Public |
-| `User-Agent` string | Client identification required by Wikimedia policy (e.g., `SocialEngage/1.0`) | Connector configuration | Backend | Non-sensitive |
+
+### 7.1 Data Inputs
+
+MediaWiki Action API responses: `search` results (page matches), `recentchanges` entries (edits since last poll, filtered by page and time window), `revisions` content (full article text for a given `revid`), and page metadata (`pageid`, title).
+
+### 7.2 Data Outputs
+
+`SocialPost` rows (one per discovered article and per qualifying subsequent revision) and `Author` rows (one per distinct `pageid`), both tenant-scoped under RLS (ADR-0015); ingestion events published on watchlist match, feeding the existing downstream pipeline (Service Bus, per ADR-0029/Story 5.19).
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `SocialConnector` (Wikipedia registration) | `providerId: 'wikipedia'`, `authMode: 'none'`, `deliveryMode: 'poll'`, `supportedQueryFeatures` (conservative), `getRateLimitConfig()` (verified or explicitly-labeled placeholder) | Registered in the connector registry; activated per-tenant via ADR-0051's generic activate/deactivate surface |
+| `Author` | `externalAuthorId` = article's stable `pageid`; `handle`/`displayName` = current article title; `followerCount` unpopulated; `firstSeenAt`/`lastSeenAt` = first/most-recent qualifying-revision ingestion timestamps | One `Author` row per distinct `pageid`; many `SocialPost` rows reference the same `Author` over the article's edit lifetime (many-post-to-one-`Author` reuse) |
+| `SocialPost` | `url` = specific revision permalink (`?oldid=<revid>`); `text` = full unmodified article content at that revision; `publishedAt` = revision timestamp; `authorId` (FK to `Author`) | Many-to-one to `Author`; tenant-scoped under RLS (ADR-0015) |
+| `Watchlist` | Query AST (keyword/hashtag/boolean); platform-source selection including `wikipedia` | Drives both discovery `search` queries and post-fetch match evaluation |
+| `recentchanges` polling state | Last-polled timestamp per tracked article, used to window subsequent `recentchanges` queries | Internal scheduler/connector state, not a new persisted entity beyond existing poll-cursor mechanisms |
+
+### 7.4 Validation Rules
+
+- `Author.externalAuthorId` must be the article's numeric `pageid`, never its title (titles can change).
+- `SocialPost.url` must always include a specific `oldid`; a bare article URL without a revision id is not a valid value for Wikipedia-sourced posts.
+- A poll cycle with zero qualifying `recentchanges` entries must not produce any new `SocialPost` rows (no-op idempotency).
+- `getRateLimitConfig()` must never contain a silently invented numeric ceiling — only a verified Wikimedia-published value or an explicitly-labeled conservative placeholder.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-| --- | --- |
-| BRU-001 | For the Wikipedia connector, `Author` represents the specific Wikipedia article, keyed by the stable `pageid` and not by title, contributor list, or a constant "Wikipedia" value. |
-| BRU-002 | Attribution for Wikipedia-sourced content is satisfied through `SocialPost.url` pointing to the specific revision permalink (`?oldid=<revid>`); `Author` does not carry the attribution obligation. |
-| BRU-003 | No account, API key, or tenant-specific credential is stored or transmitted; the only access control is a compliant, connector-identifying `User-Agent` header. |
-| BRU-004 | Only unmodified article text is stored in `SocialPost.text`; any future external redistribution of AI-enrichment output derived from Wikipedia text must first be reviewed for CC BY-SA "Adapted Material" exposure. |
-| BRU-005 | New-article discovery uses the `search` API; re-poll of already-tracked articles uses the `recentchanges` API. |
-| BRU-006 | Each tenant tracking the same public article ingests its own tenant-scoped copy of the same revision under RLS. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | `Author` represents the specific tracked Wikipedia article, keyed by stable `pageid`, never the platform as a whole, a contributor, or a contributor-history page | `Author` resolution logic |
+| BR2 | Attribution is satisfied through `SocialPost.url` (the specific revision permalink); `Author` does not carry the attribution obligation | `SocialPost` creation |
+| BR3 | No account, API key, or tenant-specific credential is stored or transmitted; access is gated only by a compliant `User-Agent` header | Connector request construction |
+| BR4 | Only unmodified article text is stored in `SocialPost.text`; any future external redistribution of AI-enrichment output derived from that text requires a prior CC BY-SA "Adapted Material" review | Enrichment/redistribution features (future) |
+| BR5 | New-article discovery uses `search`; re-poll of already-tracked articles uses `recentchanges` | Poll-cycle routing |
+| BR6 | Each tenant tracking the same public article ingests its own tenant-scoped copy of the same revision under RLS | Multi-tenant ingestion |
+| BR7 | `recentchanges` cannot enumerate edits more than 30 days into the past; this is a rolling-window limitation of that endpoint, not of the underlying revision history | Re-poll windowing |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-| --- | --- | --- | --- | --- |
-| D-001 | ADR-0042 accepted | Internal | Menno | Resolved 2026-08-08 |
-| D-002 | ADR-0004 Author normalization model | Internal | Architecture | Accepted; pending supersession note to be resolved by Menno |
-| D-003 | ADR-0021 connector query-feature matrix | Internal | Architecture | Accepted |
-| D-004 | ADR-0051 generic connector activate/deactivate surface | Internal | Engineering | Built |
-| D-005 | ADR-0018 tiered retention policy | Internal | Engineering | Accepted |
-| D-006 | Wikimedia API availability, policies, and rate limits | External | Wikimedia | Ongoing; exact rate limit remains unverified |
-| D-007 | Story 2.13, 2.14, 6.21, and 6.22 implementation | Internal | Engineering | Built 2026-08-17/18 |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| MediaWiki Action API (`en.wikipedia.org/w/api.php`) | Inbound (fetch) | `search`, `recentchanges`, `revisions` content and metadata | HTTPS/JSON, `User-Agent`-gated, no auth |
+| Connector registry / ingestion pipeline (`social-listening-core`) | Internal | Registers and drives the Wikipedia connector alongside GNews/Newswire/tenant-owned-feed/Facebook | In-process TypeScript |
+| Live ingestion-polling scheduler | Internal | Triggers discovery and re-poll cycles on a schedule | In-process TypeScript |
+| Watchlist matching engine (ADR-0006/ADR-0021) | Internal | Evaluates fetched/discovered content against tenant watchlists | In-process TypeScript |
+| Service Bus (ADR-0029) | Outbound | Publishes ingestion events on watchlist match | Azure Service Bus |
+| Tenant Admin UI (`social-listening-admin`) | Outbound (to user) | Lists Wikipedia as an activatable connector and watchlist platform source | HTTP/React (Next.js) |
+| Postgres + RLS (ADR-0015) | Internal | Tenant-scoped storage of `SocialPost`/`Author` rows | SQL |
 
 ---
 
-- Wikimedia's Terms of Use, API Usage Guidelines, and User-Agent Policy remain as verified on 2026-08-06.
-- Tenants will use watchlist queries that are compatible with the confirmed `supportedQueryFeatures`; unconfirmed CirrusSearch operators will fall back cleanly to whole-article matching.
-- A conservative rate-limit placeholder is acceptable until the exact Wikimedia ceiling is verified.
-- Whole, unmodified article text stored in `SocialPost.text` does not constitute an "Adapted Material" share under CC BY-SA 4.0.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-| --- | --- | --- | --- | --- |
-| NFR-001 | The connector shall operate in compliance with Wikimedia's Terms of Use, API Usage Guidelines, and User-Agent Policy. | Compliance | Must | All claims are traceable to primary-source Wikimedia URLs; no invented terms. |
-| NFR-002 | The connector shall use a conservative, explicitly-labeled rate-limit placeholder until the exact ceiling is verified. | Performance | Must | `getRateLimitConfig()` either uses a verified number from `mediawiki.org` or an explicitly named placeholder. |
-| NFR-003 | All ingested `SocialPost` and `Author` data shall remain tenant-scoped under the existing RLS model. | Security | Must | Cross-tenant leakage is prevented by the existing RLS policy. |
-| NFR-004 | The connector shall support the existing tiered-retention and storage policy (ADR-0018). | Scalability | Should | Wikipedia volume is observable and retention rules apply without special exceptions. |
-| NFR-005 | The system shall not resell, sublicense, or white-label the Wikimedia API. | Legal | Must | Architecture and operations reviews confirm no third-party API-resale path. |
+
+- **Performance:** Polling must respect a conservative rate-limit posture until Wikimedia's exact published ceiling is verified; re-poll windowing avoids redundant `recentchanges` queries by tracking the last-polled timestamp per article.
+- **Security / access control:** No credentials are stored for this connector; tenant isolation is enforced by existing RLS (ADR-0015), unchanged by this connector.
+- **Scalability:** An actively-edited article can generate substantially more `SocialPost` volume over its lifetime than a GNews/Newswire one-shot item — a real, named cumulative storage driver against ADR-0018's existing tiered-retention policy, worth revisiting once real volume exists.
+- **Reliability / availability:** A non-compliant `User-Agent` risks an unannounced HTTP 403 block from Wikimedia; the connector must always send the compliant header.
+- **Audit and logging:** Standard connector health/status logging applies, unchanged from other connectors.
+- **Accessibility:** Tenant Admin UI additions (Story 6.21/6.22) follow the same accessibility posture as existing connector/watchlist screens.
+- **Localization / internationalization:** Per-language-edition MediaWiki endpoints are supported by the same mechanism; v1 scope is not otherwise localization-specific.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
 
-- The best-grounded connector candidate this project has vetted since GNews/Newswire — self-service with no approval gate (unlike Reddit's now-closed registration), commercial reuse explicitly permitted (unlike GNews's non-commercial-only free tier), every material claim verified directly against Wikimedia's own primary sources rather than secondhand summaries.
-- Resolves, with reasoning rather than a third deferral, the entity-modeling open question the Knowledge-Graph reviewer explicitly declined to answer — a genuine, if structurally distinct, third instance of the issuer-as-Author pattern, giving `docs/adr/README.md`'s and ADR-0004's own "rule of three" trigger a real third data point (see the accompanying Pending supersession note on ADR-0004).
-- Cleanly separates the entity-reuse question (`Author` = the article) from the legal-attribution question (`SocialPost.url` = the specific revision permalink) — avoids conflating two different concerns into one field, per this ADR's own explicit task framing.
-- Storing whole, unchunked article text in `SocialPost.text` at each qualifying revision keeps the future RAG/embedding direction Menno has already named as anticipated (not designed here — see Open questions) structurally open rather than foreclosed: a later chunking/indexing pass can operate on the stored raw text without this ADR having pre-committed to any particular chunk boundary.
-- `recentchanges`-driven re-polling is a genuinely novel monitoring signal none of this project's other connectors offer — "your own Wikipedia article just changed" — closer to the actual reputation-monitoring use case than a one-shot article snapshot would be.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Non-compliant `User-Agent` triggers HTTP 403 | Connector shows a degraded/error health status | Request fails; connector must always send the compliant header, never omit it |
+| Zero qualifying `recentchanges` entries | No visible change | No-op; no duplicate `SocialPost` rows created |
+| Unconfirmed CirrusSearch operator in a watchlist query | No visible error to the tenant | Falls back to whole-article post-fetch matching rather than dropping the candidate |
+| Rate limit exceeded (unverified exact ceiling) | Connector health may show degraded/throttled | Connector polls conservatively by default; must not invent a numeric ceiling |
+| Article title changes (page move) between polls | No visible error | `Author` row is preserved via stable `pageid`; `handle`/`displayName` refreshed to current title |
 
-**Negative**
-
-- **`Author`'s reused shape here is not identical to Newswire's/GNews's**, and treating it as a mechanical "third instance, therefore generalize ADR-0004 without further thought" would overstate the similarity — see the Pending supersession note on ADR-0004 for the narrower, honestly-scoped generalization this ADR actually recommends.
-- **A re-poll-per-revision cadence can generate real per-tenant volume** for an actively-edited article, a cumulative storage/retention driver ADR-0018's existing tiers were not sized against; named here, not yet resolved.
-- **No confirmed, published rate limit** at the exact numeric level — same honest gap ADR-0024 disclosed for Newswire; the connector must poll conservatively by default until verified.
-- **CirrusSearch's exact native-query-parameter surface through the standard API endpoint was not fully confirmed** in this pass — a real verification gap before `supportedQueryFeatures` can be finalized, named rather than glossed over.
-- **`recentchanges`'s 30-day rolling window** means an already-tracked article's edit history beyond 30 days back is not retroactively discoverable through that endpoint alone — a real, if partial (revision-history walking can go further), limitation.
-- Every qualifying revision re-ingests the article's current full text, not a diff — Wikipedia's own API does not expose a plain "what changed" field suitable for direct ingestion (per-diff attribution isn't cleanly available either, confirmed by the Knowledge-Graph reviewer's own finding) — meaning a large, mostly-unrelated edit to an otherwise-matching article still produces a full-text re-ingestion, a real noise/volume trade-off left for implementation-time tuning (e.g., a materiality threshold), not resolved here.
+---
 
 ## 12. Assumptions and Dependencies
-- Wikimedia's Terms of Use, API Usage Guidelines, and User-Agent Policy remain as verified on 2026-08-06.
-- Tenants will use watchlist queries that are compatible with the confirmed `supportedQueryFeatures`; unconfirmed CirrusSearch operators will fall back cleanly to whole-article matching.
-- A conservative rate-limit placeholder is acceptable until the exact Wikimedia ceiling is verified.
-- Whole, unmodified article text stored in `SocialPost.text` does not constitute an "Adapted Material" share under CC BY-SA 4.0.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-| --- | --- | --- | --- | --- | --- |
-| R-001 | The article-as-`Author` shape is treated as a mechanical third instance and ADR-0004 is over-generalized. | Medium | Medium | Document the narrower, structurally distinct nature of the Wikipedia case and update ADR-0004 carefully. | Menno / Architecture |
-| R-002 | The exact CirrusSearch query surface available through the standard API endpoint remains unconfirmed, causing feature mismatch. | Medium | Medium | Declare `supportedQueryFeatures` conservatively and fall back to whole-article matching for unconfirmed operators. | Engineering |
-| R-003 | Unverified Wikimedia rate limits lead to 403/429 blocks or service disruption. | Low | High | Ship with a conservative, explicitly-labeled placeholder and verify the real ceiling before sizing `RequestGate`. | Engineering |
-| R-004 | Actively-edited articles generate high `SocialPost` volume and storage growth. | Medium | High | Apply ADR-0018 retention tiers; leave materiality-threshold tuning as a future, named option. | Product / Engineering |
-| R-005 | Future AI enrichment output redistributed externally could trigger CC BY-SA "Adapted Material" obligations. | Low | High | Flag for legal/semantic review before any feature shares enrichment output derived from Wikipedia text outside the tenant's account. | Menno |
+- Wikimedia's Terms of Use, API Usage Guidelines, and User-Agent Policy remain as verified on 2026-08-06.
+- Tenants use watchlist queries compatible with the confirmed `supportedQueryFeatures`; unconfirmed operators fall back cleanly.
+- A conservative rate-limit placeholder is acceptable until the exact Wikimedia ceiling is verified.
+- Whole, unmodified article text stored in `SocialPost.text` does not itself constitute an "Adapted Material" share under CC BY-SA 4.0 (not yet independently re-verified for AI-enrichment output redistribution).
+- Depends on: ADR-0004 (Author normalization — this connector is a "Pending supersession note" data point), ADR-0021 (connector query-feature matrix), ADR-0027 (no-pooling — inapplicable here, no credential), ADR-0018 (tiered retention), ADR-0015 (RLS), ADR-0051 (generic connector activate/deactivate, built).
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should ADR-0004 be generalized to a "rule of three" issuer-as-Author pattern, given this connector's structurally distinct third instance? | Menno / Architecture | Carried as a Pending supersession note on ADR-0004 |
+| Q2 | What is CirrusSearch's exact native-query-parameter surface through the standard `action=query&list=search` endpoint? | Engineering | Implementation-time verification, not yet fully confirmed |
+| Q3 | What is Wikimedia's exact numeric rate-limit ceiling? | Engineering | Verify before finally sizing `RequestGate`; conservative placeholder used until then |
+| Q4 | Should a materiality threshold (edit size, minor-edit flag) gate re-ingestion of every qualifying revision? | Product / Engineering | Left as a future, named tuning option, not built |
+| Q5 | How far should a newly discovered article's prior revision history be backfilled, if at all? | Engineering | Not designed; an implementation-time volume/cost trade-off |
+| Q6 | Does AI-enrichment output derived from Wikipedia text, if ever redistributed externally, constitute "sharing Adapted Material" under CC BY-SA §3(b)? | Menno / Legal review | Flagged, not analyzed; required before any future external-redistribution feature |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0042-wikipedia-connector-mediawiki-api-article-as-author.md`
-- BRD: `../Business-Requirements/BRD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md`
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+### Glossary
+
+See BRD-0042 Section 15 for the full glossary (MediaWiki Action API, `recentchanges`, `pageid`, `oldid`/`revid`, Article-as-Author, CC BY-SA 4.0, GFDL, CirrusSearch, Adapted Material).
+
+### Reference Links
+
+- **ADR-0042:** `docs/adr/0042-wikipedia-connector-mediawiki-api-article-as-author.md`
+- **BRD-0042:** `docs/project docs/Business-Requirements/BRD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md`
+- **Related ADRs:** ADR-0004 (Author normalization), ADR-0021 (connector query-feature matrix), ADR-0027 (no-pooling), ADR-0018 (tiered retention), ADR-0015 (RLS), ADR-0051 (generic connector activate/deactivate), ADR-0006 (connector-side-with-fallback matching)
+- **Stories:** Story 2.13, Story 2.14 (`docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md`); Story 6.21, Story 6.22 (`docs/user-stories/epic-6-tenant-admin-ui.md`)
+
+### Missing / Not Applicable Sources
+
+- No dedicated `docs/product-research/feature-designs/<feature>.md` or `docs/product-research/reports/<feature>-deep-research.md` file exists for the Wikipedia connector; this FDD, like BRD-0042, is derived directly from ADR-0042, the connector-comparison entry in `docs/open-decisions.md`, and the named user stories.
+
+### Revision History
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | AI Delivery Agent | Regenerated as a genuine functional-design synthesis from ADR-0042 and BRD-0042, replacing a prior defective draft that duplicated the BRD's flat requirements table. |

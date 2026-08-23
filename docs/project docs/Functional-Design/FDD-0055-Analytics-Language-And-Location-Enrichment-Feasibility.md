@@ -1,9 +1,9 @@
-# BRD-0055: Analytics Language and Location Enrichment Feasibility
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0055: Analytics Language and Location Enrichment Feasibility |
+| Document Title | FDD-0055 Analytics Language and Location Enrichment Feasibility — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

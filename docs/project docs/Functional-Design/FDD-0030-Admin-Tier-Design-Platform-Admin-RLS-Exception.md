@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Admin-tier design: Platform Admin via a narrowly-scoped, audited BYPASSRLS role; Tenant-Admin via ordinary tenant-scoped RLS plus an application-layer role check
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Admin-tier design: Platform Admin via a narrowly-scoped, audited BYPASSRLS role; Tenant-Admin via ordinary tenant-scoped RLS plus an application-layer role check |
+| Document Title | FDD-0030 Admin-tier design: Platform Admin via a narrowly-scoped, audited BYPASSRLS role; Tenant-Admin via ordinary tenant-scoped RLS plus an application-layer role check — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

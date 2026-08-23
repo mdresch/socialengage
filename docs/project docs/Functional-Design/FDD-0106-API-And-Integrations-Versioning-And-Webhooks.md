@@ -4,99 +4,138 @@
 
 | Field | Value |
 |---|---|
-| Document Title | BRD-0106: API and Integrations — Versioning and Webhooks |
-| Version | 0.1 |
+| Document Title | FDD-0106 API and Integrations — Versioning and Webhooks — Functional Design Document |
+| Version | 0.2 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer — Batch Agent |
+| Author(s) | FDD Writer Agent (derived from ADR-0106, BRD-0106, feature design 11) |
 | Reviewer(s) | Product Owner / Technical Lead |
-| Status | Draft (ADR status: Proposed (2026-08-23); BRD status: Draft — for review; may change because the source ADR is **Proposed**) |
-| Related Documents | ADR-0106, BRD-0106, related feature designs, user stories |
+| Status | Draft — ADR-0106 is currently **Proposed**, not Accepted; this FDD is a draft for review and may change once the ADR is accepted |
+| Related Documents | ADR-0106, BRD-0106, `docs/product-research/feature-designs/11-api-and-integrations.md`, Story 12.11, Story 12.12, ADR-0017, ADR-0012/0013, ADR-0091, ADR-0033, ADR-0088 |
 
 ---
 
 ## 2. Purpose and Scope
 
 ### 2.1 Purpose
-**Note:** The source ADR is currently **Proposed**. This FDD is a draft for review and may change.
 
-**What problem are we solving?** SocialEngage already exposes an internal `/v1` API and publishes Service Bus events, but it lacks a formal public API surface, rate-limit protection, and a native way for tenants to receive real-time events. Tenants who want to build integrations today must either poll the API or wait for manual exports, which is slow, expensive, and limits the product’s embeddability in customer workflows.
+**Note (draft status):** ADR-0106 is Proposed, not Accepted. This FDD translates the proposed decision into a functional design so implementation can be scoped and estimated, but the contracts below may still change before acceptance.
 
-This FDD translates the accepted architecture and business requirements from ADR-0106 and BRD-0106 into a coherent functional design for implementation.
+SocialEngage has an internal `/v1` API and Service Bus events, but no formal public API surface, no rate-limit protection, and no way for tenants to receive events in real time without polling. This document defines the functional behavior of: publishing a subset of existing endpoints as a documented public API surface under bearer-token auth; per-tenant sliding-window rate limiting; tenant-configured webhook subscriptions; HMAC-signed, retried webhook delivery sourced from Service Bus events; and the URL-based versioning/deprecation convention that protects external consumers from breaking changes.
 
 ### 2.2 Scope
 
-- **In scope:** - Public API surface for the existing v1 endpoints: `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, and `POST /v1/analytics/query`.
-- Bearer-token authentication using the tenant’s Entra External ID setup.
-- Generated `GET /v1/openapi.json` specification for the public surface.
-- Per-tenant rate limiting (global 1,000 requests/minute; 100/minute for `GET /v1/posts` and `POST /v1/analytics/query`).
-- Sliding-window rate-limit counter infrastructure backed by Redis or Postgres.
-- Webhook subscription CRUD: `GET /v1/webhooks/subscriptions`, `POST /v1/webhooks/subscriptions`, `PATCH /v1/webhooks/subscriptions/:id`, `DELETE /v1/webhooks/subscriptions/:id`.
-- Webhook delivery worker that consumes `ServiceBus` events and POSTs to active subscriptions.
-- HMAC-SHA256 payload signing (`X-SocialEngage-Signature`).
-- Exponential-backoff retry (up to 10 attempts over 24 hours) and dead-letter queue for exhausted deliveries.
-- URL-based versioning (`/v1/`, `/v2/`) and `Sunset` headers for deprecated endpoints.
-- **Out of scope:** - A generated full SDK in v1 (`GET /v1/openapi.json` is provided, but no SDK build pipeline).
-- Long-lived, scoped API keys for v1 (Entra bearer tokens are used; API keys are a future ADR).
-- Query-based API versioning (`?version=2`).
-- Third-party integration platforms (e.g., Zapier, Power Automate) as the only integration path.
-- All `ServiceBus` events in v1; only a curated set of public events is exposed initially.
-- **Assumptions and constraints:** - ADR-0017 (URL path versioning) is already accepted and `/v1/` is the current convention.
-- Entra External ID bearer-token authentication is already in place for the existing API.
-- ADR-0033 (no `X-Tenant-Id` trust; identity resolved server-side) remains in effect.
-- Redis or Postgres is available for the sliding-window rate-limit counter.
-- `ServiceBus` already emits `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent`.
+**In scope:**
+- Public API surface: `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, `POST /v1/analytics/query`, all bearer-token authenticated via Entra External ID.
+- Generated `GET /v1/openapi.json`.
+- Per-tenant rate limiting (global 1000 req/min; 100 req/min for `GET /v1/posts` and `POST /v1/analytics/query`) with `X-RateLimit-*` response headers.
+- Webhook subscription CRUD (`GET/POST/PATCH/DELETE /v1/webhooks/subscriptions[/:id]`).
+- `WebhookDeliveryWorker`: consumes Service Bus events, POSTs signed payloads to active subscriptions, retries with exponential backoff, dead-letters after exhaustion.
+- URL-based API versioning (`/v1/`, `/v2/`) and `Sunset` header deprecation signaling.
+
+**Out of scope:**
+- A generated full client SDK (OpenAPI spec only).
+- Long-lived, scoped API keys (v1 uses Entra bearer tokens only; API keys are a future ADR).
+- Query-string-based versioning (`?version=2`).
+- Third-party integration platforms (Zapier, Power Automate) as the only integration path.
+- Exposing every Service Bus event to webhooks; only a curated event list is available in v1.
 
 ### 2.3 Target Audience
-Engineers, QA, product owners, UX, and platform operations.
+
+Backend engineers implementing the public API gateway, rate limiter, and webhook delivery worker (Story 12.11); frontend engineers building the Integrations/webhooks admin page (Story 12.12); QA authoring cross-tenant isolation and delivery-retry contract tests; Tenant Admins configuring integrations; Platform Admins monitoring API/webhook health.
 
 ---
 
 ## 3. Context and Background
 
-### 1. The core API is already at `/v1/`
-`docs/product-research/feature-designs/11-api-and-integrations.md` describes a public API and integrations. `ADR-0017` already established URL path versioning (`/v1/`). This ADR adds the public API surface, rate limiting, and webhooks.
+ADR-0017 already established `/v1/` URL path versioning, and Entra External ID bearer-token auth plus RLS already protect the internal API (ADR-0033: no `X-Tenant-Id` trust). Service Bus already emits events such as `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent` for internal consumption (ADR-0012/0013). What's missing is a formal, documented, rate-limited public surface and a push mechanism (webhooks) so tenants can integrate with Slack, Teams, Zapier, CRMs, or their own systems without reverse-engineering internal endpoints or polling.
 
-### 2. Tenants want real-time event delivery
-Alerts and post events should be pushable to tenant endpoints so users can build their own workflows (Slack, Teams, Zapier, etc.) without polling.
-
-### 3. Rate limiting is required for a public API
-A public API must be protected against abuse. Per-tenant and per-key rate limits are needed.
-
----
+This design must not introduce a second, unprotected API path — the public surface reuses the exact same `tenant-auth-middleware` and RLS-protected data access as internal calls, with rate limiting and webhooks layered on top.
 
 ---
 
 ## 4. Goals and Objectives
 
-| # | Objective | Success Measure |
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Provide a stable, documented public API surface | `GET /v1/openapi.json` is generated and the public `/v1` endpoints return consistent, versioned contracts |
-| 2 | Protect the platform and tenants from API abuse | Per-tenant rate limits are enforced with `X-RateLimit-*` headers; no tenant exceeds configured limits without explicit throttling |
-| 3 | Enable real-time tenant integrations via webhooks | Tenants can create subscriptions and receive `ServiceBus` events (e.g., `post.ingested`, `alert.triggered`) at their own HTTPS endpoints |
-| 4 | Preserve multi-tenant isolation and security | All public calls pass through the same `tenant-auth-middleware` and RLS path as internal calls; no `X-Tenant-Id` trust is introduced |
-| 5 | Support long-term API evolution without breaking consumers | URL-based major versioning (`/v1/`, `/v2/`) and `Sunset` headers are used for deprecation |
-
----
+| G1 | Provide a stable, documented public API surface | `GET /v1/openapi.json` is generated and matches the public `/v1` contracts |
+| G2 | Protect the platform and tenants from abuse | Per-tenant rate limits enforced with informative `X-RateLimit-*` headers; throttled requests return `429` |
+| G3 | Enable real-time tenant integrations | Tenants create webhook subscriptions and receive curated Service Bus events at their own HTTPS endpoints |
+| G4 | Preserve multi-tenant isolation | Public calls pass through the same auth/RLS path as internal calls; no new `X-Tenant-Id`-trusting path is introduced |
+| G5 | Support long-term API evolution | Breaking changes require a new major version path; deprecated endpoints carry a `Sunset` header |
 
 ---
 
 ## 5. Functional Requirements
 
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall expose `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, and `POST /v1/analytics/query` as public endpoints. | Must | All listed endpoints are reachable and return the same stable shapes as the internal API | Product Owner |
-| BR-002 | The system shall require a valid Entra External ID bearer token for every public endpoint. | Must | Requests without a token receive `401 Unauthorized`; tokens resolve to a tenant/user identity | Product Owner |
-| BR-003 | The system shall serve a generated `GET /v1/openapi.json` spec describing the public surface. | Must | The spec is valid OpenAPI and matches the public `/v1` contracts | Product Owner |
-| BR-004 | The system shall enforce per-tenant rate limits and return `X-RateLimit-*` headers. | Must | Global limit is 1,000 req/min/tenant; `GET /v1/posts` and `POST /v1/analytics/query` are 100 req/min; throttled requests return `429 Too Many Requests` | Product Owner |
-| BR-005 | The system shall provide `GET /v1/webhooks/subscriptions` to list tenant webhook subscriptions. | Must | Returns only the current tenant’s subscriptions; supports pagination if needed | Product Owner |
-| BR-006 | The system shall provide `POST /v1/webhooks/subscriptions` to create a subscription. | Must | Body accepts `url`, `events`, `secret`, and `active`; validates `url` as HTTPS; stores under tenant RLS | Product Owner |
-| BR-007 | The system shall provide `PATCH /v1/webhooks/subscriptions/:id` and `DELETE /v1/webhooks/subscriptions/:id`. | Must | Updates/deletes only the requesting tenant’s subscription; returns `404` for cross-tenant IDs | Product Owner |
-| BR-008 | The system shall deliver `ServiceBus` events to active subscriptions as HTTPS POSTs. | Must | Payload includes `eventType`, `tenantId`, `timestamp`, and `payload` | Product Owner |
-| BR-009 | The system shall sign every webhook payload with `HMAC-SHA256(secret, body)`. | Must | `X-SocialEngage-Signature` header is present and verifiable by the consumer | Product Owner |
-| BR-010 | The system shall retry failed deliveries with exponential backoff, up to 10 attempts over 24 hours. | Must | Retry schedule and attempt count are observable in the delivery log; retries stop at 10 or 24 hours | Product Owner |
-| BR-011 | The system shall move exhausted webhook deliveries to a dead-letter queue. | Must | After 10 failed attempts, the delivery is removed from the active queue and surfaced for replay | Product Owner |
-| BR-012 | The system shall support URL-based API versioning (`/v1/`, `/v2/`) and `Sunset` headers. | Should | New major versions are introduced for breaking changes; deprecated endpoints return a `Sunset` header | Product Owner |
-| BR-013 | The admin UI shall provide an Integrations page to manage webhook subscriptions. | Should | `WebhooksView` lists subscriptions; `WebhookForm` captures URL, events, and secret; a test action sends a sample event | Product Owner |
+### 5.1 Feature / Capability: Public API surface
+
+- **Description:** Exposes a curated, documented subset of existing `/v1` endpoints as the tenant-facing public API.
+- **Triggers:** An external system (built by or for a tenant) calls a public endpoint.
+- **Inputs:** An `Authorization: Bearer <Entra token>` header plus each endpoint's normal query/body parameters.
+- **Processing:** Requests are routed through the same `tenant-auth-middleware` and identity-resolution path as internal admin-UI calls (ADR-0033); no separate, less-protected code path exists for "public" traffic. `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, and `POST /v1/analytics/query` (ADR-0088) are the initial public surface.
+- **Outputs:** The same response shapes as the internal API for these endpoints.
+- **Error handling:** A request without a valid bearer token returns `401 Unauthorized`. A token that resolves to a tenant/user without access to the requested resource returns the same not-found/forbidden behavior as the internal API — never a distinguishable "public API" error path that could leak existence.
+- **Edge cases:** A public request scoped to a watchlist/provider the resolved user cannot access behaves identically to the same request made from the admin UI.
+
+### 5.2 Feature / Capability: Generated OpenAPI specification
+
+- **Description:** Publishes a machine-readable description of the public API surface.
+- **Triggers:** `GET /v1/openapi.json` is requested, or regenerated at build/deploy time.
+- **Inputs:** The route/schema definitions of the public endpoints.
+- **Processing:** The spec is generated (not hand-maintained) from the actual public endpoint definitions, so it cannot silently drift from the real contract.
+- **Outputs:** A valid OpenAPI JSON document describing paths, parameters, and response shapes for the public surface only (internal-only endpoints are excluded).
+- **Error handling:** If generation fails, the previous valid spec should continue to be served rather than returning a broken document.
+- **Edge cases:** A newly added public endpoint must appear in the next generated spec without a manual documentation step.
+
+### 5.3 Feature / Capability: Per-tenant rate limiting
+
+- **Description:** Protects the public API from abuse by capping request volume per tenant.
+- **Triggers:** Every public API request.
+- **Inputs:** The resolved tenant identity and the target endpoint.
+- **Processing:** A sliding-window counter (Redis or Postgres) tracks requests per tenant. The global limit is 1000 requests/minute per tenant; `GET /v1/posts` and `POST /v1/analytics/query` have a lower limit of 100 requests/minute (BRU-002, BRU-003). Limits are enforced per tenant, not per user. The counter must be correct across multiple concurrent API instances (NFR-005).
+- **Outputs:** `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` headers on every rate-limited response.
+- **Error handling:** A request exceeding the limit is rejected with `429 Too Many Requests` and the same rate-limit headers indicating when the window resets.
+- **Edge cases:** A tenant issuing requests from multiple concurrent processes/instances must still be capped correctly by the shared sliding-window counter, not per-instance counters that could be individually bypassed.
+
+### 5.4 Feature / Capability: Webhook subscription management
+
+- **Description:** Lets a tenant register, list, update, and remove webhook subscriptions.
+- **Triggers:** A Tenant-Admin (or a role permitted to administer integrations) calls the subscription endpoints, typically via the `WebhooksView`/`WebhookForm` UI (Story 12.12).
+- **Inputs:** `POST`/`PATCH` body: `{ url: string; events: Array<'post.ingested'|'alert.triggered'|'connector.health.changed'|'mention.threshold.crossed'>; secret: string; active: boolean }`.
+- **Processing:**
+  - `GET /v1/webhooks/subscriptions` returns only the caller's tenant's subscriptions.
+  - `POST /v1/webhooks/subscriptions` creates a subscription; `url` must be HTTPS (BRU-005); the record is stored tenant-RLS-scoped.
+  - `PATCH /v1/webhooks/subscriptions/:id` and `DELETE /v1/webhooks/subscriptions/:id` operate only on subscriptions belonging to the caller's tenant.
+  - Only users whose role permits integration administration may manage subscriptions (BRU-004).
+  - The `secret` is stored encrypted or hashed at rest, never in plaintext (NFR-003).
+- **Outputs:** The created/updated/deleted subscription record (with `secret` never echoed back in plaintext after creation).
+- **Error handling:** A non-HTTPS `url` is rejected with a validation error. `PATCH`/`DELETE` against a subscription id belonging to another tenant returns `404`, not `403` (avoids confirming existence).
+- **Edge cases:** Deactivating (`active: false`) a subscription stops delivery without deleting its configuration or history.
+
+### 5.5 Feature / Capability: Webhook delivery
+
+- **Description:** Delivers curated Service Bus events to active tenant subscriptions as signed HTTPS POSTs.
+- **Triggers:** A Service Bus event matching a subscription's `events` list is published (e.g., `post.ingested`, `alert.triggered`, `connector.health.changed`, `mention.threshold.crossed`).
+- **Inputs:** The Service Bus event payload and the set of active, matching subscriptions for that tenant.
+- **Processing:**
+  - `WebhookDeliveryWorker` consumes the event and, for each active matching subscription, constructs the delivery payload: `{ eventType, tenantId, timestamp, payload }`.
+  - The payload is signed: `X-SocialEngage-Signature = HMAC-SHA256(secret, body)` (BRU-006).
+  - The signed payload is POSTed to the subscription's `url`.
+  - On failure (non-2xx response, timeout, connection error), the delivery is retried with exponential backoff, up to 10 attempts over 24 hours (BRU-007).
+  - After exhausting retries, the delivery is moved to a dead-letter queue for inspection/replay rather than silently dropped.
+- **Outputs:** A delivery attempt log entry per try (timestamp, status, retry count, error, payload size) and, on success, a 2xx response from the tenant's endpoint.
+- **Error handling:** Persistent failures for one subscription must not block delivery to other subscriptions or other tenants; a circuit-breaker-style backoff per destination prevents retry storms against a single unreliable endpoint (mitigates R-003).
+- **Edge cases:** A subscription's `events` list changing mid-flight (e.g., an event type removed) must not retroactively affect already-queued deliveries for that event type, but should stop new ones from being enqueued.
+
+### 5.6 Feature / Capability: API versioning and deprecation
+
+- **Description:** Governs how breaking changes are introduced and communicated without breaking existing public API consumers.
+- **Triggers:** A breaking change is planned for a public endpoint, or an existing version is scheduled for retirement.
+- **Inputs:** N/A (a platform/engineering decision, not a runtime input).
+- **Processing:** Breaking changes require a new major URL version (e.g., `/v2/`); the prior version (`/v1/`) continues to function. Endpoints scheduled for deprecation include a `Sunset` header indicating the retirement date.
+- **Outputs:** A `Sunset` HTTP header on responses from endpoints slated for removal.
+- **Error handling:** N/A — this is a governance/communication mechanism, not a runtime failure path.
+- **Edge cases:** A tenant still calling a `Sunset`-flagged endpoint after its retirement date should receive a clear error (e.g., `410 Gone` or similar) rather than a silent behavior change.
 
 ---
 
@@ -104,257 +143,203 @@ A public API must be protected against abuse. Per-tenant and per-key rate limits
 
 ### 6.1 Primary Actors
 
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant-Business-Analyst | Primary consumer of the public API for BI and custom dashboards | High | Stable, paginated, versioned responses; clear OpenAPI spec |
-| Platform-Admin | Operational owner of platform health and API usage | High | Visibility into rate-limit hits, webhook delivery health, and tenant abuse |
-| Tenant-Admin | Configures integrations and webhooks in tenant settings | High | Secure API access, webhook subscription CRUD, delivery logs |
-| Tenant-User | Uses integrations built by others or connects CRM/support tools | Medium | Trustworthy, signed, retried webhook delivery |
-| Backend Engineer | Implements and maintains the API and delivery worker | High | Clear contracts, rate-limit primitives, and retry/dead-letter semantics |
-| Product Owner | Prioritizes public API and integration roadmap | Medium | Evidence of adoption and reduced support burden |
-
----
+| Actor | Role |
+|---|---|
+| Tenant-Business-Analyst | Consumes the public API for BI/custom dashboards |
+| Tenant-Admin | Configures webhook subscriptions and integrations |
+| Tenant-User | Benefits from integrations built by others (CRM/support tool connections) |
+| Platform-Admin | Monitors API usage, rate-limit hits, and webhook delivery health |
+| Backend Engineer | Implements and maintains the API, rate limiter, and delivery worker |
 
 ### 6.2 User Stories / Use Cases
 
 | ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
 |---|---|---|---|---|
-| 12.11 | backend engineer | rate-limited public API access and HMAC-signed webhook delivery from Service Bus events, | tenants can integrate with the platform. | Public endpoints under `/v1/` are reachable with Entra bearer tokens.; Rate limiting returns `X-RateLimit-*` headers.; `POST /v1/webhooks/subscriptions`, `GET/PATCH/DELETE` endpoints exist. |
-| 12.12 | `Tenant-Admin` | a webhooks page where I can add, edit, and remove event subscriptions, | I can wire my own systems to the platform. | `WebhooksView` lists active subscriptions.; `WebhookForm` captures `url`, `events`, and `secret`.; Delivery status (success, failure, retry count) is visible per subscription. |
+| US1 (Story 12.11) | backend engineer | rate-limited public API access and HMAC-signed webhook delivery from Service Bus events | tenants can integrate with the platform | Public endpoints reachable with Entra bearer tokens; rate limiting returns `X-RateLimit-*` headers; webhook CRUD endpoints exist; `WebhookDeliveryWorker` signs payloads and retries with backoff; failed deliveries dead-lettered after 10 attempts |
+| US2 (Story 12.12) | Tenant-Admin | a webhooks page where I can add, edit, and remove event subscriptions | I can wire my own systems to the platform | `WebhooksView` lists active subscriptions; `WebhookForm` captures `url`/`events`/`secret`; delivery status (success, failure, retry count) visible per subscription; users can test a subscription with a sample event |
 
 ### 6.3 Workflow Diagrams / Steps
 
-### 1. Public API surface
-- The existing `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, and `POST /v1/analytics/query` (ADR-0088) become the public API surface.
-- All public endpoints require a bearer token from the tenant's Entra External ID setup.
-- `GET /v1/openapi.json` is a generated OpenAPI spec, but not a full SDK in v1.
+**Public API call workflow:**
+1. External system obtains an Entra External ID bearer token for the tenant.
+2. It calls a public endpoint (e.g., `GET /v1/posts`) with the bearer token.
+3. `tenant-auth-middleware` resolves identity and tenant context; rate-limit middleware checks/increments the sliding-window counter and attaches `X-RateLimit-*` headers.
+4. If under the limit, the request proceeds through the normal RLS-protected data path and returns the standard response shape; if over, `429` is returned.
 
-### 2. API keys (future)
-- v1 uses the existing Entra bearer token.
-- A future ADR may add long-lived API keys with restricted scopes.
+**Webhook subscription workflow:**
+1. Tenant-Admin opens the Integrations page and creates a subscription (`url`, `events`, `secret`, `active`).
+2. `POST /v1/webhooks/subscriptions` validates the HTTPS `url`, stores the subscription tenant-scoped with the `secret` encrypted/hashed.
+3. The admin can list (`GET`), edit (`PATCH`), deactivate/remove (`PATCH`/`DELETE`), and test the subscription from `WebhooksView`.
 
-### 3. Rate limiting
-- Global: 1000 requests per minute per tenant.
-- `GET /v1/posts` and `POST /v1/analytics/query` have lower limits: 100 per minute.
-- Rate limits are enforced by a sliding-window counter in Redis or Postgres.
-- Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
-
-### 4. Webhooks
-```
-GET    /v1/webhooks/subscriptions
-POST   /v1/webhooks/subscriptions
-PATCH  /v1/webhooks/subscriptions/:id
-DELETE /v1/webhooks/subscriptions/:id
-```
-
-**Subscription body**
-```ts
-{
-  url: string;
-  events: Array<'post.ingested' | 'alert.triggered' | 'connector.health.changed' | 'mention.threshold.crossed'>;
-  secret: string;              // used for HMAC-SHA256 signature
-  active: boolean;
-}
-```
-
-### 5. Webhook delivery
-- A `WebhookDeliveryWorker` consumes `ServiceBus` events and POSTs them to active subscriptions.
-- Each payload includes:
-  ```ts
-  {
-    eventType: string;
-    tenantId: string;
-    timestamp: string;
-    payload: object;
-  }
-  ```
-- The `X-SocialEngage-Signature` header is `HMAC-SHA256(secret, body)`.
-- Failed deliveries are retried with exponential backoff (up to 10 attempts over 24 hours), then moved to a dead-letter queue.
-
-### 6. Versioning and deprecation
-- API versions are URL-based: `/v1/`, `/v2/`.
-- A `Sunset` header is sent for endpoints scheduled for deprecation.
-- Breaking changes require a new major version.
-
----
+**Webhook delivery workflow:**
+1. A Service Bus event (e.g., `post.ingested`) is published.
+2. `WebhookDeliveryWorker` finds active subscriptions for that tenant whose `events` list includes the event type.
+3. For each match, it builds the payload, signs it with `HMAC-SHA256(secret, body)`, and POSTs it to `url`.
+4. On success, the attempt is logged as delivered. On failure, it is retried with exponential backoff up to 10 attempts over 24 hours, then dead-lettered.
+5. Delivery status (success/failure/retry count) is surfaced per subscription in `WebhooksView`.
 
 ---
 
 ## 7. Data Requirements
 
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `webhook_subscriptions.url` | HTTPS endpoint that receives webhook events | Tenant input | Tenant-Admin | High (destination for tenant data) |
-| `webhook_subscriptions.events` | Curated list of event types the subscription receives | Tenant input | Tenant-Admin | Medium |
-| `webhook_subscriptions.secret` | Shared secret used for HMAC-SHA256 signing | System generated or tenant input | Tenant-Admin | Critical (must not be exposed) |
-| `webhook_subscriptions.active` | Whether the subscription is currently enabled | Tenant input | Tenant-Admin | Low |
-| `webhook_subscriptions.tenant_id` | Tenant the subscription belongs to | Resolved from identity | System | Medium |
-| `rate_limit_counters` | Sliding-window request counts per tenant and endpoint | Middleware | System | Low |
-| `webhook_delivery_log` | Delivery attempts: timestamp, status, retry count, error, payload size | Delivery worker | System | Medium |
-| `dead_letter_webhook_deliveries` | Exhausted deliveries awaiting replay or investigation | Delivery worker | System | Medium |
-| `openapi_spec` | Generated JSON description of public `/v1` endpoints | Build/runtime | Product | Low |
+### 7.1 Data Inputs
 
----
+- Entra External ID bearer tokens on every public request.
+- Webhook subscription create/update payloads (`url`, `events`, `secret`, `active`).
+- Service Bus events (`post.ingested`, `alert.triggered`, `connector.health.changed`, `mention.threshold.crossed`) consumed by the delivery worker.
+
+### 7.2 Data Outputs
+
+- Public API responses (same shapes as internal endpoints).
+- `X-RateLimit-*` response headers.
+- Signed webhook HTTP POSTs to tenant endpoints.
+- Delivery log entries and dead-letter queue records.
+- Generated `GET /v1/openapi.json`.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `webhook_subscriptions` | `id`, `tenant_id`, `url (HTTPS)`, `events: string[]`, `secret (encrypted/hashed)`, `active: boolean`, `created_at`, `updated_at` | Tenant-scoped; referenced by delivery attempts |
+| `rate_limit_counters` | Tenant id, endpoint/scope key, sliding-window count, window reset time | Keyed per tenant (and per lower-limit endpoint where applicable) |
+| `webhook_delivery_log` | `subscription_id`, `event_type`, `attempt_number`, `timestamp`, `status`, `error?`, `payload_size` | One or more rows per delivery attempt, references `webhook_subscriptions` |
+| `dead_letter_webhook_deliveries` | `subscription_id`, `event_type`, `payload`, `attempts_exhausted_at`, `last_error` | References `webhook_subscriptions`; awaiting replay/investigation |
+| `openapi_spec` (generated artifact) | Generated JSON document describing public `/v1` endpoints | Derived from route/schema definitions, not a persisted business entity |
+
+### 7.4 Validation Rules
+
+- Every public request must present a valid Entra External ID bearer token; anonymous access is not allowed (BRU-001).
+- Rate limits are per-tenant, not per-user, via a sliding-window counter (BRU-002); `GET /v1/posts` and `POST /v1/analytics/query` use the lower 100/min limit (BRU-003).
+- Webhook `url` must be HTTPS (BRU-005).
+- Webhook management requires a role that permits integration administration (BRU-004).
+- Every delivery payload carries a valid `X-SocialEngage-Signature = HMAC-SHA256(secret, body)` (BRU-006).
+- Failed deliveries retry with exponential backoff up to 10 attempts or 24 hours, whichever comes first, then dead-letter (BRU-007).
+- Breaking changes require a new major version path; deprecations carry a `Sunset` header (BRU-008).
+- No separate, non-RLS public access path is permitted; `X-Tenant-Id` is never trusted (BRU-009).
+- No long-lived API keys in v1 (BRU-010).
 
 ---
 
 ## 8. Business Rules and Logic
 
-| ID | Rule |
-|---|---|
-| BRU-001 | Every public API request must present a valid Entra External ID bearer token; anonymous access is not allowed. |
-| BRU-002 | Rate limits are enforced per tenant, not per user, and use a sliding-window counter in Redis or Postgres. |
-| BRU-003 | `GET /v1/posts` and `POST /v1/analytics/query` have a lower rate limit (100 req/min) than the tenant global limit (1,000 req/min). |
-| BRU-004 | Webhook subscriptions are tenant-scoped; users may manage them only if their role permits integration administration. |
-| BRU-005 | Webhook `url` values must use HTTPS. |
-| BRU-006 | Every webhook delivery payload must include an `X-SocialEngage-Signature` header equal to `HMAC-SHA256(secret, body)`. |
-| BRU-007 | Failed webhook deliveries are retried with exponential backoff for up to 10 attempts or 24 hours, whichever comes first, then dead-lettered. |
-| BRU-008 | Breaking API changes require a new major URL version (`/v2/`). Deprecations are announced via a `Sunset` header. |
-| BRU-009 | The public API is not permitted to introduce a separate, non-RLS access path or to trust `X-Tenant-Id`. |
-| BRU-010 | The v1 public API does not support long-lived API keys; that capability is reserved for a future ADR. |
-
----
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | Every public request requires a valid Entra bearer token | Public API middleware |
+| BR2 | Rate limits are enforced per tenant via a sliding-window counter, correct across concurrent instances | Rate-limit middleware |
+| BR3 | `GET /v1/posts` and `POST /v1/analytics/query` carry a stricter 100/min limit than the 1000/min global | Rate-limit middleware |
+| BR4 | Webhook subscriptions are tenant-scoped and role-gated | Webhook subscription endpoints |
+| BR5 | Webhook `url` must be HTTPS | Subscription create/update |
+| BR6 | Every delivery is HMAC-SHA256 signed | `WebhookDeliveryWorker` |
+| BR7 | Failed deliveries retry with exponential backoff, capped at 10 attempts / 24 hours, then dead-letter | `WebhookDeliveryWorker` |
+| BR8 | Breaking changes require a new major version; deprecated endpoints carry `Sunset` | API versioning governance |
+| BR9 | The public API never introduces a separate non-RLS data path or trusts `X-Tenant-Id` | All public endpoints |
+| BR10 | `secret` values are stored encrypted/hashed, never plaintext | `webhook_subscriptions` storage |
 
 ---
 
 ## 9. Interfaces and Integrations
 
-### 1. Public API surface
-- The existing `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, and `POST /v1/analytics/query` (ADR-0088) become the public API surface.
-- All public endpoints require a bearer token from the tenant's Entra External ID setup.
-- `GET /v1/openapi.json` is a generated OpenAPI spec, but not a full SDK in v1.
-
-### 2. API keys (future)
-- v1 uses the existing Entra bearer token.
-- A future ADR may add long-lived API keys with restricted scopes.
-
-### 3. Rate limiting
-- Global: 1000 requests per minute per tenant.
-- `GET /v1/posts` and `POST /v1/analytics/query` have lower limits: 100 per minute.
-- Rate limits are enforced by a sliding-window counter in Redis or Postgres.
-- Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
-
-### 4. Webhooks
-```
-GET    /v1/webhooks/subscriptions
-POST   /v1/webhooks/subscriptions
-PATCH  /v1/webhooks/subscriptions/:id
-DELETE /v1/webhooks/subscriptions/:id
-```
-
-**Subscription body**
-```ts
-{
-  url: string;
-  events: Array<'post.ingested' | 'alert.triggered' | 'connector.health.changed' | 'mention.threshold.crossed'>;
-  secret: string;              // used for HMAC-SHA256 signature
-  active: boolean;
-}
-```
-
-### 5. Webhook delivery
-- A `WebhookDeliveryWorker` consumes `ServiceBus` events and POSTs them to active subscriptions.
-- Each payload includes:
-  ```ts
-  {
-    eventType: string;
-    tenantId: string;
-    timestamp: string;
-    payload: object;
-  }
-  ```
-- The `X-SocialEngage-Signature` header is `HMAC-SHA256(secret, body)`.
-- Failed deliveries are retried with exponential backoff (up to 10 attempts over 24 hours), then moved to a dead-letter queue.
-
-### 6. Versioning and deprecation
-- API versions are URL-based: `/v1/`, `/v2/`.
-- A `Sunset` header is sent for endpoints scheduled for deprecation.
-- Breaking changes require a new major version.
-
----
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `GET /v1/posts`, `GET /v1/watchlists`, `GET /v1/analytics/dashboard`, `POST /v1/analytics/query` | Inbound API | Public API surface | REST/JSON, bearer auth |
+| `GET /v1/openapi.json` | Inbound API | Public API specification | JSON (OpenAPI) |
+| Rate-limit middleware (Redis or Postgres) | Internal | Sliding-window request counting per tenant | In-process middleware + counter store |
+| `GET/POST/PATCH/DELETE /v1/webhooks/subscriptions[/:id]` | Inbound API | Webhook subscription CRUD | REST/JSON, bearer auth, tenant RLS |
+| Service Bus | Inbound event source | Source events for webhook delivery | Azure Service Bus |
+| `WebhookDeliveryWorker` | Outbound call | Delivers signed event payloads to tenant endpoints | HTTPS POST, HMAC-SHA256 signed |
+| Tenant's own HTTPS endpoint | Outbound (external) | Receives webhook deliveries | HTTPS POST/JSON |
+| `WebhooksView` / `WebhookForm` (admin UI) | Internal | Tenant-facing subscription management | React UI calling the subscription API |
 
 ---
 
 ## 10. Non-Functional Considerations
 
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Rate-limit enforcement must add less than 10 ms p99 latency to each request | Performance | Must | Measured in production or load tests over a 7-day window |
-| NFR-002 | Public endpoints must reuse existing `tenant-auth-middleware` and RLS; no `X-Tenant-Id` trust is permitted | Security | Must | Verified by contract tests that cross-tenant access is denied |
-| NFR-003 | Webhook HMAC secrets must be stored encrypted or hashed at rest | Security | Must | Security review confirms no plaintext secret storage |
-| NFR-004 | Webhook delivery must achieve at least 99.5% success rate for healthy receiver endpoints | Reliability | Should | Measured over 30 days; unhealthy endpoints do not count against the metric |
-| NFR-005 | Rate-limit state must be correct across multiple concurrent API instances | Scalability | Must | Sliding-window counter works under parallel load and rolling deploys |
-| NFR-006 | The public API and webhook contracts must include deprecation headers and stable request/response shapes | Maintainability | Should | Contract tests verify `Sunset` headers and shape invariants |
-| NFR-007 | All public access and webhook delivery attempts must be auditable per tenant | Compliance | Should | Logs include tenant, user/key, endpoint, timestamp, and outcome |
-
----
+- **Performance:** Rate-limit enforcement must add under 10 ms p99 latency per request (NFR-001).
+- **Security / access control:** Public endpoints reuse `tenant-auth-middleware` and RLS; no `X-Tenant-Id` trust (NFR-002). Webhook secrets are stored encrypted/hashed at rest (NFR-003).
+- **Reliability / availability:** Webhook delivery targets at least 99.5% success rate for healthy receiver endpoints over 30 days (NFR-004); persistent per-destination failures are isolated via backoff/circuit-breaking so they don't degrade delivery to other tenants.
+- **Scalability:** Rate-limit state must be correct across multiple concurrent API instances and rolling deploys (NFR-005).
+- **Maintainability:** The public contract is versioned and stable; `Sunset` headers and shape invariants are contract-tested (NFR-006).
+- **Audit and logging:** All public access and webhook delivery attempts are auditable per tenant — tenant, user/key, endpoint, timestamp, outcome (NFR-007).
+- **Compliance:** No cross-tenant data leakage through the public path; contract tests must prove isolation (mitigates R-004).
 
 ---
 
 ## 11. Error Handling and Exceptions
 
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Low tenant adoption of the public API and webhooks | Medium | Medium | Provide OpenAPI/Postman, documentation, and sample integrations; measure requests and subscriptions weekly | Product Owner |
-| R-002 | API abuse or DDoS from a compromised tenant token | Medium | High | Enforce strict rate limits, token rotation, and anomaly detection; short-lived Entra tokens reduce blast radius | Platform-Admin |
-| R-003 | Unreliable tenant endpoints cause webhook retry storms | High | Medium | Cap retries at 10/24h, use exponential backoff with jitter, add per-destination circuit breakers | Backend Engineer |
-| R-004 | Cross-tenant data leakage through a new public path | Low | High | Reuse existing `tenant-auth-middleware` and RLS; contract tests for cross-tenant denial; no `X-Tenant-Id` trust | Security Lead |
-| R-005 | Increased infrastructure cost from delivery workers and rate-limit counters | Medium | Medium | Start with Redis/Postgres counter; monitor queue depth and worker CPU; autoscale workers if needed | Platform-Admin |
-| R-006 | Consumer confusion when `/v1` is deprecated for `/v2` | Medium | Medium | Provide `Sunset` headers, migration guides, and a minimum 6-month deprecation window | Product Owner |
-
----
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Missing/invalid bearer token on a public request | `401 Unauthorized` | Request rejected before any data access |
+| Rate limit exceeded | `429 Too Many Requests` with `X-RateLimit-*` headers | Request rejected; counter and reset time reported |
+| Webhook subscription created with non-HTTPS `url` | Validation error | Subscription rejected, not stored |
+| `PATCH`/`DELETE` on a subscription belonging to another tenant | `404 Not Found` | No existence disclosed; treated as if the id does not exist |
+| Webhook delivery attempt fails (timeout, non-2xx, connection error) | None (tenant-side, surfaced in delivery log/UI) | Retried with exponential backoff, up to 10 attempts over 24 hours |
+| Webhook delivery exhausts all retries | Delivery shown as failed/dead-lettered in `WebhooksView` | Moved to dead-letter queue for inspection/replay, not silently dropped |
+| A `Sunset`-flagged endpoint is called after its retirement date | Clear deprecation/removal error | Request rejected rather than silently changing behavior |
 
 ---
 
 ## 12. Assumptions and Dependencies
 
-- ADR-0017 (URL path versioning) is already accepted and `/v1/` is the current convention.
+**Assumptions:**
+- ADR-0017 (`/v1/` path versioning) is already accepted.
 - Entra External ID bearer-token authentication is already in place for the existing API.
-- ADR-0033 (no `X-Tenant-Id` trust; identity resolved server-side) remains in effect.
+- ADR-0033 (no `X-Tenant-Id` trust) remains in effect for the public surface.
 - Redis or Postgres is available for the sliding-window rate-limit counter.
-- `ServiceBus` already emits `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent`.
+- Service Bus already emits `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent`.
 
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0017 (URL path versioning `/v1/`) | Architecture | Menno / Technical Lead | Accepted |
-| D-002 | ADR-0088 (`POST /v1/analytics/query`) | Architecture | Product Owner | Accepted |
-| D-003 | ADR-0012 / ADR-0013 (Service Bus event contracts) | Architecture | Backend Engineer | Accepted |
-| D-004 | ADR-0091 (alert rules and thresholds) | Architecture | Backend Engineer | Accepted |
-| D-005 | Entra External ID bearer-token authentication | External / Security | Identity Team | In production |
-| D-006 | Redis or Postgres for sliding-window rate-limit counters | Infrastructure | Platform-Admin | Provisioned |
-| D-007 | Story 12.11 (Public API versioning and webhooks backend) | Story | Backend Engineer | Ready |
-| D-008 | Story 12.12 (Webhook management UI) | Story | Frontend Engineer | Ready (depends on Story 12.11) |
+**Dependencies:**
+- ADR-0017 (URL path versioning) — accepted.
+- ADR-0088 (`POST /v1/analytics/query`) — accepted.
+- ADR-0012/ADR-0013 (Service Bus event contracts) — accepted.
+- ADR-0091 (alert rules and thresholds) — accepted.
+- Entra External ID bearer-token authentication — in production.
+- Redis or Postgres for rate-limit counters — provisioned.
+- Story 12.11 (backend) and Story 12.12 (frontend), both currently Blocked pending ADR-0106 acceptance.
 
----
+**Pending decisions:** ADR-0106 is Proposed; open questions below must be resolved before or during Story 12.11/12.12 implementation.
 
 ---
 
 ## 13. Open Questions
 
-- Which `ServiceBus` events should be available to webhooks in v1? All or a curated list?
-- Should webhook subscriptions be per-tenant or per-user?
-- How are webhook delivery failures surfaced to the tenant?
-- Should the OpenAPI spec be generated automatically or maintained by hand?
-
----
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Which Service Bus events should be available to webhooks in v1 — all or a curated list? | Product Owner | Before Story 12.11 implementation |
+| Q2 | Should webhook subscriptions be per-tenant or per-user? | Product Owner | Before Story 12.11 implementation |
+| Q3 | How are webhook delivery failures surfaced to the tenant (in-app only, email, both)? | Product Owner | Before Story 12.12 implementation |
+| Q4 | Should the OpenAPI spec be generated automatically or maintained by hand? | Technical Lead | Before Story 12.11 implementation |
 
 ---
 
 ## 14. Appendix
 
-### Reference Documents
+### Glossary
 
-- ADR-0106: `docs/adr/0106-api-and-integrations-versioning-and-webhooks.md`
+| Term | Definition |
+|---|---|
+| API versioning | Changing the major URL path (`/v1/`, `/v2/`) to introduce breaking changes without breaking older consumers. |
+| Bearer token | Short-lived access token in the `Authorization` header, issued by Entra External ID. |
+| Dead-letter queue | Queue holding deliveries that failed after all retries, for inspection or replay. |
+| HMAC-SHA256 | Keyed-hash message authentication code proving webhook payload integrity/origin. |
+| Rate limiting | Restricting the number of requests a tenant can make in a time window. |
+| Sliding-window counter | A rate-limit algorithm tracking request counts over a rolling time window. |
+| Sunset header | HTTP header announcing planned deprecation of an endpoint or API version. |
+| Webhook | An HTTPS callback the platform POSTs to a tenant-controlled endpoint when an event occurs. |
+
+### Reference links
+
+- ADR-0106: `docs/adr/0106-api-and-integrations-versioning-and-webhooks.md` (Proposed)
 - BRD-0106: `docs/project docs/Business-Requirements/BRD-0106-API-And-Integrations-Versioning-And-Webhooks.md`
 - Feature design: `docs/product-research/feature-designs/11-api-and-integrations.md`
-- User stories: `docs/user-stories/epic-12-adr-0101-to-0108.md`
+- Related ADRs: ADR-0017 (API versioning), ADR-0012/ADR-0013 (Service Bus events), ADR-0091 (alert rules), ADR-0033 (no `X-Tenant-Id` trust), ADR-0088 (`POST /v1/analytics/query`)
+- Related user stories: Story 12.11 (backend), Story 12.12 (frontend) — `docs/user-stories/epic-12-adr-0101-to-0108.md`
 
-### Missing Sources Noted
+### Missing sources
 
-- No matching deep-research report found in `docs/product-research/reports/`.
+- No `docs/product-research/reports/11-api-and-integrations-deep-research.md` deep-research brief was found for this feature.
 
-### Revision History
+### Revision history
 
-| Version | Date | Author | Description |
+| Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | FDD Writer — Batch Agent | Initial synthesis from ADR-0106 and BRD-0106. |
+| 0.2 | 2026-08-23 | FDD Writer Agent | Regenerated with a real per-capability Section 5 breakdown, data model, and workflow detail, replacing the prior defective BRD-table copy |

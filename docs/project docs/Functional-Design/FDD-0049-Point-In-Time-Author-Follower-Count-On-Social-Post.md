@@ -1,264 +1,282 @@
-# BRD-0049: Point-in-Time Author Follower Count on `SocialPost`
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | BRD-0049: Point-in-Time Author Follower Count on `SocialPost` |
+| Document Title | FDD-0049 Point-in-Time Author Follower Count on `SocialPost` — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0049-point-in-time-author-follower-count-on-social-post.md, ../Business-Requirements/BRD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md |
+| Author(s) | AI Delivery Agent (FDD synthesis pass) |
+| Reviewer(s) | Menno (Sponsor / Product Owner / Technical Lead) |
+| Status | Approved (ADR-0049 Accepted 2026-08-11; built via Story 3.9, 2026-08-12) |
+| Related Documents | ADR-0049, BRD-0049, ADR-0004, ADR-0021, ADR-0007, ADR-0018, Story 3.9, Feature Design 05 (Influencer Discovery) |
+
+---
 
 ## 2. Purpose and Scope
+
 ### 2.1 Purpose
-This document translates the accepted architecture decision in 0049-point-in-time-author-follower-count-on-social-post.md and the business requirements in BRD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md into functional design for **Point In Time Author Follower Count On Social Post**.
-**What problem are we solving?**  
-`Author` is normalized and keyed by `(tenantId, platformId, externalAuthorId)`, and `Author.followerCount` is upserted to the most recently seen value on every new ingestion. Because `SocialPost` only stored `authorId`, any historical reach or influencer analysis against a post from months ago was forced to use the author's *current* follower count. A post published when an account had 10,000 followers but now has 100,000 would incorrectly appear as a 100,000-follower post in time-series analysis.
 
-**Who is affected?**  
-Data engineers, tenant business analysts, topic-center analysts, and social-selling strategists who perform reach, influencer, or historical time-series analysis on `SocialPost` data.
-
-**What is the proposed solution at a glance?**  
-Add a single, optional, point-in-time field — `author_follower_count_at_publish` — to `SocialPost`. It is populated once at ingest from the connector's reported author follower count for that specific post and is never updated after write. `Author.followerCount` continues to represent the current, most-recently-seen value. The two values are complementary.
-
-**What business value do we expect?**  
-Reach and influencer classification queries can now use the audience size that existed at the moment a post was published, making historical comparisons materially more accurate and enabling more credible influencer and crisis-impact analysis.
-
----
+This document translates ADR-0049's architecture decision and BRD-0049's business requirements into the functional design of a single, scoped exception to ADR-0004's normalized `Author` model: a point-in-time, immutable `author_follower_count_at_publish` field on `SocialPost`, capturing the author's follower count as reported by the connector at the moment that specific post was ingested. Story 3.9 (built 2026-08-12) implements this; this FDD documents the shipped functional behavior for traceability and future maintenance.
 
 ### 2.2 Scope
-**In scope:**
-- Add one nullable `INTEGER` column, `author_follower_count_at_publish`, to the `SocialPost` storage schema.
-- Populate that column once at post-ingest time from the connector's `normalize()` output for that specific post's author.
-- Keep the value immutable: no later `Author.followerCount` upsert, reconciliation, or backfill may modify it.
-- Leave `Author.followerCount` unchanged as the most-recently-seen current value.
-- Add connector-level signaling of the capability to provide a follower count at publish time (e.g., `SocialConnector.canProvideFollowerCountAtPublish`), modeled on the existing `supportedQueryFeatures` pattern.
-- Ensure the field remains `NULL` for connectors where the value is not meaningful (e.g., Newswire, GNews, Wikipedia/organization-as-Author connectors).
-- Document the `NULL` semantics for the field in the migration and/or model code when implemented.
 
-**Out of scope:**
-- Retroactive backfill of `author_follower_count_at_publish` for existing `SocialPost` rows.
-- Any mandated change to the `GET /posts` or `GET /topics/:topic/authors` API response shapes.
-- Adding `sortBy=followerCountAtPublish` or similar to the expert-finder endpoint.
-- Embedding any other author profile field (`handle`, `displayName`, `profileLocation`, `verifiedStatus`) on `SocialPost`.
-- Reopening the full "embed author per post" design that ADR-0004 rejected.
-- Use of the `IngestionRun.rawPayload` archival store as a substitute for a queryable column.
+- **In scope:** the new nullable `author_follower_count_at_publish` column on `SocialPost`; its one-time-write, never-updated-after-ingest behavior; its independence from `Author.followerCount`'s ongoing upsert; the connector-level `canProvideFollowerCountAtPublish` capability declaration; the three-way `NULL` semantics; explicit non-backfill of pre-existing rows.
+- **Out of scope:** any other per-post author profile field (`handle`, `displayName`, `profileLocation`, `verifiedStatus` remain fully normalized on `Author`, never embedded per post); retroactive backfill of historical rows; any mandated `GET /posts` or `GET /topics/:topic/authors` API response-shape change; adding `sortBy=followerCountAtPublish` to the expert-finder endpoint; a separate `AuthorSnapshot` entity; storing the value only in `rawPayload`.
 
-## 3. Context and Background
-ADR-0004 models `Author` as its own entity keyed by `(tenantId, platformId, externalAuthorId)`, upserted as new posts arrive. `SocialPost.authorId` is a foreign key into `Author`. This means `Author.followerCount` is always the *most-recently-seen* value, upserted in place whenever the author is encountered in a new ingestion run. ADR-0004 names this trade-off explicitly in its own Negative consequences:
+### 2.3 Target Audience
 
-> "Author facts like `followerCount` reflect whatever was true at last-seen time, not at each individual post's `publishedAt` — historical accuracy of 'follower count at time of post' is not preserved."
-
-That consequence was accepted at the time as a deliberate trade-off: keeping `SocialPost` focused on per-event data and avoiding per-post duplication of author profile fields, which was ADR-0004's core motivation.
-
-**Why this is not just an Amendment Log entry on ADR-0004:** this ADR changes the data-model decision itself — adding a field to `SocialPost` that partially reintroduces per-post author data, which is precisely what ADR-0004 argued against. Under this ADR series' own governance table (see `docs/adr/README.md`'s "Conventions for changing an existing ADR"), *"the underlying decision itself changes → new ADR"*. An Amendment Log entry is appropriate when an adjustable parameter changes (a threshold, a window length); it is not appropriate when the schema structure changes in a way that touches the durable decision text of an Accepted ADR.
-
-**The specific use case that forces this decision:** individual-account social platforms — Reddit initially; X, LinkedIn, and similar future connectors — return a follower count with or alongside each post in their own API response at fetch time. This value can differ meaningfully from the author's current `followerCount` stored on `Author`, especially for accounts with rapid audience growth or loss between posts. Analysts performing reach or influencer analysis on historical posts need the value that was true *at the time the post was published*, not the author's current subscriber count at query time. Without this field, a post from six months ago from an account that grew from 10,000 to 100,000 followers will look, in any reach analysis query, as though it was a 100,000-follower post at the time — materially wrong for any time-series reach analysis.
-
-**Why this was deferred rather than decided at ADR-0004's acceptance:** ADR-0004 was accepted before any individual-account social connector was built or storied. The follower-count-at-publish concern was accurate but speculative in the absence of a real connector that would supply that value. Reddit (Phase 1's second platform) is the first connector where this question becomes concrete and implementation-time decisions will need an answer — making now the right time to decide, rather than allowing it to be resolved ad hoc during Story implementation.
-
-**Relationship to `AuthorTopicSignal` and the expert finder (ADR-0007):** the expert-finder query (`GET /topics/:topic/authors?sortBy=activeMonths|mentionCount`) does **not** currently sort by follower count — it sorts by `activeMonthsCount` and `mentionCount`, both of which are computed from `SocialPost` event history, not from `Author.followerCount`. This ADR does not change that. The question of whether `authorFollowerCountAtPublish` should ever be exposed as a `sortBy` option on that endpoint — enabling reach-weighted expert ranking — is deliberately left as an Open Question rather than decided here. ADR-0007's Negative consequence ("API consumers that just want 'the best expert' must implement their own composite ranking") is the already-accepted framing; this ADR does not resolve the composite-ranking question, only the schema-level gap.
+Backend engineers building individual-account social connectors (Reddit, X, LinkedIn, and similar future connectors) that will populate this field; data engineers maintaining the `SocialPost`/`Author` schema; analysts (tenant business analysts, topic-center analysts, social-selling strategists) consuming reach/influencer analytics; QA maintaining contract tests for immutability and `NULL` semantics.
 
 ---
-**What problem are we solving?**  
-`Author` is normalized and keyed by `(tenantId, platformId, externalAuthorId)`, and `Author.followerCount` is upserted to the most recently seen value on every new ingestion. Because `SocialPost` only stored `authorId`, any historical reach or influencer analysis against a post from months ago was forced to use the author's *current* follower count. A post published when an account had 10,000 followers but now has 100,000 would incorrectly appear as a 100,000-follower post in time-series analysis.
 
-**Who is affected?**  
-Data engineers, tenant business analysts, topic-center analysts, and social-selling strategists who perform reach, influencer, or historical time-series analysis on `SocialPost` data.
+## 3. Context and Background
 
-**What is the proposed solution at a glance?**  
-Add a single, optional, point-in-time field — `author_follower_count_at_publish` — to `SocialPost`. It is populated once at ingest from the connector's reported author follower count for that specific post and is never updated after write. `Author.followerCount` continues to represent the current, most-recently-seen value. The two values are complementary.
+ADR-0004 normalizes `Author` as its own entity, upserted so `Author.followerCount` is always the most-recently-seen value — a deliberate trade-off ADR-0004 itself named: "historical accuracy of 'follower count at time of post' is not preserved." This was accepted at ADR-0004's acceptance because no individual-account connector existed yet to make the gap concrete. Reddit (the first planned individual-account connector) makes it concrete: platforms like Reddit, X, and LinkedIn return a follower count with or alongside each post at fetch time, and this value can differ meaningfully from the author's current count for fast-growing or shrinking accounts. Without a point-in-time field, a six-month-old post from an account that grew from 10,000 to 100,000 followers would incorrectly appear as a 100,000-follower post in any reach-analysis query.
 
-**What business value do we expect?**  
-Reach and influencer classification queries can now use the audience size that existed at the moment a post was published, making historical comparisons materially more accurate and enabling more credible influencer and crisis-impact analysis.
+Because this changes the data-model decision itself (adding per-post author data, which ADR-0004 argued against), it required a new ADR under this project's governance table, not an Amendment Log entry on ADR-0004. ADR-0049 deliberately scopes the exception to exactly one field — follower count — not a reopening of the "embed author fields per post" alternative ADR-0004 rejected. The connector-capability declaration mechanism (Open Question 5) was resolved during Story 3.9's own build: `SocialConnector.canProvideFollowerCountAtPublish`, a boolean modeled directly on ADR-0021's `supportedQueryFeatures` pattern, proven via an inline local test connector, with Newswire and GNews left completely unmodified — proving a connector that doesn't declare the capability incurs zero code change.
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Enable accurate historical reach analysis | Reach/influencer queries can distinguish the author's follower count at publish time from the current follower count. |
-| 2 | Preserve the normalized author model | Only one point-in-time field is added to `SocialPost`; no other author profile fields are embedded per post. |
-| 3 | Improve data integrity for time-series analysis | `author_follower_count_at_publish` on any given `SocialPost` row does not change after initial ingest. |
-| 4 | Keep the exception additive and low-risk | Connectors that do not supply or do not meaningfully have a follower count leave the column `NULL` with no migration burden. |
-
----
-
-**Positive consequences (from ADR):**
-**Positive**
-- Closes the named trade-off in ADR-0004 for the class of connectors — individual social-platform accounts with follower counts that vary over time — where the gap has real analytical consequences: reach analysis, influencer classification, and historical time-series queries now have access to the value that was true at publication time, not just at query time.
-- The per-post value is immutable after ingest, making it straightforward to reason about in historical queries without worrying about it changing under read. Unlike `Author.followerCount`, which is expected to drift as the upsert pattern runs over time, `author_follower_count_at_publish` on any given row is a stable, append-only fact.
-- Connectors that do not provide this value (Newswire, GNews, Wikipedia) incur no schema change burden beyond a `NULL`-able column they never populate — the exception is additive, not restructuring.
-- The two-field discipline — `Author.followerCount` (current, mutable, upserted) vs. `SocialPost.author_follower_count_at_publish` (point-in-time, immutable) — gives future consumers a clear, explicit semantic distinction between "what the author's reach is today" and "what it was when this post was published," rather than conflating the two.
-- Makes the `AuthorTopicSignal` / expert-finder discussion (ADR-0007's named "Open Question" on composite ranking) more concretely answerable when that decision eventually comes: the raw signal now exists in the schema rather than needing to be reconstructed retroactively.
-
-**Negative**
-- **Partially reintroduces per-post author data** — the exact trade-off ADR-0004 argued against — scoped to one field. This is a deliberate, accepted reversal on exactly one dimension. It adds per-row storage that ADR-0004's model was designed to avoid. At v1's anticipated data volumes this is not a concern, but it is a real, permanent schema addition.
-- **Adds a `NULL` interpretation question** that did not exist before: `NULL` could mean "this connector does not report follower counts at ingest" (Newswire, GNews, Wikipedia), "this connector supports it but the platform did not return a value for this specific post" (platform API returned the post without an author-stats payload), or "this post was ingested before this column existed" (historical rows). These three cases are semantically distinct; a future consumer that depends on this field must be aware of which case it is in. The exact `NULL` semantics are left as an Open Question and should be documented in the Story that actually adds this column.
-- **Does not retroactively populate existing rows.** Any `SocialPost` rows already written before this column is added will have `NULL` for `author_follower_count_at_publish`, even for connectors that subsequently provide the value. This is not a defect — it is correct behavior for a point-in-time snapshot — but it means any analysis relying on this field will have a "before/after" gap at the migration date.
-- **The expert-finder question is deferred, not closed.** ADR-0007's `sortBy=activeMonths|mentionCount` design was accepted knowing it doesn't incorporate follower count into reach-weighted expert ranking. This ADR enables that ranking to be implemented later, but does not decide it. If `sortBy=followerCountAtPublish` is never added to the expert-finder endpoint, this field's analytical value is limited to raw query access, not a first-class API sort signal — a real limitation worth naming rather than assuming it gets added automatically.
+| G1 | Enable accurate historical reach analysis | Reach/influencer queries can distinguish follower count at publish time from the current count |
+| G2 | Preserve the normalized author model everywhere else | Only one field is added to `SocialPost`; no other author attribute is embedded per post |
+| G3 | Guarantee point-in-time integrity | The stored value on any given post never changes after initial ingest |
+| G4 | Keep the exception additive and low-risk for connectors that don't need it | Connectors leave the field `NULL` with zero code change required |
+| G5 | Make the connector-capability signal explicit and precedented | `canProvideFollowerCountAtPublish` modeled directly on ADR-0021's existing capability-matrix pattern |
 
 ---
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall add one nullable `INTEGER` column named `author_follower_count_at_publish` to the `SocialPost` schema. | Must | Schema inspection shows exactly one new nullable integer column; no other author profile fields are added to `SocialPost`. | Engineering |
-| BR-002 | The system shall populate `author_follower_count_at_publish` at the initial ingestion of a post, using the follower count the connector reports for that post's author at that moment. | Must | A test ingests a post and the stored `author_follower_count_at_publish` matches the connector's reported value. | Engineering |
-| BR-003 | The system shall keep `author_follower_count_at_publish` immutable after initial write. | Must | A later post from the same author with a different reported follower count does not alter the already-stored value on earlier posts. | Engineering |
-| BR-004 | The system shall not derive or reconcile `author_follower_count_at_publish` from `Author.followerCount` after the initial write. | Must | A test confirms that `Author.followerCount` upserts leave `author_follower_count_at_publish` unchanged on existing posts. | Engineering |
-| BR-005 | The system shall allow connectors to declare whether they can provide a follower count at publish time (e.g., `canProvideFollowerCountAtPublish`). | Should | Connector-type definitions include a boolean capability flag analogous to `supportedQueryFeatures`; unmodified connectors default to not providing the value. | Engineering |
-| BR-006 | The system shall leave `author_follower_count_at_publish` `NULL` for connectors where the value is not meaningful (e.g., organization/publication-as-Author connectors such as Newswire, GNews, and Wikipedia). | Must | Tests for Newswire/GNews/Wikipedia-style connectors produce `NULL` for the field with no connector code changes. | Engineering |
-| BR-007 | The system shall not retroactively update `author_follower_count_at_publish` on pre-existing `SocialPost` rows when the column is added. | Must | Existing rows retain `NULL` after the migration; no backfill job is triggered. | Engineering |
 
-Priority levels: Must / Should / Could / Won't (MoSCoW)
+### 5.1 Feature / Capability: Point-in-Time Follower Count Capture at Ingest
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+- **Description:** Captures the author's follower count as reported by the connector at the exact moment a specific post is fetched and normalized, storing it once on that post's own row.
+- **Triggers:** Creation of a new `SocialPost` row during ingestion, for a connector that declares `canProvideFollowerCountAtPublish`.
+- **Inputs:** The connector's `normalize()` output for that specific post's author, including whatever follower-count value the platform's API returned alongside the post.
+- **Processing:** The reported value is written into `author_follower_count_at_publish` at the same time the `SocialPost` row is created — never as a separate, later write. The value is taken exactly as reported, not derived from or reconciled against `Author.followerCount`.
+- **Outputs:** A `SocialPost` row with a populated `author_follower_count_at_publish`, standing as a stable, append-only fact from that point forward.
+- **Error handling:** If the connector does not return a follower count for that specific post (even though it generally declares the capability), the field is left `NULL` for that row — not defaulted to zero or any other placeholder.
+- **Edge cases:** A connector that does not declare `canProvideFollowerCountAtPublish` at all never attempts to populate this field — it is simply always `NULL` for that connector's posts, with no per-post decision logic needed.
 
-Add **one optional, point-in-time field** to `SocialPost` to capture the author's follower count as reported by the platform connector at the moment of ingestion of that specific post. This is a scoped, documented exception to ADR-0004's normalized Author model — deliberately the minimum exception that addresses the named trade-off, not a reopening of the "embed author fields per post" alternative ADR-0004 rejected.
+### 5.2 Feature / Capability: Immutability After Initial Write
 
-Specifically:
+- **Description:** Guarantees that once set, `author_follower_count_at_publish` on a given `SocialPost` row is never modified again, regardless of what happens to the same author's `Author.followerCount` afterward.
+- **Triggers:** Any subsequent ingestion event involving the same author (a new post, an `Author` upsert).
+- **Inputs:** N/A — this is an absence-of-write guarantee, not a processing step.
+- **Processing:** No code path updates, backfills, or reconciles `author_follower_count_at_publish` on an existing row. `Author.followerCount` upserts proceed exactly as ADR-0004 already designed, entirely independently.
+- **Outputs:** A stable, immutable per-post fact that can be relied on in historical queries without concern for it changing under read.
+- **Error handling:** N/A — enforced by simply never writing to this column outside the initial insert.
+- **Edge cases:** A later post from the same author, with a very different reported follower count, does not alter any earlier post's already-stored value — each post's value is independent and frozen at its own ingest time.
 
-- **A single field, at ingest time only.** The field is populated once, from whatever the connector/platform returns for that author at the time that specific post is fetched and normalized. It is never updated after initial write — it is a point-in-time snapshot of what the platform reported, not a mutable author profile field.
-- **Never backfilled from `Author.followerCount`.** The field is not derived from, updated by, or reconciled against `Author.followerCount` after ingest — doing so would defeat the point-in-time purpose and reintroduce the very staleness problem this field is designed to capture distinctly from. If a connector does not supply a follower count alongside the post payload, the field is left `NULL` — explicitly a first-class representation of "not available from this connector at this point in time," not a default zero.
-- **`Author.followerCount` is unchanged.** ADR-0004's Author model continues exactly as designed: `Author.followerCount` is still the most-recently-seen upserted value for the author's current subscriber count. The new per-post field captures a distinct, point-in-time value — the two are complementary, not redundant.
-- **Scope is one field only.** This exception covers follower count and nothing else. Per-post snapshots of any other author profile field — `handle`, `displayName`, `profileLocation`, `verifiedStatus` — remain out of scope. ADR-0004's normalized approach is maintained in full for all other Author fields. Each future connector that would argue for a per-post snapshot of a different author field must make that case under a new ADR or amendment — this ADR does not open a general "author fields per post" exception.
-- **Connectors where the field is not meaningful leave it `NULL`.** This follows the same discipline ADR-0024's and ADR-0026's decisions already establish for `Author.followerCount` itself: Newswire (issuer-as-Author, organizational identity) and GNews (publication-as-Author) both leave `Author.followerCount` unpopulated, for the same reason — it is not a meaningful attribute for an organization or publication. The point-in-time per-post field inherits the same logic: if the connector's own API does not return a meaningful follower count alongside the post at ingest, the field is `NULL`. ADR-0042's Wikipedia connector (article-as-Author, also organizational in nature) would similarly leave it `NULL`.
+### 5.3 Feature / Capability: Connector Capability Declaration (`canProvideFollowerCountAtPublish`)
 
-**Implementation defaults (adjustable via Amendment Log; does not require superseding this ADR):**
+- **Description:** Lets a connector explicitly declare whether it can supply a point-in-time follower count at ingest, modeled directly on ADR-0021's `supportedQueryFeatures` capability-matrix pattern.
+- **Triggers:** Connector registration/type definition.
+- **Inputs:** A boolean flag on the connector's type (`SocialConnector.canProvideFollowerCountAtPublish`).
+- **Processing:** A connector that sets this flag `true` is expected to populate the field on posts where the platform provides the value; a connector that does not set it (the default for existing connectors) is never expected to populate it, and unmodified connectors require zero code change.
+- **Outputs:** A discoverable, typed signal of which connectors can meaningfully populate this field.
+- **Error handling:** N/A — a static capability declaration, not a runtime validation.
+- **Edge cases:** Proven end-to-end via an inline local test connector during Story 3.9's build (no real individual-account connector existed yet); Newswire and GNews were left completely unmodified, confirming the additive, zero-burden nature of the capability for connectors that don't need it.
 
-- **Exact column name on `SocialPost`:** `author_follower_count_at_publish` (snake_case, consistent with the rest of this project's Postgres naming conventions). This is an implementation default — renamed via an Amendment Log entry, not a new ADR, if a better name is established at implementation time.
-- **Type:** `INTEGER`, `NULL`-able. Matches the type of `Author.follower_count` in the existing migration (`migrations/0004_create_authors.sql`), keeping the two values directly comparable in queries. A future Amendment Log entry may revise this to `BIGINT` if any supported platform returns follower counts that overflow `INTEGER` — flagged as a consideration for Reddit's connector implementation, since subreddit subscriber counts can exceed 40 million.
-- **Connector-level `canProvideFollowerCountAtPublish` flag:** connectors that supply this value at ingest time signal it via a capability declaration, analogous to ADR-0021's `supportedQueryFeatures` matrix. The exact shape of this declaration (a boolean field on the connector's capability manifest, or a naming convention in `normalize()`'s returned payload) is an implementation-time task, not fixed by this ADR.
-- **No API surface change is mandated by this ADR.** Whether `GET /posts` (cursor-paginated per ADR-0011) exposes `authorFollowerCountAtPublish` in its response shape, and whether `GET /topics/:topic/authors` (ADR-0007's expert-finder endpoint) ever accepts it as a `sortBy` parameter, are implementation-time and future-ADR decisions — see Open Questions. This ADR only adds the field to the storage schema; it does not mandate an API change.
+### 5.4 Feature / Capability: `NULL` for Organizational/Publication Author Connectors
+
+- **Description:** Ensures the field remains `NULL` for connectors whose `Author` represents an organization, publication, or article rather than an individual account with a meaningful follower count.
+- **Triggers:** Ingestion by Newswire, GNews, Wikipedia, or any similarly organization/publication-as-Author connector.
+- **Inputs:** The connector's own `canProvideFollowerCountAtPublish` declaration (unset/false for these connectors).
+- **Processing:** These connectors never attempt to populate the field, following the same discipline ADR-0024/ADR-0026 already establish for leaving `Author.followerCount` itself unpopulated for organizational Author entities.
+- **Outputs:** `NULL` values for every post from these connectors, with no schema-change burden beyond the nullable column existing.
+- **Error handling:** N/A.
+- **Edge cases:** None — this is the expected, correct behavior for these connector types, not a gap to be closed.
+
+### 5.5 Feature / Capability: No Retroactive Backfill
+
+- **Description:** Ensures adding this column does not trigger any attempt to populate historical `SocialPost` rows.
+- **Triggers:** The migration that adds `author_follower_count_at_publish` to the schema.
+- **Inputs:** N/A.
+- **Processing:** Existing rows simply receive `NULL` for the new column as part of the migration's default; no backfill job runs.
+- **Outputs:** Pre-existing rows carry `NULL`, correctly representing "this post predates the column," distinct from the other two `NULL` cases (§5.6).
+- **Error handling:** N/A.
+- **Edge cases:** Any future initiative to backfill historical values from platform historical APIs is explicitly named as an open question, not decided or attempted here.
+
+### 5.6 Feature / Capability: Three-Way `NULL` Semantics Documentation
+
+- **Description:** Names and requires documentation of the three semantically distinct meanings `NULL` can carry on this field, so future consumers don't conflate them.
+- **Triggers:** Any point where `NULL` is encountered on `author_follower_count_at_publish` by a downstream consumer or query.
+- **Inputs:** The three cases: (a) the connector's `Author` type doesn't meaningfully have a follower count (organizational/publication connectors); (b) the connector supports the capability generally but the platform did not return a value for this specific post; (c) the row predates the column's existence (pre-migration row).
+- **Processing:** These three cases are documented at implementation time (migration comment and/or `SocialPost` model field-level doc) so a future consumer is aware of which case applies before drawing conclusions from a `NULL`.
+- **Outputs:** A documented, disambiguated understanding of `NULL` for any future query or analysis built against this field.
+- **Error handling:** N/A — a documentation requirement, not a runtime distinguishing mechanism (the three cases are not distinguished by a separate flag; they are distinguished by external context: connector type, ingest date, platform response).
+- **Edge cases:** A consumer that needs to programmatically distinguish these cases (rather than relying on documentation) is not supported by this design — that would require additional schema, not decided here.
 
 ---
 
 ## 6. User Interaction and Workflows
+
 ### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Menno | Sponsor, Product Owner, Technical Lead | High | A scoped, durable decision that closes ADR-0004's named trade-off without re-denormalizing the author model. |
-| Data Engineer | Implements and maintains the `SocialPost` data model | High | A clear, one-column, one-time-write rule with unambiguous `NULL` semantics. |
-| Tenant Business Analyst / Topic-Center Analyst | Consumer of reach and influencer analytics | High | Accurate historical follower counts for time-series and trend analysis. |
-| Social-Selling Strategist | User of influencer discovery and prospecting | Medium | A reliable per-post reach signal for ranking and outreach lists. |
-| Platform Operations | Storage and archival management | Low | Minimal additive storage; no backfill or reprocessing of historical rows. |
+
+| Actor | Role |
+|---|---|
+| Backend Engineer (connector author) | Builds individual-account connectors that declare and populate this field |
+| Data Engineer | Maintains the `SocialPost`/`Author` schema and migration |
+| Tenant Business Analyst / Topic-Center Analyst | Consumes the field for historical reach/influencer analysis |
+| Social-Selling Strategist | Uses influencer discovery features that may draw on this signal in the future |
+| Ingestion pipeline | Writes the field at post-creation time; never touches it again |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| Story 3.9 | Data engineer / future individual-account connector author | ...capture and permanently preserve the author's follower count at the moment a post was published | ...historical reach analysis reflects the audience size that actually existed at publish time, not the author's current count | New nullable `INTEGER` column added to `SocialPost`; populated once at ingest from connector `normalize()` output; never updated afterward; `NULL` for connectors that don't provide it; existing rows retain `NULL` with no backfill; `canProvideFollowerCountAtPublish` capability flag added and proven via an inline test connector, with Newswire/GNews unmodified |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Workflow: post ingestion with follower-count capture**
+
+1. Connector fetches a post and its author's data from the platform API.
+2. If the connector declares `canProvideFollowerCountAtPublish: true` and the platform response includes a follower count for that author: the connector's `normalize()` output carries that value.
+3. Ingestion pipeline creates the new `SocialPost` row, writing the reported value into `author_follower_count_at_publish` in the same operation.
+4. Independently, `Author` is upserted per ADR-0004's existing logic — `Author.followerCount` is set to the most-recently-seen value, unrelated to what was just written on the post row.
+5. The post's `author_follower_count_at_publish` is now frozen; no future ingestion event, for this author or any other, ever modifies it.
+
+**Workflow: connector without the capability**
+
+1. Connector fetches a post; it does not declare `canProvideFollowerCountAtPublish` (the default).
+2. Ingestion pipeline creates the `SocialPost` row with `author_follower_count_at_publish = NULL`, with no per-post decision logic invoked.
+3. `Author` upsert proceeds unaffected — for organizational/publication connectors, `Author.followerCount` itself also typically stays unpopulated, per the existing ADR-0024/ADR-0026 pattern.
+
+**Workflow: historical analysis query**
+
+1. An analyst queries `SocialPost` for reach analysis over a time window.
+2. For each post, the query reads `author_follower_count_at_publish` (the audience size at that post's own publish time) rather than joining to `Author.followerCount` (the author's current audience size).
+3. A `NULL` value is interpreted per the documented three-way semantics (organizational connector / platform omitted / pre-migration row) rather than assumed to mean zero or "unknown in a single sense."
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 3.9 | epic-3-data-model-storage-and-archival.md | As data engineer supporting reach/influencer analysis on historical posts, I want `SocialPost` to carry the author's follower count as reported by the connec... | `SocialPost` gains one new, nullable field — `authorFollowerCountAtPublish` (Postgres column `author_follower_count_at_publish`, `INTEGER`, nullable, per ADR... |
-
-
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `SocialPost.author_follower_count_at_publish` | Nullable point-in-time follower count for the author at the post's ingest/publish time. | Connector `normalize()` output for the specific post's author | Engineering | Public author metadata; tenant-scoped under RLS |
-| `Author.followerCount` | Most-recently-seen current follower count for the author; continues to be upserted. | Connector author payload | Engineering | Public author metadata; tenant-scoped under RLS |
-| `SocialConnector.canProvideFollowerCountAtPublish` | Boolean capability flag indicating whether a connector can supply a point-in-time follower count. | Connector capability manifest | Engineering | Configuration; tenant-scoped where applicable |
-| `IngestionRun` | Existing audit anchor; unchanged, but the point-in-time value is captured during the run that creates the post. | Ingestion pipeline | Engineering | Operational; tenant-scoped |
+
+### 7.1 Data Inputs
+
+The connector's `normalize()` output for a specific post's author, including any platform-reported follower count at fetch time.
+
+### 7.2 Data Outputs
+
+A populated or `NULL` `author_follower_count_at_publish` value on each `SocialPost` row; unchanged `Author.followerCount` behavior.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `SocialPost` | New: `author_follower_count_at_publish` (nullable `INTEGER`, immutable after initial write) | Written once at post creation; never updated by any later `Author` upsert |
+| `Author` | `followerCount` (unchanged — most-recently-seen, upserted value) | Continues exactly as ADR-0004 designed; complementary to, never reconciled with, the new per-post field |
+| `SocialConnector` | New: `canProvideFollowerCountAtPublish` (boolean capability flag, modeled on ADR-0021's `supportedQueryFeatures`) | Determines whether a connector's `normalize()` output is expected to populate the new field |
+| `IngestionRun` | Unchanged | The run during which the point-in-time value is captured; not itself modified by this ADR |
+
+### 7.4 Validation Rules
+
+- `author_follower_count_at_publish` must be written only at initial `SocialPost` creation — no code path may `UPDATE` it afterward.
+- `author_follower_count_at_publish` must never be derived from, defaulted from, or reconciled against `Author.followerCount`.
+- A connector without a real follower-count value for a specific post must leave the field `NULL`, never a placeholder like `0`.
+- Pre-existing rows (created before the column existed) retain `NULL`; no migration-triggered backfill is performed.
+- Column type is `INTEGER` (nullable) for v1 — a future `BIGINT` migration is named as a real possibility if a platform's follower counts approach or exceed `INTEGER` overflow (e.g., very large Reddit subreddits, YouTube channels).
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | `author_follower_count_at_publish` is set exactly once, at the initial creation of a `SocialPost`. |
-| BRU-002 | If the connector does not return a follower count for the post's author, `author_follower_count_at_publish` is `NULL`. |
-| BRU-003 | `author_follower_count_at_publish` may never be updated, backfilled, or reconciled from `Author.followerCount`. |
-| BRU-004 | Only `followerCount` may be stored as a point-in-time author field on `SocialPost`; all other author attributes remain on the normalized `Author` entity. |
-| BRU-005 | `NULL` on `author_follower_count_at_publish` can represent (a) a connector for which the value is not meaningful, (b) a connector that did not return the value for that post, or (c) a row ingested before the column existed; these cases must be documented in the implementation. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | `author_follower_count_at_publish` is set exactly once, at initial `SocialPost` creation | Ingestion write path |
+| BR2 | If the connector does not return a follower count for the post's author, the field is `NULL`, not a default zero | Ingestion write path |
+| BR3 | The field may never be updated, backfilled, or reconciled from `Author.followerCount` after initial write | Data integrity |
+| BR4 | Only follower count may be stored as a point-in-time author field on `SocialPost`; every other author attribute stays exclusively on the normalized `Author` entity | Schema scope |
+| BR5 | `NULL` can represent any of three distinct cases (connector-type-inapplicable, platform-omitted, pre-migration row); these must be documented, not conflated | Consumer interpretation |
+| BR6 | Existing rows are never backfilled when the column is added | Migration behavior |
+| BR7 | A connector's `canProvideFollowerCountAtPublish` flag determines whether it is expected to populate the field; unset/false connectors require zero code change | Connector capability |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0004 — normalized `Author` entity | Decided / prerequisite | Engineering | Already accepted; this ADR is a scoped exception to it. |
-| D-002 | ADR-0021 — connector `supportedQueryFeatures` pattern | Pattern / precedent | Engineering | Already accepted; capability flag modeled on this pattern. |
-| D-003 | Story 3.9 — point-in-time author follower count on `SocialPost` | Implementation | Engineering | Built 2026-08-12 (`social-listening-core@34e9dfb`). |
-| D-004 | Real individual-account connectors (Reddit, X, LinkedIn, etc.) | Future connector build-out | Engineering / Product | Future Epic 2 stories; field is ready for them. |
-| D-005 | Future ADR or amendment for `GET /topics/:topic/authors` follower-count sorting | Downstream decision | Product | Open question; not required for this BRD. |
 
----
-
-- Individual-account social connectors (Reddit, X, LinkedIn, etc.) return the author follower count alongside or near the post payload at fetch time.
-- Public author metadata such as follower count is permitted to be stored under relevant platform API terms.
-- The additional nullable integer per post is acceptable at v1 data volumes.
-- This field is primarily for analytical and operational use, not for real-time scoring until a future ADR or amendment explicitly decides that.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
-Add **one optional, point-in-time field** to `SocialPost` to capture the author's follower count as reported by the platform connector at the moment of ingestion of that specific post. This is a scoped, documented exception to ADR-0004's normalized Author model — deliberately the minimum exception that addresses the named trade-off, not a reopening of the "embed author fields per post" alternative ADR-0004 rejected.
-
-Specifically:
-
-- **A single field, at ingest time only.** The field is populated once, from whatever the connector/platform returns for that author at the time that specific post is fetched and normalized. It is never updated after initial write — it is a point-in-time snapshot of what the platform reported, not a mutable author profile field.
-- **Never backfilled from `Author.followerCount`.** The field is not derived from, updated by, or reconciled against `Author.followerCount` after ingest — doing so would defeat the point-in-time purpose and reintroduce the very staleness problem this field is designed to capture distinctly from. If a connector does not supply a follower count alongside the post payload, the field is left `NULL` — explicitly a first-class representation of "not available from this connector at this point in time," not a default zero.
-- **`Author.followerCount` is unchanged.** ADR-0004's Author model continues exactly as designed: `Author.followerCount` is still the most-recently-seen upserted value for the author's current subscriber count. The new per-post field captures a distinct, point-in-time value — the two are complementary, not redundant.
-- **Scope is one field only.** This exception covers follower count and nothing else. Per-post snapshots of any other author profile field — `handle`, `displayName`, `profileLocation`, `verifiedStatus` — remain out of scope. ADR-0004's normalized approach is maintained in full for all other Author fields. Each future connector that would argue for a per-post snapshot of a different author field must make that case under a new ADR or amendment — this ADR does not open a general "author fields per post" exception.
-- **Connectors where the field is not meaningful leave it `NULL`.** This follows the same discipline ADR-0024's and ADR-0026's decisions already establish for `Author.followerCount` itself: Newswire (issuer-as-Author, organizational identity) and GNews (publication-as-Author) both leave `Author.followerCount` unpopulated, for the same reason — it is not a meaningful attribute for an organization or publication. The point-in-time per-post field inherits the same logic: if the connector's own API does not return a meaningful follower count alongside the post at ingest, the field is `NULL`. ADR-0042's Wikipedia connector (article-as-Author, also organizational in nature) would similarly leave it `NULL`.
-
-**Implementation defaults (adjustable via Amendment Log; does not require superseding this ADR):**
-
-- **Exact column name on `SocialPost`:** `author_follower_count_at_publish` (snake_case, consistent with the rest of this project's Postgres naming conventions). This is an implementation default — renamed via an Amendment Log entry, not a new ADR, if a better name is established at implementation time.
-- **Type:** `INTEGER`, `NULL`-able. Matches the type of `Author.follower_count` in the existing migration (`migrations/0004_create_authors.sql`), keeping the two values directly comparable in queries. A future Amendment Log entry may revise this to `BIGINT` if any supported platform returns follower counts that overflow `INTEGER` — flagged as a consideration for Reddit's connector implementation, since subreddit subscriber counts can exceed 40 million.
-- **Connector-level `canProvideFollowerCountAtPublish` flag:** connectors that supply this value at ingest time signal it via a capability declaration, analogous to ADR-0021's `supportedQueryFeatures` matrix. The exact shape of this declaration (a boolean field on the connector's capability manifest, or a naming convention in `normalize()`'s returned payload) is an implementation-time task, not fixed by this ADR.
-- **No API surface change is mandated by this ADR.** Whether `GET /posts` (cursor-paginated per ADR-0011) exposes `authorFollowerCountAtPublish` in its response shape, and whether `GET /topics/:topic/authors` (ADR-0007's expert-finder endpoint) ever accepts it as a `sortBy` parameter, are implementation-time and future-ADR decisions — see Open Questions. This ADR only adds the field to the storage schema; it does not mandate an API change.
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| Connector `normalize()` function | Inbound (to ingestion pipeline) | Supplies the point-in-time follower count when available | In-process TypeScript |
+| Ingestion pipeline (`SocialPost` creation) | Internal | Writes the field once, at row creation | In-process TypeScript |
+| `Author` upsert logic (ADR-0004, unchanged) | Internal | Continues to maintain `Author.followerCount` independently | In-process TypeScript |
+| Postgres (`SocialPost` schema) | Internal | Stores the nullable `INTEGER` column | SQL / migration |
+| Reach/influencer analytics queries (downstream, future) | Outbound (to analysts) | Reads the point-in-time value for historical analysis | SQL query |
+| `GET /topics/:topic/authors` (ADR-0007, unmodified by this ADR) | N/A | Not extended by this ADR; a future ADR/amendment would decide whether to add a `sortBy` option using this field | HTTP/JSON |
 
 ---
 
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | `author_follower_count_at_publish` is a point-in-time, immutable fact on each post row. | Data Integrity | Must | Contract tests prove the value never changes after initial insert. |
-| NFR-002 | The storage cost of the additional column must not materially change ingestion or archival economics. | Performance / Scalability | Should | One nullable 32-bit integer per row; no change to `rawPayload` retention or archival behavior. |
-| NFR-003 | Follower count data is treated as public author metadata and remains tenant-scoped under RLS. | Security / Compliance | Must | Existing tenant RLS on `SocialPost` and `Author` is unchanged and contract-tested. |
-| NFR-004 | The column type must support anticipated v1 platform follower counts without overflow. | Maintainability | Should | `INTEGER` is sufficient for all v1 connectors; `BIGINT` upgrade path is documented for future platforms. |
+
+- **Performance:** One nullable 32-bit integer per row — negligible storage/query overhead; no change to `rawPayload` retention or archival economics (ADR-0018 unaffected).
+- **Security / access control:** Follower count is treated as public author metadata; the field remains tenant-scoped under the existing `SocialPost`/`Author` RLS, unchanged by this ADR.
+- **Scalability:** `INTEGER` is sufficient for all v1-contemplated platforms; a documented `BIGINT` upgrade path exists if a future platform's follower counts approach overflow.
+- **Reliability / availability:** Immutability after initial write makes the field simple to reason about in concurrent/historical read scenarios — it cannot change under read.
+- **Audit and logging:** No new audit mechanism introduced; the field's own immutability is itself the integrity guarantee.
+- **Accessibility:** N/A.
+- **Localization / internationalization:** N/A.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- Closes the named trade-off in ADR-0004 for the class of connectors — individual social-platform accounts with follower counts that vary over time — where the gap has real analytical consequences: reach analysis, influencer classification, and historical time-series queries now have access to the value that was true at publication time, not just at query time.
-- The per-post value is immutable after ingest, making it straightforward to reason about in historical queries without worrying about it changing under read. Unlike `Author.followerCount`, which is expected to drift as the upsert pattern runs over time, `author_follower_count_at_publish` on any given row is a stable, append-only fact.
-- Connectors that do not provide this value (Newswire, GNews, Wikipedia) incur no schema change burden beyond a `NULL`-able column they never populate — the exception is additive, not restructuring.
-- The two-field discipline — `Author.followerCount` (current, mutable, upserted) vs. `SocialPost.author_follower_count_at_publish` (point-in-time, immutable) — gives future consumers a clear, explicit semantic distinction between "what the author's reach is today" and "what it was when this post was published," rather than conflating the two.
-- Makes the `AuthorTopicSignal` / expert-finder discussion (ADR-0007's named "Open Question" on composite ranking) more concretely answerable when that decision eventually comes: the raw signal now exists in the schema rather than needing to be reconstructed retroactively.
 
-**Negative**
-- **Partially reintroduces per-post author data** — the exact trade-off ADR-0004 argued against — scoped to one field. This is a deliberate, accepted reversal on exactly one dimension. It adds per-row storage that ADR-0004's model was designed to avoid. At v1's anticipated data volumes this is not a concern, but it is a real, permanent schema addition.
-- **Adds a `NULL` interpretation question** that did not exist before: `NULL` could mean "this connector does not report follower counts at ingest" (Newswire, GNews, Wikipedia), "this connector supports it but the platform did not return a value for this specific post" (platform API returned the post without an author-stats payload), or "this post was ingested before this column existed" (historical rows). These three cases are semantically distinct; a future consumer that depends on this field must be aware of which case it is in. The exact `NULL` semantics are left as an Open Question and should be documented in the Story that actually adds this column.
-- **Does not retroactively populate existing rows.** Any `SocialPost` rows already written before this column is added will have `NULL` for `author_follower_count_at_publish`, even for connectors that subsequently provide the value. This is not a defect — it is correct behavior for a point-in-time snapshot — but it means any analysis relying on this field will have a "before/after" gap at the migration date.
-- **The expert-finder question is deferred, not closed.** ADR-0007's `sortBy=activeMonths|mentionCount` design was accepted knowing it doesn't incorporate follower count into reach-weighted expert ranking. This ADR enables that ranking to be implemented later, but does not decide it. If `sortBy=followerCountAtPublish` is never added to the expert-finder endpoint, this field's analytical value is limited to raw query access, not a first-class API sort signal — a real limitation worth naming rather than assuming it gets added automatically.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Connector declares the capability but the platform doesn't return a value for a specific post | N/A (internal) | Field left `NULL` for that row, not defaulted to zero |
+| Connector doesn't declare the capability at all | N/A | Field is always `NULL` for that connector's posts; zero code change required |
+| Attempted write to the field on an existing row (should never happen) | N/A (implementation defect if it occurs) | Violates BR1/BR3; must be treated as a bug, not a supported code path |
+| Query conflates the three `NULL` cases | N/A (analysis-quality issue, not a system error) | Consumers must consult the documented semantics (§5.6) before interpreting `NULL` |
+| A future platform's follower count exceeds `INTEGER` range | N/A | Requires a schema migration to `BIGINT`; not automatically handled by this design |
 
 ---
 
 ## 12. Assumptions and Dependencies
+
 - Individual-account social connectors (Reddit, X, LinkedIn, etc.) return the author follower count alongside or near the post payload at fetch time.
 - Public author metadata such as follower count is permitted to be stored under relevant platform API terms.
 - The additional nullable integer per post is acceptable at v1 data volumes.
-- This field is primarily for analytical and operational use, not for real-time scoring until a future ADR or amendment explicitly decides that.
+- This field is primarily for analytical and operational use, not real-time scoring, until a future ADR or amendment explicitly decides otherwise.
+- Depends on: ADR-0004 (normalized `Author` entity, the baseline this ADR scopedly excepts), ADR-0021 (capability-declaration pattern this field's connector flag is modeled on), ADR-0007 (expert-finder endpoint, unmodified, but named as a future consumer candidate), ADR-0018 (retention/archival, unaffected).
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | The new column adds permanent per-row storage, partially reintroducing per-post author data. | High | Low | Scope is limited to one nullable integer; no other author fields are embedded; archival and `rawPayload` retention remain unchanged. | Engineering |
-| R-002 | `NULL` semantics are ambiguous (connector not applicable vs. platform omitted vs. pre-migration). | High | Medium | Document the three cases in the migration and `SocialPost` model when Story 3.9 is implemented; ensure consumers understand them. | Engineering / Product |
-| R-003 | Without a downstream API sort or `AuthorTopicSignal` use, the field's analytical value may be limited to raw queries. | Medium | Medium | Track as an open question for a future ADR/amendment on `GET /topics/:topic/authors` `sortBy` options. | Product |
-| R-004 | `INTEGER` may overflow if a future platform has >2.1 billion followers. | Low | High | Default to `INTEGER` for v1; note a clear path to `BIGINT` migration if such a connector is added. | Engineering |
-| R-005 | Storage and query patterns may be misunderstood as a general license to embed author fields per post. | Medium | Medium | Governance: any additional per-post author field requires a new ADR or supersession; this ADR explicitly scopes to one field. | Product / Engineering |
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should `BIGINT` replace `INTEGER` if a future connector's platform can exceed 2.1 billion followers? | Engineering | Named, not decided; a future schema migration if/when it becomes real |
+| Q2 | Should `GET /topics/:topic/authors` ever accept `sortBy=followerCountAtPublish` or a derived aggregate for reach-weighted expert ranking? | Product / Architecture | The most consequential downstream open question; deferred to a future ADR or Amendment Log decision, not resolved here |
+| Q3 | Should historical backfill of this field from platform historical APIs ever be attempted for pre-existing rows? | Product / Engineering | Explicitly named as open, not assumed "no" — depends on platform API terms, cost, and analytical value |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0049-point-in-time-author-follower-count-on-social-post.md`
-- BRD: `../Business-Requirements/BRD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md`
-- Feature design: `docs/product-research/feature-designs/05-influencer-discovery.md``
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+### Glossary
+
+See BRD-0049 Section 15 for the full glossary (`Author`, `SocialPost`, `author_follower_count_at_publish`, `Author.followerCount`, Point-in-time, Connector, `normalize()`, `canProvideFollowerCountAtPublish`, `AuthorTopicSignal`).
+
+### Reference Links
+
+- **ADR-0049:** `docs/adr/0049-point-in-time-author-follower-count-on-social-post.md`
+- **BRD-0049:** `docs/project docs/Business-Requirements/BRD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md`
+- **Related ADRs:** ADR-0004 (normalized Author model, the baseline exception target), ADR-0021 (capability-declaration pattern), ADR-0007 (expert-finder endpoint, unmodified but a future consumer candidate), ADR-0018 (retention/archival, unaffected)
+- **Story:** Story 3.9 (`docs/user-stories/epic-3-data-model-storage-and-archival.md`), built 2026-08-12 (`social-listening-core@34e9dfb`)
+- **Related feature design:** `docs/product-research/feature-designs/05-influencer-discovery.md` — future downstream use case that may consume this field
+
+### Missing / Not Applicable Sources
+
+- No dedicated `docs/product-research/reports/<feature>-deep-research.md` file was located for this specific data-model exception; this FDD, like BRD-0049, was synthesized from ADR-0049, Story 3.9, and the influencer-discovery feature design.
+
+### Revision History
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | AI Delivery Agent | Regenerated as a genuine functional-design synthesis from ADR-0049 and BRD-0049, replacing a prior defective draft that duplicated the BRD's flat requirements table. |

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Per-Connector Query Translation and Validation – Business Requirements Document |
+| Document Title | FDD-0110 Per-Connector Query Translation and Validation — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

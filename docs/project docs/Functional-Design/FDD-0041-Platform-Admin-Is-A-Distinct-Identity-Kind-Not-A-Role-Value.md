@@ -1,194 +1,255 @@
-# BRD-0041: Platform Admin is a Distinct Identity Kind, Not a Role Value
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | BRD-0041: Platform Admin is a Distinct Identity Kind, Not a Role Value |
+| Document Title | FDD-0041 Platform Admin Is a Distinct Identity Kind, Not a Role Value — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md, ../Business-Requirements/BRD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md and the business requirements in BRD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md into functional design for **Platform Admin Is A Distinct Identity Kind Not A Role Value**.
-**What problem are we solving?** Platform Admin and Tenant-Admin have been treated as two values of the same role field in mental models and in code, even though the project's data model already makes them structurally different kinds of identity. This confusion directly caused a routing bug in which a Platform Admin session was silently handled as a tenant identity because the consuming code assumed every resolved identity had a `.role` field.
-
-**Who is affected?** Any current or future contributor who writes or reviews code that consumes resolved identities in `social-listening-core` or `social-listening-admin`, plus the project's Platform-Admin, Tenant-Admin, and Tenant-User personas whose access boundaries depend on the distinction being preserved.
-
-**What is the proposed solution at a glance?** Elevate the existing practice of structural distinctness to a formal, project-wide, cross-layer business rule: Platform Admin is a distinct *kind* of identity, never a value inside the tenant-user role enumeration; every consumer of a resolved identity must first narrow on the identity's `type` discriminant and handle both variants exhaustively.
-
-**What business value do we expect?** A citable rule that prevents the same category error from recurring, protects the platform/tenant data boundary, and eliminates the need for future authors to reconstruct the distinction from four separately-scoped ADRs each time they touch identity-handling code.
+| Author(s) | AI Delivery Agent (FDD synthesis pass) |
+| Reviewer(s) | Menno (Sponsor / Technical Lead) |
+| Status | Approved (documents an already-Accepted, no-story ADR) |
+| Related Documents | ADR-0041, BRD-0041, ADR-0030, ADR-0032, ADR-0035, ADR-0036, Feature Design 12 (Multi-user Workspaces and RBAC) |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- Formalizing Platform Admin as a distinct identity *kind*, separate from the tenant-user role field.
-- Requiring type-narrowed, exhaustive handling of resolved identities in all code, present and future, in either repository.
-- Annotating ADR-0030, ADR-0032, ADR-0035, and ADR-0036 with a dated "Note on relation to ADR-0041" confirming they already satisfy this rule.
-- Naming and tracking two small follow-up actions: removal of the unused `AdminRole` flat-enum type and a decision on mechanical enforcement.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- Changing the database schema, Postgres role grants, or `ResolvedIdentity` shape (already implemented).
-- Removing the unused `AdminRole` type within this BRD or ADR.
-- Implementing a lint rule, type-level exhaustiveness check, or other mechanical enforcement.
-- Creating a user story; ADR-0041 is a no-story, category-1 ADR.
+### 2.1 Purpose
+
+This document translates ADR-0041's architecture decision and BRD-0041's business requirements into the concrete functional rule that governs any code, in either repository, that consumes a resolved identity. ADR-0041 is **Accepted** (2026-08-06) and is a **no-story, category-1 ADR** — its Decision is already fully satisfied by shipped code (`ResolvedIdentity` in `social-listening-core`, and the type-narrowed `isResolvedIdentity()`/`isShellAllowed()` handling in `social-listening-admin`). This FDD is therefore not a design for new build work; it is the functional specification of a standing rule that every future identity-consuming change must be checked against, and the record of the two small named follow-ups (removing the dead `AdminRole` type; deciding on mechanical enforcement) that remain open.
+
+### 2.2 Scope
+
+- **In scope:** the rule that Platform Admin and Tenant-Admin/Tenant-User are structurally distinct identity *kinds*; the type-narrowing and exhaustive-handling behavior required of any code that consumes a `ResolvedIdentity`; the prohibition on re-flattening identity into a single-shape role enum; the annotation of ADR-0030/0032/0035/0036 with "Note on relation to ADR-0041"; the two named follow-ups (dead-code removal, mechanical enforcement) as tracked, not built, items.
+- **Out of scope:** any change to the `ResolvedIdentity` discriminated union's shape, the Postgres schema, role grants, or route-tree structure (all already decided by ADR-0030/0032/0035/0036 and not reopened here); implementing a lint rule or type-level exhaustiveness check (named as an open question only); removing `social-listening-admin/src/lib/role-routing.ts`'s unused `AdminRole` type (named as a follow-up, not performed by this ADR/BRD/FDD).
+
+### 2.3 Target Audience
+
+Any engineer or AI agent (human or automated Delivery Agent) writing or reviewing identity-consuming code in `social-listening-core` or `social-listening-admin`; QA/reviewers checking new routes, endpoints, or UI shells against the platform/tenant boundary; the Documentation Steward auditing cross-ADR consistency.
+
+---
 
 ## 3. Context and Background
-**The concrete failure this ADR responds to, already found and fixed:** `docs/implementation-log.md`'s 2026-08-06 entry (`social-listening-admin@1f8960e`) records that `getRoleShell()` in `social-listening-admin/src/lib/role-routing.ts` switched on a resolved identity's `.role` field, but `social-listening-core/src/identity/identityResolution.ts`'s real `ResolvedIdentity` type is a discriminated union:
 
-```ts
-export type ResolvedIdentity =
-  | { type: 'tenant_user'; tenantId: string; userId: string; role: string }
-  | { type: 'platform_admin'; adminId: string };
-```
+`social-listening-admin`'s `getRoleShell()` once branched on a resolved identity's `.role` field without first checking the identity's `type` discriminant. Because a real `platform_admin`-kind identity carries no `role` field at all, this silently routed Platform Admin sessions into the tenant-facing UI shell rather than the Platform-Admin-facing one — a real breach of the platform/tenant boundary, not a cosmetic bug. The bug was found and fixed the same day (`social-listening-admin@1f8960e`), but the fix closed only the one call site. Four prior Accepted ADRs (ADR-0030: dedicated `platform_admin_role` Postgres role; ADR-0032 §3: separate `platform_admins` table with no `tenant_id`; ADR-0035: route-tree split on identity type; ADR-0036 §4: UI role-gating as a UX convenience only, not the real security boundary) each already treat Platform Admin as structurally distinct — but only locally, scoped to their own layer. None previously stated, as a general cross-layer principle, that every consumer of a resolved identity — in either repository, at any layer — must preserve that distinctness by construction. ADR-0041 closes that design-level gap at Menno's direct request, following the healing pass that fixed the concrete instance.
 
-A real `platform_admin` identity carries **no `role` field at all**. The original UI code blind-cast the session's untyped identity value to `{role?: string|null}` and branched on it directly — a real Platform Admin's `role` was therefore always `undefined`, and the code silently routed them into the tenant-facing shell rather than the Platform-Admin-facing one. This was not a cosmetic bug: it is exactly the class of confusion Menno's own request names — a Platform Admin session rendering as, and being treated as, an ordinary tenant identity. The fix is already built, logged, and verified (`social-listening-admin/.claude/skills/role-routing-shell/SKILL.md`'s "Load-bearing constraints"; `social-listening-admin/src/lib/role-routing.ts`'s `isResolvedIdentity()`/`isShellAllowed()`), and is not redone here — this ADR is about closing the *design-level* gap that let it happen at all, per Menno's own request, not about re-fixing already-fixed code.
-
-**What this project has already decided, and where it already gets this right:**
-
-- **ADR-0030** (Accepted) decided Platform Admin needs a structurally separate database mechanism from Tenant-Admin — a dedicated `platform_admin_role` Postgres role, granted `BYPASSRLS`, locked to the `tenants` table and its own identity table only, "never granted, and must never be used to query... any... tenant-content table" (§2). Tenant-Admin, by contrast, "requires no database-level RLS exception at all" — an ordinary tenant-scoped session with an application-layer role check (§1). Two tiers, two different mechanisms, stated explicitly.
-- **ADR-0032 §3** (Accepted) decided Platform Admin "is not a row in this table" (`users`) — modeled in its own, separate `platform_admins` table, with "no `tenant_id` column and no `tenant_isolation` policy," specifically because "forcing Platform Admin into a nullable-`tenant_id` row on `users` would force every RLS predicate... to special-case `tenant_id IS NULL` — for a role that conceptually does not belong to any tenant at all."
-- **ADR-0035** (Accepted) decided the admin UI is one role-gated app, gating on the fact that "a Platform Admin session structurally has no `tenant_id` context at all (it is not a `users` row, per ADR-0032 §3), which naturally separates what it can render from what a Tenant-Admin/Tenant User session can."
-- **ADR-0036 §4** (Accepted) decided UI role-gating is a layered UX convenience, never the real security boundary — the real boundary stays in `social-listening-core`'s own RLS and application-layer checks.
-- **Story 5.9's shipped code** (`resolveIdentity()`, `social-listening-core/src/identity/identityResolution.ts`) already implements exactly this distinctness as a TypeScript discriminated union, not a flat role field — this predates the bug and was never itself wrong.
-
-**The real gap, stated precisely:** every one of the four ADRs above already treats Platform Admin as structurally distinct — but each states that distinctness *locally*, scoped to its own layer (ADR-0030/0032: the Postgres schema and role grants; ADR-0035/0036: the route-tree split). **None of them states, as a general, project-wide, cross-layer principle, that this distinctness is a property of the identity's own *type* that every consumer — in either repository, at any layer — must preserve by construction.** Nothing previously written down told a future implementer (human or AI) that a resolved identity is a discriminated union that must be narrowed on its `type` discriminant before any type-specific field is read, or that assuming a bare `.role` field exists on "whatever the caller's identity turns out to be" is exactly the kind of assumption this project's own data model forbids. The bug is direct proof this gap was real, not hypothetical: it happened in the one repository (`social-listening-admin`) whose story (6.2) cites ADR-0035 and ADR-0036 §4 as its governing ADRs — neither of which said anything about how identity-consuming *code* must be shaped, only about which routes render for which identity.
-
-**A second, live, present-tense piece of evidence for the same gap, found while drafting this ADR, not fixed here:** `social-listening-admin/src/lib/role-routing.ts` line 1 still defines and exports `export type AdminRole = 'tenant_admin' | 'tenant_user' | 'platform_admin';` — a flat, three-value role enum that models Platform Admin as if it were a value alongside the two tenant roles, the exact shape this ADR argues against. Checked directly (`grep -r AdminRole social-listening-admin`): this type is referenced nowhere else in the repository, in source or contracts — it is dead code, but it is dead code that re-encodes the healed bug's own wrong mental model, sitting in the very file whose `SKILL.md` now warns against that model. It is named here as a concrete illustration that the gap this ADR closes is not abstract, and as a named follow-up for whoever next touches this file (the AI Delivery Agent or Menno) to remove — **not fixed by this ADR**, which is documentation-only per its own drafting persona's scope boundary.
-**What problem are we solving?** Platform Admin and Tenant-Admin have been treated as two values of the same role field in mental models and in code, even though the project's data model already makes them structurally different kinds of identity. This confusion directly caused a routing bug in which a Platform Admin session was silently handled as a tenant identity because the consuming code assumed every resolved identity had a `.role` field.
-
-**Who is affected?** Any current or future contributor who writes or reviews code that consumes resolved identities in `social-listening-core` or `social-listening-admin`, plus the project's Platform-Admin, Tenant-Admin, and Tenant-User personas whose access boundaries depend on the distinction being preserved.
-
-**What is the proposed solution at a glance?** Elevate the existing practice of structural distinctness to a formal, project-wide, cross-layer business rule: Platform Admin is a distinct *kind* of identity, never a value inside the tenant-user role enumeration; every consumer of a resolved identity must first narrow on the identity's `type` discriminant and handle both variants exhaustively.
-
-**What business value do we expect?** A citable rule that prevents the same category error from recurring, protects the platform/tenant data boundary, and eliminates the need for future authors to reconstruct the distinction from four separately-scoped ADRs each time they touch identity-handling code.
+A live, present-tense counter-example exists at the time of ADR-0041's acceptance: `social-listening-admin/src/lib/role-routing.ts` still defines an unused `AdminRole = 'tenant_admin' | 'tenant_user' | 'platform_admin'` flat-role type — dead code, but code that re-encodes the exact wrong mental model this ADR argues against.
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Close the design-level gap that allowed a Platform Admin to be treated as a tenant identity | No new identity-consuming code defaults or optionally-chains a `tenant_user`-only field without first narrowing on `type` |
-| 2 | Make the Platform Admin / Tenant-Admin distinction a citable, project-wide business rule | All future identity-handling changes can be reviewed against ADR-0041 and this BRD |
-| 3 | Preserve the platform/tenant access boundary at every layer | Platform Admin sessions never render or authorize as tenant sessions, and vice versa |
-| 4 | Keep governance cost low by documenting the rule without changing accepted prior ADRs | ADR-0030, ADR-0032, ADR-0035, and ADR-0036 each receive a "Note on relation to ADR-0041" and remain otherwise unchanged |
+| G1 | State, as a durable project-wide rule, that Platform Admin is a distinct identity kind, never a role value | Rule is written once, in ADR-0041/BRD-0041, and cited rather than re-derived by future identity-handling changes |
+| G2 | Ensure every future identity-consuming code path narrows on `type` before reading a type-specific field | No new code reads `role`, `tenantId`, or `userId` off an unnarrowed identity value |
+| G3 | Eliminate silent, privilege-assuming fallthrough in identity branching | Every branch on identity kind has an explicit `platform_admin` case and an explicit `tenant_user` case; no default/else treats an unrecognized identity as the lower-privilege tenant case |
+| G4 | Prevent re-introduction of a flattened, single-shape identity type | No new flat role enum spanning both identity kinds is introduced anywhere in either repository |
+| G5 | Preserve governance hygiene without editing Accepted ADR text | ADR-0030, ADR-0032, ADR-0035, and ADR-0036 each carry a dated "Note on relation to ADR-0041," with their own Decision/Consequences text unchanged |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- States, for the first time as a general rule rather than four separately-scoped local facts, the exact principle whose absence let the healed bug happen — closes the gap at the design level Menno asked for, not just at the one call site the healing pass already fixed.
-- Gives whoever next writes identity-consuming code in either repository (the AI Delivery Agent, Menno, or a future contributor) a citable, explicit rule to check new code against, rather than requiring each author to re-derive "Platform Admin isn't a role value" independently from four separately-scoped ADRs each time.
-- Costs nothing to accept — restates and generalizes decisions already Accepted (ADR-0030, ADR-0032, ADR-0035, ADR-0036) and a shipped type (`ResolvedIdentity`), rather than introducing new mechanism, schema, or endpoint.
-
-**Negative**
-- **Names, but does not itself close, a real residual risk:** this Decision is a documentation-level rule, not an enforced one. Nothing currently in either repository's CI, lint configuration, or `enforce-contract-first.cjs` hook would catch a future violation mechanically — the healed bug itself passed whatever review existed until the Ideal Manager's own Decision Evaluator caught it (`docs/implementation-log.md`'s own healing-pass entry). Until a mechanical check exists (Open Questions, below), this ADR's Decision §2 depends on the same human/AI-review discipline that already once let the violation through once.
-- `social-listening-admin/src/lib/role-routing.ts`'s own unused `AdminRole` type (Context, above) is a live, present-tense counter-example to this Decision that this ADR names but does not fix — a real, if minor, gap between this ADR's Decision and the current state of the codebase at the moment of acceptance.
-- Adds a fourth and fifth "Note on relation" annotation to two already-Accepted ADRs each carrying several prior amendments (ADR-0030, ADR-0032) plus two more (ADR-0035, ADR-0036) — a small, cumulative documentation-maintenance cost this project's own governance convention already accepts as the price of not editing Accepted Decision text in place.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | Platform Admin must be modeled and treated as a distinct identity *kind*, never as a value within the tenant-user role field | Must | Prose and type definitions state Platform Admin and Tenant-Admin as two different kinds; no new code treats `platform_admin` as a role value | Product Owner |
-| BR-002 | All code that consumes a resolved identity must narrow on the identity's `type` discriminant before reading any type-specific field | Must | Review of new identity-consuming code shows `type` is checked before `role`, `tenantId`, or `userId` is accessed | Technical Lead |
-| BR-003 | Identity branches must be exhaustive, with explicit cases for `platform_admin` and `tenant_user` and no silent, privilege-assuming fallthrough | Must | No default/else branch treats an un-narrowed or unrecognized identity as a tenant user; where the language supports it, an exhaustiveness check is recommended | Technical Lead |
-| BR-004 | Identity types must not be re-flattened into a single shape for convenience (e.g., one flat role enum containing `platform_admin`) | Must | No new flat role enum is introduced; existing unused `AdminRole` type is flagged for removal | Technical Lead |
-| BR-005 | The four related ADRs must carry a dated note confirming their relationship to and satisfaction of ADR-0041 | Must | ADR-0030, ADR-0032, ADR-0035, and ADR-0036 each contain a "Note on relation to ADR-0041" | Product Owner |
 
-### 5.1 Architecture Decision
-See ADR Decision.
+### 5.1 Feature / Capability: Identity Kind Discrimination Rule
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Menno | Sponsor, Product Owner, Technical Lead | High | A single, durable rule that prevents the Platform Admin / Tenant-Admin confusion from recurring |
-| Platform-Admin (persona) | Operates the platform without accessing tenant data | High | Clear assurance that platform sessions cannot be mistaken for tenant sessions |
-| Tenant-Admin (persona) | Manages a single tenant's users, connectors, and settings | Medium | Confidence that the platform operator cannot be accidentally treated as a tenant user or admin |
-| Tenant-User (persona) | Works within one tenant's scope | Low | Uninterrupted access, with no leaked platform-level privileges |
-| AI Delivery Agent / future contributors | Writes and reviews identity-handling code | High | A citable, explicit standard to check new code against |
+- **Description:** Establishes that a resolved identity's `type` field (`'tenant_user'` or `'platform_admin'`) is the sole source of truth for what kind of caller is present. `role` is meaningful only on a `tenant_user`-kind identity; asking "what is a Platform Admin's role" is a category error, not an edge case to be handled by defaulting.
+- **Triggers:** Any point in either repository where a resolved identity value (produced by `resolveIdentity()` or any future equivalent) is consumed — an HTTP handler, a UI route guard, a shell-selection function, a permission check.
+- **Inputs:** A `ResolvedIdentity` value: either `{ type: 'tenant_user'; tenantId; userId; role }` or `{ type: 'platform_admin'; adminId }`.
+- **Processing:** The consuming code must inspect `type` first. Only after confirming `type === 'tenant_user'` may `role`, `tenantId`, or `userId` be read. No code path may read a `tenant_user`-only field from a value whose `type` has not been checked, whether by direct access, optional chaining, or defaulting to `undefined`/a fallback value.
+- **Outputs:** A correctly-typed, correctly-scoped decision (route rendered, query authorized, permission granted/denied) that matches the caller's actual identity kind.
+- **Error handling:** An identity value whose `type` is neither recognized variant must be treated as unauthenticated/denied, never coerced into the lower-privilege `tenant_user` case by omission.
+- **Edge cases:** A `platform_admin` identity reaching code written only with `tenant_user` assumptions in mind (the exact shape of the healed bug) — the rule requires this to fail closed (denied/misrouted-to-admin-shell-only) rather than silently degrade to tenant-scoped behavior.
+
+### 5.2 Feature / Capability: Exhaustive, Non-Fallthrough Branching
+
+- **Description:** Requires that any code branching on identity kind handle both variants explicitly, with no silent default/else branch that treats an unrecognized or unnarrowed identity as the tenant case.
+- **Triggers:** Writing or modifying any conditional, switch, or route-guard logic that behaves differently for `platform_admin` vs. `tenant_user`.
+- **Inputs:** The identity's `type` discriminant.
+- **Processing:** Each branch must have an explicit case for `'platform_admin'` and an explicit case for `'tenant_user'`. Where the implementation language supports it (TypeScript, in both repositories today), an exhaustiveness check (e.g., a `never`-typed default branch that fails to compile if a new variant is added and unhandled) is the recommended, though not mandated, mechanism.
+- **Outputs:** Deterministic, variant-specific behavior for both identity kinds; a compile-time or review-time signal if a new identity variant is ever added without updating all consumers.
+- **Error handling:** A branch reached via an untyped or defaulted value must not silently execute the `tenant_user` path; it must be treated as an error/deny condition.
+- **Edge cases:** Future addition of a third identity kind (not currently planned) would require every existing exhaustive branch to be revisited — this is the intended behavior of the exhaustiveness discipline, not a defect.
+
+### 5.3 Feature / Capability: Prohibition on Re-Flattened Identity Types
+
+- **Description:** Forbids introducing or retaining any single-shape type that flattens both identity kinds into one role enum (e.g., `{ role: 'tenant_admin' | 'tenant_user' | 'platform_admin' }`), including in unused/dead code.
+- **Triggers:** Any new type definition intended to represent "the caller's role" or "the caller's identity" across both kinds.
+- **Inputs:** N/A (a static/type-design rule, not a runtime input).
+- **Processing:** Code review and any future mechanical check must reject a flattened role type as a violation of this Decision, regardless of whether it is currently referenced elsewhere in the codebase.
+- **Outputs:** No such flattened type exists in shipped, reachable code.
+- **Error handling:** N/A — this is a preventive rule enforced through review, not a runtime error path.
+- **Edge cases:** `social-listening-admin/src/lib/role-routing.ts`'s existing, unused `AdminRole` type is a named, live counter-example at the time of ADR-0041's acceptance — flagged for removal as a separate follow-up (Section 12/13), not fixed by this ADR/BRD/FDD.
+
+### 5.4 Feature / Capability: Cross-ADR Relation Annotation
+
+- **Description:** Records, on each of the four ADRs whose local decisions this rule generalizes, a dated note confirming what they already satisfy and that no change to their own Decision/Consequences text follows.
+- **Triggers:** ADR-0041's acceptance by Menno.
+- **Inputs:** ADR-0030, ADR-0032, ADR-0035, ADR-0036 (all Accepted).
+- **Processing:** Each of the four ADRs receives a dated "Note on relation to ADR-0041" appended after its own existing content — never an edit to its Decision or Consequences sections, per `docs/adr/README.md`'s own governance convention for annotating rather than editing Accepted ADRs.
+- **Outputs:** Four annotated ADR files, each now cross-referencing ADR-0041.
+- **Error handling:** N/A — a documentation bookkeeping step, not a runtime behavior.
+- **Edge cases:** None — this is a one-time governance action tied to ADR-0041's acceptance date.
 
 ---
 
-### 6.2 User Stories
-No related user stories found.
+## 6. User Interaction and Workflows
+
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| AI Delivery Agent / Engineer | Writes or modifies identity-consuming code in either repository |
+| Reviewer (human or Ideal Manager persona) | Checks new identity-handling code against this rule before merge |
+| Platform Admin (persona) | The identity kind whose distinctness this rule protects |
+| Tenant-Admin / Tenant-User (persona) | The other identity kind whose boundary this rule protects from platform-level leakage |
+| Documentation Steward | Verifies the four "Note on relation" annotations exist and remain consistent |
+
+### 6.2 User Stories / Use Cases
+
+No user story exists for ADR-0041 — it is a no-story, category-1 ADR per `docs/user-stories/README.md`'s own convention, already fully satisfied by shipped code (`ResolvedIdentity` in `social-listening-core`, Story 5.9; `isResolvedIdentity()`/`isShellAllowed()` in `social-listening-admin`, the 2026-08-06 healing pass under Story 6.2). Epic 7 (Platform Admin UI) restates this rule as a standing boundary note for every future story in that epic:
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| Epic 7 boundary note | Platform Admin UI story author | ...have every screen in Epic 7 inherit the platform/tenant boundary automatically | ...I don't have to re-argue it per story | No post content, post metadata, watchlist definitions, connector credentials, or per-tenant analytics ever appear on a Platform Admin screen, now or in any future Epic 7 story |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Workflow: writing or reviewing new identity-consuming code**
+
+1. A developer (human or AI agent) writes code that receives a `ResolvedIdentity` value — e.g., a new API handler, a new UI route guard, a new permission check.
+2. Before reading any field, the code checks `identity.type`.
+3. If `type === 'platform_admin'`: only `adminId` may be read; no tenant-scoped field access is permitted; the code must route to/authorize only platform-level behavior.
+4. If `type === 'tenant_user'`: `role`, `tenantId`, `userId` may be read; the code proceeds with tenant-scoped behavior, further gated by `role` where relevant.
+5. If `type` is neither recognized value (should not occur given the shipped type, but is a defensive requirement): the code denies access / fails closed, never falling through to the `tenant_user` path.
+6. At review time, the reviewer checks the diff against this rule: is `type` checked before any type-specific field is touched; are both branches explicit; is no new flattened role type introduced.
+7. If the review finds a violation, it is treated as a defect equivalent in class to the original healed bug — blocked before merge, not accepted as a known issue.
+
+**Workflow: ADR annotation (one-time, at ADR-0041 acceptance)**
+
+1. Menno accepts ADR-0041.
+2. ADR-0030, ADR-0032, ADR-0035, ADR-0036 each receive a dated "Note on relation to ADR-0041," appended without editing existing Decision/Consequences text.
+3. No story is opened; no code changes as a direct result of acceptance.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `ResolvedIdentity` (discriminated union) | The runtime representation of the caller's identity; `tenant_user` carries `role`, `tenantId`, `userId`; `platform_admin` carries `adminId` only | `social-listening-core/src/identity/identityResolution.ts` | Technical Lead | High — controls all access decisions |
-| `platform_admin_role` (Postgres role) | Dedicated database role with `BYPASSRLS`, locked to `tenants` and its own identity table only | ADR-0030 | Technical Lead | High — platform-level privilege |
-| `platform_admins` table | Separate table for Platform Admin identities, with no `tenant_id` column and no `tenant_isolation` policy | ADR-0032 | Technical Lead | High — platform identity data |
-| `users` table | Tenant-scoped user records carrying `role` (`tenant_admin` / `tenant_user`) | ADR-0032 | Technical Lead | High — tenant identity data |
-| `platform_admin_audit_log` | Audit trail for privileged Platform Admin actions | Feature Design 12 | Technical Lead | High — compliance and accountability |
+
+### 7.1 Data Inputs
+
+The `ResolvedIdentity` value produced by `resolveIdentity()` (`social-listening-core/src/identity/identityResolution.ts`), itself derived from an authenticated Entra External ID `Authorization: Bearer` token resolved against the `users` and `platform_admins` tables.
+
+### 7.2 Data Outputs
+
+No new stored data is produced by this rule. The output is a correctly-scoped runtime authorization/routing decision made by every consumer of `ResolvedIdentity`.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `ResolvedIdentity` (discriminated union, TypeScript type, not a table) | `type: 'tenant_user' \| 'platform_admin'`; `tenant_user` variant: `tenantId`, `userId`, `role`; `platform_admin` variant: `adminId` | Produced by `resolveIdentity()`; consumed by every route handler, middleware, and UI shell-selection function in both repositories |
+| `users` table (ADR-0032) | `tenant_id`, `user_id`, `role` (`'tenant_admin'` \| `'tenant_user'`) | RLS-scoped to one tenant; source of the `tenant_user` variant of `ResolvedIdentity` |
+| `platform_admins` table (ADR-0032 §3) | `admin_id`; explicitly no `tenant_id` column, no `tenant_isolation` policy | Source of the `platform_admin` variant of `ResolvedIdentity` |
+| `platform_admin_role` (Postgres role, ADR-0030) | Granted `BYPASSRLS`; locked to `tenants` table and `platform_admins`/identity table only | The database-layer mechanism that structurally separates Platform Admin data access, mirrored at the application layer by this ADR's type-discrimination rule |
+| `AdminRole` (unused type, `social-listening-admin/src/lib/role-routing.ts`) | `'tenant_admin' \| 'tenant_user' \| 'platform_admin'` (flat enum) | Named counter-example; not referenced anywhere else in the repository; flagged for removal, not part of the data model going forward |
+
+### 7.4 Validation Rules
+
+- A `ResolvedIdentity` value must always carry a `type` discriminant equal to exactly one of the two defined variants.
+- A `tenant_user`-only field (`role`, `tenantId`, `userId`) must never be read, defaulted, or optionally-chained against a value whose `type` has not first been confirmed to be `'tenant_user'`.
+- No new type definition anywhere in either repository may combine both identity kinds into a single flat shape.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | The `role` field (`'tenant_admin'` or `'tenant_user'`) is a property that exists only on a `tenant_user`-kind identity. |
-| BRU-002 | It is a category error to ask "what is a Platform Admin's role?" or to default a missing `role` to any tenant value. |
-| BRU-003 | Any code that reads a `tenant_user`-only field must first narrow the identity on its `type` discriminant. |
-| BRU-004 | Flat role enumerations that include `platform_admin` alongside tenant roles are not permitted, including in unused or dead code. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | The `role` field exists only on a `tenant_user`-kind identity; it is a category error to ask what a Platform Admin's role is | Any code reading `ResolvedIdentity` |
+| BR2 | Any code reading a `tenant_user`-only field must first narrow the identity on its `type` discriminant | All identity-consuming code, both repositories |
+| BR3 | Identity branches must be exhaustive; no default/else branch may treat an unrecognized or unnarrowed identity as the lower-privilege tenant case | All identity-branching logic |
+| BR4 | No flat role enumeration spanning both identity kinds is permitted, including in unused/dead code | All type definitions, both repositories |
+| BR5 | Accepted ADRs (ADR-0030/0032/0035/0036) are annotated with a relation note, never edited in place, when a later ADR generalizes their local decisions | ADR governance process |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0030 (Platform Admin database role and grants) | Internal / already Accepted | Product Owner | Already satisfied; receives relation note |
-| D-002 | ADR-0032 (separate `platform_admins` table) | Internal / already Accepted | Product Owner | Already satisfied; receives relation note |
-| D-003 | ADR-0035 (admin UI as one role-gated app) | Internal / already Accepted | Product Owner | Already satisfied; receives relation note |
-| D-004 | ADR-0036 (UI role-gating is a layered convenience, not the security boundary) | Internal / already Accepted | Product Owner | Already satisfied; receives relation note |
-| D-005 | Shipped `ResolvedIdentity` discriminated-union implementation in `social-listening-core` | Internal / already built | Technical Lead | Already in place |
-| D-006 | `social-listening-admin/src/lib/role-routing.ts` and its `SKILL.md` | Internal / already built | Technical Lead | Already in place; named for cleanup of unused `AdminRole` |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `social-listening-core` (`resolveIdentity()`) | Produces | Resolves an authenticated caller to a `ResolvedIdentity` discriminated union | In-process TypeScript function, consumed via middleware |
+| `social-listening-admin` (route-routing shell, `role-routing.ts`) | Consumes | Selects the UI shell (tenant vs. platform) based on `ResolvedIdentity.type` | In-process TypeScript |
+| Any future `social-listening-core` endpoint or `social-listening-admin` route | Consumes | Must apply this rule when authorizing or rendering based on identity | In-process TypeScript |
+| `docs/adr/README.md` governance convention | Governs | Defines how a generalizing ADR annotates rather than edits prior Accepted ADRs | Documentation process |
 
 ---
 
-- The `ResolvedIdentity` discriminated union in `social-listening-core` already correctly models the two identity kinds.
-- The four related ADRs (ADR-0030, ADR-0032, ADR-0035, ADR-0036) are Accepted and will not be edited in place.
-- Code review is the primary enforcement mechanism until a mechanical check is added.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | The identity-distinctness rule must be documented as a durable, citable project standard | Maintainability | Must | ADR-0041 and this BRD are the authoritative references; no contributor must re-derive the rule |
-| NFR-002 | The platform/tenant access boundary must be preserved at every layer | Security | Must | No resolved-identity consumer can access tenant-content tables or UI routes when it represents a Platform Admin, and vice versa |
+
+- **Performance:** No runtime cost beyond an existing discriminant check; no new I/O, query, or network call is introduced.
+- **Security / access control:** This is fundamentally a security rule — it exists specifically to prevent a Platform Admin session from being treated as, or granted the access of, a tenant identity, and vice versa. It reinforces, at the application-code layer, the boundary ADR-0030's `BYPASSRLS`-scoped Postgres role and ADR-0032's separate-table schema already enforce at the database layer.
+- **Scalability:** N/A — a code-shape rule, not a runtime-scaling concern.
+- **Reliability / availability:** Reduces the risk of a repeat of the healed routing bug recurring in a different component.
+- **Audit and logging:** Complements the existing `platform_admin_audit_log` (ADR-0030/0032) by ensuring the identity feeding into any audited action is correctly typed before the audit decision is made.
+- **Accessibility:** N/A.
+- **Localization / internationalization:** N/A.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- States, for the first time as a general rule rather than four separately-scoped local facts, the exact principle whose absence let the healed bug happen — closes the gap at the design level Menno asked for, not just at the one call site the healing pass already fixed.
-- Gives whoever next writes identity-consuming code in either repository (the AI Delivery Agent, Menno, or a future contributor) a citable, explicit rule to check new code against, rather than requiring each author to re-derive "Platform Admin isn't a role value" independently from four separately-scoped ADRs each time.
-- Costs nothing to accept — restates and generalizes decisions already Accepted (ADR-0030, ADR-0032, ADR-0035, ADR-0036) and a shipped type (`ResolvedIdentity`), rather than introducing new mechanism, schema, or endpoint.
 
-**Negative**
-- **Names, but does not itself close, a real residual risk:** this Decision is a documentation-level rule, not an enforced one. Nothing currently in either repository's CI, lint configuration, or `enforce-contract-first.cjs` hook would catch a future violation mechanically — the healed bug itself passed whatever review existed until the Ideal Manager's own Decision Evaluator caught it (`docs/implementation-log.md`'s own healing-pass entry). Until a mechanical check exists (Open Questions, below), this ADR's Decision §2 depends on the same human/AI-review discipline that already once let the violation through once.
-- `social-listening-admin/src/lib/role-routing.ts`'s own unused `AdminRole` type (Context, above) is a live, present-tense counter-example to this Decision that this ADR names but does not fix — a real, if minor, gap between this ADR's Decision and the current state of the codebase at the moment of acceptance.
-- Adds a fourth and fifth "Note on relation" annotation to two already-Accepted ADRs each carrying several prior amendments (ADR-0030, ADR-0032) plus two more (ADR-0035, ADR-0036) — a small, cumulative documentation-maintenance cost this project's own governance convention already accepts as the price of not editing Accepted Decision text in place.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| A `platform_admin` identity reaches code written assuming only `tenant_user` shape | (Should never surface to the user; caught at development/review time) | Code must fail closed / deny, never silently fall through as a tenant identity |
+| A resolved identity's `type` is unrecognized (defensive case, not expected given the shipped type) | Generic "not authorized" / sign-in required | Treated as unauthenticated/denied, never defaulted to the lower-privilege tenant case |
+| A new identity-consuming code path omits an explicit `platform_admin` case | N/A (build/review-time issue) | Should fail a TypeScript exhaustiveness check where implemented, or be caught in review |
+| A new flattened role type is introduced | N/A (review-time issue) | Rejected in code review per BR4; not a runtime error |
+
+---
 
 ## 12. Assumptions and Dependencies
-- The `ResolvedIdentity` discriminated union in `social-listening-core` already correctly models the two identity kinds.
-- The four related ADRs (ADR-0030, ADR-0032, ADR-0035, ADR-0036) are Accepted and will not be edited in place.
-- Code review is the primary enforcement mechanism until a mechanical check is added.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | The rule is documented but not mechanically enforced, so a future violation could pass review undetected | Medium | High | Plan a follow-up to evaluate and add a lint rule, type-level exhaustiveness check, or contract-test convention; until then, enforce through code review | Technical Lead |
-| R-002 | The unused `AdminRole` flat-enum type in `social-listening-admin/src/lib/role-routing.ts` remains as a live counter-example | Low | Medium | Create a separate code-cleanup item to remove the dead type; do not treat it as part of this ADR/BRD | AI Delivery Agent |
-| R-003 | A future contributor re-introduces the "Platform Admin is a role value" mental model in a new component | Medium | High | Reference ADR-0041 in component skill files, code comments, and PR templates; require identity review for any new route or API surface | Product Owner |
+- The `ResolvedIdentity` discriminated union in `social-listening-core` already correctly models the two identity kinds and is not being changed by this ADR/BRD/FDD.
+- ADR-0030, ADR-0032, ADR-0035, and ADR-0036 remain Accepted and are annotated, not edited, per governance convention.
+- Code review remains the primary enforcement mechanism until a mechanical check (lint rule, type-level exhaustiveness check, or contract-test convention) is designed and built as a separate, future, explicitly-scoped follow-up.
+- The unused `AdminRole` type in `social-listening-admin/src/lib/role-routing.ts` remains a known, tracked, but unresolved counter-example at the time of this FDD.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should a mechanical enforcement mechanism (lint rule, type-level exhaustiveness check, or contract-test convention) be built to catch a future violation automatically? | AI Delivery Agent / Menno | Not scheduled; a candidate future follow-up story |
+| Q2 | Should the unused `AdminRole` type in `social-listening-admin/src/lib/role-routing.ts` simply be removed? | Whoever next touches that file | Not scheduled; a small code-cleanup follow-up |
+| Q3 | Should this rule be stated directly as a code comment on `ResolvedIdentity`'s own definition, mirroring `role-routing.ts`'s informal comment? | Whoever next touches `identityResolution.ts` | Not scheduled; low-cost, optional addition |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md`
-- BRD: `../Business-Requirements/BRD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md`
-- Feature design: `docs/product-research/feature-designs/12-multi-user-workspaces-and-rbac.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: _No related user stories found._
+
+### Glossary
+
+See BRD-0041 Section 15 for the full glossary (Platform Admin, Tenant-Admin, Tenant User, ResolvedIdentity, Discriminated Union, RLS, BYPASSRLS, Role Enum).
+
+### Reference Links
+
+- **ADR-0041:** `docs/adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md`
+- **BRD-0041:** `docs/project docs/Business-Requirements/BRD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md`
+- **Feature Design 12:** `docs/product-research/feature-designs/12-multi-user-workspaces-and-rbac.md`
+- **Related ADRs:** ADR-0030 (Platform Admin Postgres role/grants), ADR-0032 §3 (separate `platform_admins` table), ADR-0035 (admin UI route-tree split), ADR-0036 §4 (UI role-gating as UX convenience, not the security boundary)
+- **Epic 7 boundary note:** `docs/user-stories/epic-7-platform-admin-ui.md`
+- **Implementation Log:** `docs/implementation-log.md`, 2026-08-06 healing-pass entry ("Story 6.2 AC2") describing the concrete bug and fix that motivated this ADR
+
+### Missing / Not Applicable Sources
+
+- No `docs/product-research/reports/<feature>-deep-research.md` deep-research brief was found for the identity/RBAC feature.
+- No user story exists for ADR-0041 itself (no-story ADR, category 1).
+
+### Revision History
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | AI Delivery Agent | Regenerated as a genuine functional-design synthesis from ADR-0041 and BRD-0041, replacing a prior defective draft that duplicated the BRD's flat requirements table. |

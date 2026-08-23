@@ -1,9 +1,9 @@
-# Business Requirements Document — Event Schema Versioning Policy
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — Event Schema Versioning Policy |
+| Document Title | FDD-0019 Event Schema Versioning Policy — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

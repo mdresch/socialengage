@@ -1,219 +1,283 @@
-# Business Requirements Document — Derived-Data Caching and Refresh Strategy
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — Derived-Data Caching and Refresh Strategy |
+| Document Title | FDD-0022 Derived-Data Caching and Refresh Strategy — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0022-derived-data-caching-and-refresh-strategy.md, ../Business-Requirements/BRD-0022-Derived-Data-Caching-And-Refresh-Strategy.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0022-derived-data-caching-and-refresh-strategy.md and the business requirements in BRD-0022-Derived-Data-Caching-And-Refresh-Strategy.md into functional design for **Derived Data Caching And Refresh Strategy**.
-SocialEngage produces two pieces of derived data whose freshness and performance characteristics have not yet been locked down: `ConnectorHealth`, which is recomputed from `IngestionRun` history every time it is read, and `AuthorTopicSignal`, a periodically-refreshed materialized view with no decided refresh cadence. Without an explicit caching and refresh strategy, frequent polling of connector status and repeated recomputation of author-topic signals waste database resources and create a risk that an over-eager optimization could reintroduce drift between displayed state and underlying facts.
-
-This BRD records the business need to serve these derived values in a fast, consistent, and operationally proportionate way. The solution is to cache `ConnectorHealth` behind a short, 60-second, in-process, read-through cache that is always reconstructable from `IngestionRun`, and to refresh `AuthorTopicSignal` once per hour using `pg_cron`. Both mechanisms preserve the single-source-of-truth principle: the cache is a time-bounded snapshot of a live derivation, not a separately writable record.
+| Author(s) | FDD Writer (Claude) |
+| Reviewer(s) | Menno |
+| Status | Approved (source ADR-0022 is Accepted; documents shipped design — Story 4.4) |
+| Related Documents | ADR-0022, BRD-0022, ADR-0007, ADR-0009, ADR-0020, ADR-0051, Story 4.4, Story 1.12 |
 
 ---
 
+## 2. Purpose and Scope
+
+### 2.1 Purpose
+
+This document translates ADR-0022 (Derived-data caching and refresh strategy) and BRD-0022 into the functional design for how two pieces of derived data — `ConnectorHealth` (a read-time derivation from `IngestionRun`) and `AuthorTopicSignal` (a periodically-refreshed materialized view) — are kept fast to read without becoming a second, independently-updatable copy of the facts they derive from. ADR-0022 is Accepted (2026-07-29); Story 4.4 shipped it (`social-listening-core@56385ba`, 2026-07-30). This FDD documents the shipped design, not a draft.
+
 ### 2.2 Scope
+
 **In scope:**
-- A 60-second time-to-live (TTL), read-through, in-process cache for `ConnectorHealth` derived from `IngestionRun`.
+- A 60-second TTL, in-process, read-through cache for `ConnectorHealth`, recomputed from `IngestionRun` on miss/expiry.
+- A safe, non-lossy `flush()` operation for that cache.
 - Hourly scheduled refresh of the `AuthorTopicSignal` materialized view via `pg_cron`.
-- Explicit, documented staleness tolerance for `ConnectorHealth` and `AuthorTopicSignal`.
-- A safe, non-lossy `flush()` operation for the `ConnectorHealth` cache.
-- Continuing to treat cached `ConnectorHealth` as a reconstructable snapshot, not an authoritative source of truth.
+- The explicit rule that connector activation state (`connector_activations`, ADR-0051) is read fresh on every call and is never folded into the `ConnectorHealth` cache.
+- Documented, accepted cross-instance display inconsistency for the in-process cache.
 
 **Out of scope:**
-- Event-driven or write-time cache invalidation for `ConnectorHealth`.
-- A shared/Redis-backed cache for `ConnectorHealth` as the default implementation.
-- Live recomputation of `AuthorTopicSignal` on every request.
-- Caching of connector *activation* state from `connector_activations`; activation is read fresh on every `GET /v1/connectors/:platformId` call.
-- Defining a new composite expertise score from `AuthorTopicSignal`.
+- Event-driven or write-time invalidation of the `ConnectorHealth` cache.
+- A shared/Redis-backed cache as the default for `ConnectorHealth`.
+- Live (uncached) recomputation of `AuthorTopicSignal` on every request.
+- Caching connector activation state.
+- Any new composite "expertise score" derived from `AuthorTopicSignal`.
+
+### 2.3 Target Audience
+
+Backend engineers (connector health, materialized-view refresh), DevOps/SRE (pg_cron, Redis-outage resilience), admin UI engineers consuming `GET /connectors` and `GET /v1/connectors/:platformId`, QA.
+
+---
 
 ## 3. Context and Background
-Two pieces of derived data have an unresolved freshness/performance question, for different reasons:
 
-- **`ConnectorHealth`** (ADR-0009) is deliberately *not* stored — it's computed from `IngestionRun` history at read time, specifically so there is exactly one source of truth with no drift risk. That ADR's own Negative consequences already note this means every health read does aggregation work, and flags caching as a likely future need "if `GET /connectors` is polled frequently."
-- **`AuthorTopicSignal`** (ADR-0007) is explicitly a periodically-refreshed materialized view, not a live query — but no refresh cadence was ever decided; ADR-0007 states outright that this "needs to be decided during implementation."
+Two unresolved freshness/performance questions existed for different reasons. `ConnectorHealth` (ADR-0009) is deliberately never stored — computed at read time from `IngestionRun` specifically so there is exactly one source of truth with no drift risk — but ADR-0009's own Negative consequences flagged that every health read repeats aggregation work and that caching would likely be needed "if `GET /connectors` is polled frequently." `AuthorTopicSignal` (ADR-0007) is explicitly a periodically-refreshed materialized view, not a live query, but ADR-0007 left the refresh cadence undecided ("needs to be decided during implementation"). ADR-0022 resolves both, under one hard constraint: any caching layer for `ConnectorHealth` must remain strictly reconstructable from `IngestionRun` alone — never a value updated by any path other than recomputation, or ADR-0009's "no possibility of drift" rationale would be quietly reintroduced as a bug.
 
-These are different mechanisms (a read cache in front of a derived value, vs. a scheduled materialized-view refresh) but the same underlying question: how fresh does derived data need to be, and what's the cheapest way to keep it that fresh without reintroducing the drift risk ADR-0009 specifically designed around.
+ADR-0051 (2026-08-12, connector activation) later added a new, separate `connector_activations` table; ADR-0022's own dated note clarifies this cache mechanism is unaffected, and activation is read fresh alongside the cached health value rather than folded into it (implemented by Story 1.12).
 
-**The constraint this ADR must respect:** any caching layer for `ConnectorHealth` must not become a second, independently-updatable copy of health state. ADR-0009's entire rationale is "no possibility of drift" because nothing is stored — a cache that's updated by anything other than recomputing from `IngestionRun` would quietly reintroduce the exact problem ADR-0009 exists to avoid.
-SocialEngage produces two pieces of derived data whose freshness and performance characteristics have not yet been locked down: `ConnectorHealth`, which is recomputed from `IngestionRun` history every time it is read, and `AuthorTopicSignal`, a periodically-refreshed materialized view with no decided refresh cadence. Without an explicit caching and refresh strategy, frequent polling of connector status and repeated recomputation of author-topic signals waste database resources and create a risk that an over-eager optimization could reintroduce drift between displayed state and underlying facts.
-
-This BRD records the business need to serve these derived values in a fast, consistent, and operationally proportionate way. The solution is to cache `ConnectorHealth` behind a short, 60-second, in-process, read-through cache that is always reconstructable from `IngestionRun`, and to refresh `AuthorTopicSignal` once per hour using `pg_cron`. Both mechanisms preserve the single-source-of-truth principle: the cache is a time-bounded snapshot of a live derivation, not a separately writable record.
+Source requirements: BRD-0022 §§6–7, Story 4.4 (Epic 4, shipped 2026-07-30), Story 1.12 (Epic 1, shipped 2026-08-12).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Reduce aggregation load from frequent connector-status polling | `GET /connectors` response time stays under target SLA even at high poll frequency |
-| 2 | Bound staleness of derived values to an acceptable, explicit tolerance | `ConnectorHealth` is at most 60 seconds stale; `AuthorTopicSignal` is at most 1 hour stale |
-| 3 | Preserve single source of truth for health and signal data | No table or cache is ever updated by any path other than recomputation from authoritative source data |
-| 4 | Avoid new scheduling infrastructure for `AuthorTopicSignal` refresh | Refresh is implemented with existing Postgres `pg_cron` extension |
-| 5 | Keep the platform resilient to Redis or shared-cache outages | `GET /connectors` continues to serve correct results if Redis is unavailable |
+| G1 | Reduce aggregation load from frequent connector-status polling | `GET /connectors` served from cache within the TTL window without recomputation |
+| G2 | Bound staleness of both derived values to an explicit, documented tolerance | `ConnectorHealth` ≤ 60s stale; `AuthorTopicSignal` ≤ 1 hour stale |
+| G3 | Preserve single source of truth | Cache/view contents fully reconstructable from `IngestionRun`/enriched posts at any time; no independently-writable copy |
+| G4 | Avoid new scheduling infrastructure | `AuthorTopicSignal` refresh runs via existing Postgres `pg_cron`, not a new service |
+| G5 | Stay resilient to a Redis outage | `GET /connectors` continues to serve correct (if slower) results with Redis unavailable |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- Closes both gaps ADR-0007 and ADR-0009 already flagged as open, with a mechanism that's proportionate to how fresh each actually needs to be.
-- Preserves ADR-0009's core property: the cache is provably reconstructable from `IngestionRun` alone at any moment, so "single source of truth" still holds — the cache is an optimization, not a second fact.
-- `pg_cron` for `AuthorTopicSignal` avoids introducing a new scheduling service just for one periodic job.
-
-**Negative**
-- A `ConnectorHealth` read can be up to 60 seconds stale — acceptable for a status indicator, but worth being explicit that `GET /connectors` is no longer a strictly live view, which is a small behavior change from what ADR-0009 implies (a live-computed derivation) even though the underlying derivation logic doesn't change.
-- Two different refresh mechanisms (TTL-based read cache vs. scheduled materialized-view refresh) for two pieces of derived data adds a small amount of conceptual overhead — a future reader needs to know which pattern applies to which entity rather than one uniform rule.
-- Both numbers (1 hour, 60 seconds) are guesses, not derived from any stated requirement or real read-frequency data.
-- With an in-process cache and more than one `social-listening-core` instance, two simultaneous `GET /connectors` calls hitting different instances can show slightly different results within the same TTL window (e.g., one instance's cache just refreshed, another's is about to expire). Both are individually correct derivations at their own computation time — this is display inconsistency, not a correctness bug — but it's a real, user-visible property worth stating explicitly rather than discovering in a bug report.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall serve `GET /connectors` from a `ConnectorHealth` cache with a 60-second TTL. | Must | After population, repeated reads within 60 seconds return the cached value without recomputing. | Product Owner |
-| BR-002 | On cache miss or TTL expiry, the system shall recompute `ConnectorHealth` solely from `IngestionRun`. | Must | No other stored state is read or written to produce the derived value. | Product Owner |
-| BR-003 | The `ConnectorHealth` cache shall be in-process (per `social-listening-core` instance) and not require Redis. | Must | With Redis unavailable, `GET /connectors` still returns correct, freshly computed results. | Product Owner |
-| BR-004 | The system shall provide a safe, non-lossy flush operation for the `ConnectorHealth` cache. | Must | After `flush()`, the next `GET /connectors` recomputes and returns the same value it would have if the cache had simply expired. | Product Owner |
-| BR-005 | The system shall refresh the `AuthorTopicSignal` materialized view every hour using `pg_cron`. | Must | The view's last-refreshed timestamp advances at least once per hour under normal operation. | Product Owner |
-| BR-006 | `AuthorTopicSignal` shall remain a raw-signal view with no composite expertise score. | Must | The view exposes only counts, dates, and breakdowns; no hidden ranking formula is added. | Product Owner |
-| BR-007 | The system shall keep connector activation state separate from `ConnectorHealth` caching. | Must | `GET /v1/connectors/:platformId` reads `isActive` fresh on every call and combines it with the cached `ConnectorHealth` value. | Product Owner |
-| BR-008 | The system shall document cross-instance cache inconsistency as acceptable display behavior. | Should | A test hitting two different instances in the same 60-second window may observe different ages, both individually correct. | Product Owner |
 
-Priority levels: Must / Should / Could / Won't (MoSCoW)
+### 5.1 Feature / Capability: `ConnectorHealth` Read-Through Cache
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+- **Description:** A 60-second TTL, in-process cache sitting in front of the existing `ConnectorHealth` derivation (ADR-0009), so repeated `GET /connectors` polling does not repeat the full `IngestionRun` aggregation on every call.
+- **Triggers:** Any call to `GET /connectors` or `GET /v1/connectors/:platformId`.
+- **Inputs:** Cache key (connector/tenant scope as applicable), current cache state (present/expired/absent), `IngestionRun` history on miss.
+- **Processing:**
+  - On a cache hit within the 60-second TTL, return the previously computed snapshot without touching `IngestionRun`.
+  - On a miss or TTL expiry, recompute `ConnectorHealth` solely from `IngestionRun` (the same derivation ADR-0009 defines — no other stored state is read or written), then populate the cache with the fresh value and a new TTL window.
+  - No explicit invalidation is wired to `IngestionRun` writes (poll completion, webhook handling, retry logic); the TTL alone bounds staleness. This is a deliberate simplicity trade-off over invalidate-on-write.
+  - Cache is in-process (per `social-listening-core` instance) — not Redis or any shared store — by deliberate contrast with ADR-0020's `RequestGate`, which requires shared state for correctness. `ConnectorHealth` has no equivalent correctness requirement: every instance can independently recompute the identical value from `IngestionRun` at any time.
+- **Outputs:** A `ConnectorHealth` value (`healthy`/`degraded`/`failing`/`disconnected`) served to the caller, at most 60 seconds old.
+- **Error handling:** If the cache mechanism itself is unavailable or Redis (used elsewhere in the system) is down, `GET /connectors` is unaffected — the cache is purely in-process and has no dependency on Redis; the endpoint continues to work, just without the performance benefit of a warm cache.
+- **Edge cases:** Two different `social-listening-core` instances may return different `ConnectorHealth` values for the same connector within the same 60-second window (one instance's cache just refreshed, another's is about to expire) — both are individually correct at their own compute time; this is documented, accepted display inconsistency, not a correctness bug.
 
-Both `AuthorTopicSignal` and `ConnectorHealth` get periodic-refresh treatment rather than always-live computation on every request, because neither needs second-by-second accuracy — `AuthorTopicSignal` by explicit design intent (the original design conversation: "an expert is not created in an hour"), `ConnectorHealth` because it's a status indicator, not a transactional read. For `ConnectorHealth` specifically: the cache is strictly a time-bounded snapshot of the same derivation ADR-0009 defines, rebuildable at any time from `IngestionRun` with no other state to reconcile — never a value updated by any path other than recomputation. A cache flush is always safe, never lossy, and never a source of truth in its own right.
+### 5.2 Feature / Capability: `ConnectorHealth` Cache Flush
 
-**Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
+- **Description:** A safe, non-lossy operation to clear the cache, always producing the same result as if the cache had simply expired.
+- **Triggers:** Operational/administrative need to force a fresh read (e.g. troubleshooting), or as a building block for future features.
+- **Inputs:** None required beyond the flush call itself.
+- **Processing:** Clears all cached entries; does not write anything. Because the cache holds no unique state, flushing can never lose data — the next read simply recomputes from `IngestionRun`.
+- **Outputs:** An empty cache; the next `GET /connectors` triggers a fresh recomputation.
+- **Error handling:** Flush has no failure mode that leaves the system in an incorrect state — worst case is simply "next read recomputes," identical to a natural TTL expiry.
+- **Edge cases:** Flushing during an in-flight read does not corrupt the cache; the next read after flush is guaranteed to equal what a natural expiry-then-recompute would have produced.
 
-- **`AuthorTopicSignal`**: refreshed via a scheduled background job every **1 hour**, using `pg_cron` (keeps the refresh logic in the database layer rather than requiring a separate scheduling service to run and monitor).
-- **`ConnectorHealth`**: a read-through cache with a **60-second TTL** — recomputed from `IngestionRun` on cache miss or expiry. No explicit invalidation on `IngestionRun` write; the TTL alone bounds staleness to at most 60 seconds, which is an acceptable tolerance for a status indicator and avoids the complexity of wiring cache invalidation into every code path that writes an `IngestionRun`.
-- **Cache locality: in-process (per-instance), not shared/Redis-backed.** This is deliberately different from ADR-0020's `RequestGate` state, and for a specific reason: `RequestGate` correctness *requires* every process instance to see the same counters, or rate-limit enforcement is actually wrong (a tenant could exceed a platform's declared limit). `ConnectorHealth` has no equivalent correctness requirement — every instance can independently recompute the exact same value straight from `IngestionRun` at any time, so an in-process cache never risks *incorrectness*, only brief cross-instance display inconsistency (two instances might show a status computed a few seconds apart, both individually correct). Given that, this read shouldn't take on a hard dependency on Redis being available just because Redis exists elsewhere in the system for a different, correctness-critical reason — `GET /connectors` should keep working (just slower) through a Redis outage.
+### 5.3 Feature / Capability: `AuthorTopicSignal` Hourly Refresh
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Platform Operator | Owns platform performance and observability | High | Frequent `GET /connectors` polling must not overload Postgres; health state must remain reliable. |
-| Tenant Administrator | Views connector status in the admin UI | High | Connector status is fresh enough to act on, but not misleading due to drift. |
-| API Consumer (future Social Selling / Insights) | Reads `AuthorTopicSignal` | Medium | Signal data is periodically refreshed and not opinionated by a hidden composite score. |
-| DevOps / SRE | Runs and monitors the service | Medium | Cache must not add a hard Redis dependency or require new scheduling services. |
-| Product Owner (Menno) | Decision authority on scope and acceptance | High | Clear trade-off between freshness, cost, and correctness; no hidden drift. |
+- **Description:** A scheduled background job that refreshes the `AuthorTopicSignal` materialized view (ADR-0007) once per hour, keeping refresh logic inside the database layer rather than a separate scheduling service.
+- **Triggers:** `pg_cron`-scheduled job, once per hour.
+- **Inputs:** Current enriched `SocialPost` data (entities, key phrases, authors) the view aggregates over.
+- **Processing:** Recomputes the materialized view's rows from underlying enriched post data on the configured hourly cadence. Hourly bounds staleness of a deliberately long-window aggregate (the signal's "sustained engagement" semantics describe *what window* it aggregates over, not how often it is safe to recompute that aggregate) — it does not conflict with the signal's long-window design intent.
+- **Outputs:** A refreshed `AuthorTopicSignal` materialized view with an advanced last-refreshed timestamp.
+- **Error handling:** A missed or failed `pg_cron` run leaves the view at its prior refreshed state (stale, not incorrect); operational monitoring (BRD-0022 Reporting) tracks the last-refreshed timestamp to detect a stalled schedule.
+- **Edge cases:** Under load, the refresh job may take non-trivial time to complete — the view remains queryable with its previous contents throughout the refresh, per standard materialized-view refresh semantics; no separate real-time or event-driven recompute path exists (explicitly rejected — see §8 BR3).
+
+### 5.4 Feature / Capability: Activation State Kept Uncached and Combined With Cached Health
+
+- **Description:** `GET /v1/connectors/:platformId` combines two now-separate signals into one response: connector activation state (from `connector_activations`, ADR-0051) and derived health (from the 60-second `ConnectorHealth` cache, this ADR).
+- **Triggers:** Any call to `GET /v1/connectors/:platformId`.
+- **Inputs:** `getCachedConnectorHealth()` result (may be cached or freshly recomputed); `isConnectorActive()` read against `connector_activations` for `ownerType: 'tenant'`.
+- **Processing:** The route handler reads `isActive` fresh on every call (never cached by this ADR's mechanism, since `connector_activations` is a small, directly-queryable table with no equivalent aggregation cost to `deriveConnectorHealth()`), and combines it with the (possibly cached) `ConnectorHealth` value into a single response object.
+- **Outputs:** A response containing both `isActive: boolean` and the derived health fields, where `isActive` is always current and health may be up to 60 seconds stale.
+- **Error handling:** A platform with no `connector_activations` row (never activated) returns `isActive: false`, never `null`/`undefined`, per the activation subsystem's lazy-creation rule.
+- **Edge cases:** Every existing consumer of this endpoint's response shape continues to work — `isActive` is a purely additive field, not a rename or removal of any prior field.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 1.12 | epic-1-repository-and-api-foundation.md | As Tenant-Admin or tenant user viewing a connector's status, I want `GET /v1/connectors/:platformId` to tell me whether the connector is actually turned on, ... | `GET /v1/connectors/:platformId`'s response gains an `isActive` field (`boolean`), read via `isConnectorActive()` (`connectorActivationStore.ts`) for `ownerT... |
-| Story 4.4 | epic-4-derived-data-analytics-and-health.md | As platform operator supporting frequent `GET /connectors` polling from the admin UI, I want `ConnectorHealth` served from a short-TTL read-through cache tha... | `GET /connectors` reads are served from a cache with a 60-second TTL (implementation default); on expiry, the cache recomputes from `IngestionRun`, not from ... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Platform Operator | Owns platform performance/observability; cares that polling doesn't overload Postgres |
+| Tenant-Admin / tenant user | Views connector status in the admin UI; needs fresh-enough, non-misleading status |
+| API Consumer (future subsystem) | Reads `AuthorTopicSignal` |
+| DevOps / SRE | Runs and monitors `pg_cron` refresh and cache behavior |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 4.4) | Platform operator supporting frequent `GET /connectors` polling | `ConnectorHealth` served from a short-TTL cache always reconstructable from `IngestionRun`, and `AuthorTopicSignal` refreshed hourly | Reads stay fast without a second, independently-updatable copy of either value | 60s TTL cache; in-process only; safe flush; hourly `pg_cron` refresh; cross-instance staleness documented as acceptable |
+| US2 (Story 1.12) | Tenant-Admin or tenant user viewing connector status | `GET /v1/connectors/:platformId` to tell me whether the connector is actually on, not just how healthy it's been | The connector status screen shows real activation state without a second round trip | `isActive` read fresh every call, never folded into the 60s cache; no-row case returns `false`, not `null` |
+
+### 6.3 Workflow Diagrams / Steps
+
+**`ConnectorHealth` read flow:**
+1. Client calls `GET /connectors` (or `GET /v1/connectors/:platformId`).
+2. Cache checked for the relevant key.
+3. Hit within TTL → return cached snapshot.
+4. Miss/expired → recompute from `IngestionRun` (ADR-0009 derivation) → populate cache with new TTL → return fresh value.
+5. For the single-connector endpoint, `isActive` is read fresh from `connector_activations` in the same call and merged into the response alongside whichever health value (cached or fresh) step 3/4 produced.
+
+**`AuthorTopicSignal` refresh flow:**
+1. `pg_cron` fires on the hourly schedule.
+2. Materialized view recomputed from current enriched `SocialPost` data.
+3. Last-refreshed timestamp advances.
+4. Consumers reading the view between refreshes see the previous hour's snapshot.
+
+**Cache flush flow:**
+1. Flush invoked (operational/troubleshooting need).
+2. Cache cleared entirely.
+3. Next read behaves exactly as a miss — recompute from `IngestionRun`, repopulate.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `IngestionRun` rows | Authoritative execution history used to derive connector health | `ingestion_runs` table | Ingestion subsystem | Operational data |
-| `ConnectorHealth` cached snapshot | 60-second read-through cache of derived connector status | Derived from `IngestionRun` | `social-listening-core` instance | Operational data |
-| `AuthorTopicSignal` materialized view | Periodically refreshed raw author-topic counts and breakdowns | Derived from enriched `SocialPost` data | `social-listening-core` database | Operational data |
-| `connector_activations` | Tenant- or user-scoped connector on/off state | `connector_activations` table | Activation subsystem | Operational data |
+
+### 7.1 Data Inputs
+
+- `IngestionRun` history (authoritative source for `ConnectorHealth` derivation).
+- Enriched `SocialPost` fields (`enrichment.entities`, `enrichment.keyPhrases`, author) — authoritative source for `AuthorTopicSignal`.
+- `connector_activations` rows — authoritative source for `isActive`.
+
+### 7.2 Data Outputs
+
+- Cached `ConnectorHealth` snapshot (in-process, per-instance, TTL-bound).
+- Refreshed `AuthorTopicSignal` materialized view rows.
+- Combined `GET /v1/connectors/:platformId` response (`isActive` + health fields).
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `IngestionRun` (existing, authoritative) | run outcome, connector/platform id, tenant scope, timestamp | Source data for `ConnectorHealth` derivation; not modified by this ADR |
+| `ConnectorHealth` cache entry (in-process, ephemeral) | cache key (connector/tenant scope), derived status value, populated-at timestamp, TTL (60s, configurable via `CONNECTOR_HEALTH_CACHE_TTL_MS`) | Read-through cache in front of `ConnectorHealth`; not a persisted table; reconstructable at any time |
+| `AuthorTopicSignal` (materialized view, ADR-0007) | author, topic/entity, counts, date breakdowns, last-refreshed timestamp | Refreshed hourly via `pg_cron`; derived from enriched `SocialPost` rows |
+| `connector_activations` (ADR-0051, existing) | `tenant_id`, `platformId`, `ownerType`, `is_active` | Read fresh (uncached) on every `GET /v1/connectors/:platformId` call; combined with cached health in the response |
+
+### 7.4 Validation Rules
+
+- The `ConnectorHealth` cache must never be written by any path other than recomputation from `IngestionRun` — no separate write API exists for it.
+- `isActive` must never be `null`/`undefined` when no `connector_activations` row exists — absence reads as `false`.
+- `AuthorTopicSignal` exposes only raw counts/breakdowns — no hidden composite "expertise score" is computed or stored.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | `ConnectorHealth` may never be updated by any path other than recomputing from `IngestionRun`. |
-| BRU-002 | The 60-second `ConnectorHealth` cache is a time-bounded snapshot, not an authoritative state record. |
-| BRU-003 | Cache invalidation shall be TTL-based; no write-time invalidation on `IngestionRun` inserts is required. |
-| BRU-004 | Flushing the `ConnectorHealth` cache is always safe and never lossy. |
-| BRU-005 | `connector_activations` state is read fresh on every `GET /v1/connectors/:platformId` call and is not cached by this mechanism. |
-| BRU-006 | Cross-instance differences in `ConnectorHealth` display within the TTL window are acceptable because each value is independently correct at its own compute time. |
-| BRU-007 | `AuthorTopicSignal` refresh is scheduled hourly, regardless of the signal's long-window semantics. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | `ConnectorHealth` may never be updated by any path other than recomputing from `IngestionRun`. | Cache (5.1) |
+| BR2 | The 60-second cache is a time-bounded snapshot, not an authoritative state record; cache invalidation is TTL-based only, with no write-time invalidation on `IngestionRun` inserts. | Cache (5.1) |
+| BR3 | Flushing the `ConnectorHealth` cache is always safe and never lossy. | Flush (5.2) |
+| BR4 | `AuthorTopicSignal` refresh is scheduled hourly regardless of the signal's long-window semantics; no event-driven recompute is used. | Refresh (5.3) |
+| BR5 | `connector_activations` state is read fresh on every `GET /v1/connectors/:platformId` call and is never folded into the 60-second `ConnectorHealth` cache. | Activation combination (5.4) |
+| BR6 | Cross-instance differences in `ConnectorHealth` display within the TTL window are acceptable — each value is independently correct at its own compute time. | Cache locality (5.1) |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0007 (`AuthorTopicSignal` raw signals) | Decision | Product Owner | Already Accepted |
-| D-002 | ADR-0009 (`ConnectorHealth` derivation) | Decision | Product Owner | Already Accepted |
-| D-003 | ADR-0020 (Redis-backed `RequestGate`) | Decision | Product Owner | Already Accepted; used only as contrast, not dependency |
-| D-004 | ADR-0051 (connector activation) | Decision | Product Owner | Already Accepted; activation read remains uncached |
-| D-005 | Story 4.1 — `AuthorTopicSignal` raw author-topic signals | Story | Product Owner | Ready |
-| D-006 | Story 4.3 — derived connector health from `IngestionRun` | Story | Product Owner | Ready |
-| D-007 | Story 4.4 — derived-data caching and refresh strategy | Story | Product Owner | Ready |
-| D-008 | Story 1.12 — `GET /v1/connectors/:platformId` combines activation with cached health | Story | Product Owner | Built 2026-08-12 |
-| D-009 | Postgres `pg_cron` extension | Infrastructure | DevOps | Available in target environment |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `GET /connectors` | Inbound | Serve cached or freshly-derived `ConnectorHealth` | REST / JSON |
+| `GET /v1/connectors/:platformId` | Inbound | Serve combined `isActive` + cached health | REST / JSON |
+| `IngestionRun` table (Postgres) | Inbound (read) | Authoritative source for health derivation on cache miss | SQL |
+| `connector_activations` table (Postgres) | Inbound (read) | Authoritative, always-fresh activation source | SQL |
+| `pg_cron` (Postgres extension) | Internal scheduling | Hourly `AuthorTopicSignal` refresh trigger | Postgres scheduled job |
+| Admin UI connector status screen (Story 6.5) | Outbound | Consumes `GET /connectors` and `GET /v1/connectors/:platformId` | REST / JSON |
 
 ---
 
-- The current deployment shape is a single `social-listening-core` instance, making an in-process cache acceptable.
-- 60 seconds of staleness is tolerable for a status indicator that is not used by automated decision logic.
-- Hourly refresh is sufficient for an author-topic signal whose semantics are intentionally long-windowed.
-- Postgres `pg_cron` is available in the target database environment.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
-Both `AuthorTopicSignal` and `ConnectorHealth` get periodic-refresh treatment rather than always-live computation on every request, because neither needs second-by-second accuracy — `AuthorTopicSignal` by explicit design intent (the original design conversation: "an expert is not created in an hour"), `ConnectorHealth` because it's a status indicator, not a transactional read. For `ConnectorHealth` specifically: the cache is strictly a time-bounded snapshot of the same derivation ADR-0009 defines, rebuildable at any time from `IngestionRun` with no other state to reconcile — never a value updated by any path other than recomputation. A cache flush is always safe, never lossy, and never a source of truth in its own right.
-
-**Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
-
-- **`AuthorTopicSignal`**: refreshed via a scheduled background job every **1 hour**, using `pg_cron` (keeps the refresh logic in the database layer rather than requiring a separate scheduling service to run and monitor).
-- **`ConnectorHealth`**: a read-through cache with a **60-second TTL** — recomputed from `IngestionRun` on cache miss or expiry. No explicit invalidation on `IngestionRun` write; the TTL alone bounds staleness to at most 60 seconds, which is an acceptable tolerance for a status indicator and avoids the complexity of wiring cache invalidation into every code path that writes an `IngestionRun`.
-- **Cache locality: in-process (per-instance), not shared/Redis-backed.** This is deliberately different from ADR-0020's `RequestGate` state, and for a specific reason: `RequestGate` correctness *requires* every process instance to see the same counters, or rate-limit enforcement is actually wrong (a tenant could exceed a platform's declared limit). `ConnectorHealth` has no equivalent correctness requirement — every instance can independently recompute the exact same value straight from `IngestionRun` at any time, so an in-process cache never risks *incorrectness*, only brief cross-instance display inconsistency (two instances might show a status computed a few seconds apart, both individually correct). Given that, this read shouldn't take on a hard dependency on Redis being available just because Redis exists elsewhere in the system for a different, correctness-critical reason — `GET /connectors` should keep working (just slower) through a Redis outage.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | `ConnectorHealth` reads shall tolerate up to 60 seconds of staleness. | Performance | Must | Documented and contractually tested; no automated decision depends on the cached value. |
-| NFR-002 | `AuthorTopicSignal` staleness shall be bounded to one hour. | Performance | Must | Refreshed at least hourly; clients are informed the view is not live. |
-| NFR-003 | The caching mechanism shall not degrade during a Redis outage. | Reliability | Must | `GET /connectors` continues to serve correct results with Redis unavailable. |
-| NFR-004 | The cache design shall remain a pure optimization, not a source of truth. | Maintainability | Must | All cache contents can be reconstructed from `IngestionRun` at any time. |
-| NFR-005 | `AuthorTopicSignal` refresh shall not require a new scheduling service. | Maintainability | Must | Refresh is triggered by `pg_cron` inside the existing Postgres database. |
 
-Categories include: Performance, Security, Reliability, Scalability, Usability, Compliance, Maintainability, Accessibility.
+- **Performance:** In-process cache eliminates repeated `IngestionRun` aggregation for polling clients within the 60-second window; hourly `pg_cron` refresh keeps `AuthorTopicSignal` recompute cost bounded and predictable.
+- **Reliability:** `GET /connectors` degrades gracefully (slower, not incorrect) if the in-process cache is cold or Redis (used elsewhere) is unavailable — no hard dependency on Redis for this specific read path, by deliberate contrast with ADR-0020's `RequestGate`.
+- **Maintainability:** All cached/derived content remains reconstructable from `IngestionRun` alone; `AuthorTopicSignal` refresh needs no new scheduling service beyond `pg_cron`.
+- **Scalability:** In-process cache locality is accepted only because the current deployment shape is single-instance; multi-instance would introduce cross-instance display inconsistency (documented as acceptable, not a correctness defect) rather than requiring an immediate Redis migration.
+- **Observability:** Cache hit/miss rate, `AuthorTopicSignal` last-refresh timestamp, `GET /connectors` p95/p99 latency, and cross-instance staleness observations are the operational signals this design should support monitoring for (BRD-0022 §11).
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- Closes both gaps ADR-0007 and ADR-0009 already flagged as open, with a mechanism that's proportionate to how fresh each actually needs to be.
-- Preserves ADR-0009's core property: the cache is provably reconstructable from `IngestionRun` alone at any moment, so "single source of truth" still holds — the cache is an optimization, not a second fact.
-- `pg_cron` for `AuthorTopicSignal` avoids introducing a new scheduling service just for one periodic job.
 
-**Negative**
-- A `ConnectorHealth` read can be up to 60 seconds stale — acceptable for a status indicator, but worth being explicit that `GET /connectors` is no longer a strictly live view, which is a small behavior change from what ADR-0009 implies (a live-computed derivation) even though the underlying derivation logic doesn't change.
-- Two different refresh mechanisms (TTL-based read cache vs. scheduled materialized-view refresh) for two pieces of derived data adds a small amount of conceptual overhead — a future reader needs to know which pattern applies to which entity rather than one uniform rule.
-- Both numbers (1 hour, 60 seconds) are guesses, not derived from any stated requirement or real read-frequency data.
-- With an in-process cache and more than one `social-listening-core` instance, two simultaneous `GET /connectors` calls hitting different instances can show slightly different results within the same TTL window (e.g., one instance's cache just refreshed, another's is about to expire). Both are individually correct derivations at their own computation time — this is display inconsistency, not a correctness bug — but it's a real, user-visible property worth stating explicitly rather than discovering in a bug report.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Cache miss/expiry on `GET /connectors` | None (transparent) | Recompute from `IngestionRun`; repopulate cache; return fresh value |
+| Redis outage (used elsewhere in the system) | None (transparent) | `GET /connectors` unaffected — no dependency on Redis for this cache |
+| Cache flushed mid-session | None (transparent) | Next read recomputes exactly as a natural expiry would |
+| `pg_cron` job fails or is delayed | None to end users directly | `AuthorTopicSignal` remains at its previous refreshed state; monitoring should flag a stalled last-refreshed timestamp |
+| No `connector_activations` row for a platform | Connector shown as inactive | `isActive: false` returned, never `null`/`undefined` |
+| Two instances observed with different `ConnectorHealth` values in the same window | None — documented as expected | Both values individually correct at their own compute time; not treated as a bug |
+
+---
 
 ## 12. Assumptions and Dependencies
-- The current deployment shape is a single `social-listening-core` instance, making an in-process cache acceptable.
-- 60 seconds of staleness is tolerable for a status indicator that is not used by automated decision logic.
-- Hourly refresh is sufficient for an author-topic signal whose semantics are intentionally long-windowed.
-- Postgres `pg_cron` is available in the target database environment.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | 60-second `ConnectorHealth` staleness is later judged too stale for a future use case | Medium | Medium | Keep TTL configurable; any automated decision reads `IngestionRun` directly, not the cache | Product Owner |
-| R-002 | Multiple `social-listening-core` instances show inconsistent status within the same 60-second window | High (when multi-instance) | Low | Document as acceptable display inconsistency; revisit only if UX proves it matters | Product Owner |
-| R-003 | Hourly `AuthorTopicSignal` refresh is too infrequent for future real-time insights | Medium | Medium | Cadence is an implementation default and can be amended without superseding the ADR | Product Owner |
-| R-004 | Engineers implement a writable or event-invalidated cache, reintroducing drift | Medium | High | Code review / contract test enforcing "recompute from `IngestionRun` only" | Technical Lead |
-| R-005 | `pg_cron` is not enabled or fails in the target environment | Low | High | Verify Postgres extension provisioning and add monitoring for missed refreshes | DevOps |
+**Assumptions:**
+- Current deployment shape is a single `social-listening-core` instance, making an in-process cache acceptable.
+- 60 seconds of staleness is tolerable for a status indicator not used by any automated decision (auto-disable logic reads `IngestionRun` directly, never the cache).
+- Hourly refresh is sufficient for a signal whose semantics are intentionally long-windowed.
+- `pg_cron` is available in the target Postgres environment.
+
+**Dependencies:**
+- ADR-0007 (`AuthorTopicSignal` raw signals) — Accepted.
+- ADR-0009 (`ConnectorHealth` derivation) — Accepted; this ADR caches, but does not change, that derivation.
+- ADR-0020 (Redis-backed `RequestGate`) — cited only as a correctness-critical contrast, not a dependency of this design.
+- ADR-0051 (connector activation) — Accepted; activation read remains uncached per this ADR's own dated note.
+- Story 4.4 (shipped 2026-07-30, `social-listening-core@56385ba`) — implements this ADR's cache and refresh mechanism.
+- Story 1.12 (shipped 2026-08-12) — combines activation with cached health on `GET /v1/connectors/:platformId`.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Is 60 seconds the right `ConnectorHealth` staleness tolerance long-term? | Product Owner | Resolved at acceptance as acceptable for v1; revisit only if a use case emerges needing tighter freshness |
+| Q2 | Is hourly sufficient for `AuthorTopicSignal`, or should cadence tighten for future real-time insight needs? | Product Owner | Cadence is an implementation default, amendable without superseding the ADR |
+| Q3 | Does cross-instance display inconsistency matter enough in practice to justify a shared/Redis-backed cache? | Product Owner | Deferred until multi-instance deployment is real |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0022-derived-data-caching-and-refresh-strategy.md`
-- BRD: `../Business-Requirements/BRD-0022-Derived-Data-Caching-And-Refresh-Strategy.md`
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Deep research: _No deep-research report found._
-- User stories: see extracted stories above
+
+**Glossary:** see BRD-0022 §15 for derived data, read-through cache, `pg_cron`, in-process cache, `ConnectorHealth`, and `AuthorTopicSignal` definitions.
+
+**Reference links:**
+- [ADR-0022: Derived-data caching and refresh strategy](../../adr/0022-derived-data-caching-and-refresh-strategy.md)
+- [BRD-0022](../Business-Requirements/BRD-0022-Derived-Data-Caching-And-Refresh-Strategy.md)
+- [ADR-0007: `AuthorTopicSignal` raw signals] (referenced; not independently re-verified in this pass)
+- [ADR-0009: `ConnectorHealth` derivation] (referenced; not independently re-verified in this pass)
+- [ADR-0020: Redis-backed `RequestGate`] (referenced as contrast; not independently re-verified in this pass)
+- [ADR-0051: Connector activation] (referenced; not independently re-verified in this pass)
+- [Story 4.4 — Derived-data caching and refresh strategy](../../user-stories/epic-4-derived-data-analytics-and-health.md)
+- [Story 1.12 — `GET /v1/connectors/:platformId` combines activation state with derived health](../../user-stories/epic-1-repository-and-api-foundation.md)
+
+**Missing sources:** No `docs/product-research/feature-designs/<feature>.md` or deep-research report exists for this ADR — ADR-0022 itself states its source is "Not specified in the design spec" and originates the policy directly; BRD-0022's own Appendix B confirms the same absence.
+
+**Revision history:**
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | FDD Writer (Claude) | Full regeneration: correct H1, real per-capability Section 5 breakdown, real Section 7.3 data model, replacing the prior defective BRD-shaped draft |

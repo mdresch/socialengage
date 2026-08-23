@@ -1,9 +1,9 @@
-# BRD-0034 – Connector Connect/Disconnect CRUD – Ownership-Tier-Aware Credential Creation
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0034 – Connector Connect/Disconnect CRUD – Ownership-Tier-Aware Credential Creation |
+| Document Title | FDD-0034 Connector Connect/Disconnect CRUD – Ownership-Tier-Aware Credential Creation — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

@@ -1,221 +1,291 @@
-# Business Requirements Document (BRD) — Proportional Connector Failure Threshold
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Proportional Connector Failure Threshold |
+| Document Title | FDD-0023 Proportional (Rate-Relative) Connector Failure Threshold — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0023-proportional-connector-failure-threshold.md, ../Business-Requirements/BRD-0023-Proportional-Connector-Failure-Threshold.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0023-proportional-connector-failure-threshold.md and the business requirements in BRD-0023-Proportional-Connector-Failure-Threshold.md into functional design for **Proportional Connector Failure Threshold**.
-**What problem are we solving?**  
-The existing auto-disable rule treats every connector as if it runs at the same frequency: “≥10 failed ingestion runs in the last hour.” A fast-polling connector that attempts 200 polls per hour and hits 10 transient failures (5%) looks identical to a slow-polling connector that attempts 10 polls and fails every single one (100%). This flat count conflates a minor blip with a genuinely broken connector and can cause unfair, premature auto-disables for high-frequency sources.
-
-**Who is affected?**  
-Tenant administrators and platform operators who rely on `ConnectorHealth` to decide whether a connector is healthy, degraded, or failing. It also affects tenants whose high-frequency connectors may otherwise be disabled on noise.
-
-**What is the proposed solution at a glance?**  
-Replace the flat failure count with a rate-relative threshold that is evaluated per `(tenantId, platformId)` over a trailing 1-hour window: a connector becomes `failing` when at least 50% of its attempts in that window failed **and** at least 5 attempts occurred in the window. A hard 20-consecutive-failure absolute ceiling is retained as a backstop for slow or low-volume connectors. Retryable failures (rate-limit, network, 5xx) are excluded from the counts, and the absolute-ceiling path must support a bounded half-open probe so a fixed connector can recover.
-
-**What business value do we expect?**  
-Fairer, more defensible health judgments across connectors with different polling cadences; fewer false-positive auto-disables; and faster, bounded detection of truly broken low-frequency connectors. This reduces tenant-visible disruption, protects quota from wasted retries, and lowers support burden.
+| Author(s) | FDD Writer (Claude) |
+| Reviewer(s) | Menno |
+| Status | Approved (source ADR-0023 is Accepted; documents shipped design, healed per its own 2026-08-12/2026-08-17 Clarifications — Stories 2.5, 2.12) |
+| Related Documents | ADR-0023, BRD-0023, ADR-0009, ADR-0010, ADR-0051, Stories 2.3, 2.5, 2.12, 4.3 |
 
 ---
 
+## 2. Purpose and Scope
+
+### 2.1 Purpose
+
+This document translates ADR-0023 (proportional, rate-relative connector failure threshold for auto-disable) and BRD-0023 into the functional design for how `deriveConnectorHealth()` decides a connector is `failing`, replacing the original flat "≥10 failures/hour" placeholder with a rate-relative rule plus an absolute ceiling, both excluding retryable failures, with a bounded half-open recovery probe once the ceiling trips. ADR-0023 is Accepted (2026-07-29) and has two later Clarifications (2026-08-12: exclude retryable failures; 2026-08-17: half-open recovery for the ceiling) that are part of its own Decision, both incorporated below as shipped behavior, not open items.
+
 ### 2.2 Scope
+
 **In scope:**
-- Replacing the flat “≥10 failures/hour” `failing` derivation for `ConnectorHealth` with a rate-relative rule.
-- Evaluation window: trailing 1 hour, scoped to a single `(tenantId, platformId)` pair.
-- Launch defaults: ≥50% of attempts failed **and** ≥5 attempts in the window; or ≥20 consecutive non-retryable failures.
-- Excluding `retryable` failed `IngestionRun`s from both the rate and the consecutive-failure counts.
-- A bounded half-open probe/recovery path for connectors that tripped the 20-consecutive-failure ceiling.
-- Updates to the existing contracts for Story 2.3 (auto-disable wiring) and Story 4.3 (derived health) where those contracts depended on the superseded flat threshold.
-- Multi-tenant isolation: a connector failure for one tenant must not affect another tenant’s same platform connector.
+- Rate-relative `failing` rule: ≥50% of non-retryable attempts failed in the trailing 1-hour window, with a minimum 5-attempt floor.
+- Absolute ceiling: ≥20 consecutive non-retryable failures, independent of window or rate.
+- Exclusion of `retryable = true` (and `NULL`, treated as non-retryable) failures from both counts as appropriate (`retryable = NULL` is treated as non-retryable per BRU-003).
+- Per-`(tenantId, platformId)` isolation of the threshold evaluation.
+- A bounded half-open probe recovery path once the 20-consecutive ceiling trips, so `shouldAttemptIngestion()` does not block a `failing` connector forever.
+- Partial supersession of only the flat-threshold clauses in ADR-0009 and ADR-0010; `degraded`/`healthy`/`disconnected` semantics are unchanged.
 
 **Out of scope:**
-- Varying the threshold by `deliveryMode` (push vs. poll) — deferred until a push-mode connector is actually on the roadmap.
-- Changing the definition of `degraded` or `healthy`.
-- Adding a dedicated persisted `ConnectorHealth` table; health remains derived from `IngestionRun` history.
-- UI-level health visualization changes (covered by other stories/epics).
-- Retuning the 50% / 5-attempt / 20-consecutive numeric defaults without an Amendment Log entry.
+- Varying the threshold by `deliveryMode` (push vs. poll) — deferred until a push-mode connector is on the roadmap.
+- A persisted, authoritative health table — health remains derived from `IngestionRun`.
+- UI-level health visualization changes.
+- Retuning the 50%/5/20 numeric defaults without a logged Amendment.
+
+### 2.3 Target Audience
+
+Backend engineers implementing/maintaining `deriveConnectorHealth()` and `shouldAttemptIngestion()`, QA authoring parity/threshold contract tests, platform operators triaging auto-disabled connectors.
+
+---
 
 ## 3. Context and Background
-ADR-0009 derives `failing` status as "≥10 failed `IngestionRun`s within the last hour" — a flat absolute count, explicitly carried over from the spec's own placeholder. This number doesn't account for how differently connectors are actually invoked: a platform polled every couple of minutes and a platform polled hourly both accumulate runs at very different rates, so a flat count-per-hour conflates two very different situations — 10 failures out of 10 attempts (100% failure, clearly broken) and 10 failures out of 200 attempts (5% failure, probably a transient blip) would trigger identically.
-**What problem are we solving?**  
-The existing auto-disable rule treats every connector as if it runs at the same frequency: “≥10 failed ingestion runs in the last hour.” A fast-polling connector that attempts 200 polls per hour and hits 10 transient failures (5%) looks identical to a slow-polling connector that attempts 10 polls and fails every single one (100%). This flat count conflates a minor blip with a genuinely broken connector and can cause unfair, premature auto-disables for high-frequency sources.
 
-**Who is affected?**  
-Tenant administrators and platform operators who rely on `ConnectorHealth` to decide whether a connector is healthy, degraded, or failing. It also affects tenants whose high-frequency connectors may otherwise be disabled on noise.
+ADR-0009 originally derived `failing` as a flat "≥10 failed `IngestionRun`s within the last hour" — carried over unchanged from the design spec's own explicitly-named placeholder. That flat count conflates very different situations: a connector polled every couple of minutes accumulating 10 failures out of 200 attempts (5%, likely transient) looks identical to a connector polled hourly failing 10 out of 10 attempts (100%, clearly broken). ADR-0023 replaces the flat count with a rate-relative rule.
 
-**What is the proposed solution at a glance?**  
-Replace the flat failure count with a rate-relative threshold that is evaluated per `(tenantId, platformId)` over a trailing 1-hour window: a connector becomes `failing` when at least 50% of its attempts in that window failed **and** at least 5 attempts occurred in the window. A hard 20-consecutive-failure absolute ceiling is retained as a backstop for slow or low-volume connectors. Retryable failures (rate-limit, network, 5xx) are excluded from the counts, and the absolute-ceiling path must support a bounded half-open probe so a fixed connector can recover.
+Two later, real-world Clarifications extend the Decision and are treated as part of it, not as separate open work:
+- **2026-08-12** — direct code inspection (during ADR-0051 drafting) found `connectorHealth.ts` counted every `status = 'failed'` row identically regardless of the `retryable` flag `ingestion_runs` already carries, meaning a run of purely rate-limited (retryable) failures could trip the rate rule or the ceiling exactly as a genuinely broken connector would — contrary to this ADR's own stated intent to distinguish "clearly broken" from "probably a transient blip."
+- **2026-08-17** — a live incident (a tenant's GNews connector legitimately failed 20 times consecutively for a real, now-fixed configuration bug, then remained permanently stuck in `failing` even after the fix and reactivation) revealed the 20-consecutive ceiling had no recovery path at all: `shouldAttemptIngestion()` blocked unconditionally once `failing`, so the very success that would clear the streak could never occur. Menno's explicit direction (given a choice of "fix it properly" / "manually unstick the one connector" / "both") was fix it properly — a half-open circuit-breaker probe.
 
-**What business value do we expect?**  
-Fairer, more defensible health judgments across connectors with different polling cadences; fewer false-positive auto-disables; and faster, bounded detection of truly broken low-frequency connectors. This reduces tenant-visible disruption, protects quota from wasted retries, and lowers support burden.
+Source requirements: BRD-0023 §§6–7, Stories 2.3 (original, pre-ADR-0023, healed), 2.5 (this ADR's own implementation story), 2.12 (retryable exclusion), 4.3 (derived health, re-verified unaffected).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Reduce false-positive auto-disables for high-frequency, mostly-healthy connectors | Number of `failing` transitions caused by <50% failure-rate blips in the trailing hour trends to zero |
-| 2 | Detect persistently broken low-frequency connectors within bounded time | Any connector that fails every run is marked `failing` within 20 consecutive non-retryable failures or the rate rule, whichever is earlier |
-| 3 | Align connector health judgment with actual attempt volume | Fast- and slow-polling connectors under equivalent failure conditions reach `failing` status consistently in contract tests |
-| 4 | Preserve per-tenant isolation and existing `degraded` semantics | One tenant’s connector status cannot cause another tenant’s same-platform connector to change |
+| G1 | Judge connectors by failure rate, not absolute count, so polling cadence doesn't bias the result | Fast- and slow-polling connectors under equivalent failure conditions reach `failing` consistently |
+| G2 | Avoid tripping on low-sample-size noise | A connector with <5 attempts in the window never trips the rate rule regardless of its failure percentage |
+| G3 | Still catch a persistently broken low-frequency connector within bounded time | 20 consecutive non-retryable failures trips `failing` even if the 1-hour rate rule isn't met |
+| G4 | Never let a transient/rate-limited failure pattern count toward auto-disable | Purely retryable failure runs trip neither the rate rule nor the ceiling |
+| G5 | Guarantee a `failing` connector can recover once actually fixed | The ceiling path allows exactly one bounded probe attempt rather than blocking forever |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- A connector polled every few minutes and one polled hourly are now judged by comparable standards (failure *rate*, not absolute count), removing an unfairness the flat threshold had by construction.
-- The attempt-count floor prevents a low-frequency, low-sample-size connector from being disabled off noise (e.g., one bad poll out of two).
-- The absolute ceiling preserves the original intent of the placeholder threshold — genuinely broken connectors still get caught — for the specific case a pure percentage rule would handle poorly (very low attempt volume).
-
-**Negative**
-- Materially more complex than a flat count: `ConnectorHealth`'s derivation (ADR-0009) now needs both attempt count and failure count per window, not just a failure count, and two threshold rules instead of one.
-- Three numbers (50%, 5-attempt floor, 20 consecutive) are this ADR's own estimates, not derived from real failure-pattern data across actual connectors — likely need tuning once real tenant/platform traffic exists.
-- Changes what `ConnectorHealth`'s `failing` derivation actually computes (ADR-0009's Decision text describes the old flat rule) — this ADR should be read alongside ADR-0009, not in isolation; ADR-0009 itself isn't edited, per this series' convention of not rewriting an Accepted ADR's original text (see README governance conventions).
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall mark a connector `failing` when ≥50% of non-retryable attempts in the trailing 1-hour window failed, provided at least 5 attempts occurred in that window. | Must | Contract test passes for 5/10, 10/20, and 50/100 failure patterns; test fails for 4 attempts or 49% rate. | Product Owner |
-| BR-002 | The system shall not trigger the rate-based `failing` rule when fewer than 5 attempts are recorded in the window. | Must | A 2-attempt, 1-failure fixture stays `healthy` or `degraded`, never `failing`. | Product Owner |
-| BR-003 | The system shall mark a connector `failing` after 20 consecutive non-retryable failures, regardless of time window or failure rate. | Must | A fixture with 20 sequential non-retryable failures, each from the same `(tenantId, platformId)`, yields `failing` even if the 1-hour rate rule is not met. | Product Owner |
-| BR-004 | The system shall exclude retryable failures from both the rate and consecutive-failure counts. | Must | A fixture of 20 consecutive `retryable = true` failures does not trip either threshold; mixed fixtures count only non-retryable failures. | Product Owner |
-| BR-005 | The system shall apply the failure threshold per `(tenantId, platformId)` pair and not across tenants or platforms. | Must | Isolation test: tenant A’s failing connector does not change tenant B’s same-platform connector status. | Product Owner |
-| BR-006 | When a connector is `failing` due to the 20-consecutive-failure ceiling, the system shall allow exactly one probe attempt after a bounded cooldown, instead of blocking forever. | Must | A connector that tripped the ceiling attempts once after cooldown; success clears `failing`, failure restarts cooldown. | Product Owner |
-| BR-007 | The `degraded` state shall remain “recent non-retryable failures with at least one success in the last hour.” | Must | Contract tests for mixed success/failure fixtures still return `degraded`, not `failing`. | Product Owner |
-| BR-008 | Health shall continue to be derived from `IngestionRun` history with no authoritative health table. | Must | No new write-side health table is introduced; read cache remains reconstructable. | Product Owner |
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+### 5.1 Feature / Capability: Rate-Relative `failing` Derivation
 
-Auto-disable is triggered by failure *rate* relative to actual attempt volume for that `(tenantId, platformId)` pair within the evaluation window, not a flat absolute count — so connectors invoked at very different frequencies aren't held to the same absolute threshold. A minimum attempt-count floor applies alongside the rate threshold, so a connector with very few attempts in the window doesn't trigger off statistical noise (e.g., 1 failure out of 2 attempts looking identical to 100% failure on a high-volume connector). A separate absolute ceiling still applies regardless of rate, so a persistently broken low-frequency connector (one that fails every single time it runs, but only runs a handful of times an hour) still gets caught within a bounded time, rather than needing an implausibly long window to accumulate enough attempts to trip a purely rate-based rule.
+- **Description:** Computes `failing` status as a ratio of non-retryable failures to non-retryable attempts within a trailing 1-hour window, scoped to a single `(tenantId, platformId)` pair.
+- **Triggers:** Any read of `ConnectorHealth` (via the cache defined in ADR-0022, on cache miss/expiry) or any `shouldAttemptIngestion()` gating check before a poll.
+- **Inputs:** `IngestionRun` rows for the `(tenantId, platformId)` pair within the trailing 1-hour window: `status`, `retryable`, `createdAt`/`attemptedAt`.
+- **Processing:**
+  - Filter to non-retryable rows only (`retryable = true` rows are excluded entirely from both numerator and denominator; `retryable = NULL` is treated as non-retryable).
+  - Compute `recentNonRetryableFailures / recentNonRetryableAttempts`.
+  - If `recentNonRetryableAttempts ≥ 5` (the floor) and the ratio is `≥ 50%`, the connector is `failing` under this rule.
+  - This rule naturally self-heals as the 1-hour window ages older failures out.
+- **Outputs:** A `failing`/not-`failing` determination contributing to the connector's derived `ConnectorHealth`.
+- **Error handling:** Fewer than 5 non-retryable attempts in the window never trips this rule, regardless of how high the percentage looks (e.g., 1 failure out of 1 attempt does not trigger).
+- **Edge cases:** A window with 0 non-retryable attempts (all retryable, or none at all) trivially does not trip this rule; a connector alternating just above/below 50% at the 5-attempt boundary is evaluated fresh on every read (no hysteresis).
 
-**Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
+### 5.2 Feature / Capability: Absolute Consecutive-Failure Ceiling
 
-- Evaluation window: **1 hour**, unchanged from ADR-0009's existing base unit.
-- Rate threshold: `failing` when **≥50%** of attempts in the window failed, **and** at least **5 attempts** occurred in the window (the floor, to avoid a single failed attempt on a low-frequency connector reading as "100% failure").
-- Absolute ceiling: `failing` when **≥20 consecutive failures** have occurred, regardless of rate or the 1-hour window — catches a connector that's broken on every run but polls infrequently enough that it wouldn't otherwise hit the attempt floor within an hour.
-- `degraded` (ADR-0009's existing intermediate state) continues to mean "some recent failures, but a successful run within the last hour" — unchanged by this ADR.
+- **Description:** An independent backstop that marks a connector `failing` after 20 consecutive non-retryable failures, regardless of the 1-hour window or the rate rule — catches a low-frequency connector that fails every run but never accumulates the 5-attempt floor within an hour.
+- **Triggers:** Same as 5.1 — any `ConnectorHealth` read or gating check.
+- **Inputs:** `IngestionRun` history for the `(tenantId, platformId)` pair, scanned backward from most recent.
+- **Processing:** Scans backward through run history (excluding retryable rows from the streak count) until either a success is found (streak resets/clears) or 20 consecutive non-retryable failures are counted (ceiling trips). This scan is unbounded in time — unlike the rate rule, it has no window to age out of.
+- **Outputs:** A `failing` determination independent of, and OR'd with, the rate rule's determination.
+- **Error handling:** A success anywhere in the backward scan clears the streak count back to zero for this rule.
+- **Edge cases:** A streak interspersed with retryable failures only counts the non-retryable ones toward the 20; because the scan is unbounded backward, once tripped it has no time dimension to decay through on its own — this is exactly why the half-open probe (5.3) is required.
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant-Admin | Monitors connector health, reactivates or reconnects failing connectors | High | Fair, accurate status; clear reason when auto-disabled |
-| Platform Operations | Operates ingestion fleet, triages rate limits and outages | High | Health signal that reflects real attempt volume and error class |
-| Product Owner | Owns connector reliability roadmap | Medium | Bounded, tunable policy that can be improved with real traffic data |
-| Support / Customer Success | Handles tenant tickets about stopped ingestion | Medium | Fewer false-positive “connector down” incidents |
-| Development / Architecture | Implements and tests `deriveConnectorHealth()` | High | Clear rules, explicit numeric defaults, recovery behavior |
+### 5.3 Feature / Capability: Half-Open Recovery Probe for the Ceiling Path
+
+- **Description:** Once a connector is `failing` specifically via the 20-consecutive ceiling, `shouldAttemptIngestion()` allows exactly one probe attempt through after a bounded cooldown, rather than blocking unconditionally forever.
+- **Triggers:** A scheduled poll/fetch attempt for a connector currently `failing` via the ceiling, where `lastAttemptAt` is older than the configured cooldown.
+- **Inputs:** Current `failing` state and which rule tripped it (rate rule vs. ceiling), `lastAttemptAt`, the cooldown duration.
+- **Processing:**
+  1. `shouldAttemptIngestion()` still runs the normal activation/credential check for the probe attempt — the half-open allowance does not bypass those checks, only the unconditional `failing`-blocks-everything short-circuit.
+  2. If the probe succeeds, a fresh `succeeded` `IngestionRun` is written; `deriveConnectorHealth()`'s scan-from-newest-until-a-success logic reads this and clears `consecutiveFailures`, ending the `failing` state via the ceiling path (the rate rule is evaluated independently and may or may not still apply).
+  3. If the probe fails, the cooldown simply restarts — the connector is not hammered with repeated attempts.
+- **Outputs:** Either a cleared `failing` (ceiling) state, or a restarted cooldown.
+- **Error handling:** This corrects the pre-2026-08-17 behavior where a connector tripped via the ceiling could never leave `failing` without an operator manually altering `ingestion_runs` history out of band.
+- **Edge cases:** A connector tripped via the rate rule (not the ceiling) does not need this mechanism — the rate rule already self-heals as the window ages; the half-open probe applies specifically and only to the ceiling path.
+
+### 5.4 Feature / Capability: Retryable-Failure Exclusion
+
+- **Description:** Ensures transient failures (rate-limiting, network errors, 5xx responses) marked `retryable = true` on their `IngestionRun` row never count toward either the rate rule or the ceiling.
+- **Triggers:** Every evaluation of 5.1 and 5.2.
+- **Inputs:** The `retryable` boolean on each `IngestionRun` row (written by `runIngestionAttempt.ts`'s error classification, per ADR-0010).
+- **Processing:** Both the rate-rule numerator/denominator and the ceiling's consecutive-streak scan filter out `retryable = true` rows entirely (they do not count as failures, attempts, or streak-breakers); `retryable = NULL` rows are treated as non-retryable (count as failures).
+- **Outputs:** Failure/attempt counts that reflect only genuinely non-retryable failure patterns.
+- **Error handling:** A run of purely retryable failures (e.g. sustained rate-limiting) trips neither the rate rule nor the ceiling — matching this ADR's stated intent that a rate-limit hit is the paradigm transient case, not a "clearly broken" signal.
+- **Edge cases:** A mixed run of retryable and non-retryable failures counts only the non-retryable ones toward both thresholds; a long run of retryable failures interspersed with occasional non-retryable ones resets neither count on its own (retryable rows are simply skipped, not treated as successes).
+
+### 5.5 Feature / Capability: Per-Tenant Isolation
+
+- **Description:** Every threshold evaluation is scoped to a single `(tenantId, platformId)` pair.
+- **Triggers:** Every `ConnectorHealth` derivation.
+- **Inputs:** `tenantId`, `platformId` on each `IngestionRun` row.
+- **Processing:** Aggregation queries filter by both keys; no cross-tenant or cross-platform aggregation ever occurs.
+- **Outputs:** An independent `failing`/`degraded`/`healthy`/`disconnected` status per tenant per connector.
+- **Error handling:** N/A — isolation is structural (query scoping), not a runtime-detected condition.
+- **Edge cases:** Tenant A's connector tripping `failing` for platform X has zero effect on Tenant B's connector for the same platform X.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 2.5 | epic-2-ingestion-connectors-and-rate-limits.md | As tenant with connectors polling at very different frequencies, I want auto-disable triggered by failure *rate* relative to attempt volume, with a minimum a... | A connector with ≥50% of attempts failing in the trailing 1-hour window, and at least 5 attempts in that window, is marked `failing`.; A connector with fewer... |
-| Story 2.12 | epic-2-ingestion-connectors-and-rate-limits.md | As Tenant-Admin whose connector is hitting transient rate limits, I want a run of purely retryable failures to never, by itself, trip the connector-level `fa... | `deriveConnectorHealth()`'s query additionally selects `retryable` from `ingestion_runs`.; `recentFailures` and `consecutiveFailures` (the two counters feedi... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Tenant-Admin | Monitors connector health, reactivates/reconnects failing connectors |
+| Platform Operations | Operates the ingestion fleet, triages rate limits and outages |
+| Scheduler / ingestion pipeline | Calls `shouldAttemptIngestion()` before every poll |
+| Engineering | Implements and tests `deriveConnectorHealth()` |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 2.5) | Platform operator | Judge connector health by failure rate relative to attempt volume, not a flat count | Fast- and slow-polling connectors are judged fairly | ≥50% of ≥5 non-retryable attempts fails; 4 or fewer attempts never trips the rule |
+| US2 (Story 2.12) | Platform operator | Exclude retryable (transient) failures from the threshold math | A rate-limited connector isn't mistaken for a broken one | Purely retryable runs trip neither the rate rule nor the ceiling |
+| US3 (2026-08-17 Clarification) | Tenant-Admin whose connector was auto-disabled and then fixed | Have the connector actually recover once the underlying cause is fixed | I don't need to manually intervene in the database to unstick it | One probe attempt allowed after a bounded cooldown once tripped via the ceiling; success clears the streak |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Health derivation (on read or scheduling check):**
+1. Load `IngestionRun` history for `(tenantId, platformId)`.
+2. Filter out `retryable = true` rows for both counts.
+3. Evaluate rate rule: is `recentNonRetryableAttempts ≥ 5` and `recentNonRetryableFailures / recentNonRetryableAttempts ≥ 50%`? If yes → `failing`.
+4. Independently evaluate ceiling: scan backward until a success or 20 consecutive non-retryable failures. If 20 reached first → `failing`.
+5. If neither rule trips: evaluate `degraded` (recent non-retryable failures with a success within the last hour) vs. `healthy` vs. `disconnected` (zero recorded runs) per ADR-0009's unchanged logic.
+
+**Recovery from ceiling-tripped `failing`:**
+1. Scheduler calls `shouldAttemptIngestion()`.
+2. If `failing` via ceiling and `lastAttemptAt` older than cooldown → allow one probe through to the normal activation/credential check.
+3. Probe succeeds → `IngestionRun` written as `succeeded` → next health read clears the ceiling-driven `failing` state.
+4. Probe fails → cooldown restarts; no further attempts until cooldown elapses again.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `IngestionRun.status` | Attempt result: `succeeded` or `failed` | `ingestion_runs` table | Platform / Ingestion | Operational |
-| `IngestionRun.retryable` | Boolean: whether the failure is transient and may be retried | `ingestion_runs` table, written by `runIngestionAttempt.ts` | Platform / Ingestion | Operational |
-| `IngestionRun.tenantId` / `platformId` | Scope keys for health aggregation | `ingestion_runs` table | Platform / Ingestion | Multi-tenant (RLS) |
-| `IngestionRun.createdAt` / `attemptedAt` | Timestamp for trailing-window evaluation | `ingestion_runs` table | Platform / Ingestion | Operational |
-| Derived `ConnectorHealth` | Read-only status: `healthy`, `degraded`, `failing`, `disconnected` | Computed from `ingestion_runs` | Product / Engineering | Tenant-visible operational status |
 
-No new authoritative health table is introduced; health remains a derived view.
+### 7.1 Data Inputs
+
+- `IngestionRun` rows: `status`, `retryable`, `tenantId`, `platformId`, `createdAt`/`attemptedAt` — all pre-existing fields.
+- Configured threshold constants: 50% rate, 5-attempt floor, 20-consecutive ceiling, half-open cooldown duration.
+
+### 7.2 Data Outputs
+
+- Derived `ConnectorHealth.status` (`healthy`/`degraded`/`failing`/`disconnected`) per `(tenantId, platformId)`.
+- No new persisted table — output is a read-time derivation, cached per ADR-0022.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `IngestionRun` (existing, unmodified schema) | `id`, `tenantId`, `platformId`, `status` (`succeeded`/`failed`), `retryable` (boolean, nullable), `attemptedAt`/`createdAt` | Source data for both the rate rule and the ceiling; `retryable` is read by this ADR's logic but was previously ignored |
+| `ConnectorHealth` (derived, not persisted) | `status`, contributing `recentNonRetryableAttempts`/`recentNonRetryableFailures`, `consecutiveNonRetryableFailures` | Computed from `IngestionRun`; cached per ADR-0022; combined with `isActive` per ADR-0051/Story 1.12 |
+| Half-open probe state (implicit, derived from `IngestionRun` history) | `lastAttemptAt`, whether currently within cooldown | Governs whether `shouldAttemptIngestion()` allows a probe through for a ceiling-tripped connector |
+
+### 7.4 Validation Rules
+
+- `retryable = NULL` is treated identically to `retryable = false` (non-retryable) for both threshold counts (BRU-003).
+- The rate rule never fires with fewer than 5 non-retryable attempts in the window, regardless of percentage.
+- The ceiling scan only counts consecutive non-retryable failures; any success or the presence of enough retryable-only gaps does not itself reset the streak (retryable rows are skipped, not treated as resets) — only an actual success resets it.
+- No new authoritative health table may be introduced; health remains fully derivable from `IngestionRun` at any time.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | A connector is `failing` if `recentNonRetryableFailures / recentNonRetryableAttempts ≥ 50%` within the trailing 1-hour window and `recentNonRetryableAttempts ≥ 5`. |
-| BRU-002 | A connector is `failing` if it has accumulated `≥20` consecutive non-retryable `IngestionRun`s, regardless of the 1-hour window or failure rate. |
-| BRU-003 | `retryable = true` failed runs are not counted as failures for either BRU-001 or BRU-002; `retryable = NULL` is treated as non-retryable. |
-| BRU-004 | Failure thresholds are evaluated independently for each `(tenantId, platformId)` pair. |
-| BRU-005 | `degraded` means `recentNonRetryableFailures > 0` and at least one success occurred within the last hour; this is unchanged by the rate-relative rule. |
-| BRU-006 | A connector that became `failing` through the consecutive-failure ceiling must be allowed one probe attempt after a bounded cooldown; a successful probe clears the consecutive-failure streak. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | A connector is `failing` if `recentNonRetryableFailures / recentNonRetryableAttempts ≥ 50%` within the trailing 1-hour window and `recentNonRetryableAttempts ≥ 5`. | Rate rule (5.1) |
+| BR2 | A connector is `failing` if it has accumulated ≥20 consecutive non-retryable `IngestionRun`s, regardless of window or rate. | Ceiling (5.2) |
+| BR3 | `retryable = true` failed runs are excluded from both BR1 and BR2; `retryable = NULL` is treated as non-retryable. | Exclusion (5.4) |
+| BR4 | Failure thresholds are evaluated independently per `(tenantId, platformId)` pair. | Isolation (5.5) |
+| BR5 | `degraded` means recent non-retryable failures exist but a success occurred within the last hour — unchanged by this ADR. | Health derivation (5.1/5.2, inherited from ADR-0009) |
+| BR6 | A connector `failing` via the ceiling must be allowed exactly one probe attempt after a bounded cooldown; a successful probe clears the streak. | Recovery (5.3) |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0009 (derived `ConnectorHealth` status) | Architecture | Menno | Accepted; partial supersession noted |
-| D-002 | ADR-0010 (error/auto-disable policy) | Architecture | Menno | Accepted; partial supersession noted |
-| D-003 | Story 2.3 (retryable/non-retryable error handling with per-tenant auto-disable) | Implementation | Engineering | Healed to rate-relative rule |
-| D-004 | Story 4.3 (derived connector health from `IngestionRun` history) | Implementation | Engineering | Re-verified, no assertion changes needed |
-| D-005 | Story 2.12 (exclude retryable failures from `failing` derivation) | Implementation | Engineering | Built 2026-08-12 |
-| D-006 | Story 1.11 (activation-aware `shouldAttemptIngestion`) | Implementation | Engineering | Provides gating context for half-open probe |
-| D-007 | `ingestion_runs` table with `retryable` column | Data | Engineering | Already exists |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `IngestionRun` table (Postgres) | Inbound (read) | Source data for threshold evaluation | SQL |
+| `deriveConnectorHealth()` | Internal | Implements the rate rule, ceiling, and `degraded`/`healthy`/`disconnected` logic | In-process function |
+| `shouldAttemptIngestion()` | Internal | Gates scheduled polls; implements half-open probe allowance | In-process function, called by the polling scheduler |
+| `ConnectorHealth` cache (ADR-0022) | Internal | Caches the derived result for 60 seconds | In-process |
+| `GET /connectors`, `GET /v1/connectors/:platformId` | Outbound | Surfaces `failing`/`degraded`/`healthy`/`disconnected` to the admin UI | REST / JSON |
+| `connector_activations` (ADR-0051) | Inbound (read) | Provides the activation/credential context the probe still checks before proceeding | SQL |
 
 ---
 
-- Every `IngestionRun` row records `status`, `retryable`, `tenantId`, `platformId`, and an attempt timestamp.
-- The current connector roster is poll-mode; push-mode handling is intentionally deferred.
-- Existing Stories 2.3 and 4.3 have already shipped with the flat rule; this change will heal their contracts rather than silently rewrite them.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
-Auto-disable is triggered by failure *rate* relative to actual attempt volume for that `(tenantId, platformId)` pair within the evaluation window, not a flat absolute count — so connectors invoked at very different frequencies aren't held to the same absolute threshold. A minimum attempt-count floor applies alongside the rate threshold, so a connector with very few attempts in the window doesn't trigger off statistical noise (e.g., 1 failure out of 2 attempts looking identical to 100% failure on a high-volume connector). A separate absolute ceiling still applies regardless of rate, so a persistently broken low-frequency connector (one that fails every single time it runs, but only runs a handful of times an hour) still gets caught within a bounded time, rather than needing an implausibly long window to accumulate enough attempts to trip a purely rate-based rule.
-
-**Implementation defaults (adjustable — see Amendment Log; does not require superseding this ADR on its own):**
-
-- Evaluation window: **1 hour**, unchanged from ADR-0009's existing base unit.
-- Rate threshold: `failing` when **≥50%** of attempts in the window failed, **and** at least **5 attempts** occurred in the window (the floor, to avoid a single failed attempt on a low-frequency connector reading as "100% failure").
-- Absolute ceiling: `failing` when **≥20 consecutive failures** have occurred, regardless of rate or the 1-hour window — catches a connector that's broken on every run but polls infrequently enough that it wouldn't otherwise hit the attempt floor within an hour.
-- `degraded` (ADR-0009's existing intermediate state) continues to mean "some recent failures, but a successful run within the last hour" — unchanged by this ADR.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Deriving connector health must not add more than a fixed, predictable query cost per connector status read. | Performance | Should | Query plan reviewed; no unbounded table scan beyond the 1-hour window plus the 20-most-recent ceiling scan. |
-| NFR-002 | Threshold defaults must be centrally configurable and documented in an Amendment Log. | Maintainability | Should | A documented, versioned place to adjust 50%/5/20 without code change; no magic numbers in business rules. |
-| NFR-003 | The new rule must keep the existing contract suite passing for Stories 2.3 and 4.3. | Reliability | Must | Existing contracts re-verified with the rate-relative rule; any changed assertion is documented with a dated note, not a silent rewrite. |
+
+- **Performance:** Evaluation cost per read is bounded — a 1-hour window query plus a bounded (20-row) backward scan for the ceiling; no unbounded table scan.
+- **Reliability:** The rule set must keep Stories 2.3 and 4.3's existing contracts passing, healed (not silently rewritten) to reflect the rate-relative rule, per BRD-0023 NFR-003.
+- **Maintainability:** Threshold defaults (50%/5/20, cooldown duration) should be centrally configurable and documented via Amendment Log rather than embedded as magic numbers.
+- **Fairness/correctness:** The core property this ADR exists to deliver — fast- and slow-polling connectors judged by comparable standards — is the primary non-functional target, verified by side-by-side contract tests (BRD-0023 AC-6).
+- **Recoverability:** A `failing` connector, once its underlying cause is fixed, must be able to leave `failing` without manual operator intervention (2026-08-17 Clarification) — this was a defect in the original design, now corrected.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- A connector polled every few minutes and one polled hourly are now judged by comparable standards (failure *rate*, not absolute count), removing an unfairness the flat threshold had by construction.
-- The attempt-count floor prevents a low-frequency, low-sample-size connector from being disabled off noise (e.g., one bad poll out of two).
-- The absolute ceiling preserves the original intent of the placeholder threshold — genuinely broken connectors still get caught — for the specific case a pure percentage rule would handle poorly (very low attempt volume).
 
-**Negative**
-- Materially more complex than a flat count: `ConnectorHealth`'s derivation (ADR-0009) now needs both attempt count and failure count per window, not just a failure count, and two threshold rules instead of one.
-- Three numbers (50%, 5-attempt floor, 20 consecutive) are this ADR's own estimates, not derived from real failure-pattern data across actual connectors — likely need tuning once real tenant/platform traffic exists.
-- Changes what `ConnectorHealth`'s `failing` derivation actually computes (ADR-0009's Decision text describes the old flat rule) — this ADR should be read alongside ADR-0009, not in isolation; ADR-0009 itself isn't edited, per this series' convention of not rewriting an Accepted ADR's original text (see README governance conventions).
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| <5 non-retryable attempts in the window, any failure rate | Connector shows `healthy`/`degraded`, not `failing` | Rate rule does not fire; ceiling evaluated independently |
+| 20 consecutive non-retryable failures | Connector shows `failing`, polling stops | `shouldAttemptIngestion()` blocks scheduled polls except the bounded half-open probe |
+| Purely retryable failure run (e.g. sustained rate-limiting) | Connector remains `healthy`/`degraded` | Neither rate rule nor ceiling counts retryable rows as failures |
+| Ceiling-tripped connector, cooldown not yet elapsed | Connector still shows `failing` | No probe attempted; scheduler skips this connector until cooldown elapses |
+| Ceiling-tripped connector, cooldown elapsed, probe succeeds | Connector returns to `healthy`/`degraded` | Streak cleared by the fresh `succeeded` run; normal scheduling resumes |
+| Ceiling-tripped connector, cooldown elapsed, probe fails | Connector remains `failing` | Cooldown restarts; no repeated hammering |
+| One tenant's connector trips `failing` | Only that tenant's connector affected | No cross-tenant or cross-platform bleed (per-pair isolation) |
+
+---
 
 ## 12. Assumptions and Dependencies
-- Every `IngestionRun` row records `status`, `retryable`, `tenantId`, `platformId`, and an attempt timestamp.
-- The current connector roster is poll-mode; push-mode handling is intentionally deferred.
-- Existing Stories 2.3 and 4.3 have already shipped with the flat rule; this change will heal their contracts rather than silently rewrite them.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Threshold defaults (50%/5/20) do not match real connector traffic patterns once live | Medium | Medium | Treat as launch defaults; capture tuning in the Amendment Log once real traffic exists. | Product Owner |
-| R-002 | The consecutive-failure ceiling permanently locks out a connector until manual intervention | High | High | Implement the bounded half-open probe requirement (BR-006) before or with this BRD. | Technical Lead |
-| R-003 | Retryable failures continue to be counted as non-retryable | Medium | High | Complete Story 2.12 before declaring this requirement fully met; verify contract tests for retryable-only fixtures. | Engineering |
-| R-004 | Existing contracts for Stories 2.3 and 4.3 are silently rewritten instead of healed | Medium | Medium | Any changed assertion gets a dated note and references this BRD/ADR-0023; keep the original AC intent. | Engineering |
-| R-005 | Push-mode connectors, when added later, may need different rules | Medium | Low | Log as a known gap; revisit when a push-mode connector is scheduled. | Product Owner |
+**Assumptions:**
+- Every `IngestionRun` row records `status`, `retryable`, `tenantId`, `platformId`, and an attempt timestamp (already true).
+- The current connector roster is entirely poll-mode; push-mode handling is intentionally deferred.
+- Stories 2.3 and 4.3 shipped against the original flat rule and are healed, not silently rewritten, when Story 2.5 lands.
+
+**Dependencies:**
+- ADR-0009 (`ConnectorHealth` derivation) — partially superseded (only the flat-threshold clause).
+- ADR-0010 (error classification / auto-disable policy) — partially superseded (only the flat-threshold clause); already distinguishes retryable vs. non-retryable conceptually.
+- ADR-0022 (derived-data caching) — the 60-second `ConnectorHealth` cache sits in front of this derivation, unaffected by this ADR.
+- ADR-0051 (connector activation) — `shouldAttemptIngestion()`'s activation/credential check still runs even during a half-open probe.
+- Story 2.5 (this ADR's implementation), Story 2.12 (retryable exclusion, built 2026-08-12), Story 2.3 (original, healed), Story 4.3 (re-verified, unaffected).
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Are 50%/5-attempt-floor/20-consecutive the right numbers long-term? | Product Owner | Launch defaults accepted without real traffic data; tune later once real connector traffic exists (logged via Amendment Log) |
+| Q2 | Should the threshold vary by `deliveryMode` (push vs. poll)? | Product Owner | Deferred — no push-mode connector is currently on the roadmap; revisit when one is scheduled |
+| Q3 | What is the right half-open cooldown duration? | Technical Lead | Set at implementation (Story 2.5/healing pass); not separately re-litigated here |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0023-proportional-connector-failure-threshold.md`
-- BRD: `../Business-Requirements/BRD-0023-Proportional-Connector-Failure-Threshold.md`
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+**Glossary:** see BRD-0023 §15 for `ConnectorHealth`, `failing`, `degraded`, rate-relative threshold, attempt-count floor, absolute ceiling, `retryable`, `deliveryMode`, and half-open probe definitions.
+
+**Reference links:**
+- [ADR-0023: Proportional (rate-relative) connector failure threshold for auto-disable](../../adr/0023-proportional-connector-failure-threshold.md)
+- [BRD-0023](../Business-Requirements/BRD-0023-Proportional-Connector-Failure-Threshold.md)
+- [ADR-0009: Derived `ConnectorHealth` status] (referenced; partially superseded, not independently re-verified in this pass)
+- [ADR-0010: Error classification and auto-disable policy] (referenced; partially superseded, not independently re-verified in this pass)
+- [ADR-0051: Connector activation] (referenced; not independently re-verified in this pass)
+- [Story 2.3, 2.5, 2.12 — Epic 2](../../user-stories/epic-2-ingestion-connectors-and-rate-limits.md)
+- [Story 4.3 — Epic 4](../../user-stories/epic-4-derived-data-analytics-and-health.md)
+- [`docs/user-stories/README.md` — Known cross-story conflict note](../../user-stories/README.md)
+
+**Missing sources:** No dedicated `docs/product-research/feature-designs/<feature>.md` or deep-research report exists for this threshold — the ADR itself states the original design spec used the flat threshold only as a placeholder, and BRD-0023's own Appendix confirms tangential mentions elsewhere lack sufficient feature-design detail.
+
+**Revision history:**
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | FDD Writer (Claude) | Full regeneration: correct H1, real per-capability Section 5 breakdown (including the two 2026-08-12/08-17 Clarifications as shipped behavior), real Section 7.3 data model, replacing the prior defective BRD-shaped draft |

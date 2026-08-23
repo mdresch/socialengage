@@ -1,9 +1,9 @@
-# Business Requirements Document – API Versioning and Compatibility Policy
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document – API Versioning and Compatibility Policy |
+| Document Title | FDD-0017 API Versioning and Compatibility Policy — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

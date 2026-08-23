@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Semantic Drift Detection – Business Requirements Document |
+| Document Title | FDD-0116 Semantic Drift Detection — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Tenant Isolation via Postgres Row-Level Security
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Tenant Isolation via Postgres Row-Level Security |
+| Document Title | FDD-0015 Tenant Isolation via Postgres Row-Level Security — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

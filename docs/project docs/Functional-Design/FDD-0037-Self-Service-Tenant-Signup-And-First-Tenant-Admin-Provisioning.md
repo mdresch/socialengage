@@ -1,9 +1,9 @@
-# SocialEngage – Business Requirements Document
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Business Requirements Document |
+| Document Title | FDD-0037 Self Service Tenant Signup And First Tenant Admin Provisioning — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

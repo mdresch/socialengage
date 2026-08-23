@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Additional Social Platform Publishing |
+| Document Title | FDD-0118 Additional Social Platform Publishing — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

@@ -1,9 +1,9 @@
-# BRD-0054: Tenant-facing Analytics Dashboard — Scope and Data-Source Strategy
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0054: Tenant-facing Analytics Dashboard — Scope and Data-Source Strategy |
+| Document Title | FDD-0054 Tenant-facing Analytics Dashboard — Scope and Data-Source Strategy — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

@@ -1,9 +1,9 @@
-# BRD-0013: Per-Tenant Event Filtering via Service Bus Subscription Rules
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0013: Per-Tenant Event Filtering via Service Bus Subscription Rules |
+| Document Title | FDD-0013 Per-Tenant Event Filtering via Service Bus Subscription Rules — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

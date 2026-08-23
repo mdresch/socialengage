@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Multi-Source Connector Capability Matrix – Business Requirements Document |
+| Document Title | FDD-0101 Multi-Source Connector Capability Matrix — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

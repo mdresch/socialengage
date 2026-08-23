@@ -1,9 +1,9 @@
-# BRD-0051 — Connector Activation Decoupled From Credential Presence
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0051 — Connector Activation Decoupled From Credential Presence |
+| Document Title | FDD-0051 Connector Activation Decoupled From Credential Presence — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |
