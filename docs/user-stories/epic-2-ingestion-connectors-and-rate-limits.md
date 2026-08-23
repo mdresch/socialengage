@@ -866,7 +866,7 @@
 ## Story 2.32 — Azure OpenAI `research?()` capability
 
 **Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@7854300
 **Depends on:** Story 2.9 (Azure OpenAI as second `AIProviderConnector`)
 
 **As a** core backend engineer,
