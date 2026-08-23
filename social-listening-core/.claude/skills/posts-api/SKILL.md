@@ -18,6 +18,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 | ADR-0012 | Full post data is fetched via REST on demand (`GET /posts/:id`), not carried in Service Bus events | 5.1 |
 | ADR-0053 (Story 3.10) | `body_markdown`'s own canonical Markdown decision — this component only exposes it, doesn't decide its content | 6.19 |
 | ADR-0071 | Human-in-the-Loop Post Enrichment Overrides API (`PATCH /v1/posts/:id/enrichment`) and re-enrichment precedence guard on `POST /v1/posts/:id/enrich` | 3.13 |
+| ADR-0073 | Outbound reply audit table and `POST /v1/posts/:id/replies` / `GET /v1/posts/:id/replies` | 3.14 |
 
 ## Contracts that constrain this component
 
@@ -27,6 +28,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 - `contracts/epic-3/story-6.16.post-manual-enrich-endpoint.contract.test.ts` — `POST /v1/posts/:id/enrich` derives the same enrichment text a real connector's own ingest function would (title, plus description when present), calls the real, unmodified `enrichPost()`, persists a real result, 404s the same way `GET /v1/posts/:id` does, and returns a real `200` with `enrichment: null` (not an error) when no AI provider is currently connected and active.
 - `contracts/epic-3/story-6.19.post-body-markdown-exposure.contract.test.ts` — both `GET /v1/posts` and `GET /v1/posts/:id` return a real, non-null `bodyMarkdown` for a post that has one stored; a post that never had one returns `bodyMarkdown: null` honestly (present, never omitted, never defaulted to empty string).
 - `contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts` — `PATCH /v1/posts/:id/enrichment` applies validation and sanitization, persists `enrichment.override` audit metadata, and ensures `POST /v1/posts/:id/enrich` rejects re-enrichment of manually overridden posts with `409 Conflict` unless `force: true` is passed.
+- `contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts` — `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are RLS-scoped, validate the post and caller's active Tier-3 credential, persist `outbound_activities` rows, and map connector failures to provider-appropriate HTTP statuses.
 
 ## How to extend this safely
 
@@ -43,4 +45,5 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 ## Known gaps / deferred work
 
 - No filters beyond pagination (`watchlistId`, `platformId`, `from`/`to`, `sentiment`) — all deferred until their backing columns exist (later Epic 3/4 stories).
+- `GET /v1/posts/:id/replies` uses a simple `created_at DESC` limit, not a full cursor scheme; cursor pagination is only needed if a single post is expected to exceed 50 reply attempts.
 - The AC3 "no linear degradation with depth" latency check runs at 500 rows, not literally millions — a deliberate, practical-scale proxy (see this story's contract-file Intent comment for the full reasoning), not a claim that multi-million-row performance has been empirically measured.

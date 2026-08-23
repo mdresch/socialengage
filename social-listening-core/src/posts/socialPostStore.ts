@@ -106,6 +106,8 @@ export interface SocialPostFull {
   authorId: string | null;
   acquisitionId: string;
   postGeoLocation: unknown;
+  /** Story 6.19 (Story 3.10/ADR-0053) — canonical Markdown body, populated by ingestion. */
+  bodyMarkdown: string | null;
 }
 
 /**
