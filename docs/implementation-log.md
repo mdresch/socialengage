@@ -3147,3 +3147,14 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/facebook-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
 - **Epic-2 suite at merge:** PASS (33/33 suites, 305/305 tests)
+---
+
+## 2026-08-23 — Story 2.30 — social-listening-core@3a65691
+
+- **Full commit:** `3a656912c77195a2dda7201d403c82141e7a078c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.30 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts
+- **Epic-2 suite at merge:** PASS (34/34 suites, 315/315 tests)

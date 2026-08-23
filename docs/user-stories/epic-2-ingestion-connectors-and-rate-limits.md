@@ -812,7 +812,7 @@
 ## Story 2.30 — LinkedIn Post Publishing
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-core@3a65691
 **Depends on:** Story 2.28 (connector publish framework), Story 2.25 (LinkedIn connector and token lifecycle)
 
 **As a** Tenant User with a connected LinkedIn profile or organization,
