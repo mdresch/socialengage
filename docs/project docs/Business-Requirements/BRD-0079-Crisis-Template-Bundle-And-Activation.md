@@ -1,29 +1,30 @@
 # BRD-0079 — Crisis Template Bundle and Activation
 
-> **Draft note:** ADR-0079 is currently *Proposed*. This BRD is therefore a draft for review and may change if the ADR is revised or not accepted.
+> **Status note:** ADR-0079 is *Accepted* (2026-08-23). This BRD reflects the accepted decision and the ready-to-build implementation stories 9.3 and 9.4.
 
 ## 1. Document Control
 
 || Field | Value |
 |---|---|---|
 || Document Title | Crisis Template Bundle and Activation – Business Requirements Document |
-|| Version | 0.1 |
+|| Version | 1.0 |
 || Date | 2026-08-23 |
 || Author(s) | BRD Writer Agent, SocialEngage |
 || Approver(s) | Menno — Business Sponsor / Product Owner / Technical Lead |
-|| Status | Draft |
+|| Status | Approved |
 
 ### Revision History
 
 || Version | Date | Author | Description of Changes |
 |---|---|---|---|---|
 || 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft derived from ADR-0079 and feature design 20-crisis-threshold-wizard |
+|| 1.0 | 2026-08-23 | BRD Writer Agent | Updated to Accepted ADR and ready-to-build Stories 9.3 and 9.4 |
 
 ---
 
 ## 2. Executive Summary
 
-SocialEngage must help brand-reputation teams begin monitoring for common crisis scenarios within seconds, not hours. Today, a `Tenant-Brand-Reputation-Manager` has to build a watchlist query, define alert thresholds, and create a triage playbook from scratch every time a new risk appears. This is slow, error-prone, and produces inconsistent first responses across tenants.
+SocialEngage must help brand-reputation teams begin monitoring for common crisis scenarios within seconds, not hours. Today, a `Tenant-Brand-Reputation-Manager` or `Tenant-Admin` has to build a watchlist query, define alert thresholds, and create a triage playbook from scratch every time a new risk appears. This is slow, error-prone, and produces inconsistent first responses across tenants.
 
 This BRD defines a *crisis template bundle and activation* capability. The system will ship a small set of platform-wide, pre-configured crisis templates (brand crisis, product recall, executive-name attack, competitor surge, data-breach rumor). A tenant user can open a crisis threshold wizard, preview the default query and thresholds, customize them if needed, and activate the template. Activation creates a preconfigured `watchlist` and `alert_rule` for that tenant and stores a linked playbook the team can follow when an alert fires.
 
@@ -34,7 +35,7 @@ The expected business value is faster time to protection, a more consistent firs
 ## 3. Business Objectives
 
 || # | Objective | Success Measure |
-|---|---|---|
+|---|---|---|---|
 || 1 | Reduce time to activate crisis monitoring to under one minute | Average end-to-end activation time from wizard open to active watchlist/alert |
 || 2 | Standardize first response for common reputation crises | All v1 templates include a visible, consistent triage playbook |
 || 3 | Lower setup friction for tenant brand managers | Self-service activation rate and reduction in support requests for watchlist/alert setup |
@@ -61,6 +62,7 @@ The expected business value is faster time to protection, a more consistent firs
 - AI-generated custom templates, threshold tuning, or playbook drafting in v1.
 - Cross-template chaining or combined-crisis bundles.
 - Real-time alert display and triage tooling (those are owned by separate features).
+- A Platform-Admin CRUD UI for managing templates in v1; templates are seeded by migration/fixtures.
 
 ### 4.3 Assumptions
 
@@ -68,6 +70,7 @@ The expected business value is faster time to protection, a more consistent firs
 - The boolean query AST and connector primitives needed for default queries are in place (ADR-0021).
 - Crisis templates are initially seeded by the platform and are read-only for tenants in v1.
 - Users who may activate templates are either `Tenant-Brand-Reputation-Manager` or `Tenant-Admin`.
+- At least one notification channel must be available and selected at activation time.
 
 ### 4.4 Constraints
 
@@ -75,6 +78,7 @@ The expected business value is faster time to protection, a more consistent firs
 - Platform defaults must not retroactively change already-activated tenant instances.
 - Playbook content must not be treated as an enforced workflow in v1.
 - The feature must avoid a production release whenever a template is added or updated.
+- All activation writes occur inside a single database transaction; partial activation is not allowed.
 
 ---
 
@@ -112,6 +116,7 @@ The expected business value is faster time to protection, a more consistent firs
 - A visible, linked playbook for each crisis type, surfaced at alert time.
 - Per-tenant ownership and editability of activated watchlists and alert rules.
 - Template data managed as platform configuration, not hardcoded release artifacts.
+- Foreign-key lifecycle management that removes activation records when the generated watchlist or alert rule is deleted.
 
 ---
 
@@ -121,15 +126,15 @@ The expected business value is faster time to protection, a more consistent firs
 
 || ID | Requirement | Priority | Acceptance Criteria | Owner |
 |---|---|---|---|---|
-|| BR-001 | The system shall provide a platform-level `crisis_templates` table with pre-configured templates for common reputation crises | Must | Table contains `id`, `template_key`, `name`, `default_query`, `default_ast`, `default_thresholds`, `playbook`, and `is_active`; initial templates cover brand crisis, product recall, executive-name attack, competitor surge, and data-breach rumor | Product Owner |
-|| BR-002 | The system shall record each activation in a tenant-scoped `tenant_crisis_templates` table | Must | Table contains `id`, `tenant_id`, `template_key`, `watchlist_id`, `alert_rule_id`, `custom_thresholds`, `created_by_user_id`, and `created_at`; one row per activation | Product Owner |
+|| BR-001 | The system shall provide a platform-level `crisis_templates` table with pre-configured templates for common reputation crises | Must | Table contains `id`, `template_key`, `name`, `description`, `default_query`, `default_ast`, `parameters`, `default_thresholds`, `playbook`, and `is_active`; initial templates cover brand crisis, product recall, executive-name attack, competitor surge, and data-breach rumor | Product Owner |
+|| BR-002 | The system shall record each activation in a tenant-scoped `tenant_crisis_templates` table | Must | Table contains `id`, `tenant_id`, `template_key`, `watchlist_id`, `alert_rule_id`, `variables`, `custom_thresholds`, `playbook`, `created_by_user_id`, and `created_at`; one row per activation | Product Owner |
 || BR-003 | The system shall expose an endpoint to list active crisis templates available to a tenant | Must | Returns active templates including name, default query, default thresholds, and playbook for preview; tenant users only see templates, not activations of others | Product Owner |
-|| BR-004 | The system shall provide an activation endpoint that creates a `watchlist` and `alert_rule` owned by the caller | Must | `POST /v1/crisis-templates/:id/activate` creates a `watchlist` from the default/customized query and an `alert_rule` from the default/customized thresholds; returns `watchlist_id`, `alert_rule_id`, and `tenant_crisis_templates` id | Product Owner |
-|| BR-005 | The system shall allow the user to customize the default query and thresholds before activation | Should | The wizard exposes editable fields for thresholds and query preview; customized values are stored in the created `alert_rule` and `watchlist` | Product Owner |
+|| BR-004 | The system shall provide an activation endpoint that creates a `watchlist` and `alert_rule` owned by the caller | Must | `POST /v1/crisis-templates/:templateKey/activate` creates a `watchlist` from the rendered `default_ast` and an `alert_rule` from thresholds and `notificationChannelIds`; returns `tenantCrisisTemplateId`, `watchlistId`, `alertRuleId`, `status`, and `playbook` | Product Owner |
+|| BR-005 | The system shall allow the user to customize the default query and thresholds before activation | Should | The wizard exposes editable thresholds and optional `customQuery`; customized values are stored in the created `watchlist` and `alert_rule` | Product Owner |
 || BR-006 | The system shall not retroactively change already-activated watchlists or alert rules when platform defaults change | Must | Updating a platform template does not modify the query, thresholds, or playbook of existing `tenant_crisis_templates` activations | Product Owner |
 || BR-007 | The system shall return the linked playbook as advisory data with the template and alert | Must | `playbook` is returned as JSON and shown in the UI; it is not executed or enforced by the back end in v1 | Product Owner |
-|| BR-008 | The admin UI shall provide a *Crisis Threshold Wizard* for template selection, preview, and activation | Must | Wizard lists active templates, shows preview, supports customization, calls the activation endpoint, and navigates to the new watchlist | Product Owner |
-|| BR-009 | The wizard shall surface activation errors and quota risks inline | Should | Errors such as high-volume or quota-risk warnings are shown before or after activation without requiring an engineer to interpret logs | Product Owner |
+|| BR-008 | The admin UI shall provide a *Crisis Threshold Wizard* for template selection, preview, and activation | Must | Wizard lists active templates, shows preview, supports threshold customization, calls the activation endpoint, and navigates to the new watchlist | Product Owner |
+|| BR-009 | The wizard shall surface activation errors and quota risks inline | Should | Errors such as missing required variables, invalid thresholds, or quota risks are shown before or after activation without requiring an engineer to interpret logs | Product Owner |
 || BR-010 | Activation and related records shall respect tenant and role boundaries | Must | Only users with `Tenant-Brand-Reputation-Manager` or `Tenant-Admin` role in the tenant can activate; all created data is scoped to the tenant | Product Owner |
 
 Priority levels: Must / Should / Could / Won't (MoSCoW)
@@ -154,23 +159,30 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 |---|---|
 || BRU-001 | A tenant user may only activate templates on behalf of their own tenant; data is never shared across tenants. |
 || BRU-002 | Activating a template creates tenant-owned `watchlist` and `alert_rule` instances that the tenant may later edit or delete. |
-|| BRU-003 | Platform `crisis_templates` are not tenant-scoped and are read-only for tenant users in v1. |
-|| BRU-004 | The playbook is advisory in v1; the system does not enforce steps, track completion, or raise SLA breaches. |
-|| BRU-005 | Default query and thresholds are copied at activation time; later changes to the platform template do not affect existing activations. |
-|| BRU-006 | Activation requires the caller to have the `Tenant-Brand-Reputation-Manager` or `Tenant-Admin` role. |
-|| BRU-007 | Only templates with `is_active = true` may be listed and activated. |
+|| BRU-003 | Deleting a generated `watchlist` or `alert_rule` cascades and removes the associated `tenant_crisis_templates` record. |
+|| BRU-004 | Platform `crisis_templates` are not tenant-scoped and are read-only for tenant users in v1. |
+|| BRU-005 | The playbook is advisory in v1; the system does not enforce steps, track completion, or raise SLA breaches. |
+|| BRU-006 | Default query and thresholds are copied at activation time; later changes to the platform template do not affect existing activations. |
+|| BRU-007 | Activation requires the caller to have the `Tenant-Brand-Reputation-Manager` or `Tenant-Admin` role. |
+|| BRU-008 | Only templates with `is_active = true` may be listed and activated. |
+|| BRU-009 | Every `required` template parameter must be present in the supplied `variables` map or activation fails. |
+|| BRU-010 | `customThresholds` and `default_thresholds` must validate against the core `AlertRuleThresholds` schema before any database write. |
+|| BRU-011 | Activation requires at least one `notificationChannelIds` entry. |
 
 ---
 
 ## 10. Data Requirements
 
 || Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 || `crisis_templates` | Platform default templates, queries, thresholds, and playbooks | Platform seed data / Platform Admin | Platform | Configuration data (not PII) |
 || `tenant_crisis_templates` | Per-tenant activation record linking a template to the created `watchlist` and `alert_rule` | Activation flow | Tenant | Tenant-scoped identifiers and internal IDs |
 || `watchlist_id` | Reference to the watchlist created on activation | Existing watchlist service | Tenant | Internal reference |
 || `alert_rule_id` | Reference to the alert rule created on activation | Existing alert-rule service | Tenant | Internal reference |
 || `playbook` | Ordered triage steps with owner, action, and recommended SLA minutes | `crisis_templates` | Platform | Operational guidance (advisory) |
+|| `variables` | Activation-time parameter values such as `brand_name` and `competitors` | Caller / wizard | Tenant | Tenant business inputs |
+|| `custom_thresholds` | Threshold overrides supplied at activation | Caller / wizard | Tenant | Tenant business configuration |
+|| `notificationChannelIds` | Target delivery channels for the generated `alert_rule` | Existing notification channel service | Tenant | Internal identifiers |
 || `created_by_user_id` | User who performed the activation | Activation flow | Tenant | Internal user identifier |
 
 ---
@@ -178,7 +190,7 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 ## 11. Reporting and Analytics
 
 || Report / Metric | Purpose | Audience | Frequency |
-|---|---|---|---|
+|---|---|---|---|---|
 || Number of active crisis templates per tenant | Track adoption and coverage | Product / Operations | Daily |
 || Average time to activate a template | Measure setup speed and UX improvement | Product / Engineering | Weekly |
 || Activations by crisis type | Understand which risks tenants care about most | Product / Marketing | Weekly |
@@ -190,10 +202,10 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 ## 12. Risks and Mitigations
 
 || ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 || R-001 | Default templates may not fit every tenant, causing false positives or missed crises | Medium | Medium | Allow customization before activation; validate thresholds against `alert_rule` capabilities | Product Owner |
 || R-002 | Users may expect playbook steps to be enforced as a workflow | Medium | Low | Clearly label the playbook as advisory in v1 and document future workflow plans | UX Lead |
-|| R-003 | Permission model for editing activated templates is not yet decided (open ADR question) | Medium | Medium | Restrict editing to the activator or a `Tenant-Admin` until the question is resolved | Engineering Lead |
+|| R-003 | Mustache-style parameter interpolation may produce an invalid AST | Medium | Medium | Validate and substitute variables before compiling the AST; test per template | Engineering Lead |
 || R-004 | New or updated templates require a management surface not built in v1 | Medium | Low | Seed initial templates in a migration; plan a Platform Admin management UI for later | Product Owner |
 || R-005 | Broad default queries may match too many posts and create quota or volume risk | Medium | High | Provide preview/warning before activation; support threshold and source customization | Engineering Lead |
 
@@ -202,7 +214,7 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 ## 13. Dependencies
 
 || ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 || D-001 | ADR-0044 — watchlist and `alert_rule` primitives | Internal / Architectural | Engineering Lead | In place; this feature reuses it |
 || D-002 | ADR-0021 — boolean query AST | Internal / Architectural | Engineering Lead | In place for default query parsing |
 || D-003 | Real-time alerts pipeline | Internal / Existing | Engineering Lead | In place; this feature feeds into it |
@@ -213,14 +225,16 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 
 ## 14. Acceptance Criteria
 
-- The `crisis_templates` and `tenant_crisis_templates` tables are created with the columns defined in ADR-0079.
-- `GET /v1/crisis-templates` returns the list of active templates and their preview data.
-- `POST /v1/crisis-templates/:id/activate` creates a `watchlist` and `alert_rule` owned by the caller and returns their identifiers plus the activation record id.
-- Activation copies the current default query and thresholds; subsequent changes to the platform template do not affect already-activated instances.
+- The `crisis_templates` and `tenant_crisis_templates` tables are created with the columns and foreign keys defined in ADR-0079.
+- `crisis_templates` contains the five v1 templates: Brand Crisis, Product Recall, Executive Attack, Competitor Surge, and Data-Breach Rumor.
+- `GET /v1/crisis-templates` (or equivalent list endpoint) returns the list of active templates and their preview data.
+- `POST /v1/crisis-templates/:templateKey/activate` validates required variables and thresholds, creates a `watchlist` and `alert_rule` owned by the caller, and returns `tenantCrisisTemplateId`, `watchlistId`, `alertRuleId`, `status`, and `playbook`.
+- Activation copies the current default query, thresholds, and playbook; subsequent changes to the platform template do not affect already-activated instances.
 - The playbook is returned as advisory data and is not executed or enforced by the back end in v1.
-- The *Crisis Threshold Wizard* lists templates, shows a preview, allows threshold customization, calls the activation endpoint, and navigates to the new watchlist.
+- The *Crisis Threshold Wizard* lists active templates, shows default query/default thresholds/playbook, allows threshold customization, calls the activation endpoint, and navigates to the new watchlist.
 - Activation errors and quota risks are surfaced inline in the wizard.
 - Cross-tenant access is blocked; tenant users cannot see or modify another tenant's activations.
+- Deleting a generated `watchlist` or `alert_rule` cascades and removes the related `tenant_crisis_templates` record.
 
 ---
 
@@ -247,10 +261,12 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 
 ### Reference documents
 
-- ADR-0079 — `docs/adr/0079-crisis-template-bundle-and-activation.md` (source, currently Proposed)
+- ADR-0079 — `docs/adr/0079-crisis-template-bundle-and-activation.md` (source, Accepted 2026-08-23)
 - Feature design — `docs/product-research/feature-designs/20-crisis-threshold-wizard.md`
 - Feature-to-ADR scoping — `docs/product-research/feature-adr-scoping.md`
-- User stories — `docs/user-stories/epic-9-adr-0077-to-0085.md` (Story 9.3 and Story 9.4)
+- User stories — `docs/user-stories/epic-9-adr-0077-to-0085.md`
+  - Story 9.3 — Crisis template bundle and activation (backend)
+  - Story 9.4 — Crisis threshold wizard (frontend)
 - Related ADRs — ADR-0044 (watchlist CRUD), ADR-0021 (boolean query AST)
 
 ### Missing source
