@@ -11,6 +11,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.1 — Next.js scaffold and Entra sign-in (server-side session)
 
 **Source:** ADR-0036 · **Status:** Ready — ADR-0036 accepted 2026-08-04 ("ADR 0036 is approved"). Also has a real cross-repo prerequisite: `social-listening-core` needs a new `GET /v1/me`-shaped endpoint (ADR-0036 §5) that does not exist today — confirmed directly against `src/identity/identityResolution.ts` and every `versions/v1/*Router.ts` file. That endpoint is `social-listening-core` work, out of this repo's/this document's own scope to build, and must exist before this story's AC6 can be verified end-to-end. **2026-08-05: that endpoint now has its own story, Story 5.11** (`docs/user-stories/epic-5-security-isolation-and-messaging.md`, Epic 5, Ready, not yet built) — sourced from ADR-0036 §5 directly, no new ADR. This story's own dependency is unchanged: still blocked in practice until Story 5.11 is actually built, not merely drafted. **2026-08-05, later the same day: Story 5.11 is now built** (`contracts/epic-5/story-5.11.get-v1-me.contract.test.ts`, `docs/implementation-log.md`) — this story's AC6 dependency is satisfied.
+**Built:** 2026-08-04 — social-listening-admin@c643553
 
 **Implemented 2026-08-04 — already built and contract-verified** (`social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts`, 18/18 assertions passing against real infrastructure, no mock — see `docs/implementation-log.md`). Every AC above is met except the one this Status line already named as blocked (the `GET /v1/me` round trip — `fetchResolvedIdentity()` is built and degrades gracefully to `null` while that endpoint doesn't exist, proven directly, not assumed). Real infrastructure provisioned for this story specifically: a dedicated Entra app registration (`social-listening-admin`, confidential Web client, exact-match redirect URI) and a dedicated test user in the same real tenant Story 5.6 provisioned — never `ENTRA_TEST_TARGET_USER_ID`, which Story 5.7/5.8's own break-glass contracts reset the password of. **Auth.js/NextAuth.js verified directly, not just web-searched, per ADR-0036 §3's own instruction:** its documented `microsoft-entra-id` provider names only workforce issuer forms, and its generic custom-OIDC-provider path has no confirmed support for Entra External ID/CIAM either — confirms, doesn't overturn, ADR-0036's own default; the bespoke Authorization Code + PKCE flow (via `openid-client`) was built as specified. **One implementation-time naming correction from ADR-0036 §4's own text:** "Next.js Middleware" is `src/proxy.ts` here, not `src/middleware.ts` — Next.js 16 renamed and moved the convention to the Node.js runtime (the deprecated `middleware.ts` convention still defaults to Edge), which turned out load-bearing, not cosmetic, for this story's own server-side session store (see `social-listening-admin/.claude/skills/admin-auth-session/SKILL.md`'s own "Load-bearing constraints"). The session cookie itself ended up a `{ sid }` reference into an in-memory, `globalThis`-anchored store, not the tokens directly — confirmed necessary, not a design preference: Entra's real `id_token`/`access_token`/`refresh_token` together exceed the ~4KB per-cookie limit browsers enforce, and a browser silently drops an oversized `Set-Cookie` rather than erroring.
 
@@ -77,7 +78,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.4 — Watchlist management screen, real rework against ADR-0044's ownership/PATCH/locking contract
 
-**Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.5's real REST surface (as reworked 2026-08-12 by ADR-0044) · **Status:** Built (real rework, 2026-08-12) — previously marked "Built" in error on 2026-08-05; see the rework note below for the fix and this line for the real build.
+**Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.5's real REST surface (as reworked 2026-08-12 by ADR-0044) · **Status:** Ready
+**Built:** 2026-08-12 — social-listening-admin@fded97b
 
 **Built 2026-08-12 (real rework, superseding the erroneous 2026-08-05 "Built" note above).** `social-listening-admin/src/app/tenant/watchlists/page.tsx` is now a real async Server Component: a real `GET /v1/watchlists` call (no fixture data), `WatchlistForm.tsx` (create + RFC 7396 merge-patch edit, `If-Match`/version-based optimistic locking, `409`/`428`/`422` each handled distinctly), `WatchlistRow.tsx` (a dedicated single-field `isActive` toggle, and a two-click delete confirm), and `src/app/api/watchlists/route.ts`/`src/app/api/watchlists/[id]/route.ts` (thin same-origin proxies to four new `core-client.ts` functions: `listWatchlists()`, `createWatchlist()`, `updateWatchlist()`, `deleteWatchlist()`). Platform scoping is deliberately narrowed to real `SocialConnector` platforms only (`gnews`, `newswire`) — not Story 6.3's broader connect/disconnect list, which also includes AI enrichment providers a watchlist cannot legitimately be scoped to. New contract: `contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts` (25/25, real behavioral assertions — mocked-fetch core-client unit tests and Route Handler proxy tests, no jsdom in this repo, the same split Stories 6.3/6.8 already established). **A real cross-component regression was found and healed in the same pass, not worked around:** `contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts`'s own "Story 6.4" block still called the old synchronous fixture `WatchlistsPage()` directly, unmocked — once the real page started calling `cookies()` for real, that broke with Next.js's own "cookies called outside a request scope" error. Root-caused directly (stashed the change, confirmed the ripple contract passed on the clean baseline, confirmed it failed once restored) before fixing — healed via `heal-contract-failure`, upgrading that block to the identical real-session-plus-real-fetch-mocking pattern the Story 6.3 block in that same file already established for the identical prior migration (2026-08-10). Full `social-listening-admin` contract suite after: 12/12 suites, 153/153 tests passing. See `docs/implementation-log.md` for the commit.
 
@@ -144,6 +146,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.7 — Self-service sign-up: new user becomes first Tenant-Admin of a new tenant
 
 **Source:** ADR-0037 (Accepted 2026-08-04) · **Status:** Ready — ADR-0037 accepted 2026-08-04 ("ADR 0037 is approved as well"), together with three direct instructions folded into the ADR's new §8 (email-verification precondition; a Tenant-Admin-facing "Same-Domain Invite Assist" proposal on domain-match rejection; a Platform-Admin-visible escalation signal for repeated attempts). Also has two real cross-repo prerequisites, neither of which exists today: (1) a new `POST /v1/tenants/self-service-signup`-shaped `social-listening-core` endpoint (ADR-0037's own "Named as required, not designed here" section) that accepts a validated-but-otherwise-unmatched Entra bearer token and provisions a tenant plus its first Tenant-Admin atomically; (2) `GET /v1/me` (ADR-0036 §5, built 2026-08-05 as Story 5.11 — see Story 6.1's own updated Status line above), needed after a successful sign-up to hydrate the admin UI's session with the caller's newly-resolved `tenant_admin` identity, exactly the way Story 6.1 already depends on it for ordinary sign-in. **Also practically sequenced after Story 6.1** — this story reuses Story 6.1's own BFF session mechanism (server-side session cookie, `core-client.ts`'s single bearer-attachment choke point) rather than inventing a second one; it does not exist as a standalone screen outside that session shape.
+**Built:** 2026-08-09 — social-listening-admin@2b44637
 
 **2026-08-06 — the first of this story's two cross-repo prerequisites is now built.** `POST /v1/tenants/self-service-signup` exists, contract-verified, in `social-listening-core` (Story 5.15) — see `docs/implementation-log.md`. Both named prerequisites are now satisfied (`GET /v1/me` since Story 5.11); this story's own remaining status is purely about this document's own not-yet-built UI work. **Not yet safe for real, untrusted traffic** — `docs/implementation-plan.md`'s own caution stands: Story 5.18 (rate-limiting, ADR-0040, Ready but unbuilt) is a precondition before this endpoint is exposed publicly, per ADR-0037 §7.
 
@@ -266,6 +269,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.12 — Tenant-owned-feed connector setup UI
 
 **Source:** ADR-0050 (Accepted) · **Status:** Ready — no new ADR needed, ADR-0050 already fully specifies the connect/verify flow; same precedent Story 6.3 used for the original connect/disconnect screen against ADR-0034's REST surface.
+**Built:** 2026-08-13 — social-listening-admin@e1e9913
 
 **Drafted 2026-08-12**, same cross-reference pass as Story 6.11 above. Closes a gap in work built the same day: the `tenant-owned-feed` connector (Story 2.11) has real `POST /v1/connectors/tenant-owned-feed/connect` and `POST /v1/connectors/tenant-owned-feed/verify-domain` endpoints, but no tenant can reach them — confirmed directly, zero references to `tenant-owned-feed` anywhere in `social-listening-admin`. Story 6.3's existing connect screen structurally cannot absorb this connector as a simple platform-list addition: its `ConnectForm`/`DisconnectButton` components assume a single-field (or JSON-encoded multi-field) credential submission, not a two-step domain+feedUrl-then-DNS-TXT-verification flow with its own `pending`/`verified` state.
 
@@ -289,6 +293,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.13 — Self-service tenant deletion/offboarding UI
 
 **Source:** ADR-0043 (Accepted) · **Status:** Ready — no new ADR needed, ADR-0043 already fully specifies the request/export/grace-period/cancel/confirm flow; same "ordinary CRUD/UI surface against an already-real REST surface" precedent as Story 6.3.
+**Built:** 2026-08-13 — social-listening-admin@500a4b9
 
 **Drafted 2026-08-12**, from a second, exhaustive cross-reference pass (every mounted `/v1` router against every `core-client.ts` function, not sampling) requested by Menno after the first drafting pass found Stories 6.4/6.5/6.6's fixture-data problem. Found the single largest remaining gap: `POST /v1/tenants/self-service-deletion/request`, `POST .../export`, `DELETE /v1/tenants/self-service-deletion` (cancel), and `POST .../confirm` (Story 3.8, the full request → export → 30-day-grace-period → cancel-or-confirm → irreversible-async-delete flow) are real, contract-verified, and completely absent from `social-listening-admin` — zero references anywhere in the repo. A Tenant-Admin who wants to offboard their own tenant today has no way to do it except calling the REST API directly, for a flow whose final step is genuinely irreversible.
 
@@ -333,7 +338,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.15 — Activate/deactivate controls on the connectors and connector-status screens
 
-**Source:** ADR-0051 (Accepted 2026-08-12) · **Status:** Built 2026-08-12 — no new ADR needed, the same "ordinary UI/CRUD surface" category Stories 6.3/6.4/6.5 already established. Depends on Story 1.11 (`POST .../activate|deactivate`, built) and **Story 1.12** (`GET /v1/connectors/:platformId` returning real `isActive`, Ready but not yet built as of this drafting) — this story cannot correctly render current activation state on page load until Story 1.12 ships; it can be built and its own contract written against Story 1.12's not-yet-existing field in the meantime, the same "contract written, implementation waits on a named dependency" sequencing Story 1.9 already used for Story 5.17.
+**Source:** ADR-0051 (Accepted 2026-08-12) · **Status:** Ready — no new ADR needed, the same "ordinary UI/CRUD surface" category Stories 6.3/6.4/6.5 already established. Depends on Story 1.11 (`POST .../activate|deactivate`, built) and **Story 1.12** (`GET /v1/connectors/:platformId` returning real `isActive`, Ready but not yet built as of this drafting) — this story cannot correctly render current activation state on page load until Story 1.12 ships; it can be built and its own contract written against Story 1.12's not-yet-existing field in the meantime, the same "contract written, implementation waits on a named dependency" sequencing Story 1.9 already used for Story 5.17.
+**Built:** 2026-08-12 — social-listening-admin@cc7cae2
 
 **Drafted 2026-08-12, at Menno's own direct request**, alongside Stories 1.12 and 2.12, closing out the three named "deliberately out of scope" items from Story 1.11's own text that are ready to be storied now (the fourth, live credential validation, and the fifth, auto-deactivation, are not — see this session's own separate note on why).
 
@@ -390,7 +396,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.19 — Render the post detail body as real, formatted Markdown
 
-**Source:** Story 3.10/ADR-0053's already-built `body_markdown` field, against Story 6.11's own post detail screen · **Status:** Built 2026-08-17 — no new ADR needed, exposes an already-real, already-populated column over REST (`SocialPostSummary`/`SocialPostFull`, unmodified queries widened, not a new endpoint), the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 6.16 already established for this exact pair of screens.
+**Source:** Story 3.10/ADR-0053's already-built `body_markdown` field, against Story 6.11's own post detail screen · **Status:** Ready — no new ADR needed, exposes an already-real, already-populated column over REST (`SocialPostSummary`/`SocialPostFull`, unmodified queries widened, not a new endpoint), the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 6.16 already established for this exact pair of screens.
 **Built:** 2026-08-17 — social-listening-admin@4f099a6 (core half: social-listening-core@aa4f317)
 
 **Requested directly by Menno** ("could you ensure the body that is presented in the UI is rendered to Markdown language? it now displays raw markdown"), found to be a real, confirmed gap on investigation, not a rendering-only bug: `social_posts.body_markdown` (Story 3.10, all three real connectors' `ingestX()` functions already populate it — clean prose, HTML stripped, converted via the canonical `htmlToMarkdown()` pipeline) has never been exposed by `GET /v1/posts`/`GET /v1/posts/:id` at all — confirmed directly against `socialPostStore.ts`'s `SocialPostSummary`/`SocialPostFull` interfaces and their own SQL queries, neither of which selects `body_markdown`. What the UI shows today is `rawPayload.description` — for Newswire/tenant-owned-feed, confirmed live to still contain raw, un-stripped HTML tags (`<p>...</p>`), rendered as literal escaped text since React never treats a string prop as HTML. No Markdown-rendering library exists anywhere in `social-listening-admin` today either — even once fetched, `body_markdown` would need real rendering, not just display.
@@ -415,6 +421,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.17 — Tenant-wide activate/deactivate control on the tenant-owned-feed connector screen
 
 **Source:** ADR-0051 (Accepted 2026-08-12), extending Story 6.15's own already-built wiring pattern to a screen Story 6.15 never covered · **Status:** Ready — no new ADR needed. This is not a new architectural decision: ADR-0051 already fully decided the two-table, ownership-scoped activation mechanism and its REST surface; ADR-0028/ADR-0034 already decided the `tenant_admin`-only authorization split for the tenant-wide scope. This story wires an already-decided, already-built, already-generic backend mechanism onto one more screen — the identical "expose/wire an already-decided policy over REST, no new decision" category Story 6.16's own text used to justify skipping a new ADR for `POST /v1/posts/:id/enrich`, and the category Story 6.15 itself already established for wiring the same mechanism onto the Story 6.3/6.5 screens.
+**Built:** 2026-08-13 — social-listening-admin@d0eb088
 
 **Drafted 2026-08-13, from a real, freshly-confirmed gap found by direct code inspection, not assumed from either story's own "Built" text.** `tenant-owned-feed` (ADR-0050, Story 2.11/6.12) has two entirely separate pieces of persisted state that nothing in this project has ever connected:
 
@@ -468,7 +475,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.20 — Multi-feed administration for the tenant-owned-feed connector (list, edit, remove)
 
-**Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Built 2026-08-17
+**Source:** [ADR-0057](../adr/0057-tenant-owned-feed-multi-feed-administration.md), Accepted 2026-08-17 — resolves ADR-0050's own Open Question 2, left open since that ADR's 2026-08-11 acceptance · **Status:** Ready
 **Built:** 2026-08-17 — social-listening-admin@be1764d (core half: social-listening-core@e9d797f)
 
 **Requested directly by Menno** ("what needs to change to enable the feeds to be administered?", then "let's build the new ADR"). The storage/polling layers already supported multiple feeds per tenant (`tenant_owned_feed_activations` has no uniqueness constraint; `getVerifiedActivations()`/`pollTenantOwnedFeed()` already iterate every verified row) — but nothing above them exposed it: `tenantOwnedFeedRouter.ts` had exactly two routes (`connect`, `verify-domain`), and `TenantOwnedFeedSetup.tsx` was a single-activation state machine with no path to a second feed once one was verified.
@@ -536,7 +543,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 **Built:** 2026-08-18 — social-listening-admin@535338f
 
-**Source:** ADR-0059 (Accepted 2026-08-18), against Story 2.15's real backend surface · **Status:** Built 2026-08-18, with the same precondition Story 2.15 itself carries, inherited rather than repeated in full: this story's own OAuth flow and Page picker can be built and proven against a Menno-administered test Page under Meta's Standard Access (no App Review needed for that degenerate case, per ADR-0059 Decision §3) — onboarding any real, unaffiliated tenant's Page still requires SocialEngage's own Meta App to separately clear Business Verification and App Review first. Not blocked on Story 2.15 being fully built first — both can be developed in parallel against the same ADR, but this story's own end-to-end proof needs Story 2.15's OAuth exchange/token storage to exist.
+**Source:** ADR-0059 (Accepted 2026-08-18), against Story 2.15's real backend surface · **Status:** Ready, with the same precondition Story 2.15 itself carries, inherited rather than repeated in full: this story's own OAuth flow and Page picker can be built and proven against a Menno-administered test Page under Meta's Standard Access (no App Review needed for that degenerate case, per ADR-0059 Decision §3) — onboarding any real, unaffiliated tenant's Page still requires SocialEngage's own Meta App to separately clear Business Verification and App Review first. Not blocked on Story 2.15 being fully built first — both can be developed in parallel against the same ADR, but this story's own end-to-end proof needs Story 2.15's OAuth exchange/token storage to exist.
 
 **Drafted 2026-08-18, at Menno's own direct request**, immediately after ADR-0059's acceptance: Facebook is this project's first `authMode: 'oauth'` connector (every existing connector uses `'none'` or `'apiKey'`) and its first Tier-3-only connector (ADR-0059 Decision §4 — no `ownerType: 'tenant'` path exists for it at all, unlike every platform Story 6.3's existing `ConnectForm` already handles). Story 6.3's own connect flow assumes a single-step form submission (an API key field, or nothing for `authMode: 'none'`) — it has no redirect-based OAuth mechanism, and no concept of a provider returning a *list* of connectable assets (Meta's `/me/accounts`, the Pages the authenticating individual's own account administers) that the caller must choose among before a connection is actually made. Both gaps are real, not cosmetic — a plain reuse of `ConnectForm` cannot represent either. This story also gives ADR-0028's own still-open, named UX question (`docs/open-decisions.md`: "the user-activation flow's exact UX — how a user learns a tier-3/user-bound credential is available to activate — undesigned, blocks Story 6.3") its first concrete, built instance, though it resolves that question only for this one connector, not as a general pattern — named here, not overclaimed.
 
@@ -722,7 +729,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.30 — Brave Search API Connector Setup, Activation, and Status Screen
 
-**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** 2026-08-21 — social-listening-admin@dedfb6b
 **Depends on:** Story 2.21 (`brave-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant Administrator,
@@ -758,7 +766,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.31 — Human-in-the-Loop Post Enrichment Cascading Edit Drawer
 
-**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** not yet
 **Depends on:** Story 3.13 (Post enrichment override API & precedence guard in `social-listening-core`), Story 6.15 (Post detail panel), Story 6.16 (Post enrichment display & re-enrichment action)
 
 **As a** Tenant User or Tenant-Admin,
@@ -800,7 +809,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
 
-**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** not yet
 **Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant Administrator,
@@ -837,7 +847,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
 
-**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** not yet
 **Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
 
 **As a** Tenant User or Tenant-Admin reviewing ingested social posts,
@@ -871,7 +882,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** not yet
 **Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
 
 **As a** Tenant Administrator or User,
@@ -921,7 +933,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Built:** not yet
 **Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
 
 **As a** Tenant Administrator or User,
@@ -1068,7 +1081,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.39 — Polypost Composer Real Publish Flow
 
-**Source:** ADR-0075 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0075 acceptance
+**Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
 **Built:** not yet
 **Depends on:** Story 3.15 (`POST /v1/outbound/posts` endpoint), Story 2.29 (Facebook Page `publish()`)
 
@@ -1091,7 +1104,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.40 — Tenant settings screen: styled workspace profile, export actions, and offboarding link
 
-**Source:** ADR-0074 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0074 acceptance and backend endpoints (Story 3.16)
+**Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Ready — depends on Story 3.16 (backend endpoints)
 **Built:** not yet
 **Depends on:** Story 3.16 (`/v1/tenants/me/export/workspace` and posts CSV), existing `GET /v1/tenants/me` (Story 1.8), existing `/tenant/settings/delete` (Story 6.13)
 
@@ -1119,7 +1132,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.41 — Composer Deep Research panel UI
 
-**Source:** ADR-0076 (Proposed 2026-08-22) · **Status:** Blocked — pending ADR-0076 acceptance and Story 3.17
+**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready — depends on Story 3.17
 **Built:** not yet
 **Depends on:** Story 6.36 (Polypost Composer), Story 3.17 (`POST /v1/composer/research`)
 

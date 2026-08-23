@@ -3,6 +3,7 @@
 ## Story 4.1 — Raw author-topic signals for expert-finding
 
 **Source:** ADR-0007 · **Status:** Ready
+**Built:** 2026-07-30 — social-listening-core@16d6fea
 
 **As an** API consumer (e.g., a future Social Selling subsystem),
 **I want** `GET /topics/:topic/authors` backed by a periodically refreshed `AuthorTopicSignal` view exposing raw signals — `mentionCount`, `activeMonthsCount`, `avgEngagement`, `sentimentBreakdown` — with no baked-in composite score,
@@ -12,12 +13,15 @@
 - `AuthorTopicSignal` contains no `expertiseScore` or equivalent computed field — only raw counts/dates/breakdowns.
 - `GET /topics/:topic/authors` accepts `sortBy=activeMonths|mentionCount` and sorts accordingly.
 - The view is refreshed on a schedule (see Story 4.4, ADR-0022), not recomputed live on every request.
+- Author-topic signals are tenant-scoped and cannot be accessed across tenants.
+- A consumer can retrieve the same raw-signal row shape repeatedly without schema breaking when new fields are added later.
 
 ---
 
 ## Story 4.2 — Deferred topic time-series aggregation
 
 **Source:** ADR-0008 · **Status:** Ready
+**Built:** 2026-07-30 — social-listening-core@ec66c3b
 
 **As a** subsystem architect scoping this subsystem's boundaries,
 **I want** `SocialPost` to consistently capture `enrichment.entities`, `enrichment.keyPhrases`, and `publishedAt` without this subsystem building a `TopicDailyCount` table or any charting UI,
@@ -35,6 +39,7 @@
 ## Story 4.3 — Derived connector health from IngestionRun history
 
 **Source:** ADR-0009 · **Status:** Ready
+**Built:** 2026-07-29 — social-listening-core@10e7c43
 *(Story 2.5 / ADR-0023, accepted 2026-07-29 and implemented 2026-07-30, supersedes the flat threshold named in AC2 below — per ADR-0009's "Supersession update" note. This story's own contract needed no assertion changes; see `docs/user-stories/README.md`'s "Known cross-story conflict" note.)*
 
 **As a** tenant administrator,
@@ -46,12 +51,14 @@
 - `failing` is derived from a connector-level failure threshold (originally the flat ≥10/hour placeholder; superseded 2026-07-30 by Story 2.5's rate-relative rule — ≥50% of ≥5 attempts in the trailing hour, or ≥20 consecutive failures); `degraded` as recent failures with a success within the last hour; `disconnected` as zero recorded runs; `healthy` otherwise.
 - `credentialStatus` is read from the `Credential` entity directly, not derived from run history.
 - A test that manually inserts a known sequence of `IngestionRun`s and asserts the resulting derived status for all four states passes without any separate health-table writes.
+- `GET /v1/connectors` and `GET /v1/connectors/:platformId` return derived health without embedding any tenant-scoped content in the response.
 
 ---
 
 ## Story 4.4 — Derived-data caching and refresh strategy
 
 **Source:** ADR-0022 · **Status:** Ready (accepted 2026-07-29; scheduled for Phase 4 — see `docs/implementation-plan.md`; 60s TTL, hourly refresh, and in-process cache locality all kept as originally proposed, per ADR-0022's Acceptance note)
+**Built:** 2026-07-30 — social-listening-core@56385ba
 
 **As a** platform operator supporting frequent `GET /connectors` polling from the admin UI,
 **I want** `ConnectorHealth` served from a short-TTL read-through cache that's always reconstructable from `IngestionRun`, and `AuthorTopicSignal` refreshed hourly via a scheduled job,
