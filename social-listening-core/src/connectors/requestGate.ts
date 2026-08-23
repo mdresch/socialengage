@@ -1,4 +1,4 @@
-import { AIProviderConnector, ProviderConnector, RateLimitConfig } from './types';
+import { AIProviderConnector, ProviderConnector, RateLimitConfig, SocialConnector } from './types';
 import { resolveRateLimitConfig } from './rateLimitResolution';
 
 interface GateState {
@@ -157,6 +157,17 @@ export async function acquireForAiModel(
     ? connector.parseRateLimitHeaders(liveHeaders)
     : undefined;
   return acquire(key, { ...declared, ...live });
+}
+
+export function outboundKey(tenantId: string, connector: ProviderConnector): string {
+  return `${tenantId}:${connector.providerId}:outbound`;
+}
+
+/** Gates per (tenantId, providerId, 'outbound') — separate from ingestion polls (ADR-0073). */
+export async function acquireForOutbound(tenantId: string, connector: SocialConnector): Promise<void> {
+  const key = outboundKey(tenantId, connector);
+  const config = connector.getOutboundRateLimitConfig?.() ?? connector.getRateLimitConfig();
+  return acquire(key, config);
 }
 
 /** Test-only: isolates contract tests that would otherwise share gate state by key collision. */

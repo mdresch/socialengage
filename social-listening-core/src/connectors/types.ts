@@ -1,6 +1,7 @@
 import { WatchlistTerms } from '../watchlists/types';
 import { AstNodeType } from '../watchlists/ast';
 import { RunIngestionAttemptResult } from '../ingestion/runIngestionAttempt';
+import { SocialPostSummary } from '../posts/socialPostStore';
 
 export type AuthMode = 'oauth' | 'api_key' | 'none';
 
@@ -75,6 +76,13 @@ export interface SocialConnector extends ProviderConnector {
    * *will*.
    */
   canProvideFollowerCountAtPublish?: boolean;
+  /**
+   * Story 2.26 (ADR-0073) — optional outbound reply/comment capability. Connectors
+   * that do not implement it fail with `reply_not_supported` through the
+   * outbound service.
+   */
+  getOutboundRateLimitConfig?(): RateLimitConfig;
+  reply?(post: SocialPostSummary, body: string, credential: string): Promise<{ externalId: string; externalUrl: string }>;
   /**
    * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
    * deliveryMode: 'poll'. The scheduler's one generic invocation surface —

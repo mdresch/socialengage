@@ -7,7 +7,12 @@ export type ErrorKind =
   | 'malformed_watchlist'
   | 'queue_ttl_exceeded'
   | 'queue_depth_exceeded'
-  | 'tenant_deletion_requested';
+  | 'tenant_deletion_requested'
+  | 'missing_permission'
+  | 'post_not_found'
+  | 'reconnect_required'
+  | 'rate_limited'
+  | 'reply_not_supported';
 
 const RETRYABLE_KINDS: ReadonlySet<ErrorKind> = new Set(['rate_limit', 'network', 'http_5xx']);
 const CREDENTIAL_KINDS: ReadonlySet<ErrorKind> = new Set(['http_401', 'http_403']);
