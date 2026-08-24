@@ -373,7 +373,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.16 — Manual "run enrichment now" button on the post detail screen
 
-**Source:** Story 6.11's own post detail screen, against Story 2.8/2.9's already-built `enrichPost()` · **Status:** Ready — no new ADR needed, exposes an already-real internal function over a new REST endpoint, the same "ordinary CRUD-adjacent surface, no new architectural decision" category `GET /v1/me` and Story 1.12 already established.
+**Source:** Story 6.11's own post detail screen, against Story 2.8/2.9's already-built `enrichPost()` · **Status:** Built 2026-08-12 — no new ADR needed, exposes an already-real internal function over a new REST endpoint, the same "ordinary CRUD-adjacent surface, no new architectural decision" category `GET /v1/me` and Story 1.12 already established.
+**Built:** 2026-08-12 — social-listening-admin@21da4f5 (core half: social-listening-core@51a2b40)
 
 **Drafted 2026-08-12, requested directly by Menno while manually testing Story 6.11's post detail screen** — real posts ingested before either AI provider had a stored credential permanently show `enrichment: null` (confirmed directly: `enrichPost()` is only ever called inline during ingestion, nothing re-processes an already-stored post). Menno asked for a button, not a one-off backfill script, so this is real, reusable, ordinary product surface, not a throwaway fix.
 
