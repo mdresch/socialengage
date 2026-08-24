@@ -198,7 +198,8 @@
 
 ## Story 1.9 — User invitation and offboarding REST surface
 
-**Source:** ADR-0032 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0032 §6 (invite/link flow) and §9 (`access_ends_at`) already fully designed the schema, RLS, and seat-enforcement mechanics this story exposes over HTTP; the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+**Source:** ADR-0032 (Accepted) · **Status:** Built 2026-08-09 — no new ADR needed. ADR-0032 §6 (invite/link flow) and §9 (`access_ends_at`) already fully designed the schema, RLS, and seat-enforcement mechanics this story exposes over HTTP; the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+**Built:** 2026-08-09 — social-listening-core@3badf2f
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: Story 5.9's own Acceptance Criteria assume "Tenant-Admin creates a `users` row in `invited` status" and that `access_ends_at` gets set for offboarding, but no story builds the endpoint for either — the same shape of gap Story 1.5 already closed for watchlists, confirmed directly against the current router files (no `/v1/tenants/users` route exists anywhere).
 
