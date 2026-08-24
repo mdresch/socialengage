@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-24 | 05:33 | — | — | Review | — | chore: record post-commit hook outputs for this scheduled review's own commits (8b9bd14) |
 | 2026-08-24 | 05:33 | — | — | Review | — | Scheduled doc review: Documentation Steward pass (2026-08-24) (3a8ff91) |
 | 2026-08-24 | 05:24 | — | — | Review | — | Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24) (5ff1879) |
 | 2026-08-22 | 01:17 | — | — | Documentation | ADR-0076 | docs: persist ADR-0076, implementation stories, and pending design docs (3e86b5f) |
