@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -10,14 +10,24 @@ import { StackedBarChart, type StackedBarItem } from "@/components/charts/Stacke
 import { VelocityAreaChart } from "@/components/charts/VelocityAreaChart";
 import { StatSparkline } from "@/components/charts/StatSparkline";
 import { CODEBASE_METRICS, EPICS_SUMMARY, ADR_LIST, STORIES_LIST } from "@/lib/project-dashboard/data";
+import type { DrawerItem } from "./DetailDrawer";
 
-export function OverviewView() {
-  const totalStories = STORIES_LIST.length;
-  const builtStories = STORIES_LIST.filter(s => s.isBuilt).length;
-  const pendingStories = totalStories - builtStories;
-  const progressPct = Math.round((builtStories / totalStories) * 100);
+export interface OverviewViewProps {
+  onSelectItem?: (item: DrawerItem) => void;
+  onNavigateTab?: (tab: string) => void;
+}
 
-  const acceptedAdrs = ADR_LIST.filter(a => a.status.toLowerCase().includes("accepted")).length;
+export function OverviewView({ onSelectItem, onNavigateTab }: OverviewViewProps) {
+  const [simulatedPendingBuilt, setSimulatedPendingBuilt] = useState(false);
+
+  const baseTotalStories = STORIES_LIST.length;
+  const baseBuiltStories = STORIES_LIST.filter((s) => s.isBuilt).length;
+  
+  const builtStories = simulatedPendingBuilt ? baseTotalStories : baseBuiltStories;
+  const pendingStories = simulatedPendingBuilt ? 0 : baseTotalStories - baseBuiltStories;
+  const progressPct = Math.round((builtStories / baseTotalStories) * 100);
+
+  const acceptedAdrs = ADR_LIST.filter((a) => a.status.toLowerCase().includes("accepted")).length;
   const proposedAdrs = ADR_LIST.length - acceptedAdrs;
 
   // Codebase Donut Data
@@ -29,39 +39,78 @@ export function OverviewView() {
   ];
 
   // Epic Stacked Bar Data
-  const epicBarData: StackedBarItem[] = EPICS_SUMMARY.map(ep => ({
+  const epicBarData: StackedBarItem[] = EPICS_SUMMARY.map((ep) => ({
     id: ep.id,
     label: ep.title,
-    built: ep.built,
-    pending: ep.pending,
+    built: simulatedPendingBuilt ? ep.total : ep.built,
+    pending: simulatedPendingBuilt ? 0 : ep.pending,
     total: ep.total,
-    progressPct: ep.progressPct,
+    progressPct: simulatedPendingBuilt ? 100 : ep.progressPct,
   }));
 
   return (
     <div className="space-y-6">
-      {/* Top Interactive Metric Cards with Sparklines */}
+      {/* Simulation Banner */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-bold text-sm">Live System Telemetry Active</span>
+            <Badge variant="outline" className="text-[10px] text-white border-white/30">
+              Phase 4.0
+            </Badge>
+          </div>
+          <p className="text-xs text-blue-200">
+            Automated monitoring across 2 repos, 142 contract test suites, 119 ADRs, 119 BRDs, and 206 user stories.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setSimulatedPendingBuilt((prev) => !prev)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              simulatedPendingBuilt
+                ? "bg-amber-400 text-amber-950 border-amber-300 shadow-sm"
+                : "bg-white/10 hover:bg-white/20 text-white border-white/20"
+            }`}
+          >
+            {simulatedPendingBuilt ? "⚡ Reset What-If Simulation" : "🔮 Simulate 100% Backlog"}
+          </button>
+        </div>
+      </div>
+
+      {/* Top Metric Cards with Sparklines */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => onNavigateTab && onNavigateTab("stories")}
+        >
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
-              <CardDescription>Story Completion</CardDescription>
+              <CardDescription>Story Completion (Roadmap)</CardDescription>
               <CardTitle className="text-3xl font-bold text-blue-600">
                 {progressPct}%
               </CardTitle>
             </div>
-            <StatSparkline data={[8, 34, 82, 138, 185, 192]} color="#2563eb" />
+            <StatSparkline data={[8, 34, 82, 110, 120, builtStories]} color="#2563eb" />
           </CardHeader>
           <CardContent>
             <Progress value={progressPct} className="h-2 mb-2" />
             <div className="flex justify-between text-xs text-slate-500">
-              <span>{builtStories} built</span>
+              <span className="font-semibold text-emerald-600">{builtStories} built (Epics 1–8)</span>
               <span className="font-semibold text-amber-600">{pendingStories} pending</span>
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 flex justify-between text-[11px] text-slate-500">
+              <span>Core Active Scope (Epics 1–8):</span>
+              <span className="font-mono font-bold text-emerald-700">89.9% (125/139)</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => onNavigateTab && onNavigateTab("adrs")}
+        >
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
               <CardDescription>ADR Governance</CardDescription>
@@ -76,13 +125,25 @@ export function OverviewView() {
               <Badge variant="success">{acceptedAdrs} Accepted</Badge>
               <Badge variant="warning">{proposedAdrs} Proposed</Badge>
             </div>
-            <p className="text-xs text-slate-500">
-              100% architectural coverage across 6 core domains
-            </p>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Open Questions:</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onNavigateTab) onNavigateTab("questions");
+                }}
+                className="font-mono font-bold text-amber-600 hover:text-amber-800 hover:underline cursor-pointer"
+              >
+                244 Pending Decision ➔
+              </span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => onNavigateTab && onNavigateTab("architecture")}
+        >
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
               <CardDescription>Contract Test Suites</CardDescription>
@@ -97,13 +158,16 @@ export function OverviewView() {
               <Badge variant="default">{CODEBASE_METRICS.coreTestFiles} Core</Badge>
               <Badge variant="secondary">{CODEBASE_METRICS.adminTestFiles} Admin</Badge>
             </div>
-            <p className="text-xs text-slate-500">
-              {(CODEBASE_METRICS.coreTestLoc + CODEBASE_METRICS.adminTestLoc).toLocaleString()} LOC automated contracts
+            <p className="text-xs text-slate-500 font-mono">
+              {(CODEBASE_METRICS.coreTestLoc + CODEBASE_METRICS.adminTestLoc).toLocaleString()} LOC verified
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => onNavigateTab && onNavigateTab("architecture")}
+        >
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
               <CardDescription>Total Codebase Footprint</CardDescription>
@@ -139,15 +203,18 @@ export function OverviewView() {
           <CardContent className="flex flex-col items-center justify-center py-4">
             <RadialGauge
               value={progressPct}
-              title="Overall Epics Progress"
-              subtitle={`${builtStories}/${totalStories} stories`}
+              title="Overall Roadmap Progress"
+              subtitle={`${builtStories}/${baseTotalStories} stories`}
               color="#2563eb"
               size={190}
             />
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex flex-col items-center gap-1.5 mt-2 text-center">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Phase 4: 93.2% Complete
+                Phase 4 (Epics 1–8): 89.9% Complete (125/139)
+              </span>
+              <span className="text-[11px] text-slate-500">
+                Epics 9–13: 0/67 Built (Planned v1.5 / v2 Roadmap)
               </span>
             </div>
           </CardContent>
@@ -209,7 +276,15 @@ export function OverviewView() {
           </div>
         </CardHeader>
         <CardContent>
-          <StackedBarChart data={epicBarData} />
+          <StackedBarChart
+            data={epicBarData}
+            onSelectEpic={(id) => {
+              const ep = EPICS_SUMMARY.find((e) => e.id === id);
+              if (ep && onSelectItem) {
+                onSelectItem({ type: "epic", data: ep });
+              }
+            }}
+          />
         </CardContent>
       </Card>
 
