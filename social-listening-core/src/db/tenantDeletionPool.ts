@@ -25,6 +25,7 @@ export function getTenantDeletionPool(): Pool {
       user: process.env.TENANT_DELETION_PGUSER ?? 'tenant_deletion_role',
       password: process.env.TENANT_DELETION_PGPASSWORD ?? 'tenant_deletion_role_password',
     });
+    tenantDeletionPool.on('error', () => {});
   }
   return tenantDeletionPool;
 }

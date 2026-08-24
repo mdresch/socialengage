@@ -21,6 +21,7 @@ export function getAdminPool(): Pool {
       user: process.env.PGUSER ?? 'postgres',
       password: process.env.PGPASSWORD ?? 'postgres',
     });
+    adminPool.on('error', () => {});
   }
   return adminPool;
 }

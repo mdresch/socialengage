@@ -20,6 +20,7 @@ export function getPlatformAdminPool(): Pool {
       user: process.env.PLATFORM_ADMIN_PGUSER ?? 'platform_admin_role',
       password: process.env.PLATFORM_ADMIN_PGPASSWORD ?? 'platform_admin_role_password',
     });
+    platformAdminPool.on('error', () => {});
   }
   return platformAdminPool;
 }

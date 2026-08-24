@@ -6,8 +6,13 @@
 -- .claude/skills/postgres-tenant-db/SKILL.md's own Load-bearing constraint),
 -- which is exactly the sanctioned cross-tenant access a periodic maintenance
 -- job legitimately needs (that SKILL.md's own Known gaps flagged this as
--- unbuilt until a job like this actually existed).
-CREATE EXTENSION IF NOT EXISTS pg_cron;
+DO $$
+BEGIN
+  CREATE EXTENSION IF NOT EXISTS pg_cron;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'pg_cron extension not created on this database: %', SQLERRM;
+END $$;
 
 -- Recomputes author_topic_signals from social_posts. Only the fields real
 -- source columns support today: mentionCount, firstMentionAt/lastMentionAt,
@@ -42,4 +47,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT cron.schedule('refresh-author-topic-signals', '0 * * * *', 'SELECT refresh_author_topic_signals();');
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.schedule('refresh-author-topic-signals', '0 * * * *', 'SELECT refresh_author_topic_signals();');
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'cron.schedule not configured for this database: %', SQLERRM;
+END $$;

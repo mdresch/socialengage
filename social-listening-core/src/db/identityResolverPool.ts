@@ -19,6 +19,7 @@ export function getIdentityResolverPool(): Pool {
       user: process.env.IDENTITY_RESOLVER_PGUSER ?? 'identity_resolver_role',
       password: process.env.IDENTITY_RESOLVER_PGPASSWORD ?? 'identity_resolver_role_password',
     });
+    identityResolverPool.on('error', () => {});
   }
   return identityResolverPool;
 }

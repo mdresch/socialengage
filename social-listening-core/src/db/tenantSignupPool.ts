@@ -19,6 +19,7 @@ export function getTenantSignupPool(): Pool {
       user: process.env.TENANT_SIGNUP_PGUSER ?? 'tenant_signup_role',
       password: process.env.TENANT_SIGNUP_PGPASSWORD ?? 'tenant_signup_role_password',
     });
+    tenantSignupPool.on('error', () => {});
   }
   return tenantSignupPool;
 }

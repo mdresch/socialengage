@@ -10,9 +10,24 @@ Every artifact in this project so far (the [ADRs](adr/README.md), the [user stor
 
 ## The loop — mandatory, in order, for every story
 
-### 1. Scope
+### 0. Worktree provisioning (Multi-Agent Isolation)
 
-Before touching anything: re-read the story's Acceptance Criteria and its Source ADR. Enumerate the smallest set of files/modules those Acceptance Criteria actually require touching. Anything outside that set is out of scope for this pass — even if related, even if tempting to "clean up while in there." If implementing the story surfaces a genuine need to touch something outside that set, stop and flag it explicitly as its own scoped follow-up rather than folding it in silently.
+Before touching code or branches, provision an isolated Git worktree:
+```bash
+git worktree add ../socialengage-story-<X.Y> -b feat/story-<X.Y> main
+cd ../socialengage-story-<X.Y>
+```
+This guarantees complete filesystem and branch isolation so parallel autonomous agents running on the same host machine never overwrite each other's work-in-progress code or dirty the working tree.
+
+### 1. Ingest the specification pyramid & check scope
+
+Before touching anything, read the 4-tier specification pyramid:
+- **User Story (`docs/user-stories/`):** Confirm status is **`Status: Ready`** (never implement a `Blocked` story). Note Acceptance Criteria ($AC_0 \dots AC_n$).
+- **Source ADR (`docs/adr/`):** Read architectural decisions, schema invariants, and Amendment Logs in full.
+- **Business Requirements (`docs/project docs/Business-Requirements/`):** Check business rules (`BRU-xxx`), permissions, and stakeholder success metrics.
+- **Functional Design (`docs/project docs/Functional-Design/`):** Check TypeScript request/response schemas, bundled queries, error codes, and role gating.
+
+*Hierarchy rule:* ADR > BRD/FDD > User Story. Enumerate the smallest set of files/modules required. Anything outside that set is strictly out of scope.
 
 ### 2. State intent
 
@@ -27,9 +42,9 @@ Explicitly out of scope: <anything adjacent that will NOT be touched this pass>
 
 This is the checkpoint where scope creep gets caught before any code exists, not after a diff needs untangling.
 
-### 3. Write the contract (Jest, before implementation)
+### 3. Write the contract (Jest, before implementation — RED)
 
-Translate the story's Acceptance Criteria into executable Jest tests — **contracts**, not implementation tests: they assert observable behavior the story promises, not internal structure. One test (or a small cohesive group) per Acceptance Criterion, tagged back to its story and ADR in a header comment:
+Translate the story's Acceptance Criteria and FDD contracts into executable Jest tests — **contracts**, not implementation tests: they assert observable behavior the story promises, not internal structure. One test per Acceptance Criterion, tagged back to its story and ADR in a header comment:
 
 ```ts
 // Contract: Story 3.4 (ADR-0011) — cursor-based pagination for GET /posts
@@ -40,27 +55,46 @@ describe('GET /posts pagination contract', () => {
 });
 ```
 
-Contracts live in a dedicated, permanent directory at each repo's root — `contracts/`, mirrored by epic and story number (`contracts/epic-3/story-3.4.pagination.contract.test.ts`) — separate from ordinary unit tests. This separation matters: contracts are never casually rewritten when implementation changes underneath them, only superseded the same deliberate way an ADR is (Step 7).
+Contracts live in `<repo>/contracts/epic-<N>/story-<X.Y>.<slug>.contract.test.ts`.
 
-**Relationship assertions.** If this story gives the component a new real call relationship with another component — it now calls into one, or another now calls into it — at least one contract assertion for that relationship must exercise it at the *real* call site (the actual production caller: a live scheduler tick, a real `ingestX()` function, an actual route handler), not only call the function directly in isolation. A contract proving a function behaves correctly when called directly proves nothing about whether the system's real call path ever reaches it. This is not a hypothetical: `publishEvent()` (Story 5.x, `ingestion-events`) had a fully passing contract and zero real call sites in the live ingestion path, found by hand during a 2026-08-13 retrospective rather than by anything in this process. Applies going forward, from whichever story introduces or changes a relationship — no retroactive requirement on relationships that predate this convention.
+**Relationship assertions.** If this story gives the component a new real call relationship with another component, at least one contract assertion must exercise it at the *real* call site (live scheduler tick, real event dispatcher, or route handler), not only in isolation.
 
-### 4. Derive or update the Skill file
+### 4. Derive or update the Component Skill file
 
-Once the contract exists — even failing, pre-implementation — write or update `.claude/skills/<component>/SKILL.md` for the component the story lives in. This is what a future agent with no memory of this session reads before touching that component again. See [`docs/templates/component-skill-template.md`](templates/component-skill-template.md) for the required structure. At minimum it must state: which ADR(s)/Story(ies) govern this component, which contract file(s) define its required behavior, how to safely extend it, what not to change casually (the load-bearing constraints — e.g. "don't add a field to `SocialPost` without checking ADR-0004 and ADR-0018's tiering rules first"), and — in its "Relations to other components" section — which other components it has a real call relationship with. Every relationship named there that describes a real call must be backed by the Step 3 relationship assertion above; if it isn't yet (a relationship inherited from before this convention existed), say so explicitly in that section rather than letting the omission read as "verified."
+Once the contract exists — even failing, pre-implementation — write or update `.claude/skills/<component>/SKILL.md` for the component the story lives in. See [`docs/templates/component-skill-template.md`](templates/component-skill-template.md). It must state: governing ADRs/Stories, contract files, extension guidance, load-bearing constraints, and real call-site relationships.
 
-### 5. Implement
+### 5. Implement (GREEN)
 
-Write the minimal code that makes the contract pass. Nothing more — no speculative generalization, no untested paths, no bundled refactors, per Step 1.
+Write the minimal code in `<repo>/src/**` that makes the contract pass. Nothing more — no speculative generalization, no untested paths, no bundled refactors.
 
-### 6. Validate
+### 6. Validate (Postgres Template Database Cloning)
 
-Run the new contract; it must pass. Then run **this story's own epic's contract suite** (`contracts/epic-<N>/`, matching the story's own epic number) — not just the new contract in isolation. Run the **entire accumulated contract suite** instead of the epic-scoped subset whenever this diff touches a file shared outside that epic: check the touched component's own `SKILL.md` "Relations to other components" section — if any real relationship there crosses into a different epic's contracts, or you're not sure, run full. A green contract for Story 3.4 that silently breaks Story 3.2's contract is still a regression, not a success — this carve-out exists so epic-scoping never becomes a way to miss that, not a way to skip catching it.
+Run the new contract; it executes against an instant, physically isolated database clone on port `5434` (`CREATE DATABASE test_run_<pid> TEMPLATE social_listening_template` in $< 30\text{ ms}$):
+- Run the story contract: `npm test <contract-path>`.
+- Run the epic contract suite: `npm test contracts/epic-<N>`.
+- Run the full accumulated suite if shared files outside the epic were modified: `npm run test:contracts`.
+- If anything fails, invoke the **`heal-contract-failure`** skill.
 
-**CI runs the entire accumulated suite unconditionally on every push and PR** (`docs/templates/ci-workflow.md`), regardless of which scope ran locally — that remains the one non-negotiable full-suite gate. The epic-scoped default above only governs the local iteration loop's speed; it is never the only thing standing between a regression and `main`. See this document's Amendment Log for why this split was introduced, and 2026-08-19's note under "When the failing contract belongs to someone else's scope" for what it changes about how a cross-epic regression is actually caught.
+### 7. Commit & log permanently
 
-### 7. Commit the contract permanently
+1. Stage and commit implementation, contract, `SKILL.md`, and traceability updates:
+   ```bash
+   git commit -m "feat(<scope>): implement Story <X.Y> — <title> (ADR-<NNNN>)"
+   ```
+2. Append a verified entry to `docs/implementation-log.md` with commit hash, story/ADR, files touched, and suite result.
+3. Update the story file: `**Built:** YYYY-MM-DD — <repo>@<short-hash>`.
+4. Run `npm run sync` to synchronize the live project progress dashboard.
 
-The contract is not deleted once the story ships — it becomes a permanent regression guard. CI runs the full accumulated contract suite on every PR, for the life of the project (this is what the lightweight CI decided in spec §10 is actually *for*). If a later change legitimately needs to change a contract's asserted behavior, that's the same category of event as changing an ADR's decision: the old contract isn't silently edited — a dated note is added explaining why, cross-referenced to whichever ADR amendment or supersession justifies the change, following the same four-and-a-half-category convention already established in `docs/adr/README.md`.
+### 8. Merge Worktree into Main & Teardown
+
+Merge the feature branch cleanly into `main` and remove the temporary worktree:
+```bash
+git checkout main
+git merge feat/story-<X.Y>
+cd ../socialengage
+git worktree remove ../socialengage-story-<X.Y>
+git branch -d feat/story-<X.Y>
+```
 
 ## What's mechanically enforced vs. what's followed by discipline
 

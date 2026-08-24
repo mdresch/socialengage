@@ -21,6 +21,7 @@ export function getPool(): Pool {
       password: process.env.APP_PGPASSWORD ?? 'app_user_password',
       max: Number(process.env.PGPOOL_MAX ?? 20),
     });
+    pool.on('error', () => {});
   }
   return pool;
 }

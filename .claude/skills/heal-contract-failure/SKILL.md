@@ -1,6 +1,6 @@
 ---
 name: heal-contract-failure
-description: Use when a contract test, the accumulated contract suite, a lint/typecheck step, CI, or the enforce-contract-first hook is failing/blocking and needs to be resolved — or when resuming a story a prior session left mid-implementation, uncommitted, because that session ended (e.g. a usage-quota cutoff) before Step 9's commit. Re-walks Intent, Contract, Skill, and Implementation in that fixed order for every failure — no classifying the failure and jumping to a shortcut patch. Invoke this instead of freelancing a repair.
+description: Use when a contract test, the accumulated contract suite, a lint/typecheck step, CI, or the enforce-contract-first hook is failing/blocking and needs to be resolved — or when resuming a story a prior session left mid-implementation, uncommitted, because that session ended (e.g. a usage-quota cutoff) before Step 9's commit. Re-walks Intent (ADR/BRD/FDD/Story), Contract, Skill, and Implementation in that fixed order for every failure — no classifying the failure and jumping to a shortcut patch.
 ---
 
 # Heal Contract Failure
@@ -13,72 +13,54 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 
 **Do not classify the failure and jump to a patch.** Walk all five steps below, in order, every time — including when the cause looks obvious. "Obvious" is exactly the assumption that lets a stale Intent or a wrong Contract slide through while you patch the symptom one step later.
 
-**Retry cap: 3 full walks of Steps 1–5 for this failure, then mandatory escalation — no 4th attempt.** Before starting, check whether a todo item already exists for this failure from an earlier attempt this session (search the todo list via the `manage_todo_list` tool); if so, this is attempt 2 or 3, not attempt 1. Log a fresh todo entry per attempt with title `Healing attempt N: <what's failing> — <hypothesis>` so the count and the reasoning are both visible. Attempt 2 or 3 must be informed by why the previous attempt's Step 5 failed — repeating the same Step 4 change with no new information is not a distinct attempt; treat it as a signal to escalate now rather than spend the remaining budget on a repeat.
+**Retry cap: 3 full walks of Steps 1–5 for this failure, then mandatory escalation — no 4th attempt.** Before starting, check whether a todo item already exists for this failure from an earlier attempt this session; if so, this is attempt 2 or 3, not attempt 1. Log a fresh todo entry per attempt with title `Healing attempt N: <what's failing> — <hypothesis>`.
 
 ## Steps — fixed order, no skipping
 
-0. **Before Step 1, if the failure smells environmental** (times out only sometimes, only fails under the full suite / parallel run, only started after touching auth/Azure CLI/a dependency version) — check [`docs/environment-gotchas.md`](../../../docs/environment-gotchas.md) first. A known pattern there still needs Steps 1–5 walked (don't shortcut to a patch), but it tells you what you're likely looking at before you spend the walk re-deriving it. If this failure turns out to be a *new* environmental root cause, add it there once healed (Step 7 territory, not before).
+0. **Before Step 1, if the failure smells environmental** (times out only sometimes, only fails under the full suite / parallel run, only started after touching auth/Azure CLI/a dependency version) — check [`docs/environment-gotchas.md`](../../../docs/environment-gotchas.md) first. If this failure turns out to be a *new* environmental root cause, add it there once healed.
 
-1. **Re-validate Intent.** Open the failing contract's Intent header comment. Re-read its Story in `docs/user-stories/epic-*.md` and its Source ADR in `docs/adr/` *fresh* — including any Amendment Log, Clarification, or Pending-supersession note added since this contract was written. **Also re-read the matching BRD and FDD**, if they exist, in `docs/project docs/Business-Requirements/BRD-00XX-*.md` and `docs/project docs/Functional-Design/FDD-00XX-*.md` (where `00XX` is the ADR number). They provide current business context and future details; they do not override the ADR. If a BRD or FDD contradicts the ADR, stop and surface the conflict to the user before continuing. Does the Intent block (story, ADR, BRD/FDD if available, scope, contract-to-encode, out-of-scope) still match what the story and ADR say right now? If not, that mismatch is very likely the actual root cause. Say so before continuing.
-   
-   **If the referenced Story file, ADR, or Implementation Log cannot be found:** stop immediately and report the missing file path to the user before proceeding. Do not assume default content or skip the read.
+1. **Re-validate Intent against the 4-tier Specification Pyramid.**
+   - Open the failing contract's Intent header comment.
+   - **Source ADR:** Re-read its Source ADR in `docs/adr/00XX-*.md` *fresh* — including architectural invariants, schema rules, and Amendment Logs.
+   - **Business Requirements (BRD):** Re-read `docs/project docs/Business-Requirements/BRD-00XX-*.md` for business rules (`BRU-xxx`) and role access.
+   - **Functional Design (FDD):** Re-read `docs/project docs/Functional-Design/FDD-00XX-*.md` for TypeScript Request/Response schemas, error payloads, and edge cases.
+   - **User Story:** Re-read the story in `docs/user-stories/epic-*.md` for Acceptance Criteria ($AC_0 \dots AC_n$).
+   - *Hierarchy:* ADR > BRD/FDD > Story. If the Intent block drifted from these specifications, that mismatch is the root cause. Surface it before touching code.
 
-2. **Re-validate the Contract.** Re-read the failing contract test against the Acceptance Criteria you just re-fetched — not against what the test already asserts. Does it genuinely encode the story's *current* promises? If the contract itself looks wrong or stale: do not edit it yourself. That requires a dated note pointing to a specific ADR change, with the user's explicit sign-off — go to Step 6 instead.
-   
-   **If no contract exists yet:** this finding stays here — note it and proceed. (This means Step 1–3 will need to be completed before Step 4 can write code, per the sub-instruction in Step 4 below.)
+2. **Re-validate the Contract.** Re-read the failing contract test against the Acceptance Criteria and FDD schemas you just re-fetched — not against what the test already asserts. Does it genuinely encode the story's *current* promises? If the contract itself looks wrong or stale: do not edit it unilaterally. That requires a dated note pointing to a specific ADR change, with the user's explicit sign-off — go to Step 6 instead.
 
-3. **Re-validate the component `SKILL.md`.** Check it against [`docs/templates/component-skill-template.md`](../../../docs/templates/component-skill-template.md)'s required sections: governing ADRs/Stories, the contract files that constrain it, extension guidance, load-bearing constraints. Update it if stale — this one you're always allowed to fix directly.
+3. **Re-validate the component `SKILL.md`.** Check it against [`docs/templates/component-skill-template.md`](../../../docs/templates/component-skill-template.md)'s required sections: governing ADRs/Stories, the contract files that constrain it, extension guidance, load-bearing constraints, and real call-site relationships. Update it if stale.
 
-4. **Re-validate and fix the implementation.** Proceed only if Steps 1–3 confirm a contract exists and the target is correct. Touch code to make the minimal change that satisfies that (now-confirmed) contract. No speculative generalization, no scope creep beyond what Step 1 reconfirmed.
-   
-   **If Step 2 found no contract exists yet:** this is the case where a hook blocked a write because no contract was authored before implementation was attempted. This is not a special case — it means the real work of Steps 1–3 must be completed now, in order, before any code can be safely written. Complete them now: finalize the Intent (Step 1), create/finalize the contract (Step 2), update/create the component SKILL.md (Step 3). Only then return to this step and write the implementation to match the (now-existing) contract.
+4. **Re-validate and fix the implementation.** Proceed only if Steps 1–3 confirm a contract exists and the target is correct. Make the minimal code change in `<repo>/src/**` that satisfies that contract. Avoid speculative generalization or scope expansion.
 
-5. **Validate.** Run the specific contract that was failing. Then run the failing contract's own epic's contract suite (`jest contracts/epic-<N>`, per `docs/implementation-methodology.md`'s Step 6) — or the full accumulated suite instead if the fix touched any file shared outside that epic (check the touched component's `SKILL.md` "Relations to other components" section; crosses epics, or any doubt, means run full). Both must pass. CI's own unconditional full-suite run on every push/PR is the real backstop regardless of which scope ran here. If either still fails, this attempt is done and failed — see Step 6b before starting another.
-   
-   **If this run fails a contract you weren't targeting** (from a different story or component), stop before touching it. This is a cross-component regression — do not mix its repair into the current attempt counter. Instead, apply the **Cross-Component Regression Protocol** below, then return to Step 5 and re-validate with the full suite (not the epic-scoped subset — a cross-component regression, by definition, already crossed the boundary the epic scope was meant to catch).
+5. **Validate with Isolated Postgres Template Database Cloning.**
+   Run the specific contract that was failing:
+   ```bash
+   npm test <path-to-contract>
+   ```
+   (Uses the $< 30\text{ ms}$ native Postgres Template DB clone on port `5434`).
+   - Run the epic contract suite: `npm test contracts/epic-<N>`.
+   - Run the full accumulated suite if shared files outside the epic were modified.
+   - If a contract outside this story fails, follow the **Cross-Component Regression Protocol** below.
 
 ## Cross-Component Regression Protocol
 
-When a contract from a different story or component fails after your changes, follow this separately (with its own attempt counter and stop condition) per `docs/implementation-methodology.md`'s "When the failing contract belongs to someone else's scope":
-
-- **Attribute first.** Check whether it traces to a change made in *this* session — the far more common case — by comparing what you just modified against what the foreign contract exercises (a shared type, a shared utility, a common pipeline stage). Don't assume; if there's no plausible link, stop and ask rather than guess.
-- **Default remedy: narrow the new change, not the foreign component.** The foreign contract was already passing and is presumed correct, same as an Accepted ADR — fix it by adjusting what you just changed, back in the current story's own files. Do not touch the foreign component's implementation, and never its contract.
-- **Give it its own Intent and its own attempt counter** — create a separate todo `Healing attempt N: regression in <foreign story/contract> caused by <this story>'s change` — separate from the original story's counter. A struggling fix here should never look like the original story just needs "one more try."
-- **If the real fix genuinely requires changing the foreign component too** (a shared interface both must adapt to): that's a scope expansion into another story's territory. Stop and surface it to the user as a named decision, per Step 2's rule. Never decide this yourself just because it seems like the obvious fix.
-- **When the foreign regression is resolved**, return to Step 5 and re-run the full suite to confirm both the original and the regression contracts now pass.
+When a contract from a different story or component fails after your changes:
+- **Attribute first.** Compare what you just modified against what the foreign contract exercises.
+- **Default remedy: narrow the new change, not the foreign component.** The foreign contract was already passing and is presumed correct — adjust the current story's code. Do not weaken the foreign contract.
+- **Separate attempt budget:** Create a separate todo `Healing attempt N: regression in <foreign contract> caused by <this story>`.
+- **When resolved**, re-run the full contract suite.
 
 ## Hard Stop Conditions
 
-6a. **Hard stop — cheating, checked at every step above, not just here:** if getting to green at any point would mean weakening, skipping, deleting, or bypassing a contract's assertions, a hook, a lint rule, or a CI gate — stop right there. Do not finish the sequence by force.
+6a. **Hard stop — cheating:** if getting to green at any point would mean weakening, skipping, deleting, or bypassing a contract's assertions, a hook, a lint rule, or a CI gate — stop right there. Do not finish the sequence by force.
 
 6b. **Hard stop — attempt cap:** if Step 5 just failed for the 3rd time on this failure, stop. Do not start a 4th walk regardless of how promising the next idea seems.
 
-Either 6a or 6b means: report to the user exactly what's blocking a safe repair (6a) or what was tried across all attempts and why none converged (6b), and what decision or input you need from them. Do not proceed to Step 7's commit/log — there's nothing legitimate to log.
+7. **Commit and log — only on a genuine pass, never after a 6a/6b stop.**
+   Stage and commit the fix. Append an entry to `docs/implementation-log.md` with commit hash, story/ADR, files touched, and suite result. Run `npm run sync` to refresh dashboard telemetry.
 
-7. **Commit and log — only on a genuine pass, never after a 6a/6b stop.** Stage and commit the fix (and, if this was a 5b cross-component regression, note in the commit message which story's change caused it and which story's contract it restored). Run `git rev-parse HEAD` and `git show --stat --format= HEAD`, then append an entry to `docs/implementation-log.md` using its exact field format — commit hash, repo, the story/ADR whose contract was healed, files touched (from git's output, not memory), full suite result. Append only, per that file's own rule — never edit a prior entry, including one from an earlier attempt in this same session.
+8. **Merge & Teardown (if in a Git Worktree).**
+   If running in an isolated worktree (`feat/story-X.Y`), merge cleanly into `main` and remove the worktree.
 
-8. **Report back.** State: which step(s) actually needed a fix and which didn't, what changed (file list), the commit hash and Implementation Log entry, and which suite scope Step 5 actually ran (epic-scoped or full, and why) with confirmation it passed. For a Step 6a/6b stop, state plainly that no repair was completed, no commit was made, which stop condition applied, and — for 6b — a summary of all attempts tried. Never present a forced, partial, or non-converged fix as resolved, and never log a commit that doesn't exist.
-
-## Definition of "healed" — all of these, not just the check that was red
-
-1. Steps 1–5 were actually walked, in order, this pass.
-2. The originally failing check now passes.
-3. Step 5's own suite scope passes — the failing contract's epic, or the full accumulated suite if the shared-file carve-out applied. CI's unconditional full-suite run on push/PR is the final, authoritative confirmation beyond that; the local bar is Step 5's scope, not a guarantee CI has already run.
-4. Nothing was weakened, skipped, `.skip`/`.todo`-marked, deleted, or bypassed (`--no-verify` etc.) to get here.
-5. Any file touched outside the original story's scope is explicitly flagged, not silent.
-6. `SKILL.md` and the traceability tables are accurate afterward.
-7. A commit exists and an Implementation Log entry references its real hash and actual files touched.
-
-## Hard rules, not preferences
-
-- Never classify a failure and skip straight to a step-4-only patch. Walk 1 through 5.
-- Never edit a contract test's assertions, a hook's matching logic, a lint rule, or a CI gate as a way to resolve a failure.
-- Never use `--no-verify`, `.skip`, `.todo`, or a CI workflow edit to make a red check green.
-- Never expand scope silently while repairing.
-- Never attempt a 4th full walk of Steps 1–5 for the same failure. 3 fails means stop and escalate, not "one more try."
-- Never repeat an identical Step 4 change across attempts without new information from the prior attempt's Step 5 failure — that's not a distinct attempt, it's a wasted one.
-- If a genuine behavior change seems warranted (Step 2), that goes to the user with an ADR reference — never a decision this skill makes on its own.
-- Never "fix" a foreign contract's regression by changing the foreign component instead of the change that broke it. A previously-passing contract is presumed correct; the burden is on the new change.
-- Never let a cross-component regression's fix attempts share an attempt counter with the original story's — they're different failures, budget them separately.
-- Never commit or log anything after a 6a/6b stop — those end in a report, not a partial commit.
-- Never edit or remove an existing Implementation Log entry. Append only.
+9. **Report back concisely.** State which steps needed repair, files changed, commit hash, Implementation Log entry, and test suite result.
