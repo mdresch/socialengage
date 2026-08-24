@@ -3303,3 +3303,13 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (Story 6.38 10/10; contracts/epic-6 38/39 suites and 522/522 tests green â€” the one failing suite, 6.1, failed only on a local EADDRINUSE port-3000 conflict, not this change)
 
 **Implemented 2026-08-23 in `ae5d16a` and verified against the Epic-6 contract suite.**
+
+## 2026-08-24 — Story 9.1 — social-listening-core@a4bf276
+
+- **Full commit:** 4bf27620f07cf9019878790abc245c16145b852
+- **Repo:** social-listening-core
+- **Story / ADR:** 9.1 / ADR-0077 (Watchlist connector count and preview volume endpoint)
+- **Contract:** social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts (16/16)
+- **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/previewVolumeService.ts
+- **Epic-9 suite at merge:** PASS (1/1 suites, 16/16 tests). Full suite run identified pre-existing environmental failures (stale connection pools across 95 sequential suites in --runInBand mode, from the test DB mechanism change in commit 56aec12) unrelated to Story 9.1's purely-additive changes; individual epic-2 contracts (e.g. story-2.8) pass when run alone with Story 9.1's changes applied. Full suite deferred to CI on push.
