@@ -934,7 +934,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
 
 **Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-21 — social-listening-admin@89eb97c
 **Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
 
 **As a** Tenant Administrator or User,

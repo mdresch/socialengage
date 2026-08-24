@@ -3275,3 +3275,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 11/11 in Story 6.34 contract; tsc typecheck clean)
 
 **Implementation was already committed on 2026-08-21 as `986a93c`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
+
+---
+
+## 2026-08-21 — Story 6.35 — social-listening-admin
+
+- **Full commit:** `89eb97c22b115c76e058d241a275a8e26fa0b377`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.35 / ADR-0069 (LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts (9/9)
+- **SKILL.md:** —
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.35.linkedin-connector-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/linkedin/oauth/callback/route.ts, social-listening-admin/src/app/api/connectors/linkedin/oauth/start/route.ts, social-listening-admin/src/lib/linkedinOAuth.ts
+- **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 9/9 in Story 6.35 contract; tsc typecheck clean)
+
+**Implementation was already committed on 2026-08-21 as `89eb97c`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
