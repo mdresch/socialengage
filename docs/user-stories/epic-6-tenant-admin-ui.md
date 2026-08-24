@@ -848,7 +848,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
 
 **Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-20 — social-listening-admin@b0dc89e
 **Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
 
 **As a** Tenant User or Tenant-Admin reviewing ingested social posts,

@@ -3247,3 +3247,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 5/5 in Story 6.32 contract; tsc typecheck clean)
 
 **Implementation was already committed on 2026-08-21 as `2f428e0`; the 6.32 contract (`0c24532`) was added separately. This entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
+
+---
+
+## 2026-08-20 — Story 6.33 — social-listening-admin
+
+- **Full commit:** `b0dc89e38aa2ee5476ba99db34f875cc11e70891`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.33 / ADR-0067 (Facebook connector hosting Page attribution and author distinction display)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts (5/5)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 5/5 in Story 6.33 contract; tsc typecheck clean)
+
+**Implementation was already committed on 2026-08-20 as `b0dc89e`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
