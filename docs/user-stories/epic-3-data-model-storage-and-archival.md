@@ -408,7 +408,7 @@
 ## Story 3.17 — Composer deep research REST endpoint
 
 **Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@bdd9bcf
 **Depends on:** Story 2.31 (Brave/Bing one-off research search helpers), Story 2.32 (Azure OpenAI `research?()` capability), Story 5.10/5.11 (tenant auth and `GET /v1/me`)
 
 **As a** tenant user,
