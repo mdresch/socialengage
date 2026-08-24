@@ -2149,3 +2149,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md — confirmed via `git diff-tree --no-commit-id --name-only -r 5ff1879`, exact match.
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-24 — clean, out of this role's own chartered file scope.** This commit landed mid-way through this same scheduled Documentation Steward pass (a sibling Ideal Manager/L&D Writer pass running concurrently) and touches only `docs/management/*` (Ideal Manager's own domain) and `docs/manuals/*` (Learning & Development Writer's own domain) — no ADR, story, `SKILL.md`, `implementation-plan.md`, or PM-side Project Management Plan file. Nothing here for this role to check.
 
+## 2026-08-24 — 3a8ff91 — Scheduled doc review: Documentation Steward pass (2026-08-24)
+
+- **Full commit:** `3a8ff91ff8203e1e3ab059c89cce4893fcfddb7d`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+

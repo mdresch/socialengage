@@ -2462,3 +2462,15 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-08-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — persists further roadmap ADRs (0074–0076: tenant workspace/posts export, outbound social post publishing, composer deep-research agent) and their draft stories. All Proposed, nothing built; correctly left undocumented.
 
+## 2026-08-24 — 5ff1879 — Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24)
+
+- **Full commit:** `5ff1879ee65e477e0e7861323f6a9820a0c1cbd0`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
+## 2026-08-24 — 3a8ff91 — Scheduled doc review: Documentation Steward pass (2026-08-24)
+
+- **Full commit:** `3a8ff91ff8203e1e3ab059c89cce4893fcfddb7d`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+

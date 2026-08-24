@@ -2640,3 +2640,15 @@
 - **Session:** feature-design and ADR drafting pass (no single commit; see `658b392` for the roadmap documentation batch and `5c1e521` for the supporting `.devin` research skills).
 - **Note for review:** This session intentionally expanded the ADR count far beyond the prior `0059` ceiling through a focused brainstorm of the full v1.5/v2 feature set. The volume of new ADRs (`0077–0117`, 41 records) and supporting user stories (`Epics 9–13`) was a deliberate investment: the clarity, traceability, and implementation-ready backlog produced is judged to be far more valuable than a hard limit on ADR count. No code or contracts were changed; both `social-listening-core` and `social-listening-admin` contract suites remain green (1.10 timeout isolated to full-suite environmental contention; passes in isolation).
 
+## 2026-08-24 — 5ff1879 — Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24)
+
+- **Full commit:** `5ff1879ee65e477e0e7861323f6a9820a0c1cbd0`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
+## 2026-08-24 — 3a8ff91 — Scheduled doc review: Documentation Steward pass (2026-08-24)
+
+- **Full commit:** `3a8ff91ff8203e1e3ab059c89cce4893fcfddb7d`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
