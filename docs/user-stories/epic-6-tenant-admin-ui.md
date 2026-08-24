@@ -198,7 +198,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.9 — Tenant settings screen
 
-**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.8's real REST surface · **Status:** Ready — no new ADR needed, Story 1.5/6.3/6.4's own precedent. Practically sequenced after Story 1.8 exists.
+**Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.8's real REST surface · **Status:** Built 2026-08-10 — no new ADR needed, Story 1.5/6.3/6.4's own precedent. Practically sequenced after Story 1.8 exists.
+**Built:** 2026-08-10 — social-listening-admin@9ec62fa
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Companion UI to Story 1.8 — no screen currently lets a Tenant-Admin or tenant user view their own tenant's own settings from the admin UI.
 
