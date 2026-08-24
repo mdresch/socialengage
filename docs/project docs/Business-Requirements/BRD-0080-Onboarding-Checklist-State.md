@@ -5,27 +5,26 @@
 | Field | Value |
 |---|---|
 | Document Title | Onboarding Checklist State — Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-24 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno, Product Owner / Technical Lead |
-| Status | Draft for review — parent ADR-0080 is Proposed and may change |
+| Status | Approved (2026-08-24) — Parent ADR-0080 Accepted |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
 | 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0080, feature design, and Epic 9 stories |
+| 1.0 | 2026-08-24 | Menno / Agent | Approved; parent ADR-0080 accepted with one-way milestone locking and bundled query reconciliation |
 
 ---
 
 ## 2. Executive Summary
 
-New SocialEngage tenants currently complete setup by navigating independently through connector, watchlist, user, and post screens. This leaves trial users without a clear activation path and increases support requests for basic setup. ADR-0080 proposes a tenant-scoped `onboarding_checklist` state model and a lightweight `GET/PATCH` API that reflects setup progress without altering existing endpoints.
+New SocialEngage tenants currently complete setup by navigating independently through connector, watchlist, user, and post screens. This leaves trial users without a clear activation path and increases support requests for basic setup. ADR-0080 authorizes a tenant-scoped `onboarding_checklist` state model, bundled query reconciliation, and a lightweight `GET/PATCH` API that reflects setup progress without altering existing endpoints.
 
-The proposed solution adds a dismissible, read-mostly checklist to the tenant admin dashboard. It guides a `Tenant-Admin` through four core setup milestones — connect a source, build a watchlist, invite a user, and verify first posts — plus optional advanced steps. Completion is derived from existing data, so the checklist introduces no new workflow gates and no new permissions. The expected business value is faster time-to-value, lower support burden, and higher trial-to-paid conversion.
-
-> **Note:** ADR-0080 is currently **Proposed** (not yet Accepted). This BRD is a draft for review and will be updated once the ADR is accepted.
+The solution adds a dismissible, read-mostly checklist to the tenant admin dashboard. It guides a `Tenant-Admin` through four core setup milestones — connect a source, build a watchlist, invite a user, and verify first posts — plus optional advanced steps. Completion is derived from existing data with one-way milestone caching, so the checklist introduces no new workflow gates and no new permissions. The expected business value is faster time-to-value, lower support burden, and higher trial-to-paid conversion.
 
 ---
 

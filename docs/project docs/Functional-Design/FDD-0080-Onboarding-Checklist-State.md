@@ -5,14 +5,12 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0080 Onboarding Checklist State — Functional Design Document |
-| Version | 0.2 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-24 |
 | Author(s) | FDD Writer Agent |
 | Reviewer(s) | Menno (Business Sponsor, Product Owner, Technical Lead) |
-| Status | Draft / Review |
+| Status | Approved (2026-08-24) — Parent ADR-0080 Accepted |
 | Related Documents | ADR-0080 (Onboarding checklist state), BRD-0080 (Onboarding Checklist State), `docs/product-research/feature-designs/19-self-service-onboarding-checklist.md`, Story 9.5, Story 9.6, ADR-0051 (connector activation), ADR-0044 (watchlists), ADR-0032 (users/invites), ADR-0008 (posts API) |
-
-**Note on source status:** ADR-0080 is currently **Proposed**, not Accepted. This FDD is a draft for review and may change if the ADR's decision changes before acceptance.
 
 ---
 
@@ -20,7 +18,7 @@
 
 ### 2.1 Purpose
 
-This document translates ADR-0080 and BRD-0080 into a functional design for a tenant-scoped **onboarding checklist state model**: a lightweight, mostly-derived progress tracker that helps a `Tenant-Admin` complete initial tenant setup (connect a source, build a watchlist, invite a user, verify first posts) without introducing new workflow gates. Because ADR-0080 is still Proposed, this FDD is a draft for review and may change before the ADR is Accepted.
+This document translates ADR-0080 and BRD-0080 into a functional design for a tenant-scoped **onboarding checklist state model**: a lightweight, mostly-derived progress tracker that helps a `Tenant-Admin` complete initial tenant setup (connect a source, build a watchlist, invite a user, verify first posts) without introducing new workflow gates. Parent ADR-0080 was accepted on 2026-08-24.
 
 ### 2.2 Scope
 
