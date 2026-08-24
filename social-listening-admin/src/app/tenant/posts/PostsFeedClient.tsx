@@ -10,8 +10,11 @@ import { EmptyState } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostDetailPanel } from './PostDetailPanel';
 import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
+import { ReplyComposerDrawer } from './ReplyComposerDrawer';
+import { PostRepliesTab } from './PostRepliesTab';
 import { ComposePostModal } from '@/components/composer';
 import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
+import type { OutboundActivity } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-react is not installed)
@@ -146,6 +149,10 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
   );
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const [optimisticReplies, setOptimisticReplies] = useState<OutboundActivity[]>([]);
+  const [repliesRefresh, setRepliesRefresh] = useState(0);
+  const [replyToast, setReplyToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const filteredPosts = useMemo(() => {
     return flat.filter((post) => {
@@ -178,6 +185,19 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
     setVisibleCount(VISIBLE_BATCH_SIZE);
   }, [selectedProvider, selectedSentiment, selectedWatchlist, searchQuery]);
 
+  // Story 6.38 — clear per-post reply state whenever the inspected post changes.
+  useEffect(() => {
+    setOptimisticReplies([]);
+    setRepliesRefresh(0);
+  }, [activePost?.id]);
+
+  // Story 6.38 — auto-dismiss reply toasts.
+  useEffect(() => {
+    if (!replyToast) return;
+    const timeout = setTimeout(() => setReplyToast(null), 5000);
+    return () => clearTimeout(timeout);
+  }, [replyToast]);
+
   const visiblePosts = useMemo(() => filteredPosts.slice(0, visibleCount), [filteredPosts, visibleCount]);
 
   function resetFilters() {
@@ -207,6 +227,15 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
 
   return (
     <div className="pf-root">
+      {replyToast && (
+        <div
+          className={`pf-toast pf-toast-${replyToast.type}`}
+          role="status"
+          aria-live="polite"
+        >
+          {replyToast.message}
+        </div>
+      )}
       {/* Page Header */}
       <div className="pf-header">
         <div>
@@ -499,6 +528,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
             onClose={() => {
               setActivePost(null);
               setIsEditingEnrichment(false);
+              setIsReplying(false);
             }}
             title={activePost.title}
             subtitle={
@@ -509,7 +539,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
                 : activePost.provider.replace(/_/g, ' ')
             }
             width="lg"
-            className={isEditingEnrichment ? 'slideover-shifted' : undefined}
+            className={isEditingEnrichment || isReplying ? 'slideover-shifted' : undefined}
             footer={
               <div className="pf-slideover-footer-inner">
                 {activePost.url ? (
@@ -537,6 +567,9 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               watchlists={watchlists}
               facebookPages={facebookPages}
               onEdit={() => setIsEditingEnrichment(true)}
+              onReply={() => setIsReplying(true)}
+              optimisticReplies={optimisticReplies}
+              repliesRefresh={repliesRefresh}
             />
           </Slideover>
 
@@ -561,6 +594,51 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
                   setPostList((prev) => prev.map((p) => (p.id === updatedSummary.id ? updatedSummary : p)));
                   setActivePost(flattenPost(updatedSummary, watchlists, facebookPages));
                 }
+              }}
+            />
+          )}
+
+          {/* Cascading Reply Composer Drawer */}
+          {isReplying && (
+            <ReplyComposerDrawer
+              isOpen={isReplying}
+              onClose={() => setIsReplying(false)}
+              post={activePost}
+              onSubmit={async (body: string) => {
+                const response = await fetch(`/api/posts/${encodeURIComponent(activePost.id)}/replies`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ body }),
+                });
+                const row = (await response.json().catch(() => ({}))) as OutboundActivity & { error?: string; code?: string };
+                if (response.ok && row.status === 'sent') {
+                  setReplyToast({ type: 'success', message: 'Reply sent.' });
+                  setOptimisticReplies((prev) => [...prev, row]);
+                  setRepliesRefresh((r) => r + 1);
+                  return;
+                }
+                const message = row.error || row.code || 'Failed to send reply.';
+                setReplyToast({ type: 'error', message });
+                const failed: OutboundActivity = row.status === 'failed'
+                  ? (row as OutboundActivity)
+                  : {
+                      id: `local-${Date.now()}`,
+                      postId: activePost.id,
+                      providerId: activePost.provider,
+                      userId: '',
+                      credentialId: '',
+                      activityType: 'reply',
+                      body,
+                      status: 'failed',
+                      externalId: null,
+                      externalUrl: null,
+                      errorCode: row.code || row.error || 'UNKNOWN',
+                      createdAt: new Date().toISOString(),
+                      sentAt: null,
+                      failedAt: new Date().toISOString(),
+                    };
+                setOptimisticReplies((prev) => [...prev, failed]);
+                throw new Error(message);
               }}
             />
           )}

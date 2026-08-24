@@ -1051,6 +1051,65 @@ export async function updatePostEnrichment(
   return { status: response.status, body };
 }
 
+/**
+ * Story 6.38 (ADR-0073) — the audit row shape for an outbound reply or
+ * other outbound engagement. Returned by both POST and GET /v1/posts/:id/replies.
+ */
+export interface OutboundActivity {
+  id: string;
+  postId: string;
+  providerId: string;
+  userId: string;
+  credentialId: string;
+  activityType: 'reply';
+  body: string;
+  status: 'pending' | 'sent' | 'failed' | 'delivered';
+  externalId: string | null;
+  externalUrl: string | null;
+  errorCode: string | null;
+  createdAt: string;
+  sentAt: string | null;
+  failedAt: string | null;
+}
+
+export interface ReplySubmitOutcome {
+  status: number;
+  body: OutboundActivity | { error?: string; code?: string };
+}
+
+export interface RepliesList {
+  replies: OutboundActivity[];
+  nextCursor: string | null;
+}
+
+/**
+ * Story 6.38 (ADR-0073) — submits a reply to an ingested post
+ * (POST /v1/posts/:id/replies). Returns the created/failed outbound_activities
+ * row with its HTTP status; a 422/429/5xx is still a real, expected outcome
+ * the UI must distinguish from a network failure.
+ */
+export async function submitReply(postId: string, body: string): Promise<ReplySubmitOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(postId)}/replies`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  });
+  const bodyJson = await response.json().catch(() => ({}));
+  return { status: response.status, body: bodyJson };
+}
+
+/**
+ * Story 6.38 (ADR-0073) — lists the tenant-scoped reply audit rows for a
+ * post (GET /v1/posts/:id/replies).
+ */
+export async function listReplies(postId: string): Promise<RepliesList> {
+  const response = await authenticatedCoreFetch(`/v1/posts/${encodeURIComponent(postId)}/replies`);
+  if (!response.ok) {
+    throw new Error(`Failed to load replies: ${response.status}`);
+  }
+  return (await response.json()) as RepliesList;
+}
+
 export interface TenantOwnedFeedActivation {
   connectorActivationId: string;
   txtRecordHost: string;

@@ -11,6 +11,8 @@ import {
   type PostEnrichmentSummary,
 } from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
+import { PostRepliesTab } from './PostRepliesTab';
+import type { OutboundActivity } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons — same set PostsFeedClient.tsx already defines; lucide-react
@@ -73,18 +75,70 @@ export interface PostDetailPanelPost {
 export function PostDetailPanel({
   post,
   onEdit,
+  onReply,
   watchlists,
   facebookPages,
+  optimisticReplies,
+  repliesRefresh,
 }: {
   post: PostDetailPanelPost;
   onEdit?: () => void;
+  onReply?: () => void;
   watchlists?: { id: string; name?: string }[];
   facebookPages?: { pageId: string; pageName: string }[];
+  optimisticReplies?: OutboundActivity[];
+  repliesRefresh?: number;
 }) {
   const [showRawJson, setShowRawJson] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'replies'>('details');
+
+  const supportedReplyProviders = ['facebook'];
+  const isReplySupported = supportedReplyProviders.includes(post.provider);
+  const hasCredential = post.provider === 'facebook' && (facebookPages ?? []).length > 0;
+  const canReply = isReplySupported && hasCredential;
+  const replyTooltip = !isReplySupported
+    ? 'Replies are not supported for this provider yet.'
+    : !hasCredential
+    ? 'No active credential for this provider. Connect it first.'
+    : 'Reply to this post';
 
   return (
     <div className="pf-detail-body">
+      <div className="pf-detail-header">
+        <div className="pf-detail-tablist" role="tablist" aria-label="Post detail tabs">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'details'}
+            className={`pf-detail-tab ${activeTab === 'details' ? 'active' : ''}`}
+            onClick={() => setActiveTab('details')}
+          >
+            Details
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'replies'}
+            className={`pf-detail-tab ${activeTab === 'replies' ? 'active' : ''}`}
+            onClick={() => setActiveTab('replies')}
+          >
+            Replies
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => onReply?.()}
+          disabled={!canReply}
+          aria-label="Reply"
+          title={replyTooltip}
+          className="pf-reply-btn"
+        >
+          Reply
+        </button>
+      </div>
+
+      {activeTab === 'details' && (
+        <div className="pf-detail-tab-panel">
       {/* Instagram Media & Carousel Gallery (Story 6.34, ADR-0068) */}
       {(() => {
         const igContext = extractInstagramContext(post.rawPayload);
@@ -487,5 +541,13 @@ export function PostDetailPanel({
         {showRawJson && <pre className="pf-raw-json">{JSON.stringify(post.rawPayload, null, 2)}</pre>}
       </div>
     </div>
+    )}
+
+    {activeTab === 'replies' && (
+      <div className="replies-tab-panel">
+        <PostRepliesTab postId={post.id} optimisticReplies={optimisticReplies} refreshToken={repliesRefresh} />
+      </div>
+    )}
+  </div>
   );
 }
