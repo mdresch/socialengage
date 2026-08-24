@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-24 | 10:20 | — | — | Documentation | — | Add project development dashboard (da51fde) |
 | 2026-08-22 | 01:17 | — | — | Documentation | ADR-0076 | docs: persist ADR-0076, implementation stories, and pending design docs (3e86b5f) |
 | 2026-08-22 | 01:13 | — | — | Documentation | — | docs: capture v1.5/v2 feature roadmap with ADRs 0077-0117 and user stories (658b392) |
 | 2026-08-22 | 18:47 | — | — | Review | — | Merge origin/main and keep local review tracking copies (298411d) |

@@ -2534,3 +2534,9 @@
 - **Session:** feature-design and ADR drafting pass (no single commit; see `658b392` for the roadmap documentation batch and `5c1e521` for the supporting `.devin` research skills).
 - **Note for review:** This session intentionally expanded the ADR count far beyond the prior `0059` ceiling through a focused brainstorm of the full v1.5/v2 feature set. The volume of new ADRs (`0077–0117`, 41 records) and supporting user stories (`Epics 9–13`) was a deliberate investment: the clarity, traceability, and implementation-ready backlog produced is judged to be far more valuable than a hard limit on ADR count. No code or contracts were changed; both `social-listening-core` and `social-listening-admin` contract suites remain green (1.10 timeout isolated to full-suite environmental contention; passes in isolation).
 
+## 2026-08-24 — da51fde — Add project development dashboard
+
+- **Full commit:** `da51fde5c5b7436c6fd9759be0c54c435602faf5`
+- **Files touched:** docs/project-dashboard.html
+- **Status:** Pending review
+
