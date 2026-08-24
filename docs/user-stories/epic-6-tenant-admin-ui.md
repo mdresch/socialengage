@@ -883,7 +883,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
 
 **Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-21 — social-listening-admin@986a93c
 **Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
 
 **As a** Tenant Administrator or User,

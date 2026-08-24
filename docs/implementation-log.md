@@ -3261,3 +3261,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 5/5 in Story 6.33 contract; tsc typecheck clean)
 
 **Implementation was already committed on 2026-08-20 as `b0dc89e`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
+
+---
+
+## 2026-08-21 — Story 6.34 — social-listening-admin
+
+- **Full commit:** `986a93cb25ced727d3ec9be6fb2fc4b41a2cf105`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.34 / ADR-0068 (Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts (11/11)
+- **SKILL.md:** —
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.34.instagram-connector-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/instagram/accounts/[id]/route.ts, social-listening-admin/src/app/api/connectors/instagram/accounts/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/callback/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/pending/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/select-accounts/route.ts, social-listening-admin/src/app/api/connectors/instagram/oauth/start/route.ts, social-listening-admin/src/lib/instagramOAuth.ts
+- **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 11/11 in Story 6.34 contract; tsc typecheck clean)
+
+**Implementation was already committed on 2026-08-21 as `986a93c`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
