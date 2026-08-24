@@ -22,6 +22,7 @@ import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRout
 import { tenantSelfViewRouter } from './tenantSelfViewRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
+import { composerRouter } from './composerRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -150,6 +151,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 3.15 (ADR-0075) — outbound post publishing and scheduling. */
   v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
+
+  /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */
+  v1Router.use('/composer', authMiddleware, composerRouter);
 
   return v1Router;
 }
