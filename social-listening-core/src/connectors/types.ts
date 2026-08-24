@@ -97,6 +97,16 @@ export interface SocialConnector extends ProviderConnector {
    * outbound service.
    */
   getOutboundRateLimitConfig?(): RateLimitConfig;
+  /**
+   * Story 3.15 (ADR-0075) — optional per-user asset enumeration used to
+   * validate `targetAssetId` before dispatch. Returns an array of asset
+   * identifiers (strings) or objects with `id` and `type`.
+   */
+  targetAssets?(
+    tenantId: string,
+    userId: string,
+    credential: string
+  ): Promise<Array<string | { id: string; type: string }>> | Array<string | { id: string; type: string }>;
   reply?(post: SocialPostSummary, body: string, credential: string): Promise<{ externalId: string; externalUrl: string }>;
   /**
    * Story 2.28 (ADR-0075) — optional outbound post/publish capability. Connectors
