@@ -1,9 +1,10 @@
 # SocialEngage workspace guidance
 
-This workspace contains two related repos:
+This workspace contains the primary applications:
 
 - [social-listening-core](social-listening-core) for the backend and API
 - [social-listening-admin](social-listening-admin) for the Next.js admin UI
+- [project-progress-dashboard](project-progress-dashboard) for the standalone Next.js project progress dashboard
 
 ## Start here
 
