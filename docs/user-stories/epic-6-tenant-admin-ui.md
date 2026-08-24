@@ -219,7 +219,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.10 — Same-Domain Invite Assist view (Tenant-Admin dashboard)
 
-**Source:** ADR-0037 §8b (Accepted), against Story 5.16's real REST surface · **Status:** Ready — no new ADR needed, ADR-0037 §8b already exhaustively decided the mechanism this screen surfaces; only the screen itself is undesigned. Practically sequenced after Story 5.16 exists.
+**Source:** ADR-0037 §8b (Accepted), against Story 5.16's real REST surface · **Status:** Built 2026-08-10 — no new ADR needed, ADR-0037 §8b already exhaustively decided the mechanism this screen surfaces; only the screen itself is undesigned. Practically sequenced after Story 5.16 exists.
+**Built:** 2026-08-10 — social-listening-admin@3661ce9
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno. Renumbered from Menno's own proposed "Story 6.11" — his listed Epic 6 items (6.8, 6.9, 6.11) skip 6.10 with nothing named to fill it; corrected silently to the next actual sequential number in Epic 6, per this project's own numbering convention (see `docs/user-stories/README.md`'s dated note on this batch for the full accounting).** Closes ADR-0037 §8b's own explicitly-named gap: "which admin-UI story/screen owns building the Same-Domain Invite Assist — none of Epic 6's existing stories (6.1–6.6) name it."
 
