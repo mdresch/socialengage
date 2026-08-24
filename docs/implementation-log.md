@@ -3233,3 +3233,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 11/11 in Story 6.31 contract; tsc typecheck clean)
 
 **Traceability correction:** the implementation for Story 6.31 was already committed on 2026-08-20 as `9260f6f`; this entry backfills the real commit hash and verifies the contract still passes after the Story 3.17 work.
+
+---
+
+## 2026-08-21 — Story 6.32 — social-listening-admin
+
+- **Full commit:** `2f428e0c5d2d9bc6131f8062d54a1d511d600c46`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.32 / ADR-0066 (Bing Search API Connector Setup, Activation, and Status Screen)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.32.bing-search-connector-ui.contract.test.ts (5/5)
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md; social-listening-admin/.claude/skills/connector-status-view/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 5/5 in Story 6.32 contract; tsc typecheck clean)
+
+**Implementation was already committed on 2026-08-21 as `2f428e0`; the 6.32 contract (`0c24532`) was added separately. This entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**

@@ -810,7 +810,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
 
 **Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-21 — social-listening-admin@2f428e0
 **Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant Administrator,
