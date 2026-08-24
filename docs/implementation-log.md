@@ -3191,3 +3191,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts, social-listening-core/migrations/0042_add_outbound_post_columns.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/outboundPostsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/outbound/outboundActivityStore.ts
 - **Epic-3 suite at merge:** PASS (17/17 suites, 126/126 tests)
+
+---
+
+## 2026-08-24 — Story 3.16 — social-listening-core@0d11e3f
+
+- **Full commit:** `0d11e3f16b7387709476bfed8a9659df5aaf85bb`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.16 / ADR-0074
+- **Contract:** social-listening-core/contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/tenant-export/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/tenant-export/SKILL.md, social-listening-core/contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantExportRouter.ts, social-listening-core/src/posts/csvExport.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/tenants/tenantExportStore.ts
+- **Epic-3 suite at merge:** PASS (18/18 suites, 131/131 tests)
+
+**heal-contract-failure walk (one attempt):** the initial `buildTenantWorkspaceExport()` query referenced non-existent `ingestion_runs.created_at`/`updated_at` columns; re-validating Intent/Contract/SKILL.md found the workspace export should include only run summary fields, so the query was corrected to `started_at`, `completed_at`, `connector_version`, and `error_summary`. `platform_credentials.status` and the `tenant_export` SKILL.md were also aligned with the FDD during the same pass.

@@ -379,7 +379,7 @@
 ## Story 3.16 — Tenant-facing workspace and matched-posts export endpoints
 
 **Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@0d11e3f
 
 **As a** Tenant-Admin or tenant user,
 **I want** to download a full workspace JSON archive and a CSV of matched posts on demand from `social-listening-core`,
