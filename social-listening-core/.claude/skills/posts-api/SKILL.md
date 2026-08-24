@@ -19,6 +19,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 | ADR-0053 (Story 3.10) | `body_markdown`'s own canonical Markdown decision — this component only exposes it, doesn't decide its content | 6.19 |
 | ADR-0071 | Human-in-the-Loop Post Enrichment Overrides API (`PATCH /v1/posts/:id/enrichment`) and re-enrichment precedence guard on `POST /v1/posts/:id/enrich` | 3.13 |
 | ADR-0073 | Outbound reply audit table and `POST /v1/posts/:id/replies` / `GET /v1/posts/:id/replies` | 3.14 |
+| ADR-0074 | Matched-posts CSV export (`GET /v1/posts?format=csv`) and the canonical post fields it shares with the workspace JSON export | 3.16 |
 
 ## Contracts that constrain this component
 
@@ -30,10 +31,11 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 - `contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts` — `PATCH /v1/posts/:id/enrichment` applies validation and sanitization, persists `enrichment.override` audit metadata, and ensures `POST /v1/posts/:id/enrich` rejects re-enrichment of manually overridden posts with `409 Conflict` unless `force: true` is passed.
 - `contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts` — `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are RLS-scoped, validate the post and caller's active Tier-3 credential, persist `outbound_activities` rows, and map connector failures to provider-appropriate HTTP statuses.
 - `contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts` — `POST /v1/outbound/posts`, `GET /v1/outbound/posts`, and `DELETE /v1/outbound/posts/:id` are mounted under `/v1/outbound`, use the same resolved-identity middleware, and reuse `outbound_activities` for `post` audit rows.
+- `contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts` — `GET /v1/posts?format=csv` returns the same filtered rows as the JSON endpoint, with UTF-8 BOM, RFC 4180-ish quoting, and the expected columns; `GET /v1/tenants/me/export/workspace` is `tenant_admin` only and excludes credential secrets.
 
 ## How to extend this safely
 
-- **Adding a query filter** (`watchlistId`, `platformId`, `from`/`to`, `sentiment` — all named in ADR-0011's Context but none built yet, since none of those fields exist on `social_posts` yet): add a `WHERE` clause to `queryFirstPage`/`queryAfterCursor` in `socialPostStore.ts`, keyed off the new column once its owning story adds it. Keep it additive to the existing `seq`-ordered keyset query — never replace `seq` ordering with something else without re-deriving the whole cursor scheme.
+- **Adding a query filter** (`watchlistId`, `platformId`, `from`/`to`, `sentiment` — all named in ADR-0011's Context but none built yet, since none of those fields exist on `social_posts` yet): add a `WHERE` clause to `queryFirstPage`/`queryAfterCursor` in `socialPostStore.ts`, keyed off the new column once its owning story adds it. Keep it additive to the existing `seq`-ordered keyset query — never replace `seq` ordering with something else without re-deriving the whole cursor scheme. The same filter must also be applied to `exportSocialPostsCsv()` so `GET /v1/posts?format=csv` stays consistent with `GET /v1/posts`.
 - **The cursor is opaque by contract** (ADR-0011's own Negative consequence) — never document or rely on its internal shape (`{ seq: string }`) as a public API contract; treat `encodeCursor`/`decodeCursor` as the only code allowed to construct or parse one.
 - **Adding a field to `GET /v1/posts/:id`'s response:** extend `getSocialPostById()`'s `SELECT` and its `SocialPostFull` interface together — keep it a superset of `SocialPostSummary`'s fields (the list endpoint), not a divergent shape.
 

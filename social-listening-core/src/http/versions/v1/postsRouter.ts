@@ -5,6 +5,7 @@ import {
   deriveEnrichmentText,
   setPostEnrichment,
   updatePostEnrichment,
+  exportSocialPostsCsv,
 } from '../../../posts/socialPostStore';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import { enrichPost } from '../../../connectors/azureAiLanguage/enrichPost';
@@ -40,6 +41,7 @@ postsRouter.get('/', async (req, res) => {
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const watchlistId = typeof req.query.watchlistId === 'string' ? req.query.watchlistId : undefined;
+  const format = typeof req.query.format === 'string' ? req.query.format : undefined;
 
   if (watchlistId !== undefined) {
     if (!UUID_PATTERN.test(watchlistId)) {
@@ -51,6 +53,22 @@ postsRouter.get('/', async (req, res) => {
       res.status(404).json({ code: 'WATCHLIST_NOT_FOUND' });
       return;
     }
+  }
+
+  if (format === 'csv') {
+    try {
+      const csv = await exportSocialPostsCsv(tenantId, { watchlistId });
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="posts.csv"');
+      res.send('\uFEFF' + csv);
+    } catch (err: any) {
+      if (err?.message === 'EXPORT_TOO_LARGE') {
+        res.status(413).json({ code: 'EXPORT_TOO_LARGE' });
+      } else {
+        res.status(400).json({ error: 'Invalid request.' });
+      }
+    }
+    return;
   }
 
   try {

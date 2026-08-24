@@ -1,5 +1,6 @@
 import { withTenant } from '../db/withTenant';
 import { decodeCursor, encodeCursor } from './cursor';
+import { rowsToCsv } from './csvExport';
 
 export interface InsertSocialPostInput {
   tenantId: string;
@@ -535,4 +536,121 @@ async function queryAfterCursor(
     params
   );
   return rows;
+}
+
+const CSV_HEADERS = [
+  'id',
+  'published_at',
+  'provider',
+  'author_name',
+  'author_url',
+  'title',
+  'body_markdown',
+  'url',
+  'sentiment',
+  'keywords',
+  'watchlist_ids',
+];
+
+const DEFAULT_CSV_MAX_ROWS = 10000;
+
+export interface ExportSocialPostsCsvOptions {
+  /** Story 3.11 (ADR-0063) — limits the export to posts matching this watchlist. */
+  watchlistId?: string;
+}
+
+/**
+ * Story 3.16 (ADR-0074) — on-demand flat CSV export of the posts the caller is
+ * already authorized to see. Honors the same `watchlistId` filter as
+ * `listSocialPosts()`, enforces a row cap, and returns a UTF-8 RFC 4180-ish
+ * string. The router is responsible for prefixing the BOM and writing headers.
+ */
+export async function exportSocialPostsCsv(
+  tenantId: string,
+  options: ExportSocialPostsCsvOptions = {}
+): Promise<string> {
+  const maxRows = Number(process.env.POSTS_CSV_MAX_ROWS ?? DEFAULT_CSV_MAX_ROWS);
+
+  return withTenant(tenantId, async (client) => {
+    const countSql = options.watchlistId
+      ? `SELECT COUNT(*)::int as count
+         FROM social_posts sp
+         JOIN post_watchlist_matches pwm ON pwm.post_id = sp.id AND pwm.watchlist_id = $2 AND pwm.tenant_id = sp.tenant_id
+         WHERE sp.tenant_id = $1`
+      : `SELECT COUNT(*)::int as count FROM social_posts WHERE tenant_id = $1`;
+    const countParams = options.watchlistId ? [tenantId, options.watchlistId] : [tenantId];
+    const { rows: countRows } = await client.query<{ count: number }>(countSql, countParams);
+    if (countRows[0].count > maxRows) {
+      throw new Error('EXPORT_TOO_LARGE');
+    }
+
+    const join = options.watchlistId
+      ? `JOIN post_watchlist_matches pwm ON pwm.post_id = sp.id AND pwm.watchlist_id = $3 AND pwm.tenant_id = sp.tenant_id`
+      : '';
+    const params = options.watchlistId ? [tenantId, maxRows, options.watchlistId] : [tenantId, maxRows];
+    const { rows } = await client.query<Record<string, unknown>>(
+      `SELECT sp.id, sp.published_at, sp.body_markdown, sp.enrichment,
+              COALESCE(sp.raw_payload->>'providerId', '') as provider,
+              COALESCE(sp.raw_payload->>'title', sp.raw_payload->>'text', '') as title,
+              COALESCE(sp.raw_payload->>'url', '') as url,
+              a.display_name as author_display_name,
+              a.handle as author_handle,
+              a.external_author_id as author_external_author_id
+       FROM social_posts sp
+       LEFT JOIN authors a ON a.id = sp.author_id
+       ${join}
+       WHERE sp.tenant_id = $1
+       ORDER BY sp.seq ASC
+       LIMIT $2`,
+      params
+    );
+
+    const postIds = rows.map((r) => r.id as string);
+    const watchlistMap = new Map<string, string[]>();
+    if (postIds.length > 0) {
+      const { rows: matches } = await client.query<{ post_id: string; watchlist_id: string }>(
+        `SELECT post_id, watchlist_id
+         FROM post_watchlist_matches
+         WHERE tenant_id = $1 AND post_id = ANY($2::uuid[])
+         ORDER BY watchlist_id`,
+        [tenantId, postIds]
+      );
+      for (const m of matches) {
+        const list = watchlistMap.get(m.post_id) ?? [];
+        list.push(m.watchlist_id);
+        watchlistMap.set(m.post_id, list);
+      }
+    }
+
+    const csvRows = rows.map((r) => {
+      const authorName =
+        ((r.author_display_name as string | null) ??
+          (r.author_handle as string | null) ??
+          (r.author_external_author_id as string | null)) ??
+        '';
+      const authorUrl =
+        ((r.author_handle as string | null) ?? (r.author_external_author_id as string | null)) ?? '';
+      const watchlistIds = watchlistMap.get(r.id as string) ?? [];
+      const enrichment = r.enrichment as Record<string, unknown> | null;
+      const sentiment = typeof enrichment?.sentiment === 'string' ? enrichment.sentiment : '';
+      const keyPhrases = Array.isArray(enrichment?.keyPhrases)
+        ? enrichment.keyPhrases.filter((p): p is string => typeof p === 'string').join('; ')
+        : '';
+      return {
+        id: r.id,
+        published_at: (r.published_at as Date | null) ? (r.published_at as Date).toISOString() : '',
+        provider: r.provider,
+        author_name: authorName,
+        author_url: authorUrl,
+        title: r.title,
+        body_markdown: (r.body_markdown as string | null) ?? '',
+        url: r.url,
+        sentiment,
+        keywords: keyPhrases,
+        watchlist_ids: watchlistIds.join(','),
+      };
+    });
+
+    return rowsToCsv(csvRows, CSV_HEADERS);
+  });
 }
