@@ -1055,7 +1055,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.38 — Post Detail Reply Action, Composer Drawer, and Replies Tab
 
 **Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-23 — social-listening-admin@ae5d16a
 
 **As a** Tenant User or Tenant-Admin,
 **I want** to click "Reply" on a post, compose the reply in a drawer, and see it listed,

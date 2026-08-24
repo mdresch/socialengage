@@ -3289,3 +3289,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (38/38 suites, 512/512 tests in contracts/epic-6; 9/9 in Story 6.35 contract; tsc typecheck clean)
 
 **Implementation was already committed on 2026-08-21 as `89eb97c`; this entry backfills the real implementation commit and the `Built:` field after re-verifying the Epic-6 suite still passes.**
+
+---
+
+## 2026-08-23 — Story 6.38 — social-listening-admin
+
+- **Full commit:** `ae5d16a31e81b4627be3dd92dbb69fe2b3675c64`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.38 / ADR-0073 (Post Detail Reply Action, Composer Drawer, and Replies Tab)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts (10/10)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/src/app/api/posts/[id]/replies/route.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostRepliesTab.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/ReplyComposerDrawer.tsx, social-listening-admin/src/lib/core-client.ts
+- **Full suite at merge:** PASS (Story 6.38 10/10; contracts/epic-6 38/39 suites and 522/522 tests green — the one failing suite, 6.1, failed only on a local EADDRINUSE port-3000 conflict, not this change)
+
+**Implemented 2026-08-23 in `ae5d16a` and verified against the Epic-6 contract suite.**
