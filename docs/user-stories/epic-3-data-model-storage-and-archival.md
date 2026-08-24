@@ -352,7 +352,7 @@
 ## Story 3.15 — Outbound Post Publishing Audit Table and `POST /v1/outbound/posts` API
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@8e7f312
 **Depends on:** Story 3.14 (base `outbound_activities` table and `POST /v1/posts/:id/replies`), Story 2.28 (connector `publish?()` framework)
 
 **As a** Tenant User or Tenant-Admin,
