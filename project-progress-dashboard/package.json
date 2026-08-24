@@ -4,6 +4,9 @@
   "private": true,
   "description": "Standalone Next.js shadcn dashboard for SocialEngage project progress, ADRs, BRDs, FDDs, and User Stories.",
   "scripts": {
+    "sync": "node scripts/sync-data.js",
+    "predev": "node scripts/sync-data.js",
+    "prebuild": "node scripts/sync-data.js",
     "dev": "next dev -p 3060",
     "build": "next build",
     "start": "next start -p 3060",
