@@ -187,3 +187,38 @@ export function __resetGateForTests(): void {
   keyLocks.clear();
   queueDepth.clear();
 }
+
+/**
+ * Story 9.1 (ADR-0077 §5) — a non-consuming read of a key's remaining
+ * rate-limit budget, used by the preview controller's `quota_risk`
+ * pre-check. Unlike `acquire()`, it never decrements `remaining` and never
+ * queues: it reports the current window state so the controller can decide
+ * whether a preview call would consume too much of the remaining budget
+ * before spending any of it. Returns `remaining: 0` for a key with no
+ * prior acquisitions in this window only when the config itself is zero;
+ * otherwise a fresh window is reported at its full `requestsPerWindow`.
+ */
+export function checkAvailability(key: string, config: RateLimitConfig): { remaining: number } {
+  const nowMs = Date.now();
+  let s = state.get(key);
+  if (!s || nowMs >= s.windowResetAt) {
+    return { remaining: config.requestsPerWindow };
+  }
+  return { remaining: s.remaining };
+}
+
+/**
+ * Story 9.1 (ADR-0077 §5) — the per-(tenantId, providerId) convenience
+ * wrapper around `checkAvailability`, mirroring `acquireForProvider()`'s
+ * keying. The preview controller calls this before executing a connector's
+ * `count?()` / `sample?()` to raise the `quota_risk` warning when the
+ * preview would consume more than 80% of the remaining budget.
+ */
+export function checkProviderAvailability(
+  tenantId: string,
+  connector: ProviderConnector
+): { remaining: number } {
+  const key = socialConnectorKey(tenantId, connector);
+  const config = resolveRateLimitConfig(connector);
+  return checkAvailability(key, config);
+}

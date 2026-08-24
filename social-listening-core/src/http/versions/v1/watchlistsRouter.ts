@@ -9,6 +9,7 @@ import {
   CreateWatchlistInput,
   WatchlistPatchInput,
 } from '../../../watchlists/watchlistStore';
+import { previewWatchlistVolume, watchlistToAst } from '../../../watchlists/previewVolumeService';
 import { requireTenantUserIdentity } from '../../auth/requireTenantUser';
 
 export const watchlistsRouter = Router();
@@ -197,6 +198,63 @@ watchlistsRouter.delete('/:id', async (req, res) => {
       return;
     }
     res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ code: 'internal_error' });
+  }
+});
+
+/**
+ * Story 9.1 (ADR-0077 §4) — POST /v1/watchlists/preview-volume. Tenant-scoped
+ * and RLS-gated via requireTenantUserIdentity() (and, for the watchlistId
+ * path, getWatchlistById()'s ownership-scoped RLS — a cross-tenant caller
+ * gets 404). Accepts either a `watchlistId` (loaded under RLS, AST derived
+ * from the stored query) or an inline `ast`, plus `connectorIds` and an
+ * optional `timeWindow`. Returns WatchlistVolumePreview with a per-connector
+ * breakdown; a single connector failure is returned as
+ * `confidence: 'unavailable'` without failing the HTTP request (ADR-0077 §4).
+ */
+watchlistsRouter.post('/preview-volume', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+
+  const body = req.body ?? {};
+  const connectorIds: string[] = Array.isArray(body.connectorIds) ? body.connectorIds : [];
+  const timeWindow = body.timeWindow ?? undefined;
+
+  let ast;
+  let resolvedConnectorIds = connectorIds;
+  if (body.watchlistId && typeof body.watchlistId === 'string') {
+    try {
+      const watchlist = await getWatchlistById(identity.tenantId, identity.userId, body.watchlistId);
+      if (!watchlist) {
+        res.status(404).json({ code: 'not_found' });
+        return;
+      }
+      ast = watchlistToAst(watchlist);
+      if (connectorIds.length === 0) {
+        resolvedConnectorIds = watchlist.platformIds ?? [];
+      }
+    } catch (err) {
+      res.status(500).json({ code: 'internal_error' });
+      return;
+    }
+  } else if (body.ast && typeof body.ast === 'object') {
+    ast = body.ast;
+  }
+
+  if (!ast) {
+    res.status(400).json({ code: 'bad_request' });
+    return;
+  }
+
+  try {
+    const preview = await previewWatchlistVolume({
+      tenantId: identity.tenantId,
+      ast,
+      connectorIds: resolvedConnectorIds,
+      timeWindow,
+    });
+    res.json(preview);
   } catch (err) {
     res.status(500).json({ code: 'internal_error' });
   }

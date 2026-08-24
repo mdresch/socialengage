@@ -1,5 +1,5 @@
 import { WatchlistTerms } from '../watchlists/types';
-import { AstNodeType } from '../watchlists/ast';
+import { AstNodeType, AstNode } from '../watchlists/ast';
 import { RunIngestionAttemptResult } from '../ingestion/runIngestionAttempt';
 import { SocialPostSummary } from '../posts/socialPostStore';
 
@@ -8,6 +8,70 @@ export type AuthMode = 'oauth' | 'api_key' | 'none';
 export interface RateLimitConfig {
   requestsPerWindow: number;
   windowSeconds: number;
+}
+
+/**
+ * Story 9.1 (ADR-0077) — the canonical boolean-query AST, surfaced under the
+ * ADR's own name so connector `count?()`/`sample?()` signatures read exactly
+ * as the ADR's decision text writes them. An alias, not a second
+ * representation: it is `AstNode` from `src/watchlists/ast.ts`, unchanged.
+ */
+export type WatchlistAST = AstNode;
+
+/**
+ * Story 9.1 (ADR-0077) — a half-open time window passed to `count?()` /
+ * `sample?()`. ISO 8601 strings, either bound optional. The preview
+ * controller defaults a fully-unspecified window to a 7-day look-back when
+ * extrapolating a sample.
+ */
+export interface TimeWindow {
+  start?: string;
+  end?: string;
+}
+
+/**
+ * Story 9.1 (ADR-0077) — the context handed to `count?()` / `sample?()`.
+ * `mode: 'preview'` / `isDryRun: true` is the preview controller's signal to
+ * the connector that this call must not mutate cursors, watermarks,
+ * checkpoints, or high-water-marks, and that fetched posts are discarded
+ * after counting (ADR-0077 §2). `tenantId` is the resolved, token-authenticated
+ * caller's tenant — never a client-supplied value.
+ */
+export interface ConnectorContext {
+  tenantId: string;
+  mode?: 'preview' | 'live';
+  isDryRun?: boolean;
+}
+
+/**
+ * Story 9.1 (ADR-0077 §1) — the result of a connector's optional `count?()`.
+ * `count` is the platform's own total-results figure (or, for the fallback
+ * sample path, the extrapolated estimate); `confidence` is `'exact'` when the
+ * platform reported a real total and `'estimate'` when derived. `rateLimitCost`
+ * is the API request units the preview check itself consumed (a separate
+ * `projectedIngestionRateLimitCost` field would carry future ingestion cost —
+ * not built in v1). `unsupportedOperators` lets the connector report AST
+ * operators it could not evaluate, feeding the `unsupported_query` warning.
+ */
+export interface ConnectorCountResult {
+  count: number;
+  confidence: 'exact' | 'estimate';
+  sampleSize?: number;
+  rateLimitCost?: number;
+  unsupportedOperators?: string[];
+}
+
+/**
+ * Story 9.1 (ADR-0077 §3) — the result of a connector's optional `sample?()`,
+ * the no-side-effect preview fallback for connectors without `count?()`. The
+ * preview controller extrapolates from `posts`' publishedAt span against the
+ * requested time window; a sample smaller than the bounded preview size
+ * (default 50) is the exact count for that window.
+ */
+export interface ConnectorSampleResult {
+  posts: NormalizedPost[];
+  rateLimitCost?: number;
+  unsupportedOperators?: string[];
 }
 
 /**
@@ -150,6 +214,30 @@ export interface SocialConnector extends ProviderConnector {
    * is the only caller.
    */
   pollUser?(tenantId: string, userId: string): Promise<RunIngestionAttemptResult>;
+  /**
+   * Story 9.1 (ADR-0077 §1) — optional per-connector post-count estimate for
+   * the watchlist volume preview. Connectors whose platform exposes a
+   * total-results field (GNews `totalArticles`, Brave/Bing page counts)
+   * implement this returning `confidence: 'exact'`; connectors that cannot
+   * count simply omit it and the preview controller falls back to
+   * `sample?()`. The method receives the same `WatchlistAST` and
+   * `timeWindow` used for `poll()`, must be tenant-scoped, and must use the
+   * connector's existing credentials and `RequestGate`. See
+   * .claude/skills/watchlist-matching/SKILL.md and
+   * .claude/skills/provider-connector-framework/SKILL.md.
+   */
+  count?(ctx: ConnectorContext, args: { ast: WatchlistAST; timeWindow: TimeWindow }): Promise<ConnectorCountResult>;
+  /**
+   * Story 9.1 (ADR-0077 §2/§3) — optional bounded preview sample, the
+   * no-side-effect fallback for connectors without `count?()`. The preview
+   * controller passes `mode: 'preview'` / `isDryRun: true` in `ctx`; the
+   * connector must skip watermark/cursor/checkpoint updates and must not
+   * persist fetched posts. `limit` is the bounded preview size (default 50).
+   */
+  sample?(
+    ctx: ConnectorContext,
+    args: { ast: WatchlistAST; timeWindow: TimeWindow; limit: number }
+  ): Promise<ConnectorSampleResult>;
 }
 
 export interface ModelCapabilities {

@@ -28,6 +28,8 @@ The unifying abstraction every social platform integration and every AI enrichme
 
 ||| ADR-0076 | `AIProviderConnector` gains optional `research?()` method; `SearchSnippet`, `ResearchOptions`, and `ResearchResult` shapes added to `src/connectors/types.ts` | 2.32 |
 
+||| ADR-0077 | `SocialConnector` gains optional `count?()` (returning `ConnectorCountResult`) and `sample?()` (returning `ConnectorSampleResult`) for watchlist volume preview; `ConnectorContext`/`TimeWindow`/`WatchlistAST` added to `types.ts`; `RequestGate` gains `checkAvailability`/`checkProviderAvailability` pre-check for the `quota_risk` warning | 9.1 |
+
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.1.provider-connector-framework.contract.test.ts` — the three interfaces' required shape; a poll-mode and a push-mode `SocialConnector` both normalize correctly with no delivery-mode-specific pipeline branching; two `AIProviderConnector`s (including one with differing per-model rate limits) both resolve through the same generic dispatcher; live parsed rate-limit headers take priority over static declared config.
@@ -39,6 +41,7 @@ The unifying abstraction every social platform integration and every AI enrichme
 - `contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts` (ADR-0073) — optional `SocialConnector.reply?()` and `getOutboundRateLimitConfig?()`; `outboundEngagementService.invoke()` returns a `sent`/`failed` row; `RequestGate.acquireForOutbound()` uses a separate `(tenantId, providerId, 'outbound')` key with `getOutboundRateLimitConfig?()` fallback.
 - `contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts` (ADR-0075) — optional `SocialConnector.publish?()` and `OutboundPostPayload`; `outboundPublishService.invoke()` returns a `sent`/`failed` row for `activity_type='post'`; `RequestGate.acquireForOutboundPost()` uses a separate `(tenantId, providerId, 'outbound_post')` key with `getOutboundRateLimitConfig?()` fallback.
 - `contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts` (ADR-0076) — `AIProviderConnector` interface gains `research?()`, `ResearchOptions`, `ResearchResult`, and `SearchSnippet` types; `azureOpenAiConnector.research()` returns a structured result; `azureAiLanguageConnector.research` is undefined.
+- `contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts` (ADR-0077) — `SocialConnector` gains optional `count?()`/`sample?()` and `ConnectorCountResult`/`ConnectorSampleResult`/`ConnectorContext`/`TimeWindow`/`WatchlistAST` types; `RequestGate` gains `checkAvailability`/`checkProviderAvailability`; the GNews connector implements `count?()` via the platform's `totalArticles` field. See `.claude/skills/watchlist-matching/SKILL.md` for the orchestration half (`previewVolumeService.ts` + the `POST /v1/watchlists/preview-volume` route).
 
 ## How to extend this safely
 
