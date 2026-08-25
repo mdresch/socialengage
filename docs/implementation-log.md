@@ -3313,3 +3313,15 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/previewVolumeService.ts
 - **Epic-9 suite at merge:** PASS (1/1 suites, 16/16 tests). Full suite run identified pre-existing environmental failures (stale connection pools across 95 sequential suites in --runInBand mode, from the test DB mechanism change in commit 56aec12) unrelated to Story 9.1's purely-additive changes; individual epic-2 contracts (e.g. story-2.8) pass when run alone with Story 9.1's changes applied. Full suite deferred to CI on push.
+
+## 2026-08-25 — Story 9.5 — social-listening-core@3add125
+
+- **Full commit:** 3add1256fbfb4085c6c5e2f62bb32708b8736bed`n- **Repo:** social-listening-core
+- **Story / ADR:** 9.5 / ADR-0080 (Onboarding checklist state)
+- **Contract:** social-listening-core/contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts (17/17)
+- **SKILL.md:** social-listening-core/.claude/skills/onboarding-checklist/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/onboarding-checklist/SKILL.md, social-listening-core/contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts, social-listening-core/migrations/0043_add_tenants_onboarding_checklist.sql, social-listening-core/src/http/versions/v1/onboardingChecklistRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/tenants/onboardingChecklist.ts
+- **Epic-9 suite at merge:** PASS (2/2 suites, 33/33 tests). tsc typecheck clean. Full suite deferred to CI on push.
+
+**Resumed from a prior session that wrote the contract test, migration, and core module but stalled before the HTTP router and SKILL.md. Fixed two fixture bugs in the contract test (watchlist FK violation — needs a real user row; social_posts RLS violation — needs withTenant not bare pool) that the prior session never caught because the router didn't exist to run the test against.**
+

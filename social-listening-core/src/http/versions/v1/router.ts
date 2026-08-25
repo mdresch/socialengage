@@ -22,6 +22,7 @@ import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRout
 import { tenantSelfViewRouter } from './tenantSelfViewRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
+import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
 
 /**
@@ -154,6 +155,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */
   v1Router.use('/composer', authMiddleware, composerRouter);
+
+  /** Story 9.5 (ADR-0080) — tenant onboarding checklist state. */
+  v1Router.use('/tenants', authMiddleware, onboardingChecklistRouter);
 
   return v1Router;
 }
