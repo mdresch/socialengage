@@ -1515,323 +1515,329 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues
+## ~~2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues~~
 
 - **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
 - **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — this is the prior scheduled pass's own review commit; verified rather than re-litigated. Its self-described corrections (Epic 3/8 rows added to docs/user-stories/README.md's Epics table, docs/implementation-plan.md's Traceability table gap closed for Stories 8.7/8.8/8.9/3.11/2.18 and the stale 1.15/6.24/6.27 rows) are all still present and accurate — confirmed directly against the current dated notes at docs/user-stories/README.md (lines ~229-231) and the matching implementation-plan.md note. The post-commit-hook gap it flagged (commits landing via a branch merge never populating any of the three review queues) is real and was itself fixed two commits later by 6673537 (see below).
 
-## 2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713
+  **Note on commit-hash provenance, discovered while starting this pass.** `git show`/`git diff-tree` on this and the next ~67 entries' cited hashes don't resolve against `origin/main` at all. Investigated rather than assumed to be a fetch problem: `origin/main`'s real history jumps directly from 2026-08-18 (`7c0572c`/`f570dfb`) to 2026-08-23 (`9231a67`) — no commit dated 2026-08-19 through 2026-08-22 is reachable from the current `origin/main` tip (`5b4ebd6`) at all, despite this file's queue being full of entries dated across exactly that window. `git merge-base main origin/main` (a stale local `main` ref this session's own `git fetch origin main` reported force-updating away from, at session start: `+ 39211ac...5b4ebd6 main -> origin/main (forced update)`) finds the fork point at `53dc527` ("chore: post-commit hook outputs for 31af056", 2026-08-19 12:15). **68 commits made after that point on the old lineage (starting `6080795`, running through 532e713 here up to 7cd9cf9, plus five later duplicate-content commits) are not ancestors of the current `origin/main` at all** — a different, 97-commit lineage from the same fork point is what `origin/main` actually contains today, continuing on through Story 3.16 (`5b4ebd6`). This is a real history rewrite (a rebase or reset) that already existed upstream before this session started, not something this pass did.
+
+  **What this means for the affected entries below:** most cited hashes are real, retrievable git objects (present in the stale local `main` ref this session's fetch happened to pull in) that are simply not part of `origin/main`'s actual history, so `git diff-tree` against them doesn't describe what's actually in the tree Menno's project tracks today. **A further, more severe wrinkle found while checking: four of them — `ae1bd98`, `e40d3e5`, `be6c4cd`, `8930de7` (the Story 1.16/6.29 "build" and "log" commits) — don't exist as git objects anywhere at all, not even on the stale local `main` ref, whose own real tip (`39211ac`) sits only one minute after the last hash that does resolve (`f00b34c`, 16:44 on 2026-08-20).** The post-commit hook queued these four as if they'd been committed, but no ref this session can see ever actually contains them — a stronger failure than "history got rewritten," closer to "a queue entry was written for a commit that was never durably made." The Story 1.16/6.29 work they describe is nonetheless genuinely present in `origin/main`'s current tree (verified directly by file), so it did land eventually, just not via these four specific, apparently-phantom commits. Checked directly rather than assumed: the *substantive work* every affected commit describes (Stories 8.7-8.10, 2.19-2.25, 6.28-6.37, 1.16, ADR-0064-0071, etc.) **is genuinely present in `origin/main`'s current tree**, under the *new* lineage's own commit hashes (several directly visible starting at `30ed2df`, `86f093b`, `513b125`, etc.) — confirmed by reading the real files (OverviewTab.tsx, CountryWorldMap.tsx, IngestionAlertBanner.tsx, the watchdog migration, and more), the current epics/traceability tables, and current SKILL.md files, all already correctly reflecting this work. **Five old-lineage commits are literal content duplicates of a new-lineage commit under a different hash** (`4df8d6d`≈`16a47d8`, `dedfb6b`≈`5ff540a`, `bb34673`≈`8de21b3`, and both `dca7b22`+`0052776` superseded by `d0094f6`) — the old lineage briefly double-committed the Brave Search connector, the Bing Search connector, and a Postgres-pool-deadlock heal; the rewrite deduplicated them. Every resolution below for a 2026-08-19/20-dated entry was verified against `origin/main`'s real, current tree state for exactly this reason, flagged once here rather than repeated 53 times.
+
+  **What this role is and isn't chartered to do about it:** confirming the paper trail matches git reality is squarely this role's mandate, and this *is* real, structural drift between the pending-review queues and `origin/main`'s actual history — but the queue files and `scripts/git-hooks/post-commit` are append-only-by-convention bookkeeping this role has no authority to retroactively rewrite, only to append a dated note to, same as everywhere else. Whether the rewrite was deliberate (cleaning up noisy per-commit bookkeeping) or accidental is outside what git alone can tell me — flagged for Menno directly, not guessed at. **Not performed here:** the ~17 remaining orphaned entries this pass doesn't reach (`3ee2b75` through `7cd9cf9` plus the five duplicates) are left for a future pass or for Menno to decide whether the same verify-against-current-tree treatment is worth applying, or whether the queue files instead deserve a one-time structural note in place of 68 individual per-commit workarounds.**
+
+## ~~2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713~~
 
 - **Full commit:** `d5ef4597f396b559dd9d75c9a6df6bdb6a5c179f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-log bookkeeping — appends the queue entries and a time-tracking row for 532e713, nothing else. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459
+## ~~2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459~~
 
 - **Full commit:** `d4c8ca0b276fadee003b8f407c3a9df87a08a144`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Same pure bookkeeping pattern as d5ef459, one commit later. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits
+## ~~2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits~~
 
 - **Full commit:** `66735370992a4a48420236e90a5b97ddf339ed8c`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift; also closes a real gap the 532e713 entry above had just flagged. Fixes scripts/git-hooks/post-commit to stop re-queuing its own "chore: post-commit hook outputs for X" bookkeeping commits, which had no terminating condition before this fix. Outside this role's chartered file scope (scripts/ isn't a traceability doc), so nothing to correct directly. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 5d3ec45 — Writen the ADRs 0064 0065 0066 0067 0068 0069
+## ~~2026-08-19 — 5d3ec45 — Writen the ADRs 0064 0065 0066 0067 0068 0069~~
 
 - **Full commit:** `5d3ec452c00b3c2af73303387aee6f4c00d7723b`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md, docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0068-instagram-connector, docs/adr/0069-linkedin-connector, docs/design/Google AI Studio/server.ts, docs/design/frontend-design-future-devs.md, docs/project docs/Spark-Capture-AI-Provider-Model-Agnosticism.md, docs/project docs/Spark-Capture-Service-Bus-Purposeful-Downstream-Subscriptions.md, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — one real, self-correcting defect found, already resolved by a later commit, nothing left to fix now. This commit's own ADR-0067/0068/0069 drafts were written to disk with malformed, extension-less filenames (e.g. `docs/adr/0067-reconfirm-facebook-connector`, no `.md`), so they carried no content even though docs/adr/README.md's master table already linked to the correctly-suffixed filenames. Verified directly: `git ls-files docs/adr/` shows no extension-less stray file remains today, and every 0064-0069 README.md table link and footnote resolves to a real, populated file (1bb19f7, reviewed below, is what fixed it). *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 63902a1 — fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo
+## ~~2026-08-19 — 63902a1 — fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo~~
 
 - **Full commit:** `63902a11b3c2c83f3db8077ac0944440e6f1daa9`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/posts/socialPostStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 3.11's healing pass (FK conflict, ambiguous-column JOIN, fixture typo) is fully reflected in ADR-0063's own Amendment Log and epic-3-data-model-storage-and-archival.md's Story 3.11 entry — matches docs/implementation-plan.md's own dated note (line 233) describing the same heal. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 6e6755e — docs: implementation log entry for Story 3.11 healing pass
+## ~~2026-08-19 — 6e6755e — docs: implementation log entry for Story 3.11 healing pass~~
 
 - **Full commit:** `6e6755e8693a8708414a0b734f36374629fe320f`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure append to docs/implementation-log.md for the Story 3.11 healing pass; confirmed only appended, no prior entry touched. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 1d550a1 — docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate
+## ~~2026-08-19 — 1d550a1 — docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate~~
 
 - **Full commit:** `1d550a1c8d749e634af4b065199d8303496763ce`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, CLAUDE.md, docs/implementation-log.md, docs/implementation-methodology.md, docs/templates/ci-workflow.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Methodology amendment (epic-scoped local validation, CI as the unconditional full-suite gate) updates .claude/skills/heal-contract-failure/SKILL.md and .claude/skills/implement-story/SKILL.md consistently with docs/implementation-methodology.md's own Amendment Log entry for the same change; docs/templates/ci-workflow.md's matching note confirmed present. CLAUDE.md is outside this role's own chartered file scope, so its two-line addition wasn't checked further. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 7698563 — feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance
+## ~~2026-08-19 — 7698563 — feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance~~
 
 - **Full commit:** `7698563ba34ec7f71ec5c4deac609965101381ba`
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 8.7's Built field (epic-8-analytics-dashboard.md: `social-listening-admin@7698563`) matches this commit's own hash exactly (the underlying commit is orphaned per the note above, but the Built-field citation is honest about which commit originally did the work); docs/adr/README.md's footnote 32 (ADR-0062) and footnote 33 (ADR-0063) both accurately describe the accepted-as-revised decisions and the Stories 8.7/8.8 Blocked-to-Ready transition; docs/user-stories/README.md's own dated note independently confirms the same account. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-19 — 6a59885 — docs: implementation log entry for Story 8.7, Built hash finalized
+## ~~2026-08-19 — 6a59885 — docs: implementation log entry for Story 8.7, Built hash finalized~~
 
 - **Full commit:** `6a598854f83063c1bd61fb8a7628420c78e52b0e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log append plus the Built-field finalization on epic-8-analytics-dashboard.md's Story 8.7 entry. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 2859a76 — feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer
+## ~~2026-08-20 — 2859a76 — feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer~~
 
 - **Full commit:** `2859a76da56c066a11053e50feb96833fe0415a4`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/[id]/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. UI/UX refinement pass within Story 8.7/8.1's already-accepted scope (no new ADR or story needed); social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md and .../post-feed/SKILL.md are both updated in this same commit to describe the new stacked post-detail drawer, matching the real component split (PostDetailPanel.tsx shared between the Posts screen and the Analytics drawer) still present in the current tree. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — efa96e8 — fix(analytics-overview): unreadable white-on-white post title in drawer rows
+## ~~2026-08-20 — efa96e8 — fix(analytics-overview): unreadable white-on-white post title in drawer rows~~
 
 - **Full commit:** `efa96e8869d1b24b396cb2f7e9d00e872e20acc4`
 - **Files touched:** social-listening-admin/src/app/globals.css
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Single-line CSS contrast fix, no SKILL.md or traceability claim touched or implicated. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — cd6f41e — fix(post-feed): allocate the Newswire issuer to the author position
+## ~~2026-08-20 — cd6f41e — fix(post-feed): allocate the Newswire issuer to the author position~~
 
 - **Full commit:** `cd6f41e08dea95d06748056c97e54802e35c6fb7`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. post-feed/SKILL.md updated in the same commit to describe the Newswire-issuer-as-author fix; matches the new contract assertion in story-6.11.post-feed.contract.test.ts. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 75362d3 — fix(facebook-connector): denormalize Page id/name into rawPayload
+## ~~2026-08-20 — 75362d3 — fix(facebook-connector): denormalize Page id/name into rawPayload~~
 
 - **Full commit:** `75362d338413dd2a1e2cc36d12219b48798f9118`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. facebook-connector/SKILL.md updated in the same commit to describe the Page id/name denormalization into rawPayload; matches the story-2.15 contract's new assertions. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 2fa45ba — fix(post-feed): surface Facebook Page author and original-post link
+## ~~2026-08-20 — 2fa45ba — fix(post-feed): surface Facebook Page author and original-post link~~
 
 - **Full commit:** `2fa45ba5bfb07660987e34c90019241081e50094`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. post-feed/SKILL.md updated in the same commit for the Facebook Page author/original-post-link surfacing; consistent with the prior 75362d3 change it builds on. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 2f52c0f — feat(story-2.19): tenant-owned-feed per-feed name + per-item byline
+## ~~2026-08-20 — 2f52c0f — feat(story-2.19): tenant-owned-feed per-feed name + per-item byline~~
 
 - **Full commit:** `2f52c0f1079249e9508c5878bc100ff2543468a7`
 - **Files touched:** docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.19.tenant-owned-feed-naming-and-byline.contract.test.ts, social-listening-core/contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts, social-listening-core/migrations/0037_add_tenant_owned_feed_activations_name.sql, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedStore.ts, social-listening-core/src/http/versions/v1/tenantOwnedFeedRouter.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 2.19 is real and fully traced: docs/implementation-plan.md's own dated note (line 332) and the ADR-0050 Amendment Log entry both accurately describe the per-feed name/per-item byline work, and epic-2-ingestion-connectors-and-rate-limits.md's Story 2.19 entry matches. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — e54f937 — docs: implementation log entry for Story 2.19, Built hash finalized
+## ~~2026-08-20 — e54f937 — docs: implementation log entry for Story 2.19, Built hash finalized~~
 
 - **Full commit:** `e54f937c9994e126bee7944e9b071be3e524e9c1`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log append plus Built-field finalization for Story 2.19 on the epic-2 file. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — cc38b6a — feat(story-6.28): tenant-owned-feed friendly naming in setup UI
+## ~~2026-08-20 — cc38b6a — feat(story-6.28): tenant-owned-feed friendly naming in setup UI~~
 
 - **Full commit:** `cc38b6a9909eb4347d39789bd07e7f1e5027137d`
 - **Files touched:** social-listening-admin/.claude/skills/tenant-owned-feed-connector-setup/SKILL.md, social-listening-admin/contracts/epic-6/story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/[id]/route.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/connect/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/tenant-owned-feed/TenantOwnedFeedSetup.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 6.28 (unstoried ADR-0050-sourced UI surface, per this project's own no-story-ADR convention) appears correctly in docs/user-stories/README.md's Epic 6 row's unstoried-surface list; tenant-owned-feed-connector-setup/SKILL.md updated in the same commit for the friendly-naming UI. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 1bb19f7 — docs: ADR filename fixes and governance review updates
+## ~~2026-08-20 — 1bb19f7 — docs: ADR filename fixes and governance review updates~~
 
 - **Full commit:** `1bb19f703bf8d28a085172934b1edc6b07a46666`
 - **Files touched:** docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0067-reconfirm-facebook-connector.md, docs/adr/0068-instagram-connector, docs/adr/0068-instagram-connector.md, docs/adr/0069-linkedin-connector, docs/adr/0069-linkedin-connector.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, and this is the commit that actually fixes the real 5d3ec45 filename defect flagged above: adds the missing `.md` extension (with real content) to the 0067/0068/0069 ADR files and creates 0066's real file — every 006x ADR file docs/adr/README.md's table links to now resolves correctly, confirmed directly against the current tree. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 983ae70 — docs: sync tracking and review registers
+## ~~2026-08-20 — 983ae70 — docs: sync tracking and review registers~~
 
 - **Full commit:** `983ae70fc87dd679f695a486ad3bdd6ba37b38a0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 605e5a4 — feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget
+## ~~2026-08-20 — 605e5a4 — feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget~~
 
 - **Full commit:** `605e5a430aaa535dea868af78acd5d222ed1ea72`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/analytics/summary/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 8.9 is fully traced: docs/implementation-plan.md's dated note (line 334) and analytics-dashboard/SKILL.md's own "Built 2026-08-20" entry both accurately describe the selectedTopic filter and Watchlist Coverage widget; ADR-0063's own footnote 33 correctly names both as its downstream enablement. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 1fee797 — docs(story-8.9): record implementation and traceability for Story 8.9
+## ~~2026-08-20 — 1fee797 — docs(story-8.9): record implementation and traceability for Story 8.9~~
 
 - **Full commit:** `1fee7974ac43b9892c227ac9b5c7c5f4251aff3a`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log/traceability append for Story 8.9, matching the code that shipped one commit earlier. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution
+## ~~2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution~~
 
 - **Full commit:** `1320adbb2fd8e54a955dce7fa3092ab8eeaa274c`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 3.12 drafted via an ADR-0063 Amendment Log entry (not a new ADR, correctly per this series' convention for a narrow scope extension); appears in epic-3-data-model-storage-and-archival.md and docs/implementation-plan.md's own Traceability table (line 67) with a matching Source citation. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution
+## ~~2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution~~
 
 - **Full commit:** `3adc06068ea5736c6fac6a2ae0794a49e07be533`
 - **Files touched:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts, social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/migrations/0038_backfill_post_watchlist_matches.sql, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 3.12 built (historical backfill + discovery attribution); post-watchlist-match-persistence/SKILL.md and wikipedia-connector/SKILL.md both updated in the same commit, consistent with the new migration (0038_backfill_post_watchlist_matches.sql) and the Wikipedia-discovery contract's new assertions. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — af83d18 — docs(story-3.12): record Story 3.12 implementation and update traceability
+## ~~2026-08-20 — af83d18 — docs(story-3.12): record Story 3.12 implementation and update traceability~~
 
 - **Full commit:** `af83d1870bb86467fb7f3370e6bfdb845ced3f69`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log/traceability append for Story 3.12, matching the code that shipped one commit earlier. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — aa1e7f5 — fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items
+## ~~2026-08-20 — aa1e7f5 — fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items~~
 
 - **Full commit:** `aa1e7f5802d2ca7af48ef119aca91f365af3af50`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — no false claim found, one minor gap noted but not corrected. Sorts the Watchlist Coverage widget descending by post count and caps it to the top 6 — a real behavior change analytics-dashboard/SKILL.md's own "Built 2026-08-20 (Story 8.9...)" line doesn't mention (it still just says "real per-watchlist post counts"). Nothing in that line is false — a tenant with 6 or fewer active watchlists sees no difference — but it's incomplete for a tenant with more. Not corrected here: a narrower completeness gap than the false-claim-after-a-shipped-change class this role targets, and SKILL.md files here document contract-level behavior, not every later UI-polish commit's own display limit — flagged for the next pass touching that SKILL.md for another reason anyway. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 3e3c352 — docs: update review logs and time tracking
+## ~~2026-08-20 — 3e3c352 — docs: update review logs and time tracking~~
 
 - **Full commit:** `3e3c352bf6cbac8a13095db155665a370162b4cf`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line
+## ~~2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line~~
 
 - **Full commit:** `3d7d7435a8a67f17d4e68b6b165e3772c8e747f6`
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.3.conversations-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.5.languages-breakdown-widget.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure layout alignment (topic selector, date-range picker, matching-posts count on one line) — no SKILL.md claim or traceability entry is affected by a single-control-line layout change. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — ee03f09 — docs: update review logs and time tracking
+## ~~2026-08-20 — ee03f09 — docs: update review logs and time tracking~~
 
 - **Full commit:** `ee03f09f33d03d94f23ff6d7f5703060af192356`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 1edd1e7 — feat(analytics): promote toolbar items to header for persistent visibility across all tabs
+## ~~2026-08-20 — 1edd1e7 — feat(analytics): promote toolbar items to header for persistent visibility across all tabs~~
 
 - **Full commit:** `1edd1e7b091e1ba40799074aaefb0f8f43fbdd0d`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Promotes existing toolbar controls to the header for persistent visibility across tabs — a layout change to already-documented controls, not a new capability; no SKILL.md claim affected. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 8e50e38 — docs: update reviews and time tracking
+## ~~2026-08-20 — 8e50e38 — docs: update reviews and time tracking~~
 
 - **Full commit:** `8e50e387ba9fbdfe27e8cac2932de6d95ffa5f11`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable
+## ~~2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable~~
 
 - **Full commit:** `76941c005b8fd6feb0a26b262f03b1a8af67e4f9`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/shell.test.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Sidebar navigation icons and collapsibility are presentation-layer only; shell.test.ts (added in the same commit) covers the new behavior. No SKILL.md or traceability claim is affected by a navigation-chrome change. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 6115e1b — docs: update review tracking
+## ~~2026-08-20 — 6115e1b — docs: update review tracking~~
 
 - **Full commit:** `6115e1b4a1708a79f8d57df3380dbd28795081f9`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals
+## ~~2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals~~
 
 - **Full commit:** `8d9b6f365123c8747d52f43a5804a70fe6f165c5`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Tenant overview metric-card redesign (icons, full-width grid, real actuals) is a presentation change over already-real data; no new capability, no SKILL.md claim affected. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 142638c — docs: update review logs
+## ~~2026-08-20 — 142638c — docs: update review logs~~
 
 - **Full commit:** `142638c24d5e21c5dc8a5fb627abcec7ae77713f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream
+## ~~2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream~~
 
 - **Full commit:** `cb953f1d197bf09f6c7cfc1cbcc57950d5276038`
 - **Files touched:** social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Ordering fix on the tenant overview's own "recent ingestion stream" widget — distinct from, and doesn't conflict with, Story 6.25's already-documented newest-first ordering on the separate Posts screen. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — c3044d0 — docs: update review logs
+## ~~2026-08-20 — c3044d0 — docs: update review logs~~
 
 - **Full commit:** `c3044d0593e42deeb88fd941f0bd8f4039450cb1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column
+## ~~2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column~~
 
 - **Full commit:** `72a15c91b2114e92f0a5496402d44b48acbca145`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Widget repositioning (Sources/Authors moved beneath the volume graph) within the already-accepted ADR-0062 widget set — no widget added, removed, or behaviorally changed, so no SKILL.md or traceability claim is affected. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 034e968 — docs: update review logs
+## ~~2026-08-20 — 034e968 — docs: update review logs~~
 
 - **Full commit:** `034e968612549535e418d716e7f14b4c111c9173`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget
+## ~~2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget~~
 
 - **Full commit:** `8cbb71a022a1c48e8bbef8a0795312ac07e4a74b`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Platform icons and dynamic percentage bars on the Sources widget are presentation-only over the same already-real per-source counts; no SKILL.md claim affected. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 624c626 — docs: update review tracking
+## ~~2026-08-20 — 624c626 — docs: update review tracking~~
 
 - **Full commit:** `624c6263f819237845fa7982f4f7a31a59ebfef3`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget
+## ~~2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget~~
 
 - **Full commit:** `d2dff0dd7e5a29bc37eb37b64f65c07499c756fe`
 - **Files touched:** social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Platform icons/brand coloring on the Authors by Source widget, same presentation-only class as 8cbb71a immediately above. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — ad3e8be — docs: update review logs
+## ~~2026-08-20 — ad3e8be — docs: update review logs~~
 
 - **Full commit:** `ad3e8be50c8a8a784522d90390b378a98096b6bc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure queue/time-tracking bookkeeping. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 8bc60a1 — Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064)
+## ~~2026-08-20 — 8bc60a1 — Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064)~~
 
 - **Full commit:** `8bc60a17381f19368dc34de4332ad62a18c8eb17`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts, social-listening-core/src/connectors/geo/geoCountryUtils.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 2.20 (country-level geospatial extraction, ADR-0064) is fully traced: docs/implementation-plan.md and epic-2-ingestion-connectors-and-rate-limits.md both carry matching entries; social-post-enrichment/SKILL.md updated in the same commit. This commit's own file list also names two differently-punctuated ADR-0064 paths (one with literal spaces, one correctly dashed) — checked directly: only the correctly-dashed file exists in the tree and is what docs/adr/README.md's table links to; the space-containing name was never a real second file, just a diff artifact. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'
+## ~~2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'~~
 
 - **Full commit:** `93dadabf2c3e52e4e25c20f26acc61a5fbe8dc87`
 - **Files touched:** 
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Empty merge commit (no files touched on the old lineage), nothing to review. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)
+## ~~2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)~~
 
 - **Full commit:** `75a0a4a72328f56953c49f3622b3e0ebfd0830ea`
 - **Files touched:** docs/implementation-plan.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 8.10 (Location & Geospatial Insights, ADR-0064) is fully traced: docs/implementation-plan.md's own note and epic-8-analytics-dashboard.md's Story 8.10 entry (Built 2026-08-20) match; analytics-dashboard/SKILL.md updated in the same commit for the new widget-location-insights and the 7th filter dimension. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log
+## ~~2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log~~
 
 - **Full commit:** `168e5f75ae88234db755aea052b5c0d143bb8bdd`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log/traceability append for Story 8.10, matching the code that shipped one commit earlier. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts
+## ~~2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts~~
 
 - **Full commit:** `70035d7e03eeb2e2e3a3020938ba91cf511ab4d6`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/adr/README.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. ADR-0070 drafted and Stories 1.16/6.29 added to their respective epic files and docs/adr/README.md's master table, both correctly Blocked-pending-acceptance at this point — matches the acceptance sequence confirmed in f00b34c below. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence
+## ~~2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence~~
 
 - **Full commit:** `f00b34cf34d4185043728eba09aa2f9df7e58588`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. ADR-0070 accepted; Stories 1.16 and 6.29 correctly move to Ready in their epic files with the lock-safe-watchdog/health-precedence revisions folded in before acceptance, not after — matches this series' own established drafting-review-accept pattern. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — ae1bd98 — feat(core): implement Story 1.16 ingestion watchdog, stalled health, and alert events (ADR-0070)
+## ~~2026-08-20 — ae1bd98 — feat(core): implement Story 1.16 ingestion watchdog, stalled health, and alert events (ADR-0070)~~
 
 - **Full commit:** `ae1bd988c6c10846afe3465ccd8c844824b7b905`
 - **Files touched:** docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/migrations/0039_add_ingestion_runs_stale_watchdog_index.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/publishConnectorAlertEvents.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 1.16 built (ingestion watchdog, stalled health, alert events); connector-health-and-error-handling/SKILL.md and live-ingestion-polling-scheduler/SKILL.md both updated in the same commit for the new watchdog behavior and the new stale-run migration index — confirmed present in the current tree. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — e40d3e5 — docs: record Story 1.16 implementation in log and user story metadata
+## ~~2026-08-20 — e40d3e5 — docs: record Story 1.16 implementation in log and user story metadata~~
 
 - **Full commit:** `e40d3e5a3d882a2cbc8b73071a0fc7e66c2711aa`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log/traceability append for Story 1.16, matching the code that shipped one commit earlier. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — be6c4cd — feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070)
+## ~~2026-08-20 — be6c4cd — feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070)~~
 
 - **Full commit:** `be6c4cd081b8cef9b314f636707f51a6f057f575`
 - **Files touched:** social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.29.connector-ingestion-status-and-stalled-alerts.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/retry/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/components/IngestionAlertBanner.tsx, social-listening-admin/src/components/ui/StatusBadge.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Story 6.29 built (connector ingestion status badges, stalled alerts banner, on-demand re-sync); connector-status-view/SKILL.md updated in the same commit for the new badges/banner/retry action, consistent with Story 1.16's backend watchdog this depends on — confirmed present in the current tree. *(Commit hash orphaned by the 2026-08-19 history rewrite — see the full provenance note under the 532e713 entry above; verified instead against origin/main's current real tree state.)***
 
-## 2026-08-20 — 8930de7 — docs: record Story 6.29 implementation in log and user story metadata
+## ~~2026-08-20 — 8930de7 — docs: record Story 6.29 implementation in log and user story metadata~~
 
 - **Full commit:** `8930de757d22fb2dbc64e690a5d1bc04f7c90b52`
 - **Files touched:** docs/implementation-log.md, docs/time-tracking.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-25 — clean, no drift. Pure implementation-log/traceability append for Story 6.29, matching the code that shipped one commit earlier. Closes this pass's reviewed batch (532e713 through 8930de7, 53 commits) — remaining queue entries, including the ~17 further orphaned ones noted above, left for a future pass, per this file's own "partial progress is acceptable" framing.**
 
 ## 2026-08-20 — 3ee2b75 — docs(adr): mark ADR-0064 as Accepted and Story 8.10 as Built
 
