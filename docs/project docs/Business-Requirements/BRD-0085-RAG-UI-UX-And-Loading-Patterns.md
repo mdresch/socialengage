@@ -169,7 +169,7 @@ A tenant user opens the RAG search/ask page, sees a single prominent search box 
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
 | `query` | Natural-language search or ask string | User input | Product | Low (tenant-scoped) |
-| `watchlistId` / `platform` / `topic` / `sentiment` / `dateRange` | Optional filters passed to the search endpoint | User selection | Product | Low |
+| `platformId` / `sentiment` / `watchlistIds` / `topics` / `dateRange` | Optional filters (canonical `RAGFilter` per ADR-0081) passed to the search endpoint | User selection | Product | Low |
 | `RAGSearch` result snippet | Highlighted excerpt from the matched chunk | `POST /v1/rag/search` | Backend | Public post content |
 | `platform`, `publishedAt`, `watchlist`, `sentiment` | Metadata shown on each `RAGResultCard` | `POST /v1/rag/search` | Backend | Public post content |
 | `postId` | Original post identifier used for navigation links | `POST /v1/rag/search` / `POST /v1/rag/ask` | Backend | Internal reference |

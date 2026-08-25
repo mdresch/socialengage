@@ -5,14 +5,14 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0081 RAG Connector Provider Abstraction — Functional Design Document |
-| Version | 0.2 |
-| Date | 2026-08-23 |
+| Version | 0.3 |
+| Date | 2026-08-25 |
 | Author(s) | FDD Writer Agent |
 | Reviewer(s) | Menno (Business Sponsor, Product Owner, Technical Lead) |
-| Status | Draft / Review |
+| Status | Approved (source ADR-0081 Accepted 2026-08-25) |
 | Related Documents | ADR-0081 (RAGConnector provider abstraction), BRD-0081 (RAG Connector Provider Abstraction), `docs/product-research/feature-designs/28-semantic-search-rag.md`, Story 9.7, ADR-0002 (`AIProviderConnector`), ADR-0028 (credential ownership tiers), ADR-0015 (tenant RLS) |
 
-**Note on source status:** ADR-0081 is currently **Proposed**, not Accepted. This FDD is a draft for review and may change if the ADR's decision changes before acceptance.
+**Note on source status:** ADR-0081 was **Accepted** on 2026-08-25 (revised the same day per architectural review, all open questions resolved). This FDD is aligned with the accepted ADR.
 
 ---
 
@@ -20,18 +20,23 @@
 
 ### 2.1 Purpose
 
-This document translates ADR-0081 and BRD-0081 into a functional design for a **`RAGConnector` provider abstraction**: a vendor-agnostic interface for vector-store operations (upsert, search, delete, status) that keeps the ingestion, search, and UI layers free of provider-specific code, and enforces tenant isolation as a structural property of every operation. Because ADR-0081 is still Proposed, this FDD is a draft for review and may change before the ADR is Accepted.
+This document translates ADR-0081 and BRD-0081 into a functional design for a **`RAGConnector` provider abstraction**: a vendor-agnostic interface for vector-store operations (upsert, search, delete, status) that keeps the ingestion, search, and UI layers free of provider-specific code, and enforces tenant isolation as a structural property of every operation. ADR-0081 was Accepted on 2026-08-25; this FDD is aligned with the accepted ADR.
 
 ### 2.2 Scope
 
 - **In scope:**
   - The `RAGConnector` interface itself: `upsert`, `search`, `deletePost`, `deleteTenant`, `status`.
-  - The `RAGChunkMetadata` shape carried on every vector record.
-  - Mandatory `tenant_id` metadata filtering on every `search()` call.
-  - Selection and configuration of exactly one vector-store provider at platform deployment time (Pinecone, Azure AI Search, or pgvector).
+  - The `RAGChunkMetadata` shape carried on every vector record, including a `content` field (chunk text payload).
+  - The canonical, provider-agnostic `RAGFilter` shape and `RAGSearchOptions` (`topK`, `filter`, `textQuery`, `minScore`).
+  - Mandatory `tenant_id` metadata filtering on every `search()` call, using a shared-index-with-metadata-filter isolation model.
+  - A deterministic vector ID convention (`${tenantId}:${postId}:${chunkIndex}`).
+  - Chunk batching as the connector implementation's responsibility (callers pass the full per-post chunk set).
+  - Selection and configuration of exactly one vector-store provider at platform deployment time, with **pgvector as the v1 default** (Pinecone Serverless and Azure AI Search as supported alternatives).
   - Credential/configuration storage via the existing `platform_credentials` envelope with `credential_type = 'rag'`.
+  - Embedding vector dimension specified in connector configuration, matched to the chosen embedding model at index-creation time.
+  - A dedicated `ragConnectorRegistry.ts` for instantiating the active `RAGConnector` implementation.
   - `status()` reporting (indexing lag, chunk count, store-level errors) as consumed by `RAGSearchService` and, in v2, a Platform Operations Dashboard.
-  - The principle that vector records are a derived, rebuildable index over `social_posts`, never the source of truth.
+  - The principle that vector records are a derived, rebuildable index over `social_posts`, never the source of truth (stored `content` is a derived copy for retrieval convenience).
 - **Out of scope (owned by sibling ADRs, not conflated here):**
   - The post-chunking and embedding pipeline itself, including `RAGChunkingService`, `RAGIndexRequestedEvent`, and `rag_chunks_sync` (ADR-0082 / Story 9.8 — covered by FDD-0082, not this document).
   - Vector-store RLS enforcement detail and metadata-sync/reconciliation rules beyond the `tenant_id` filter contract stated here (ADR-0083 / Story 9.9).
@@ -54,7 +59,7 @@ Backend engineers implementing `RAGConnector` and its first concrete provider, e
   - Follows the established connector pattern from `ADR-0002` (`AIProviderConnector`) — interface, registry, per-provider implementation.
   - Credential storage reuses `platform_credentials` (ADR-0028) with a new `credential_type = 'rag'`.
   - Tenant isolation must build on and be consistent with the platform's existing RLS approach (ADR-0015), even though vector stores are not relational databases and cannot use RLS directly — isolation here is enforced by mandatory metadata filtering in the interface contract.
-  - ADR-0081 itself is Proposed; this design is provisional pending acceptance.
+  - ADR-0081 was Accepted 2026-08-25; this design is aligned with the accepted ADR.
 
 ---
 
@@ -76,11 +81,12 @@ Backend engineers implementing `RAGConnector` and its first concrete provider, e
 
 - **Description:** Writes one or more chunk vectors with metadata into the configured vector store for a given tenant.
 - **Triggers:** Called by the (out-of-scope, ADR-0082-owned) chunking/embedding pipeline after a post is chunked and embedded; not invoked directly by ingestion or UI code.
-- **Inputs:** `tenantId: string`; `vectors: Array<{ id: string; values: number[]; metadata: RAGChunkMetadata }>`, where `RAGChunkMetadata` carries `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at`, and optional `watchlist_ids`, `sentiment`, `topics`.
+- **Inputs:** `tenantId: string`; `vectors: Array<{ id: string; values: number[]; metadata: RAGChunkMetadata }>`, where `RAGChunkMetadata` carries `tenant_id`, `post_id`, `chunk_index`, `content` (chunk text payload), `platform_id`, `published_at`, and optional `watchlist_ids`, `sentiment`, `topics`. Vector ids follow the deterministic convention `${tenantId}:${postId}:${chunkIndex}`.
 - **Processing:**
   1. Validate that every vector's `metadata.tenant_id` matches the `tenantId` parameter — a mismatch is a programming error, not a valid state, and must be rejected rather than silently written.
-  2. Write/upsert each vector record into the provider's index/namespace using the provider-specific implementation behind the interface.
-  3. The vector store never becomes the source of truth — the operation is understood as (re)building a derived index, not recording a fact.
+  2. Split the `vectors` array into provider-safe batches internally (batching is the connector implementation's responsibility — callers pass the full per-post chunk set and do not need to know provider batch limits such as Pinecone's 2 MB/batch or Azure AI Search batch-size limits).
+  3. Write/upsert each vector record into the provider's index/namespace using the provider-specific implementation behind the interface. Re-upserting the same vector `id` overwrites the prior record (idempotent by id, enabled by the deterministic id scheme).
+  4. The vector store never becomes the source of truth — the operation is understood as (re)building a derived index, not recording a fact. Stored `content` is a derived copy of the chunk text for retrieval convenience.
 - **Outputs:** `Promise<void>` resolving once the write is durable in the vector store (or provider-defined equivalent of durable).
 - **Error handling:** A provider-level failure (timeout, quota, outage) propagates as a rejected promise; callers (the chunking/embedding pipeline) are responsible for retry/best-effort handling — `upsert()` itself does not silently swallow errors.
 - **Edge cases:** An empty `vectors` array is a valid no-op call; re-upserting the same vector `id` overwrites the prior record (idempotent by id).
@@ -89,12 +95,13 @@ Backend engineers implementing `RAGConnector` and its first concrete provider, e
 
 - **Description:** Performs a tenant-scoped approximate-nearest-neighbor (ANN) similarity search against the vector store and returns the top-K matching chunk records.
 - **Triggers:** Called by `RAGSearchService` (owned by ADR-0084, out of scope here) on behalf of a user-facing search or "ask" request.
-- **Inputs:** `tenantId: string`; `query: number[]` (a query embedding vector); `options: { topK: number; filter?: RAGFilter }`.
+- **Inputs:** `tenantId: string`; `query: number[]` (a query embedding vector); `options: RAGSearchOptions` where `RAGSearchOptions = { topK: number; filter?: RAGFilter; textQuery?: string; minScore?: number }`. `RAGFilter` is a canonical, provider-agnostic shape: `{ platformId?: string | string[]; sentiment?: string | string[]; watchlistIds?: string[]; topics?: string[]; dateRange?: { from?: string; to?: string } }`.
 - **Processing:**
-  1. The implementation **must** apply a `tenant_id` equality filter derived from `tenantId` to every query, in addition to any caller-supplied `RAGFilter`. This is not optional and cannot be bypassed by a caller — the interface contract makes it a required parameter, not an optional filter field.
-  2. Apply any additional `filter` fields (e.g., watchlist, platform, topic, sentiment, date range — full filter shape is defined by ADR-0083/Story 9.9, out of scope here) as an AND condition alongside the tenant filter.
-  3. Run the provider's ANN search, returning up to `topK` results ranked by similarity score.
-- **Outputs:** `Promise<Array<{ id: string; score: number; metadata: RAGChunkMetadata }>>` — every returned record's `metadata.tenant_id` is guaranteed to equal the requested `tenantId`.
+  1. The implementation **must** apply a `tenant_id` equality filter derived from `tenantId` to every query, in addition to any caller-supplied `RAGFilter`. This is not optional and cannot be bypassed by a caller — the interface contract makes it a required parameter, not an optional filter field. `tenant_id` is never a field the caller supplies via `RAGFilter`.
+  2. Translate the caller-supplied `RAGFilter` into the provider's native filter syntax (e.g. Pinecone Mongo-style operators, Azure AI Search OData `$filter`, pgvector SQL `WHERE`) and apply it as an AND condition alongside the tenant filter.
+  3. If `textQuery` is supplied and the provider supports hybrid search (dense vector + sparse/lexical BM25), combine `query` (dense) and `textQuery` (sparse) per the provider's hybrid-search API. Providers without hybrid support ignore `textQuery` and perform dense-only search.
+  4. Run the provider's ANN/hybrid search, returning up to `topK` results ranked by similarity score. If `minScore` is supplied, drop results whose score falls below the threshold before returning.
+- **Outputs:** `Promise<RAGSearchResult[]>` where `RAGSearchResult = { id: string; score: number; metadata: RAGChunkMetadata }` — every returned record's `metadata.tenant_id` is guaranteed to equal the requested `tenantId`, and `metadata.content` carries the chunk text for direct RAG generation without a secondary SQL lookup.
 - **Error handling:** Provider-level failures propagate as rejected promises; an empty result set (no matches above threshold, or empty index) is a valid, non-error response.
 - **Edge cases:** `topK` larger than the number of available tenant records returns all available records, not an error; a `filter` that matches nothing returns an empty array, not an error.
 
@@ -104,8 +111,8 @@ Backend engineers implementing `RAGConnector` and its first concrete provider, e
 - **Triggers:** `deletePost()` — a post is deleted or retracted from `social_posts`. `deleteTenant()` — a tenant is offboarded.
 - **Inputs:** `deletePost(tenantId: string, postId: string)`; `deleteTenant(tenantId: string)`.
 - **Processing:**
-  1. `deletePost()` removes every vector record whose metadata matches the given `tenant_id` and `post_id` (there may be multiple chunks per post).
-  2. `deleteTenant()` removes every vector record whose metadata matches the given `tenant_id`, regardless of post.
+  1. `deletePost()` removes every vector record whose metadata matches the given `tenant_id` and `post_id` (there may be multiple chunks per post). Because vector ids follow `${tenantId}:${postId}:${chunkIndex}`, this is a predictable id-range delete (`${tenantId}:${postId}:0` through `${tenantId}:${postId}:N`) where the provider supports it, and a metadata-filter delete (`post_id == postId` AND `tenant_id == tenantId`) otherwise.
+  2. `deleteTenant()` removes every vector record whose metadata matches the given `tenant_id`, regardless of post — a metadata-filter delete on `tenant_id`.
   3. Both operations are scoped by `tenant_id` as a structural safety property — a `deletePost`/`deleteTenant` call can never affect another tenant's records even if `postId` collides across tenants (post ids are not assumed globally unique across tenants).
 - **Outputs:** `Promise<void>` resolving once the deletion is durable.
 - **Error handling:** Deleting a post/tenant with no matching vector records is a valid no-op, not an error (e.g., a post that was never successfully indexed).
@@ -123,13 +130,14 @@ Backend engineers implementing `RAGConnector` and its first concrete provider, e
 
 ### 5.5 Feature / Capability: Provider selection and credential configuration
 
-- **Description:** Exactly one vector-store provider (Pinecone, Azure AI Search, or pgvector) is selected and configured at platform deployment time; its credentials and endpoint/index identifiers are stored using the existing credential envelope.
+- **Description:** Exactly one vector-store provider is selected and configured at platform deployment time, with **pgvector as the v1 default** (reusing the existing Azure Postgres instance); Pinecone Serverless and Azure AI Search are supported alternatives via the same interface. Its credentials and endpoint/index identifiers are stored using the existing credential envelope, and the embedding vector dimension is specified in connector configuration.
 - **Triggers:** Platform deployment/configuration time, and credential rotation events thereafter.
-- **Inputs:** Provider choice (deployment configuration); vector-store credentials and index/endpoint names.
+- **Inputs:** Provider choice (deployment configuration, default pgvector); vector-store credentials and index/endpoint names; embedding vector dimension matched to the chosen embedding model (e.g. 1536 for OpenAI `text-embedding-3-small`).
 - **Processing:**
   1. Store credentials and index/endpoint configuration in `platform_credentials` with `credential_type = 'rag'`, following the same ownership-tier model already used for `SocialConnector`/`AIProviderConnector` credentials (ADR-0028).
-  2. Instantiate the concrete `RAGConnector` implementation corresponding to the configured provider (mechanism — dedicated `ragConnectorRegistry.ts` vs. extending the existing `ProviderConnector` registry — is an open question, see §13 Q4).
-  3. All downstream code (`RAGChunkingService`, `RAGSearchService`, and this interface's own callers) depends only on the `RAGConnector` interface, never on the concrete provider type.
+  2. Instantiate the concrete `RAGConnector` implementation corresponding to the configured provider via a **dedicated `ragConnectorRegistry.ts`** (separate from the existing `ProviderConnector` registry — vector stores have fundamentally different lifecycles, configuration fields, and connection semantics).
+  3. Create the vector index using the configured embedding dimension; swapping embedding models requires re-creating the index at the configured dimension, not an interface change.
+  4. All downstream code (`RAGChunkingService`, `RAGSearchService`, and this interface's own callers) depends only on the `RAGConnector` interface, never on the concrete provider type.
 - **Outputs:** A configured, usable `RAGConnector` instance for the platform.
 - **Error handling:** Missing or invalid `rag`-type credentials at startup/first-use should surface as a clear configuration error, not a silent no-op connector.
 - **Edge cases:** Only one provider may be active at a time in v1 — there is no runtime multi-provider selection or per-tenant provider choice (BRU-004 in BRD-0081).
@@ -191,18 +199,24 @@ Story 9.7 is listed as **Blocked — pending ADR acceptance** as of this writing
 
 | Entity | Key Attributes | Relationships |
 |---|---|---|
-| `RAGConnector` (interface, not a persisted entity) | `id: string` (connector identifier); methods `upsert`, `search`, `deletePost`, `deleteTenant`, `status` | Implemented by exactly one active concrete provider (Pinecone, Azure AI Search, or pgvector) per deployment |
-| `RAGChunkMetadata` (attached to every vector record) | `tenant_id` (string, required), `post_id` (string, required), `chunk_index` (number, required), `platform_id` (string, required), `published_at` (string/ISO, required), `watchlist_ids` (string[], optional), `sentiment` (string, optional), `topics` (string[], optional) | `tenant_id` references the owning tenant; `post_id` references a `social_posts` row (the source of truth); `watchlist_ids` reference `watchlists` |
-| Vector record (provider-internal) | `id` (string), `values` (number[], the embedding), `metadata` (`RAGChunkMetadata`) | One or more per `post_id`/tenant, depending on chunking (owned by ADR-0082); derived and rebuildable from `social_posts` |
-| `platform_credentials` row (`credential_type = 'rag'`) | Endpoint, index/namespace name, API key/secret reference, ownership tier | Reused existing entity (ADR-0028); configures exactly one active `RAGConnector` implementation |
+| `RAGConnector` (interface, not a persisted entity) | `id: string` (connector identifier); methods `upsert`, `search`, `deletePost`, `deleteTenant`, `status` | Implemented by exactly one active concrete provider (pgvector default, Pinecone Serverless, or Azure AI Search) per deployment; instantiated by `ragConnectorRegistry.ts` |
+| `RAGChunkMetadata` (attached to every vector record) | `tenant_id` (string, required), `post_id` (string, required), `chunk_index` (number, required), `content` (string, required — chunk text payload), `platform_id` (string, required), `published_at` (string/ISO, required), `watchlist_ids` (string[], optional), `sentiment` (string, optional), `topics` (string[], optional) | `tenant_id` references the owning tenant; `post_id` references a `social_posts` row (the source of truth); `watchlist_ids` reference `watchlists`; `content` is a derived copy of the chunk text |
+| `RAGFilter` (provider-agnostic query filter) | `platformId?` (string \| string[]), `sentiment?` (string \| string[]), `watchlistIds?` (string[]), `topics?` (string[]), `dateRange?` ({ from?: string; to?: string }) | Translated to vendor-native filter syntax inside the connector; `tenant_id` is never a field here (it comes from the mandatory `tenantId` parameter) |
+| `RAGSearchOptions` (search call options) | `topK` (number, required), `filter?` (`RAGFilter`), `textQuery?` (string — hybrid search), `minScore?` (number — score threshold) | Passed to `search()`; `textQuery`/`minScore` are optional and ignored gracefully by providers that do not support them |
+| `RAGSearchResult` (search return element) | `id` (string), `score` (number), `metadata` (`RAGChunkMetadata`, including `content`) | One per matched chunk; `metadata.content` enables direct RAG generation without a secondary SQL lookup |
+| Vector record (provider-internal) | `id` (string, deterministic `${tenantId}:${postId}:${chunkIndex}`), `values` (number[], the embedding), `metadata` (`RAGChunkMetadata`) | One or more per `post_id`/tenant, depending on chunking (owned by ADR-0082); derived and rebuildable from `social_posts`; idempotent re-index by id |
+| `platform_credentials` row (`credential_type = 'rag'`) | Endpoint, index/namespace name, API key/secret reference, ownership tier, embedding dimension | Reused existing entity (ADR-0028); configures exactly one active `RAGConnector` implementation |
 | `ConnectorStatus` | Indexing lag, chunk count, store-level error state | Returned by `status()`; scoped platform-wide or per-tenant depending on the call |
 
 ### 7.4 Validation Rules
 
 - Every vector record's `metadata.tenant_id` must equal the `tenantId` parameter passed to `upsert()` — validated before the write, not assumed.
-- `search()` must always resolve to a query that includes a `tenant_id` equality condition; there is no code path that performs an unfiltered, all-tenant search.
-- `RAGChunkMetadata.tenant_id`, `post_id`, `chunk_index`, `platform_id`, and `published_at` are required on every vector record; `watchlist_ids`, `sentiment`, `topics` are optional.
-- No field beyond public post content and its derived metadata may be written to vector-record metadata — no PII beyond what is already present in ingested public post content (BRU-005 in BRD-0081).
+- `search()` must always resolve to a query that includes a `tenant_id` equality condition; there is no code path that performs an unfiltered, all-tenant search. `tenant_id` is never supplied via `RAGFilter` — it comes from the mandatory `tenantId` parameter.
+- `RAGChunkMetadata.tenant_id`, `post_id`, `chunk_index`, `content`, `platform_id`, and `published_at` are required on every vector record; `watchlist_ids`, `sentiment`, `topics` are optional.
+- Vector record ids must follow `${tenantId}:${postId}:${chunkIndex}`; re-upserting the same post overwrites the same ids (idempotent re-indexing).
+- The connector implementation must split the `vectors` array into provider-safe batches internally; callers pass the full per-post chunk set.
+- `RAGFilter` translation to vendor-native syntax is the connector implementation's responsibility; provider-specific filter syntax must not leak into callers.
+- No field beyond public post content and its derived metadata may be written to vector-record metadata — no PII beyond what is already present in ingested public post content (BRU-005 in BRD-0081). `content` is a derived copy of already-public post text.
 - Exactly one `rag`-type credential configuration may be active per platform deployment in v1.
 
 ---
@@ -212,12 +226,17 @@ Story 9.7 is listed as **Blocked — pending ADR acceptance** as of this writing
 | ID | Rule | Applies To |
 |---|---|---|
 | BR1 | A `tenant_id` metadata filter is mandatory on every `RAGConnector.search()` call and cannot be bypassed. | `search()` |
-| BR2 | Vector records are derived from `social_posts`; the source of truth remains the relational database. | Overall data lifecycle |
+| BR2 | Vector records (including stored chunk text) are derived from `social_posts`; the source of truth remains the relational database. | Overall data lifecycle |
 | BR3 | Vector-store credentials shall use `credential_type = 'rag'` inside the existing `platform_credentials` envelope. | Credential configuration |
-| BR4 | Only one vector-store provider shall be active in v1, selected at platform deployment time. | Provider selection |
+| BR4 | Only one vector-store provider shall be active in v1 (pgvector default), selected at platform deployment time. | Provider selection |
 | BR5 | No PII beyond public post content may be written to the vector index. | `upsert()` / metadata content |
 | BR6 | `RAGConnector.deleteTenant()` and `deletePost()` must remove all vector records for the given tenant or post. | Deletion operations |
 | BR7 | New providers must be addable by implementing the `RAGConnector` interface, without changing `RAGChunkingService` or `RAGSearchService`. | Extensibility |
+| BR8 | Vector record ids shall follow `${tenantId}:${postId}:${chunkIndex}`; re-upserting the same post overwrites the same ids (idempotent re-indexing). | `upsert()` / deletion |
+| BR9 | Chunk batching into provider-safe batches is the connector implementation's responsibility; callers pass the full per-post chunk set. | `upsert()` |
+| BR10 | `RAGFilter` is provider-agnostic; vendor-native filter syntax translation stays inside the connector implementation. | `search()` |
+| BR11 | The v1 isolation model is a shared index with mandatory `tenant_id` metadata filtering; namespace-per-tenant is an optional internal optimization only. | `search()` / provider selection |
+| BR12 | `RAGChunkMetadata.content` carries the chunk text payload so `search()` results support direct RAG generation without a secondary SQL lookup. | `upsert()` / `search()` |
 
 ---
 
@@ -260,24 +279,24 @@ Story 9.7 is listed as **Blocked — pending ADR acceptance** as of this writing
 
 ## 12. Assumptions and Dependencies
 
-- One vector-store provider is selected for v1; multi-provider runtime selection is explicitly deferred to a v2 consideration (BRD-0081 §4.3).
-- `social_posts` remains the system of record; the vector index is always a rebuildable, derived view.
+- pgvector is the v1 default provider, reusing the existing Azure Postgres instance; multi-provider runtime selection is explicitly deferred to a v2 consideration (BRD-0081 §4.3).
+- `social_posts` remains the system of record; the vector index (including stored chunk text) is always a rebuildable, derived view.
 - The platform already has `platform_credentials` (ADR-0028) and tenant RLS conventions (ADR-0015) available to build on.
 - The connector pattern established by `AIProviderConnector` (ADR-0002) is the organizational standard this interface follows.
-- **Pending decision:** ADR-0081 is Proposed, not Accepted — the interface shape, provider choice mechanism, and credential model described here could still change before acceptance.
-- **External dependency:** the platform needs a real account with the chosen vector-store provider (Pinecone, Azure AI Search, or pgvector) — this is a new runtime/operational dependency, even though only one provider is required.
+- **Accepted:** ADR-0081 was Accepted 2026-08-25 (revised the same day per architectural review, all open questions resolved); the interface shape described here is aligned with the accepted ADR, and the four previously-open questions are resolved (see §13).
+- **External dependency:** the platform needs a real account with the chosen vector-store provider — for the pgvector default this is the existing Azure Postgres instance (no new external account); for Pinecone Serverless or Azure AI Search a new provider account is required.
 - **Downstream dependency:** ADR-0082 (chunking/embedding), ADR-0083 (vector-store RLS/metadata detail), ADR-0084 (search/ask endpoint), and ADR-0085 (RAG UI/UX) all build directly on this interface and are explicitly out of scope here.
 
 ---
 
-## 13. Open Questions
+## 13. Resolved Questions (previously open, resolved per architectural review 2026-08-25)
 
-| ID | Question | Owner | Target Resolution |
-|---|---|---|---|
-| Q1 | Which provider should be the v1 default for this project — Pinecone (speed), Azure AI Search (Azure-native), or pgvector (cost)? | Menno | Before/at ADR-0081 acceptance |
-| Q2 | Should the vector index be per-tenant, per-tenant-namespace, or a shared index distinguished only by tenant metadata? | Engineering | Before/at ADR-0081 acceptance |
-| Q3 | What is the maximum vector dimension supported by the chosen provider, and does it constrain the embedding model choice? | Engineering | Before/at ADR-0081 acceptance |
-| Q4 | How is `RAGConnector` instantiated — a new `ragConnectorRegistry.ts`, or an extension of the existing `ProviderConnector` registry? | Engineering | Before/at ADR-0081 acceptance |
+| ID | Question | Resolution |
+|---|---|---|
+| Q1 | Which provider should be the v1 default? | **pgvector** — reuses the existing Azure Postgres instance with zero external infrastructure; best fit for a solo, self-funded, low-scale deployment. Pinecone Serverless is the documented managed-cloud alternative. (ADR-0081 Decision §3.) |
+| Q2 | Per-tenant, per-tenant-namespace, or shared index with tenant metadata? | **Shared index with mandatory `tenant_id` metadata filtering**; namespace-per-tenant may be used as an internal optimization where supported. (ADR-0081 Decision §11.) |
+| Q3 | Vector dimension / embedding model constraint? | **Dimension specified in connector configuration**, matched to the chosen embedding model at index-creation time (e.g. 1536 for `text-embedding-3-small`); not hardcoded in the interface. (ADR-0081 Decision §12.) |
+| Q4 | Registry mechanism? | **Dedicated `ragConnectorRegistry.ts`**, separate from the `ProviderConnector` registry. (ADR-0081 Decision §13.) |
 
 ---
 
@@ -289,7 +308,7 @@ See BRD-0081 §15 for the shared glossary (RAG, Vector store, Embedding, Chunk, 
 
 ### Reference links
 
-- ADR: `docs/adr/0081-rag-connector-provider-abstraction.md` (Status: Proposed)
+- ADR: `docs/adr/0081-rag-connector-provider-abstraction.md` (Status: Accepted 2026-08-25)
 - BRD: `docs/project docs/Business-Requirements/BRD-0081-RAG-Connector-Provider-Abstraction.md`
 - Feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
 - Related ADRs: `ADR-0002` (`AIProviderConnector`), `ADR-0028` (credential ownership tiers), `ADR-0015` (tenant RLS); downstream ADR-0082 (chunking/embedding), ADR-0083 (vector-store RLS/metadata), ADR-0084 (search/ask endpoint), ADR-0085 (RAG UI/UX) — all out of scope for this document.
@@ -306,3 +325,4 @@ None provided; see §6.3 for the textual step-by-step workflow in place of a dia
 |---|---|---|---|
 | 0.1 | 2026-08-23 | (prior batch run) | Initial defective draft (wrong H1 / flat BRD-style Section 5) |
 | 0.2 | 2026-08-23 | FDD Writer Agent | Full regeneration: correct H1, per-capability Section 5 scoped to the connector abstraction only, real Section 7.3 data model, workflow steps, sourced stories |
+| 0.3 | 2026-08-25 | FDD Writer Agent | Applied architectural-review revisions: added `content` to `RAGChunkMetadata`, defined `RAGFilter`/`RAGSearchOptions`/`RAGSearchResult`, vector ID scheme, batching responsibility, hybrid-search/score-threshold options, resolved all four open questions (pgvector default, shared-index isolation, dimension-in-config, dedicated registry); updated §2.2, §5.1–§5.5, §7.3, §7.4, §8, §12, §13 |

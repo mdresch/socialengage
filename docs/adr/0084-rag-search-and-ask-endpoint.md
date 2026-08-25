@@ -1,6 +1,6 @@
 # ADR-0084: RAG search and ask endpoint
 
-**Status:** Proposed (2026-08-23)
+**Status:** Proposed (2026-08-23); revised 2026-08-25 to align with ADR-0081/0083 architectural-review revision — `RAGFilter` shape aligned to ADR-0081 canonical form, snippets/citations sourced from stored `RAGChunkMetadata.content` (no per-result `social_posts` lookup).
 
 **Authorizes:** the `POST /v1/rag/search` semantic search endpoint and the `POST /v1/rag/ask` natural-language Q&A endpoint, including their contracts, filters, pagination, and citation format.
 
@@ -28,12 +28,12 @@ A generated answer is only useful if the user can verify it against the original
 ```ts
 {
   query: string;                    // natural-language query
-  filter?: {
-    watchlistId?: string;
-    platformId?: string;
-    topicId?: string;
-    sentiment?: 'positive' | 'negative' | 'neutral' | 'mixed';
-    dateRange?: { start: ISOString; end: ISOString };
+  filter?: {                        // canonical RAGFilter per ADR-0081
+    platformId?: string | string[];
+    sentiment?: string | string[];
+    watchlistIds?: string[];
+    topics?: string[];
+    dateRange?: { from?: ISOString; to?: ISOString };
   };
   pagination?: {
     topK: number;                   // default 10, hard cap 50
@@ -50,14 +50,14 @@ A generated answer is only useful if the user can verify it against the original
     score: number;
     platformId: string;
     publishedAt: string;
-    snippet: string;                // reconstructed from social_posts
+    snippet: string;                // sourced from stored RAGChunkMetadata.content (per ADR-0081/0083)
   }>;
 }
 ```
 
-- The query text is embedded using the same `AIProviderConnector.embed()` as the chunking pipeline.
-- `RAGSearchService` calls `RAGConnector.search()` with the `tenant_id` and any `RAGFilter`.
-- Snippets are reconstructed by fetching the original `social_posts` row and extracting the relevant chunk.
+- The query text is embedded using the same `AIProviderConnector.embed(tenantId, texts)` method and `text-embedding-3-small` deployment as the chunking pipeline (ADR-0082), so query and chunk vectors live in the same embedding space.
+- `RAGSearchService` calls `RAGConnector.search()` with the `tenant_id` (mandatory parameter) and any `RAGFilter`; the connector enforces the `tenant_id` filter internally and translates `RAGFilter` to vendor-native syntax.
+- Snippets are sourced from the stored `RAGChunkMetadata.content` (a derived copy of the chunk text, per ADR-0081/0083 revision) — no per-result `social_posts` lookup is required. `social_posts` remains the source of truth for rebuilds.
 - `topK` is capped to 50 to control cost.
 
 ### 2. `POST /v1/rag/ask`
@@ -113,7 +113,7 @@ Returns the indexing health for the tenant:
 1. **Two clear UX paths:** `search` for discovery, `ask` for synthesis.
 2. **Citations by design:** every answer is grounded in retrievable posts.
 3. **Cost exposure:** `ask` is more expensive than `search` because it includes a generation call.
-4. **Coupling to `social_posts`:** the response must fetch the original post to display the snippet, adding a small but necessary round trip.
+4. **No per-result `social_posts` round trip:** snippets/citations are sourced from stored `RAGChunkMetadata.content` (per ADR-0081/0083 revision), so the response does not fetch `social_posts` per result. `social_posts` remains the source of truth for rebuilds.
 
 ---
 
@@ -122,8 +122,8 @@ Returns the indexing health for the tenant:
 1. **One combined `/v1/rag/query` endpoint with a `mode` flag.**
    - *Rejected:* separate endpoints make the UI and rate-limiting clearer. `search` is cheap; `ask` is expensive.
 
-2. **Return full chunk text from the vector store without fetching `social_posts`.**
-   - *Rejected:* it duplicates content and weakens RLS/PII controls. The source of truth is `social_posts`.
+2. **Fetch `social_posts` per result to reconstruct snippet/citation text.**
+   - *Rejected (reversed 2026-08-25 per ADR-0081/0083 architectural review):* forcing a per-result SQL lookup adds latency and coupling that outweighs the benefit. Snippet/citation text is now sourced from stored `RAGChunkMetadata.content` (a derived copy of already-public post text); `social_posts` remains the source of truth and the index is rebuildable. PII safety is preserved by storing only public post content (no `author` or other PII) in vector-record metadata.
 
 3. **Allow unauthenticated `ask` for public posts.**
    - *Rejected:* all tenant data is access-controlled. There is no public RAG surface.
@@ -134,7 +134,7 @@ Returns the indexing health for the tenant:
 
 - Should `/v1/rag/ask` stream the answer token by token, or return a full response?
 - How should the API behave when the question is outside the scope of the retrieved chunks — refuse to answer or note the limitation?
-- Should `search` support hybrid search (vector + keyword) in v1 or only vector?
+- Should `search` support hybrid search (vector + keyword) in v1 or only vector? — ADR-0081's `RAGSearchOptions.textQuery` now optionally enables hybrid search at the connector level where the provider supports it; the remaining question is whether v1 endpoints expose a separate hybrid-search control to callers.
 - What is the right `maxChunks` for `ask`? 3, 5, or 10?
 
 ---

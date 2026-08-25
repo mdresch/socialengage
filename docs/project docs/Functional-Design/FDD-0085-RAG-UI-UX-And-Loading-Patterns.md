@@ -201,7 +201,7 @@ Rendered result cards, answer card, citation cards; navigation events to `/tenan
 
 | Entity | Key Attributes | Relationships |
 |---|---|---|
-| `RAGSearchBox` (component state) | `queryText`, `selectedFilters` (`watchlistId?`, `platformId?`, `topicId?`, `sentiment?`, `dateRange?`) | Produces the request body for `POST /v1/rag/search` |
+| `RAGSearchBox` (component state) | `queryText`, `selectedFilters` (`platformId?`, `sentiment?`, `watchlistIds?`, `topics?`, `dateRange?`) | Produces the request body for `POST /v1/rag/search` |
 | `RAGResultCard` (view model) | `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, `snippet`, derived `watchlist`/`sentiment` display fields | One per entry in the API's `results` array; links to a `social_posts` detail route by `postId` |
 | `RAGAskPanel` (component state) | `questionText`, `selectedFilters`, `answer`, `confidence`, `citations[]`, `loadingState` | Produces the request body for `POST /v1/rag/ask`; renders its response |
 | `RAGCitationCard` (view model) | `postId`, `chunkIndex`, `url?`, `snippet` | One per entry in the API's `citations` array; links to a `social_posts` detail route |
@@ -210,7 +210,7 @@ Rendered result cards, answer card, citation cards; navigation events to `/tenan
 ### 7.4 Validation Rules
 
 - The search/ask submit action is disabled (or a no-op) when the input text is empty.
-- Filter chip values passed to the API must match the `RAGFilter` shapes defined in ADR-0084 (`watchlistId`, `platformId`, `topicId`, `sentiment` enum, `dateRange.start`/`end`).
+- Filter chip values passed to the API must match the canonical `RAGFilter` shape defined in ADR-0081 (`platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange.from`/`to`).
 - Citation link `href` values must resolve to a valid `/tenant/posts/:postId` path; a `postId` that cannot resolve is handled per Section 5.4's error handling, not passed through as a broken link.
 
 ---

@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0084 RAG Search and Ask Endpoint — Functional Design Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 0.2 |
+| Date | 2026-08-25 |
 | Author(s) | FDD Writer |
 | Reviewer(s) | Technical Lead (Menno) |
 | Status | Draft |
@@ -20,12 +20,12 @@
 
 This document translates ADR-0084's decision — three REST endpoints (`POST /v1/rag/search`, `POST /v1/rag/ask`, `GET /v1/rag/status`) that expose the tenant-scoped RAG vector index to callers — into a functional design: the request/response behavior, processing rules, error handling, and workflows each endpoint must support.
 
-**Note:** ADR-0084's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
+**Note:** ADR-0084's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation. Updated 2026-08-25 to align with ADR-0081/0083 architectural-review revision (snippets/citations sourced from stored `RAGChunkMetadata.content`; `RAGFilter` shape aligned to ADR-0081 canonical form).
 
 ### 2.2 Scope
 
 - **In scope:** the `POST /v1/rag/search`, `POST /v1/rag/ask`, and `GET /v1/rag/status` contracts; query embedding; `RAGFilter` application; `topK`/`maxChunks` bounds; citation and snippet reconstruction; per-tenant metering and the `429 RAG_QUOTA_EXCEEDED` response.
-- **Out of scope:** the `RAGConnector` interface and provider selection (ADR-0081); chunking/embedding pipeline internals (ADR-0082); vector-store metadata schema and tenant-isolation filter implementation (ADR-0083); the admin UI search/ask components and loading states (ADR-0085); streaming `ask` responses and hybrid (vector + keyword) search (both explicitly deferred past v1); unauthenticated/public RAG access (not supported).
+- **Out of scope:** the `RAGConnector` interface and provider selection (ADR-0081); chunking/embedding pipeline internals (ADR-0082); vector-store metadata schema and tenant-isolation filter implementation (ADR-0083); the admin UI search/ask components and loading states (ADR-0085); streaming `ask` responses (deferred past v1); hybrid (vector + keyword) search as a v1 *exposed* feature — ADR-0081's `RAGSearchOptions.textQuery` optionally enables it at the connector level where the provider supports it, but v1 endpoints do not expose a separate hybrid-search control to callers; unauthenticated/public RAG access (not supported).
 
 ### 2.3 Target Audience
 
@@ -62,18 +62,21 @@ Source requirements: ADR-0084, BRD-0084, Story 9.10 (`docs/user-stories/epic-9-a
   ```ts
   {
     query: string;
-    filter?: { watchlistId?: string; platformId?: string; topicId?: string;
-               sentiment?: 'positive'|'negative'|'neutral'|'mixed';
-               dateRange?: { start: ISOString; end: ISOString } };
+    filter?: { platformId?: string | string[];
+               sentiment?: string | string[];
+               watchlistIds?: string[];
+               topics?: string[];
+               dateRange?: { from?: ISOString; to?: ISOString } };
     pagination?: { topK: number };  // default 10, hard cap 50
   }
   ```
+  The `filter` shape mirrors the canonical `RAGFilter` defined in ADR-0081 (and referenced by ADR-0083).
 - **Processing:**
   1. Resolve the caller's `tenant_id` server-side from the authenticated session (never from the request body).
-  2. Embed `query` using the same `AIProviderConnector.embed()` method used by the chunking pipeline (ADR-0082), so query and chunk vectors live in the same embedding space.
+  2. Embed `query` using the same `AIProviderConnector.embed(tenantId, texts)` method and `text-embedding-3-small` deployment used by the chunking pipeline (ADR-0082), so query and chunk vectors live in the same embedding space.
   3. Clamp/validate `topK`: default 10 when omitted, reject or clamp values above the hard cap of 50.
-  4. Call `RAGConnector.search()` (ADR-0081) with the tenant-scoped embedding and the caller-supplied `filter` translated to a `RAGFilter` (ADR-0083).
-  5. For each returned chunk, reconstruct a `snippet` by fetching the corresponding `social_posts` row and extracting the text at `chunkIndex` (chunk text itself is never stored in the vector store, per ADR-0083).
+  4. Call `RAGConnector.search()` (ADR-0081) with the tenant-scoped embedding and the caller-supplied `filter` translated to a `RAGFilter` (canonical shape per ADR-0081/0083); the connector enforces the mandatory `tenant_id` equality filter internally and translates `RAGFilter` to vendor-native syntax.
+  5. For each returned chunk, source the `snippet` directly from the stored `RAGChunkMetadata.content` (per ADR-0081/0083 revision, chunk text is stored as a derived copy) — no secondary `social_posts` lookup is required per result.
   6. Increment the tenant's RAG usage counter for this `search` call before returning a successful response.
 - **Outputs:**
   ```ts
@@ -81,7 +84,7 @@ Source requirements: ADR-0084, BRD-0084, Story 9.10 (`docs/user-stories/epic-9-a
                       platformId: string; publishedAt: string; snippet: string }> }
   ```
 - **Error handling:** Missing/empty `query` is a validation error (400). `topK` above 50 is rejected or clamped per implementation choice (must be consistent and documented). Quota exceeded returns `429 RAG_QUOTA_EXCEEDED`. Vector-store unavailability surfaces as a 5xx with a generic message, not an internal stack trace.
-- **Edge cases:** Zero results is a valid 200 response with an empty `results` array (not an error). A `filter` that matches no vectors returns empty results, not a 404. A `social_posts` row deleted between indexing and the search request (race with reconciliation, ADR-0083) is either omitted from results or handled gracefully rather than erroring the whole request.
+- **Edge cases:** Zero results is a valid 200 response with an empty `results` array (not an error). A `filter` that matches no vectors returns empty results, not a 404. A `social_posts` row deleted between indexing and the search request (race with reconciliation, ADR-0083) is either omitted from results or handled gracefully rather than erroring the whole request — the stored `content` may briefly remain until reconciliation removes the orphaned vector record.
 
 ### 5.2 Feature / Capability: `POST /v1/rag/ask`
 
@@ -91,6 +94,7 @@ Source requirements: ADR-0084, BRD-0084, Story 9.10 (`docs/user-stories/epic-9-a
   ```ts
   { question: string; filter?: RAGFilter; maxChunks?: number }  // default 5, hard cap 10
   ```
+  `RAGFilter` is the canonical, provider-agnostic shape defined in ADR-0081 (`platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange` `from`/`to`).
 - **Processing:**
   1. Resolve `tenant_id` server-side, as in 5.1.
   2. Validate/clamp `maxChunks`: default 5, hard cap 10.
@@ -159,9 +163,9 @@ Source requirements: ADR-0084, BRD-0084, Story 9.10 (`docs/user-stories/epic-9-a
 1. Client submits `{ query, filter?, pagination? }`.
 2. Server resolves `tenant_id`, validates/clamps `topK`.
 3. Server checks tenant quota; rejects with `429` if exceeded.
-4. Server embeds `query` via `AIProviderConnector.embed()`.
-5. Server calls `RAGConnector.search()` with the tenant-scoped embedding and translated `RAGFilter`.
-6. Server reconstructs each result's `snippet` from `social_posts`.
+4. Server embeds `query` via `AIProviderConnector.embed(tenantId, [query])` using the `text-embedding-3-small` deployment.
+5. Server calls `RAGConnector.search()` with the tenant-scoped embedding and translated `RAGFilter` (connector enforces `tenant_id` filter internally).
+6. Server sources each result's `snippet` from the stored `RAGChunkMetadata.content` (no per-result `social_posts` lookup).
 7. Server increments usage and returns `{ results }`.
 
 **`POST /v1/rag/ask` flow:**
@@ -183,7 +187,7 @@ Source requirements: ADR-0084, BRD-0084, Story 9.10 (`docs/user-stories/epic-9-a
 
 ### 7.1 Data Inputs
 
-Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK`/`maxChunks` pagination hints; the authenticated caller's resolved `tenant_id`; `rag_chunks_sync` and `social_posts` (for status and snippet reconstruction); vector-store search results (`postId`, `chunkIndex`, `score`).
+Natural-language `query`/`question` text; optional `RAGFilter` dimensions (canonical shape per ADR-0081); `topK`/`maxChunks` pagination hints; the authenticated caller's resolved `tenant_id`; `rag_chunks_sync` and `social_posts` (for status); vector-store search results (`postId`, `chunkIndex`, `score`, `metadata.content` for snippet/citation text).
 
 ### 7.2 Data Outputs
 
@@ -193,11 +197,11 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 
 | Entity | Key Attributes | Relationships |
 |---|---|---|
-| `RagSearchRequest` | `query`, `filter?`, `pagination.topK` (default 10, max 50) | Translated into a `RAGFilter` (ADR-0083) passed to `RAGConnector.search()` |
-| `RagSearchResult` | `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, `snippet` | One entry per matched chunk; `snippet` reconstructed from `social_posts` by `postId`/`chunkIndex` |
-| `RagAskRequest` | `question`, `filter?`, `maxChunks` (default 5, max 10) | Drives an internal `RagSearchRequest`, then a generation call |
+| `RagSearchRequest` | `query`, `filter?` (canonical `RAGFilter` per ADR-0081), `pagination.topK` (default 10, max 50) | Translated into a `RAGFilter` passed to `RAGConnector.search()`; connector enforces `tenant_id` filter internally |
+| `RagSearchResult` | `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, `snippet` | One entry per matched chunk; `snippet` sourced from stored `RAGChunkMetadata.content` (no per-result `social_posts` lookup) |
+| `RagAskRequest` | `question`, `filter?` (canonical `RAGFilter`), `maxChunks` (default 5, max 10) | Drives an internal `RagSearchRequest`, then a generation call |
 | `RagAskResponse` | `answer`, `citations[]`, `confidence` (`high`/`medium`/`low`) | `citations` is a subset of the chunks retrieved for this request, one-to-one with what the model actually used |
-| `RagCitation` | `postId`, `chunkIndex`, `url?`, `snippet` | References a specific chunk; `url` optional link to the original post |
+| `RagCitation` | `postId`, `chunkIndex`, `url?`, `snippet` | References a specific chunk; `snippet` sourced from stored `RAGChunkMetadata.content`; `url` optional link to the original post |
 | `RagStatus` | `totalIndexedPosts`, `totalChunks`, `lagBehindIngestion`, `lastIndexedAt`, `storeStatus` (`healthy`/`degraded`/`unavailable`) | Derived from `rag_chunks_sync` + `social_posts` counts and `RAGConnector` health |
 | Tenant RAG usage counters | Per-tenant `search` count, `ask` count, monthly cap, current period | Consulted/incremented on every `search`/`ask` call; visible to `tenant_admin` |
 
@@ -206,7 +210,7 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 - `query` (search) / `question` (ask) must be non-empty strings.
 - `pagination.topK` defaults to 10; values above 50 are rejected or clamped (implementation must be consistent).
 - `maxChunks` defaults to 5; values above 10 are rejected or clamped.
-- `filter.dateRange.start` must not be after `dateRange.end`.
+- `filter.dateRange.from` must not be after `dateRange.to`.
 - `filter.sentiment`, when present, must be one of `positive`/`negative`/`neutral`/`mixed`.
 - Every `citations` entry in an `ask` response must correspond to a chunk that was actually retrieved and used for that answer.
 
@@ -222,7 +226,7 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 | BR4 | Generated answers must be grounded solely in the chunks supplied for that question — no outside-knowledge answers. | `ask` |
 | BR5 | Every citation in an `ask` response must correspond to a chunk actually used to generate the answer. | `ask` |
 | BR6 | Per-tenant RAG usage (search + ask) is metered; hitting the monthly cap returns `429 RAG_QUOTA_EXCEEDED`. | `search`, `ask` |
-| BR7 | Snippet and citation text are reconstructed from `social_posts`, never duplicated from the vector store. | `search`, `ask` |
+| BR7 | Snippet and citation text are sourced from stored `RAGChunkMetadata.content` (derived copy, rebuildable from `social_posts` which remains the source of truth); no per-result SQL lookup is required. | `search`, `ask` |
 | BR8 | No PII beyond public post content is indexed or returned through these endpoints. | `search`, `ask`, `status` |
 | BR9 | There is no unauthenticated or public RAG access; all three endpoints require a resolved tenant identity. | `search`, `ask`, `status` |
 
@@ -233,9 +237,9 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 | System / Component | Direction | Purpose | Protocol / Format |
 |---|---|---|---|
 | `RAGConnector` (ADR-0081) | Outbound | Executes tenant-scoped vector search | Internal service call |
-| `AIProviderConnector.embed()` (ADR-0002/0082) | Outbound | Embeds the query/question text | Internal service call |
+| `AIProviderConnector.embed(tenantId, texts)` (ADR-0002/0082) | Outbound | Embeds the query/question text using `text-embedding-3-small` | Internal service call |
 | `AIProviderConnector` generation method (ADR-0002) | Outbound | Generates the grounded answer for `ask` | Internal service call |
-| `social_posts` | Inbound (read) | Source for snippet/citation text reconstruction | SQL (Postgres, RLS-scoped) |
+| `social_posts` | Inbound (read) | Source of truth for rebuilds; `RAGChunkMetadata.content` is a derived copy (per ADR-0081/0083), so per-result snippet/citation text comes from the vector store, not a per-result SQL lookup | SQL (Postgres, RLS-scoped) |
 | `rag_chunks_sync` (ADR-0083) | Inbound (read) | Source for `status` indexed-post/chunk counts and lag | SQL (Postgres) |
 | Tenant usage/quota store | Bidirectional | Read current usage, increment on each call | Internal service call |
 | Admin UI (ADR-0085) | Inbound (consumer) | Calls all three endpoints on behalf of the user | REST / JSON over HTTPS |
@@ -263,7 +267,7 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 | Tenant monthly quota exceeded | `429 RAG_QUOTA_EXCEEDED` | Request rejected before embedding/generation cost is incurred |
 | Vector store unreachable during `search`/`ask` | Generic 5xx error | No partial/unfiltered fallback; `GET /v1/rag/status` would separately report `unavailable` |
 | Question outside scope of retrieved chunks | Answer indicates the limitation rather than fabricating a confident answer | Model instructed to answer only from context; low/no-confidence signaled (see Q2) |
-| `filter.dateRange.start` after `end` | Validation error (400) | Request rejected |
+| `filter.dateRange.from` after `to` | Validation error (400) | Request rejected |
 | Caller `tenant_id` cannot be resolved (auth failure) | Standard authentication error | Request never reaches RAG retrieval logic |
 
 ---
@@ -272,9 +276,9 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 
 - ADR-0081, ADR-0082, and ADR-0083 are accepted and implemented before these endpoints are exposed.
 - Authenticated users are already resolved through the existing Entra-based identity pipeline.
-- `social_posts` remains the source of truth for snippet/citation reconstruction.
+- `social_posts` remains the source of truth; snippet/citation text is sourced from stored `RAGChunkMetadata.content` (a derived copy rebuildable from `social_posts`, per ADR-0081/0083 revision), so no per-result SQL lookup is required.
 - A vector index is populated and reachable before `search`/`ask` return useful results; an empty/lagging index degrades usefulness but is not itself an error state (reported via `status`).
-- `AIProviderConnector` (ADR-0002) already exposes `embed()` and a usable generation method.
+- `AIProviderConnector` (ADR-0002) already exposes `embed(tenantId, texts)` (targeting `text-embedding-3-small`, per ADR-0082) and a usable generation method.
 - Depends on Story 9.8 (chunking/embedding) and Story 9.9 (RLS/metadata) before Story 9.10 can be implemented.
 
 ---
@@ -285,7 +289,7 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
 |---|---|---|---|
 | Q1 | Should `POST /v1/rag/ask` stream the answer token by token, or return a full response only? | Technical Lead | Before implementation |
 | Q2 | How should the API behave when the question is outside the scope of the retrieved chunks — refuse to answer, or note the limitation explicitly in the response? | Technical Lead | Before implementation |
-| Q3 | Should `search` support hybrid search (vector + keyword) in v1, or vector-only? | Technical Lead | Before implementation |
+| Q3 | Should `search` support hybrid search (vector + keyword) in v1, or vector-only? — ADR-0081's `RAGSearchOptions.textQuery` now optionally enables hybrid search at the connector level where the provider supports it; the remaining question is whether v1 endpoints expose a separate hybrid-search control to callers (currently out of scope per §2.2). | Technical Lead | Before implementation |
 | Q4 | What is the right default `maxChunks` for `ask` — 3, 5, or 10? | Technical Lead | Before implementation |
 
 ---
@@ -304,4 +308,6 @@ Natural-language `query`/`question` text; optional `RAGFilter` dimensions; `topK
   - *Citation* — a reference in an `ask` response pointing to a specific chunk used to generate the answer.
   - *`topK`* — maximum ranked results returned by a search.
   - *Confidence* — qualitative grade (`high`/`medium`/`low`) of the model's certainty in a generated answer.
-- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0084/BRD-0084.
+- **Revision history:**
+  - v0.1, 2026-08-23 — initial regenerated functional design from ADR-0084/BRD-0084.
+  - v0.2, 2026-08-25 — aligned with ADR-0081/0083 architectural-review revision: snippets/citations sourced from stored `RAGChunkMetadata.content` (no per-result `social_posts` lookup); `RAGFilter` shape aligned to ADR-0081 canonical form (`platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange.from/to`); hybrid-search open question updated to reflect ADR-0081 `textQuery`; updated §2.2, §5.1–§5.2, §6.3, §7.1, §7.3–§7.4, §8, §9, §11, §12, §13.

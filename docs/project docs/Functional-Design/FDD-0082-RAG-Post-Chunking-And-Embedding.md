@@ -4,10 +4,10 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0082 RAG Post Chunking and Embedding Pipeline — Functional Design Document |
-| Version | 1.0 |
-| Date | 2026-08-23 |
+| Version | 1.2 |
+| Date | 2026-08-25 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved (source ADR-0082 Accepted 2026-08-25) |
 | Related Documents | ../../adr/0082-rag-post-chunking-and-embedding.md, ../Business-Requirements/BRD-0082-RAG-Post-Chunking-And-Embedding.md |
 
 ## 2. Purpose and Scope
@@ -23,21 +23,22 @@ The expected business value is higher retrieval quality for semantic search, mor
 
 ### 2.2 Scope
 **In scope:**
-- A new `RAGChunkingService` that splits normalized `SocialPost` content into overlapping `RAGChunk` objects.
-- Chunking rules applied to `body_markdown` with a default size of 256 tokens, 20% overlap (≈ 51 tokens), paragraph/sentence boundary preference, and a minimum chunk size of 64 tokens.
-- Embedding of chunks through an `AIProviderConnector.embed()` contract.
+- A new `RAGChunkingService` that splits normalized `SocialPost` content into overlapping `RAGChunk` objects (with `tenant_id`, `post_id`, `chunk_index`, `content`).
+- Chunking rules applied to `body_markdown` with a default size of 256 tokens, 20% overlap (≈ 51 tokens), paragraph/sentence boundary preference, a 64-token minimum chunk size, title-prepending, and a short-post (< 64 token) guarantee.
+- Embedding of chunks through an `AIProviderConnector.embed(tenantId, texts)` contract targeting a dedicated `text-embedding-3-small` (1536-dim) deployment.
 - Asynchronous indexing triggered after `enrichPost()` completes via a `RAGIndexRequestedEvent` queue.
 - A `RAGIndexingWorker` that consumes the event, chunks and embeds the post, and upserts the resulting vectors through `RAGConnector` (ADR-0081).
-- A `rag_chunks_sync` bookkeeping table that tracks `post_id`, `tenant_id`, `last_indexed_at`, `chunk_count`, and `store_id`.
+- Orphan-chunk cleanup on re-index (delete obsolete vector IDs when new chunk count < old chunk count).
+- A `rag_chunks_sync` bookkeeping table that tracks `post_id`, `tenant_id`, `chunk_count`, `embedding_model`, `status`, `last_indexed_at`, and `error_message`.
 - Synchronization on post deletion, tenant offboarding, and `rawPayload` retention (vectors remain while the post itself exists).
-- Bounded retry and failure logging for the async indexing worker.
+- Bounded retry (3 retries, exponential backoff 1s/5s/30s → DLQ → `status = 'failed'`) and failure logging for the async indexing worker.
 
 **Out of scope:**
 - The vector store provider abstraction itself (owned by ADR-0081 / Story 9.7).
 - Vector-store RLS, metadata schema, and query-time filtering (owned by ADR-0083 / Story 9.9).
 - The `POST /v1/rag/search`, `POST /v1/rag/ask`, and `GET /v1/rag/status` REST endpoints (owned by ADR-0084 / Story 9.10).
 - The admin UI search box, results list, citations, and loading patterns (owned by ADR-0085 / Story 9.11).
-- A dedicated, cheaper embedding model (future ADR; v1 uses the existing `AIProviderConnector`).
+- A dedicated, cheaper embedding model — resolved: v1 uses `text-embedding-3-small`. Future model swaps are supported via `rag_chunks_sync.embedding_model` tracking.
 
 ## 3. Context and Background
 See ADR Context.
@@ -75,16 +76,19 @@ The expected business value is higher retrieval quality for semantic search, mor
 | BR-001 | The system shall split each normalized `SocialPost` into one or more `RAGChunk` objects from `body_markdown` after `enrichPost()` completes. | Must | `RAGChunkingService.split(post)` returns at least one chunk per post; very short posts produce a single chunk. | Product Owner |
 | BR-002 | The system shall produce overlapping chunks with a default 256-token size and 20% overlap (≈ 51 tokens). | Must | Chunks are sized and overlapped according to ADR-0082 §2. | Product Owner |
 | BR-003 | The system shall prefer paragraph and sentence boundaries when splitting, falling back to token count when no boundary exists. | Must | A chunk does not split mid-sentence unless the sentence exceeds the target size. | Product Owner |
-| BR-004 | The system shall enforce a minimum chunk size of 64 tokens. | Must | No chunk smaller than 64 tokens is emitted unless the entire post is shorter. | Product Owner |
-| BR-005 | The system shall embed each chunk into a vector using `AIProviderConnector.embed()`. | Must | `AIProviderConnector.embed(texts)` returns one vector per input string in the same order. | Product Owner |
-| BR-006 | The system shall append enrichment metadata to `RAGChunkMetadata` without including it in the embedded text. | Must | Embedded `text` is the canonical chunk content; metadata is stored alongside the vector. | Product Owner |
+| BR-004 | The system shall enforce a minimum chunk size of 64 tokens and shall never discard short posts (< 64 tokens). | Must | No chunk smaller than 64 tokens is emitted unless the entire post is shorter, in which case one chunk contains the whole post. | Product Owner |
+| BR-005 | The system shall embed each chunk into a vector using `AIProviderConnector.embed(tenantId, texts)` targeting a dedicated `text-embedding-3-small` (1536-dim) deployment. | Must | `embed(tenantId, texts)` returns one 1536-dimension vector per input string; the deployment is separate from chat/generation models. | Product Owner |
+| BR-006 | The system shall append enrichment metadata to `RAGChunkMetadata` without including it in the embedded `content`. | Must | Embedded `content` is the canonical chunk text (with optional title prepend); metadata is stored alongside the vector but not embedded. | Product Owner |
 | BR-007 | The system shall trigger indexing asynchronously via `RAGIndexRequestedEvent` after `enrichPost()`. | Must | The event is emitted after enrichment; ingestion does not wait for the worker to complete. | Product Owner |
-| BR-008 | The system shall consume `RAGIndexRequestedEvent` with a `RAGIndexingWorker` and upsert chunks through `RAGConnector`. | Must | Worker calls `RAGChunkingService` and `RAGConnector.upsert()` for each indexed post. | Product Owner |
-| BR-009 | The system shall track the sync state of each post in `rag_chunks_sync`. | Must | Table records `post_id`, `tenant_id`, `last_indexed_at`, `chunk_count`, and `store_id`. | Product Owner |
-| BR-010 | The system shall delete a post's chunks from the vector store when the post is deleted. | Must | `RAGIndexingWorker` calls `RAGConnector.deletePost()` on deletion. | Product Owner |
-| BR-011 | The system shall delete all chunks for a tenant when the tenant is offboarded. | Must | `RAGIndexingWorker` calls `RAGConnector.deleteTenant()` on offboarding. | Product Owner |
-| BR-012 | The system shall retry indexing failures with bounded backoff and log each failure. | Must | Retry policy is documented and failures do not block main ingestion. | Product Owner |
-| BR-013 | The system shall make chunk size, overlap, and embedding model configurable in a future release. | Could | ADR open questions capture the future requirement; v1 uses fixed defaults. | Product Owner |
+| BR-008 | The system shall consume `RAGIndexRequestedEvent` with a `RAGIndexingWorker` and upsert chunks through `RAGConnector`. | Must | Worker calls `RAGChunkingService` and `RAGConnector.upsert()` for each indexed post, using deterministic vector IDs. | Product Owner |
+| BR-009 | The system shall track the sync state of each post in `rag_chunks_sync` with `embedding_model`, `status`, and `error_message`. | Must | Table records all fields; `status` and `error_message` support health checks and retry visibility. | Product Owner |
+| BR-010 | The system shall delete a post's chunks from the vector store when the post is deleted. | Must | `RAGIndexingWorker` calls `RAGConnector.deletePost()` on deletion and removes the `rag_chunks_sync` row. | Product Owner |
+| BR-011 | The system shall delete all chunks for a tenant when the tenant is offboarded. | Must | `RAGIndexingWorker` calls `RAGConnector.deleteTenant()` on offboarding and removes all `rag_chunks_sync` rows for the tenant. | Product Owner |
+| BR-012 | The system shall retry indexing failures with 3 retries (exponential backoff 1s/5s/30s), then DLQ and mark `status = 'failed'`. | Must | Retry policy is enforced; failures do not block main ingestion; failed posts are visible via `GET /v1/rag/status`. | Product Owner |
+| BR-013 | The system shall make chunk size, overlap, and embedding model configurable in a future release. | Could | v1 uses fixed defaults (256 tokens, 20% overlap, `text-embedding-3-small`); future tuning may introduce per-tenant configuration. | Product Owner |
+| BR-014 | The system shall clean up orphan chunks when a post is re-indexed with fewer chunks than before. | Must | Worker compares new chunk count to `rag_chunks_sync.chunk_count`; if lower, obsolete vector IDs are deleted before upserting new chunks. | Product Owner |
+| BR-015 | The system shall prepend `Title: {title}\n\n` to chunk `content` when the post has a title/subject. | Should | Chunks of titled posts carry the title context; the prepended title is additive to the 256-token target. | Product Owner |
+| BR-016 | The system shall record `embedding_model` in `rag_chunks_sync` for each indexed post to support future embedding-model migrations. | Must | `rag_chunks_sync.embedding_model` is populated on every index/re-index; a model mismatch triggers re-indexing. | Product Owner |
 
 ### 5.1 Architecture Decision
 See ADR Decision.
@@ -107,23 +111,27 @@ See ADR Decision.
 ### 6.2 User Stories
 | ID | Epic | Intent | Acceptance Criteria |
 |---|---|---|---|
-| Story 9.8 | epic-9-adr-0077-to-0085.md | As backend engineer, I want `RAGChunkingService` and an async `RAGIndexRequestedEvent` to chunk and embed posts after enrichment, so that the vector store st... | `RAGChunkingService.split(post)` produces overlapping chunks from `body_markdown` and enrichment metadata.; `AIProviderConnector.embed(chunks)` or a dedicate... |
+| Story 9.8 | epic-9-adr-0077-to-0085.md | As backend engineer, I want `RAGChunkingService` and an async `RAGIndexRequestedEvent` to chunk and embed posts after enrichment, so that the vector store stays in sync with `social_posts` without blocking ingestion. | `RAGChunkingService.split(post)` produces overlapping chunks (256-token, 20% overlap, 64-token min, title-prepend, short-post guarantee) with `tenant_id`/`post_id`/`chunk_index`/`content`; `AIProviderConnector.embed(tenantId, texts)` targets `text-embedding-3-small` (1536-dim); `rag_chunks_sync` tracks `embedding_model`/`status`/`error_message`; orphan-chunk cleanup on re-index; 3-retry → DLQ → `failed` policy. |
 
 
 ## 7. Data Requirements
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
 | `body_markdown` | Canonical normalized post body used for chunking | `social_posts` | Backend / Ingestion | Public post content |
+| `RAGChunk.tenant_id` | Tenant identifier for the chunk | `social_posts.tenant_id` | Backend / RAG | System reference |
 | `RAGChunk.post_id` | Original post identifier | `social_posts.id` | Backend / RAG | System reference |
 | `RAGChunk.chunk_index` | Zero-based index of the chunk within the post | `RAGChunkingService` | Backend / RAG | System reference |
-| `RAGChunk.text` | Canonical chunk text to be embedded | `RAGChunkingService` | Backend / RAG | Public post content |
-| `EmbeddedRAGChunk.vector` | Numerical embedding produced by `AIProviderConnector` | `AIProviderConnector.embed()` | Backend / RAG | Derived, not PII |
+| `RAGChunk.content` | Canonical chunk text to be embedded (named `content` to match ADR-0081) | `RAGChunkingService` | Backend / RAG | Public post content |
+| `EmbeddedRAGChunk.vector` | Numerical embedding (1536-dim) produced by `AIProviderConnector.embed()` | `AIProviderConnector.embed()` | Backend / RAG | Derived, not PII |
+| `EmbeddedRAGChunk.id` | Deterministic vector ID `${tenantId}:${postId}:${chunkIndex}` (ADR-0081) | `RAGChunkingService` | Backend / RAG | System reference |
 | `RAGChunkMetadata` | Enrichment metadata and provenance attached to the chunk; see ADR-0083 | `enrichPost()` + `RAGChunkingService` | Backend / RAG | Mixed; no PII beyond public post content |
+| `rag_chunks_sync.embedding_model` | Embedding model used (e.g., `text-embedding-3-small`) for migration detection | `RAGIndexingWorker` | Backend / RAG | System reference |
+| `rag_chunks_sync.status` | Indexing status (`synced` / `pending` / `failed`) for health checks | `RAGIndexingWorker` | Backend / RAG | System reference |
+| `rag_chunks_sync.error_message` | Last failure reason for `failed` rows | `RAGIndexingWorker` | Backend / RAG | System reference |
 | `rag_chunks_sync.post_id` | Post identifier for sync bookkeeping | `social_posts.id` | Backend / RAG | System reference |
 | `rag_chunks_sync.tenant_id` | Tenant identifier for isolation and cleanup | `social_posts.tenant_id` | Backend / RAG | System reference |
 | `rag_chunks_sync.last_indexed_at` | Timestamp of the last successful index | `RAGIndexingWorker` | Backend / RAG | System reference |
 | `rag_chunks_sync.chunk_count` | Number of chunks indexed for the post | `RAGIndexingWorker` | Backend / RAG | System reference |
-| `rag_chunks_sync.store_id` | Identifier of the vector store record/index | `RAGConnector` | Backend / RAG | System reference |
 
 ---
 
@@ -131,13 +139,15 @@ See ADR Decision.
 | ID | Rule |
 |---|---|
 | BRU-001 | A post is not indexed for RAG until `enrichPost()` has completed successfully. |
-| BRU-002 | The canonical text embedded for each chunk is derived from `body_markdown` only; enrichment metadata is stored but not embedded. |
-| BRU-003 | Every chunk must carry `post_id` and `chunk_index` so it can be linked back to the original `social_posts` row. |
+| BRU-002 | The canonical `content` embedded for each chunk is derived from `body_markdown` only (with optional title prepend); enrichment metadata is stored in `RAGChunkMetadata` but not embedded. |
+| BRU-003 | Every chunk must carry `tenant_id`, `post_id`, and `chunk_index` so it can be linked back to the original `social_posts` row and assigned a deterministic vector ID. |
 | BRU-004 | The vector store is a derived index; `social_posts` remains the source of truth. |
-| BRU-005 | Embedding and vector-store failures are retried but never allowed to fail the main ingestion pipeline. |
+| BRU-005 | Embedding and vector-store failures are retried (3 retries, exponential backoff) then moved to DLQ with `status = 'failed'`; they never fail the main ingestion pipeline. |
 | BRU-006 | `rawPayload` retention (ADR-0018) removes only `social_posts.raw_payload`; vector chunks remain until the post itself is deleted or the tenant is offboarded. |
-| BRU-007 | Chunk size, overlap, and embedding model are fixed in v1 unless a future ADR changes them. |
+| BRU-007 | Chunk size (256 tokens), overlap (20%), and embedding model (`text-embedding-3-small`, 1536 dim) are fixed in v1 unless a future ADR changes them. |
 | BRU-008 | All chunk and embedding operations are scoped to a single `tenant_id`. |
+| BRU-009 | When a post is re-indexed with fewer chunks than before, obsolete vector IDs are deleted before upserting the new chunk set — no orphaned chunks remain. |
+| BRU-010 | Short posts (< 64 tokens) are never discarded; they are indexed as a single chunk containing the entire post body. |
 
 ---
 
@@ -155,7 +165,7 @@ See ADR Decision.
 ---
 
 - ADR-0081 (`RAGConnector`) is accepted and implemented before this pipeline is built.
-- `AIProviderConnector` already supports or will be extended to support an `embed(texts: string[])` method.
+- `AIProviderConnector` already supports or will be extended to support an `embed(tenantId: string, texts: string[])` method targeting a dedicated `text-embedding-3-small` Azure OpenAI deployment (1536 dimensions).
 - `body_markdown` is the canonical, normalized post body at the point `enrichPost()` completes.
 - The vector store is treated as a derived index that can be rebuilt from `social_posts` and `rag_chunks_sync`.
 
@@ -182,7 +192,7 @@ See ADR Decision.
 
 ## 12. Assumptions and Dependencies
 - ADR-0081 (`RAGConnector`) is accepted and implemented before this pipeline is built.
-- `AIProviderConnector` already supports or will be extended to support an `embed(texts: string[])` method.
+- `AIProviderConnector` already supports or will be extended to support an `embed(tenantId: string, texts: string[])` method targeting a dedicated `text-embedding-3-small` Azure OpenAI deployment (1536 dimensions).
 - `body_markdown` is the canonical, normalized post body at the point `enrichPost()` completes.
 - The vector store is treated as a derived index that can be rebuilt from `social_posts` and `rag_chunks_sync`.
 
@@ -194,7 +204,7 @@ See ADR Decision.
 | R-003 | Embedding costs exceed budget as post volume grows | Medium | High | Default bounded chunk size; per-tenant chunk-count metrics; dedicated cheaper embedding model considered in future ADR | Product / Engineering |
 | R-004 | Vector index drifts out of sync with `social_posts` | Medium | High | `rag_chunks_sync` bookkeeping table enables reconciliation and full rebuild; deletion and offboarding triggers keep deletes in sync | Engineering |
 | R-005 | Multi-tenant data leaks if tenant filter is missed | Low | High | `RAGConnector` enforces `tenant_id` metadata on every upsert/search (ADR-0081/0083); `rag_chunks_sync` records `tenant_id` for every operation | Engineering |
-| R-006 | ADR-0082 remains Proposed and may change before implementation | High | Medium | This BRD is marked as draft for review; final BRD updated once ADR is Accepted | Product Owner |
+| R-006 | ~~ADR-0082 remains Proposed and may change before implementation~~ **Resolved 2026-08-25:** ADR-0082 Accepted | ~~High~~ Resolved | ~~Medium~~ N/A | ADR-0082 accepted following final architectural review; this FDD updated to Approved | Product Owner |
 
 ---
 

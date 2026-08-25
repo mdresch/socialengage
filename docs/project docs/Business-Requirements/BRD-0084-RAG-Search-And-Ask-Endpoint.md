@@ -7,8 +7,8 @@
 | Field | Value |
 |---|---|
 | Document Title | RAG Search and Ask Endpoint – Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 0.2 |
+| Date | 2026-08-25 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno – Product Owner / Technical Lead |
 | Status | Draft for Review (source ADR-0084 is Proposed) |
@@ -18,6 +18,7 @@
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
 | 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft derived from ADR-0084 and feature design `28-semantic-search-rag.md` |
+| 0.2 | 2026-08-25 | BRD Writer Agent | Aligned with ADR-0081/0083 architectural-review revision: snippets/citations now sourced from stored `RAGChunkMetadata.content` (not reconstructed via a secondary `social_posts` lookup); `RAGFilter` shape aligned to ADR-0081 canonical form; hybrid search noted as optionally supported via `RAGSearchOptions.textQuery` |
 
 ---
 
@@ -56,7 +57,7 @@ Semantic search turns the post corpus into a queryable knowledge layer, improves
 - `POST /v1/rag/ask` endpoint for question answering with citations and confidence grading.
 - `GET /v1/rag/status` endpoint for index health and lag reporting.
 - Request/response contract shapes, filter dimensions, pagination, and result metadata.
-- Tenant-scoped RAG filter support (`watchlistId`, `platformId`, `topicId`, `sentiment`, `dateRange`).
+- Tenant-scoped RAG filter support (canonical `RAGFilter` per ADR-0081: `platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange` `from`/`to`).
 - Default and hard-capped values for `topK` (10 / 50) and `maxChunks` (5 / 10).
 - Per-tenant usage metering and `429 RAG_QUOTA_EXCEEDED` response.
 - Citation format that links back to original `social_posts`.
@@ -68,14 +69,14 @@ Semantic search turns the post corpus into a queryable knowledge layer, improves
 - Vector-store RLS, metadata schema, and deletion sync (ADR-0083).
 - Frontend search/ask UI components, loading patterns, and accessibility (ADR-0085).
 - Streaming `ask` responses for v1.
-- Hybrid (vector + keyword) search for v1.
+- Hybrid (vector + keyword) search as a v1 *exposed* feature — ADR-0081's `RAGSearchOptions.textQuery` optionally enables it at the connector level where the provider supports it, but v1 endpoints do not expose a separate hybrid-search control to callers.
 - Unauthenticated or public RAG access.
 
 ### 4.3 Assumptions
 
 - ADR-0081, ADR-0082, and ADR-0083 are accepted and implemented before these endpoints are exposed.
 - Authenticated users are already resolved through the existing Entra-based identity pipeline.
-- The `social_posts` table remains the source of truth for snippet reconstruction.
+- The `social_posts` table remains the source of truth; snippet/citation text is sourced from the stored `RAGChunkMetadata.content` (a derived copy rebuildable from `social_posts`, per ADR-0081/0083 revision), so no secondary SQL lookup is required per result.
 - A vector index is populated and reachable before `search` and `ask` calls return useful results.
 
 ### 4.4 Constraints
@@ -126,7 +127,7 @@ A tenant user enters a natural-language query. The system embeds the query, retr
 - Natural-language Q&A with citations and confidence grading.
 - Filtered scoped search by watchlist, platform, topic, sentiment, or date range.
 - Index health visibility and per-tenant cost metering.
-- Snippet reconstruction from the authoritative `social_posts` row.
+- Snippet/citation text sourced from stored `RAGChunkMetadata.content` (no per-result SQL lookup); `social_posts` remains the source of truth for rebuilds.
 
 ---
 
@@ -137,13 +138,13 @@ A tenant user enters a natural-language query. The system embeds the query, retr
 | ID | Requirement | Priority | Acceptance Criteria | Owner |
 |---|---|---|---|---|
 | BR-001 | The system shall accept a natural-language query and return ranked, tenant-scoped post chunks | Must | `POST /v1/rag/search` returns `results` with `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, and `snippet` | Product Owner |
-| BR-002 | The system shall allow filtering search and ask requests by watchlist, platform, topic, sentiment, and date range | Must | `RAGFilter` dimensions are validated and applied to vector retrieval | Product Owner |
+| BR-002 | The system shall allow filtering search and ask requests by the canonical `RAGFilter` dimensions (ADR-0081): `platformId`, `sentiment`, `watchlistIds`, `topics`, and `dateRange` (`from`/`to`) | Must | `RAGFilter` dimensions are validated and applied to vector retrieval | Product Owner |
 | BR-003 | The system shall cap the number of returned results to control cost | Must | `topK` defaults to 10 and is hard-capped at 50 | Product Owner |
 | BR-004 | The system shall answer natural-language questions and cite the chunks it used | Must | `POST /v1/rag/ask` returns `answer`, `citations`, and `confidence` (`high` / `medium` / `low`) | Product Owner |
 | BR-005 | The system shall expose index health and lag to operators | Must | `GET /v1/rag/status` returns `totalIndexedPosts`, `totalChunks`, `lagBehindIngestion`, `lastIndexedAt`, and `storeStatus` | Product Owner |
 | BR-006 | The system shall enforce per-tenant RAG quotas | Must | When the tenant cap is reached, the endpoint returns `429 RAG_QUOTA_EXCEEDED` | Product Owner |
 | BR-007 | The system shall link every snippet and citation back to its source post | Must | Citations contain `postId`, `chunkIndex`, `url` (when available), and `snippet` | Product Owner |
-| BR-008 | The system shall reconstruct snippets from the authoritative post store | Must | Snippets are fetched from `social_posts`, not duplicated in the vector store | Product Owner |
+| BR-008 | The system shall source snippet/citation text from the stored `RAGChunkMetadata.content` (a derived copy rebuildable from `social_posts`, per ADR-0081/0083) so no per-result SQL lookup is required | Must | Snippets are returned from stored `content`; `social_posts` remains the source of truth for rebuilds | Product Owner |
 
 ### 8.2 Non-Functional Requirements
 
@@ -167,7 +168,7 @@ A tenant user enters a natural-language query. The system embeds the query, retr
 | BRU-004 | Generated answers must be grounded solely in the chunks supplied for the question. |
 | BRU-005 | Every citation in an `ask` response must correspond to a chunk actually used to generate the answer. |
 | BRU-006 | Per-tenant RAG usage is metered; hitting the cap returns `429 RAG_QUOTA_EXCEEDED`. |
-| BRU-007 | Snippet and citation text are reconstructed from `social_posts` as the source of truth. |
+| BRU-007 | Snippet and citation text are sourced from stored `RAGChunkMetadata.content` (derived copy, rebuildable from `social_posts` which remains the source of truth); no per-result SQL lookup is required. |
 | BRU-008 | No PII beyond public post content is indexed or returned through RAG endpoints. |
 
 ---
@@ -177,11 +178,11 @@ A tenant user enters a natural-language query. The system embeds the query, retr
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
 | Natural-language query | The user’s search or question text | Client request | Product | Standard tenant input |
-| `RAGFilter` | Filter dimensions (`watchlistId`, `platformId`, `topicId`, `sentiment`, `dateRange`) | Client request | Product | Tenant-scoped configuration data |
+| `RAGFilter` | Filter dimensions (canonical shape per ADR-0081: `platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange` `from`/`to`) | Client request | Product | Tenant-scoped configuration data |
 | `postId` | Identifier of the source post | `social_posts` | Engineering | Reference to tenant content |
 | `chunkIndex` | Position of the chunk within the post | Vector store / `rag_chunks_sync` | Engineering | Internal reference |
 | `score` | Vector similarity score for the result | Vector store | Engineering | Internal |
-| `snippet` | Reconstructed excerpt of the matching post chunk | `social_posts` | Engineering | Public post content |
+| `snippet` | Excerpt of the matching post chunk, sourced from stored `RAGChunkMetadata.content` (derived copy, rebuildable from `social_posts`) | Vector store (`RAGChunkMetadata.content`) | Engineering | Public post content |
 | `answer` | Generated natural-language response | AI provider | Engineering | Derived from public post content |
 | `citations` | References to chunks used for the answer | Vector store + `social_posts` | Engineering | Public post content |
 | `confidence` | Reliability of the generated answer (`high` / `medium` / `low`) | AI provider / service | Engineering | Internal |
@@ -224,13 +225,13 @@ A tenant user enters a natural-language query. The system embeds the query, retr
 | D-004 | Feature design `28-semantic-search-rag.md` | Reference | Product | Maintained alongside ADR acceptance |
 | D-005 | Story 9.8 – RAG post chunking and embedding pipeline | Story | Engineering | Precedes Story 9.10 |
 | D-006 | Story 9.9 – RAG vector-store RLS and metadata | Story | Engineering | Precedes Story 9.10 |
-| D-007 | AI provider contract for `embed()` and generation methods | External / Internal | Engineering | Existing `AIProviderConnector` (ADR-0002) |
+| D-007 | AI provider contract for `embed(tenantId, texts)` (targeting `text-embedding-3-small`, per ADR-0082) and generation methods | External / Internal | Engineering | Existing `AIProviderConnector` (ADR-0002) |
 
 ---
 
 ## 14. Acceptance Criteria
 
-- `POST /v1/rag/search` accepts a natural-language `query` and optional `RAGFilter`, returning `results` with `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, and `snippet`.
+- `POST /v1/rag/search` accepts a natural-language `query` and optional `RAGFilter` (canonical shape per ADR-0081: `platformId`, `sentiment`, `watchlistIds`, `topics`, `dateRange` `from`/`to`), returning `results` with `postId`, `chunkIndex`, `score`, `platformId`, `publishedAt`, and `snippet` (sourced from stored `RAGChunkMetadata.content`).
 - `POST /v1/rag/search` defaults `topK` to 10 and rejects or clamps values above 50.
 - `POST /v1/rag/ask` returns `answer`, `citations`, and `confidence`, where `confidence` is one of `high`, `medium`, or `low`.
 - `POST /v1/rag/ask` defaults `maxChunks` to 5 and rejects or clamps values above 10.
