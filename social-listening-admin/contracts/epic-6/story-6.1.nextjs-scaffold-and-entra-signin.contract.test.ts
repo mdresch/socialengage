@@ -143,14 +143,22 @@ import { Agent, setGlobalDispatcher } from 'undici';
 import { chromium, type Browser, type BrowserContext } from '@playwright/test';
 import { encryptSession, decryptSession, SESSION_COOKIE_NAME } from '../../src/lib/session';
 import { fetchResolvedIdentity } from '../../src/lib/core-client';
+import { acquireDevServerLock, releaseDevServerLock } from '../../src/testUtils/devServerLock';
+import { ensurePortsFree } from '../../src/testUtils/portCleanup';
 
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(ADMIN_ROOT, '..');
 const CORE_ROOT = path.join(REPO_ROOT, 'social-listening-core');
+// Fixed, not dynamic: this contract drives a real interactive sign-in against the
+// real Entra tenant, whose app registration requires an exact-match redirect URI
+// built from this host:port. Concurrent agents share this one port via
+// DEV_SERVER_LOCK_NAME below instead of each getting their own.
 const PORT = 3000;
 const HOSTNAME = 'socialengage.test';
 const BASE_URL = `https://${HOSTNAME}:${PORT}`;
 const CORE_BASE_URL = process.env.CORE_API_BASE_URL || 'http://localhost:3001';
+const DEV_SERVER_LOCK_NAME = 'admin-live-dev-server';
+const TEST_DB_NAME = `test_run_admin_${process.pid}`;
 
 /**
  * Locates the real, machine-local mkcert root CA — the same one Next's own
@@ -332,11 +340,29 @@ function waitForServerReady(timeoutMs: number): Promise<void> {
 beforeAll(async () => {
   const isWin = process.platform === 'win32';
 
+  // Port 3000/3001 and the real Entra tenant are host-wide, not per-worktree — see
+  // DEV_SERVER_LOCK_NAME's own comment above. Acquired before anything else in this
+  // block so a second concurrent agent waits here rather than racing for the port.
+  await acquireDevServerLock(DEV_SERVER_LOCK_NAME);
+
+  // Own physically-isolated database clone (56aec12's mechanism, exposed as a
+  // standalone script so this admin-repo test can use it without importing `pg`
+  // itself — see testDbClone.ts's own header comment on the ADR-0001 boundary).
+  execSync(`npx ts-node scripts/testDbClone.ts create "${TEST_DB_NAME}"`, {
+    cwd: CORE_ROOT,
+    stdio: 'pipe',
+    shell: isWin ? 'cmd.exe' : undefined,
+  });
+
+  const testDbEnv = { PGHOST: 'localhost', PGPORT: '5434', PGDATABASE: TEST_DB_NAME };
+
   // Seed a real, resolvable identity for TEST_EMAIL before anything signs in — see this
-  // file's own 2026-08-12 healing note above. Talks to the dev DB directly (no server
-  // needs to be up yet for this), idempotent, safe to run every time this contract runs.
+  // file's own 2026-08-12 healing note above. Talks to this run's own isolated database
+  // clone (no server needs to be up yet for this), idempotent, safe to run every time
+  // this contract runs.
   execSync(`node scripts/withDevEnv.js npx ts-node scripts/ensureContractTestIdentity.ts "${TEST_EMAIL}" tenant_admin`, {
     cwd: CORE_ROOT,
+    env: { ...process.env, ...testDbEnv },
     stdio: 'pipe',
     shell: isWin ? 'cmd.exe' : undefined,
   });
@@ -350,9 +376,11 @@ beforeAll(async () => {
   // that looks identical to "missing Authorization header." Found via direct
   // instrumentation of entraAuthMiddleware.ts/core-client.ts during this healing
   // pass, both reverted after confirming — see docs/implementation-log.md.
+  // Also pointed at this run's own isolated database clone (testDbEnv above), not
+  // core's shared local dev database, via withDevEnv.js's additive-only dotenv load.
   coreProcess = spawn(isWin ? 'npm.cmd' : 'npm', ['run', 'dev'], {
     cwd: CORE_ROOT,
-    env: { ...process.env, NODE_ENV: 'development' },
+    env: { ...process.env, NODE_ENV: 'development', ...testDbEnv },
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: isWin,
   });
@@ -416,30 +444,58 @@ beforeAll(async () => {
 }, 240_000);
 
 afterAll(async () => {
-  await browser?.close();
-  if (coreProcess?.pid) {
-    if (process.platform === 'win32') {
-      try {
-        execSync(`taskkill /PID ${coreProcess.pid} /T /F`);
-      } catch {
-        // already gone
+  try {
+    await browser?.close();
+    if (coreProcess?.pid) {
+      if (process.platform === 'win32') {
+        try {
+          execSync(`taskkill /PID ${coreProcess.pid} /T /F`);
+        } catch {
+          // already gone
+        }
+      } else {
+        coreProcess.kill('SIGKILL');
       }
-    } else {
-      coreProcess.kill('SIGKILL');
     }
-  }
-  if (serverProcess?.pid) {
-    if (process.platform === 'win32') {
-      try {
-        execSync(`taskkill /PID ${serverProcess.pid} /T /F`);
-      } catch {
-        // already gone
+    if (serverProcess?.pid) {
+      if (process.platform === 'win32') {
+        try {
+          execSync(`taskkill /PID ${serverProcess.pid} /T /F`);
+        } catch {
+          // already gone
+        }
+      } else {
+        serverProcess.kill('SIGKILL');
       }
-    } else {
-      serverProcess.kill('SIGKILL');
     }
+    // The taskkill/kill calls above target the PID this file spawned the process
+    // tree under, which doesn't reliably reap the whole npm -> npm -> node chain on
+    // Windows — confirmed directly, 2026-08-24 (see portCleanup.ts's own header
+    // comment). Verifying the port is actually free matters specifically because
+    // DEV_SERVER_LOCK_NAME is released right after this function returns: a lock
+    // that's "released" while the port it guards is still held just moves the
+    // EADDRINUSE onto whichever agent acquires it next.
+    await ensurePortsFree([PORT, Number(new URL(CORE_BASE_URL).port || 3001)]);
+    try {
+      execSync(`npx ts-node scripts/testDbClone.ts drop "${TEST_DB_NAME}"`, {
+        cwd: CORE_ROOT,
+        stdio: 'pipe',
+        shell: process.platform === 'win32' ? 'cmd.exe' : undefined,
+      });
+    } catch {
+      // best-effort — an orphaned test_run_* database is swept by
+      // jest.global-setup.js's own hourly cleanup either way
+    }
+  } finally {
+    // Always releases, even if a kill or the drop above threw — otherwise a
+    // failed teardown would leave every other waiting agent locked out.
+    releaseDevServerLock(DEV_SERVER_LOCK_NAME);
   }
-}, 30_000);
+  // 90s, not the previous 30s: ensurePortsFree's own listener-lookup measured
+  // 5.6-7.9s per invocation in a slow sandbox shell (portCleanup.ts's own header
+  // comment), and it can run several times (poll loop, then the fallback kill,
+  // then a re-check) before this function returns.
+}, 90_000);
 
 /** Drives a real interactive sign-in through our own app, against the real Entra tenant. */
 async function performRealSignIn(context: BrowserContext) {

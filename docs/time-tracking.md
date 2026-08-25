@@ -15,6 +15,64 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-24 | 20:24 | — | — | Documentation | ADR-0080 | docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list (0a7c450) |
+| 2026-08-24 | 18:04 | — | — | Documentation | Story 9.1 | docs(trace): finalize Story 9.1 Built field and Implementation Log entry (f912b13) |
+| 2026-08-24 | 18:01 | — | — | Review | Story 9.1 | feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint (a4bf276) |
+| 2026-08-24 | 17:31 | — | — | Documentation | — | chore(infra): update implement-story and heal-contract-failure skills and Postgres template DB test harness (56aec12) |
+| 2026-08-24 | 16:29 | — | — | Documentation | ADR-0080 | docs(onboarding): approve BRD-0080 and FDD-0080 and unblock Stories 9.5 and 9.6 following ADR-0080 acceptance (a9f73c4) |
+| 2026-08-24 | 15:24 | — | — | Infrastructure | ADR-0080 | docs(adr): accept ADR-0080 with milestone locking, bundled query reconciliation, and TypeScript contracts (7f2e1f9) |
+| 2026-08-24 | 15:13 | — | — | Infrastructure | — | feat(dashboard): add automated repository sync script and predev/prebuild triggers (8e16327) |
+| 2026-08-24 | 15:03 | — | — | Documentation | — | feat(dashboard): transform into enterprise telemetry portal with sidebar, test contracts, extended roadmap, and ADR open questions resolution center (44b4962) |
+| 2026-08-24 | 14:14 | — | — | Documentation | Story 1.9 | docs(trace): backfill Story 1.9 Built field (f49bba1) |
+| 2026-08-24 | 14:06 | — | — | Documentation | Story 6.10 | docs(trace): backfill Story 6.10 Built field (c7ecbc3) |
+| 2026-08-24 | 14:01 | — | — | Documentation | Story 6.9 | docs(trace): backfill Story 6.9 Built field (68b70be) |
+| 2026-08-24 | 13:58 | — | — | Documentation | Story 6.16 | docs(trace): backfill Story 6.16 Built field (9fb2086) |
+| 2026-08-24 | 13:22 | — | — | Documentation | Story 6.38 | docs(trace): finalize Story 6.38 Built field and Implementation Log entry (ef1e984) |
+| 2026-08-24 | 13:12 | — | — | Documentation | Story 6.38 | feat(admin): Story 6.38 / ADR-0073 — post detail reply composer and replies tab (ae5d16a) |
+| 2026-08-24 | 12:56 | — | — | Documentation | Story 6.38 | feat(admin): Story 6.38 contract (b62e2c0) |
+| 2026-08-24 | 11:44 | — | — | Documentation | Story 6.35 | docs(trace): backfill Story 6.35 Built field and Implementation Log entry (3c64c15) |
+| 2026-08-24 | 11:40 | — | — | Documentation | Story 6.34 | docs(trace): backfill Story 6.34 Built field and Implementation Log entry (ebf4144) |
+| 2026-08-24 | 11:38 | — | — | Documentation | Story 6.33 | docs(trace): backfill Story 6.33 Built field and Implementation Log entry (a920eee) |
+| 2026-08-24 | 11:36 | — | — | Documentation | Story 6.32 | docs(trace): backfill Story 6.32 Built field and Implementation Log entry (e7d69a1) |
+| 2026-08-24 | 11:32 | — | — | Documentation | Story 6.31 | docs(trace): backfill Story 6.31 Built field and Implementation Log entry (86b7b7e) |
+| 2026-08-24 | 10:57 | — | — | Documentation | Story 3.17 | docs(trace): Story 3.17 implementation log and Built field (f75da21) |
+| 2026-08-24 | 10:56 | — | — | Documentation | Story 3.17 | feat(composer): Story 3.17 POST /v1/composer/research Deep Research endpoint (ADR-0076) (bdd9bcf) |
+| 2026-08-24 | 10:53 | — | — | Documentation | — | feat(dashboard): add standalone Next.js project progress dashboard with interactive charts and gauges (8ac5a8a) |
+| 2026-08-24 | 08:19 | — | — | Documentation | Story 3.16 | docs(trace): Story 3.16 implementation log and Built field (5b4ebd6) |
+| 2026-08-24 | 08:17 | — | — | Documentation | Story 3.16 | feat(export): Story 3.16 tenant workspace and matched-posts exports (ADR-0074) (0d11e3f) |
+| 2026-08-24 | 07:01 | — | — | Documentation | Story 3.15 | docs(trace): Story 3.15 implementation log and Built field (fc48c3a) |
+| 2026-08-24 | 07:00 | — | — | Documentation | Story 3.15 | feat(outbound-post): Story 3.15 outbound post publishing audit table and POST/GET/DELETE /v1/outbound/posts (8e7f312) |
+| 2026-08-23 | 21:23 | — | — | Documentation | Story 3.14 | docs(trace): Story 3.14 implementation log and Built field (18d5e77) |
+| 2026-08-23 | 21:19 | — | — | Documentation | Story 3.14 | feat(outbound-reply): Story 3.14 outbound_activities table and POST/GET /v1/posts/:id/replies (e3e661b) |
+| 2026-08-23 | 20:14 | — | — | Documentation | Story 2.32 | docs(trace): Story 2.32 implementation log and Built field (9d7b31b) |
+| 2026-08-23 | 20:12 | — | — | Documentation | Story 2.32 | feat(azure-openai): optional research?() capability (Story 2.32, ADR-0076) (7854300) |
+| 2026-08-23 | 20:12 | — | — | Documentation | — | docs(brd): commit updated BRD drafts (bd9cb91) |
+| 2026-08-23 | 20:12 | — | — | Documentation | — | docs(fdd): commit updated FDD drafts (a8551b4) |
+| 2026-08-23 | 20:10 | — | — | Documentation | — | docs(fdd): commit updated FDD drafts (dfa3673) |
+| 2026-08-23 | 20:10 | — | — | Documentation | — | docs(brd): commit updated BRD drafts (0bba070) |
+| 2026-08-23 | 20:04 | — | — | Documentation | ADR-0079 | docs(adr): accept ADR-0079 and add newly drafted ADRs 0118-0121 (0c1d5b9) |
+| 2026-08-23 | 20:03 | — | — | Documentation | ADR-0079 | docs(fdd): regenerate FDD-0079 and BRD-0079 for accepted ADR-0079 (ce1c11a) |
+| 2026-08-23 | 20:03 | — | — | Documentation | ADR-0079 | docs(user-stories): mark ADR-0079 stories Ready and refresh Epic 9 statuses (b64bf07) |
+| 2026-08-23 | 20:03 | — | — | Documentation | — | docs(skills): add fdd-writer and fdd-writer-batch skill modules (17a3405) |
+| 2026-08-23 | 19:50 | — | — | Documentation | Story 2.30 | docs(trace): Story 2.30 implementation log and Built field (1a28fc5) |
+| 2026-08-23 | 19:49 | — | — | Documentation | Story 2.30 | feat(linkedin): LinkedIn post publishing (Story 2.30, ADR-0075) (3a65691) |
+| 2026-08-23 | 18:41 | — | — | Documentation | Story 2.29 | docs(trace): Story 2.29 implementation log and Built field (af0c048) |
+| 2026-08-23 | 18:38 | — | — | Documentation | Story 2.29 | feat(facebook): Facebook Page post publishing (Story 2.29, ADR-0075) (4234834) |
+| 2026-08-23 | 16:21 | — | — | Documentation | Story 2.28 | docs(trace): Story 2.28 implementation log and Built field (e04854d) |
+| 2026-08-23 | 16:11 | — | — | Documentation | Story 2.28 | feat(core): Connector publish framework and outbound post rate gate (Story 2.28, ADR-0075) (f1e0f9b) |
+| 2026-08-23 | 15:21 | — | — | Documentation | — | docs(skills): include BRD/FDD context in heal-contract-failure (3df8ccf) |
+| 2026-08-23 | 15:19 | — | — | Documentation | — | docs(skills): include BRD/FDD context in implement-story process (c63752e) |
+| 2026-08-23 | 15:15 | — | — | Documentation | Story 2.27 | docs(trace): Story 2.27 implementation log and Built field (3bf8786) |
+| 2026-08-23 | 15:12 | — | — | Documentation | Story 2.27 | feat(core): Facebook Page reply implementation (Story 2.27, ADR-0073) (2da26eb) |
+| 2026-08-23 | 14:57 | — | — | Documentation | — | docs: add FDD template and functional design documents for ADR/BRD 0001-0121 (dc22ecc) |
+| 2026-08-23 | 14:38 | — | — | Documentation | Story 2.31 | docs(trace): Story 2.31 implementation log and Built field (0364adb) |
+| 2026-08-23 | 14:37 | — | — | Documentation | Story 2.31 | feat(core): Brave and Bing one-off research search helpers (Story 2.31) (4949200) |
+| 2026-08-23 | 14:36 | — | — | Documentation | Story 2.26 | docs(trace): Story 2.26 implementation log and Built field (9231a67) |
+| 2026-08-23 | 14:34 | — | — | Documentation | Story 2.26 | feat(core): implement Story 2.26 connector reply framework and outbound rate gate (ADR-0073) (e3df7d9) |
+| 2026-08-23 | 11:24 | — | — | Documentation | — | docs: add BRD-Template and one BRD for every ADR 0001-0121 (eb319d6) |
+| 2026-08-22 | 01:33 | — | — | Review | — | docs: add manager-review note on roadmap brainstorming and ADR expansion (bae4adf) |
+| 2026-08-22 | 01:30 | — | — | Documentation | — | devin: add research skills for feature design and comparison (5c1e521) |
+| 2026-08-22 | 01:20 | — | — | Documentation | — | feat(admin): wire Polypost Composer to real publish target dialog and loading states (6a8b69e) |
 | 2026-08-22 | 01:17 | — | — | Documentation | ADR-0076 | docs: persist ADR-0076, implementation stories, and pending design docs (3e86b5f) |
 | 2026-08-22 | 01:13 | — | — | Documentation | — | docs: capture v1.5/v2 feature roadmap with ADRs 0077-0117 and user stories (658b392) |
 | 2026-08-22 | 18:47 | — | — | Review | — | Merge origin/main and keep local review tracking copies (298411d) |

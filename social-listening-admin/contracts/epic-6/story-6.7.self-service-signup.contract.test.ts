@@ -113,7 +113,13 @@ describe('Story 6.7 — self-service sign-up', () => {
       return;
     }
 
-    const PORT = 3002;
+    // Dynamic, unlike Story 6.1's fixed PORT: this contract only inspects the
+    // redirect-response headers this app's own route handler produces (fetch with
+    // `redirect: 'manual'`, never followed) — it never completes a round trip back
+    // through Entra, so nothing requires this port to match a registered redirect
+    // URI. PID-derived so two concurrent agents in different worktrees, each also
+    // running Story 6.1 on the fixed port 3000, don't collide with each other here.
+    const PORT = 4100 + (process.pid % 500);
     const BASE_URL = `http://localhost:${PORT}`;
     let serverProcess: ChildProcess | null = null;
 
