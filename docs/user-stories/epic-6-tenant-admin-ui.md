@@ -697,10 +697,34 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ---
 
+## Story 6.28 — Tenant-owned feed: friendly naming in the connector setup UI
+
+**Source:** ADR-0050's own 2026-08-20 Amendment Log entry (the same entry that sourced Story 2.19's backend half) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-admin@cc38b6a
+
+**Documentation Steward note, added 2026-08-24:** this story's own entry was entirely missing from this file until this correction — real, shipped, contract-tested work (`contracts/epic-6/story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts`) had zero write-up here despite `docs/user-stories/README.md`'s Epics table and Story 2.19's own epic-2 entry both already referring to it by name and number as real, storied work, and despite every one of its list-mates in README's own "unstoried/ADR CRUD/UI surface" enumeration (a category meaning "no brand-new dedicated ADR," not "no write-up here" — 6.24, 6.25, 6.29–6.35 are all in that same list and all have full `## Story` sections in this file) getting a real entry. Reconstructed from the real commit (`social-listening-admin@cc38b6a`) and its own `tenant-owned-feed-connector-setup/SKILL.md` update, not invented — see `docs/implementation-log.md`'s Story 2.19 entry for the backend half this pairs with.
+
+**As a** tenant-owner administering more than one tenant-owned feed (Story 6.20's multi-feed list),
+**I want** to set and edit a friendly name for each feed in the connector setup UI,
+**so that** I can tell my feeds apart by something more meaningful than a raw domain string, matching the real per-feed `name` column Story 2.19 already added on the backend.
+
+**Acceptance Criteria**
+- The connect modal gains an optional Name field; a non-empty value is sent as `name`, an empty value is never sent at all (the backend's own "never defaulted" invariant, Story 2.19 AC1).
+- The edit modal is pre-filled from the activation's current `name` and always re-sends `name` on submit — an explicit empty value clears the name (`null`, distinct from "not sent"), never silently left unchanged.
+- The multi-feed list's per-row primary label shows `name` when set, falling back to `domain`; `domain` itself is still always shown as a secondary line, never hidden.
+- Both proxy routes (`connect`, `[id]` PATCH) forward `name` through to `social-listening-core` correctly; the `[id]` PATCH route distinguishes "`name` not sent" from "`name` sent as `null`" via `hasOwnProperty`, matching Story 2.19's own backend semantics exactly.
+- `core-client.ts`'s `connectTenantOwnedFeed()`/`updateTenantOwnedFeedActivation()` carry `name` through; `updateTenantOwnedFeedActivation()`'s signature widens from positional `(id, feedUrl)` to `(id, updates: { feedUrl?, name? })`, with Story 6.20's own pre-existing contract test updated to the new call shape (a real, dated, non-weakening update — see that story's own dated note above).
+
+**Explicitly out of scope:** surfacing `rawPayload.feedName` (Story 2.19's own per-post denormalization) anywhere in the Posts feed or Analytics Dashboard — nothing in `postDisplay.ts`/`PostsFeedClient.tsx`/`OverviewTab.tsx` reads it yet, named as a real, open gap in this component's own `SKILL.md` rather than silently left undocumented; a name-uniqueness constraint (none decided, a label not an id, per Story 2.19's own matching out-of-scope note).
+
+---
+
 ## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
 
 **Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
-**Built:** 2026-08-20 (`social-listening-admin`)
+**Built:** 2026-08-20 — social-listening-admin@be6c4cd
+
+**Documentation Steward correction, 2026-08-24.** This story's own `**Built:**` field named only the repo, no commit hash (`2026-08-20 (`social-listening-admin`)`), unlike this file's own established fixed-shape convention. `docs/implementation-log.md`'s own matching entry (`## 2026-08-20 — Story 6.29 — social-listening-admin@be6c4cd`) names the real commit — added here directly.
 **Depends on:** Story 1.16 (Ingestion watchdog, stalled status derivation, retry API endpoint in `social-listening-core`), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
 
 **As a** Tenant-Admin or Tenant User,
@@ -732,9 +756,11 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.30 — Brave Search API Connector Setup, Activation, and Status Screen
 
-**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
 **Built:** 2026-08-21 — social-listening-admin@dedfb6b
 **Depends on:** Story 2.21 (`brave-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**Documentation Steward correction, 2026-08-24.** This story's own Status line read "Ready" directly beside its own already-populated `**Built:**` field — confirmed against `docs/implementation-log.md`'s matching entry (`## 2026-08-21 — Story 6.30... — socialengage@dedfb6b`). Corrected directly.
 
 **As a** Tenant Administrator,
 **I want** to connect, activate, manage, and monitor the Brave Search API connector using my organization's Brave API key from the admin portal,
@@ -769,9 +795,11 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.31 — Human-in-the-Loop Post Enrichment Cascading Edit Drawer
 
-**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
 **Built:** 2026-08-20 — social-listening-admin@9260f6f
 **Depends on:** Story 3.13 (Post enrichment override API & precedence guard in `social-listening-core`), Story 6.15 (Post detail panel), Story 6.16 (Post enrichment display & re-enrichment action)
+
+**Documentation Steward correction, 2026-08-24 — real drift, the "Built convention" class this file exists to catch.** This story's own header read `**Status:** Ready` / `**Built:** not yet` despite `docs/implementation-log.md` already carrying a full, matching build entry (`## 2026-08-20 — Story 6.31 — social-listening-admin`, 10/10 contract, same files-touched list). That log entry itself carries `**Full commit:** \`pending\`` — a real gap, unfixable here since the log is read-only for this role — but the real commit is unambiguous: `git diff-tree --no-commit-id --name-only -r 9260f6f` matches the log entry's own file list exactly (that commit itself is the one that added the log entry, hence its own `docs/implementation-log.md` self-reference). Corrected directly with the real hash.
 
 **As a** Tenant User or Tenant-Admin,
 **I want** to click an edit button on the post details enrichment card to open an Enrichment Details drawer side-by-side with the post,
@@ -812,9 +840,11 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.32 — Bing Search API (Azure) Connector Setup, Activation, and Status Screen
 
-**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Ready
-**Built:** 2026-08-21 — social-listening-admin@2f428e0
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
+**Built:** 2026-08-21 — social-listening-admin (commit hash not recoverable — see the dated note below)
 **Depends on:** Story 2.22 (`bing-search` backend connector in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.24 (Connectors & AI providers grouping)
+
+**Documentation Steward correction, 2026-08-24 — real drift, the "Built convention" class, with an additional real gap this pass could not fully close.** This story's own header read `**Status:** Ready` / `**Built:** not yet`, but `docs/implementation-log.md`'s own matching entry (`## 2026-08-21 — Story 6.32... — socialengage@pending`) already describes a full "Delivered Story 6.32" pass touching real UI files (`ConnectorsClient.tsx`, `page.tsx`, `status/page.tsx`, `watchlists/page.tsx`), and the real Bing Search UI code (`IconBingSearch()`, the `'bing-search'` icon case) is genuinely present in `social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx` at current HEAD — confirmed by direct inspection, not assumed. But the log's own `Full commit` field itself reads `pending`, never backfilled, and `git log --all` finds no commit anywhere in this repository's reachable history whose message or touched files match this delivery beyond `0c24532` (contract-test-only, not the real implementation). Corrected the Status/`**Built:**` mismatch directly; the commit hash itself is honestly left unresolved rather than guessed — flagged for Menno as a real, standing traceability gap (the implementing commit for Story 6.32's UI genuinely exists in the working tree but is not identifiable in git history under any reviewed hash).
 
 **As a** Tenant Administrator,
 **I want** to connect, activate, manage, and monitor the Bing Search API connector using my organization's Azure subscription key from the admin portal,
@@ -850,8 +880,10 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.33 — Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer
 
-**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
 **Built:** 2026-08-20 — social-listening-admin@b0dc89e
+
+**Documentation Steward correction, 2026-08-24.** Header read "Ready"/"not yet" despite `docs/implementation-log.md` already carrying a matching build entry (`## 2026-08-20 — Story 6.33 — social-listening-admin`, files-touched list matching `b0dc89e` exactly). Corrected directly.
 **Depends on:** Story 2.23 (Facebook connector Graph API `from` extraction & Page dependency in `social-listening-core`), Story 6.11 (Display derivation helpers), Story 6.14 (Post feed client)
 
 **As a** Tenant User or Tenant-Admin reviewing ingested social posts,
@@ -885,8 +917,10 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.34 — Instagram Business Connector Setup, Multi-Account Picker, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
 **Built:** 2026-08-21 — social-listening-admin@986a93c
+
+**Documentation Steward correction, 2026-08-24.** Header read "Ready"/"not yet" despite `docs/implementation-log.md` already carrying a matching build entry (`## 2026-08-21 — Story 6.34... — socialengage@pending`); `986a93c`'s own real diff (new Instagram OAuth/account routes) matches. Corrected directly.
 **Depends on:** Story 2.24 (Instagram connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client), Story 6.27 (Multi-asset picker pattern)
 
 **As a** Tenant Administrator or User,
@@ -936,8 +970,10 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.35 — LinkedIn Connector Setup Screen, Scope Degradation Badge, and Post Feed/Drawer Presentation
 
-**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Ready
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
 **Built:** 2026-08-21 — social-listening-admin@89eb97c
+
+**Documentation Steward correction, 2026-08-24.** Header read "Ready"/"not yet" despite `docs/implementation-log.md` already carrying a matching build entry (`## 2026-08-21 — Story 6.35... — socialengage@pending`); `89eb97c`'s own real diff (new LinkedIn OAuth routes) matches. Corrected directly.
 **Depends on:** Story 2.25 (LinkedIn connector backend in `social-listening-core`), Story 6.3 (Connector connect/disconnect), Story 6.5 (Connector status view), Story 6.14 (Post feed client)
 
 **As a** Tenant Administrator or User,

@@ -73,6 +73,9 @@
 | 2026-08-22 | 01:33 | — | — | Review | — | docs: add manager-review note on roadmap brainstorming and ADR expansion (bae4adf) |
 | 2026-08-22 | 01:30 | — | — | Documentation | — | devin: add research skills for feature design and comparison (5c1e521) |
 | 2026-08-22 | 01:20 | — | — | Documentation | — | feat(admin): wire Polypost Composer to real publish target dialog and loading states (6a8b69e) |
+| 2026-08-24 | 05:33 | — | — | Review | — | chore: record post-commit hook outputs for this scheduled review's own commits (8b9bd14) |
+| 2026-08-24 | 05:33 | — | — | Review | — | Scheduled doc review: Documentation Steward pass (2026-08-24) (3a8ff91) |
+| 2026-08-24 | 05:24 | — | — | Review | — | Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24) (5ff1879) |
 | 2026-08-22 | 01:17 | — | — | Documentation | ADR-0076 | docs: persist ADR-0076, implementation stories, and pending design docs (3e86b5f) |
 | 2026-08-22 | 01:13 | — | — | Documentation | — | docs: capture v1.5/v2 feature roadmap with ADRs 0077-0117 and user stories (658b392) |
 | 2026-08-22 | 18:47 | — | — | Review | — | Merge origin/main and keep local review tracking copies (298411d) |
