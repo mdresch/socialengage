@@ -402,7 +402,9 @@
 
 **Built:** 2026-08-20 — social-listening-core@2f52c0f (backend half only — see Explicitly out of scope below for the admin-side UI, Story 6.28)
 
-**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Ready
+**Source:** ADR-0050's own 2026-08-20 Amendment Log entry — two additive, backward-compatible extensions of the already-Accepted ADR-0050, neither requiring re-acceptance. **Status:** Built 2026-08-20 (backend half; admin-side UI is the separate Story 6.28)
+
+**Documentation Steward correction, 2026-08-24.** This story's own Status line read "Ready" directly beside its own already-populated `**Built:** 2026-08-20 — social-listening-core@2f52c0f` field — the exact drift class this file's own "Built convention" (added 2026-08-13) exists to catch, confirmed against `docs/implementation-log.md`'s matching `2026-08-20 — Story 2.19 — social-listening-core@2f52c0f` entry. Corrected in place, following the same precedent already used for Story 1.14 (see that story's own 2026-08-19 dated note above and this file's own README-level 2026-08-19 note); no Acceptance Criteria text changed.
 
 **Requested directly by Menno, 2026-08-20**, having just been given the connector setup screen's own URL (`/tenant/connectors/tenant-owned-feed`): *"give feeds ... a name. Let the feed owner give the feed a separate name. This allow for a feed identification name instead of the generic tenant-owned-feed selection and review the feeds for a mandatory field that is designated to be the Author of the article/project/posts."* Clarified directly with Menno (`AskUserQuestion`) that "mandatory field... designated to be the Author" meant adding real per-article byline extraction from the feed itself (`<dc:creator>`/`<author>`), not merely confirming the already-existing domain-as-Author invariant — ADR-0050's own Consequences/Open Question 5 had explicitly reserved that as "a separate, named design decision... not in scope for this ADR," so a short Amendment Log entry was drafted (not a re-opened Decision) before implementing.
 
@@ -424,8 +426,10 @@
 
 ## Story 2.20 — Country-level geospatial extraction and normalization on post enrichment
 
-**Source:** ADR-0064 (Proposed 2026-08-19) · **Status:** Built 2026-08-20
-**Built:** 2026-08-20 — social-listening-core
+**Source:** ADR-0064 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@8bc60a1
+
+**Documentation Steward correction, 2026-08-24.** Two real, confirmed staleness items in this header. (1) The Source line still read "ADR-0064 (Proposed 2026-08-19)" — accurate only up to the moment of drafting; ADR-0064's own Status line has read "Accepted (2026-08-20)" since that acceptance (matching Story 8.10's own correctly-worded Source line below), corrected here to match. (2) The `**Built:**` field named the repo with no commit hash at all (`2026-08-20 — social-listening-core`), unlike every sibling story's fixed-shape field — `docs/implementation-log.md`'s own matching entry (`## 2026-08-20 — Story 2.20 — social-listening-core`) has the identical omission, itself unfixable here since the log is append-only/read-only for this role. The commit is unambiguous, though: `git diff-tree --no-commit-id --name-only -r 8bc60a1` matches the log entry's own `Files touched` list exactly, so the hash is added here with full confidence, not guessed.
 
 **As a** core backend engineer,
 **I want** the ingestion and enrichment pipelines to extract, normalize, and store country-level geospatial metadata from connector payloads (`gnews`, `newswire`, `tenant-owned-feed`) into `social_posts.enrichment`,
@@ -463,8 +467,11 @@
 
 ## Story 2.21 — Active Watchlist Sourcing via Brave Search API: Polling connector, query transformation, and junction linking
 
-**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0065 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@4df8d6d
 **Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**Documentation Steward correction, 2026-08-24.** This story's own Status line read the non-standard "Implemented" with no `**Built:**` field at all — `docs/implementation-log.md`'s own matching entry (`## 2026-08-20 — Story 2.21: Active Watchlist Sourcing via Brave Search API — socialengage@4df8d6d`) confirms the real build. Corrected directly, same convention as every other Built story in this file.
 
 **As a** Tenant User or Tenant-Admin,
 **I want** the platform to actively query the Brave Search API for my active watchlists, validate matching articles, and ingest them as social posts linked to their respective watchlists,
@@ -505,8 +512,11 @@
 
 ## Story 2.22 — Active Watchlist Sourcing via Bing Search API (Azure): Polling connector, candidate evaluation cap, and URL canonicalisation
 
-**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0066 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
+**Built:** 2026-08-21 — social-listening-core@8de21b3
 **Depends on:** Story 2.1 (Provider connector framework), Story 1.13 / Story 1.14 (Live polling scheduler), Story 3.11 (Post-watchlist match persistence, `post_watchlist_matches`), Story 3.6 (Boolean AST parser)
+
+**Documentation Steward correction, 2026-08-24.** Same drift class as Story 2.21 above — Status line read the non-standard "Implemented" with no `**Built:**` field. `docs/implementation-log.md`'s own matching entry (`## 2026-08-21 — Story 2.22: Active Watchlist Sourcing via Bing Search API (Azure) — socialengage@8de21b3`) confirms the real build. Corrected directly.
 
 **As a** Tenant User or Tenant-Admin,
 **I want** the platform to actively query the Bing Search API (Azure) for my active watchlists, validate matching news and web articles, and ingest them as social posts linked to their respective watchlists,
@@ -551,8 +561,11 @@
 
 ## Story 2.23 — Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution
 
-**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0067 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@450fffc
 **Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Facebook engagement counts), Story 6.27 (Facebook multiple Pages per user)
+
+**Documentation Steward correction, 2026-08-24.** Status line read the non-standard "Implemented" with no `**Built:**` field. `docs/implementation-log.md` carries two entries for this story's delivery (both `socialengage@pending`) — the first (`## 2026-08-20 — Story 2.23 — social-listening-core`) has a files-touched list matching `450fffc` exactly (`git diff-tree` confirmed). Corrected directly with that hash.
 
 **As a** core backend engineer / social listening analyst,
 **I want** `pollFacebookPage()` and `fetchFacebookPagePosts()` to extract the `from` object from Meta Graph API, record the explicit hosting Facebook Page ID/Name (`rawPayload.pageId`, `rawPayload.pageName`), and resolve post authorship using a two-tier hierarchy (`from.name` true author falling back to `pageName`),
@@ -586,8 +599,11 @@
 
 ## Story 2.24 — Instagram Business Connector: Tier-3 OAuth Poller, Single-Row Carousel Normalization, Lookback Pagination, and Error Reclassification
 
-**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0068 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
+**Built:** 2026-08-21 — social-listening-core@86f093b
 **Depends on:** Story 2.15 (Facebook connector), Story 2.18 (Engagement counts), Story 2.20 (Country geospatial normalization), Story 6.27 (Multi-asset credential model), Story 1.16 (Watchdog reconciliation & alerts)
+
+**Documentation Steward correction, 2026-08-24.** Same drift class as Story 2.23 above. `docs/implementation-log.md`'s matching entry (`## 2026-08-21 — Story 2.24... — socialengage@pending`) confirms the real build; `86f093b`'s own real diff matches the described Instagram connector work (new `instagram-connector/SKILL.md`, `instagramConnectedAccountsStore.ts`, `pollInstagram.ts`, migration `0040`). Corrected directly.
 
 **As a** core backend engineer / social listening analyst,
 **I want** a dedicated `instagram` ingestion connector in `social-listening-core` that queries the Instagram Graph API (`/{ig-user-id}/media`) for connected Instagram Business and Creator accounts,
@@ -636,8 +652,11 @@
 
 ## Story 2.25 — LinkedIn Connector: Confidential Client OAuth, Token Lifecycle with Persisted Expiry, Rest.li Rate Limiting, and 1-Hour Poller Guardrails
 
-**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0069 (Accepted 2026-08-20) · **Status:** Built 2026-08-21
+**Built:** 2026-08-21 — social-listening-core@513b125
 **Depends on:** Story 2.1 (Unified connector interface), Story 2.2 (Rate limiting request gate), Story 1.16 / ADR-0070 (Watchdog reconciliation & alerts)
+
+**Documentation Steward correction, 2026-08-24.** Same drift class as Story 2.23/2.24 above. `docs/implementation-log.md`'s matching entry (`## 2026-08-21 — Story 2.25... — socialengage@pending`) confirms the real build; `513b125`'s own real diff matches the described LinkedIn connector work. Corrected directly.
 
 **As a** core backend engineer / social listening analyst,
 **I want** a dedicated `linkedin` ingestion connector in `social-listening-core` implementing OAuth 2.0 confidential client flow, 60-day access token refresh with persisted `refreshTokenExpiresAt`, Rest.li rate-limit header parsing, scheduler-level 1-hour polling guardrails, and graceful scope degradation,
