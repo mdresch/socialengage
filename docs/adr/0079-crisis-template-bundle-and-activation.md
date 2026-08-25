@@ -156,4 +156,54 @@ The wizard lets the user preview `default_query` (rendered with sample or suppli
 
 - Related feature design: `docs/product-research/feature-designs/20-crisis-threshold-wizard.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
-- Related ADRs: `ADR-0044` (Watchlist CRUD), `ADR-0021` (boolean query AST), alert-rule design
+- Related ADRs: `ADR-0044` (Watchlist CRUD), `ADR-0021` (boolean query AST); see the 2026-08-25 Correction below on the "alert-rule design" reference that used to sit here — no such accepted ADR existed at acceptance time.
+
+---
+
+## Correction (2026-08-25) — Context §2 was factually inaccurate at acceptance
+
+Found by an `implement-story` agent that stopped rather than freelance a schema decision for Story 9.3, and confirmed independently by grep across both repos' `src/`, `migrations/`, and `contracts/` (2026-08-25):
+
+**Context §2's claim — "`ADR-0044` and the built watchlist/alert infrastructure provide the underlying tables and endpoints" — is wrong.**
+
+- `ADR-0044` (`docs/adr/0044-watchlist-api-design-and-database-schema-standardization.md`) is the `watchlists` CRUD/schema contract only. It never mentions `alert_rule` anywhere in its Decision, Appendices, or Amendment Log.
+- **No `alert_rules` table, no `AlertRule` type, and no notification-channel concept exist anywhere** in `social-listening-core/src`, `social-listening-core/migrations`, `social-listening-admin/src`, or either repo's `contracts/` — zero matches on `alert_rule`, `AlertRule`, `notificationChannel`, or `notification_channel` project-wide, verified 2026-08-25.
+- The real owning ADR for alert rules and delivery is **ADR-0091** (`docs/adr/0091-real-time-alert-rules-and-delivery.md`) — **Status: Proposed**, not Accepted — and its corresponding **Story 10.9** (`docs/user-stories/epic-10-adr-0086-to-0094.md`) is explicitly **"Blocked — pending ADR acceptance."** ADR-0091's own design (rule types `volume`/`sentiment`/`keyword`/`topic`/`connector-health`, an `AlertEvaluationWorker`, `tenant_alerts`, cooldowns) is materially richer than anything this ADR itself specified for `alert_rule`.
+- The former Footnotes entry "alert-rule design" (removed above, preserved here for the record) pointed at nothing — no accepted ADR for alert rules existed when this ADR was accepted on 2026-08-23.
+
+Per `docs/adr/README.md`'s "Conventions for changing an existing ADR" — the common thread that original Decision/Consequences text is a historical record and stays put — the Decision, Consequences, and Alternatives-considered sections above are **not rewritten**. This Correction documents that Context §2's stated reasoning was wrong; the Amendment immediately below is what actually changes the live contract.
+
+## Amendment (2026-08-25) — v1 Decision rescoped: activation creates a `watchlist` only; `alert_rule` deferred to ADR-0091
+
+**Resolution: Defer.** Two options were weighed:
+
+1. **Defer** (chosen) — rescope v1 so activation creates only the `watchlist`; store thresholds and notification-channel *intent* as data on `tenant_crisis_templates` for later use; real `alert_rule` wiring becomes a named follow-on once ADR-0091 is accepted and Story 10.9 is built.
+2. **Minimal now** — define a deliberately narrow `alert_rules` table scoped strictly to what this ADR needs, explicitly provisional, expected to be extended once ADR-0091 lands.
+
+**Why Defer, not Minimal-now:**
+
+1. ADR-0091 is Proposed, not Accepted, and specifies a materially richer `alert_rules` design (§Decision above) than anything this ADR itself scoped. Building a narrower, ADR-0079-only `alert_rules` table now creates a second, competing schema under the same table name that ADR-0091 would then have to reconcile with or replace outright — the same speculative-infrastructure-ahead-of-an-accepted-design risk `ADR-0020` (distributed rate-limit gate) was deliberately deferred to avoid, and this project's established general bias against building provisional infrastructure ahead of an accepted design.
+2. The "minimal now" alternative also silently depends on a notification-channel concept — something to validate/resolve `notificationChannelIds` against — that **does not exist anywhere in the codebase either** (verified 2026-08-25, same grep pass as the Correction above). FDD-0079 §9 asserts a "Notification-channel service (existing)" — that is also incorrect and is corrected in FDD-0079's own amendment. Building even a minimal `alert_rules` table now would require inventing a notification-channel registry that no accepted ADR defines — real scope creep beyond what this ADR itself set out to decide.
+3. Nothing about the wizard's core value (fast, one-click activation of a preconfigured watchlist with a linked playbook) requires alert delivery to exist yet. The watchlist alone is functional and independently useful; alert delivery is additive, not load-bearing for v1's stated business objectives except the "protection" framing named as a negative consequence below.
+
+**Revised v1 Decision** (this section is the live contract for the `alert_rule`-touching portions of §2 and §3 above, per `ADR-0047` §4's "last dated appendix is the live contract" — the original text above is unedited historical record):
+
+1. **§2's `tenant_crisis_templates` table drops the `alert_rule_id uuid REFERENCES alert_rules(id) ON DELETE CASCADE` column.** In its place:
+   - `notification_channel_ids jsonb` — the caller's requested destinations, stored as **intent only**, not resolved or validated against any real channel/delivery mechanism (none exists).
+   - `thresholds jsonb` — the effective thresholds (`default_thresholds` merged with any `customThresholds`), stored unchanged so they are available once real alert-rule wiring lands.
+2. **§3's activation flow drops step 5** ("Create an `alert_rule` from `default_thresholds`… linked to the new watchlist."). The single transaction now writes only the `watchlist` and the `tenant_crisis_templates` row (carrying `thresholds` and `notification_channel_ids` as stored data, not a live, evaluating alert).
+3. **§3's response contract drops `alertRuleId`.** Revised response: `{ tenantCrisisTemplateId, watchlistId, status: 'active', playbook, thresholds, notificationChannelIds }`. No `alert_rule` is created; the response must not imply one exists.
+4. **`notificationChannelIds` remains a required activation-request field** (original §3's "required" rule is unchanged) — captured now as stated intent, not silently dropped, so the eventual ADR-0091 integration doesn't need a separate backfill migration for intent that was never captured.
+5. **§4 ("Customization is allowed") and §5 ("Playbook is read-only advisory data") are unaffected** — both already only ever touched `watchlist`/`tenant_crisis_templates` data, not `alert_rule`.
+
+**Pending supersession note, per `docs/adr/README.md` row 5** (a still-Proposed ADR — `ADR-0091`, Proposed 2026-08-23 — would change part of this Decision if accepted): once `ADR-0091` is Accepted **and** its **Story 10.9** is actually built (per `docs/adr/README.md` row 6 / `ADR-0047` §2 — acceptance alone does not change shipped behavior), a follow-on story, not yet numbered, wires crisis-template activation to create a real `alert_rules` row from `tenant_crisis_templates.thresholds` and `.notification_channel_ids`, and backfills `alert_rule_id`-equivalent linkage for activations that predate that story. This note will get a dated "Supersession update" here once `ADR-0091` is actually accepted, following the same pattern `ADR-0009`'s Pending-supersession-note → Supersession-update → implementation-confirmation sequence already established in this project.
+
+**Consequences of this amendment (additive to the original Consequences section above):**
+
+- *Positive:* v1 ships without inventing a second, throwaway `alert_rules`/notification-channel schema that `ADR-0091` would need to reconcile with or discard later; the ADR is now honest about what infrastructure actually exists.
+- *Negative:* v1 crisis-template activation **does not deliver real-time alerts.** A `Tenant-Brand-Reputation-Manager` who activates a template gets monitoring (the `watchlist`) but no notification until the `ADR-0091` follow-on ships. This must be stated plainly in the wizard UI (Story 9.4), not left implicit — see that story's revised Acceptance Criteria.
+- *Negative:* Business Objective framing that promised "faster time to **protection**" (BRD-0079 §3, Objective 1) overstates v1 delivery — the BRD is corrected accordingly below.
+
+## Amendment Log
+
+- 2026-08-25 — Correction (Context §2 factual error) and Amendment (v1 Decision rescoped to defer `alert_rule` creation to `ADR-0091`) — see sections above. Drafted by the Business & Requirements Analyst persona in response to an `implement-story` agent that stopped rather than freelance a schema decision for Story 9.3; requested directly by Menno. This ADR remains **Accepted** — the amendment rescopes v1's implementation surface, it does not reopen or reverse the core decision to ship a crisis-template-activation feature.
