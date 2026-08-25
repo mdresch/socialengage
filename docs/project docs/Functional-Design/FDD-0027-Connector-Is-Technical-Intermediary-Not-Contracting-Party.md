@@ -1,237 +1,276 @@
-# Business Requirements Document (BRD)
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) |
+| Document Title | FDD-0027 Connector Architecture as Technical Intermediary Only — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0027-connector-is-technical-intermediary-not-contracting-party.md, ../Business-Requirements/BRD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0027-connector-is-technical-intermediary-not-contracting-party.md and the business requirements in BRD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md into functional design for **Connector Is Technical Intermediary Not Contracting Party**.
-**What problem are we solving?**  
-SocialEngage connects tenants and users to external data sources (news APIs, newswires, social platforms, AI enrichment providers) through a connector architecture. Without an explicit business rule, future connectors or commercial decisions could quietly position SocialEngage as a reseller, credential pooler, or billing intermediary for those third-party relationships. That would expose the project to contractual, pricing, and liability risk it is not resourced to assume.
-
-**Who is affected?**  
-- Connecting parties (tenants today, potentially individual users once the Users model is defined).  
-- Future connector authors and the AI Delivery Agent building connector CRUD flows.  
-- Platform and tenant administrators who must communicate the signup relationship clearly.
-
-**What is the proposed solution at a glance?**  
-Adopt the principle that SocialEngage's connector layer is strictly a technical intermediary: it executes the OAuth handshake, validates API keys, stores encrypted credentials, and polls/normalizes data. It never signs terms, pools credentials, resells tiers, or bills on behalf of a connecting party. The connecting party maintains a direct account and credential relationship with the data source under that source's own terms.
-
-**What business value do we expect?**  
-- Bounded legal and commercial exposure for a self-funded solo project.  
-- A durable, written constraint that future connector selection and UI flows must satisfy.  
-- Preservation of the "own your data and access, don't recreate the black box" positioning established in the business case.
+| Author(s) | FDD Writer (Claude) |
+| Reviewer(s) | Menno |
+| Status | Approved (source ADR-0027 is Accepted; a governance/policy constraint, not a build) |
+| Related Documents | ADR-0027, BRD-0027, ADR-0002, ADR-0014, ADR-0024, ADR-0026, ADR-0028, `Stakeholder-Register.md` S-03/S-05, `Business-Case-v6.0.md` §4/§9, `Project-Charter.md` |
 
 ---
 
+## 2. Purpose and Scope
+
+### 2.1 Purpose
+
+This document translates ADR-0027 (connector architecture is a technical intermediary only) and BRD-0027 into the functional design for a project-wide constraint: SocialEngage's connector architecture provides only the technical connection mechanism to a data source (OAuth handshake support, API-key validation, encrypted credential storage, poll/normalize) and never becomes a party to, reseller of, or intermediary in the connecting party's own commercial or legal relationship with that source. ADR-0027 is Accepted (2026-08-01, drafted, revised, and accepted the same day). Unlike most FDDs in this series, this design has no accompanying user story, no new interface, and no new stored field of its own — it is a durable governance constraint already satisfied by two existing connectors (Newswire, GNews) and binding on every future one. This FDD documents that constraint's functional shape: what it requires, where it applies, and how it is checked, not a new runtime capability.
+
 ### 2.2 Scope
+
 **In scope:**
-- The project-wide principle that SocialEngage's connector architecture is a technical intermediary only.
-- Application of the principle to all data sources: social platforms, newswires, general-news APIs, AI enrichment providers, and any future source.
-- No pooling, no sharing, and no SocialEngage-held credentials across connecting parties.
-- No contracting, negotiating, or accepting a source's terms on a connecting party's behalf.
-- No billing, reselling, mark-up, or cost-fronting for any source tier, free or paid.
-- Connector selection: build only sources whose published terms permit the automated, third-party API use the connector requires.
-- Requirement for future connector connect-flow UI to make the direct-provider relationship unambiguous.
+- The general, project-wide principle: no pooling/sharing of a connecting party's credential; no contracting on anyone's behalf; no assumed liability for a source's terms; source eligibility decided at connector-selection time (a paid-only source is not disqualifying, but SocialEngage never intermediates billing/pricing for any tier).
+- Application to every data source: social platforms, newswires, general-news APIs, AI enrichment providers, and any future source.
+- The requirement that a future connector connect-flow UI unambiguously discloses the direct-provider relationship.
+- The constraint this principle places on the still-undrafted Users model (candidate ADRs #1–#4) — it must be satisfied regardless of how tenant-vs-user is eventually resolved.
 
 **Out of scope:**
-- Resolving the tenant-vs-user connecting-party model (deferred to candidate ADRs #1–#4).  
-- Designing the specific Admin UI copy or disclosure pattern for the connect flow (named as a follow-up for candidate ADR #6).  
-- Reopening or re-verifying historical connector rejections (RTPR, NewsAPI.org, Currents API) against paid tiers.  
-- Drafting a public-facing Terms of Use or customer-facing legal document.  
-- Changing accepted ADR-0002, ADR-0014, ADR-0024, or ADR-0026 text; this BRD cites them as precedent.
+- Resolving the tenant-vs-user connecting-party model itself (deferred to candidate ADRs #1–#4).
+- Designing the specific Admin UI copy/disclosure pattern for the connect flow (named as a requirement for whoever builds candidate ADR #6, not designed here).
+- Reopening or re-verifying historical connector rejections (RTPR, NewsAPI.org, Currents API) against paid tiers.
+- Drafting a public-facing Terms of Use or other customer-facing legal document.
+- Editing ADR-0002, ADR-0014, ADR-0024, or ADR-0026's own Decision text — this ADR cites them as precedent via forward-pointer notes, per the series' governance convention.
+
+### 2.3 Target Audience
+
+Future connector authors (human or AI persona), whoever drafts the Users model or Admin UI connect-flow, product owner reviewing connector-selection decisions, Menno as Sponsor.
+
+---
 
 ## 3. Context and Background
-`docs/adr/README.md`'s 2026-07-30 governance note lists seven candidate future ADRs, in dependency order, for the still-undrafted multi-tenant Admin/Tenant/User model, starting with "(1) authentication mechanism — blocks everything else." **This ADR is deliberately not that.** It does not decide whether the connecting party is a tenant or an individual user, does not decide the `tenants`/`users` table shape, and does not decide authentication. Those stay exactly as open as the governance note left them. What this ADR decides is narrower and already answerable now, independent of that sequencing: regardless of who "the connecting party" turns out to be once the Users model exists, SocialEngage's own role relative to a data source is fixed — technical intermediary only, never a contracting party. That makes this a *constraint* the future Authentication/Users ADRs (candidate ADRs #1–#4) must satisfy once drafted, not a decision that depends on them being resolved first.
 
-The practice this ADR formalizes is not new — it is already present, connector-by-connector, in this project's own Accepted ADRs, just never stated as a project-wide rule:
+`docs/adr/README.md`'s 2026-07-30 governance note lists seven candidate future ADRs for the still-undrafted multi-tenant Admin/Tenant/User model. This ADR is deliberately not one of them — it does not decide who the connecting party is, does not decide table shapes, and does not decide authentication. What it decides is narrower and answerable now, independent of that sequencing: regardless of who the connecting party turns out to be, SocialEngage's own role relative to a data source is fixed — technical intermediary only, never a contracting party.
 
-- **ADR-0002** (`ProviderConnector`, sourced from Design Spec §3.1) defines the connector contract as a purely technical connection mechanism: `getAuthUrl`/`handleAuthCallback` for the OAuth handshake, `validateApiKey` for API-key validation, `poll`/`normalize` for data acquisition. Nothing in that contract represents, negotiates, or holds a commercial relationship with the source on anyone's behalf — it only executes one the connecting party already has.
-- **ADR-0014** (credential storage) is explicit that OAuth tokens and API keys are stored, encrypted, per credential — "OAuth used wherever a platform supports it; API keys are the fallback" is a technical storage decision, not a contractual one. The credential being stored is the connecting party's own, not SocialEngage's.
-- **ADR-0024** (Newswire connector) targets GlobeNewswire's and PR Newswire's public feeds "directly... no aggregator, no API key, no account" — SocialEngage inserts no commercial layer between the wire service and the tenant reading its feed.
-- **ADR-0026** (RSS/News connector, GNews API) states this most explicitly of any ADR to date: *"Per-tenant credential, not a shared pool: each tenant registers their own free GNews API key... stored per ADR-0014's existing envelope-encrypted credential model. The 100-requests/day ceiling is therefore per-tenant, not a project-wide shared quota across every tenant this project ever onboards."* ADR-0026 also names GNews's free-tier non-commercial-use restriction as "a real, accepted constraint... the same 'compliance-by-construction... monitor for policy or pricing changes before they cause a failure' discipline `Stakeholder-Register.md` §4 already applies to every other platform provider (S-03)."
+The practice being formalized is not new — it was already present, connector-by-connector, without ever being stated as a project-wide rule: ADR-0002's connector contract is purely technical (no representation of a commercial relationship on anyone's behalf); ADR-0014 stores the connecting party's own credential, not SocialEngage's; ADR-0024 (Newswire) targets public feeds directly with no commercial layer inserted; ADR-0026 (GNews) states the pattern most explicitly ("per-tenant credential, not a shared pool"). Three connectors' worth of Decision text already assumed this principle without ever stating it generally — a gap that mattered because nothing on record would have stopped a future connector from proposing a pooled, SocialEngage-held credential "to reduce onboarding friction" without first having to argue against a written rule.
 
-Three connectors' worth of Decision text already assumes this principle. None of them *state* it as a principle — each states it as an implementation default local to that one connector. That gap matters for a concrete reason: nothing currently on record would stop a future connector (or a future ADR resolving the Users-model questions) from proposing a pooled, SocialEngage-held credential "to reduce onboarding friction" without first having to argue against an explicit, written rule — because no such rule exists yet in writing, only three instances of a pattern.
+`Stakeholder-Register.md` S-03 already frames every social platform provider as External/High Power/Low Interest, engaged via "Keep Satisfied — compliance-by-construction": build every connector strictly against currently published API terms, monitor for policy/pricing changes before they cause a failure. This ADR is the direct architectural consequence of that posture — SocialEngage cannot credibly claim compliance-by-construction while also inserting itself as an unacknowledged party via a pooled credential or resold access tier. `Business-Case-v6.0.md` §4/§9 establishes the project has no revenue model, no set budget ceiling, and no capacity to absorb a third party's contractual or financial risk — this ADR is compatible with, though not sourced from, that framing.
 
-`Stakeholder-Register.md` S-03 already frames every social platform provider as External, High Power ("can revoke access or reprice unilaterally"), Low Interest ("indifferent to this project specifically"), engaged via **Keep Satisfied — compliance-by-construction**: *"build every connector strictly against currently published API terms, monitor for policy or pricing changes before they cause a failure rather than after."* This ADR is the direct architectural consequence of that stakeholder posture: SocialEngage cannot credibly claim to build "strictly against currently published API terms" while also inserting itself as an unacknowledged party to those terms via a pooled credential or a resold access tier.
+**The Decision went through a same-day reversal, both parts now part of the accepted text:** an intermediate revision added a "free/no-cost-path required" eligibility criterion (a paid-only source disqualified entirely), grounded in ADR-0024's RTPR rejection and ADR-0026's NewsAPI.org/Currents API rejections. Menno's clarification reversed this the same day: a paid-only source is *not* disqualifying — the connecting party independently obtains and pays for whatever tier is needed, directly with the source; SocialEngage's actual, durable concern is narrower — never being the billing/pricing intermediary, not that money never changes hands at all. This reversal does not reopen ADR-0024's or ADR-0026's own historical rejections, which remain each ADR's own record.
 
-`Business-Case-v6.0.md` does not itself contain an explicit "we are not a reseller/intermediary" statement — checked directly against §4 (Financial Architecture), §9 (Strategic Recommendation), and the rest of the document; no such language exists there today. What §4 does establish, and what this ADR is consistent with rather than duplicates, is that this project has **no revenue model, no budget ceiling, and no capacity to absorb a third party's contractual or financial risk** ("no formal budget ceiling has been set at this stage," §4/§9) — a self-funded solo project has no basis to become a contracting intermediary for anyone else's API relationship even if it wanted to. This ADR is not sourced from the Business Case; it is compatible with it.
-**What problem are we solving?**  
-SocialEngage connects tenants and users to external data sources (news APIs, newswires, social platforms, AI enrichment providers) through a connector architecture. Without an explicit business rule, future connectors or commercial decisions could quietly position SocialEngage as a reseller, credential pooler, or billing intermediary for those third-party relationships. That would expose the project to contractual, pricing, and liability risk it is not resourced to assume.
-
-**Who is affected?**  
-- Connecting parties (tenants today, potentially individual users once the Users model is defined).  
-- Future connector authors and the AI Delivery Agent building connector CRUD flows.  
-- Platform and tenant administrators who must communicate the signup relationship clearly.
-
-**What is the proposed solution at a glance?**  
-Adopt the principle that SocialEngage's connector layer is strictly a technical intermediary: it executes the OAuth handshake, validates API keys, stores encrypted credentials, and polls/normalizes data. It never signs terms, pools credentials, resells tiers, or bills on behalf of a connecting party. The connecting party maintains a direct account and credential relationship with the data source under that source's own terms.
-
-**What business value do we expect?**  
-- Bounded legal and commercial exposure for a self-funded solo project.  
-- A durable, written constraint that future connector selection and UI flows must satisfy.  
-- Preservation of the "own your data and access, don't recreate the black box" positioning established in the business case.
+Source requirements: BRD-0027 §§6–7. No user story exists for this ADR — a documented, named exception to the "one user story per ADR" convention (no new interface, stored field, or endpoint is introduced; the principle is already satisfied by existing connectors without any code change).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Make SocialEngage's non-intermediary role explicit and durable across every current and future connector | All new connector ADRs cite ADR-0027 / this BRD as a governing constraint |
-| 2 | Prevent SocialEngage from assuming data-source contractual, pricing, or liability risk | No connector design pools credentials, resells tiers, or bills connecting parties on a source's behalf |
-| 3 | Preserve direct-source relationships for connecting parties | Each connecting party signs up and holds their own credential directly with the data source |
-| 4 | Support clear UI copy and tenant-facing disclosure | Connector connect-flow copy states that the relationship is directly with the provider, not through SocialEngage |
+| G1 | Make the non-intermediary role explicit and durable across every current and future connector | Every new connector ADR cites ADR-0027/this FDD as a governing constraint |
+| G2 | Prevent SocialEngage from assuming data-source contractual, pricing, or liability risk | No connector design pools credentials, resells tiers, or bills connecting parties on a source's behalf |
+| G3 | Preserve direct-source relationships for connecting parties | Each connecting party signs up and holds their own credential directly with the data source |
+| G4 | Support clear UI disclosure once built | Future connect-flow copy states the relationship is direct, not through SocialEngage |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- Makes explicit and durable something two connectors (ADR-0024, ADR-0026) already do in practice but never stated as project policy — closes the gap before a future connector, or a future ADR resolving the Users-model questions, has occasion to depart from it without first having to argue against a written rule.
-- Gives whoever eventually drafts candidate ADR #4 (`users` table shape) or candidate ADR #6 (connector connect/disconnect CRUD) a settled answer to "does SocialEngage ever hold or broker a data-source relationship on a user's behalf" before they have to improvise one under schedule pressure.
-- Keeps SocialEngage's own legal/commercial exposure bounded to what ADR-0014's technical credential-storage model already covers — it never signs up for, resells, or subsidizes access to a third-party API on any connecting party's behalf — consistent with a self-funded solo project with no set budget ceiling (`Business-Case-v6.0.md` §4/§9) having no capacity to absorb a third party's contractual risk.
-- Names a real, concrete follow-up rather than leaving it implicit: the eventual Admin UI's connector connect-flow (candidate ADR #6; `docs/open-items-and-deferred-work.md` §A lists `POST /connectors/:platformId/connect` as "also build, not storied," Phase 1) needs its own copy/UX design that makes it unambiguous to the connecting party that they are signing up with the data source directly, not through SocialEngage. **This is named here as a requirement for whoever builds that flow — the AI Delivery Agent or Menno — not designed or implemented by this ADR.**
-
-**Negative**
-- **Paid-only sources are viable candidates — the real constraint is narrower than this bullet previously stated.** A data source requiring a paid tier does not disqualify it from candidacy (see the corrected "Source eligibility" bullet above): the connecting party independently obtains and pays for whatever tier the connector needs, directly with the source, under the source's own terms and billing relationship. The actual, durable constraint is that SocialEngage itself never becomes an intermediary in that billing or pricing relationship — no invoicing, reselling, marking up, or absorbing a source's cost on the connecting party's behalf. **This reverses this ADR's own immediately-prior wording**, which read a paid-only source as excluded from candidacy entirely — see the Amendment Log for the full correction and why the free-tier requirement didn't survive. This correction does not reopen or re-verify whether any specific previously-rejected candidate (RTPR, NewsAPI.org, Currents API) would now be viable: those ADRs' own historical rejections stand as their own record (ADR-0024 Accepted; ADR-0026 under separate review), and whether their *paid* tiers would satisfy the terms-permit-the-integration requirement was never checked, since it wasn't the deciding factor under the rule in force at the time.
-- Places real setup burden on the connecting party (independently signing up with GNews, Reddit, etc.) that a reseller/aggregator model would remove. This is a deliberate trade-off consistent with this project's own "own your data and access, don't recreate the black box" thesis (`Business-Case-v6.0.md` §1's root-cause analysis of the MSE "black box" criticism), but it is a genuine cost to the connecting party's onboarding experience, not a free simplification — worth naming plainly rather than treating as costless.
-- Once the Users model is actually drafted (candidate ADRs #1–#4), this principle will need to be checked against whatever entity shape it lands on. If an individual user, not the tenant, ends up being the connecting party for some platforms, ADR-0014's current credential model (built around per-tenant storage) may need an explicit per-user extension to keep satisfying this ADR's "no pooling" requirement at the right granularity — flagged here as a future consideration for that ADR, not resolved by this one.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The connector architecture shall provide only technical connection, credential-storage, and data-acquisition mechanisms | Must | ADR-0002 contract (OAuth, API-key validation, poll/normalize) is used; no commercial terms are represented | Product Owner |
-| BR-002 | Each connecting party shall hold their own direct credential with each data source | Must | Credentials are stored per-tenant (today) or per-user (when defined); no platform-wide credential exists | Product Owner |
-| BR-003 | SocialEngage shall not sign up for, negotiate, or accept a data source's terms on a connecting party's behalf | Must | No connector design includes SocialEngage as the contractual party; TOS acceptance is performed by the connecting party | Product Owner |
-| BR-004 | SocialEngage shall not invoice, resell, mark up, or absorb a data source's paid-tier cost | Must | No billing or pricing pass-through appears in connector design, admin UI, or business model | Product Owner |
-| BR-005 | A connector shall be built only when the source's published terms permit the automated, third-party API use the connector requires | Must | Connector selection record includes a terms-permit-use check; paid-only sources are viable if the connecting party pays the source directly | Product Owner |
-| BR-006 | The connector connect-flow UI shall disclose that the connecting party is signing up directly with the provider | Should | UI copy states the provider relationship is direct and that SocialEngage is not an intermediary in billing or pricing | Product Owner |
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+### 5.1 Feature / Capability: Technical-Only Connector Contract
 
-SocialEngage's connector architecture (ADR-0002) provides only the **technical connection mechanism** to a data source — OAuth flow support (`getAuthUrl`/`handleAuthCallback`), API-key validation (`validateApiKey`), encrypted credential storage (ADR-0014), and polling/normalization (`poll`/`normalize`). It never becomes a party to, reseller of, or intermediary in the actual commercial or legal relationship between a data source (a social platform, an AI enrichment provider, a newswire, a general-news API — `Stakeholder-Register.md` S-03/S-05) and whoever connects to it.
+- **Description:** The connector architecture (ADR-0002) executes only the technical connection mechanism — OAuth flow support, API-key validation, encrypted credential storage (ADR-0014), polling/normalization — and represents no commercial relationship on anyone's behalf.
+- **Triggers:** Every connector implementation, existing or future.
+- **Inputs:** The connecting party's own credential (OAuth token or API key), already obtained directly from the data source.
+- **Processing:** The connector stores and uses the credential purely as a technical mechanism to execute a relationship the connecting party already holds — it never represents, negotiates, or holds that relationship itself.
+- **Outputs:** A working technical connection with no commercial/legal relationship implied on SocialEngage's part.
+- **Error handling:** N/A — this is a design constraint checked at connector-review time, not a runtime condition.
+- **Edge cases:** A future connector proposing a system-wide or pooled credential fails this constraint at design-review time, before implementation.
 
-Whoever "the connecting party" is — today, a tenant, per the existing per-tenant credential pattern in ADR-0014/0024/0026; potentially, once the still-undrafted Users model exists (`docs/adr/README.md`'s 2026-07-30 governance note, candidate ADRs #1–#4), an individual user within a tenant — must independently sign up for, and hold, their own direct account or credential with the data source, under that source's own terms. Concretely:
+### 5.2 Feature / Capability: No Pooling or Sharing of Credentials
 
-- **No pooling or sharing.** SocialEngage never pools, aggregates, or shares one connecting party's credential across others. This is already true in practice for GNews (ADR-0026's "per-tenant credential, not a shared pool"); this ADR extends the same rule as a general requirement for every current and future connector, not a GNews-specific default.
-- **No contracting on anyone's behalf.** SocialEngage is not itself a party to any data source's terms of service, developer agreement, or paid tier, and never signs up for, negotiates, or accepts a data source's terms on a connecting party's behalf. The connecting party's own acceptance of a source's terms — clicking through GNews's ToS, authorizing an OAuth grant on Reddit — is theirs, not SocialEngage's.
-- **No assumed liability.** SocialEngage does not assume liability for a data source's own terms, pricing changes, rate-limit policy, or a connecting party's violation of that source's terms. Each connecting party is bound directly by, and responsible for compliance with, that source's own published terms — consistent with `Project-Charter.md`'s existing constraint ("Must comply with each platform's Terms of Service; no scraping or unauthorized access methods") and `Stakeholder-Register.md` S-03's compliance-by-construction posture, both of which already place the compliance burden on the connector's construction, not on SocialEngage absorbing a source's contractual risk.
-- **Source eligibility, decided at connector-selection time — independent of the tenant-vs-user sequencing above.** SocialEngage will only build a connector for a data source when its own published terms actually permit the automated, third-party API use a connector requires — a connector is not built if operating it as designed would violate the source's own terms, at any tier. **A source requiring a paid tier to obtain that access is not disqualifying.** The connecting party — a tenant today, per the existing per-tenant credential pattern; potentially an individual user once the Users model exists — independently obtains and pays for whatever tier, free or paid, the connector needs, directly with the source, under that source's own terms and its own billing relationship. **SocialEngage never acts as an intermediary in billing or pricing for any tier, free or paid:** no invoicing the connecting party for a source's access, no reselling or marking up a source's paid tier, no pass-through pricing, and no absorbing or fronting a source's cost on the connecting party's behalf. This is not a new idea layered on top of the three bullets above — it is the same "no contracting on anyone's behalf" / "no assumed liability" logic already stated there for credential-holding, made explicit here for the case where money, not just a credential, changes hands. *(This corrects this ADR's own immediately-prior wording, which read a source's paid-only status as disqualifying and cited RTPR's, NewsAPI.org's, and Currents API's rejections as precedent for that — that framing was an overreach beyond this ADR's actual concern and has been reversed; see the Amendment Log for the full correction. That reversal does not reopen or re-verify ADR-0024's or ADR-0026's own historical rejections of those candidates, which remain each ADR's own record — whether their paid tiers would satisfy this bullet's terms-permit-the-integration requirement was never checked and is not asserted here.)*
+- **Description:** SocialEngage never pools, aggregates, or shares one connecting party's credential across others.
+- **Triggers:** Every connector's credential-storage design.
+- **Inputs:** Per-connecting-party credentials (per-tenant today; potentially per-user once the Users model exists).
+- **Processing:** Each credential is stored and scoped to exactly one connecting party (already true in practice for GNews's "per-tenant credential, not a shared pool"); this ADR extends the rule as a general requirement for every current and future connector, not a GNews-specific default.
+- **Outputs:** No SocialEngage-held or cross-party-shared credential ever exists.
+- **Error handling:** N/A — a design-time constraint.
+- **Edge cases:** If the Users model eventually makes an individual user, not the tenant, the connecting party for some platforms, ADR-0014's credential model may need an explicit per-user extension to keep satisfying this rule at the right granularity — flagged as a future consideration, not resolved here.
 
-**This principle governs regardless of how the tenant-vs-user question is eventually resolved.** It is a constraint the future Authentication/Users ADRs (candidate ADRs #1–#4) must be drafted to satisfy, not a decision that depends on their outcome. If the Users model eventually makes an individual user, not a tenant, the connecting party for some platforms, this Decision's requirement — independent sign-up, no pooling, no assumed liability — applies at whatever granularity "the connecting party" turns out to mean; only the storage/UX mechanics of *which entity* holds the credential are left open, not whether SocialEngage itself ever becomes a party.
+### 5.3 Feature / Capability: No Contracting on Anyone's Behalf, No Assumed Liability
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Menno (Sponsor) | Project owner and decision authority | High | Clear, durable principle that protects the project from unacknowledged liability |
-| Future Connector Authors | Designers of new data-source integrations | High | A written rule to evaluate against when proposing sources and auth models |
-| AI Delivery Agent / Developers | Implementers of connector CRUD and connect flow | High | Guidance on permitted credential ownership and required UI disclosure |
-| Tenant Administrators | Users who activate connectors | Medium | Clear understanding that they sign up and pay (if required) directly with the provider |
-| Platform Providers (S-03) | External data-source vendors | Medium | Assurance that SocialEngage builds against their published API terms without reselling access |
+- **Description:** SocialEngage is not itself a party to any data source's terms of service, developer agreement, or paid tier, and never signs up for, negotiates, or accepts a source's terms on a connecting party's behalf; it does not assume liability for a source's terms, pricing changes, rate-limit policy, or a connecting party's violation of those terms.
+- **Triggers:** Every connector's design and every connecting party's onboarding.
+- **Inputs:** The data source's own published terms; the connecting party's own act of acceptance (clicking through a ToS, authorizing an OAuth grant).
+- **Processing:** The connecting party's acceptance of a source's terms is theirs, not SocialEngage's — consistent with `Project-Charter.md`'s existing constraint ("must comply with each platform's Terms of Service; no scraping or unauthorized access") and `Stakeholder-Register.md` S-03's compliance-by-construction posture, both of which already place the compliance burden on the connector's construction, not on SocialEngage absorbing a source's contractual risk.
+- **Outputs:** A connector that functions correctly under the source's terms, with SocialEngage bearing no contractual exposure to that source.
+- **Error handling:** N/A — a design-time and operational-posture constraint, not a runtime error path.
+- **Edge cases:** A connecting party violating a source's terms (e.g. over-polling) is that party's own compliance failure, not one SocialEngage absorbs — though SocialEngage's own conservative default rate limits (e.g. ADR-0024's Newswire cadence) are designed to reduce the likelihood of this happening by construction.
+
+### 5.4 Feature / Capability: Source-Eligibility Review at Connector-Selection Time
+
+- **Description:** SocialEngage will only build a connector for a data source whose own published terms actually permit the automated, third-party API use a connector requires — checked at connector-selection time, independent of the tenant-vs-user sequencing.
+- **Triggers:** Evaluation of a candidate data source before a connector ADR is drafted.
+- **Inputs:** The source's published terms of service/API documentation.
+- **Processing:** A source requiring a paid tier is not disqualifying — the connecting party independently obtains and pays for whatever tier the connector needs, directly with the source, under that source's own billing relationship. SocialEngage never acts as an intermediary in billing or pricing for any tier, free or paid: no invoicing, no reselling/marking up, no pass-through pricing, no absorbing or fronting a source's cost.
+- **Outputs:** A connector-selection decision (built or not built) with a recorded terms-permit-use rationale.
+- **Error handling:** N/A — a review-gate process, not a runtime behavior.
+- **Edge cases:** A source's paid-tier signup mechanism (e.g. a credit-card-gated trial that auto-bills unless cancelled) may still be a legitimate, separate concern to weigh at selection time (as it was for RTPR in ADR-0024) — this is not restated as a rule by this ADR and must not be conflated with the reversed free-tier requirement; it is carried forward as an explicitly named, still-open consideration for future candidate evaluation.
+
+### 5.5 Feature / Capability: Connect-Flow Disclosure Requirement (Named, Not Designed Here)
+
+- **Description:** A future requirement — not designed or implemented by this ADR — that the Admin UI's connector connect-flow make it unambiguous to the connecting party that they are signing up with the data source directly, not through SocialEngage.
+- **Triggers:** Whoever eventually builds the connector connect/disconnect CRUD flow (candidate ADR #6).
+- **Inputs:** N/A at this ADR's level — the exact copy/UX design is deferred.
+- **Processing:** Named here as a requirement for that future work: disclosure that the relationship is direct, and that SocialEngage is not an intermediary in billing or pricing.
+- **Outputs:** N/A at this ADR's level.
+- **Error handling:** N/A.
+- **Edge cases:** N/A — this is a forward-pointer requirement, not a built capability.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 6.3 | epic-6-tenant-admin-ui.md | As Tenant-Admin or tenant user connecting a platform, I want a screen that lets me connect or disconnect a platform credential, tenant-wide or personal as my... | Lists the platforms with a real, shipped connector today (GNews/RSS-News, Newswire) with their current connection state, calling `GET`-equivalent state and `... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Future Connector Authors (human or AI persona) | Evaluate and design new connectors against this constraint |
+| AI Delivery Agent / Developers | Implement connector CRUD and connect-flow UI under this constraint |
+| Tenant Administrators | Connecting parties who sign up and, if required, pay directly with the provider |
+| Platform Providers (`Stakeholder-Register.md` S-03) | External data sources whose terms govern the connecting party's use |
+| Menno (Sponsor) | Decision authority on scope, acceptance, and any future supersession |
+
+### 6.2 User Stories / Use Cases
+
+No user story accompanies ADR-0027 — a documented, named exception to the project's "one user story per ADR" convention, since this ADR introduces no new interface, stored field, or endpoint; it is a constraint already satisfied by the existing GNews (ADR-0026) and Newswire (ADR-0024) connectors. The downstream UI-disclosure requirement (5.5) is captured as a constraint for future stories, notably the connector connect-flow work in Epic 6, rather than as a story of its own here.
+
+### 6.3 Workflow Diagrams / Steps
+
+**Connector-selection review (applies to every future connector):**
+1. A candidate data source is identified.
+2. Its published terms are checked directly against the automated, third-party API use the connector would require (5.4).
+3. If terms permit the use (at any tier, free or paid) → candidacy proceeds; a paid-only source is not disqualifying on its own.
+4. If terms do not permit the use, or no self-serve path exists at all → the source is not built as a connector.
+5. The connector's design is checked against 5.1–5.3 (technical-only contract, no pooling, no contracting/liability) before the connector ADR is drafted.
+
+**Future connect-flow (named requirement, not built by this ADR):**
+1. Connecting party initiates connect for a given connector.
+2. UI discloses the relationship is direct with the provider, not through SocialEngage.
+3. Connecting party independently signs up/authenticates/pays with the provider.
+4. SocialEngage stores only the resulting credential, per-connecting-party, never pooled.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| Provider credential (OAuth token, API key) | Per-tenant or per-user encrypted credential held by the connecting party, not SocialEngage | Data source and connecting party | Connecting party | High |
-| Connector selection rationale | Terms-permit-use review recorded at connector-selection time | Connector ADR / BRD-0027 | Product Owner | Internal |
-| Connect-flow disclosure copy | UI text stating direct provider relationship and no billing intermediation | Product / UX design | Product Owner | Internal |
+
+### 7.1 Data Inputs
+
+- The data source's own published terms of service/API documentation (reviewed at connector-selection time).
+- The connecting party's own credential, obtained independently.
+
+### 7.2 Data Outputs
+
+- A connector-selection rationale (terms-permit-use review), recorded per connector ADR.
+- No new stored data type is introduced by this ADR itself — it constrains how existing credential storage (ADR-0014) may be used, not its schema.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| Provider credential (OAuth token / API key, existing ADR-0014 schema) | Per-connecting-party, encrypted | Constrained by this ADR to remain per-connecting-party — never pooled, never SocialEngage-held |
+| Connector-selection rationale (documentation artifact, not a stored table) | Source name, terms-permit-use finding, free/paid-tier note | Recorded in the connector's own ADR, not a database entity |
+| Connect-flow disclosure copy (future UI content, not yet built) | Disclosure text stating direct-provider relationship and no billing intermediation | To be implemented by candidate ADR #6's connect-flow work |
+
+### 7.4 Validation Rules
+
+- No credential may be stored at a platform/SocialEngage-wide level, for any connector, present or future.
+- A connector may only be built for a source whose published terms permit the automated, third-party use required — recorded as part of that connector's own selection rationale.
+- No connector design may include billing, reselling, mark-up, or cost-fronting for a source's tier, free or paid.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | SocialEngage's connector architecture is a technical intermediary only and never becomes a party to, reseller of, or intermediary in a data-source relationship. |
-| BRU-002 | One connecting party's credential may not be pooled, aggregated, or shared with another connecting party. |
-| BRU-003 | SocialEngage does not assume liability for a data source's terms, pricing, rate limits, or a connecting party's violation of those terms. |
-| BRU-004 | A connector may only be built for a data source whose published terms permit the automated, third-party API use the connector requires. |
-| BRU-005 | If a source requires a paid tier, the connecting party must obtain and pay for that tier directly with the source; SocialEngage does not intermediate billing or pricing. |
-| BRU-006 | Future connector connect-flow UI must make it unambiguous that the connecting party is creating their own account/credential directly with the provider. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | SocialEngage's connector architecture is a technical intermediary only and never becomes a party to, reseller of, or intermediary in a data-source relationship. | All connectors (5.1) |
+| BR2 | One connecting party's credential may not be pooled, aggregated, or shared with another connecting party. | Credential storage (5.2) |
+| BR3 | SocialEngage does not assume liability for a data source's terms, pricing, rate limits, or a connecting party's violation of those terms. | Liability (5.3) |
+| BR4 | A connector may only be built for a data source whose published terms permit the automated, third-party API use the connector requires. | Selection review (5.4) |
+| BR5 | If a source requires a paid tier, the connecting party must obtain and pay for that tier directly with the source; SocialEngage does not intermediate billing or pricing. | Selection review (5.4) |
+| BR6 | Future connector connect-flow UI must make it unambiguous that the connecting party is creating their own account/credential directly with the provider. | Disclosure (5.5) |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0002 connector contract (technical only) | Internal / Precedent | Product Owner | Accepted |
-| D-002 | ADR-0014 encrypted credential storage | Internal / Precedent | Technical Lead | Accepted |
-| D-003 | ADR-0024 and ADR-0026 per-connector practice | Internal / Precedent | Product Owner | Accepted |
-| D-004 | Candidate ADRs #1–#4 (Authentication / Users model) | Internal / Future | Technical Lead | To be drafted; must satisfy this BRD as a constraint |
-| D-005 | Candidate ADR #6 (connector connect/disconnect CRUD + UI copy) | Internal / Future | AI Delivery Agent | Build connector connect flow with ADR-0027 disclosure requirement |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| Connector ADRs (existing and future) | Governing | Must cite and satisfy this constraint | ADR document convention |
+| ADR-0002 (`SocialConnector` contract) | Governing | Technical-only shape this ADR constrains the use of | Design constraint |
+| ADR-0014 (credential storage) | Governing | Per-credential encryption model this ADR constrains to per-connecting-party scope | Design constraint |
+| Future Admin UI connect-flow (candidate ADR #6) | Downstream | Must implement the disclosure requirement (5.5) | UI copy/UX (not yet built) |
+| Future Users-model ADRs (candidate ADRs #1–#4) | Downstream | Must be drafted to satisfy this constraint regardless of tenant-vs-user resolution | ADR design constraint |
 
 ---
 
-- The existing per-tenant credential pattern (ADR-0014 / ADR-0026) remains the default until a Users model is defined.  
-- A self-funded, solo-project posture means SocialEngage has no budget or organizational capacity to absorb third-party contractual risk.  
-- Data-source terms are public, current, and reviewable at connector-selection time.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
-SocialEngage's connector architecture (ADR-0002) provides only the **technical connection mechanism** to a data source — OAuth flow support (`getAuthUrl`/`handleAuthCallback`), API-key validation (`validateApiKey`), encrypted credential storage (ADR-0014), and polling/normalization (`poll`/`normalize`). It never becomes a party to, reseller of, or intermediary in the actual commercial or legal relationship between a data source (a social platform, an AI enrichment provider, a newswire, a general-news API — `Stakeholder-Register.md` S-03/S-05) and whoever connects to it.
-
-Whoever "the connecting party" is — today, a tenant, per the existing per-tenant credential pattern in ADR-0014/0024/0026; potentially, once the still-undrafted Users model exists (`docs/adr/README.md`'s 2026-07-30 governance note, candidate ADRs #1–#4), an individual user within a tenant — must independently sign up for, and hold, their own direct account or credential with the data source, under that source's own terms. Concretely:
-
-- **No pooling or sharing.** SocialEngage never pools, aggregates, or shares one connecting party's credential across others. This is already true in practice for GNews (ADR-0026's "per-tenant credential, not a shared pool"); this ADR extends the same rule as a general requirement for every current and future connector, not a GNews-specific default.
-- **No contracting on anyone's behalf.** SocialEngage is not itself a party to any data source's terms of service, developer agreement, or paid tier, and never signs up for, negotiates, or accepts a data source's terms on a connecting party's behalf. The connecting party's own acceptance of a source's terms — clicking through GNews's ToS, authorizing an OAuth grant on Reddit — is theirs, not SocialEngage's.
-- **No assumed liability.** SocialEngage does not assume liability for a data source's own terms, pricing changes, rate-limit policy, or a connecting party's violation of that source's terms. Each connecting party is bound directly by, and responsible for compliance with, that source's own published terms — consistent with `Project-Charter.md`'s existing constraint ("Must comply with each platform's Terms of Service; no scraping or unauthorized access methods") and `Stakeholder-Register.md` S-03's compliance-by-construction posture, both of which already place the compliance burden on the connector's construction, not on SocialEngage absorbing a source's contractual risk.
-- **Source eligibility, decided at connector-selection time — independent of the tenant-vs-user sequencing above.** SocialEngage will only build a connector for a data source when its own published terms actually permit the automated, third-party API use a connector requires — a connector is not built if operating it as designed would violate the source's own terms, at any tier. **A source requiring a paid tier to obtain that access is not disqualifying.** The connecting party — a tenant today, per the existing per-tenant credential pattern; potentially an individual user once the Users model exists — independently obtains and pays for whatever tier, free or paid, the connector needs, directly with the source, under that source's own terms and its own billing relationship. **SocialEngage never acts as an intermediary in billing or pricing for any tier, free or paid:** no invoicing the connecting party for a source's access, no reselling or marking up a source's paid tier, no pass-through pricing, and no absorbing or fronting a source's cost on the connecting party's behalf. This is not a new idea layered on top of the three bullets above — it is the same "no contracting on anyone's behalf" / "no assumed liability" logic already stated there for credential-holding, made explicit here for the case where money, not just a credential, changes hands. *(This corrects this ADR's own immediately-prior wording, which read a source's paid-only status as disqualifying and cited RTPR's, NewsAPI.org's, and Currents API's rejections as precedent for that — that framing was an overreach beyond this ADR's actual concern and has been reversed; see the Amendment Log for the full correction. That reversal does not reopen or re-verify ADR-0024's or ADR-0026's own historical rejections of those candidates, which remain each ADR's own record — whether their paid tiers would satisfy this bullet's terms-permit-the-integration requirement was never checked and is not asserted here.)*
-
-**This principle governs regardless of how the tenant-vs-user question is eventually resolved.** It is a constraint the future Authentication/Users ADRs (candidate ADRs #1–#4) must be drafted to satisfy, not a decision that depends on their outcome. If the Users model eventually makes an individual user, not a tenant, the connecting party for some platforms, this Decision's requirement — independent sign-up, no pooling, no assumed liability — applies at whatever granularity "the connecting party" turns out to mean; only the storage/UX mechanics of *which entity* holds the credential are left open, not whether SocialEngage itself ever becomes a party.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Connector-selection decisions are documented and reviewable | Compliance | Must | Each connector ADR references ADR-0027 / this BRD and records the terms-permit-use rationale |
-| NFR-002 | The no-intermediary principle remains stable across tenant and user model changes | Maintainability | Must | Future Authentication/Users ADRs explicitly satisfy this constraint |
+
+- **Compliance:** Every connector-selection decision should record a terms-permit-use rationale, reviewable per BRD-0027 NFR-001.
+- **Legal/commercial exposure:** Bounded to what ADR-0014's technical credential-storage model already covers — SocialEngage never signs up for, resells, or subsidizes access to a third-party API on any connecting party's behalf, consistent with a self-funded solo project with no set budget ceiling.
+- **Onboarding cost:** A real, named trade-off — independent sign-up per connecting party is a genuine onboarding cost compared to a reseller/aggregator model, accepted deliberately in line with the project's "own your data and access, don't recreate the black box" thesis.
+- **Stability across model changes:** This principle must remain stable regardless of how the tenant-vs-user connecting-party question is eventually resolved (NFR-002) — future Authentication/Users ADRs must be drafted to satisfy it, not the reverse.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- Makes explicit and durable something two connectors (ADR-0024, ADR-0026) already do in practice but never stated as project policy — closes the gap before a future connector, or a future ADR resolving the Users-model questions, has occasion to depart from it without first having to argue against a written rule.
-- Gives whoever eventually drafts candidate ADR #4 (`users` table shape) or candidate ADR #6 (connector connect/disconnect CRUD) a settled answer to "does SocialEngage ever hold or broker a data-source relationship on a user's behalf" before they have to improvise one under schedule pressure.
-- Keeps SocialEngage's own legal/commercial exposure bounded to what ADR-0014's technical credential-storage model already covers — it never signs up for, resells, or subsidizes access to a third-party API on any connecting party's behalf — consistent with a self-funded solo project with no set budget ceiling (`Business-Case-v6.0.md` §4/§9) having no capacity to absorb a third party's contractual risk.
-- Names a real, concrete follow-up rather than leaving it implicit: the eventual Admin UI's connector connect-flow (candidate ADR #6; `docs/open-items-and-deferred-work.md` §A lists `POST /connectors/:platformId/connect` as "also build, not storied," Phase 1) needs its own copy/UX design that makes it unambiguous to the connecting party that they are signing up with the data source directly, not through SocialEngage. **This is named here as a requirement for whoever builds that flow — the AI Delivery Agent or Menno — not designed or implemented by this ADR.**
 
-**Negative**
-- **Paid-only sources are viable candidates — the real constraint is narrower than this bullet previously stated.** A data source requiring a paid tier does not disqualify it from candidacy (see the corrected "Source eligibility" bullet above): the connecting party independently obtains and pays for whatever tier the connector needs, directly with the source, under the source's own terms and billing relationship. The actual, durable constraint is that SocialEngage itself never becomes an intermediary in that billing or pricing relationship — no invoicing, reselling, marking up, or absorbing a source's cost on the connecting party's behalf. **This reverses this ADR's own immediately-prior wording**, which read a paid-only source as excluded from candidacy entirely — see the Amendment Log for the full correction and why the free-tier requirement didn't survive. This correction does not reopen or re-verify whether any specific previously-rejected candidate (RTPR, NewsAPI.org, Currents API) would now be viable: those ADRs' own historical rejections stand as their own record (ADR-0024 Accepted; ADR-0026 under separate review), and whether their *paid* tiers would satisfy the terms-permit-the-integration requirement was never checked, since it wasn't the deciding factor under the rule in force at the time.
-- Places real setup burden on the connecting party (independently signing up with GNews, Reddit, etc.) that a reseller/aggregator model would remove. This is a deliberate trade-off consistent with this project's own "own your data and access, don't recreate the black box" thesis (`Business-Case-v6.0.md` §1's root-cause analysis of the MSE "black box" criticism), but it is a genuine cost to the connecting party's onboarding experience, not a free simplification — worth naming plainly rather than treating as costless.
-- Once the Users model is actually drafted (candidate ADRs #1–#4), this principle will need to be checked against whatever entity shape it lands on. If an individual user, not the tenant, ends up being the connecting party for some platforms, ADR-0014's current credential model (built around per-tenant storage) may need an explicit per-user extension to keep satisfying this ADR's "no pooling" requirement at the right granularity — flagged here as a future consideration for that ADR, not resolved by this one.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| A future connector proposal includes a pooled/platform-held credential | N/A (design-review rejection) | Proposal fails review against this constraint before implementation begins |
+| A candidate data source's terms do not permit automated third-party use at any tier | N/A (not built) | Source is not selected as a connector candidate |
+| A candidate source requires a paid tier | N/A | Not disqualifying — connecting party obtains/pays directly; SocialEngage still does not intermediate billing |
+| A connecting party violates a source's own terms (e.g. over-polling) | N/A (source-side enforcement) | That party's own compliance responsibility; SocialEngage does not absorb liability |
+| Future connect-flow UI omits the direct-relationship disclosure | N/A (build-review finding) | Flagged as a requirement not yet satisfied when candidate ADR #6's UI work is reviewed |
+
+---
 
 ## 12. Assumptions and Dependencies
-- The existing per-tenant credential pattern (ADR-0014 / ADR-0026) remains the default until a Users model is defined.  
-- A self-funded, solo-project posture means SocialEngage has no budget or organizational capacity to absorb third-party contractual risk.  
+
+**Assumptions:**
+- The existing per-tenant credential pattern (ADR-0014/ADR-0026) remains the default until a Users model is defined.
+- A self-funded, solo-project posture means SocialEngage has no budget or organizational capacity to absorb third-party contractual risk.
 - Data-source terms are public, current, and reviewable at connector-selection time.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Future connector author proposes pooled or platform-held credentials to reduce onboarding friction | Medium | High | Enforce this BRD/ADR-0027 as a mandatory review gate and require explicit supersession if ever changed | Product Owner |
-| R-002 | Paid-tier sources create pressure to bill or resell through SocialEngage | Low | High | Reiterate BRU-005 in connector selection and business-model discussions; reject any design with pass-through pricing | Product Owner |
-| R-003 | Connecting parties misunderstand SocialEngage's role and expect support or liability for source terms | Medium | Medium | Implement connect-flow disclosure and support documentation that directs source-TOS questions to the provider | Product Owner |
-| R-004 | Users model reopens the credential-granularity question | Medium | Medium | When ADR-0014 is extended, explicitly preserve the no-pooling rule at the new per-user granularity | Technical Lead |
+**Dependencies:**
+- ADR-0002 (connector contract, technical only) — Accepted; this ADR constrains its use, does not edit it.
+- ADR-0014 (encrypted credential storage) — Accepted; this ADR constrains its scope (per-connecting-party, never pooled).
+- ADR-0024, ADR-0026 (Newswire, GNews) — Accepted; both already satisfy this principle in practice, cited as precedent.
+- ADR-0028 (credential creation authority scoped by ownership tier) — Accepted 2026-08-03; formalizes, as a related but distinct principle, that SocialEngage never creates a system-wide credential at creation time, not merely never shares one after the fact. Confirmed the same day: no change follows to this ADR's own Decision or Consequences.
+- Candidate ADRs #1–#4 (Authentication/Users model) — to be drafted; must satisfy this ADR as a constraint.
+- Candidate ADR #6 (connector connect/disconnect CRUD + UI copy) — to be drafted; must implement the disclosure requirement (5.5).
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should this principle also be reflected in a future tenant-facing document (Terms of Use, onboarding copy)? | Product Owner | Out of this ADR's own scope; worth naming as a Phase 5 production-readiness follow-up |
+| Q2 | What are the exact mechanics of "whoever connects" once the Users model exists (per-tenant vs. per-user credential storage)? | Technical Lead | Deliberately left to candidate ADRs #1–#4 |
+| Q3 | Does the Admin UI's connect-flow need a specific, standard disclosure pattern across every connector? | Whoever builds candidate ADR #6 | Named as a requirement here; exact design is a follow-up |
+| Q4 | Does a source's paid-tier signup *mechanism* itself (e.g. a credit-card-gated auto-billing trial) warrant its own explicit future evaluation criterion? | Product Owner | Legitimate, still-open consideration; not restated as a rule by this ADR, not conflated with the reversed free-tier requirement |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0027-connector-is-technical-intermediary-not-contracting-party.md`
-- BRD: `../Business-Requirements/BRD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md`
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Deep research: `docs/product-research/reports/*-deep-research.md``
-- User stories: see extracted stories above
+
+**Glossary:** see BRD-0027 §15 for connecting party, connector, credential, data source, and technical intermediary definitions.
+
+**Reference links:**
+- [ADR-0027: Connector architecture is a technical intermediary only](../../adr/0027-connector-is-technical-intermediary-not-contracting-party.md)
+- [BRD-0027](../Business-Requirements/BRD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md)
+- [ADR-0002, ADR-0014, ADR-0024, ADR-0026, ADR-0028] (referenced; not independently re-verified in this pass)
+- `docs/project docs/Stakeholder-Register.md` §S-03/S-05
+- `docs/project docs/Business-Case-v6.0.md` §4/§9
+- `docs/project docs/Project-Charter.md`
+
+**Missing sources:** No `docs/product-research/feature-designs/<feature>.md` or deep-research report exists for this ADR — it originates a principle stated directly by Menno during the session, elevating practice already present in ADR-0014/0024/0026, as BRD-0027's own Appendix confirms. No user story accompanies this ADR — a documented, named exception (see §6.2 above).
+
+**Revision history:**
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | FDD Writer (Claude) | Full regeneration: correct H1, real per-capability Section 5 breakdown (framed as governance/policy capabilities, since this ADR introduces no runtime feature), real Section 7.3 data model, replacing the prior defective BRD-shaped draft |

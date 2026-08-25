@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Wire Ingestion Events Into Real Connector Pipeline
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Wire Ingestion Events Into Real Connector Pipeline |
+| Document Title | FDD-0058 Wire Ingestion Events Into Real Connector Pipeline — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

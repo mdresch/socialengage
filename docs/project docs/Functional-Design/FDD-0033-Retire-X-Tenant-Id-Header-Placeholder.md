@@ -1,9 +1,9 @@
-# BRD-0033 — Retire `X-Tenant-Id` as the Tenant-Identity Trust Mechanism
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0033 — Retire `X-Tenant-Id` as the Tenant-Identity Trust Mechanism |
+| Document Title | FDD-0033 Retire `X-Tenant-Id` as the Tenant-Identity Trust Mechanism — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

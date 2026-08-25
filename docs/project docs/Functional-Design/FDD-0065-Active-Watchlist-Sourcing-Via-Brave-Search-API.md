@@ -1,221 +1,373 @@
-# Business Requirements Document — Active Watchlist Sourcing via Brave Search API
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — Active Watchlist Sourcing via Brave Search API |
+| Document Title | FDD-0065 Active Watchlist Sourcing via Brave Search API — Polling Connector, Post Ingestion Grounding, and LLM Enrichment — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0065-active-watchlist-sourcing-via-brave-search-api.md, ../Business-Requirements/BRD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0065-active-watchlist-sourcing-via-brave-search-api.md and the business requirements in BRD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md into functional design for **Active Watchlist Sourcing Via Brave Search API**.
-The platform's watchlists have historically been passive filters: they evaluate posts that already arrive through generic connectors such as GNews, Newswire, and tenant-owned feeds. This leaves a coverage gap—users cannot actively discover new web or news content specifically targeted at the topics and boolean queries they have chosen to monitor.
-
-This BRD authorizes the introduction of a native `brave-search` connector that turns active watchlists into discovery agents. On each polling cycle, the connector formulates a Brave Search API query from each active watchlist, fetches structured news or web results, validates each candidate against the originating watchlist's exact matching rules, and ingests the valid results as standard social posts. Each ingested post is automatically linked to the triggering watchlist through the existing `post_watchlist_matches` junction table, is deduplicated by canonical URL, and flows through the standard Azure OpenAI enrichment pipeline for sentiment, key phrases, language detection, and grounding context.
-
-The expected business value is proactive topic coverage, more accurate analytics for the Watchlist Coverage widget and `selectedTopic` filters, and a reduction in missed conversations without resorting to brittle web scraping. Tenant administrators retain full control through a self-service connector setup screen and direct billing with Brave, consistent with the project's credential-ownership and direct-billing policies.
+| Author(s) | Architecture Documentation, translated from ADR-0065 / BRD-0065 |
+| Reviewer(s) | Menno (Sponsor / Product Owner / Technical Lead) |
+| Status | Approved |
+| Related Documents | ADR-0065; BRD-0065; ADR-0063 (post-watchlist match persistence); ADR-0062 (Overview tab); ADR-0028 (credential ownership tiers); ADR-0027 (direct billing); ADR-0038 (Azure OpenAI enrichment); ADR-0055 (language enrichment); ADR-0018 (ingestion lookback/retention); ADR-0021 (Boolean AST matching); ADR-0004 (organization-as-Author precedent); Story 2.21; Story 6.30; Story 8.9 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- A new `brave-search` provider connector registered in the connector framework.
-- Active watchlist query generation for `keyword`, `hashtag`, `account`, and `boolean_query` match types.
-- Dual discovery and validation: Brave result candidates are evaluated against the originating watchlist's exact rules before ingestion.
-- Mapping of Brave Search result fields to the canonical `SocialPost` / `SocialPostSummary` schema.
-- URL canonicalisation and tenant-scoped deduplication using `(tenant_id, providerId, externalId)`.
-- Automatic, best-effort insertion of `post_watchlist_matches` rows for the triggering watchlist.
-- Grounding and AI enrichment of Brave-sourced posts through the existing enrichment pipeline.
-- Polling cadence of 1–4 hours configurable per tenant, with a 1.2-second pacing delay between requests.
-- Tenant administrator connector setup, activation, and status screen in the admin UI.
-- Quota and error telemetry exposed in connector health dashboards.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- Full-text scraping of external web pages (deferred to a future v2 evaluation).
-- Client-side execution of Brave Search queries.
-- Reselling or proxying Brave Search API billing/credits.
-- Bing Search, Google Programmable Search, or other search providers (covered by separate ADRs).
-- Push notifications, email alerts, or real-time messaging triggered by Brave-sourced posts.
-- Sub-national or city-level geocoding of discovered articles.
+### 2.1 Purpose
+
+This document translates ADR-0065 and BRD-0065 into a functional design for a new active connector, `brave-search`, that turns tenant watchlists from passive filters into active discovery queries against the Brave Search API — ingesting validated results as standard posts, linking them to their triggering watchlist, and enriching them through the existing AI pipeline.
+
+ADR-0065's Status is **Accepted** (2026-08-20), and BRD-0065 is **Approved**; this FDD reflects an already-approved design (Story 2.21 Implemented, Story 6.30 Built), not a draft for review.
+
+### 2.2 Scope
+
+- **In scope:**
+  - The `brave-search` connector: registration, active-watchlist-driven query generation, dual discovery/validation, pacing/quota-safe polling.
+  - Mapping of Brave Search results to the canonical `SocialPost`/`SocialPostSummary` schema, including Publication/Domain-as-Author.
+  - URL canonicalization and deduplication via the existing `(tenant_id, providerId, externalId)` unique key.
+  - Automatic, best-effort linkage of ingested posts to their triggering watchlist in `post_watchlist_matches` (ADR-0063).
+  - Grounding and AI enrichment integration for Brave-sourced posts.
+  - Tier-2 tenant-owned credential storage, direct billing, quota-safe pacing/cadence, and connector telemetry.
+  - The tenant admin UI connector setup/activation/status screen (Story 6.30).
+- **Out of scope:**
+  - Full-text scraping of external web pages (deferred to a future v2 evaluation).
+  - Client-side execution of Brave Search queries.
+  - Reselling or proxying Brave Search API billing/credits.
+  - Other search providers (Bing is covered separately by ADR-0066).
+  - Push notifications, email alerts, or real-time messaging triggered by Brave-sourced posts.
+  - Sub-national/city-level geocoding of discovered articles.
+
+### 2.3 Target Audience
+
+Backend engineers (`social-listening-core` connector framework), frontend engineers (`social-listening-admin` connector UI), QA, and the product owner reviewing traceability from BRD-0065 through implementation.
+
+---
 
 ## 3. Context and Background
-See ADR Context.
-The platform's watchlists have historically been passive filters: they evaluate posts that already arrive through generic connectors such as GNews, Newswire, and tenant-owned feeds. This leaves a coverage gap—users cannot actively discover new web or news content specifically targeted at the topics and boolean queries they have chosen to monitor.
 
-This BRD authorizes the introduction of a native `brave-search` connector that turns active watchlists into discovery agents. On each polling cycle, the connector formulates a Brave Search API query from each active watchlist, fetches structured news or web results, validates each candidate against the originating watchlist's exact matching rules, and ingests the valid results as standard social posts. Each ingested post is automatically linked to the triggering watchlist through the existing `post_watchlist_matches` junction table, is deduplicated by canonical URL, and flows through the standard Azure OpenAI enrichment pipeline for sentiment, key phrases, language detection, and grounding context.
-
-The expected business value is proactive topic coverage, more accurate analytics for the Watchlist Coverage widget and `selectedTopic` filters, and a reduction in missed conversations without resorting to brittle web scraping. Tenant administrators retain full control through a self-service connector setup screen and direct billing with Brave, consistent with the project's credential-ownership and direct-billing policies.
+- **Problem:** Watchlists have historically been purely reactive (ADR-0006/Story 3.3/ADR-0021) — they evaluate posts that already arrive through passive connectors (GNews, Newswire, tenant-owned feeds). The platform cannot actively discover new content specifically targeted at a tenant's defined watchlists unless it happens to appear in generic feeds by chance.
+- **Business/user value:** Proactive topic coverage; more accurate, real data for the Watchlist Coverage widget and `selectedTopic` filters (ADR-0062/ADR-0063) instead of gaps for narrowly defined or emerging topics; reduced missed conversations without resorting to brittle scraping.
+- **Source requirements:** ADR-0065 (Accepted 2026-08-20); BRD-0065 (Approved 2026-08-20); follow-up to ADR-0063 and ADR-0062; direct request from Menno to align Topics/watchlists and evaluate Brave Search for active discovery and grounding/enrichment.
+- **Constraints:**
+  - Brave Search API free tier: 2,000 requests/month, 1 req/sec ceiling.
+  - Must respect the 1 req/sec limit via a 1.2-second minimum pacing delay between sequential requests within a poll cycle.
+  - Default polling cadence 1–4 hours (configurable per tenant), not 15 minutes, to remain quota-safe.
+  - The API token is a Tier-2, tenant-owned credential (ADR-0028) with direct tenant-to-Brave billing (ADR-0027); SocialEngage never resells or proxies Brave credits.
+  - Only publicly accessible web/news URLs and snippets are ingested — no private/authenticated content, no author IPs or private audience data.
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Enable proactive discovery of web and news content for active watchlists | Brave-sourced posts appear in `GET /v1/posts?watchlistId=<id>` for active watchlists within one polling cycle |
-| 2 | Close the analytics feedback loop for watchlist coverage | Watchlist Coverage widget and `selectedTopic` filters are populated with real, actively sourced data |
-| 3 | Maintain the same precision as passive watchlist matching | 100% of ingested Brave-sourced posts satisfy the originating watchlist's matching rules |
-| 4 | Operate within Brave Search API quota and rate limits | No HTTP 429 violations and API calls paced to the 1 req/sec ceiling |
-| 5 | Provide self-service tenant administration | Tenant admins can connect, activate, and monitor the connector without engineering support |
-
----
-
-**Positive consequences (from ADR):**
-**Positive**
-
-- **Active discovery:** Watchlists become active web-scouring agents. The platform proactively finds relevant content rather than waiting for it to appear in generic feeds.
-- **Closes the Overview Tab loop:** The Watchlist Coverage widget and `selectedTopic` filters (ADR-0062/ADR-0063) now receive targeted, real data generated directly from active watchlist queries.
-- **Reuses existing infrastructure:** Leverages the ingestion runner framework, ADR-0063 junction table, and Azure OpenAI enrichment connector with minimal new surface area. Brave-sourced posts flow through the same stores, APIs, and UI paths.
-- **Deterministic mapping:** Using Brave's structured JSON avoids the brittleness of scraping and produces consistent, deduplicable results via URL-based deduplication.
-- **Privacy & compliance alignment:** The connector only ingests publicly accessible web/news URLs and their snippets; no author IPs or private audience data are collected (consistent with the analysis in ADR-0064).
-
-**Negative**
-
-- **API cost & quota management:** Brave Search API is metered. Polling many active watchlists at high frequency can incur meaningful cost. Requires careful tenant-tier configuration and observability.
-- **Snippet-only representation:** Brave returns structured snippets/descriptions rather than full raw HTML. Very long-form articles are represented by their summary excerpt. Deep analysis that requires full article body is limited without an additional fetch step (Open Question 2).
-- **Query fidelity:** For complex boolean watchlists, Brave's interpretation of boolean syntax may differ slightly from the in-process `matchesAst()` evaluator (ADR-0021). The discovery query (Brave) and the matching semantics (ingestion-time evaluator) serve different purposes (find vs. validate), but this difference is worth monitoring.
-- **New connector operational surface:** Introduces a new provider (`brave-search`) with its own polling scheduler, quota tracking, and failure modes. Must be integrated into existing connector health dashboards.
+| G1 | Enable proactive discovery of web and news content for active watchlists | Brave-sourced posts appear in `GET /v1/posts?watchlistId=<id>` for active watchlists within one polling cycle |
+| G2 | Close the analytics feedback loop for watchlist coverage | Watchlist Coverage widget and `selectedTopic` filters are populated with real, actively sourced data |
+| G3 | Maintain the same precision as passive watchlist matching | 100% of ingested Brave-sourced posts satisfy the originating watchlist's matching rules |
+| G4 | Operate within Brave Search API quota and rate limits | No HTTP 429 violations; API calls paced to the 1 req/sec ceiling |
+| G5 | Provide self-service tenant administration | Tenant admins can connect, activate, and monitor the connector without engineering support |
 
 ---
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall provide a `brave-search` connector that implements the existing `SocialConnector` provider framework. | Must | Registered in `connectorRegistry.ts` with `providerId: 'brave-search'`, `authMode: 'api_key'`, and `deliveryMode: 'poll'`. | Engineering |
-| BR-002 | The system shall generate Brave Search queries from each active tenant watchlist based on its `matchType`. | Must | `keyword`/`hashtag`/`account` terms are formatted as an OR expression; `boolean_query` watchlists pass a Brave-compatible formatted string. | Engineering |
-| BR-003 | The system shall validate every Brave result candidate against the originating watchlist's rules before ingestion. | Must | Only candidates satisfying `matchesWatchlist()` or `matchesAst()` are ingested; no false positives are persisted. | Engineering |
-| BR-004 | The system shall map each accepted Brave result to the canonical `SocialPost` schema and canonicalise the URL for `externalId`. | Must | `externalId` equals the normalised canonical URL; duplicate `(tenant_id, 'brave-search', externalId)` rows are not created. | Engineering |
-| BR-005 | The system shall link each ingested Brave-sourced post to the originating watchlist in `post_watchlist_matches`. | Must | `insertPostWatchlistMatches()` is called idempotently and does not block ingestion on failure. | Engineering |
-| BR-006 | The system shall pass Brave-sourced posts through the existing AI enrichment pipeline with an explicit grounding pass. | Must | Enrichment outputs sentiment, key phrases, detected language, and a grounding context for the watchlist. | Engineering |
-| BR-007 | The system shall allow a Tenant Administrator to connect, activate, and monitor the Brave Search connector from the admin UI. | Must | Setup screen captures `X-Subscription-Token`, submits with `ownerType: 'tenant'`, and shows health/polling status. | Engineering |
-| BR-008 | The system shall support a configurable 1–4 hour polling cadence and 1.2-second intra-poll pacing. | Should | Default interval and pacing are enforced; no HTTP 429 is triggered under normal load. | Engineering |
-| BR-009 | The system shall expose quota and health telemetry for the `brave-search` connector. | Should | Connector status view displays last attempt, last success, poll interval, and a health badge. | Engineering |
 
-### 5.1 Architecture Decision
-See ADR Decision.
+### 5.1 Feature / Capability: `brave-search` Connector Registration
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant Administrator | Configures and activates the Brave Search connector; manages API key and budget | High | Simple, self-service setup; clear quota and status visibility |
-| Tenant User / Analyst | Consumes watchlist-driven posts, coverage charts, and analytics | High | Relevant, timely, accurate content with no false positives |
-| Product Owner | Owns feature prioritisation and acceptance | Medium | Measurable coverage improvement and low operational overhead |
-| Platform Operations | Monitors connector health and quota across tenants | Medium | Telemetry, alerts, and graceful degradation under quota pressure |
-| Brave Search (Vendor) | Provides the upstream API service | Low | Contractual, direct-billing relationship with each tenant |
+- **Description:** Registers a new native ingestion connector implementing the existing `SocialConnector` provider framework.
+- **Triggers:** Connector framework startup / registry load.
+- **Inputs:** N/A (static registration).
+- **Processing:** Registers `providerId: 'brave-search'`, `authMode: 'api_key'`, `deliveryMode: 'poll'`, exposing `poll(tenantId: string)`, in `connectorRegistry.ts` — the same pattern every other native connector follows.
+- **Outputs:** A selectable connector in the admin UI's platform list and a poll target in the live scheduler.
+- **Error handling:** N/A at registration.
+- **Edge cases:** N/A.
+
+### 5.2 Feature / Capability: Active-Watchlist Query Generation (Dual Discovery)
+
+- **Description:** For each of a tenant's active watchlists, constructs and issues a Brave Search API query tailored to that watchlist's match type.
+- **Triggers:** A scheduled `poll(tenantId)` invocation from the live polling scheduler (Story 1.13/1.14).
+- **Inputs:** The tenant's active watchlists (`listActiveWatchlistsForTenant(tenantId)`), each with its `matchType` (`keyword`/`hashtag`/`account`/`boolean_query`) and rule definition.
+- **Processing:**
+  - For `keyword`/`hashtag`/`account` watchlists, formats `terms[]` into an OR-expression search query (e.g. `"term1" OR "term2"`).
+  - For `boolean_query` watchlists (ADR-0021), formats the stored AST/boolean expression into Brave-compatible search syntax.
+  - Calls `/res/v1/news/search` by default (configurable to `/res/v1/web/search`), including the tenant's `X-Subscription-Token`, a `freshness` parameter aligned to ADR-0018's ingestion lookback window, and `offset`/`count` pagination to avoid over-fetching in a single call.
+- **Outputs:** A set of candidate search results (title, URL, snippet/description, publication date, source domain) per watchlist.
+- **Error handling:** Handled at the API-call level (5.5).
+- **Edge cases:** A watchlist with no active matches in Brave's index yields zero candidates for that cycle — not an error.
+
+### 5.3 Feature / Capability: Candidate Validation Filter
+
+- **Description:** Re-evaluates every Brave-returned candidate against the triggering watchlist's exact matching rules before ingestion, guaranteeing identical precision to passive feeds.
+- **Triggers:** Immediately after each Brave Search API call returns candidates for a watchlist.
+- **Inputs:** Candidate title + snippet/description; the triggering watchlist's exact rule definition.
+- **Processing:** Evaluates each candidate via the existing `matchesWatchlist()` (keyword/hashtag/account) or `matchesAst()` (boolean_query) — the same in-process evaluators used by passive ingestion. No new matching logic is introduced.
+- **Outputs:** A filtered subset of candidates that strictly satisfy the watchlist's rule predicate.
+- **Error handling:** Candidates failing validation are silently discarded — not ingested, not logged as errors.
+- **Edge cases:** Because search engines use broad matching/stemming, a candidate may be returned by Brave but fail strict validation (e.g. stemmed match, not exact); this is expected and by design — it guarantees zero false-positive drift between active search and passive ingestion (ADR-0065 Consequences, Query fidelity risk named as an open monitoring item).
+
+### 5.4 Feature / Capability: Canonical Mapping and Deduplication
+
+- **Description:** Maps each validated candidate into the platform's canonical `SocialPost`/`SocialPostSummary` schema, using Publication/Domain as the canonical Author and the canonicalized URL for deduplication.
+- **Triggers:** A candidate passes validation (5.3).
+- **Inputs:** The Brave result's `url`, `title`, `description`/`snippet`, `age`/`published`/`page_age`, `source`/`domain`, and optional `language`.
+- **Processing:**
+  - `externalId` and `url` are set from the canonicalized result URL (following redirects where available) to maximize deduplication effectiveness.
+  - `title` is mapped to `title` (trimmed to a sensible length).
+  - `description`/`snippet` is mapped to `bodyMarkdown` as the primary body text.
+  - `age`/`published`/`page_age` is parsed into `publishedAt`; if no publication date is returned, `publishedAt = now()` at ingestion time.
+  - `providerId = 'brave-search'`; the source domain is stored in the post's source metadata for display/filtering.
+  - If Brave returns a language hint, it seeds `enrichment.detectedLanguage` as an initial value, subject to override by the standard enrichment pass (ADR-0055).
+  - **Publication/Domain-as-Author (ADR-0004 generalization):** `author.id = 'brave-search:' + domain`; `author.username = domain` (e.g. `bbc.com`); `author.displayName = sourceName || domain`; `author.platform = 'brave-search'`.
+  - Deduplication reuses the standard URL-based path (ADR-0005): `INSERT` respects the existing unique key on `(tenant_id, providerId, externalId)`, so the same article discovered across multiple polling cycles or overlapping watchlist queries is never ingested twice.
+- **Outputs:** A new `SocialPost` row (or a no-op if already present via the unique key).
+- **Error handling:** A malformed or unparseable result is skipped for that candidate; it does not fail the rest of the poll cycle.
+- **Edge cases:** Very long-form articles are represented only by Brave's summary excerpt, not the full article body (named limitation, Open Question 2).
+
+### 5.5 Feature / Capability: Automatic Watchlist Linking on Ingestion
+
+- **Description:** Explicitly associates every successfully ingested Brave-sourced post with the watchlist whose query produced it.
+- **Triggers:** Successful ingestion of a validated, deduplicated candidate (5.4).
+- **Inputs:** The ingested post's ID and the triggering watchlist's ID, plus `tenantId`.
+- **Processing:** Creates a `(post_id, watchlist_id, tenant_id)` pair and persists it via `insertPostWatchlistMatches()` (ADR-0063) using `INSERT ... ON CONFLICT (post_id, watchlist_id) DO NOTHING` — best-effort, must not block ingestion.
+- **Outputs:** A `post_watchlist_matches` row linking the post to its discovering watchlist; the post becomes immediately queryable via `GET /v1/posts?watchlistId=<id>` and available to the Watchlist Coverage widget.
+- **Error handling:** A failure to persist the link is logged (same telemetry path as ADR-0063's own best-effort semantics) but never fails or retries the ingestion of the post itself.
+- **Edge cases:** A post independently discoverable by two different active watchlists' queries in the same or different cycles produces two distinct junction rows (one per watchlist), consistent with the many-to-many junction design.
+
+### 5.6 Feature / Capability: Grounding and LLM Enrichment Integration
+
+- **Description:** Runs Brave-sourced posts through the existing AI enrichment pipeline with an explicit grounding pass that explains relevance to the triggering watchlist.
+- **Triggers:** A Brave-sourced post completes ingestion (5.4/5.5).
+- **Inputs:** The post's `bodyMarkdown` (Brave snippet), title, URL, source domain, and the triggering `watchlistId`/watchlist query context.
+- **Processing:** The enrichment runner (`azureOpenAiConnector.ts`, ADR-0038) extracts and stores: sentiment (`enrichment.sentiment`, positive/neutral/negative with score); key phrases (`enrichment.keyPhrases`); detected language (`enrichment.detectedLanguage`, ISO 639-1, overriding any Brave-provided hint per ADR-0055); and a grounding context/executive summary explaining why the article matches the watchlist criteria, persisted in the `post_enrichments` store (e.g. `enrichment.groundingContext` or `enrichment.summary`).
+- **Outputs:** A fully enriched post, indistinguishable in the UI/API from posts sourced by native feeds — supporting sentiment filters, language filters, the AI Spike Storyteller, and all existing analytics aggregations.
+- **Error handling:** Enrichment failures follow the pipeline's existing error/retry behavior (ADR-0038); not respecified here.
+- **Edge cases:** N/A beyond standard enrichment-pipeline edge cases.
+
+### 5.7 Feature / Capability: Credential, Rate-Limit, and Cadence Management
+
+- **Description:** Manages the tenant-owned Brave API credential and enforces quota-safe request pacing and polling cadence.
+- **Triggers:** Connector connect/activate (credential storage); every scheduled poll cycle (pacing/cadence).
+- **Inputs:** Tenant-submitted `X-Subscription-Token`; the tenant's configured (or default) poll interval.
+- **Processing:**
+  - Stores the token as a Tier-2 tenant-owned credential (`platform_credentials`, `owner_type: 'tenant'`), configured by `tenant_admin` (ADR-0028).
+  - All Brave API calls include the `X-Subscription-Token` header.
+  - Default polling cadence is 1–4 hours (configurable per tenant), not 15 minutes, to stay quota-safe against the free tier's 2,000 req/mo limit.
+  - Within a poll cycle, queries across multiple active watchlists execute sequentially with a minimum 1.2-second pacing delay between requests, respecting Brave's 1 req/sec ceiling and avoiding HTTP 429.
+  - Records API call counts and quota usage in connector telemetry (ADR-0009/ADR-0010/ADR-0070); if a tenant approaches their quota limit, logs a warning and gracefully defers further queries until the next period.
+- **Outputs:** A connected, activatable connector with observable health/quota telemetry.
+- **Error handling:** HTTP 401/403 marks the connector `failing` (invalid credential); HTTP 429 triggers backoff and is recorded in telemetry, without data loss.
+- **Edge cases:** A tenant that never obtains a Brave subscription simply cannot activate the connector — no default/shared credential exists (Tier-2 has no system-wide fallback, per ADR-0028).
+
+### 5.8 Feature / Capability: Tenant Admin Connector Setup, Activation, and Status Screen
+
+- **Description:** Provides the self-service admin UI surface for connecting, activating, deactivating, and monitoring the Brave Search connector.
+- **Triggers:** A `tenant_admin` navigates to the Connectors screen.
+- **Inputs:** The tenant admin's Brave `X-Subscription-Token`; connector activation toggle actions.
+- **Processing:**
+  - Adds `brave-search` to the `PLATFORMS` array (`id: 'brave-search'`, `name: 'Brave Search'`, `category: 'Ingestion'`, `authMode: 'api_key'`, `tenantScopeAllowed: true`, `personalScopeAllowed: false`).
+  - The Connect modal captures the API key with an explicit ADR-0027 billing disclaimer (tenant contracts directly with Brave) and submits via `POST /api/connectors/brave-search/connect` with `ownerType: 'tenant'`.
+  - On success, the card shows a connected state with a masked credential indicator.
+  - `ActivateDeactivateButton` (gated on `tenant_admin`) toggles the connector's active state via `/api/connectors/brave-search/activate` / `/deactivate`.
+  - The connector status screen shows Last Ingestion Attempt, Last Successful Ingestion, polling cadence (e.g. "Poll interval: 1h–4h"), and a health badge (`Healthy`/`Degraded`/`Failing`/`Stalled`); a "Re-sync now" button is available to `tenant_admin`.
+- **Outputs:** A connected, monitorable connector state visible in the admin UI.
+- **Error handling:** Invalid credential submission surfaces the standard connect-modal error path; connector health state reflects 401/403/429 outcomes from 5.7.
+- **Edge cases:** N/A beyond standard connector UI patterns already established by Story 6.3/6.5.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 2.21 | epic-2-ingestion-connectors-and-rate-limits.md | As Tenant User or Tenant-Admin, I want the platform to actively query the Brave Search API for my active watchlists, validate matching articles, and ingest t... | **Connector Implementation (`braveSearchConnector.ts`):**; **Active Watchlist Querying & Pacing Loop:**; **Dual Discovery & Validation Filter:**; **Publicati... |
-| Story 6.30 | epic-6-tenant-admin-ui.md | As Tenant Administrator, I want to connect, activate, manage, and monitor the Brave Search API connector using my organization's Brave API key from the admin... | **Platform Definition & Branding (`ConnectorsClient.tsx` & `ConnectorStatusClient.tsx`):**; **Connect Modal & Credential Submission (`ConnectModal`):**; **Ac... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Tenant Administrator | Connects, activates, deactivates, and monitors the Brave Search connector; owns the API credential |
+| Tenant User / Analyst | Consumes Brave-sourced posts, coverage charts, and analytics |
+| Backend Engineer | Owns the connector implementation, query generation, validation, and enrichment integration |
+| Platform Operations | Monitors connector health and quota across tenants |
+| Brave Search (Vendor) | Provides the upstream API; tenant contracts directly for billing |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria (summary) |
+|---|---|---|---|---|
+| Story 2.21 | Tenant User / Tenant-Admin | Have the platform actively query Brave Search for my active watchlists, validate matching articles, and ingest them linked to their watchlists | My monitored topics are proactively discovered across the web/news index rather than waiting for them to randomly cross generic feeds | `braveSearchConnector.ts` implements `SocialConnector`; active-watchlist querying with 1.2s pacing; dual discovery/validation via `matchesWatchlist()`/`matchesAst()`; Publication/Domain-as-Author mapping; canonical ingestion + `post_watchlist_matches` linking; 401/403/429 handling; 1–4h cadence. **Implemented.** |
+| Story 6.30 | Tenant Administrator | Connect, activate, manage, and monitor the Brave Search API connector using my organization's API key from the admin portal | Our tenant can actively discover web/news content for our watchlists without backend developer assistance | `brave-search` added to `PLATFORMS`; Connect modal with API key field and ADR-0027 billing disclaimer; activation/deactivation gated on `tenant_admin`; status screen with health badge, last attempt/success, poll cadence, "Re-sync now." **Built 2026-08-21.** |
+| Story 8.9 (consumer) | Tenant User / Tenant-Admin | See Brave-sourced posts reflected in the `selectedTopic` filter and Watchlist Coverage widget | Coverage/filter data is real and actively sourced, not just passively arrived | Consumes `GET /v1/posts?watchlistId` and `post_watchlist_matches`, unaffected by which connector produced the match (ADR-0063). |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Connector setup flow (tenant admin):**
+1. Tenant Administrator opens the Connectors screen and clicks "Connect" on the Brave Search card.
+2. Submits their Brave `X-Subscription-Token` via the Connect modal (with ADR-0027 billing disclaimer shown).
+3. Credential is stored as a Tier-2 tenant-owned credential (`platform_credentials`, `owner_type: 'tenant'`).
+4. Tenant Administrator toggles the connector active via `ActivateDeactivateButton`.
+5. The connector becomes eligible for the live polling scheduler.
+
+**Poll cycle flow (backend):**
+1. Scheduler invokes `poll(tenantId)` for the tenant's active `brave-search` connector.
+2. Connector loads the tenant's active watchlists.
+3. For each watchlist (sequentially, 1.2s apart): builds a match-type-appropriate query; calls `/res/v1/news/search` (or `/res/v1/web/search`) with `X-Subscription-Token`, `freshness`, and pagination.
+4. Each returned candidate is validated in-process against the triggering watchlist's exact rules.
+5. Validated candidates are canonicalized, deduplicated by URL, and inserted as `SocialPost` rows with `providerId: 'brave-search'`.
+6. Each newly ingested post is linked to its triggering watchlist in `post_watchlist_matches` (best-effort).
+7. The post flows into the AI enrichment pipeline for sentiment, key phrases, language, and grounding context.
+8. Quota/call-count telemetry is recorded; on 429 the connector backs off; on 401/403 the connector is marked `failing`.
+9. The next poll cycle is scheduled 1–4 hours later.
+
+**Dashboard consumption flow (downstream, unchanged by this ADR):**
+1. Tenant User views the Overview tab's `selectedTopic` filter or Watchlist Coverage widget (Story 8.9).
+2. Both call the existing `GET /v1/posts?watchlistId=<id>` / `GET /v1/watchlists` endpoints (ADR-0063), which now also return Brave-sourced posts alongside posts from any other connector, indistinguishably.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| Active watchlists (`watchlists`) | Match rules (`matchType`, `terms`, `boolean_query`) and active flag for the tenant. | `social-listening-core` database | Tenant Admin | Tenant-confidential |
-| Brave API token (`platform_credentials`) | `X-Subscription-Token` stored as a Tier-2 tenant credential. | Tenant Admin entry in UI | Tenant Admin | High (secret) |
-| Brave Search result | Structured JSON with `url`, `title`, `description`/`snippet`, `age`/`published`, `source`/`domain`, and optional `language`. | Brave Search API | Brave (vendor) | Public web content |
-| `SocialPost` row (`social_posts`) | Canonical post record with `externalId` = canonical URL, `providerId: 'brave-search'`, title, body, publishedAt, source, and enrichment. | `brave-search` connector | System | Tenant-scoped |
-| `post_watchlist_matches` | Junction rows linking each ingested Brave post to its originating watchlist. | `brave-search` connector | System | Tenant-scoped |
-| `post_enrichments` | Grounding context, sentiment, key phrases, and detected language. | Azure OpenAI enrichment | System | Tenant-scoped |
-| Connector telemetry | Call counts, quota usage, health, and last success/failure timestamps. | `brave-search` connector / scheduler | Platform Operations | Operational |
+
+### 7.1 Data Inputs
+
+- Active watchlist definitions (`matchType`, `terms[]`, `boolean_query`) via `listActiveWatchlistsForTenant()`.
+- Brave Search API responses: `url`, `title`, `description`/`snippet`, `age`/`published`/`page_age`, `source`/`domain`, optional `language`.
+- The tenant's `X-Subscription-Token` credential.
+
+### 7.2 Data Outputs
+
+- New `SocialPost`/`social_posts` rows with `providerId: 'brave-search'`.
+- New `post_watchlist_matches` rows linking Brave-sourced posts to their triggering watchlist.
+- Enrichment output in `post_enrichments` (sentiment, key phrases, detected language, grounding context).
+- Connector telemetry (call counts, quota usage, health, last success/failure timestamps).
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `SocialPost` / `social_posts` (existing, populated by this connector) | `externalId` (canonical URL), `url`, `title`, `bodyMarkdown` (Brave snippet), `publishedAt`, `providerId: 'brave-search'`, source domain metadata, `author.*` (domain-as-Author), `enrichment.*` | Unique on `(tenant_id, providerId, externalId)`; many-to-many to `watchlists` via `post_watchlist_matches` |
+| `post_watchlist_matches` (existing, ADR-0063) | `post_id`, `watchlist_id`, `tenant_id`, `matched_at` | Links each Brave-sourced post to its triggering watchlist, best-effort insert |
+| `platform_credentials` (existing) | `owner_type: 'tenant'`, encrypted `X-Subscription-Token` | Tier-2 tenant-owned credential (ADR-0028) for the `brave-search` connector |
+| `post_enrichments` (existing) | `sentiment`, `keyPhrases`, `detectedLanguage`, `groundingContext`/`summary` | One-to-one with the ingested post; populated by the Azure OpenAI enrichment pass |
+| Connector telemetry (existing) | call counts, quota usage, health state, last attempt/success timestamps | Scoped per tenant per connector (`brave-search`) |
+
+### 7.4 Validation Rules
+
+- Every candidate must pass `matchesWatchlist()` or `matchesAst()` re-evaluation against the triggering watchlist's exact rule before ingestion — no candidate is ingested on Brave's relevance ranking alone.
+- `externalId` must equal the normalized canonical URL; the existing `(tenant_id, providerId, externalId)` uniqueness prevents duplicate rows.
+- Requests must be spaced at least 1.2 seconds apart within a poll cycle.
+- The default poll interval must fall within 1–4 hours unless explicitly overridden per tenant.
+- The Brave API token must be stored only as an encrypted, tenant-owned (`owner_type: 'tenant'`) credential — never exposed to browser JS.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | Only watchlists marked `active` for the tenant are used for Brave Search discovery. |
-| BRU-002 | `keyword`/`hashtag`/`account` watchlists are translated into an OR expression of quoted terms for Brave Search. |
-| BRU-003 | `boolean_query` watchlists may be passed directly to Brave using a syntax-compatible formatting of the stored AST. |
-| BRU-004 | Every Brave result candidate must pass the originating watchlist's exact rule evaluation before it is ingested. |
-| BRU-005 | The source domain is treated as the canonical `Author` for the ingested post. |
-| BRU-006 | The Brave Search API token is a Tier-2, tenant-owned credential; the tenant contracts directly with Brave. |
-| BRU-007 | Default active watchlist polling cadence is 1–4 hours, with a 1.2-second pacing delay between requests. |
-| BRU-008 | `post_watchlist_matches` insertion is best-effort and must never block post ingestion. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BRU-001 | Only watchlists marked `active` for the tenant are used for Brave Search discovery. | Query generation |
+| BRU-002 | `keyword`/`hashtag`/`account` watchlists are translated into an OR expression of quoted terms for Brave Search. | Query generation |
+| BRU-003 | `boolean_query` watchlists may be passed directly to Brave using a syntax-compatible formatting of the stored AST. | Query generation |
+| BRU-004 | Every Brave result candidate must pass the originating watchlist's exact rule evaluation before it is ingested. | Validation |
+| BRU-005 | The source domain is treated as the canonical `Author` for the ingested post. | Author mapping |
+| BRU-006 | The Brave Search API token is a Tier-2, tenant-owned credential; the tenant contracts directly with Brave. | Credential management |
+| BRU-007 | Default active watchlist polling cadence is 1–4 hours, with a 1.2-second pacing delay between requests. | Scheduling |
+| BRU-008 | `post_watchlist_matches` insertion is best-effort and must never block post ingestion. | Junction linking |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0063 — `post_watchlist_matches` junction table and `GET /v1/posts?watchlistId=<id>` filter | Internal | Engineering | Already Accepted (2026-08-19) |
-| D-002 | ADR-0062 — Analytics Dashboard Overview enhancements and Watchlist Coverage widget | Internal | Engineering | Already Accepted (2026-08-19) |
-| D-003 | ADR-0028 — Tier-2 credential ownership (`owner_type: 'tenant'`) | Internal | Engineering | Already Accepted |
-| D-004 | ADR-0027 — Direct billing: tenants contract directly with Brave | Internal / Commercial | Product Owner | Already Accepted |
-| D-005 | ADR-0038 — Azure OpenAI enrichment pipeline | Internal | Engineering | Already Built |
-| D-006 | ADR-0055 — Language detection and enrichment schema | Internal | Engineering | Already Accepted |
-| D-007 | ADR-0018 — Ingestion lookback and retention cadence | Internal | Engineering | Already Accepted |
-| D-008 | Story 2.21 — `brave-search` backend connector | Internal | Engineering | Implemented |
-| D-009 | Story 6.30 — Brave Search admin UI connector setup and status | Internal | Engineering | Implemented |
-| D-010 | Brave Search API subscription and terms of service | External | Tenant / Product Owner | Tenant obtains token before use |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| Brave Search API (`/res/v1/news/search`, `/res/v1/web/search`) | Outbound, external | Discovery queries against the tenant's active watchlists | REST / JSON over HTTPS, `X-Subscription-Token` header |
+| `listActiveWatchlistsForTenant()` (`social-listening-core`) | Internal, read | Supplies the set of active watchlists to query | In-process function call |
+| `matchesWatchlist()` / `matchesAst()` (`social-listening-core`) | Internal, read | Validates candidates before ingestion | In-process function call |
+| `insertPostWatchlistMatches()` (ADR-0063) | Internal, write | Links ingested posts to their triggering watchlist | In-process function call |
+| `azureOpenAiConnector.ts` (ADR-0038) | Internal, write | Runs grounding/enrichment on Brave-sourced posts | In-process function call |
+| `platform_credentials` store | Internal, storage | Persists the tenant-owned Brave API token | Encrypted storage |
+| Connector-health telemetry (ADR-0009/ADR-0010/ADR-0070) | Internal, outbound | Records call counts, quota usage, and health state | Existing telemetry mechanism |
+| `social-listening-admin` Connectors UI (Story 6.30) | Inbound/outbound | Tenant admin connect/activate/monitor flow | REST / JSON over HTTPS |
+| Live polling scheduler (Story 1.13/1.14) | Internal, trigger | Invokes `poll(tenantId)` on the configured 1–4 hour cadence | In-process scheduler |
 
 ---
 
-- Tenants obtain and manage their own Brave Search API subscription token.
-- Only publicly accessible web/news URLs and snippets are ingested; no private or authenticated content.
-- Watchlists are already defined and can be marked active for a tenant.
-- The existing `post_watchlist_matches` junction table and `GET /v1/posts?watchlistId=<id>` filter are available.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Brave Search API calls shall not exceed a 1 req/sec effective rate. | Performance | Must | Pacing delay of at least 1.2 seconds between sequential requests within a poll cycle. |
-| NFR-002 | The connector shall handle HTTP 429, 401, and 403 responses without data loss. | Reliability | Must | 429 triggers backoff and telemetry; 401/403 marks the connector as `failing`. |
-| NFR-003 | The Brave Search API token shall be stored as a tenant-owned, encrypted credential. | Security | Must | Stored in `platform_credentials` with `owner_type: 'tenant'` and never exposed in the browser. |
-| NFR-004 | The connector shall only ingest publicly accessible URLs and snippets. | Compliance | Must | No IP, audience, or private data is collected from Brave results. |
-| NFR-005 | Brave-sourced posts shall be indistinguishable from native feed posts in the posts API and analytics. | Maintainability | Should | All existing filters, sorting, and aggregation endpoints work without client-side changes. |
+
+- **Performance:** Sequential per-watchlist queries with a mandatory 1.2-second pacing delay ensure the connector never exceeds Brave's 1 req/sec ceiling (NFR-001).
+- **Reliability:** HTTP 429 triggers backoff and telemetry rather than data loss; HTTP 401/403 marks the connector `failing` so it is visibly actionable rather than silently degraded (NFR-002).
+- **Security:** The API token is stored encrypted as a Tier-2 tenant-owned credential and never exposed in browser JS (NFR-003).
+- **Compliance/privacy:** Only publicly accessible URLs and snippets are ingested; no IP, audience, or private data is collected from Brave results, consistent with the privacy posture established in ADR-0064 (NFR-004).
+- **Maintainability:** Brave-sourced posts are indistinguishable from native-feed posts in the posts API and analytics — all existing filters, sorting, and aggregation endpoints work without client-side changes (NFR-005).
+- **Cost/quota management:** API cost is metered; polling many active watchlists at high frequency can incur meaningful cost, requiring careful tenant-tier configuration, quota telemetry, and graceful deferral near quota limits.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
 
-- **Active discovery:** Watchlists become active web-scouring agents. The platform proactively finds relevant content rather than waiting for it to appear in generic feeds.
-- **Closes the Overview Tab loop:** The Watchlist Coverage widget and `selectedTopic` filters (ADR-0062/ADR-0063) now receive targeted, real data generated directly from active watchlist queries.
-- **Reuses existing infrastructure:** Leverages the ingestion runner framework, ADR-0063 junction table, and Azure OpenAI enrichment connector with minimal new surface area. Brave-sourced posts flow through the same stores, APIs, and UI paths.
-- **Deterministic mapping:** Using Brave's structured JSON avoids the brittleness of scraping and produces consistent, deduplicable results via URL-based deduplication.
-- **Privacy & compliance alignment:** The connector only ingests publicly accessible web/news URLs and their snippets; no author IPs or private audience data are collected (consistent with the analysis in ADR-0064).
-
-**Negative**
-
-- **API cost & quota management:** Brave Search API is metered. Polling many active watchlists at high frequency can incur meaningful cost. Requires careful tenant-tier configuration and observability.
-- **Snippet-only representation:** Brave returns structured snippets/descriptions rather than full raw HTML. Very long-form articles are represented by their summary excerpt. Deep analysis that requires full article body is limited without an additional fetch step (Open Question 2).
-- **Query fidelity:** For complex boolean watchlists, Brave's interpretation of boolean syntax may differ slightly from the in-process `matchesAst()` evaluator (ADR-0021). The discovery query (Brave) and the matching semantics (ingestion-time evaluator) serve different purposes (find vs. validate), but this difference is worth monitoring.
-- **New connector operational surface:** Introduces a new provider (`brave-search`) with its own polling scheduler, quota tracking, and failure modes. Must be integrated into existing connector health dashboards.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Brave API returns HTTP 401/403 (invalid/revoked credential) | Connector status shows `Failing` | Connector marked `failing`; no further requests attempted until credential is fixed |
+| Brave API returns HTTP 429 (rate limit exceeded) | Connector status may show `Degraded`; no data loss | Backoff applied; call recorded in quota telemetry; retried on the next safe interval |
+| A candidate fails the in-process validation filter | N/A (silent) | Candidate discarded; not ingested; not treated as an error |
+| Duplicate `(tenant_id, 'brave-search', externalId)` encountered | N/A (silent) | No new row created; existing deduplication constraint handles it |
+| `post_watchlist_matches` insert fails for a successfully ingested post | N/A (silent to the end user) | Logged as connector-health telemetry; ingestion of the post itself is unaffected |
+| Tenant approaches their Brave quota limit | Quota warning visible in connector telemetry/status | Further queries for that tenant are gracefully deferred until the next period |
 
 ---
 
 ## 12. Assumptions and Dependencies
-- Tenants obtain and manage their own Brave Search API subscription token.
-- Only publicly accessible web/news URLs and snippets are ingested; no private or authenticated content.
-- Watchlists are already defined and can be marked active for a tenant.
-- The existing `post_watchlist_matches` junction table and `GET /v1/posts?watchlistId=<id>` filter are available.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Brave Search API quota or cost overruns due to many active watchlists. | Medium | High | Pacing, 1–4 hour cadence, quota telemetry, and tenant-managed direct billing. | Product Owner |
-| R-002 | HTTP 429 rate-limit errors if pacing is not respected. | Low | Medium | Enforced 1.2-second inter-request pacing and backoff on 429. | Engineering |
-| R-003 | Snippet-only representation limits deep analysis. | High | Medium | Document limitation; defer full-text extraction to v2 evaluation. | Product Owner |
-| R-004 | Boolean-query interpretation drift between Brave and the in-process evaluator. | Medium | Medium | Validate every candidate with `matchesAst()`; monitor validation rate. | Engineering |
-| R-005 | New connector operational surface and failure modes. | Low | Medium | Integrate into existing connector health dashboards and alert on `Failing`/`Stalled`. | Platform Operations |
-| R-006 | Tenant credential exposure or misuse. | Low | High | Tier-2 tenant ownership, encrypted credential storage, and no client-side token exposure. | Engineering |
+- Tenants obtain and manage their own Brave Search API subscription token; SocialEngage never resells or proxies it.
+- Only publicly accessible web/news URLs and snippets are ingested; no private or authenticated content.
+- Watchlists are already defined and can be marked active for a tenant (existing capability).
+- The existing `post_watchlist_matches` junction table and `GET /v1/posts?watchlistId=<id>` filter (ADR-0063) are available and unchanged by this design.
+- Depends on ADR-0028 (Tier-2 credential ownership), ADR-0027 (direct billing), ADR-0038 (Azure OpenAI enrichment pipeline, already built), ADR-0055 (language enrichment schema), and ADR-0018 (ingestion lookback/retention cadence).
+- Story 2.21 (backend connector) is a prerequisite for Story 6.30 (admin UI); both already implemented/built as of 2026-08-21.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | What polling schedule frequency (within the 1–4 hour band) should apply by tenant subscription tier, watchlist criticality, and API budget? | Product Owner | Per-tier defaults with tenant-level overrides; not further fixed here |
+| Q2 | Should posts discovered via Brave trigger an optional background full-text fetch when the snippet is too brief, and via what mechanism? | Product Owner / Engineering | Deferred to a v2 evaluation |
+| Q3 | For `boolean_query` watchlists, should the raw boolean string be passed to Brave verbatim, or simplified to keyword terms to improve recall? | Engineering | Open — validate with real tenant queries |
+| Q4 | Should deduplication consider results seen across a wider N-day window beyond the existing `(tenant_id, providerId, externalId)` uniqueness? | Engineering | Current approach sufficient for v1; revisit if cross-cycle duplication is observed |
+| Q5 | Under quota constraint, which watchlists should be polled first? | Engineering | Implementation-time judgment; sensible default is to prioritize active watchlists with recent dashboard usage |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0065-active-watchlist-sourcing-via-brave-search-api.md`
-- BRD: `../Business-Requirements/BRD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md`
-- Feature design: `docs/product-research/feature-designs/<feature>.md``
-- Feature design: `docs/product-research/feature-designs/01-multi-source-ingestion.md`
-- Feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+### Glossary
+
+- **Active watchlist:** A tenant watchlist that is enabled and used by a connector to proactively discover content.
+- **Dual discovery and validation:** The two-stage process of querying Brave for candidates and then re-evaluating each candidate against the watchlist's exact rules before ingestion.
+- **Grounding:** An enrichment step that explains why a discovered article matches the originating watchlist criteria.
+- **Canonical URL:** A normalized, redirect-followed URL used as the stable `externalId` for deduplication.
+- **`X-Subscription-Token`:** The API key header required to authenticate Brave Search API requests.
+
+### Reference Links
+
+- ADR-0065 — `docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md`
+- BRD-0065 — `docs/project docs/Business-Requirements/BRD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md`
+- ADR-0063 — Post-watchlist match persistence and server-side filters
+- ADR-0062 — Analytics Dashboard Overview enhancements
+- ADR-0028 — Connector credential ownership tiers
+- ADR-0027 — Direct billing for third-party connectors
+- ADR-0038 — Azure OpenAI enrichment connector
+- ADR-0055 — Post language and key-phrase enrichment
+- ADR-0018 — Ingestion lookback and retention cadence
+- ADR-0004 — Organization-as-Author precedent (generalized here for domain/publication authorship)
+- Story 2.21 — `docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md`
+- Story 6.30 — `docs/user-stories/epic-6-tenant-admin-ui.md`
+- Story 8.9 — `docs/user-stories/epic-8-analytics-dashboard.md`
+
+### Related Product-Research Documents
+
+No dedicated `docs/product-research/feature-designs/<feature>.md` or `docs/product-research/reports/<feature>-deep-research.md` file was found for the `brave-search` active watchlist feature (confirmed by BRD-0065 §16.3 "Missing Source Notice"). Supporting context is drawn from ADR-0065 and the related user stories.
+
+### Revision History
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | Architecture Documentation | Regenerated as a genuine Functional Design Document, replacing a defective prior version that duplicated the BRD's flat requirements table |

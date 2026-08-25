@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SearchProviderConnector — Business Requirements Document |
+| Document Title | FDD-0120 SearchProviderConnector — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

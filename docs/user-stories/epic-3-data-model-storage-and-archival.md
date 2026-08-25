@@ -275,8 +275,11 @@
 
 ## Story 3.13 — Post Enrichment Overrides API and Re-Enrichment Precedence Guard
 
-**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Implemented
+**Source:** ADR-0071 (Accepted 2026-08-20) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@d9639df
 **Depends on:** Story 1.1 (Posts router and RLS context), Story 2.20 (Geospatial enrichment normalization), Story 3.5 (Post storage schema), Story 3.8 (AI Language enrichment)
+
+**Documentation Steward correction, 2026-08-24.** This story's own Status line read the non-standard "Implemented" (set by `cede597`) rather than this file's own established `**Built:** <date>` convention, and carried no `**Built:**` field at all. `docs/implementation-log.md`'s own matching entry (`## 2026-08-20 — Story 3.13 — social-listening-core`) confirms the real build but itself carries `**Full commit:** \`pending\`` — a real gap in the log, unfixable here since the log is read-only for this role. The real commit is unambiguous: `git diff-tree --no-commit-id --name-only -r d9639df` matches the log entry's own `Files touched` list exactly (minus `docs/implementation-log.md` itself, added by the follow-on commit that recorded both this story and Story 6.31 together) — added here with confidence.
 
 **As a** core backend engineer,
 **I want** a `PATCH /v1/posts/:id/enrichment` endpoint allowing authorized tenant users to modify post enrichment attributes with full audit lineage, and an explicit re-enrichment precedence guard,
@@ -323,7 +326,7 @@
 ## Story 3.14 — Outbound Reply Audit Table and `POST /v1/posts/:id/replies` API
 
 **Source:** ADR-0073 (Accepted 2026-08-22) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@e3e661b
 
 **As a** Tenant User or Tenant-Admin,
 **I want** a tenant-scoped record of every reply attempt and a REST endpoint to create one against an ingested post,
@@ -352,7 +355,7 @@
 ## Story 3.15 — Outbound Post Publishing Audit Table and `POST /v1/outbound/posts` API
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@8e7f312
 **Depends on:** Story 3.14 (base `outbound_activities` table and `POST /v1/posts/:id/replies`), Story 2.28 (connector `publish?()` framework)
 
 **As a** Tenant User or Tenant-Admin,
@@ -379,7 +382,7 @@
 ## Story 3.16 — Tenant-facing workspace and matched-posts export endpoints
 
 **Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-24 — social-listening-core@0d11e3f
 
 **As a** Tenant-Admin or tenant user,
 **I want** to download a full workspace JSON archive and a CSV of matched posts on demand from `social-listening-core`,

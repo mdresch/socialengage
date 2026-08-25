@@ -13,12 +13,14 @@ The `outboundEngagementService` in `src/outbound/outboundEngagementService.ts` e
 
 | ADR | Decision | Story |
 |---|---|---|
-| ADR-0073 | Outbound reply path: optional `SocialConnector.reply?()`, separate `RequestGate` key `(tenantId, providerId, 'outbound')`, `outbound_activities` audit table, and `POST /v1/posts/:id/replies` | 2.26 |
+| ADR-0073 | Outbound reply path: optional `SocialConnector.reply?()`, separate `RequestGate` key `(tenantId, providerId, 'outbound')`, `outbound_activities` audit table, and `POST /v1/posts/:id/replies` | 2.26 / 3.14 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts` — `SocialConnector` accepts an optional `reply?()`; `outboundEngagementService.invoke()` calls it and returns `sent`/`failed` rows; connectors without `reply()` fail with `reply_not_supported`; `ClassifiableError` thrown from `reply()` maps to the row's `errorCode`.
 - `contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts` — the first real `SocialConnector.reply()` call site; `outboundEngagementService.invoke()` with `facebookConnector` exercises the full outbound path from gate to `POST /{post-id}/comments` and back.
+- `contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts` — `outbound_activities` table, `src/outbound/outboundActivityStore.ts`, `POST /v1/posts/:id/replies`, and `GET /v1/posts/:id/replies` are real; the REST endpoint persists the audit row and maps `ClassifiableError` to provider-appropriate HTTP statuses.
+- `contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts` (ADR-0075) — the same `outbound_activities` table now also holds `activity_type='post'` rows with `target_asset_id`, `payload`, `scheduled_for`, and `cancelled_at`; the `activityType`/`status` unions are widened accordingly.
 
 ## How to extend this safely
 
@@ -36,9 +38,9 @@ The `outboundEngagementService` in `src/outbound/outboundEngagementService.ts` e
 ## Known gaps / deferred work
 
 - **Real connector-specific reply implementations (Facebook, Instagram, LinkedIn) are not yet built.** Story 2.27 begins the Facebook `reply()` implementation; other platforms are deferred to their own stories.
-- **REST endpoint `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are Story 3.14**, not built in this component.
-- **The `outbound_activities` table is created in Story 3.14**; `outboundEngagementService` only returns a row-shaped object that matches its intended contents.
-- **The separate `outbound-post` component (new post publishing, Story 2.28) uses a sibling service in `src/outbound/outboundPublishService.ts` and a separate `RequestGate` key `outbound_post` — it is not built by this component.
+- **REST endpoint `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are built in Story 3.14**; `outboundEngagementService` still does not persist the row, but the endpoint does via `src/outbound/outboundActivityStore.ts`.
+- **The `outbound_activities` table is created in Story 3.14 and extended for `post` rows in Story 3.15**; `outboundEngagementService` returns a row-shaped object that the reply endpoint persists.
+- **The separate `outbound-post` component (new post publishing, Story 2.28/3.15) uses a sibling service in `src/outbound/outboundPublishService.ts` and a separate `RequestGate` key `outbound_post`.
 
 ## Relations to other components
 

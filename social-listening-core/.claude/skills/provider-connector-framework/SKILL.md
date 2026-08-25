@@ -26,6 +26,8 @@ The unifying abstraction every social platform integration and every AI enrichme
 || ADR-0073 | `SocialConnector` gains optional `reply?()` and `getOutboundRateLimitConfig?()`; `RequestGate` gains `acquireForOutbound()` per `(tenantId, providerId, 'outbound')` | 2.26 |
 || ADR-0075 | `SocialConnector` gains optional `publish?()` and `OutboundPostPayload`; `RequestGate` gains `acquireForOutboundPost()` per `(tenantId, providerId, 'outbound_post')` | 2.28 |
 
+||| ADR-0076 | `AIProviderConnector` gains optional `research?()` method; `SearchSnippet`, `ResearchOptions`, and `ResearchResult` shapes added to `src/connectors/types.ts` | 2.32 |
+
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.1.provider-connector-framework.contract.test.ts` — the three interfaces' required shape; a poll-mode and a push-mode `SocialConnector` both normalize correctly with no delivery-mode-specific pipeline branching; two `AIProviderConnector`s (including one with differing per-model rate limits) both resolve through the same generic dispatcher; live parsed rate-limit headers take priority over static declared config.
@@ -36,6 +38,7 @@ The unifying abstraction every social platform integration and every AI enrichme
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` (ADR-0048) — mechanically greps a designated set of core ingestion/orchestration files, proving none of them contain any real connector's own `providerId` literal; also proves each real connector's own SKILL.md documents its registration location, extension points used, and how no-core-change verification is satisfied. Runs as an ordinary Jest contract test under the existing `npm test`/CI step — no separate CI script — per ADR-0048's own left-open "dedicated script vs. contract-test gate" question, resolved here in favor of this project's established "the accumulated contract suite is the check" convention (`http-api-versioning/SKILL.md`).
 - `contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts` (ADR-0073) — optional `SocialConnector.reply?()` and `getOutboundRateLimitConfig?()`; `outboundEngagementService.invoke()` returns a `sent`/`failed` row; `RequestGate.acquireForOutbound()` uses a separate `(tenantId, providerId, 'outbound')` key with `getOutboundRateLimitConfig?()` fallback.
 - `contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts` (ADR-0075) — optional `SocialConnector.publish?()` and `OutboundPostPayload`; `outboundPublishService.invoke()` returns a `sent`/`failed` row for `activity_type='post'`; `RequestGate.acquireForOutboundPost()` uses a separate `(tenantId, providerId, 'outbound_post')` key with `getOutboundRateLimitConfig?()` fallback.
+- `contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts` (ADR-0076) — `AIProviderConnector` interface gains `research?()`, `ResearchOptions`, `ResearchResult`, and `SearchSnippet` types; `azureOpenAiConnector.research()` returns a structured result; `azureAiLanguageConnector.research` is undefined.
 
 ## How to extend this safely
 

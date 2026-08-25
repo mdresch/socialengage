@@ -22,11 +22,12 @@ The `outboundPublishService` in `src/outbound/outboundPublishService.ts` execute
 - `contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts` (ADR-0075) — `SocialConnector` accepts an optional `publish?()`; `outboundPublishService.invoke()` calls it and returns `sent`/`failed` rows with `activityType='post'`; connectors without `publish()` fail with `publish_not_supported`; `ClassifiableError` thrown from `publish()` maps to the row's `errorCode`; `RequestGate` tracks `outbound_post` separately from `outbound` (reply).
 - `contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts` (ADR-0075) — the first real `SocialConnector.publish()` call site; `outboundPublishService.invoke()` with `facebookConnector` exercises the full outbound post path from gate to `POST /{page-id}/feed` and back.
 - `contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts` (ADR-0075) — the second real `SocialConnector.publish()` call site; `outboundPublishService.invoke()` with `linkedinConnector` exercises the full outbound post path from gate to `POST /v2/ugcPosts` and back.
+- `contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts` (ADR-0075) — `outbound_activities` is extended for `activity_type='post'`; `POST /v1/outbound/posts`, `GET /v1/outbound/posts`, and `DELETE /v1/outbound/posts/:id` are live; the endpoint validates target assets against `connector.targetAssets?()` and persists the audit row before/after `outboundPublishService.invoke()`.
 
 ## How to extend this safely
 
 - **Adding a new outbound post action type:** this service owns the *new post* action. If a future action needs its own gate (e.g., `outbound:repost`), add a sibling `acquireFor...` in `requestGate.ts` rather than overloading the `outbound_post` key.
-- **Calling `publish()` from a REST endpoint:** the endpoint is responsible for resolving the user's credential, validating the target asset against the caller's enumerated assets, recording the `outbound_activities` row, and returning it (Story 3.15). Call `outboundPublishService.invoke()` and use the returned `externalId`/`externalUrl` to populate the `sent` row.
+- **Calling `publish()` from a REST endpoint:** the endpoint (`src/http/versions/v1/outboundPostsRouter.ts`, Story 3.15) resolves the user's credential, checks connector activation, validates the target asset against `connector.targetAssets?()` (or accepts any non-empty target when the connector omits it), records the `outbound_activities` row, and dispatches synchronously or stores as `pending` for `scheduledFor`. Call `outboundPublishService.invoke()` and use the returned `externalId`/`externalUrl` to populate the `sent` row.
 - **Reclassifying connector publish errors:** a connector's `publish()` should throw `ClassifiableError('missing_permission' | 'target_asset_not_found' | 'reconnect_required' | 'rate_limited' | 'media_not_supported' | ...)` for recoverable/platform-meaningful failures. Any other thrown error is treated as `'network'` by `invoke()`.
 - **Adding a `publish?()` implementation for a new platform:** implement the platform-specific method and set `getOutboundRateLimitConfig?()` to the platform's real write/quote limit; `outboundPublishService.invoke()` will gate and call it. Do not change `SocialConnector.publish?()`'s signature without updating this contract and every implementation.
 
@@ -41,9 +42,8 @@ The `outboundPublishService` in `src/outbound/outboundPublishService.ts` execute
 ## Known gaps / deferred work
 
 - **Real connector-specific `publish()` implementations: Facebook Page posts are built by Story 2.29; Instagram, LinkedIn, and other platform `publish()` implementations are deferred to their own stories.**
-- **REST endpoint `POST /v1/outbound/posts` and `GET /v1/outbound/posts` are Story 3.15**, not built in this component.
-- **The `outbound_activities` table extension for `activity_type='post'` is created in Story 3.15**; `outboundPublishService` only returns a row-shaped object that matches its intended contents.
-- **Media upload, scheduled dispatch, bulk publishing, and third-party assets are out of scope for v1** (ADR-0075 §7).
+- **REST endpoint `POST /v1/outbound/posts`, `GET /v1/outbound/posts`, and `DELETE /v1/outbound/posts/:id` are built by Story 3.15** in `src/http/versions/v1/outboundPostsRouter.ts` and `src/outbound/outboundActivityStore.ts`.
+- **Media upload, the background scheduled-dispatch worker, bulk publishing, and third-party assets are out of scope for v1** (ADR-0075 §7).
 
 ## Relations to other components
 

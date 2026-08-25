@@ -1,270 +1,308 @@
-# Business Requirements Document — RSS/News Connector: GNews API, Publication-as-Author
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — RSS/News Connector: GNews API, Publication-as-Author |
+| Document Title | FDD-0026 RSS/News Connector: GNews API, Publication-as-Author — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0026-rss-news-connector-gnews-api-publication-as-author.md, ../Business-Requirements/BRD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0026-rss-news-connector-gnews-api-publication-as-author.md and the business requirements in BRD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md into functional design for **RSS News Connector GNews API Publication As Author**.
-**What problem are we solving?**  
-The SocialEngage ingestion pipeline has supported the full connector framework, rate-limiting, health, and normalization layers since Phase 0, but the RSS/News platform category — the first category committed in the implementation plan — has never had a real connector. This leaves a gap in the unified listening coverage that the product promises: tenants cannot track general news coverage of topics, companies, or competitors the same way they track social or press-release sources.
-
-**Who is affected?**  
-Tenant-Admins who configure sources, Tenant-Users and Social-Selling-Strategists who consume the normalized post feed, and the product's own credibility as a multi-source listening platform.
-
-**What is the proposed solution at a glance?**  
-Introduce a GNews API-based RSS/News connector. Each tenant supplies its own free-tier GNews API key; the connector polls GNews's `/api/v4/search` endpoint, normalizes each article into the common `SocialPost` model, and models the article's originating publication as the `Author`. The connector reuses the existing `apiKey` authentication, `poll` delivery, per-tenant credential, and rate-limit patterns already built for the framework.
-
-**What business value do we expect?**  
-Closes the oldest unbuilt Phase 1 gap, gives tenants real general-news coverage, proves the `apiKey` authentication mode for the first time, and confirms that the "organization/outlet as Author" pattern introduced for Newswire generalizes to a second connector family.
+| Author(s) | FDD Writer (Claude) |
+| Reviewer(s) | Menno |
+| Status | Approved (source ADR-0026 is Accepted; documents shipped design — Story 2.7) |
+| Related Documents | ADR-0026, BRD-0026, ADR-0002, ADR-0004, ADR-0014, ADR-0021, ADR-0024, ADR-0027, Story 2.7 |
 
 ---
 
+## 2. Purpose and Scope
+
+### 2.1 Purpose
+
+This document translates ADR-0026 (RSS/News connector — GNews API, with publication-as-Author modeling) and BRD-0026 into the functional design for the RSS/News platform category's first concrete connector implementation: a GNews API-based connector using per-tenant `apiKey` authentication, polling, native AND/OR/NOT/phrase query translation, and publication-as-Author modeling. ADR-0026 is Accepted (2026-07-31, same day drafted and accepted); Story 2.7 implements it. This FDD documents the shipped design.
+
 ### 2.2 Scope
+
 **In scope:**
-- Selecting GNews API (`gnews.io`) as the concrete RSS/News provider.
-- Per-tenant GNews API key registration via the existing `POST /connectors/:platformId/connect` flow.
-- Polling the GNews `/api/v4/search` endpoint with a per-tenant, non-shared `apikey` query parameter.
-- Normalizing returned articles (`id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, `source`) into canonical `SocialPost` rows.
-- Modeling the article's `source` publication as the `Author`: `externalAuthorId` from `source.id` or `source.name`, `followerCount` left unpopulated.
-- Declaring GNews's native `supportedQueryFeatures` (`AND`/`OR`/`NOT` and phrase search in the `q` parameter) for connector-native watchlist matching where possible.
-- Enforcing the free-tier ceiling of 100 requests/day and up to 10 articles/request, per tenant.
-- Reusing the existing `RequestGate`, `IngestionRun`, `ConnectorHealth`, and `runIngestionAttempt` pipeline.
-- Constraint: use of GNews's free tier is scoped to this project's current non-commercial status as documented in `Business-Case-v6.0.md` §4/§9.
+- GNews API (`gnews.io`, `/api/v4/search`) as the concrete RSS/News provider.
+- `authMode: 'apiKey'` — per-tenant credential, registered via the existing connect flow and stored under ADR-0014's envelope-encrypted model.
+- `deliveryMode: 'poll'`.
+- Normalization of GNews articles (`id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, `source`) into `SocialPost`.
+- Publication-as-Author modeling: `Author` represents the source publication, not an individual — the second connector (after Newswire) to need this exact departure from ADR-0004.
+- `supportedQueryFeatures` declaring GNews's real native AND/OR/NOT/phrase capability within `q`.
+- Enforcement of the free-tier 100 requests/day, 10 articles/request, per-tenant ceiling.
+- The explicit, accepted non-commercial-use operating constraint tied to this project's current self-funded status.
 
 **Out of scope:**
-- Commercial or paid-tier GNews usage at v1; this is explicitly a free-tier, non-commercial connector until re-evaluated.
-- A second general-news connector or a NewsData.io integration in v1 — kept as a future amendment lead, not rejected.
-- Cross-publication duplicate de-duplication strategy — left as an implementation-time decision, same as ADR-0024.
-- Exact boolean AST-to-GNews query syntax translation — established as an implementation-time detail under ADR-0021.
+- Commercial/paid-tier GNews usage at v1.
+- A second general-news connector or NewsData.io integration (deferred, unconfirmed formal terms).
+- Cross-publication de-duplication strategy and exact AST-to-`q`-syntax translation (both implementation-time decisions).
 - Historical backfill beyond GNews's own 30-day window.
-- Generalizing the organization-as-Author exception into ADR-0004's base text — deferred until a third connector requires it (rule of three).
-- Push/webhook delivery; GNews does not expose one, so `deliveryMode: 'poll'` is the only v1 mode.
+- Generalizing organization-as-Author into ADR-0004's base text (deferred per "rule of three" — two instances is not yet three).
+- Push/webhook delivery (GNews exposes none).
+
+### 2.3 Target Audience
+
+Backend engineers implementing/extending the connector, product owner, tenant admins connecting the source, platform admins monitoring quota/health.
+
+---
 
 ## 3. Context and Background
-RSS/News and Reddit were chosen (2026-07-29) as Phase 1's first and second platforms (spec §10). Phase 1's full architectural slice built around that choice — the connector framework (ADR-0002), `Author` (ADR-0004), `IngestionRun` (ADR-0005), per-tenant rate limiting (ADR-0003), error handling and auto-disable (ADR-0010/0023), connector-side watchlist matching (ADR-0006), cursor pagination (ADR-0011), and derived `ConnectorHealth` (ADR-0009) — is built and contract-verified (see `docs/implementation-log.md`). **The actual RSS/News connector implementation was never built, though** — it remained Phase 1's own "also build, not storied" line, and stayed the single oldest unbuilt piece of an otherwise fully-shipped Phase 0–4 even after Story 2.6/ADR-0024 (Newswire, architecturally a *later*, Phase-4 connector) shipped ahead of it as a deliberate, ADR-sanctioned deviation.
 
-Two things need deciding before Story 2.7 can be picked up, the same two questions ADR-0024 had to answer for Newswire:
+RSS/News and Reddit were chosen (2026-07-29) as Phase 1's first and second platforms; the full architectural slice around that choice (connector framework, `Author`, `IngestionRun`, rate limiting, error handling/auto-disable, watchlist matching, pagination, derived health) was built and contract-verified — but the actual RSS/News connector implementation was never built, remaining Phase 1's single oldest unbuilt gap even after the later, Phase-4 Newswire connector shipped ahead of it as a deliberate, ADR-sanctioned deviation.
 
-1. **Which concrete provider.** "RSS/News" in `docs/implementation-plan.md` means general news coverage — distinct in content shape from Newswire's press-release wires — and was already characterized as `poll`-only, **API-key auth**, no paid tier before any real vendor was checked. That characterization needs to actually survive contact with a real vendor's own terms, the same way the original Newswire proposal (RTPR) did not.
-2. **How to model the article's "author."** `Author` (ADR-0004) was designed around individual social-platform accounts — `followerCount`, `handle`, `firstSeenAt`/`lastSeenAt` tracking one person's or brand's activity over time. General-news APIs report the **publication** an article came from, not a byline — a person the platform's own data model doesn't return at all, not merely a variant of "author" like Newswire's issuing organization was.
-**What problem are we solving?**  
-The SocialEngage ingestion pipeline has supported the full connector framework, rate-limiting, health, and normalization layers since Phase 0, but the RSS/News platform category — the first category committed in the implementation plan — has never had a real connector. This leaves a gap in the unified listening coverage that the product promises: tenants cannot track general news coverage of topics, companies, or competitors the same way they track social or press-release sources.
+Two questions needed deciding, mirroring what ADR-0024 answered for Newswire: (1) which concrete provider — "RSS/News" was already characterized as `poll`-only, API-key auth, no paid tier, before any real vendor was checked, and that characterization needed to survive contact with a real vendor's terms; (2) how to model an article's "author" — GNews reports the publication an article came from, not a byline, a data shape the platform doesn't return at all (not merely a variant, the way Newswire's issuing organization was). A same-day research pass (drafted by the AI Business & Requirements Analyst persona, reviewed and accepted by Menno as Sponsor) rejected NewsAPI.org (categorical ban on staging/production use, any commercial status), Currents API (a third-party "production-safe" claim that did not survive direct verification against Currents' own pages), and Mediastack (100 calls/*month*, too thin); GDELT and a keyless-RSS approach were considered but not selected because either would repeat Newswire's `authMode: 'none'` deviation rather than prove the `apiKey` path for the first time — the specific gap this ADR closes. NewsData.io was deferred (its formal terms pages could not be rendered directly across four attempts; its own blog content was internally inconsistent about free-vs-paid commercial fit).
 
-**Who is affected?**  
-Tenant-Admins who configure sources, Tenant-Users and Social-Selling-Strategists who consume the normalized post feed, and the product's own credibility as a multi-source listening platform.
+A real internal inconsistency in GNews's own terms is named, not silently resolved: the pricing-page FAQ states the free tier "cannot be used for commercial projects," while the Terms of Service (§3.3) states retrieved data "may be used for commercial purposes" with no plan-based carve-out. This ADR adopts the more conservative FAQ reading as the operative constraint, consistent with how the project treats every other platform provider's terms — and names this as something requiring re-evaluation if the project ever monetizes, not a permanent property.
 
-**What is the proposed solution at a glance?**  
-Introduce a GNews API-based RSS/News connector. Each tenant supplies its own free-tier GNews API key; the connector polls GNews's `/api/v4/search` endpoint, normalizes each article into the common `SocialPost` model, and models the article's originating publication as the `Author`. The connector reuses the existing `apiKey` authentication, `poll` delivery, per-tenant credential, and rate-limit patterns already built for the framework.
-
-**What business value do we expect?**  
-Closes the oldest unbuilt Phase 1 gap, gives tenants real general-news coverage, proves the `apiKey` authentication mode for the first time, and confirms that the "organization/outlet as Author" pattern introduced for Newswire generalizes to a second connector family.
+Source requirements: BRD-0026 §§6–7, Story 2.7 (Epic 2, Ready as of ADR-0026's 2026-07-31 acceptance).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Close the Phase 1 RSS/News connector gap | Story 2.7 is built and the GNews connector passes contract tests against the live ingestion pipeline |
-| 2 | Expand tenant coverage to general-news sources | A Tenant-Admin can connect, activate, and view healthy GNews-sourced posts in the same feed as other platforms |
-| 3 | Validate the `apiKey` authentication abstraction | GNews becomes the first shipped `authMode: 'apiKey'` connector without introducing a new credential-storage pattern |
-| 4 | Prove the publication-as-Author model generalizes beyond Newswire | Two connectors (Newswire, GNews) resolve `Author` to an organization/outlet using the same scoped exception pattern |
-| 5 | Maintain compliance with platform provider terms | GNews's free-tier non-commercial constraint is documented, accepted, and re-evaluated before any commercial use |
+| G1 | Close Phase 1's oldest unbuilt gap | Story 2.7 built and contract-verified against the live ingestion pipeline |
+| G2 | Expand tenant coverage to general-news sources | Tenant-Admin can connect, activate, and view healthy GNews-sourced posts in the unified feed |
+| G3 | Prove the `apiKey` auth mode for the first time in a real, running build | GNews connector exercises `authMode: 'apiKey'` end to end |
+| G4 | Confirm the publication-as-Author pattern generalizes beyond a Newswire one-off | Two connectors (Newswire, GNews) resolve `Author` to an organization/outlet using the identical scoped-exception pattern |
+| G5 | Stay within GNews's own published terms | Free-tier non-commercial constraint documented, accepted, and flagged for re-evaluation before monetization |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- Closes Phase 1's single oldest unbuilt gap — the "actual RSS/News connector implementation" line that has sat unstoried since Phase 0, even after a later Phase-4 connector (Newswire) shipped ahead of it.
-- The first connector in this project to actually exercise `authMode: 'apiKey'` in a real, running build — Newswire proved `'none'`, Reddit (not yet built) will prove OAuth; this is the missing third data point for ADR-0002's "the abstraction generalizes across auth modes" claim.
-- A materially richer native query surface (AND/OR/NOT/phrase) than Newswire's minimal/empty declaration gives ADR-0021's capability matrix a genuine second real data point once built, distinct from "everything falls back to whole-query matching."
-- Fits the existing per-tenant credential-connect flow and ADR-0014's credential model exactly — no new architectural pattern required for auth or storage.
-- Confirms, with a second real instance, that ADR-0024's issuer-as-Author departure generalizes to "the provider reports an organization/outlet, not a person" rather than being a one-off Newswire quirk — closing one of ADR-0024's own named open questions.
-
-**Negative**
-- **The free tier is explicitly non-commercial-only per GNews's own FAQ**, a real, accepted constraint that must be revisited before or if this project ever monetizes — not a permanent property of the connector.
-- **GNews's own published terms are internally inconsistent** (FAQ vs. Terms of Service) on whether commercial use is permitted at all on the free tier; this ADR adopts the more conservative reading rather than resolving GNews's contradiction, which is a real ambiguity this project does not control.
-- **100 requests/day per tenant is a modest ceiling** — enough to prove the pipeline for Phase 1's one-tenant, one-watchlist deliverable, but a real constraint once more than a few watchlists per tenant compete for it; GNews's paid tiers exist to lift this, at a cost this project has not committed to.
-- **No push capability and only a 30-day historical window** — a real trade-off, same category as Newswire's no-backfill limitation.
-- **Content articles, not literal RSS/XML** — GNews returns JSON, not an RSS/Atom feed; this is a naming clarification worth stating plainly: "RSS/News" in this project's own documents names a *category* (general news, poll, cheap validation), not a literal wire-format requirement, and `normalize()` already has to parse whatever shape a provider returns regardless of source.
-- Author-as-publication is scoped to this connector (and Newswire), not stated as ADR-0004's general rule — a future connector with the same shape would still need its own explicit note, per ADR-0024's own precedent of not generalizing this into ADR-0004 directly.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall provide a GNews connector option in the connector catalog. | Must | A distinct `providerId` for GNews is registered and visible to Tenant-Admins. | Product Owner |
-| BR-002 | The system shall allow a Tenant-Admin to connect the GNews connector using a per-tenant API key. | Must | `POST /connectors/gnews/connect` accepts and stores a single `apikey` per ADR-0014, without a new credential pattern. | Product Owner |
-| BR-003 | The system shall poll GNews `/api/v4/search` and normalize articles into `SocialPost` rows. | Must | A live poll returns real GNews articles; each is normalized with `provider_id`, `url`, `title`, `description`, `content`, `image`, `publishedAt`, `lang`, and `rawPayload`. | Product Owner |
-| BR-004 | The system shall model the GNews article source as the `Author`. | Must | `Author.externalAuthorId` is populated from `source.id` (or `source.name` if absent); `followerCount` is left unpopulated. | Product Owner |
-| BR-005 | The system shall declare and use GNews's native boolean query capabilities. | Should | `supportedQueryFeatures` lists `AND`, `OR`, `NOT`, and phrase search; watchlist matching uses native `q` fragments where possible and falls back to post-fetch matching otherwise. | Product Owner |
-| BR-006 | The system shall stay within the tenant's free-tier GNews quota. | Must | Polling never exceeds 100 requests/day or 10 articles/request for that tenant; `RequestGate` and cadence are configured accordingly. | Product Owner |
-| BR-007 | The system shall avoid duplicate `SocialPost` rows when no new articles exist. | Must | A second consecutive poll with no new articles since the last checkpoint is a no-op. | Product Owner |
 
-### 5.1 Architecture Decision
-**The durable decision — this is what would need superseding, not just amending:**
+### 5.1 Feature / Capability: GNews Connector Registration and Per-Tenant Credential
 
-Target **GNews API** (`gnews.io`, documented at `docs.gnews.io`) as the connector's concrete data source for the RSS/News category. Verified directly 2026-07-31 against GNews's own pages:
+- **Description:** Registers a distinct `SocialConnector` for GNews and lets each tenant connect using their own free-tier API key.
+- **Triggers:** Tenant-Admin initiates `POST /connectors/gnews/connect`.
+- **Inputs:** A per-tenant GNews API key.
+- **Processing:** `authMode: 'apiKey'` — the key is stored under ADR-0014's existing envelope-encrypted credential model, exactly as any other API-key connector, with no new credential-storage pattern introduced. The 100-requests/day ceiling is therefore per-tenant, not a project-wide shared pool — no tenant's usage affects another's quota.
+- **Outputs:** A stored, encrypted per-tenant credential; the connector becomes available for polling once activated.
+- **Error handling:** An invalid/rejected key surfaces as a connect-time failure, not a later silent poll failure.
+- **Edge cases:** A tenant with no registered key cannot activate the connector — this is the same pattern every other `apiKey` connector already follows.
 
-- **Pricing** (`gnews.io/pricing`): the free "Essential" plan is €0, requires no credit card ("*Start on the free tier instantly, no credit card needed*"), and returns up to 10 articles per request, 100 requests/day, with a 12-hour publication delay and a 30-day historical window.
-- **Auth mechanism** (`docs.gnews.io/endpoints/search-endpoint`): a per-account API key passed as the `apikey` query parameter (`GET https://gnews.io/api/v4/search?q=...&apikey=API_KEY`) — this is a genuine `authMode: 'apiKey'` fit, unlike Newswire's `authMode: 'none'`, and is the first connector in this project to actually exercise that auth mode.
-- **Query capability** (`docs.gnews.io/endpoints/search-endpoint`): the mandatory `q` parameter supports `AND`/`OR`/`NOT`, quoted-phrase search, and parenthetical grouping — a materially richer native filtering surface than Newswire's "expected minimal/empty" declaration, and a real opportunity for ADR-0021's boolean-query AST to push a meaningful subset of a watchlist's query down to the provider natively rather than falling back to whole-query post-fetch matching for everything.
-- **Response shape** (`docs.gnews.io/json-response`): each article carries `id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, and a nested `source` object (`id`, `name`, `url`, `country`) — **no author or byline field of any kind**. This confirms the second decision below.
+### 5.2 Feature / Capability: Polling and Article Normalization
 
-**Permitted-use constraint, adopted deliberately rather than glossed over:** GNews's own pricing-page FAQ states, verbatim: *"No, the free subscription cannot be used for commercial projects. The free plan is designed for non-commercial projects, development, and testing purposes only."* This project, per `Business-Case-v6.0.md` §4 and §9, genuinely has no revenue model and is self-funded — the free tier's "non-commercial projects" permission is a real, accurate fit for this project's *current* documented status, not a workaround. **This is adopted as an explicit, accepted operating constraint, not a loophole:** if the project ever monetizes or onboards a paying tenant, this connector's provider/tier needs re-evaluation before that happens — the same "compliance-by-construction... monitor for policy or pricing changes before they cause a failure" discipline `Stakeholder-Register.md` §4 already applies to every other platform provider (S-03). **A genuine internal inconsistency in GNews's own published terms is named here rather than silently resolved in this project's favor:** GNews's own Terms of Service (`gnews.io/legal/terms-of-service`, Section 3.3) states, with no plan-based carve-out, that *"Data retrieved through the API... may be used for commercial purposes, subject to [copyright/attribution] conditions"* — directly in tension with the pricing page's FAQ. This ADR adopts the **more conservative FAQ reading** as the operative constraint (non-commercial use only, on the free tier), consistent with how this project already treats platform-provider terms elsewhere; it does not attempt to resolve GNews's own internal contradiction on its behalf.
+- **Description:** Polls GNews's `/api/v4/search` endpoint and normalizes each returned article into the platform's canonical `SocialPost` shape.
+- **Triggers:** Scheduled poll cycle for a tenant with the connector active and a valid key.
+- **Inputs:** The tenant's `apikey`, the watchlist-derived `q` query (see 5.4), GNews's paginated article response.
+- **Processing:** `deliveryMode: 'poll'` (GNews has no push/webhook mechanism). Each request returns up to 10 articles; the connector maps `id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang` into `SocialPost` fields, retaining the raw payload. Content returned is JSON, not literal RSS/XML — "RSS/News" in this project's docs names a category (general news, poll, cheap validation), not a literal wire-format requirement.
+- **Outputs:** Normalized `SocialPost` rows, tenant-scoped.
+- **Error handling:** A poll returning zero new articles since the last checkpoint is a correct no-op — no duplicate rows produced across consecutive cycles. Quota exhaustion or rate-limit responses (`429`) feed into the standard `ConnectorHealth`/auto-disable model rather than looping indefinitely.
+- **Edge cases:** GNews's 30-day historical window means a watchlist created today cannot see articles older than 30 days — a real, published boundary, not a defect.
 
-**Per-tenant credential, not a shared pool:** each tenant registers their own free GNews API key via the same `POST /connectors/:platformId/connect` flow already storied for every other connector, stored per ADR-0014's existing envelope-encrypted credential model. The 100-requests/day ceiling is therefore per-tenant, not a project-wide shared quota across every tenant this project ever onboards — no new credential-storage pattern is needed.
+### 5.3 Feature / Capability: Publication-as-Author Modeling
 
-For this connector, `Author` represents the **source publication**, not an individual — a scoped, documented departure from ADR-0004's per-account assumption, structurally identical to ADR-0024's issuer-as-Author exception for Newswire. This is the **second** connector to need this exact departure, confirming what ADR-0024's own Consequences section anticipated but declined to generalize: *"a future connector with a similar shape... would need to decide whether to reuse this exact pattern or treat each case independently."* This ADR reuses ADR-0024's exact pattern rather than inventing a new one, flagged on ADR-0004 as a second dated Pending-supersession note (see that file), not edited into ADR-0004's original Decision text.
+- **Description:** Resolves each article's `Author` to the source publication, not an individual — GNews's own documented response schema carries no author/byline field of any kind.
+- **Triggers:** Every normalized `SocialPost` (5.2) needs an associated `Author`.
+- **Inputs:** GNews's nested `source` object (`id`, `name`, `url`, `country`).
+- **Processing:** `Author.externalAuthorId` = `source.id` where present, else `source.name`; `Author.followerCount` is deliberately left unpopulated (not a meaningful concept for a publication). This reuses ADR-0024's exact issuer-as-Author pattern for Newswire rather than inventing a new one — confirmed as the second real instance of the same departure, which the project's own "rule of three" treats as still not enough to generalize into ADR-0004's base text (a third connector needing the identical departure is the trigger to revisit).
+- **Outputs:** A resolved `Author` row representing the publication, linked to the `SocialPost`.
+- **Error handling:** An article with no `source.id` falls back to `source.name`; an article with neither is a data-quality edge case handled at normalization time rather than blocking ingestion.
+- **Edge cases:** The same publication appearing across multiple articles should resolve to the same `Author` record where `source.id`/`source.name` matches, avoiding duplicate `Author` rows for one real outlet.
 
-**Implementation defaults (adjustable — logged here in an Amendment Log going forward; does not require superseding this ADR on its own):**
+### 5.4 Feature / Capability: Native Query Translation (`supportedQueryFeatures`)
 
-- `authMode: 'apiKey'`, key supplied per-tenant, passed as the `apikey` query parameter.
-- `deliveryMode: 'poll'` — GNews has no push/webhook mechanism; consistent with every other Phase 1/4 connector.
-- `getRateLimitConfig()`: 100 requests/day, 10 articles/request, per the connected tenant's own free-tier account — a real, published, confirmed ceiling (unlike Newswire's unconfirmed placeholder).
-- `supportedQueryFeatures` (ADR-0021): AND/OR/NOT and phrase search within the `q` parameter — the exact translation from the internal boolean AST to GNews's query syntax is an implementation-time task, not fixed by this ADR.
-- `Author.externalAuthorId` = `source.id` where present, else `source.name`; `Author.followerCount` left unpopulated as not meaningful for a publication.
-- **No historical backfill beyond GNews's own 30-day window** — a watchlist created today can see articles back to 30 days per GNews's stated historical limit, not further; this is a real, published boundary, not an open question.
-- Cross-publication duplicate handling (the same wire story picked up and republished by multiple outlets GNews indexes) is an implementation-time decision, named here so it isn't discovered mid-build, the same way ADR-0024 named cross-wire de-duplication for Newswire.
+- **Description:** Declares and uses GNews's real native boolean query capability within its `q` parameter, giving ADR-0021's AST a genuine partial-native-translation opportunity distinct from Newswire's minimal/empty declaration.
+- **Triggers:** Watchlist matching evaluation for a tenant watchlist against the GNews connector.
+- **Inputs:** The watchlist's AST; GNews's `q` parameter, which supports `AND`/`OR`/`NOT` and quoted-phrase search with parenthetical grouping.
+- **Processing:** `supportedQueryFeatures` declares `AND`/`OR`/`NOT`/phrase support; per ADR-0021's whole-query degradation rule, if the watchlist's AST uses only these supported node types, the full query translates natively into `q`; if it uses any unsupported node type (e.g. `HASHTAG`/`ACCOUNT`, which GNews's search has no equivalent for), the entire query falls back to whole-query post-fetch matching for this connector. The exact AST-to-`q`-syntax translation mapping is an implementation-time task, not fixed by this ADR.
+- **Outputs:** Either a native GNews search request reflecting the full AST, or a fallback post-fetch match, per connector.
+- **Error handling:** N/A — this is the standard ADR-0021 matching-path selection, applied with a materially richer capability declaration than Newswire's.
+- **Edge cases:** A watchlist mixing supported and unsupported node types still degrades whole-query, not per-clause, per ADR-0021's existing v1 rule — this ADR does not change that rule, only supplies a connector with more to potentially translate natively.
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Menno | Sponsor / Technical Lead / Solo Developer | High | Compliance-safe, low-cost, contract-first delivery that closes the Phase 1 gap |
-| Tenant-Admin | Configures connectors and credentials | High | Simple API-key setup, clear capability matrix, health status visible |
-| Tenant-User | Consumes the unified post feed | Medium | Sees general-news posts alongside other sources with source clearly labeled |
-| Social-Selling-Strategist | Filters posts by source/author for prospecting | Medium | Can identify and export publication-level author lists |
-| Platform-Admin | Monitors cross-tenant connector health | Low | Per-tenant quota usage and error rates visible without accessing tenant data |
+### 5.5 Feature / Capability: Free-Tier Quota Enforcement
+
+- **Description:** Keeps polling within GNews's published free-tier ceiling per tenant.
+- **Triggers:** Every poll attempt.
+- **Inputs:** The tenant's current request count against the 100-requests/day ceiling.
+- **Processing:** `getRateLimitConfig()` reflects the real, published, confirmed ceiling (100 requests/day, 10 articles/request) — unlike Newswire's unconfirmed placeholder, this is a real, documented limit. The existing `RequestGate` mechanism enforces it per tenant.
+- **Outputs:** Polls that stay within quota; quota-exceeded attempts are gated/deferred rather than sent.
+- **Error handling:** Nearing or exceeding quota should surface via `ConnectorHealth`/UI visibility rather than fail silently.
+- **Edge cases:** A tenant running multiple watchlists against this connector competes for the same 100-requests/day ceiling — a real constraint once more than a few watchlists are active, named as an accepted v1 limitation, not solved here.
+
+### 5.6 Feature / Compliance Constraint: Non-Commercial Free-Tier Use
+
+- **Description:** Documents and enforces, as an operating constraint (not a technical gate), that GNews's free tier is used only because this project is genuinely non-commercial and self-funded.
+- **Triggers:** Ongoing — reviewed whenever the project's commercial status might change.
+- **Inputs:** The project's documented business status (`Business-Case-v6.0.md` §4/§9).
+- **Processing:** The connector's own documentation (`SKILL.md`) and contract tests reference the free-tier non-commercial constraint and the FAQ-vs-ToS ambiguity explicitly. The more conservative FAQ reading (non-commercial only) is adopted as the operative constraint rather than the less restrictive ToS reading, consistent with how the project treats every other provider's terms.
+- **Outputs:** A documented, monitored constraint, not a runtime-enforced technical control.
+- **Error handling:** N/A — this is a compliance/process control, not a system behavior.
+- **Edge cases:** If the project ever monetizes or onboards a paying tenant, this connector's provider/tier requires re-evaluation before that happens — named explicitly as a required future action, not silently deferred.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 2.7 | epic-2-ingestion-connectors-and-rate-limits.md | As tenant tracking general news coverage of a topic, company, or organization, I want a real `SocialConnector` that polls GNews API's Search endpoint using a... | A registered `SocialConnector` (`authMode: 'apiKey'`, `deliveryMode: 'poll'`, a `providerId` distinct from Newswire's) authenticates using a per-tenant-suppl... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Tenant-Admin | Configures the connector and registers the API key |
+| Tenant-User / Social-Selling-Strategist | Consumes the normalized post feed; filters by source/author |
+| Platform-Admin | Monitors cross-tenant connector health and quota |
+| Menno (Sponsor/Technical Lead) | Owns compliance-safe delivery |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 2.7) | Tenant-Admin | Connect and activate a GNews connector with my own free API key | I get general-news coverage alongside other platforms | Distinct `providerId`; connect flow stores the key via ADR-0014's model; no new credential pattern |
+| US2 | Tenant-User | See general-news articles in the same unified feed as other sources | I can monitor topics/companies across channels | Live poll returns real articles normalized into `SocialPost` with correct tenant scoping |
+| US3 | Social-Selling-Strategist | Filter/export posts by publication-level author | I can identify outlets covering a topic | `Author.externalAuthorId` populated from `source.id`/`source.name` |
+| US4 | Platform-Admin | See quota saturation and health for the connector | I can spot tenants approaching the 100-req/day ceiling | Rate-limit/health visible via existing `ConnectorHealth`/UI patterns |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Connect and activate:**
+1. Tenant-Admin selects GNews from the connector catalog.
+2. Enters their own free-tier GNews API key via `POST /connectors/gnews/connect`.
+3. Key stored encrypted (ADR-0014); connector activated (ADR-0051 activation mechanism, same as any other connector).
+
+**Poll cycle:**
+1. Scheduler triggers a poll for an active tenant.
+2. Connector builds the `q` query — natively translating the watchlist AST where `supportedQueryFeatures` allows, or issuing a broader query with fallback matching otherwise.
+3. GNews returns up to 10 articles; each is normalized into a `SocialPost`.
+4. Each article's `Author` resolves to its source publication.
+5. `IngestionRun` records the outcome; `ConnectorHealth`/`RequestGate` track quota and errors.
+6. Watchlist matches persist via native or fallback path per 5.4.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `SocialPost` | Normalized article with title, description, content, URL, image, publishedAt, language, provider, raw payload | GNews API `/v4/search` | Tenant | Public/third-party content |
-| `Author` | Source publication derived from `source.id` or `source.name` | GNews API `source` object | Tenant | Public metadata |
-| `IngestionRun` | Audit record of each poll attempt, including success/failure and article count | Connector `poll()` output | System | Operational |
-| `ConnectorHealth` | Derived health status for the connector | `IngestionRun` and error classification | System | Operational |
-| `platform_credentials` | Envelope-encrypted GNews API key per tenant | Tenant-supplied via connect flow | Tenant (key owner) / system (encrypted envelope) | Credential secret |
-| `provider_id` | Distinct GNews connector identifier | Connector registry | System | Operational |
+
+### 7.1 Data Inputs
+
+- GNews `/api/v4/search` response: `id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, `source` (`id`, `name`, `url`, `country`).
+- Tenant's registered `apikey`.
+- Watchlist AST (for native `q` translation).
+
+### 7.2 Data Outputs
+
+- Normalized `SocialPost` rows.
+- `Author` rows (publication).
+- `IngestionRun` records.
+- Watchlist match records via native or fallback path.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `SocialConnector` (GNews, new registration) | distinct `providerId`, `authMode: 'apiKey'`, `deliveryMode: 'poll'`, `supportedQueryFeatures` (`AND`/`OR`/`NOT`/phrase), `getRateLimitConfig()` (100/day, 10/request) | Implements the existing `SocialConnector` interface (ADR-0002) |
+| `SocialPost` (existing schema, reused) | `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, `authorId`, raw payload | Normalized from GNews articles |
+| `Author` (existing schema, publication-as-organization variant) | `externalAuthorId` (`source.id`/`source.name`), `followerCount` (unpopulated) | Second scoped exception to ADR-0004, structurally identical to Newswire's issuer-as-Author pattern |
+| `platform_credentials` (existing, envelope-encrypted, ADR-0014) | per-tenant `apikey` | One key per tenant, never pooled |
+| `IngestionRun` (existing, reused) | `tenantId`, `platformId` (GNews), `status`, article count, quota usage | Standard ingestion attempt record |
+| `RequestGate` (existing, reused) | per-tenant request counter against the 100/day ceiling | Enforces the free-tier quota |
+
+### 7.4 Validation Rules
+
+- `Author.externalAuthorId` must be populated from `source.id` (preferred) or `source.name` (fallback) — never left blank when either is available.
+- Polling must never exceed 100 requests/day or 10 articles/request per tenant.
+- `supportedQueryFeatures` must reflect only GNews's genuine native capability (`AND`/`OR`/`NOT`/phrase) — never overstated.
+- A repeated poll with no new articles must not create duplicate `SocialPost` rows.
+- The connector's credential must be tenant-scoped and RLS-safe, never pooled across tenants.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | A GNews connector may only be activated when a valid per-tenant GNews API key has been registered. |
-| BRU-002 | The `Author` for a GNews article must always resolve to the source publication, never to an individual journalist. |
-| BRU-003 | The free-tier GNews connector is authorized only for non-commercial, self-funded project use; commercial re-evaluation is required before monetization. |
-| BRU-004 | The GNews API key must not be pooled or shared across tenants; each tenant uses its own credential. |
-| BRU-005 | Historical search is capped at GNews's 30-day window; older backfill is not permitted. |
-| BRU-006 | The connector must adopt the more conservative reading of GNews's published terms (FAQ non-commercial clause) where the provider's own documents conflict. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | A GNews connector may only be activated when a valid per-tenant GNews API key has been registered. | Registration (5.1) |
+| BR2 | `Author` for a GNews article must always resolve to the source publication, never an individual journalist. | Author modeling (5.3) |
+| BR3 | The free-tier GNews connector is authorized only for non-commercial, self-funded project use; commercial re-evaluation is required before monetization. | Compliance (5.6) |
+| BR4 | The GNews API key must not be pooled or shared across tenants. | Credential (5.1) |
+| BR5 | Historical search is capped at GNews's 30-day window. | Polling (5.2) |
+| BR6 | The connector adopts the more conservative reading of GNews's published terms (FAQ non-commercial clause) where the provider's own documents conflict. | Compliance (5.6) |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | Connector framework (`ProviderConnector`/`SocialConnector`, `runIngestionAttempt()`, `registry.ts`) | Internal / Existing | Technical Lead | Already built and contract-verified |
-| D-002 | Per-tenant credential storage (ADR-0014) | Internal / Existing | Technical Lead | Already built and verified |
-| D-003 | Rate-limit gate (ADR-0003/ADR-0020) | Internal / Existing | Technical Lead | Already built and verified |
-| D-004 | Boolean query AST and `supportedQueryFeatures` (ADR-0021) | Internal / Existing | Technical Lead | Already built and verified |
-| D-005 | `Author` model (ADR-0004) with scoped organization-as-Author exception | Internal / Existing | Technical Lead | Already built for Newswire; reused for GNews |
-| D-006 | GNews free-tier API availability and terms | External | GNews / Tenant | Accepted as operative constraint at ADR-0026 acceptance |
-| D-007 | Story 2.7 implementation and contract tests | Internal | Technical Lead / Solo Developer | Ready per ADR-0026; to be picked up after BRD acceptance |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| GNews API (`/api/v4/search`) | Inbound | Source article data | REST/JSON over HTTPS, `apikey` query param |
+| `POST /connectors/gnews/connect` | Inbound | Registers the per-tenant credential | REST/JSON |
+| `platform_credentials` (Postgres, envelope-encrypted) | Outbound (write)/Inbound (read) | Stores the per-tenant API key | SQL, ADR-0014 encryption model |
+| `runIngestionAttempt()` pipeline | Internal | Normalizes articles, records `IngestionRun` | In-process |
+| `RequestGate` | Internal | Enforces the per-tenant 100/day quota | In-process |
+| Shared/native watchlist matcher | Internal | Native `q` translation or fallback matching | In-process |
+| `ConnectorHealth` derivation | Internal | Health/auto-disable based on `IngestionRun` outcomes and quota errors | In-process |
 
 ---
 
-- The project remains non-commercial/self-funded and therefore fits GNews's free-tier "non-commercial projects" permission as the operative constraint.
-- Each tenant can obtain its own GNews free API key without project-side contracting.
-- The existing `Author`, `SocialPost`, `IngestionRun`, and `ConnectorHealth` data models from prior ADRs are available unchanged.
-- The connector framework's `poll()` and `RequestGate` abstractions already support `apiKey` authentication mode.
-
-**The durable decision — this is what would need superseding, not just amending:**
-
-Target **GNews API** (`gnews.io`, documented at `docs.gnews.io`) as the connector's concrete data source for the RSS/News category. Verified directly 2026-07-31 against GNews's own pages:
-
-- **Pricing** (`gnews.io/pricing`): the free "Essential" plan is €0, requires no credit card ("*Start on the free tier instantly, no credit card needed*"), and returns up to 10 articles per request, 100 requests/day, with a 12-hour publication delay and a 30-day historical window.
-- **Auth mechanism** (`docs.gnews.io/endpoints/search-endpoint`): a per-account API key passed as the `apikey` query parameter (`GET https://gnews.io/api/v4/search?q=...&apikey=API_KEY`) — this is a genuine `authMode: 'apiKey'` fit, unlike Newswire's `authMode: 'none'`, and is the first connector in this project to actually exercise that auth mode.
-- **Query capability** (`docs.gnews.io/endpoints/search-endpoint`): the mandatory `q` parameter supports `AND`/`OR`/`NOT`, quoted-phrase search, and parenthetical grouping — a materially richer native filtering surface than Newswire's "expected minimal/empty" declaration, and a real opportunity for ADR-0021's boolean-query AST to push a meaningful subset of a watchlist's query down to the provider natively rather than falling back to whole-query post-fetch matching for everything.
-- **Response shape** (`docs.gnews.io/json-response`): each article carries `id`, `title`, `description`, `content`, `url`, `image`, `publishedAt`, `lang`, and a nested `source` object (`id`, `name`, `url`, `country`) — **no author or byline field of any kind**. This confirms the second decision below.
-
-**Permitted-use constraint, adopted deliberately rather than glossed over:** GNews's own pricing-page FAQ states, verbatim: *"No, the free subscription cannot be used for commercial projects. The free plan is designed for non-commercial projects, development, and testing purposes only."* This project, per `Business-Case-v6.0.md` §4 and §9, genuinely has no revenue model and is self-funded — the free tier's "non-commercial projects" permission is a real, accurate fit for this project's *current* documented status, not a workaround. **This is adopted as an explicit, accepted operating constraint, not a loophole:** if the project ever monetizes or onboards a paying tenant, this connector's provider/tier needs re-evaluation before that happens — the same "compliance-by-construction... monitor for policy or pricing changes before they cause a failure" discipline `Stakeholder-Register.md` §4 already applies to every other platform provider (S-03). **A genuine internal inconsistency in GNews's own published terms is named here rather than silently resolved in this project's favor:** GNews's own Terms of Service (`gnews.io/legal/terms-of-service`, Section 3.3) states, with no plan-based carve-out, that *"Data retrieved through the API... may be used for commercial purposes, subject to [copyright/attribution] conditions"* — directly in tension with the pricing page's FAQ. This ADR adopts the **more conservative FAQ reading** as the operative constraint (non-commercial use only, on the free tier), consistent with how this project already treats platform-provider terms elsewhere; it does not attempt to resolve GNews's own internal contradiction on its behalf.
-
-**Per-tenant credential, not a shared pool:** each tenant registers their own free GNews API key via the same `POST /connectors/:platformId/connect` flow already storied for every other connector, stored per ADR-0014's existing envelope-encrypted credential model. The 100-requests/day ceiling is therefore per-tenant, not a project-wide shared quota across every tenant this project ever onboards — no new credential-storage pattern is needed.
-
-For this connector, `Author` represents the **source publication**, not an individual — a scoped, documented departure from ADR-0004's per-account assumption, structurally identical to ADR-0024's issuer-as-Author exception for Newswire. This is the **second** connector to need this exact departure, confirming what ADR-0024's own Consequences section anticipated but declined to generalize: *"a future connector with a similar shape... would need to decide whether to reuse this exact pattern or treat each case independently."* This ADR reuses ADR-0024's exact pattern rather than inventing a new one, flagged on ADR-0004 as a second dated Pending-supersession note (see that file), not edited into ADR-0004's original Decision text.
-
-**Implementation defaults (adjustable — logged here in an Amendment Log going forward; does not require superseding this ADR on its own):**
-
-- `authMode: 'apiKey'`, key supplied per-tenant, passed as the `apikey` query parameter.
-- `deliveryMode: 'poll'` — GNews has no push/webhook mechanism; consistent with every other Phase 1/4 connector.
-- `getRateLimitConfig()`: 100 requests/day, 10 articles/request, per the connected tenant's own free-tier account — a real, published, confirmed ceiling (unlike Newswire's unconfirmed placeholder).
-- `supportedQueryFeatures` (ADR-0021): AND/OR/NOT and phrase search within the `q` parameter — the exact translation from the internal boolean AST to GNews's query syntax is an implementation-time task, not fixed by this ADR.
-- `Author.externalAuthorId` = `source.id` where present, else `source.name`; `Author.followerCount` left unpopulated as not meaningful for a publication.
-- **No historical backfill beyond GNews's own 30-day window** — a watchlist created today can see articles back to 30 days per GNews's stated historical limit, not further; this is a real, published boundary, not an open question.
-- Cross-publication duplicate handling (the same wire story picked up and republished by multiple outlets GNews indexes) is an implementation-time decision, named here so it isn't discovered mid-build, the same way ADR-0024 named cross-wire de-duplication for Newswire.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | The GNews connector must reuse the existing `apiKey` authentication and credential-storage patterns. | Maintainability | Must | No new credential table or storage pattern is introduced. |
-| NFR-002 | The connector must operate within GNews's stated free-tier terms and document the non-commercial constraint. | Compliance | Must | The connector's `SKILL.md` and contract tests reference the free-tier non-commercial constraint and the FAQ-vs-ToS ambiguity. |
-| NFR-003 | Connector polling must respect per-tenant rate limits and degrade gracefully on `429` or quota-exhaustion. | Reliability | Must | Health transitions to `failing` or `degraded` on rate-limit or provider errors; no infinite retry loops. |
-| NFR-004 | `Author` and `SocialPost` normalization must be tenant-scoped and RLS-safe. | Security | Must | All contract tests prove RLS isolation for `social_posts` and `authors` rows. |
-| NFR-005 | The connector must be removable without affecting other connector implementations. | Maintainability | Should | The registration and no-core-path-edit invariants from ADR-0048/Story 2.10 hold for the new connector. |
+
+- **Compliance:** Free-tier non-commercial constraint documented in the connector's `SKILL.md` and contract tests; the FAQ-vs-ToS ambiguity is named explicitly, not silently resolved.
+- **Maintainability:** Reuses existing `apiKey` auth and credential-storage patterns — no new credential table or pattern introduced; connector remains removable without affecting other connectors (ADR-0048/Story 2.10 invariants).
+- **Reliability:** Rate-limit/quota errors (`429`, exhaustion) must degrade gracefully — health transitions to `degraded`/`failing`, no infinite retry loops.
+- **Security:** `Author`/`SocialPost` normalization is tenant-scoped and RLS-safe; contract tests prove isolation.
+- **Capacity:** 100 requests/day per tenant is a modest ceiling — adequate for Phase 1's one-tenant, one-watchlist deliverable, a real constraint once more than a few watchlists per tenant compete for it; a future paid-tier or alternate-provider upgrade path is not precluded, but not built now.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- Closes Phase 1's single oldest unbuilt gap — the "actual RSS/News connector implementation" line that has sat unstoried since Phase 0, even after a later Phase-4 connector (Newswire) shipped ahead of it.
-- The first connector in this project to actually exercise `authMode: 'apiKey'` in a real, running build — Newswire proved `'none'`, Reddit (not yet built) will prove OAuth; this is the missing third data point for ADR-0002's "the abstraction generalizes across auth modes" claim.
-- A materially richer native query surface (AND/OR/NOT/phrase) than Newswire's minimal/empty declaration gives ADR-0021's capability matrix a genuine second real data point once built, distinct from "everything falls back to whole-query matching."
-- Fits the existing per-tenant credential-connect flow and ADR-0014's credential model exactly — no new architectural pattern required for auth or storage.
-- Confirms, with a second real instance, that ADR-0024's issuer-as-Author departure generalizes to "the provider reports an organization/outlet, not a person" rather than being a one-off Newswire quirk — closing one of ADR-0024's own named open questions.
 
-**Negative**
-- **The free tier is explicitly non-commercial-only per GNews's own FAQ**, a real, accepted constraint that must be revisited before or if this project ever monetizes — not a permanent property of the connector.
-- **GNews's own published terms are internally inconsistent** (FAQ vs. Terms of Service) on whether commercial use is permitted at all on the free tier; this ADR adopts the more conservative reading rather than resolving GNews's contradiction, which is a real ambiguity this project does not control.
-- **100 requests/day per tenant is a modest ceiling** — enough to prove the pipeline for Phase 1's one-tenant, one-watchlist deliverable, but a real constraint once more than a few watchlists per tenant compete for it; GNews's paid tiers exist to lift this, at a cost this project has not committed to.
-- **No push capability and only a 30-day historical window** — a real trade-off, same category as Newswire's no-backfill limitation.
-- **Content articles, not literal RSS/XML** — GNews returns JSON, not an RSS/Atom feed; this is a naming clarification worth stating plainly: "RSS/News" in this project's own documents names a *category* (general news, poll, cheap validation), not a literal wire-format requirement, and `normalize()` already has to parse whatever shape a provider returns regardless of source.
-- Author-as-publication is scoped to this connector (and Newswire), not stated as ADR-0004's general rule — a future connector with the same shape would still need its own explicit note, per ADR-0024's own precedent of not generalizing this into ADR-0004 directly.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Invalid/rejected API key at connect time | Connect-flow error | Credential rejected; connector not activated |
+| Quota exhausted (100 requests/day reached) | Connector shows degraded/rate-limited state | `RequestGate` defers further polls for that tenant until the window resets |
+| `429` response from GNews | None (transparent) | Treated per standard error classification (ADR-0010/ADR-0023); `ConnectorHealth` reflects the pattern |
+| Poll returns zero new articles | None | Correct no-op; no duplicate rows |
+| Article missing `source.id` | None | Falls back to `source.name` for `Author.externalAuthorId` |
+| Watchlist query using node types GNews doesn't support | Fallback badge shown (per ADR-0021) | Entire query falls back to whole-query post-fetch matching for this connector |
+| Historical search requested beyond 30 days | None (structural limit) | GNews simply does not return older articles; no backfill attempted |
+
+---
 
 ## 12. Assumptions and Dependencies
-- The project remains non-commercial/self-funded and therefore fits GNews's free-tier "non-commercial projects" permission as the operative constraint.
-- Each tenant can obtain its own GNews free API key without project-side contracting.
-- The existing `Author`, `SocialPost`, `IngestionRun`, and `ConnectorHealth` data models from prior ADRs are available unchanged.
-- The connector framework's `poll()` and `RequestGate` abstractions already support `apiKey` authentication mode.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | GNews changes free-tier pricing, limits, or terms | Medium | High | Monitor provider terms monthly; design connector to re-evaluate on policy/pricing changes; per-tenant key limits blast radius | Technical Lead |
-| R-002 | GNews FAQ vs. ToS ambiguity on commercial use creates compliance uncertainty | Medium | High | Adopt conservative FAQ reading; document constraint in BRD/ADR/SKILL; re-evaluate before any monetization | Sponsor |
-| R-003 | 100 requests/day per tenant is insufficient for multiple active watchlists | Medium | Medium | Make quota visible in UI; allow future paid-tier or alternate provider (e.g. NewsData.io) upgrade path without re-architecting | Product Owner |
-| R-004 | Cross-publication duplicate articles inflate post volume | Medium | Medium | Leave explicit implementation-time de-duplication decision; track duplicates in `IngestionRun` notes | Technical Lead |
-| R-005 | Exact AST-to-GNews query translation is complex and may silently degrade matching | Medium | Medium | Declare `supportedQueryFeatures` explicitly; contract test native vs. fallback paths; never silently no-op | Technical Lead |
+**Assumptions:**
+- The project remains non-commercial/self-funded, fitting GNews's free-tier "non-commercial projects" permission.
+- Each tenant can obtain its own free GNews API key without project-side contracting.
+- Existing `Author`, `SocialPost`, `IngestionRun`, `ConnectorHealth` models are available unchanged.
+- The connector framework's `poll()`/`RequestGate` abstractions already support `apiKey` auth mode.
+
+**Dependencies:**
+- ADR-0002 (`SocialConnector` framework) — built.
+- ADR-0004 (`Author` model) — carries a second scoped exception for this connector, reusing ADR-0024's pattern.
+- ADR-0014 (envelope-encrypted credential model) — built; reused with no new pattern.
+- ADR-0021 (`supportedQueryFeatures`/watchlist matching) — built; this connector supplies a materially richer capability declaration than Newswire.
+- ADR-0024 (Newswire, issuer-as-Author precedent) — this connector's Author-modeling pattern is reused directly from it.
+- ADR-0027 (connector as technical intermediary, never a contracting party) — confirmed 2026-08-01 this connector already satisfied the principle before ADR-0027 existed.
+- Story 2.7 — this ADR's implementation story, Ready as of 2026-07-31.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | What are NewsData.io's actual formal terms? | Technical Lead | Worth a follow-up browser-rendered verification pass before ruling it in or out more permanently |
+| Q2 | What cross-publication de-duplication strategy should be used? | Technical Lead | Implementation-time decision, named but not resolved here |
+| Q3 | What is the exact AST-to-GNews-`q`-syntax translation mapping? | Technical Lead | Implementation-time task; this ADR only establishes the native capability is real and non-trivial |
+| Q4 | Should ADR-0004 eventually carry a permanent, generalized organization-as-Author clause? | Technical Lead | Resolved at acceptance: not yet (rule of three); revisit when a third connector needs the identical departure |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0026-rss-news-connector-gnews-api-publication-as-author.md`
-- BRD: `../Business-Requirements/BRD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md`
-- Feature design: `docs/product-research/feature-designs/01-multi-source-ingestion.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+**Glossary:** see BRD-0026 §15 for GNews, `Author`, `externalAuthorId`, `SocialPost`, `supportedQueryFeatures`, `poll`, `apiKey`, `providerId`, `IngestionRun`, `ConnectorHealth`, and non-commercial free tier definitions.
+
+**Reference links:**
+- [ADR-0026: RSS/News connector — GNews API, with publication-as-Author modeling](../../adr/0026-rss-news-connector-gnews-api-publication-as-author.md)
+- [BRD-0026](../Business-Requirements/BRD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md)
+- [Feature design — Multi-source ingestion](../../product-research/feature-designs/01-multi-source-ingestion.md)
+- [ADR-0002, ADR-0004, ADR-0014, ADR-0021, ADR-0024, ADR-0027] (referenced; not independently re-verified in this pass)
+- [Story 2.7 — GNews RSS/News connector](../../user-stories/epic-2-ingestion-connectors-and-rate-limits.md)
+
+**Missing sources:** No dedicated `docs/product-research/reports/<feature>-deep-research.md` was found for GNews; vendor pricing/terms/capability verification is embedded directly in ADR-0026's own Amendment Log and Consequences sections (primary-source verified against `gnews.io` pages 2026-07-31), as BRD-0026's own Appendix confirms.
+
+**Revision history:**
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | FDD Writer (Claude) | Full regeneration: correct H1, real per-capability Section 5 breakdown, real Section 7.3 data model, replacing the prior defective BRD-shaped draft |

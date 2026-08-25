@@ -1,200 +1,232 @@
-# Business Requirements Document (BRD) — Per-Tenant, Per-Provider Rate Limiting
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Per-Tenant, Per-Provider Rate Limiting |
+| Document Title | FDD-0003 Per-Tenant, Per-Provider Rate Limiting — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0003-per-tenant-per-provider-rate-limiting.md, ../Business-Requirements/BRD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0003-per-tenant-per-provider-rate-limiting.md and the business requirements in BRD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md into functional design for **Per Tenant Per Provider Rate Limiting**.
-**What problem are we solving?**  
-The SocialEngage platform connects multiple tenants to the same third-party social platforms and AI enrichment providers. Each tenant uses its own credentials, so its quota is independent. Without per-tenant enforcement, one tenant's heavy polling or enrichment could exhaust a shared rate budget and throttle every other tenant on that platform. There is also no shared place to react to live rate-limit headers, which means the system can either invent limits or silently drop requests when a ceiling is hit.
-
-**Who is affected?**  
-All tenants using social-listening connectors and AI enrichment, the platform operator responsible for multi-tenancy, and the core backend engineers who must keep connectors from overrunning platform quotas.
-
-**What is the proposed solution at a glance?**  
-A shared `RequestGate` in the core enforces rate limits per `(tenantId, providerId)` for social connectors and per `(tenantId, providerId, modelId)` for AI providers. Connectors declare their documented limits; the gate prefers live rate-limit headers returned by the platform; and requests that exceed the limit are queued and retried after the window resets, never dropped silently.
-
-**What business value do we expect?**  
-Stronger multi-tenancy guarantees, fairer quota allocation, no silent ingestion loss on transient rate limits, and a single enforcement point that every current and future connector can reuse.
+| Author(s) | Menno, FDD Writer |
+| Reviewer(s) | Menno |
+| Status | Approved (source ADR-0003 is Accepted) |
+| Related Documents | ADR-0003, ADR-0002, ADR-0010, ADR-0020, ADR-0023, BRD-0003, Story 2.2, Story 2.4 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- A shared `RequestGate` in `social-listening-core` that enforces rate limits per `(tenantId, providerId)` for all social-connector outbound requests.
-- Per-model gating for AI provider enrichment requests, keyed by `(tenantId, providerId, modelId)`.
-- Connector-declared rate-limit configuration via `getRateLimitConfig()` and optional `parseRateLimitHeaders()`.
-- Live rate-limit header state taking priority over the static declared configuration.
-- Queuing and automatic retry of requests that would exceed the current rate limit, after the relevant window resets.
-- Contract/acceptance tests proving two tenants are isolated when using the same platform.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- Distributed `RequestGate` state across multiple `social-listening-core` instances (deferred to ADR-0020 / Story 2.4).
-- Queue depth ceiling, TTL-based abandonment, and per-request dead-lettering (deferred to ADR-0020 / Story 2.4).
-- Silently dropping requests that exceed a rate limit.
-- Global per-provider rate limiting that is not tenant-scoped.
+### 2.1 Purpose
+
+This document translates ADR-0003 (rate limiting enforced per `(tenantId, providerId)` via a shared `RequestGate`) and BRD-0003 into a functional design for the enforcement engine that stops one tenant's usage from throttling another tenant sharing the same social platform or AI provider.
+
+### 2.2 Scope
+
+- **In scope:** the `RequestGate` enforcement point; per-`(tenantId, providerId)` (social) and per-`(tenantId, providerId, modelId)` (AI) key scoping; static `RateLimitConfig` vs. live header-derived state precedence; queue-and-retry behavior for over-limit requests.
+- **Out of scope:** distributed gate state across multiple `social-listening-core` instances, queue depth ceilings, TTL-based abandonment, and dead-lettering — all deferred to ADR-0020/FDD-0020; connector health/auto-disable logic (ADR-0010/ADR-0023); the connector contract itself that supplies `getRateLimitConfig()`/`parseRateLimitHeaders()` (ADR-0002/FDD-0002).
+
+### 2.3 Target Audience
+
+Core backend engineers implementing or consuming `RequestGate`, the platform operator monitoring queue depth/throughput, and the technical lead validating tenant-isolation guarantees.
+
+---
 
 ## 3. Context and Background
-Each tenant connects platforms and AI providers using their own credentials, so each tenant carries independent, platform-imposed rate limits (X's per-tier windows, YouTube's daily quota-cost model, Reddit's per-minute cap, and per-model limits for AI providers). A shared enforcement point is needed so one tenant's usage can't affect another's, and so limits reflect what each platform actually documents rather than values invented by the core.
-**What problem are we solving?**  
-The SocialEngage platform connects multiple tenants to the same third-party social platforms and AI enrichment providers. Each tenant uses its own credentials, so its quota is independent. Without per-tenant enforcement, one tenant's heavy polling or enrichment could exhaust a shared rate budget and throttle every other tenant on that platform. There is also no shared place to react to live rate-limit headers, which means the system can either invent limits or silently drop requests when a ceiling is hit.
 
-**Who is affected?**  
-All tenants using social-listening connectors and AI enrichment, the platform operator responsible for multi-tenancy, and the core backend engineers who must keep connectors from overrunning platform quotas.
-
-**What is the proposed solution at a glance?**  
-A shared `RequestGate` in the core enforces rate limits per `(tenantId, providerId)` for social connectors and per `(tenantId, providerId, modelId)` for AI providers. Connectors declare their documented limits; the gate prefers live rate-limit headers returned by the platform; and requests that exceed the limit are queued and retried after the window resets, never dropped silently.
-
-**What business value do we expect?**  
-Stronger multi-tenancy guarantees, fairer quota allocation, no silent ingestion loss on transient rate limits, and a single enforcement point that every current and future connector can reuse.
+- **Problem/opportunity:** each tenant connects platforms/AI providers with its own credentials and therefore its own independent quota (X's per-tier windows, YouTube's daily quota-cost model, Reddit's per-minute cap, per-model AI limits). Without a shared, tenant-scoped enforcement point, one heavy tenant could exhaust a shared budget and throttle every other tenant hitting the same platform, and the system would either invent limits or silently drop over-limit requests.
+- **Business/user value:** guaranteed multi-tenant isolation on rate limiting; automatic adaptation to a platform's live rate-limit state without a code change; no silent ingestion data loss on transient rate-limit hits.
+- **Source requirements:** ADR-0003; BRD-0003 (BR-001–BR-006, BRU-001–BRU-005); Story 2.2 (Epic 2, built `social-listening-core@00322f2`).
+- **Constraints/dependencies:** rate-limit values must never be invented by the core — only platform-documented limits or explicitly labeled conservative placeholders (BRU-001); a queued request waiting for window reset adds latency to that tenant's ingestion; per-model AI gating is more granular bookkeeping than social connectors need; the current `RequestGate` runs in-process on a single `social-listening-core` instance — distributed state is explicitly deferred (ADR-0020) until a second concurrent instance is actually run.
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Guarantee tenant-isolated rate-limit enforcement | Two tenants calling the same platform concurrently are gated independently — one tenant hitting its limit does not delay or block the other |
-| 2 | Use platform-documented rate limits as the single source of truth | Every connector exposes `getRateLimitConfig()` derived from the platform's own documentation, with no invented core values |
-| 3 | Adapt automatically to live platform limits | Where a connector implements `parseRateLimitHeaders()`, the gate reflects the platform's live reported state rather than stale static config |
-| 4 | Prevent silent data loss on rate-limit hits | Requests that would exceed a limit are queued and retried; no request is dropped without a trace |
-| 5 | Extend the same model to AI enrichment | AI provider calls are gated per model (`getModelRateLimit(modelId)`) as well as per provider |
+| G1 | Guarantee tenant-isolated rate-limit enforcement | Two tenants calling the same platform concurrently are gated independently — one tenant at its limit does not delay or block the other |
+| G2 | Use platform-documented rate limits as the sole source of truth | Every connector's `RateLimitConfig` traces to platform documentation or an explicitly labeled conservative placeholder; the core invents nothing |
+| G3 | Adapt automatically to a platform's live rate-limit state | When a connector implements `parseRateLimitHeaders()`, the gate reflects live reported state over the static config |
+| G4 | Prevent silent data loss on rate-limit hits | Requests exceeding a limit are queued and retried after window reset; none are dropped without a trace |
+| G5 | Extend isolation to AI enrichment at model granularity | AI provider calls are gated per `(tenantId, providerId, modelId)`, not merely per provider |
 
 ---
-
-**Positive consequences (from ADR):**
-**Positive**
-- Rate-limit isolation directly satisfies the multi-tenancy requirement in §8: one tenant's usage never throttles another's, even though all tenants may be hitting the same third-party platform.
-- Preferring live header state over static config means the gate adapts to a platform tightening or loosening its limits without a code change.
-- Queue-and-retry (rather than drop) means transient rate-limit hits don't silently lose data — consistent with the retryable-error handling in §5.
-
-**Negative**
-- A queued request that waits for window reset adds latency to that tenant's ingestion; under sustained over-quota conditions, the queue for a given `(tenantId, providerId)` can grow and needs monitoring/backpressure that isn't detailed in this spec.
-- Per-model limits for AI providers mean the gate's key space is effectively `(tenantId, providerId, modelId)` for enrichment traffic, which is more granular bookkeeping than social connectors need.
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall enforce all social-connector outbound requests per `(tenantId, providerId)` through a shared `RequestGate` | Must | Two tenants calling the same platform concurrently are gated independently; one tenant at its limit does not delay the other | Technical Lead |
-| BR-002 | Every connector shall declare its rate limits via `getRateLimitConfig()` using only the platform's documented limits | Must | A connector's `RateLimitConfig` is traceable to platform documentation or explicitly labeled as a conservative placeholder | Technical Lead |
-| BR-003 | The gate shall prefer live rate-limit headers over static declared config when a connector implements `parseRateLimitHeaders()` | Should | A test confirms that after parsing live headers, the gate uses the reported remaining quota/window rather than the static value | Technical Lead |
-| BR-004 | Requests that would exceed the current rate limit shall be queued and retried after the window resets | Must | No request is dropped silently; a queued request is eventually delivered or fails with a visible record | Technical Lead |
-| BR-005 | AI provider enrichment calls shall be gated per `(tenantId, providerId, modelId)` via `getModelRateLimit(modelId)` | Must | Two tenants calling the same AI model are gated independently; tenant A's usage does not throttle tenant B's same model | Technical Lead |
-| BR-006 | The gate shall never enforce rate limits globally across all tenants | Must | No code path can reduce the available budget for one tenant because another tenant is active | Technical Lead |
 
-### 5.1 Architecture Decision
-- Every connector declares its own limits via `getRateLimitConfig()`, reflecting the platform's documented limits only.
-- A shared `RequestGate` in the core enforces limits **per `(tenantId, providerId)`**, never globally.
-- Where a platform returns live rate-limit state in response headers, `parseRateLimitHeaders()` updates the gate's live state, which takes priority over the static declared config.
-- Requests that would exceed the limit are **queued and retried after window reset**, never dropped silently.
-- AI providers extend this one level deeper: limits are enforced per-model via `getModelRateLimit(modelId)`, not just per-provider.
+### 5.1 Feature / Capability: `RequestGate` admission check
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Platform Operator | Ensures fair multi-tenant resource sharing | High | No cross-tenant throttling; visibility into gate queues |
-| Tenant-Admin | Manages connected platforms and credentials | Medium | Connectors run reliably without being slowed by other tenants |
-| Core Backend Engineer | Implements and maintains the `RequestGate` | High | Clear contract, reusable across all connectors |
-| Tenant-User | Consumes ingested posts and analytics | Low | Data keeps flowing even when other tenants hit limits |
+- **Description:** the shared enforcement point every outbound platform/AI request passes through before leaving `social-listening-core`.
+- **Triggers:** any outbound request a connector is about to make — a poll fetch, a push/webhook-driven follow-up call, or an AI `analyze()` call.
+- **Inputs:** the requesting `tenantId`; the target connector's `providerId` (and `modelId` for AI); the connector's declared `RateLimitConfig` (from `getRateLimitConfig()`, ADR-0002).
+- **Processing:** the gate looks up current state for the request's key — `(tenantId, providerId)` for social, `(tenantId, providerId, modelId)` for AI — and determines whether the request fits within the remaining quota for the current window. Live header-derived state (if the connector implements `parseRateLimitHeaders()`) takes priority over the static `RateLimitConfig` when both exist for the same key.
+- **Outputs:** either an immediate admission (the request proceeds) or a queued-and-delayed admission (see 5.3).
+- **Error handling:** a missing or malformed `RateLimitConfig` from a connector is a contract-test-time failure (per ADR-0002), not something the gate silently works around at runtime.
+- **Edge cases:** a connector with no declared limit for a request type it is now making — treated as a contract violation to be fixed, not a runtime default to invent.
+
+### 5.2 Feature / Capability: Tenant-scoped key isolation
+
+- **Description:** the gate's state is partitioned strictly by tenant, so no tenant's usage can ever consume another tenant's budget for the same provider.
+- **Triggers:** every admission check (5.1).
+- **Inputs:** `tenantId` as a mandatory component of every gate key.
+- **Processing:** social requests key on `(tenantId, providerId)`; AI enrichment requests key on `(tenantId, providerId, modelId)` — one level deeper, since AI provider limits are typically per-model (per ADR-0002's `getModelRateLimit(modelId)`). No code path aggregates or shares quota across tenants for the same provider/model.
+- **Outputs:** independent quota state per tenant, verifiable by concurrent-tenant tests.
+- **Error handling:** a bug that lets one tenant's state influence another's is a correctness defect verified against directly by acceptance/contract tests (per BR-006/NFR-001), not an acceptable degradation.
+- **Edge cases:** two tenants sharing the exact same underlying platform credential (not the normal case, since each tenant holds its own credentials) — even then, gating remains keyed by `tenantId`, not by credential identity.
+
+### 5.3 Feature / Capability: Queue-and-retry for over-limit requests
+
+- **Description:** a request that would exceed the current rate limit is not dropped — it is queued for the same `(tenantId, providerId[, modelId])` key and automatically retried once the relevant window resets.
+- **Triggers:** an admission check (5.1) that determines the request would exceed the remaining quota.
+- **Inputs:** the over-limit request; the window-reset time derived from the (live or static) rate-limit state.
+- **Processing:** the request is placed on that key's queue; when the window resets (or live state indicates quota is available again), the gate releases the next queued request(s) up to the newly available quota.
+- **Outputs:** eventual delivery of the request once quota is available, or (in future scope per ADR-0020) a visible failure if queue bounds/TTL are exceeded.
+- **Error handling:** a request must never be silently dropped for exceeding the limit — queue-and-retry is the only sanctioned outcome in this ADR's scope (BR-004/BRU-003); unbounded queue growth under sustained over-quota conditions is a known gap, explicitly deferred to ADR-0020 (queue bounds, TTL, dead-lettering) rather than solved here.
+- **Edge cases:** a tenant sustaining over-quota usage indefinitely — queue for that `(tenantId, providerId)` grows without the bounds/backpressure this ADR does not define; monitoring queue depth (NFR-002) is the mitigation available today, ahead of ADR-0020's bounded-queue work.
+
+### 5.4 Feature / Capability: Live rate-limit header precedence
+
+- **Description:** where a platform reports its current rate-limit state in response headers, and the connector implements `parseRateLimitHeaders()`, that live state overrides the connector's static declared `RateLimitConfig` for admission decisions.
+- **Triggers:** any platform response that includes rate-limit headers, on a connector that implements the optional parser.
+- **Inputs:** raw response headers from the platform call; the connector's `parseRateLimitHeaders()` implementation.
+- **Processing:** the gate updates its live-state view for the request's key from the parsed headers; subsequent admission checks for that key prefer this live state over the static config until it is next refreshed or expires.
+- **Outputs:** an admission decision that reflects what the platform is reporting right now, not a potentially stale static value.
+- **Error handling:** a connector without `parseRateLimitHeaders()` simply falls back to the static `RateLimitConfig` — this is a normal, supported path, not an error.
+- **Edge cases:** a platform tightening its limits mid-window (live state now stricter than static config) — the gate must honor the tighter live state immediately, not wait for the next static-config deploy.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 2.2 | epic-2-ingestion-connectors-and-rate-limits.md | As multi-tenant platform operator, I want every outbound platform/AI request gated by a shared `RequestGate` scoped to `(tenantId, providerId)` — and `(tenan... | Two tenants issuing requests to the same platform concurrently are gated independently — one tenant hitting its limit does not delay or block the other's req... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Ingestion Pipeline / Enrichment Stage (system actor) | Issues outbound requests that must pass through `RequestGate` |
+| `RequestGate` (system actor) | Enforces tenant-scoped admission, queuing, and retry |
+| Platform Operator | Monitors queue depth and retry wait times across tenants |
+| Core Backend Engineer | Implements connectors that supply `RateLimitConfig`/`parseRateLimitHeaders()` consumed by the gate |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 2.2) | multi-tenant platform operator | have every outbound platform/AI request gated by a shared `RequestGate` scoped to `(tenantId, providerId)` — and `(tenantId, providerId, modelId)` for AI enrichment — with live rate-limit headers taking priority over static declared config | one tenant's usage never throttles another tenant sharing the same platform | (1) two tenants calling the same platform concurrently are gated independently; (2) live headers, when parsed, override static config; (3) an over-limit request is queued and retried after window reset, never dropped without a trace; (4) AI enrichment requests are gated per model |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Workflow: Outbound request admission**
+
+1. A connector (social poll/push, or AI `analyze()`) is about to make an outbound call.
+2. The pipeline requests admission from `RequestGate`, supplying `tenantId`, `providerId` (and `modelId` for AI).
+3. The gate checks current state for that key: live header-derived state if present, otherwise the connector's static `RateLimitConfig`.
+4. If quota is available, the request proceeds immediately.
+5. If not, the request is queued for that key.
+6. When the window resets (or live state indicates renewed quota), the gate releases the queued request for delivery.
+7. If the platform response includes rate-limit headers and the connector implements `parseRateLimitHeaders()`, the gate updates its live state for that key from the response, ready for the next admission check.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `RateLimitConfig` | Static rate-limit declaration per connector (strategy, window, quota, cost-per-request) | Connector implementation | Technical Lead | Internal |
-| `RateLimitState` | Live rate-limit state derived from platform response headers | `parseRateLimitHeaders()` output | Technical Lead | Internal |
-| `RequestGate` queue entry | Queued outbound request keyed by `(tenantId, providerId)` or `(tenantId, providerId, modelId)` | `RequestGate` | Technical Lead | Internal |
-| `IngestionRun` status/retryable | Record of a poll attempt, including whether it was retryable | Ingestion pipeline | Technical Lead | Internal |
+
+### 7.1 Data Inputs
+
+Connector-declared `RateLimitConfig` (strategy, window, quota, cost-per-request); live rate-limit headers from platform responses (where available); the `tenantId`/`providerId`/`modelId` of each outbound request.
+
+### 7.2 Data Outputs
+
+Admission decisions (proceed / queue); queue entries per key; updated live `RateLimitState` per key; observability metrics (queue depth, wait time) for the platform operator.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `RequestGate` | in-process enforcement component; holds state keyed by `(tenantId, providerId)` or `(tenantId, providerId, modelId)` | Consumes `RateLimitConfig`/`RateLimitState` from connectors (ADR-0002); gates every outbound request |
+| `RateLimitConfig` | strategy, window, quota, cost-per-request; static, connector-declared | Produced by `getRateLimitConfig()`; superseded by `RateLimitState` when live headers are available |
+| `RateLimitState` | live remaining quota, window boundaries, cost — derived from platform response headers | Produced by `parseRateLimitHeaders()`; takes priority over `RateLimitConfig` |
+| Queue entry | a queued outbound request awaiting window reset, keyed by `(tenantId, providerId[, modelId])` | Belongs to exactly one tenant/provider/model key; released on window reset |
+| `IngestionRun` (referenced) | records whether a poll attempt was retryable, per the ingestion pipeline | Related but owned by ADR-0005/ADR-0010, not by this ADR |
+
+### 7.4 Validation Rules
+
+- A connector's `RateLimitConfig` must trace to platform documentation, or be explicitly labeled as a conservative placeholder (BRU-001) — never an invented value.
+- Live state from `parseRateLimitHeaders()` always takes priority over static `RateLimitConfig` for the same key when both exist (BRU-002).
+- Every gate key must include `tenantId` — no key may omit tenant scope (BRU-005).
+- AI enrichment keys must include `modelId` in addition to `providerId` (BRU-004).
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | A connector may only declare rate limits that reflect the platform's documented limits or an explicitly labeled conservative placeholder; the core shall never invent a rate limit. |
-| BRU-002 | When a platform returns live rate-limit headers and the connector implements `parseRateLimitHeaders()`, the live state takes priority over the static `RateLimitConfig`. |
-| BRU-003 | A request that would exceed the current rate limit for a tenant shall be queued and retried; it must never be dropped silently. |
-| BRU-004 | AI enrichment requests shall be gated per model, using the key `(tenantId, providerId, modelId)`, in addition to provider-level gating. |
-| BRU-005 | Rate-limit enforcement shall never be global; it shall always be scoped to a single tenant. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | A connector may only declare rate limits reflecting the platform's documented limits or an explicitly labeled conservative placeholder; the core never invents a limit. | All connectors |
+| BR2 | When a platform returns live rate-limit headers and the connector implements `parseRateLimitHeaders()`, the live state takes priority over the static `RateLimitConfig`. | `RequestGate` |
+| BR3 | A request that would exceed the current rate limit for a tenant must be queued and retried; it must never be dropped silently. | `RequestGate` |
+| BR4 | AI enrichment requests are gated per model, using the key `(tenantId, providerId, modelId)`, in addition to provider-level gating. | AI enrichment requests |
+| BR5 | Rate-limit enforcement is never global; it is always scoped to a single tenant. | `RequestGate` |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0002 — Unified provider connector framework (`getRateLimitConfig()`, `parseRateLimitHeaders()`) | Internal | Technical Lead | Already accepted |
-| D-002 | ADR-0010 / ADR-0023 — Retryable/non-retryable error handling and connector auto-disable | Internal | Technical Lead | Already accepted |
-| D-003 | ADR-0014 / ADR-0015 — Tenant-scoped credential storage and database-level RLS | Internal | Technical Lead | Already accepted |
-| D-004 | ADR-0020 — Bounded queues, dead-lettering, and distributed gate state | Internal | Technical Lead | Accepted; queue bounds scheduled for Phase 4; distributed state deferred until multi-instance deployment |
-| D-005 | Story 2.1 — Unified provider connector framework | Internal | Technical Lead | Ready |
-| D-006 | Story 2.2 — Per-tenant, per-provider rate limiting | Internal | Technical Lead | Ready |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `ProviderConnector`/`SocialConnector`/`AIProviderConnector` (ADR-0002) | Inbound to gate | Supplies `RateLimitConfig` and, optionally, live header state | In-process |
+| Ingestion pipeline / enrichment stage | Outbound consumer of the gate | Requests admission before every outbound call | In-process |
+| Connector health / auto-disable (ADR-0010/ADR-0023) | Parallel system | Handles sustained failure separately from rate-limit queuing | In-process |
+| ADR-0020 bounded-queue/distributed-gate work (future) | Extension point | Adds queue bounds, TTL, dead-lettering, and multi-instance distributed state | In-process (future: shared state store) |
 
 ---
 
-- Each tenant holds independent platform credentials and therefore independent quota.
-- Platform rate limits are documented and stable enough to be declared by connectors; live headers are the preferred override where available.
-- The initial `RequestGate` implementation runs in-process on a single `social-listening-core` instance.
-- Existing retryable/non-retryable error handling (ADR-0010 / ADR-0023) remains the separate mechanism for connector health and auto-disable.
-
-- Every connector declares its own limits via `getRateLimitConfig()`, reflecting the platform's documented limits only.
-- A shared `RequestGate` in the core enforces limits **per `(tenantId, providerId)`**, never globally.
-- Where a platform returns live rate-limit state in response headers, `parseRateLimitHeaders()` updates the gate's live state, which takes priority over the static declared config.
-- Requests that would exceed the limit are **queued and retried after window reset**, never dropped silently.
-- AI providers extend this one level deeper: limits are enforced per-model via `getModelRateLimit(modelId)`, not just per-provider.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Rate-limit enforcement must preserve multi-tenant isolation | Security / Reliability | Must | Acceptance tests prove one tenant's rate-limit state does not influence another tenant's allowed requests |
-| NFR-002 | The gate must be observable via queue depth and wait-time metrics | Reliability / Maintainability | Should | Platform operator can inspect per `(tenantId, providerId)` queue depth and retry wait time |
-| NFR-003 | The rate-limit contract must be reusable by all current and future connectors | Maintainability | Must | Adding a new connector requires only implementing `getRateLimitConfig()` (and optionally `parseRateLimitHeaders()`) |
+
+- **Performance:** admission checks sit on the hot path of every outbound request; the lookup/update for a given key must stay cheap enough not to become the pipeline's bottleneck.
+- **Security/access control:** rate-limit state is keyed by `tenantId`, reinforcing tenant isolation alongside RLS (ADR-0015) but at the outbound-request layer rather than the database layer.
+- **Scalability:** the current design runs in-process on a single instance; horizontal scaling to multiple instances requires the distributed gate state deferred to ADR-0020.
+- **Reliability/availability:** queue-and-retry protects against silent data loss on transient rate-limit hits; unbounded queue growth under sustained over-quota conditions is a known, currently unmitigated risk pending ADR-0020.
+- **Audit and logging:** queue depth and retry wait time per `(tenantId, providerId)` should be observable to the platform operator (NFR-002).
+- **Accessibility/localization:** not applicable — internal backend enforcement component with no UI surface.
 
 ---
 
 ## 11. Error Handling and Exceptions
-**Positive**
-- Rate-limit isolation directly satisfies the multi-tenancy requirement in §8: one tenant's usage never throttles another's, even though all tenants may be hitting the same third-party platform.
-- Preferring live header state over static config means the gate adapts to a platform tightening or loosening its limits without a code change.
-- Queue-and-retry (rather than drop) means transient rate-limit hits don't silently lose data — consistent with the retryable-error handling in §5.
 
-**Negative**
-- A queued request that waits for window reset adds latency to that tenant's ingestion; under sustained over-quota conditions, the queue for a given `(tenantId, providerId)` can grow and needs monitoring/backpressure that isn't detailed in this spec.
-- Per-model limits for AI providers mean the gate's key space is effectively `(tenantId, providerId, modelId)` for enrichment traffic, which is more granular bookkeeping than social connectors need.
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Request would exceed the current rate limit | N/A (internal); ingestion for that tenant/provider simply resumes after window reset | Request queued at the `(tenantId, providerId[, modelId])` key, retried after window reset |
+| Connector declares no valid `RateLimitConfig` | N/A (caught in contract tests, ADR-0002) | Gate cannot admit requests for that connector until fixed |
+| Live headers indicate a tighter limit than the static config | N/A (internal) | Gate immediately adopts the tighter live state for subsequent admission checks |
+| Sustained over-quota usage causes unbounded queue growth | N/A (operator-facing metric, not user-facing) | Currently unmitigated within this ADR's scope; tracked as a known gap for ADR-0020 |
+| Cross-tenant quota leakage (defect scenario) | N/A | Must never occur; caught by acceptance/contract tests verifying key isolation (BR-006/NFR-001) |
+
+---
 
 ## 12. Assumptions and Dependencies
+
 - Each tenant holds independent platform credentials and therefore independent quota.
 - Platform rate limits are documented and stable enough to be declared by connectors; live headers are the preferred override where available.
-- The initial `RequestGate` implementation runs in-process on a single `social-listening-core` instance.
-- Existing retryable/non-retryable error handling (ADR-0010 / ADR-0023) remains the separate mechanism for connector health and auto-disable.
+- The initial `RequestGate` implementation runs in-process on a single `social-listening-core` instance; distributed state is out of scope until a second concurrent instance actually runs.
+- Existing retryable/non-retryable error handling (ADR-0010/ADR-0023) remains the separate mechanism for connector health and auto-disable — not duplicated here.
+- Dependency: ADR-0002 supplies the `getRateLimitConfig()`/`parseRateLimitHeaders()` contract this gate consumes.
+- Dependency: ADR-0020 will add queue bounds, TTL-based abandonment, dead-lettering, and distributed gate state — explicitly deferred, not built speculatively.
+- Dependency: ADR-0014/ADR-0015 (tenant-scoped credential storage and RLS) provide the broader tenant-isolation context this gate reinforces at the outbound-request layer.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Sustained over-quota usage for one tenant causes queue growth and ingestion latency | Medium | Medium | Implement queue bounds, TTL, and dead-lettering per ADR-0020 / Story 2.4; add monitoring and backpressure | Technical Lead |
-| R-002 | A connector does not implement `parseRateLimitHeaders()`, so the gate cannot react to live platform changes | Medium | Medium | Keep `getRateLimitConfig()` as a conservative, documented fallback; require explicit labels on placeholders | Technical Lead |
-| R-003 | A bug in the gate allows cross-tenant quota sharing | Low | High | Acceptance tests with concurrent tenants; contract tests verifying key scoping | Technical Lead |
-| R-004 | Per-model AI gating adds bookkeeping complexity | Medium | Low | Reuse the same `RequestGate` with an extra key segment; test key isolation per model | Technical Lead |
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | What queue depth/TTL bounds and backpressure mechanism will apply once ADR-0020 is implemented? | Technical Lead | Resolved by ADR-0020/FDD-0020 |
+| Q2 | What observability surface (dashboard, metric export) will expose queue depth and retry wait time to the platform operator? | Technical Lead | Open — NFR-002 states the requirement, not the mechanism |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0003-per-tenant-per-provider-rate-limiting.md`
-- BRD: `../Business-Requirements/BRD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md`
-- Feature design: _No dedicated feature-design file found._
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+- **Glossary:** see BRD-0003 §15 (`RequestGate`, `RateLimitConfig`, `parseRateLimitHeaders()`, `getModelRateLimit(modelId)`, `RateLimitState`, `tenantId`/`providerId`/`modelId`).
+- **Reference links:** `docs/adr/0003-per-tenant-per-provider-rate-limiting.md`; `docs/project docs/Business-Requirements/BRD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md`; `docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md` (Story 2.2, Story 2.4); `docs/adr/0002-unified-provider-connector-pattern.md`; `docs/adr/0020-rate-limit-queue-bounds-and-distributed-gate-state.md`; `docs/adr/0010-error-handling-and-auto-disable-policy.md`; `docs/adr/0023-proportional-connector-failure-threshold.md`.
+- **Feature design/deep research:** none found — this is a backend enforcement ADR with no dedicated `docs/product-research/feature-designs/` or `reports/` entry; rationale is captured directly in the design spec (§3.2, §8) and the ADR.
+- **Diagrams:** none beyond the workflow steps in §6.3.
+- **Revision history:** v1.0, 2026-08-23 — regenerated from ADR-0003/BRD-0003/Story 2.2 to replace a defective prior version that copied the BRD's flat requirements table instead of a per-capability functional breakdown.

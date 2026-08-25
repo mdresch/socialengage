@@ -1,9 +1,9 @@
-# SocialEngage – Credential Creation Authority Scoped by Ownership Tier
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Credential Creation Authority Scoped by Ownership Tier |
+| Document Title | FDD-0028 Credential Creation Authority Scoped by Ownership Tier — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

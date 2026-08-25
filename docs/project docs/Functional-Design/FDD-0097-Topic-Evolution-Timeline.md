@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Topic Evolution Timeline
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Topic Evolution Timeline |
+| Document Title | FDD-0097 Topic Evolution Timeline — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

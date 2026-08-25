@@ -1,9 +1,9 @@
-# BRD-0029 — Authentication Mechanism: Microsoft Entra External ID
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0029 — Authentication Mechanism: Microsoft Entra External ID |
+| Document Title | FDD-0029 Authentication Mechanism: Microsoft Entra External ID — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

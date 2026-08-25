@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Compliance Audit Pack
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Compliance Audit Pack |
+| Document Title | FDD-0094 Compliance Audit Pack — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

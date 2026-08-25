@@ -1,9 +1,9 @@
-# Live Ingestion-Polling Scheduler – Business Requirements Document
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Live Ingestion-Polling Scheduler – Business Requirements Document |
+| Document Title | FDD-0052 Live Ingestion-Polling Scheduler — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

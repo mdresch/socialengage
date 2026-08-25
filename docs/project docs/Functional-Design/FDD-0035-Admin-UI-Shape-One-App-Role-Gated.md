@@ -1,9 +1,9 @@
-# SocialEngage — Admin UI Shape: One Role-Gated Application
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage — Admin UI Shape: One Role-Gated Application |
+| Document Title | FDD-0035 Admin UI Shape: One Role-Gated Application — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

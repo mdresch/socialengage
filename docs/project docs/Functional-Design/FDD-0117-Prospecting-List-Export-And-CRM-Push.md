@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Prospecting List Export and CRM Push – Business Requirements Document |
+| Document Title | FDD-0117 Prospecting List Export and CRM Push — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

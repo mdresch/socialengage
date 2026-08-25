@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage — Publishing: Media Upload and Asset Targeting |
+| Document Title | FDD-0115 Publishing: Media Upload and Asset Targeting — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

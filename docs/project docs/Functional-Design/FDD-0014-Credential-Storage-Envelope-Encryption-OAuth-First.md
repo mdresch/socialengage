@@ -1,9 +1,9 @@
-# SocialEngage — Envelope-Encrypted Credential Storage with OAuth-First Authentication
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage — Envelope-Encrypted Credential Storage with OAuth-First Authentication |
+| Document Title | FDD-0014 Envelope-Encrypted Credential Storage with OAuth-First Authentication — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

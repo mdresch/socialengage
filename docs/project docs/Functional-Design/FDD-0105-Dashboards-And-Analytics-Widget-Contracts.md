@@ -4,96 +4,144 @@
 
 | Field | Value |
 |---|---|
-| Document Title | BRD-0105: Dashboards and Analytics Widget Contracts |
-| Version | 0.1 |
+| Document Title | FDD-0105 Dashboards and Analytics Widget Contracts — Functional Design Document |
+| Version | 0.2 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer — Batch Agent |
+| Author(s) | FDD Writer Agent (derived from ADR-0105, BRD-0105, feature design 08) |
 | Reviewer(s) | Product Owner / Technical Lead |
-| Status | Draft (ADR status: Proposed (2026-08-23); BRD status: Draft) |
-| Related Documents | ADR-0105, BRD-0105, related feature designs, user stories |
+| Status | Draft — ADR-0105 is currently **Proposed**, not Accepted; this FDD is a draft for review and may change once the ADR is accepted |
+| Related Documents | ADR-0105, BRD-0105, `docs/product-research/feature-designs/08-dashboards-and-analytics.md`, Story 12.9, Story 12.10, ADR-0087, ADR-0078, ADR-0104 |
 
 ---
 
 ## 2. Purpose and Scope
 
 ### 2.1 Purpose
-**Note:** The source ADR is currently **Proposed**. This FDD is a draft for review and may change.
 
-The analytics dashboard already gives tenants visual, interactive views of listening data, but each widget has been built as a one-off component. This initiative establishes a single, typed contract between the backend and the front end so that every widget—sentiment gauges, volume charts, topic clouds, source breakdowns, and future visualizations—can be rendered generically and deep-linked consistently.
+**Note (draft status):** ADR-0105 is Proposed, not Accepted. This FDD translates the proposed decision into a functional design so implementation can be scoped and estimated, but the contract below may still change before acceptance.
 
-This FDD translates the accepted architecture and business requirements from ADR-0105 and BRD-0105 into a coherent functional design for implementation.
+The Analytics Dashboard (Epic 8) already ships, but each widget was hand-built with its own data shape and client-side aggregation, so adding a widget means touching both backend fetching and frontend rendering, and large date ranges degrade client-side performance. This document defines the functional behavior of a single, typed widget contract: the `GET /v1/analytics/dashboard` endpoint, the six per-widget data shapes, the backend `WidgetRegistry`/`WidgetDataProvider` pattern, filter propagation rules, precomputed-vs-fallback query routing, and the frontend `WidgetRenderer` hierarchy that maps `widget.type` to a generic renderer.
 
 ### 2.2 Scope
 
-- **In scope:** - The `GET /v1/analytics/dashboard` request and response contract.
-- The six per-widget data shapes: `metric`, `time-series`, `bar`, `pie`, `list`, and `table`.
-- A backend `WidgetRegistry` that maps `widgetId` to a `WidgetDataProvider`.
-- Filter semantics for `watchlistId`, `selectedTopic`, `timeRange`, and `granularity`.
-- Query routing that prefers `*DailyCount` precomputed tables and falls back to `social_posts` for the current partial day.
-- Integration with the `selectedTopic` filter from ADR-0104.
-- A front-end `WidgetRenderer` component hierarchy: `DashboardView` → `FilterBar` → `WidgetGrid` → typed renderers.
-- Deep-link encoding of filter state.
-- Optional metric explainability via `POST /v1/explain` (ADR-0078) when the user enables it.
-- **Out of scope:** - Public shareable dashboard links (deferred; tenant-internal sharing only for v2).
-- Persistent user-specific dashboard layout (pending open question on `user_dashboard_layout`).
-- A `widgets` allowlist or per-request widget subset (pending open question).
-- New v2 widgets such as Share of Voice, Top Influencers, or Engagement Rate beyond the contract needed to support them.
-- Geospatial/Location widgets explicitly reaffirmed as not buildable in Epic 8 (ADR-0054/0055).
-- New precomputed aggregate tables beyond the current `*DailyCount` design unless client-side aggregation becomes a bottleneck.
-- **Assumptions and constraints:** - Epic 8 (Analytics Dashboard, Stories 8.1–8.6) is already built in `social-listening-admin`.
-- ADR-0087 (preconfigured analytics views and `*DailyCount` tables) provides the historical aggregate data source.
-- ADR-0104 (`selectedTopic` filter and topic curation) is in place.
-- ADR-0078 (metric explainability) makes `POST /v1/explain` available.
-- All dashboard data remains subject to multi-tenant RLS and watchlist/provider access rules.
+**In scope:**
+- `GET /v1/analytics/dashboard` request/response contract (`watchlistId`, `selectedTopic`, `timeRange`, `granularity` in; `widgets[]` and `filters` out).
+- The six typed `WidgetData` shapes: `metric`, `time-series`, `bar`, `pie`, `list`, `table`.
+- Backend `WidgetRegistry` mapping `widgetId` to a `WidgetDataProvider`.
+- Filter semantics for `watchlistId`, `selectedTopic` (ADR-0104), `timeRange`, `granularity`, including the "unsupported filter returns null" rule.
+- Query routing: prefer `*DailyCount` (ADR-0087) tables; fall back to `social_posts` only for the current partial day.
+- Optional metric `explanation` via `POST /v1/explain` (ADR-0078).
+- Frontend `WidgetRenderer` component hierarchy (`DashboardView` → `FilterBar` → `WidgetGrid` → typed renderers) and deep-link encoding of filter state.
+
+**Out of scope:**
+- Publicly shareable (non-tenant-authenticated) dashboard links.
+- Persistent per-user dashboard layout (`user_dashboard_layout` — open question).
+- A `widgets` allowlist / per-request widget subset (open question).
+- New v2 widget types (Share of Voice, Top Influencers, Engagement Rate) beyond the contract needed to support future ones.
+- Geospatial/Location widgets (reaffirmed out of scope per ADR-0054/0055).
+- New precomputed aggregate tables beyond the existing `*DailyCount` design.
 
 ### 2.3 Target Audience
-Engineers, QA, product owners, UX, and platform operations.
+
+Backend engineers implementing the `WidgetRegistry`/providers (Story 12.9), frontend engineers implementing `WidgetRenderer` (Story 12.10), QA authoring RLS/filter contract tests, and the Product Owner validating widget shapes against dashboard needs.
 
 ---
 
 ## 3. Context and Background
 
-### 1. The analytics dashboard is already built
-`docs/product-research/feature-designs/08-dashboards-and-analytics.md` and the Analytics Dashboard (Epic 8, Stories 8.1–8.6) already exist. This ADR formalizes the widget contract, the `selectedTopic` filter, and the query-routing rules so future widgets follow the same pattern.
+Epic 8 (Stories 8.1–8.6) already shipped Overview/Sentiment/Conversations/Sources/Language dashboard views, built as client-side aggregations over `GET /v1/posts` and `enrichment`, each widget owning its own transformation and rendering logic. This works for a v1 but does not scale: widget shapes are inconsistent, there's no generic `widget.type → renderer` mapping, filter propagation is ad hoc, and client-side aggregation over large date ranges is slow. ADR-0087's `*DailyCount` precomputed tables and ADR-0104's `selectedTopic` filter both need a stable contract point to plug into; ADR-0078's `POST /v1/explain` needs a place to surface `explanation` text on metric widgets.
 
-### 2. Widgets need a common contract
-Each widget (sentiment gauge, volume chart, topic cloud, source breakdown, etc.) should have a consistent request/response shape so the UI can render them generically.
-
-### 3. Precomputed views and `RAG` can power widgets
-`ADR-0087` (preconfigured analytics views) and `ADR-0084` (RAG search) provide fast aggregate data and natural-language Q&A. The dashboard contract must support both.
-
----
+This design formalizes what already works in Epic 8 into a typed, versioned contract so future widgets are additive (a new provider + a new renderer) rather than requiring endpoint changes.
 
 ---
 
 ## 4. Goals and Objectives
 
-| # | Objective | Success Measure |
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Standardize the dashboard widget contract so new widgets require only a backend provider and a front-end renderer | New widget types can be added without changing the main `GET /v1/analytics/dashboard` endpoint |
-| 2 | Improve dashboard response time and scalability | Dashboard renders within p99 < 500 ms for pre-aggregated historical views |
-| 3 | Enable consistent, shareable filtering across all dashboard widgets | Deep links restore `watchlistId`, `selectedTopic`, and `timeRange` and all compatible widgets update |
-| 4 | Support explainable metrics where users opt in | Metric widgets can display a plain-language `explanation` from `POST /v1/explain` |
-
----
+| G1 | Standardize the widget contract | New widget types are added via a registered `WidgetDataProvider` and renderer, with no change to `GET /v1/analytics/dashboard` itself |
+| G2 | Improve dashboard performance at scale | p99 dashboard load under 500 ms for pre-aggregated historical views |
+| G3 | Consistent, shareable filtering | Deep links restore `watchlistId`, `selectedTopic`, `timeRange`, and all compatible widgets update accordingly |
+| G4 | Built-in explainability | Metric widgets can surface a plain-language `explanation` with a confidence indicator when the user opts in |
+| G5 | Preserve tenant isolation | All widget data remains scoped by tenant RLS and the user's watchlist/provider permissions |
 
 ---
 
 ## 5. Functional Requirements
 
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall expose `GET /v1/analytics/dashboard` accepting `watchlistId`, `selectedTopic`, `timeRange`, and `granularity` | Must | Endpoint returns a typed `widgets` array and a `filters` object | Product Owner |
-| BR-002 | The system shall define six per-widget data shapes (`metric`, `time-series`, `bar`, `pie`, `list`, `table`) | Must | Each returned widget's `data` matches exactly one of the six shapes | Product Owner |
-| BR-003 | The backend shall maintain a `WidgetRegistry` mapping `widgetId` to a `WidgetDataProvider` | Must | New widgets can be registered without changing the main endpoint | Technical Lead |
-| BR-004 | The system shall propagate `watchlistId`, `selectedTopic`, `timeRange`, and `granularity` to all compatible widgets | Must | Each widget's data reflects the active filters where the dimension exists | Product Owner |
-| BR-005 | Widgets that cannot honor a filter shall return `null` for that filter's effect, not an error | Must | Dashboard renders without failure when a filter is unsupported by a widget | Technical Lead |
-| BR-006 | Widgets shall prefer `*DailyCount` tables and fall back to `social_posts` only for the current partial day | Should | Historical data loads from precomputed tables; current-day data is accurate | Technical Lead |
-| BR-007 | Metric widgets may include a plain-language `explanation` from `POST /v1/explain` when the user enables explainability | Could | Explanation appears only when requested and has a confidence indicator | Product Owner |
-| BR-008 | The front end shall provide a `WidgetRenderer` component hierarchy that maps `widget.type` to a renderer | Must | All six data shapes render correctly and handle loading/empty states | Technical Lead |
-| BR-009 | The system shall encode `watchlistId`, `selectedTopic`, and `timeRange` in the dashboard URL for deep links | Should | Loading a deep link restores the same dashboard state | Product Owner |
+### 5.1 Feature / Capability: `GET /v1/analytics/dashboard` contract
 
-Priority levels: Must / Should / Could / Won't (MoSCoW)
+- **Description:** The single endpoint the dashboard UI calls to retrieve all widgets for the current filter state.
+- **Triggers:** `DashboardView` loads, or the user changes a filter (`watchlistId`, `selectedTopic`, `timeRange`, `granularity`).
+- **Inputs:** Optional `watchlistId`, `selectedTopic`, `timeRange` (`{ start, end }` ISO strings), `granularity` (`hour`/`day`/`week`/`month`).
+- **Processing:** The endpoint resolves the caller's tenant/user context, iterates the `WidgetRegistry` (5.3) to build the `widgets[]` array, and separately computes the `filters` object (available `watchlists`, `topics`, `availableTimeRanges`) for populating `FilterBar` controls.
+- **Outputs:** `{ widgets: Array<{ id, type, title, data }>; filters: { watchlists, topics, availableTimeRanges } }`.
+- **Error handling:** An invalid `timeRange` (end before start) or unknown `granularity` value is rejected with a validation error before any provider is invoked. A `watchlistId`/`selectedTopic` the caller cannot access is treated as not found (no cross-tenant/cross-permission disclosure).
+- **Edge cases:** No filters supplied returns the tenant's default (unfiltered, default time range) view.
+
+### 5.2 Feature / Capability: Per-widget data shapes
+
+- **Description:** Defines the six discriminated-union `WidgetData` shapes every provider must emit, so the frontend can render generically by `type`.
+- **Triggers:** Emitted by each `WidgetDataProvider` as part of building the `GET /v1/analytics/dashboard` response.
+- **Inputs:** Provider-specific query results (aggregate counts, series, breakdowns).
+- **Processing:** Each provider maps its query result into exactly one of: `metric` (`value`, optional `previousValue`, optional `explanation`), `time-series` (`labels[]`, `series: [{ name, data[] }]`), `bar` (`labels[]`, `data[]`), `pie` (`segments: [{ label, value, color? }]`), `list` (`items: [{ label, value, url? }]`), `table` (`columns[]`, `rows[]`).
+- **Outputs:** A `widget.data` value strictly matching one of the six shapes; the frontend never receives an undocumented seventh shape.
+- **Error handling:** A provider that cannot produce valid data for its declared shape (e.g., empty result set) still returns a well-formed, empty instance of that shape (e.g., `{ type: 'metric', value: 0 }`), not a null/undefined `data`.
+- **Edge cases:** A `metric` widget with no prior-period comparison omits `previousValue` rather than sending a placeholder zero that could be misread as an actual prior value.
+
+### 5.3 Feature / Capability: `WidgetRegistry` / `WidgetDataProvider`
+
+- **Description:** The backend extensibility mechanism that lets new widgets be added without modifying the main endpoint.
+- **Triggers:** Invoked once per registered widget on every `GET /v1/analytics/dashboard` call.
+- **Inputs:** The resolved request filters (`watchlistId`, `selectedTopic`, `timeRange`, `granularity`) and the caller's tenant/permission context.
+- **Processing:** Each `WidgetDataProvider` declares which filter dimensions it supports and which aggregate view or query it uses (5.5). The registry invokes every applicable provider (or an allowlisted subset, pending Q1) and assembles their outputs into `widgets[]`.
+- **Outputs:** One `widgets[]` entry per registered, applicable provider.
+- **Error handling:** A single provider's failure (e.g., a query timeout) must not fail the whole dashboard response; that widget can be omitted or returned in an error/empty state while other widgets still render.
+- **Edge cases:** Registering two providers with the same `widgetId` is a configuration error caught at startup/registration time, not at request time.
+
+### 5.4 Feature / Capability: Filter propagation semantics
+
+- **Description:** Defines how `watchlistId`, `selectedTopic`, `timeRange`, and `granularity` affect each widget.
+- **Triggers:** Any active filter on a `GET /v1/analytics/dashboard` request.
+- **Inputs:** The filter values from 5.1.
+- **Processing:**
+  - `watchlistId` restricts every widget to posts matching that watchlist (BRU-001).
+  - `selectedTopic` restricts every widget to posts associated (via `post_topics`, ADR-0104) with that topic (BRU-002).
+  - `timeRange`/`granularity` are honored only where the underlying data has a `date`/`published_at` dimension (BRU-003).
+  - A widget whose data has no dimension matching an active filter returns `null` for that specific filter's effect rather than raising an error (BRU-004) — the widget still renders, just without that filter applied.
+- **Outputs:** Filtered widget data consistent with all filters the widget supports; explicit `null` markers for unsupported filters (used by the frontend to show "filter not applicable" state if desired).
+- **Error handling:** N/A beyond 5.1's validation — filter *application* never errors, only filter *parsing* can.
+- **Edge cases:** `selectedTopic` referencing a merged topic (ADR-0104) resolves to the merge target's data, consistent with ADR-0104 §6's merge semantics.
+
+### 5.5 Feature / Capability: Query routing (precomputed vs. fallback)
+
+- **Description:** Determines whether a widget's data comes from a fast precomputed aggregate or a live query over raw posts.
+- **Triggers:** Every widget data fetch.
+- **Inputs:** The requested `timeRange` and the availability/freshness of the relevant `*DailyCount` table (ADR-0087).
+- **Processing:** Widgets prefer `*DailyCount` tables for historical aggregation. Only the current, not-yet-fully-aggregated partial day may fall back to a live `social_posts` query; the fallback query window is kept small (capped) to bound latency (mitigation for R-002).
+- **Outputs:** Widget data that is a seamless blend of precomputed history plus (for the current day only) live data, indistinguishable in shape to the consumer.
+- **Error handling:** If the `*DailyCount` table has not yet been refreshed for a requested historical date, that gap is also covered by the live-query fallback rather than showing missing data.
+- **Edge cases:** A `timeRange` spanning both historical and current-day data must merge both sources into one continuous series without a visible seam or double-count at the boundary.
+
+### 5.6 Feature / Capability: Metric explainability integration
+
+- **Description:** Lets a `metric` widget surface a plain-language explanation of its value/change.
+- **Triggers:** The user enables explainability (an opt-in setting or per-widget action).
+- **Inputs:** The metric widget's underlying value/previousValue and its query context.
+- **Processing:** The provider calls `POST /v1/explain` (ADR-0078) and attaches the result as `explanation` on the `metric` widget's data.
+- **Outputs:** `widget.data.explanation` (plain-language text) alongside the numeric value; per ADR-0078/BRU-006 the explanation must surface a confidence indicator.
+- **Error handling:** If `POST /v1/explain` fails or times out, the metric widget still returns its numeric value with `explanation` omitted rather than failing the whole widget.
+- **Edge cases:** Explainability is per-request opt-in; it must not be silently cached/reused for a different metric value without regenerating.
+
+### 5.7 Feature / Capability: `WidgetRenderer` frontend hierarchy
+
+- **Description:** The frontend component hierarchy that consumes `GET /v1/analytics/dashboard` output generically.
+- **Triggers:** `DashboardView` mounts or filters change.
+- **Inputs:** The `widgets[]` and `filters` payload from 5.1.
+- **Processing:** `DashboardView` renders a `FilterBar` (`WatchlistSelector`, `TopicSelector`, `TimeRangeSelector`) and a `WidgetGrid`. For each widget, `WidgetGrid` maps `widget.type` to one of `MetricTile`, `TimeSeriesChart`, `BarChart`, `PieChart`, `RankedList`, `DataTable`. Each renderer manages its own loading and error/empty state independently.
+- **Outputs:** A rendered dashboard reflecting the current filter state; a URL that encodes `watchlistId`, `selectedTopic`, and `timeRange` for deep linking.
+- **Error handling:** A renderer receiving malformed/unexpected data for its type shows an inline error state for that widget only, not a full-page failure.
+- **Edge cases:** An unrecognized `widget.type` (e.g., a newly registered backend widget the frontend build predates) is rendered as a generic "unsupported widget" placeholder rather than crashing the grid.
 
 ---
 
@@ -101,292 +149,189 @@ Priority levels: Must / Should / Could / Won't (MoSCoW)
 
 ### 6.1 Primary Actors
 
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant-Reader | Daily dashboard viewer | High | Understand every widget at a glance with plain-language labels |
-| Tenant-Business-Analyst | Filters and exports data for deeper analysis | High | Filter by watchlist, date, source, language, and topic; export underlying data |
-| Topic-Center-Analyst | Investigates trends and topics | Medium | Use `selectedTopic` and future topic/influencer widgets |
-| Tenant-Brand-Reputation-Manager | Monitors crisis KPIs | Medium | See negative sentiment, reach, and source breakdown quickly |
-| Platform-Admin | Operates the platform | Medium | View platform-wide usage, cost, and connector-health widgets without seeing tenant content |
-| Tenant-User | Customizes and shares within the tenant | Low | Customize default dashboard view and share within the tenant |
-| Backend / Frontend Engineers | Implement and maintain the contract | High | Clear, typed, versioned contract and generic rendering pipeline |
-
----
+| Actor | Role |
+|---|---|
+| Tenant-Reader | Daily dashboard viewer |
+| Tenant-Business-Analyst | Filters and exports data for deeper analysis |
+| Topic-Center-Analyst | Uses `selectedTopic` and topic/trend widgets |
+| Tenant-Brand-Reputation-Manager | Monitors crisis KPIs (sentiment, reach, source breakdown) |
+| Platform-Admin | Views platform-wide usage/cost/connector-health widgets without seeing tenant content |
+| Tenant-User | Customizes and shares dashboard views within the tenant |
+| Backend / Frontend Engineers | Implement and extend the contract |
 
 ### 6.2 User Stories / Use Cases
 
 | ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
 |---|---|---|---|---|
-| 12.9 | backend engineer | `GET /v1/analytics/dashboard` to return a registry of typed widgets and `selectedTopic` filters, | the frontend can render dashboards generically and new widgets can be added easily. | `GET /v1/analytics/dashboard` accepts `watchlistId`, `selectedTopic`, `timeRange`, `granularity`.; Widget data shapes: `metric`, `time-series`, `bar`, `pie`, `list`, `table`.; `WidgetRegistry` maps `widgetId` to a `WidgetDataProvider`. |
-| 12.10 | `Tenant-Reader` | a dashboard that renders widgets consistently and lets me filter by topic and watchlist, | I can see the metrics that matter. | `DashboardView` with `FilterBar` and `WidgetGrid`.; `MetricTile`, `TimeSeriesChart`, `BarChart`, `PieChart`, `RankedList`, `DataTable` renderers.; Filters propagate to all compatible widgets. |
+| US1 (Story 12.9) | backend engineer | `GET /v1/analytics/dashboard` to return a registry of typed widgets and `selectedTopic` filters | the frontend can render dashboards generically and new widgets can be added easily | Endpoint accepts `watchlistId`/`selectedTopic`/`timeRange`/`granularity`; six data shapes; `WidgetRegistry` maps `widgetId` to provider; widgets prefer `*DailyCount`, fall back for current day; metric widgets can include `explanation` |
+| US2 (Story 12.10) | Tenant-Reader | a dashboard that renders widgets consistently and lets me filter by topic and watchlist | I can see the metrics that matter | `DashboardView` with `FilterBar`/`WidgetGrid`; six renderer components; filters propagate to all compatible widgets; each renderer handles its own loading/empty state; deep links include filter state |
 
 ### 6.3 Workflow Diagrams / Steps
 
-### 1. `GET /v1/analytics/dashboard` contract
-```ts
-// Request
-{
-  watchlistId?: string;
-  selectedTopic?: string;
-  timeRange?: { start: ISOString; end: ISOString };
-  granularity?: 'hour' | 'day' | 'week' | 'month';
-}
+**Dashboard load workflow:**
+1. User opens the Analytics Dashboard (or loads a deep link with filter query params).
+2. `DashboardView` calls `GET /v1/analytics/dashboard` with the current filter state.
+3. The backend `WidgetRegistry` invokes each applicable `WidgetDataProvider`, which routes to `*DailyCount` (or the bounded live fallback for the current day) and, for opted-in metrics, calls `POST /v1/explain`.
+4. The response's `widgets[]` and `filters` are returned; `WidgetGrid` maps each `widget.type` to its renderer and displays the dashboard.
+5. The URL is updated/kept in sync with `watchlistId`, `selectedTopic`, `timeRange` for deep-linking.
 
-// Response
-{
-  widgets: Array<{
-    id: string;
-    type: string;
-    title: string;
-    data: WidgetData;
-  }>;
-  filters: {
-    watchlists: Array<{ id: string; name: string }>;
-    topics: Array<{ id: string; name: string }>;
-    availableTimeRanges: string[];
-  };
-}
-```
-
-### 2. Per-widget data shapes
-```ts
-type WidgetData =
-  | { type: 'metric'; value: number; previousValue?: number; explanation?: string }
-  | { type: 'time-series'; labels: string[]; series: Array<{ name: string; data: number[] }> }
-  | { type: 'bar'; labels: string[]; data: number[] }
-  | { type: 'pie'; segments: Array<{ label: string; value: number; color?: string }> }
-  | { type: 'list'; items: Array<{ label: string; value: number; url?: string }> }
-  | { type: 'table'; columns: string[]; rows: Array<Record<string, string | number>> };
-```
-
-### 3. Widget registry
-- The backend has a `WidgetRegistry` that maps `widgetId` to a `WidgetDataProvider`.
-- Each provider knows which aggregate view or query to use and what filter combinations it supports.
-- New widgets can be added without changing the main endpoint by registering a new provider.
-
-### 4. Filter semantics
-- `watchlistId` restricts all widgets to posts matching that watchlist.
-- `selectedTopic` (ADR-0104) restricts widgets to posts associated with that topic.
-- `timeRange` is honored where the underlying data has a `date` or `published_at` dimension.
-- Widgets that cannot honor a filter return `null` for that filter's effect, not an error.
-
-### 5. Query routing
-- Widgets prefer `*DailyCount` tables (ADR-0087) for historical aggregation.
-- The current partial day may fall back to `social_posts` if the aggregate table has not yet been refreshed.
-- `metric` widgets can include an `explanation` from `POST /v1/explain` (ADR-0078) if the user enables explainability.
-
-### 6. `WidgetRenderer` component hierarchy
-```
-DashboardView
-├── FilterBar
-│   ├── WatchlistSelector
-│   ├── TopicSelector
-│   └── TimeRangeSelector
-└── WidgetGrid
-    ├── MetricTile
-    ├── TimeSeriesChart
-    ├── BarChart
-    ├── PieChart
-    ├── RankedList
-    └── DataTable
-```
-
-- The front-end maps `widget.type` to a renderer.
-- Each renderer handles its own loading and error states.
-- Deep links encode `watchlistId`, `selectedTopic`, and `timeRange`.
-
----
+**Filter-change workflow:**
+1. User changes a `FilterBar` control (watchlist, topic, or time range).
+2. `DashboardView` re-requests `GET /v1/analytics/dashboard` with the new filter values.
+3. Widgets that support the changed filter re-render with updated data; widgets that do not support it are unaffected (receive `null` for that filter's effect) and continue showing their existing data.
+4. The URL updates to reflect the new filter state.
 
 ---
 
 ## 7. Data Requirements
 
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `widgets` array | Typed list of dashboard widgets returned by `GET /v1/analytics/dashboard` | `WidgetRegistry` / `WidgetDataProvider` | Backend | Tenant-scoped |
-| `widget.data` | One of `metric`, `time-series`, `bar`, `pie`, `list`, `table` | Provider query result | Backend | Tenant-scoped |
-| `filters` | Available `watchlists`, `topics`, and `availableTimeRanges` | `watchlists`, `topics` | Backend | Tenant-scoped |
-| `watchlistId` | Selected watchlist filter | User selection | Frontend | Tenant-scoped |
-| `selectedTopic` | Selected topic filter | User selection + ADR-0104 | Frontend / Backend | Tenant-scoped |
-| `timeRange` / `granularity` | Date filter and bucket size | User selection | Frontend | None |
-| `*DailyCount` tables | Precomputed daily aggregates (ADR-0087) | Derived from `social_posts` + `enrichment` | Backend | Tenant-scoped |
-| `social_posts` | Raw post fallback for the current partial day | Ingestion pipeline | Backend | Tenant-scoped / PII possible |
-| `explanation` | Plain-language metric explanation (ADR-0078) | `POST /v1/explain` | Backend | Tenant-scoped |
-| `user_dashboard_layout` (proposed) | Per-user widget layout persistence | Open question | Backend | Tenant-scoped |
+### 7.1 Data Inputs
 
----
+- `watchlistId`, `selectedTopic`, `timeRange`, `granularity` from the `FilterBar`/deep-link URL.
+- `*DailyCount` precomputed aggregate rows (ADR-0087) and, for the current day, live `social_posts`/`enrichment` rows.
+- `POST /v1/explain` output (ADR-0078) when explainability is enabled.
+
+### 7.2 Data Outputs
+
+- `GET /v1/analytics/dashboard` response: `widgets[]` and `filters`, consumed by `DashboardView`/`WidgetGrid`.
+- Deep-link URLs encoding filter state.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `DashboardRequest` (request DTO, not persisted) | `watchlistId?`, `selectedTopic?`, `timeRange? {start, end}`, `granularity? ('hour'\|'day'\|'week'\|'month')` | Consumed by `GET /v1/analytics/dashboard` |
+| `DashboardResponse` (response DTO, not persisted) | `widgets: Widget[]`, `filters: { watchlists[], topics[], availableTimeRanges[] }` | Returned to the frontend |
+| `Widget` (embedded object) | `id`, `type`, `title`, `data: WidgetData` | One per registered `WidgetDataProvider` applicable to the request |
+| `WidgetData` (discriminated union) | One of `metric` \| `time-series` \| `bar` \| `pie` \| `list` \| `table`, each with its own typed fields (see 5.2) | Embedded in `Widget.data` |
+| `WidgetRegistry` (backend component, not persisted) | Maps `widgetId → WidgetDataProvider` | Iterated once per dashboard request |
+| `*DailyCount` (ADR-0087, existing tables) | Precomputed daily aggregates (e.g., `SentimentDailyCount`, `TopicDailyCount`, `SourceDailyCount`) | Primary data source for historical widget providers |
+| `social_posts` / `enrichment` (existing) | Raw post fallback for current-partial-day data | Secondary data source, bounded to the current day |
+
+### 7.4 Validation Rules
+
+- `timeRange.start` must be before `timeRange.end`; invalid ranges are rejected before any provider runs.
+- `granularity` must be one of `hour`, `day`, `week`, `month`.
+- `widget.data` must match exactly one of the six defined shapes — no additional/undocumented shape is emitted (BR-002).
+- A widget unable to honor an active filter must emit `null` for that filter's effect, never throw (BRU-004).
+- All widget data queries must be scoped by tenant RLS and the caller's watchlist/provider permissions (BRU-007, NFR-002).
 
 ---
 
 ## 8. Business Rules and Logic
 
-| ID | Rule |
-|---|---|
-| BRU-001 | `watchlistId` restricts every widget to posts that match the selected watchlist. |
-| BRU-002 | `selectedTopic` (ADR-0104) restricts every widget to posts associated with the selected topic. |
-| BRU-003 | `timeRange` and `granularity` are honored only where the underlying data has a `date` or `published_at` dimension. |
-| BRU-004 | A widget that cannot honor an active filter must return `null` for that filter's effect, not raise an error. |
-| BRU-005 | Historical widget data must prefer `*DailyCount` precomputed tables; the current partial day may fall back to `social_posts`. |
-| BRU-006 | Metric explainability requires explicit user opt-in and must surface a confidence indicator. |
-| BRU-007 | Dashboard data access is governed by multi-tenant RLS and the user's watchlist/provider permissions. |
-
----
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | `watchlistId` restricts every widget to posts matching that watchlist | All providers |
+| BR2 | `selectedTopic` restricts every widget to posts associated with that topic | All providers |
+| BR3 | `timeRange`/`granularity` apply only where a `date`/`published_at` dimension exists | All providers |
+| BR4 | A widget that cannot honor a filter returns `null` for that filter's effect, not an error | All providers |
+| BR5 | Historical data prefers `*DailyCount`; only the current partial day may fall back to `social_posts` | Query routing |
+| BR6 | Metric explainability is opt-in and must include a confidence indicator | `metric` widget providers |
+| BR7 | New widget types require a registered provider + renderer only, no endpoint contract change | `WidgetRegistry`, `WidgetRenderer` |
+| BR8 | Dashboard data is always scoped by tenant RLS and the user's watchlist/provider permissions | All providers, all renderers |
+| BR9 | Deep links encode `watchlistId`, `selectedTopic`, `timeRange` for shareable/restorable state | Frontend `DashboardView` |
 
 ---
 
 ## 9. Interfaces and Integrations
 
-### 1. `GET /v1/analytics/dashboard` contract
-```ts
-// Request
-{
-  watchlistId?: string;
-  selectedTopic?: string;
-  timeRange?: { start: ISOString; end: ISOString };
-  granularity?: 'hour' | 'day' | 'week' | 'month';
-}
-
-// Response
-{
-  widgets: Array<{
-    id: string;
-    type: string;
-    title: string;
-    data: WidgetData;
-  }>;
-  filters: {
-    watchlists: Array<{ id: string; name: string }>;
-    topics: Array<{ id: string; name: string }>;
-    availableTimeRanges: string[];
-  };
-}
-```
-
-### 2. Per-widget data shapes
-```ts
-type WidgetData =
-  | { type: 'metric'; value: number; previousValue?: number; explanation?: string }
-  | { type: 'time-series'; labels: string[]; series: Array<{ name: string; data: number[] }> }
-  | { type: 'bar'; labels: string[]; data: number[] }
-  | { type: 'pie'; segments: Array<{ label: string; value: number; color?: string }> }
-  | { type: 'list'; items: Array<{ label: string; value: number; url?: string }> }
-  | { type: 'table'; columns: string[]; rows: Array<Record<string, string | number>> };
-```
-
-### 3. Widget registry
-- The backend has a `WidgetRegistry` that maps `widgetId` to a `WidgetDataProvider`.
-- Each provider knows which aggregate view or query to use and what filter combinations it supports.
-- New widgets can be added without changing the main endpoint by registering a new provider.
-
-### 4. Filter semantics
-- `watchlistId` restricts all widgets to posts matching that watchlist.
-- `selectedTopic` (ADR-0104) restricts widgets to posts associated with that topic.
-- `timeRange` is honored where the underlying data has a `date` or `published_at` dimension.
-- Widgets that cannot honor a filter return `null` for that filter's effect, not an error.
-
-### 5. Query routing
-- Widgets prefer `*DailyCount` tables (ADR-0087) for historical aggregation.
-- The current partial day may fall back to `social_posts` if the aggregate table has not yet been refreshed.
-- `metric` widgets can include an `explanation` from `POST /v1/explain` (ADR-0078) if the user enables explainability.
-
-### 6. `WidgetRenderer` component hierarchy
-```
-DashboardView
-├── FilterBar
-│   ├── WatchlistSelector
-│   ├── TopicSelector
-│   └── TimeRangeSelector
-└── WidgetGrid
-    ├── MetricTile
-    ├── TimeSeriesChart
-    ├── BarChart
-    ├── PieChart
-    ├── RankedList
-    └── DataTable
-```
-
-- The front-end maps `widget.type` to a renderer.
-- Each renderer handles its own loading and error states.
-- Deep links encode `watchlistId`, `selectedTopic`, and `timeRange`.
-
----
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `GET /v1/analytics/dashboard` | Inbound API | Serve the typed widget list and filter options | REST/JSON |
+| `WidgetRegistry` / `WidgetDataProvider` (backend) | Internal | Extensible per-widget data-fetch mechanism | Internal interface |
+| `*DailyCount` tables (ADR-0087) | Read | Primary historical data source for widgets | Postgres aggregation |
+| `social_posts` / `enrichment` | Read | Fallback source for current-partial-day data | Postgres, tenant RLS |
+| `post_topics` / `topics` (ADR-0104) | Read | Resolves `selectedTopic` filter | Postgres, tenant RLS |
+| `POST /v1/explain` (ADR-0078) | Outbound call | Produces plain-language metric explanations | REST/JSON |
+| `WidgetRenderer` hierarchy (frontend) | Internal | Maps `widget.type` to a rendering component | React component tree |
 
 ---
 
 ## 10. Non-Functional Considerations
 
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | p99 dashboard load time under 500 ms for pre-aggregated historical views | Performance | Should | Measured by contract and production monitoring |
-| NFR-002 | All dashboard data must be scoped by tenant and user access (RLS) | Security | Must | Contract tests verify no cross-tenant data leakage |
-| NFR-003 | The widget contract must be versioned under `/v1` and backward-compatible | Maintainability | Must | Existing widgets continue to work when a new type is added |
-| NFR-004 | Charts and widgets must be keyboard-focusable and include accessible labels | Accessibility | Should | Verified by accessibility check / manual review |
-| NFR-005 | New widget types must not break existing renderers | Maintainability | Should | Existing renderer contract tests continue to pass |
-
----
+- **Performance:** p99 dashboard load under 500 ms for pre-aggregated historical views (NFR-001); fallback queries are bounded to small windows to avoid degrading current-day performance (mitigates R-002).
+- **Security / access control:** All widget data is scoped by tenant RLS and the user's watchlist/provider permissions; contract tests must verify no cross-tenant leakage through any provider or filter combination (NFR-002).
+- **Scalability:** The registry/provider pattern lets widget count grow without endpoint changes; heavy aggregation stays in precomputed tables rather than per-request computation.
+- **Reliability / availability:** A single provider's failure must not take down the whole dashboard response (5.3).
+- **Maintainability:** The contract is versioned under `/v1` and must remain backward-compatible when new widget types are added (NFR-003); new widget types must not break existing renderers (NFR-005).
+- **Accessibility:** Charts and widgets must be keyboard-focusable and carry accessible labels (NFR-004).
+- **Auditability:** Filter usage and widget render/error rates support engineering and product reporting (Section 11 of the BRD).
 
 ---
 
 ## 11. Error Handling and Exceptions
 
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | ADR-0105 is still Proposed, so decisions may change | High | High | Keep BRD in Draft status; reissue upon ADR acceptance | Product Owner |
-| R-002 | Fallback to raw `social_posts` for the current partial day could degrade performance | Medium | Medium | Limit fallback to small time windows and cap returned posts | Technical Lead |
-| R-003 | Growing number of widget types increases renderer maintenance | Medium | Medium | Enforce the strict six-type contract and version the API | Technical Lead |
-| R-004 | Cross-tenant data could leak through dashboard filters or aggregates | Low | High | Apply RLS to every provider and aggregate; contract-test with multi-tenant fixtures | Technical Lead |
-
----
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Invalid `timeRange` (end before start) or unknown `granularity` | Validation error | Request rejected before any provider runs |
+| `watchlistId`/`selectedTopic` the caller cannot access | Not-found (no cross-tenant disclosure) | Treated as if the resource does not exist |
+| A single `WidgetDataProvider` fails or times out | That widget shows an inline error/empty state | Other widgets in the response still render normally |
+| A widget cannot honor an active filter | No user-visible error; filter simply has no effect on that widget | Provider returns `null` for that filter's effect |
+| `POST /v1/explain` fails or times out | Metric widget shows its value without an explanation | `explanation` field omitted; numeric `value` still returned |
+| Frontend receives an unrecognized `widget.type` | Generic "unsupported widget" placeholder | Rest of the dashboard grid renders normally |
 
 ---
 
 ## 12. Assumptions and Dependencies
 
-- Epic 8 (Analytics Dashboard, Stories 8.1–8.6) is already built in `social-listening-admin`.
-- ADR-0087 (preconfigured analytics views and `*DailyCount` tables) provides the historical aggregate data source.
-- ADR-0104 (`selectedTopic` filter and topic curation) is in place.
-- ADR-0078 (metric explainability) makes `POST /v1/explain` available.
-- All dashboard data remains subject to multi-tenant RLS and watchlist/provider access rules.
+**Assumptions:**
+- Epic 8 (Stories 8.1–8.6) is already built and provides the existing frontend scaffold to formalize.
+- ADR-0087's `*DailyCount` tables and ADR-0104's `selectedTopic`/topic curation are in place as data sources.
+- ADR-0078's `POST /v1/explain` is available for explainability.
+- All dashboard data remains subject to existing multi-tenant RLS and watchlist/provider access rules.
 
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0087 — preconfigured analytics views and `*DailyCount` tables | Internal | Technical Lead | Required before historical query routing |
-| D-002 | ADR-0078 — metric explainability and `POST /v1/explain` | Internal | Technical Lead | Required for optional `explanation` field |
-| D-003 | ADR-0104 — `selectedTopic` filter and topic curation | Internal | Technical Lead | Required for topic filtering on the dashboard |
-| D-004 | Epic 8 Analytics Dashboard (Stories 8.1–8.6) | Internal | Engineering | Already built; existing front-end scaffold |
-| D-005 | Story 12.9 — Dashboard widget contracts (backend) | Internal | Engineering | Ready; builds the backend contract |
-| D-006 | Story 12.10 — Dashboard widget renderer (frontend) | Internal | Engineering | Ready (depends on Story 12.9) |
+**Dependencies:**
+- ADR-0087 (preconfigured analytics views) — required for historical query routing.
+- ADR-0078 (metric explainability) — required for the optional `explanation` field.
+- ADR-0104 (`selectedTopic` filter, topic curation) — required for topic filtering.
+- Epic 8 Analytics Dashboard (Stories 8.1–8.6) — already built.
+- Story 12.9 (backend) and Story 12.10 (frontend), both currently Blocked pending ADR-0105 acceptance.
 
----
+**Pending decisions:** ADR-0105 is Proposed; the open questions below must be resolved before or during Story 12.9/12.10 implementation.
 
 ---
 
 ## 13. Open Questions
 
-- Should `GET /v1/analytics/dashboard` return all widgets or support a `widgets` allowlist?
-- How is widget layout persisted per user? `user_dashboard_layout` table?
-- Should the `selectedTopic` filter persist across sessions?
-- How do widgets indicate that they are missing data for the current filter?
-
----
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should `GET /v1/analytics/dashboard` return all widgets or support a `widgets` allowlist? | Product Owner | Before Story 12.9 implementation |
+| Q2 | How is widget layout persisted per user — a new `user_dashboard_layout` table? | Product Owner | Post-v1 |
+| Q3 | Should the `selectedTopic` filter persist across sessions? | Product Owner | Before Story 12.10 implementation |
+| Q4 | How do widgets indicate they are missing data for the current filter, beyond the `null`-filter-effect rule? | Technical Lead | Before Story 12.9 implementation |
 
 ---
 
 ## 14. Appendix
 
-### Reference Documents
+### Glossary
 
-- ADR-0105: `docs/adr/0105-dashboards-and-analytics-widget-contracts.md`
+| Term | Definition |
+|---|---|
+| Widget | A typed visualization tile on the analytics dashboard (metric, chart, list, or table). |
+| `WidgetRegistry` | Backend component mapping `widgetId` to a `WidgetDataProvider`. |
+| `WidgetDataProvider` | Backend component that fetches and shapes data for one widget. |
+| `WidgetRenderer` | Frontend component tree that maps `widget.type` to the appropriate visualization. |
+| `selectedTopic` | Single-topic filter defined by ADR-0104, restricting widgets to a curated topic. |
+| `*DailyCount` | Precomputed daily aggregate tables (ADR-0087) preferred for historical widget data. |
+| Explanation | Plain-language description of a metric's value/change, from `POST /v1/explain` (ADR-0078). |
+| Deep link | A dashboard URL capturing the current filter state for sharing/bookmarking. |
+
+### Reference links
+
+- ADR-0105: `docs/adr/0105-dashboards-and-analytics-widget-contracts.md` (Proposed)
 - BRD-0105: `docs/project docs/Business-Requirements/BRD-0105-Dashboards-And-Analytics-Widget-Contracts.md`
 - Feature design: `docs/product-research/feature-designs/08-dashboards-and-analytics.md`
-- User stories: `docs/user-stories/epic-12-adr-0101-to-0108.md`
+- Related ADRs: ADR-0087 (preconfigured analytics views), ADR-0078 (metric explainability), ADR-0104 (`selectedTopic` filter)
+- Related user stories: Story 12.9 (backend), Story 12.10 (frontend) — `docs/user-stories/epic-12-adr-0101-to-0108.md`
 
-### Missing Sources Noted
+### Missing sources
 
-- No matching deep-research report found in `docs/product-research/reports/`.
+- No `docs/product-research/reports/08-dashboards-and-analytics-deep-research.md` deep-research brief was found for this feature.
 
-### Revision History
+### Revision history
 
-| Version | Date | Author | Description |
+| Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | FDD Writer — Batch Agent | Initial synthesis from ADR-0105 and BRD-0105. |
+| 0.2 | 2026-08-23 | FDD Writer Agent | Regenerated with a real per-capability Section 5 breakdown, data model, and workflow detail, replacing the prior defective BRD-table copy |

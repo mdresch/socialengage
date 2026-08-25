@@ -1,9 +1,9 @@
-# BRD-0040: Self-Service Sign-up Rate Limiting and Abuse Prevention Mechanism
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0040: Self-Service Sign-up Rate Limiting and Abuse Prevention Mechanism |
+| Document Title | FDD-0040 Self-Service Sign-up Rate Limiting and Abuse Prevention Mechanism — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

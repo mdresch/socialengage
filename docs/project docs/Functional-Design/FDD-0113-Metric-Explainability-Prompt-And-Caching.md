@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Metric Explainability Prompt and Caching Business Requirements Document |
+| Document Title | FDD-0113 Metric Explainability Prompt and Caching — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

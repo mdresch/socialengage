@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Rate-Limit Queue Bounds, Dead-Letter Handling, and Distributed Gate State
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Rate-Limit Queue Bounds, Dead-Letter Handling, and Distributed Gate State |
+| Document Title | FDD-0020 Rate-Limit Queue Bounds, Dead-Letter Handling, and Distributed Gate State — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

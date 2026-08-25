@@ -11,6 +11,7 @@ import { instagramOAuthRouter } from './instagramOAuthRouter';
 import { instagramAccountsRouter } from './instagramAccountsRouter';
 import { linkedinOAuthRouter } from './linkedinOAuthRouter';
 import { watchlistsRouter } from './watchlistsRouter';
+import { outboundPostsRouter } from './outboundPostsRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
 import { adminBreakGlassRouter } from './adminBreakGlassRouter';
@@ -20,6 +21,7 @@ import { domainSignupAttemptsRouter } from './domainSignupAttemptsRouter';
 import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRouter';
 import { tenantSelfViewRouter } from './tenantSelfViewRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
+import { tenantExportRouter } from './tenantExportRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -140,8 +142,14 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 1.9 (ADR-0032) — see .claude/skills/identity-resolution/SKILL.md. */
   v1Router.use('/tenants/users', authMiddleware, tenantUsersRouter);
 
+  /** Story 3.16 (ADR-0074) — on-demand workspace JSON and posts CSV exports. */
+  v1Router.use('/tenants/me/export', authMiddleware, tenantExportRouter);
+
   /** Story 3.8 (ADR-0043) — see .claude/skills/self-service-tenant-deletion/SKILL.md. */
   v1Router.use('/tenants/self-service-deletion', authMiddleware, selfServiceTenantDeletionRouter);
+
+  /** Story 3.15 (ADR-0075) — outbound post publishing and scheduling. */
+  v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
 
   return v1Router;
 }

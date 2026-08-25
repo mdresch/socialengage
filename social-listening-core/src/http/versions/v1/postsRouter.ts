@@ -5,10 +5,16 @@ import {
   deriveEnrichmentText,
   setPostEnrichment,
   updatePostEnrichment,
+  exportSocialPostsCsv,
 } from '../../../posts/socialPostStore';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import { enrichPost } from '../../../connectors/azureAiLanguage/enrichPost';
 import { getWatchlistById } from '../../../watchlists/watchlistStore';
+import { isConnectorActive } from '../../../connectors/connectorActivationStore';
+import { getLatestCredentialId, readCredential } from '../../../credentials/credentialStore';
+import { getSocialConnector } from '../../../connectors/registry';
+import { invoke } from '../../../outbound/outboundEngagementService';
+import { insertPending, setSent, setFailed, listForPost } from '../../../outbound/outboundActivityStore';
 
 export const postsRouter = Router();
 
@@ -35,6 +41,7 @@ postsRouter.get('/', async (req, res) => {
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const watchlistId = typeof req.query.watchlistId === 'string' ? req.query.watchlistId : undefined;
+  const format = typeof req.query.format === 'string' ? req.query.format : undefined;
 
   if (watchlistId !== undefined) {
     if (!UUID_PATTERN.test(watchlistId)) {
@@ -46,6 +53,22 @@ postsRouter.get('/', async (req, res) => {
       res.status(404).json({ code: 'WATCHLIST_NOT_FOUND' });
       return;
     }
+  }
+
+  if (format === 'csv') {
+    try {
+      const csv = await exportSocialPostsCsv(tenantId, { watchlistId });
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="posts.csv"');
+      res.send('\uFEFF' + csv);
+    } catch (err: any) {
+      if (err?.message === 'EXPORT_TOO_LARGE') {
+        res.status(413).json({ code: 'EXPORT_TOO_LARGE' });
+      } else {
+        res.status(400).json({ error: 'Invalid request.' });
+      }
+    }
+    return;
   }
 
   try {
@@ -148,5 +171,107 @@ postsRouter.post('/:id/enrich', async (req, res) => {
   } else {
     res.json({ ...post, enrichment: post.enrichment ?? null });
   }
+});
+
+/**
+ * Story 3.14 (ADR-0073) — reply to an ingested post through the originating
+ * platform. User-bound, auditable, and RLS-scoped.
+ */
+postsRouter.post('/:id/replies', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId } = identity;
+
+  const post = await getSocialPostById(tenantId, req.params.id);
+  if (!post) {
+    res.status(404).json({ error: 'Not found.' });
+    return;
+  }
+
+  const rawPayload =
+    post.rawPayload && typeof post.rawPayload === 'object' ? (post.rawPayload as Record<string, unknown>) : {};
+  const providerId = typeof rawPayload['providerId'] === 'string' ? rawPayload['providerId'] : '';
+
+  const body = typeof req.body?.body === 'string' ? req.body.body.trim() : '';
+  if (!body) {
+    res.status(422).json({ error: 'Reply body is required and cannot be empty.', code: 'INVALID_REPLY_BODY' });
+    return;
+  }
+
+  const active = await isConnectorActive(tenantId, providerId, 'user', userId);
+  if (!active) {
+    res.status(422).json({ error: 'Reply is not available for this provider.', code: 'REPLY_NOT_AVAILABLE' });
+    return;
+  }
+
+  const credentialId = await getLatestCredentialId(tenantId, providerId, 'user', userId);
+  if (!credentialId) {
+    res.status(422).json({ error: 'Reply is not available for this provider.', code: 'REPLY_NOT_AVAILABLE' });
+    return;
+  }
+
+  const credential = await readCredential(tenantId, credentialId);
+  const connector = getSocialConnector(providerId);
+  if (!connector || !connector.reply) {
+    res.status(422).json({ error: 'Reply is not available for this provider.', code: 'REPLY_NOT_AVAILABLE' });
+    return;
+  }
+
+  const pending = await insertPending({
+    tenantId,
+    postId: post.id,
+    userId,
+    providerId,
+    credentialId,
+    activityType: 'reply',
+    body,
+  });
+
+  const result = await invoke({ tenantId, userId, post, body, credential, connector });
+
+  if (result.status === 'sent') {
+    const sent = await setSent(tenantId, pending.id, result.externalId!, result.externalUrl!, result.sentAt!);
+    res.status(201).json(sent);
+    return;
+  }
+
+  const failed = await setFailed(tenantId, pending.id, result.errorCode!, result.failedAt!);
+  res.status(mapReplyErrorToStatus(result.errorCode!)).json(failed);
+});
+
+function mapReplyErrorToStatus(errorCode: string): number {
+  switch (errorCode) {
+    case 'rate_limited':
+    case 'queue_ttl_exceeded':
+    case 'queue_depth_exceeded':
+      return 429;
+    case 'network':
+      return 504;
+    case 'missing_permission':
+    case 'post_not_found':
+    case 'reconnect_required':
+      return 502;
+    default:
+      return 500;
+  }
+}
+
+/**
+ * Story 3.14 (ADR-0073) — list the tenant-scoped reply audit rows for a post.
+ */
+postsRouter.get('/:id/replies', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId } = identity;
+
+  const post = await getSocialPostById(tenantId, req.params.id);
+  if (!post) {
+    res.status(404).json({ error: 'Not found.' });
+    return;
+  }
+
+  const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+  const replies = await listForPost(tenantId, post.id, { limit });
+  res.json({ replies, nextCursor: null });
 });
 

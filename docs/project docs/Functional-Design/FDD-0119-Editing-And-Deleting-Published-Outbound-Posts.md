@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Editing And Deleting Published Outbound Posts |
+| Document Title | FDD-0119 Editing And Deleting Published Outbound Posts — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

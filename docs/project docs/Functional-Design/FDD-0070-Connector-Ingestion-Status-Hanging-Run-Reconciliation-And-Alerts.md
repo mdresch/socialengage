@@ -1,185 +1,368 @@
-# Business Requirements Document (BRD) — Connector Ingestion Health Status, Hanging Run Reconciliation, and Inactivity Alerting
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Connector Ingestion Health Status, Hanging Run Reconciliation, and Inactivity Alerting |
+| Document Title | FDD-0070 Connector Ingestion Health Status, Hanging Run Reconciliation, and Inactivity Alerting — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, ../Business-Requirements/BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md and the business requirements in BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md into functional design for **Connector Ingestion Status Hanging Run Reconciliation And Alerts**.
-Ingestion runs can be left in a perpetual `running` state when the backend process is restarted, the container is redeployed, or an uncaught exception terminates a connector poll. Because the scheduler's in-flight guard skips any connector that already has a `running` run, a single orphaned row silently and permanently halts all future ingestion for that tenant, platform, and (for Tier-3 connectors) user. Even when no run is orphaned, active connectors can stop producing posts because of upstream silent outages, circuit-breaker lockouts, or scheduler starvation, and neither operators nor tenant admins are notified.
-
-This BRD authorizes an automated, lock-safe watchdog to reconcile stale `running` ingestion runs; an extended `ConnectorHealthStatus` that includes an explicit `stalled` state; structured `ConnectorIngestionAlertEvent` messages on Azure Service Bus; and new Admin UI status badges, a global ingestion alert banner, and an on-demand "Force Retry / Re-sync" action. The result is zero manual recovery for hung runs, proactive visibility when ingestion stops, and self-service recovery without direct database access.
+| Author(s) | FDD Writer (regenerated) |
+| Reviewer(s) | Menno (Product Owner / Technical Lead) |
+| Status | Approved |
+| Related Documents | ADR-0070, BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md, Story 1.16 (epic-1), Story 6.29 (epic-6), ADR-0005/0009/0010/0023/0052/0058/0061 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- Automated lock-safe reconciliation of stale `running` ingestion runs at the start of each scheduler tick.
-- Partial database index to keep watchdog sweeps efficient regardless of historical table size.
-- Extension of derived `ConnectorHealthStatus` to include `stalled` with strict derivation precedence.
-- `ConnectorIngestionAlertEvent` publishing on Azure Service Bus for run timeout, stall, failing, and reconnect-required conditions.
-- `POST /v1/connectors/:id/retry` and `POST /v1/connectors/:id/users/:userId/retry` force-retry endpoints.
-- Admin UI connector status badges and operational timestamps (last attempt, last successful ingestion, cadence).
-- Global ingestion alert banner on `/tenant/analytics` (Overview tab) and `/tenant/connectors`.
-- On-demand "Re-sync now" button with loading, success, and 409 conflict handling.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- Third-party push, email, SMS, Slack, or PagerDuty notification delivery (Service Bus events are produced for downstream consumers, not the core pipeline).
-- Re-architecting the connector `poll()` loop or content normalization logic.
-- Predictive stall detection using ML or anomaly models.
-- Multi-tenant alert aggregation for `Platform-Admin` dashboards.
+### 2.1 Purpose
+
+This document translates ADR-0070 (Accepted, 2026-08-20) and BRD-0070 into the functional design for: (a) a lock-safe automated watchdog that reconciles stale/orphaned `running` ingestion runs, (b) an extended `ConnectorHealthStatus` including a new `stalled` state with a strict derivation precedence, (c) structured `ConnectorIngestionAlertEvent` publishing on Azure Service Bus, and (d) Admin UI status badges, a global ingestion alert banner, and an on-demand "Force Retry / Re-sync" action.
+
+### 2.2 Scope
+
+- **In scope:**
+  - `reconcileStaleIngestionRuns` watchdog function, executed at the start of every scheduler tick, with lock-safe (`FOR UPDATE SKIP LOCKED`) reconciliation of stale `running` rows.
+  - A supporting partial database index for O(1) watchdog sweeps.
+  - Extension of `ConnectorHealthStatus` with `'stalled'` and the six-step strict derivation precedence.
+  - `ConnectorIngestionAlertEvent` publishing for `run_timed_out`, `ingestion_stalled`, `connector_failing`, and `reconnect_required`, with throttling for `run_timed_out`.
+  - `POST /v1/connectors/:id/retry` and `POST /v1/connectors/:id/users/:userId/retry` idempotent force-retry endpoints.
+  - Admin UI: connector status badges (including `Stalled / No Ingestion`), operational timestamps/cadence display, global ingestion alert banner, and "Re-sync now" action with loading/success/409 handling.
+- **Out of scope:**
+  - Third-party push, email, SMS, Slack, or PagerDuty notification delivery (Service Bus events are produced for downstream consumers only, not delivered by the core pipeline itself).
+  - Re-architecting the connector `poll()` loop or content normalization logic.
+  - Predictive stall detection using ML or anomaly models.
+  - Multi-tenant alert aggregation for Platform-Admin dashboards.
+
+### 2.3 Target Audience
+
+Backend engineers (`social-listening-core`), frontend engineers (`social-listening-admin`), QA/contract authors, product owner, platform operators.
+
+---
 
 ## 3. Context and Background
-See ADR Context.
-Ingestion runs can be left in a perpetual `running` state when the backend process is restarted, the container is redeployed, or an uncaught exception terminates a connector poll. Because the scheduler's in-flight guard skips any connector that already has a `running` run, a single orphaned row silently and permanently halts all future ingestion for that tenant, platform, and (for Tier-3 connectors) user. Even when no run is orphaned, active connectors can stop producing posts because of upstream silent outages, circuit-breaker lockouts, or scheduler starvation, and neither operators nor tenant admins are notified.
 
-This BRD authorizes an automated, lock-safe watchdog to reconcile stale `running` ingestion runs; an extended `ConnectorHealthStatus` that includes an explicit `stalled` state; structured `ConnectorIngestionAlertEvent` messages on Azure Service Bus; and new Admin UI status badges, a global ingestion alert banner, and an on-demand "Force Retry / Re-sync" action. The result is zero manual recovery for hung runs, proactive visibility when ingestion stops, and self-service recovery without direct database access.
+Story 1.14 (ADR-0052 §5b) and Story 1.15 (ADR-0061 §2) introduced an in-flight concurrency guard in `pollScheduler.ts`: before polling, the scheduler checks `getMostRecentRunStatus()` and skips the poll if the most recent run is still `'running'`. This correctly prevents same-process poll overlaps, but has a critical gap: in production, a Node.js process restart, container redeployment, uncaught exception, SIGTERM/SIGKILL, or unhandled socket hang can leave an `ingestion_runs` row permanently at `status = 'running'` with `completed_at = NULL`. Because `getMostRecentRunStatus()` then perpetually returns `'running'`, the scheduler **permanently skips all future ticks** for that `(tenantId, platformId[, userId])` — ingestion stops silently and permanently with no automatic recovery or notification.
+
+Separately, even without an orphaned run, an active connector can silently stop producing content due to upstream silent outages (HTTP 200 with empty/unchanged payload), circuit-breaker lockout (repeated non-retryable failures), or scheduler starvation/drift. `ConnectorHealthStatus` previously had no way to distinguish a healthy, on-schedule connector from one that has stalled. There was also no proactive alerting mechanism and no top-level UI banner or manual recovery trigger — only the connector status screen's on-demand metrics, visible only when a user happens to navigate there.
+
+ADR-0070 builds on ADR-0005 (`IngestionRun` audit anchor), ADR-0009 (derived, not stored, `ConnectorHealth`), ADR-0010 (error handling/auto-disable), ADR-0023 (proportional failure threshold/circuit breaker), ADR-0052 (live scheduler/in-flight guard), ADR-0058 (ingestion events), and ADR-0061 (Tier-3 per-user scheduler). It is implemented by Story 1.16 (backend, built 2026-08-20) and Story 6.29 (UI, built 2026-08-20).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Eliminate permanent ingestion deadlocks from orphaned or hung `running` runs | A reconciled stale run is marked `failed` with `retryable = true` and the next scheduler tick resumes polling for that target. |
-| 2 | Make connector inactivity visible before users discover gaps in their data | `stalled` health is derived and surfaced when a connector has not attempted or successfully fetched within configured thresholds. |
-| 3 | Enable proactive alerting for ingestion anomalies | `ConnectorIngestionAlertEvent` messages are emitted for `run_timed_out`, `ingestion_stalled`, `connector_failing`, and `reconnect_required`. |
-| 4 | Provide self-service recovery for tenant admins and Tier-3 users | Authorized users can trigger `Force Retry / Re-sync` from the Admin UI and receive immediate feedback. |
-| 5 | Preserve a complete, honest audit trail | Every reconciliation, health transition, and manual retry is reflected in `ingestion_runs` and health history. |
+| G1 | Eliminate permanent ingestion deadlocks from orphaned/hung `running` runs | A reconciled stale run is marked `failed` with `retryable = true`; the next scheduler tick resumes polling for that target |
+| G2 | Make connector inactivity visible before users discover data gaps themselves | `stalled` health is derived and surfaced whenever a connector has not attempted or successfully fetched within configured thresholds |
+| G3 | Enable proactive alerting for ingestion anomalies | `ConnectorIngestionAlertEvent` messages are emitted for `run_timed_out`, `ingestion_stalled`, `connector_failing`, and `reconnect_required` |
+| G4 | Provide self-service recovery for tenant admins and Tier-3 users | Authorized users can trigger "Force Retry / Re-sync" from the Admin UI and receive immediate feedback |
+| G5 | Preserve a complete, honest audit trail | Every reconciliation, health transition, and manual retry is reflected in `ingestion_runs` and health history |
 
 ---
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall automatically reconcile stale `running` ingestion runs at the start of each scheduler tick. | Must | Runs older than `max(15 minutes, 2 * effectiveCadenceMs)` are updated to `failed`, `retryable = true`, with a completed audit timestamp. | Technical Lead |
-| BR-002 | The reconciliation sweep shall be lock-safe and non-blocking. | Must | `FOR UPDATE SKIP LOCKED` ensures active runs within the threshold are not overwritten. | Technical Lead |
-| BR-003 | The system shall support `stalled` as a derived connector health status. | Must | `ConnectorHealthStatus` includes `stalled` and `deriveConnectorHealth()` returns it under the documented conditions. | Technical Lead |
-| BR-004 | The system shall derive `stalled` only after higher-priority failure states are ruled out. | Must | `stalled` is never returned when `disconnected`, `reconnect_required`, or `failing` apply. | Technical Lead |
-| BR-005 | The system shall publish structured ingestion alert events on Service Bus. | Must | `ConnectorIngestionAlertEvent` is emitted for `run_timed_out`, `ingestion_stalled`, `connector_failing`, and `reconnect_required`. | Technical Lead |
-| BR-006 | Alert events for run timeouts shall be throttled to avoid storms. | Must | At most one `run_timed_out` event per `(tenantId, platformId[, userId])` per sweep window. | Technical Lead |
-| BR-007 | Authorized users shall be able to trigger a force retry / re-sync for a connector. | Must | `POST /v1/connectors/:id/retry` and `/v1/connectors/:id/users/:userId/retry` reconcile stale runs, reset failure counters, and trigger an immediate poll. | Technical Lead |
-| BR-008 | Force retry shall be idempotent and safe. | Must | Returns `409` without erroring if a run started within the last 60 seconds is still in progress. | Technical Lead |
-| BR-009 | The Admin UI shall display explicit connector health badges. | Must | Badges include `Healthy`, `Degraded`, `Stalled`, `Failing`, `Reconnect Required`, and `Disconnected`. | Product Owner |
-| BR-010 | The Admin UI shall show operational timestamps and cadence for each connector. | Must | `lastAttemptAt`, `lastSuccessfulFetchAt`, and poll interval are visible on the connector status screen. | Product Owner |
-| BR-011 | The Admin UI shall surface a global ingestion alert banner when active connectors are unhealthy. | Must | Banner appears on `/tenant/analytics` and `/tenant/connectors` for any `stalled`, `failing`, or `reconnect_required` connector. | Product Owner |
-| BR-012 | The Admin UI shall allow authorized users to request a re-sync from the connector card. | Must | "Re-sync now" button calls the retry endpoint, shows loading state, and refreshes metrics on success. | Product Owner |
 
-### 5.1 Architecture Decision
-See ADR Decision.
+### 5.1 Feature / Capability: Lock-Safe Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`)
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| `Tenant-Admin` (primary) | Owns connector configuration and credential health | High | See when ingestion stops, understand why, and recover without support tickets. |
-| `Tenant-User` (primary) | Relies on accurate, timely post feeds for monitoring | High | Trust that stalled sources are flagged and not silently dropping content. |
-| `Sole-Operator` (primary) | Manages both business and technical operations | High | One screen with connector counts, health, and one-click re-sync. |
-| `Platform-Admin` (secondary) | Operates platform infrastructure | Medium | Avoid manual database cleanup of orphaned `running` rows. |
-| `Support / System Operator` (secondary) | Monitors ingestion health across tenants | Medium | Receive structured Service Bus events for runbook automation. |
+- **Description:** Automatically detects and reconciles `ingestion_runs` rows orphaned in `status = 'running'` due to process restarts, redeployments, crashes, or hangs, unblocking the scheduler's in-flight guard.
+- **Triggers:** Executed automatically at the start of every `runSchedulerTick()`, before any connector is evaluated for polling.
+- **Inputs:** Current `ingestion_runs` table state; the connector's `effectiveCadenceMs` (Tier-3 user-level or Tier-2 platform/tenant-level cadence).
+- **Processing:**
+  1. Compute `MAX_RUN_DURATION_MS = max(15 minutes, 2 * effectiveCadenceMs)` for the run's context; default fallback is 15 minutes when cadence is unknown.
+  2. A run is stale if `status = 'running' AND started_at < (NOW() - MAX_RUN_DURATION_MS)`.
+  3. Execute a row-locked, non-blocking update: `SELECT id FROM ingestion_runs WHERE status = 'running' AND started_at < NOW() - INTERVAL '15 minutes' FOR UPDATE SKIP LOCKED`, then `UPDATE` the selected rows to `status = 'failed'`, `completed_at = NOW()`, `error_summary = 'Ingestion run timed out or aborted (reconciled by watchdog)'`, `retryable = true`.
+  4. `FOR UPDATE SKIP LOCKED` ensures rows currently being finalized by a legitimately-completing worker are skipped rather than overwritten mid-transition — no race condition.
+  5. Return reconciled row details (`id`, `tenant_id`, `platform_id`, `user_id`, `started_at`) to the caller for alert emission (5.3).
+- **Outputs:** Updated `ingestion_runs` rows (now `failed`, `retryable = true`); the scheduler's `getMostRecentRunStatus()` immediately reflects `failed`, unblocking the in-flight guard so the next tick can poll normally.
+- **Error handling:** If the reconciliation query itself fails (e.g. transient DB error), the scheduler tick logs the failure and proceeds without blocking other connectors' polling for that tick.
+- **Edge cases:** A run that completes normally in the few milliseconds between the watchdog's row selection and its own completion is protected by `SKIP LOCKED` — it is not reconciled. A run inside the threshold (e.g. started 10 minutes ago against a 15-minute threshold) is left untouched.
+
+### 5.2 Feature / Capability: Watchdog Query Performance (Partial Index)
+
+- **Description:** Ensures the watchdog sweep remains O(1) regardless of the historical size of `ingestion_runs`.
+- **Triggers:** Database migration applied once; queried on every watchdog sweep thereafter.
+- **Inputs:** N/A (schema-level).
+- **Processing:** Adds a partial index `idx_ingestion_runs_stale_watchdog` on `ingestion_runs(status, started_at) WHERE status = 'running'`, scoping the index to only currently-running rows (a small, bounded subset regardless of total table size).
+- **Outputs:** Fast, indexed lookups for the watchdog's `WHERE status = 'running' AND started_at < ...` predicate.
+- **Error handling:** N/A (schema prerequisite; absence would degrade performance, not correctness).
+- **Edge cases:** None beyond standard migration rollout considerations.
+
+### 5.3 Feature / Capability: Extended Connector Health Derivation with `'stalled'` (Strict Precedence)
+
+- **Description:** Widens the derived `ConnectorHealthStatus` union to include `'stalled'`, and enforces a strict, unambiguous precedence order so `stalled` never masks a more severe failure state and vice versa.
+- **Triggers:** Any call to `deriveConnectorHealth(tenantId, platformId, pageId?, userId?)` — e.g. status screen render, alert-banner evaluation, force-retry response.
+- **Inputs:** `ingestion_runs` history for the target; `credentialStatus`; `isConnectorActive`; `lastAttemptAt`; `lastSuccessfulFetchAt`; `effectiveCadenceMs`.
+- **Processing (strict precedence, evaluated in order, first match wins):**
+  1. `disconnected` — if zero runs exist in history.
+  2. `reconnect_required` — if the latest run failed with `is_credential_failure = true`, OR `credentialStatus` is `'expired'`/`'revoked'`.
+  3. `failing` — if consecutive non-retryable failures reach `CONSECUTIVE_FAILURE_CEILING = 20`, OR the trailing-hour failure rate reaches `RATE_FAILURE_THRESHOLD = 0.5` across at least `RATE_ATTEMPT_FLOOR = 5` attempts (ADR-0023).
+  4. `stalled` — if active (`isConnectorActive === true`) with valid credentials (`credentialStatus === 'valid'`), not matched by 1–3, and either `now - lastAttemptAt >= 3 * effectiveCadenceMs` (minimum 45 minutes) OR `now - lastSuccessfulFetchAt >= MAX_INGESTION_SILENCE_MS` (default 24 hours), with at least one prior run.
+  5. `degraded` — if a recent failure occurred within the trailing hour but a success also occurred.
+  6. `healthy` — otherwise (default/normal operation).
+- **Outputs:** A single `ConnectorHealthStatus` value consumed by the status screen, alert-banner logic, and force-retry authorization checks.
+- **Error handling:** Missing/undefined inputs (e.g. no `lastAttemptAt` on a newly-connected connector with zero runs) fall through to `disconnected` at step 1 rather than raising an error.
+- **Edge cases:** A connector exactly at the 45-minute or 24-hour boundary is treated as having crossed it (inclusive `>=`); a connector that is `failing` due to the rate-based threshold but also technically past the stall silence window still returns `failing` (step 3 wins before step 4 is evaluated).
+
+### 5.4 Feature / Capability: Structured Ingestion Alert Events on Service Bus
+
+- **Description:** Publishes structured `ConnectorIngestionAlertEvent` messages to Azure Service Bus when ingestion anomalies are detected, for downstream consumption (operator runbooks, future notification channels).
+- **Triggers:** (a) Each row reconciled by the watchdog sweep (5.1); (b) a derived-health transition into `'stalled'`; (c) a derived-health transition into `'failing'`/`'reconnect_required'` (auto-disable or credential revocation).
+- **Inputs:** Reconciled run metadata; health-derivation transition context.
+- **Processing:**
+  - Event shape: `{ tenantId, platformId, userId?, alertType: 'run_timed_out' | 'ingestion_stalled' | 'connector_failing' | 'reconnect_required', severity: 'warning' | 'critical', message, occurredAt, metadata: { consecutiveFailures?, lastAttemptAt?, lastSuccessfulFetchAt?, staleRunId? } }`.
+  - `run_timed_out` (severity `warning`): emitted per reconciled run row, with `metadata.staleRunId` populated; throttled/batched to at most once per `(tenantId, platformId[, userId])` per sweep window to prevent alert storms during mass reconciliation.
+  - `ingestion_stalled` (severity `warning`): emitted when derived health transitions into `'stalled'` (on transition, not every evaluation).
+  - `connector_failing` / `reconnect_required` (severity `critical`): emitted when derived health transitions into an auto-disable or credential-revocation state.
+- **Outputs:** Published Service Bus messages consumable by downstream systems.
+- **Error handling:** A Service Bus publish failure is logged but does not block or roll back the underlying reconciliation/health-derivation operation (alert emission is best-effort, not transactional with the state change).
+- **Edge cases:** A sweep reconciling many stale runs for the same target in one pass still emits at most one `run_timed_out` event for that target for that sweep window.
+
+### 5.5 Feature / Capability: Idempotent Force Retry / Re-sync API
+
+- **Description:** Lets an authorized user manually reconcile stale runs, reset circuit-breaker counters, and trigger an immediate poll for a specific connector or Tier-3 user, without direct database access.
+- **Triggers:** `POST /v1/connectors/:id/retry` (Tier-2/tenant-wide) or `POST /v1/connectors/:id/users/:userId/retry` (Tier-3).
+- **Inputs:** Connector/platform ID; optional `userId` (Tier-3); caller's authenticated identity and role.
+- **Processing:**
+  1. Authorization: gated by `requireTenantAdmin`, or — for Tier-3 — the authenticated user matching the `:userId` path segment, with strict tenant-isolation validation.
+  2. Reconcile any stale runs for the target (reuses 5.1's logic scoped to the target).
+  3. Reset circuit-breaker transient failure counters (`consecutiveFailures = 0`, cooldown cleared).
+  4. Trigger an immediate on-demand `connector.poll(tenantId)` (Tier-2) or `pollUser(tenantId, userId)` (Tier-3).
+  5. Idempotency check: if a legitimate run is currently `running` and was started within the last 60 seconds, return HTTP `409` ("Run already in progress") instead of starting a duplicate poll.
+- **Outputs:** HTTP 200 with triggered-run confirmation, or HTTP 409 conflict response.
+- **Error handling:** An unauthorized caller (wrong tenant, wrong Tier-3 user, non-admin) receives an authorization failure before any reconciliation or poll is attempted. A 409 is a safe, non-erroring outcome, not a failure.
+- **Edge cases:** A retry request for a connector already in `reconnect_required` status still reconciles stale runs and clears failure counters, but the subsequent poll attempt will itself likely re-fail authentication until the credential is actually reconnected — this is expected, not a defect.
+
+### 5.6 Feature / Capability: Admin UI — Connector Status Badges & Operational Metrics
+
+- **Description:** Renders explicit, unambiguous health badges and operational timestamps for each connector on the status screen.
+- **Triggers:** Tenant Admin/user navigates to `/tenant/connectors` or `/tenant/connectors/status`.
+- **Inputs:** Derived `ConnectorHealthStatus` (5.3) and `lastAttemptAt`/`lastSuccessfulFetchAt`/cadence for each connector.
+- **Processing:**
+  - Renders one of: `Healthy` (Green), `Degraded` (Amber), `Stalled / No Ingestion` (Amber-Red), `Failing / Suspended` (Red), `Reconnect Required` (Red), `Disconnected` (Gray).
+  - Displays **Last Ingestion Attempt** as a relative timestamp (e.g. "10 mins ago") with an ISO tooltip, from `lastAttemptAt`.
+  - Displays **Last Successful Ingestion** as a relative timestamp with an ISO tooltip, from `lastSuccessfulFetchAt`.
+  - Displays **Ingestion Cadence** (e.g. "Poll interval: 15m").
+- **Outputs:** Rendered connector status cards.
+- **Error handling:** A connector with no prior runs shows `Disconnected` and omits attempt/success timestamps rather than showing a misleading "never" or blank value inconsistently.
+- **Edge cases:** A connector whose `lastSuccessfulFetchAt` is null (never successfully fetched) but has attempted recently shows `Last Successful Ingestion: —` rather than an error.
+
+### 5.7 Feature / Capability: Admin UI — On-Demand "Force Retry / Re-sync" Button
+
+- **Description:** Gives authorized users a one-click recovery action directly from the connector card.
+- **Triggers:** User clicks "Re-sync now" on an active Ingestion Connector card.
+- **Inputs:** Connector/platform ID; Tier-3 `userId` where applicable.
+- **Processing:**
+  - Rendered only for `tenant_admin` users, or — for Tier-3 connectors — the user owning the credential, and only when the connector is active.
+  - Invokes `POST /v1/connectors/:id/retry` (or the Tier-3 variant) via the `/api/connectors/[id]/retry` Next.js proxy route.
+  - While in-flight: shows a loading spinner and disables repeat clicks.
+  - On success: shows a toast ("Ingestion run triggered") and immediately refreshes connector metrics.
+  - On HTTP 409: shows an informative "Run already in progress" message without an error state.
+- **Outputs:** Updated connector card reflecting the newly-triggered run once metrics refresh.
+- **Error handling:** A non-409 failure response (e.g. 403 unauthorized, 5xx) shows a generic error toast without crashing the card.
+- **Edge cases:** Rapid double-clicking is prevented by the disabled-while-loading state, not merely a debounce.
+
+### 5.8 Feature / Capability: Admin UI — Global Ingestion Alert Banner
+
+- **Description:** Surfaces a prominent, top-level banner when any active connector for the tenant is unhealthy, so users do not need to proactively check the connectors screen.
+- **Triggers:** Render of `/tenant/analytics` (Overview tab) or `/tenant/connectors`.
+- **Inputs:** Derived health for all active connectors for the tenant.
+- **Processing:**
+  - If any active connector is in `stalled`, `failing`, or `reconnect_required` status, renders a banner detailing the affected platform(s), a reason (e.g. "Ingestion stalled — no posts received in > 24 hours"), and direct actions ("Re-sync now" or "Reconnect account").
+  - Dismissible for the current browser session, but reappears on the next page load if the underlying status remains unresolved.
+- **Outputs:** Rendered banner (or its absence when all active connectors are healthy/degraded-only).
+- **Error handling:** A banner-data fetch failure fails silently (no banner) rather than blocking page render.
+- **Edge cases:** Multiple simultaneously-unhealthy connectors are summarized in a single banner rather than stacking multiple banners; dismissing the banner for one unresolved issue does not suppress a newly-arising, different issue on the next load if the underlying condition changed.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 1.16 | epic-1-repository-and-api-foundation.md | As system operator and platform engineer, I want orphaned or hung `running` ingestion runs to be automatically reconciled by a lock-safe scheduler watchdog, ... | **Database Partial Index:**; **Lock-Safe Watchdog Stale Run Reconciliation (`reconcileStaleIngestionRuns`):**; **Extended Connector Health Derivation with St... |
-| Story 6.29 | epic-6-tenant-admin-ui.md | As Tenant-Admin or Tenant User, I want to see clear, real-time ingestion status badges (including `Stalled`), actionable alert banners when ingestion stops, ... | **Connector Status View (`/tenant/connectors/status` & `/tenant/connectors`):**; **On-Demand "Force Retry / Re-sync" Button:**; **Global Ingestion Alert Bann... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Tenant Administrator | Views connector health, triggers Force Retry/Re-sync, resolves alert banners |
+| Tenant User (Tier-3 credential owner) | Views health for their own connectors, triggers Force Retry/Re-sync for owned Tier-3 connectors |
+| Sole Operator | Combines both business and technical operator concerns; relies on one screen for counts, health, and recovery |
+| Platform Administrator | Benefits from self-healing (avoids manual database cleanup) |
+| Background Scheduler | System actor; runs the watchdog at the start of every tick |
+| Downstream alert/runbook consumers | External/internal system actors consuming `ConnectorIngestionAlertEvent` from Service Bus |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria (summary) |
+|---|---|---|---|---|
+| Story 1.16 | System operator / platform engineer | Have orphaned or hung `running` ingestion runs automatically reconciled by a lock-safe scheduler watchdog, inactive connectors derived as `stalled`, and structured alert events published to Service Bus | Polling deadlocks cannot occur after server restarts or network hangs, and ingestion failures/stalls trigger proactive notifications | Partial index added; `reconcileStaleIngestionRuns` uses `FOR UPDATE SKIP LOCKED`; `stalled` added with strict precedence; `ConnectorIngestionAlertEvent` emitted for all four alert types; idempotent force-retry endpoints implemented |
+| Story 6.29 | Tenant-Admin or Tenant User | See clear, real-time ingestion status badges (including `Stalled`), actionable alert banners when ingestion stops, and an on-demand "Force Retry / Re-sync" action | I am immediately aware when ingestion has stalled and can proactively trigger recovery without database intervention | `StatusBadge` widened to include `stalled`; operational metrics (last attempt, last success, cadence) rendered; re-sync button with loading/success/409 handling; global banner on Overview and Connectors screens |
+
+Both stories are marked **Built** (2026-08-20) in `docs/user-stories/epic-1-repository-and-api-foundation.md` and `docs/user-stories/epic-6-tenant-admin-ui.md` respectively, sourced from ADR-0070.
+
+### 6.3 Workflow Diagrams / Steps
+
+**Watchdog reconciliation (background, per scheduler tick):**
+1. `runSchedulerTick()` begins.
+2. `reconcileStaleIngestionRuns()` runs first: selects stale `running` rows with `FOR UPDATE SKIP LOCKED`, updates them to `failed`/`retryable=true`, returns reconciled row details.
+3. For each reconciled row, a throttled `run_timed_out` alert event is published.
+4. The scheduler proceeds to evaluate each connector's in-flight guard using the now-current (possibly just-reconciled) run status, and polls connectors that are eligible.
+5. After polling, `deriveConnectorHealth()` is (re-)evaluated as needed for status/alerting purposes; transitions into `stalled`, `failing`, or `reconnect_required` emit the corresponding alert event.
+
+**Manual force retry (interactive):**
+1. User clicks "Re-sync now" on a connector card.
+2. UI calls the retry proxy route, which calls `POST /v1/connectors/:id/retry` (or Tier-3 variant).
+3. Backend authorizes the caller, reconciles stale runs for the target, resets failure counters, and triggers an immediate poll — unless a run started within the last 60 seconds is still active, in which case it returns 409.
+4. UI shows a loading state, then a success toast and refreshed metrics, or a 409 informational message.
+
+**Global banner resolution (interactive):**
+1. On page load of `/tenant/analytics` (Overview) or `/tenant/connectors`, the UI evaluates derived health for all active connectors.
+2. If any is `stalled`/`failing`/`reconnect_required`, the banner renders with affected platform(s), reason, and direct actions.
+3. User dismisses the banner for the session, or acts on it (re-sync / reconnect).
+4. On the next page load, the banner re-evaluates and reappears if the condition is still unresolved.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `ingestion_runs` rows | Audit anchor for each poll attempt, including `status`, `started_at`, `completed_at`, `error_summary`, `retryable`, and `is_credential_failure` | `ingestion_runs` table | System / Tenant | Medium |
-| `ConnectorHealthStatus` | Derived health value (`healthy`, `degraded`, `failing`, `disconnected`, `reconnect_required`, `stalled`) | Derived from `ingestion_runs` and credential status | System | Low |
-| `lastAttemptAt` | Timestamp of the most recent ingestion attempt | Latest `ingestion_runs` row for the target | System | Low |
-| `lastSuccessfulFetchAt` | Timestamp of the most recent completed run that acquired posts | Latest successful `ingestion_runs` row for the target | System | Low |
-| `effectiveCadenceMs` | Connector poll cadence for the current context (tenant-wide or per-user Tier-3) | `connector_activations` / scheduler configuration | System | Low |
-| `ConnectorIngestionAlertEvent` | Structured alert message on Service Bus | Core pipeline event publisher | System / Tenant | Medium |
-| `platform_credentials` | Credential status (valid / expired / revoked) used in health derivation | Azure Key Vault–backed credential store | Tenant | High |
+
+### 7.1 Data Inputs
+
+- `ingestion_runs` table state (`status`, `started_at`, `completed_at`, `error_summary`, `retryable`, `is_credential_failure`).
+- `platform_credentials` credential status (`valid`/`expired`/`revoked`).
+- Connector activation/configuration (`isConnectorActive`, `effectiveCadenceMs`).
+
+### 7.2 Data Outputs
+
+- Reconciled `ingestion_runs` rows (`failed`, `retryable = true`, `completed_at` set).
+- Derived `ConnectorHealthStatus` values consumed by the status screen and alert banner.
+- `ConnectorIngestionAlertEvent` messages on Azure Service Bus.
+- HTTP responses from the force-retry endpoints (200 with triggered-run confirmation, or 409 conflict).
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `ingestion_runs` | `id`, `tenant_id`, `platform_id`, `user_id?`, `status` (`running`\|`failed`\|`completed`\|...), `started_at`, `completed_at`, `error_summary`, `retryable`, `is_credential_failure` | Audit anchor per poll attempt; watchdog scans/updates rows where `status='running'` |
+| `idx_ingestion_runs_stale_watchdog` (partial index) | On `ingestion_runs(status, started_at) WHERE status = 'running'` | Supports O(1) watchdog scans |
+| `ConnectorHealthStatus` (derived, not stored) | `healthy` \| `degraded` \| `failing` \| `disconnected` \| `reconnect_required` \| `stalled` | Computed from `ingestion_runs` history + `platform_credentials` status; not itself a stored table |
+| `ConnectorIngestionAlertEvent` | `tenantId`, `platformId`, `userId?`, `alertType` (`run_timed_out`\|`ingestion_stalled`\|`connector_failing`\|`reconnect_required`), `severity` (`warning`\|`critical`), `message`, `occurredAt`, `metadata` (`consecutiveFailures?`, `lastAttemptAt?`, `lastSuccessfulFetchAt?`, `staleRunId?`) | Published to Service Bus; references the tenant/platform/user context of the underlying `ingestion_runs`/health transition |
+| `platform_credentials` | `credentialStatus` (`valid`\|`expired`\|`revoked`) | Consumed (read-only) by health derivation |
+| Force-retry request/response | `connectorId`, `userId?` (path); response: 200 (triggered) or 409 (`"Run already in progress"`) | Bound to `ingestion_runs` reconciliation and an immediate poll invocation |
+
+### 7.4 Validation Rules
+
+- A run must never be reconciled by the watchdog while a concurrent worker is actively finalizing it (`FOR UPDATE SKIP LOCKED` guarantees this).
+- `MAX_RUN_DURATION_MS` must never be computed as less than 15 minutes, even if `2 * effectiveCadenceMs` would be smaller.
+- `deriveConnectorHealth()` must evaluate the six states in the fixed precedence order; a lower-precedence state must never be returned when a higher-precedence condition is met.
+- `run_timed_out` alert emission must be throttled to at most one per `(tenantId, platformId[, userId])` per sweep window, regardless of how many rows for that target were reconciled in the same sweep.
+- The force-retry endpoint must return 409 (not proceed) whenever a run for the same target started within the last 60 seconds and is still `running`.
+- Force-retry authorization must strictly enforce tenant isolation and, for Tier-3, exact `userId` match — no cross-tenant or cross-user retry is permitted.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | A `running` ingestion run is considered stale when `started_at < NOW() - MAX_RUN_DURATION_MS`, where `MAX_RUN_DURATION_MS = max(15 minutes, 2 * effectiveCadenceMs)`. |
-| BRU-002 | Health derivation follows strict precedence: `disconnected` → `reconnect_required` → `failing` → `stalled` → `degraded` → `healthy`. |
-| BRU-003 | `stalled` is derived only for active connectors with valid credentials that are not already `reconnect_required` or `failing`. |
-| BRU-004 | `stalled` is triggered when `now - lastAttemptAt >= 3 * effectiveCadenceMs` (minimum 45 minutes) OR `now - lastSuccessfulFetchAt >= 24 hours`. |
-| BRU-005 | Force retry is authorized for `tenant_admin` users or, for Tier-3 connectors, the authenticated user who owns the credential. |
-| BRU-006 | A force retry returns `409` if a run started within the last 60 seconds is actively `running`. |
-| BRU-007 | `ConnectorIngestionAlertEvent` `run_timed_out` warnings are batched/throttled to at most one per target per sweep window. |
-| BRU-008 | Global alert banners reappear on the next page load if the underlying connector status remains unresolved. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | A `running` ingestion run is stale when `started_at < NOW() - MAX_RUN_DURATION_MS`, where `MAX_RUN_DURATION_MS = max(15 minutes, 2 * effectiveCadenceMs)`. | Watchdog reconciliation |
+| BR2 | Health derivation follows strict precedence: `disconnected` → `reconnect_required` → `failing` → `stalled` → `degraded` → `healthy`. | Health derivation |
+| BR3 | `stalled` is derived only for active connectors with valid credentials that are not already `reconnect_required` or `failing`. | Health derivation |
+| BR4 | `stalled` is triggered when `now - lastAttemptAt >= 3 * effectiveCadenceMs` (minimum 45 minutes) OR `now - lastSuccessfulFetchAt >= 24 hours`. | Health derivation |
+| BR5 | Force retry is authorized for `tenant_admin` users, or for Tier-3 connectors, the authenticated user who owns the credential. | Force retry authorization |
+| BR6 | A force retry returns 409 if a run started within the last 60 seconds is actively `running`. | Force retry idempotency |
+| BR7 | `ConnectorIngestionAlertEvent` `run_timed_out` warnings are batched/throttled to at most one per target per sweep window. | Alert emission |
+| BR8 | Global alert banners reappear on the next page load if the underlying connector status remains unresolved. | UI banner behavior |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0005 (`IngestionRun` as audit anchor) | Internal | Technical Lead | Already Accepted |
-| D-002 | ADR-0009 (`ConnectorHealth` derived not stored) | Internal | Technical Lead | Already Accepted |
-| D-003 | ADR-0010 (Error handling & auto-disable policy) | Internal | Technical Lead | Already Accepted |
-| D-004 | ADR-0023 (Proportional failure threshold & circuit breaker) | Internal | Technical Lead | Already Accepted |
-| D-005 | ADR-0052 (Live polling scheduler & in-flight guard) | Internal | Technical Lead | Already Accepted |
-| D-006 | ADR-0058 (Ingestion events & `ConnectorHealthChangedEvent`) | Internal | Technical Lead | Already Accepted |
-| D-007 | ADR-0061 (Tier-3 per-user scheduler) | Internal | Technical Lead | Already Accepted |
-| D-008 | Story 1.13/1.14/1.15 (scheduler and in-flight guard) | Internal | Technical Lead | Already Built |
-| D-009 | Story 1.16 (reconciliation, stalled health, alert events) | Internal | Technical Lead | Already Built 2026-08-20 |
-| D-010 | Story 5.19 (Service Bus event publishing) | Internal | Technical Lead | Already Built |
-| D-011 | Story 6.5 (connector status view) | Internal | Product Owner | Already Built |
-| D-012 | Story 6.24 (connectors & AI providers grouping) | Internal | Product Owner | Already Built |
-| D-013 | Story 6.29 (badges, banner, and re-sync UI) | Internal | Product Owner | Already Built 2026-08-20 |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `ingestion_runs` table (Postgres) | Internal | Watchdog read/update target; audit anchor | Database (row-locked SQL) |
+| Tier-3/Tier-2 poll scheduler (`pollScheduler.ts`) | Internal | Invokes watchdog at start of every tick; consumes reconciled status | In-process scheduling |
+| `ConnectorHealth` derivation service | Internal | Computes `ConnectorHealthStatus` from `ingestion_runs` + credential status | In-process |
+| Azure Service Bus | Outbound (system → Service Bus) | Publishes `ConnectorIngestionAlertEvent` messages | AMQP / Service Bus SDK |
+| `platform_credentials` store | Internal | Credential status input to health derivation | Database |
+| `POST /v1/connectors/:id/retry`, `/v1/connectors/:id/users/:userId/retry` | Inbound (UI → backend) | Force retry / re-sync API | HTTPS REST / JSON |
+| `social-listening-admin` connectors/status UI + `/api/connectors/[id]/retry` proxy | Internal (upstream consumer) | Renders badges, banner, and re-sync action | Internal API / React components |
 
 ---
 
-- The live polling scheduler (`pollScheduler.ts`) and `ingestion_runs` audit anchor from ADR-0005/ADR-0052 already exist.
-- Azure Service Bus event publishing from ADR-0058/Story 5.19 is already in place.
-- `ConnectorHealth` is derived, not stored, per ADR-0009.
-- Health derivation already consumes `lastAttemptAt`, `lastSuccessfulFetchAt`, consecutive-failure counters, and credential status.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Watchdog sweeps must remain O(1) regardless of `ingestion_runs` table size. | Performance | Must | A partial index on `(status, started_at) WHERE status = 'running'` is created. |
-| NFR-002 | Force retry endpoints must enforce tenant and ownership-tier authorization. | Security | Must | `requireTenantAdmin` or matching Tier-3 user with RLS validation. |
-| NFR-003 | Alert emissions must not overwhelm downstream consumers. | Reliability | Must | Timeout alerts are throttled per target per sweep; stall/failing events are emitted on transition, not every tick. |
-| NFR-004 | Health derivation must be deterministic and consistent with precedence rules. | Maintainability | Must | Unit/contract tests assert the full precedence order. |
-| NFR-005 | UI banners must be accessible and dismissible. | Usability | Should | Banner is keyboard-focusable, includes an `aria-live` region, and can be dismissed for the session. |
-| NFR-006 | Reconciliation must not block the scheduler tick from completing. | Performance | Should | Watchdog runs as an initial step and returns quickly; skipped-locked rows are not waited on. |
+
+- **Performance:** Partial index (`idx_ingestion_runs_stale_watchdog`) keeps watchdog sweeps O(1) regardless of table growth; reconciliation runs as an initial, quick step that does not block the scheduler tick from completing.
+- **Security / access control:** Force-retry endpoints enforce `requireTenantAdmin` or exact Tier-3 `userId` match with strict tenant-isolation validation (RLS-backed).
+- **Reliability / availability:** Lock-safe `SKIP LOCKED` semantics guarantee no race between the watchdog and legitimately-completing runs; alert emission is best-effort and does not block or roll back the underlying state change.
+- **Scalability:** Alert throttling (one `run_timed_out` per target per sweep) prevents event storms during mass reconciliation after an outage affecting many tenants/connectors simultaneously.
+- **Audit and logging:** Every reconciliation, health transition, and manual retry remains reflected in `ingestion_runs` and health history — no state change is silent or untracked.
+- **Accessibility:** UI banners are keyboard-focusable and use an `aria-live` region (NFR-005 in BRD-0070); dismissible per session.
+- **Maintainability:** Health-derivation precedence is deterministic and covered by unit/contract tests asserting the full ordering.
 
 ---
 
 ## 11. Error Handling and Exceptions
-See ADR consequences and BRD business rules for failure modes.
+
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Orphaned `running` run older than threshold | No direct user message (self-healing); status screen reflects updated health on next load | Watchdog reconciles to `failed`, `retryable=true`; scheduler resumes polling next tick |
+| Run inside the threshold, still legitimately running | None | Left untouched by the watchdog |
+| Connector stalled (no attempt/success within thresholds) | `Stalled / No Ingestion` badge; global banner if active | Health derivation returns `stalled`; `ingestion_stalled` alert emitted on transition |
+| Connector failing (consecutive/rate-based failure threshold breached) | `Failing / Suspended` badge; global banner | Health derivation returns `failing`; `connector_failing` alert emitted on transition |
+| Credential expired/revoked | `Reconnect Required` badge; global banner with "Reconnect account" action | Health derivation returns `reconnect_required`; alert emitted on transition |
+| Force retry requested while a run <60s old is still running | "Run already in progress" (409, non-error styling) | Request rejected without triggering a duplicate poll |
+| Force retry requested by unauthorized caller | Action not visible / access denied | Request rejected before any reconciliation or poll is attempted |
+| Service Bus publish failure during alert emission | None (silent to end user) | Logged; does not block or roll back the reconciliation/health-derivation operation |
+
+---
 
 ## 12. Assumptions and Dependencies
+
 - The live polling scheduler (`pollScheduler.ts`) and `ingestion_runs` audit anchor from ADR-0005/ADR-0052 already exist.
 - Azure Service Bus event publishing from ADR-0058/Story 5.19 is already in place.
 - `ConnectorHealth` is derived, not stored, per ADR-0009.
 - Health derivation already consumes `lastAttemptAt`, `lastSuccessfulFetchAt`, consecutive-failure counters, and credential status.
+- Depends on: ADR-0005 (`IngestionRun` audit anchor), ADR-0009 (derived `ConnectorHealth`), ADR-0010 (error handling/auto-disable), ADR-0023 (proportional failure threshold/circuit breaker), ADR-0052 (live scheduler/in-flight guard), ADR-0058 (ingestion events), ADR-0061 (Tier-3 scheduler).
+- Story 1.16 depends on Story 1.13 (live polling scheduler), Story 1.14 (in-flight run guard), Story 1.15 (Tier-3 per-user scheduler), Story 5.19 (Service Bus event publishing).
+- Story 6.29 depends on Story 1.16 (backend watchdog/retry API), Story 6.5 (connector status view), Story 6.24 (connectors & AI providers grouping).
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | A legitimate long-running run is incorrectly reconciled as stale. | Low | Medium | Timeout is `max(15 min, 2 * cadence)` and uses `FOR UPDATE SKIP LOCKED`; active workers are not overwritten. | Technical Lead |
-| R-002 | Alert storms overwhelm downstream consumers or operators. | Low | High | Throttle `run_timed_out` to one per target per sweep; emit stall/failing on transition only. | Technical Lead |
-| R-003 | `stalled` status is misinterpreted as a fatal failure. | Medium | Medium | UI labels clearly distinguish `Stalled / No Ingestion` from `Failing / Suspended`; tooltip/help text explains the cause. | Product Owner |
-| R-004 | Watchdog query becomes slow without the partial index. | Low | High | Require migration `idx_ingestion_runs_stale_watchdog` on `(status, started_at) WHERE status = 'running'`. | Technical Lead |
-| R-005 | Tier-3 users trigger force retry on connectors they do not own. | Low | High | Enforce `requireTenantAdmin` or exact `userId` match with strict tenant-isolation validation. | Technical Lead |
-| R-006 | UI banner fatigue causes users to ignore real alerts. | Medium | Low | Dismissible per session; banner reappears if status is unresolved, and status badges provide persistent visibility. | Product Owner |
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should `run_timed_out`/`ingestion_stalled`/`connector_failing` events eventually feed a real downstream notification channel (email/Slack/PagerDuty), given they are currently produced but not consumed by any delivery mechanism? | Product Owner | Future notification-delivery initiative (explicitly out of scope here) |
+| Q2 | Should Platform-Admin dashboards eventually aggregate stalled/failing connectors across tenants, given this FDD explicitly excludes multi-tenant alert aggregation? | Product Owner | Future Platform-Admin epic consideration |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md`
-- BRD: `../Business-Requirements/BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md`
-- Feature design: _No dedicated feature-design file found._
-- Deep research: `docs/product-research/reports/``
-- User stories: see extracted stories above
+
+### Glossary
+
+See BRD-0070 §15 for the full glossary (`ingestion_runs`, `ConnectorHealthStatus`, `stalled`, `effectiveCadenceMs`, `ConnectorIngestionAlertEvent`, `reconcileStaleIngestionRuns`, `force retry / re-sync`).
+
+### Reference links
+
+- [ADR-0070: Connector Ingestion Health Status, Hanging Run Reconciliation, and Inactivity Alerting](../../adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md)
+- [BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md](../Business-Requirements/BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md)
+- [docs/user-stories/epic-1-repository-and-api-foundation.md](../../user-stories/epic-1-repository-and-api-foundation.md) — Story 1.16
+- [docs/user-stories/epic-6-tenant-admin-ui.md](../../user-stories/epic-6-tenant-admin-ui.md) — Story 6.29
+- [docs/user-stories/README.md](../../user-stories/README.md) — Epic index
+- [docs/product-research/feature-designs/01-multi-source-ingestion.md](../../product-research/feature-designs/01-multi-source-ingestion.md) — general ingestion-reliability context (per BRD-0070 Appendix, used only for competitive/background framing, not a dedicated source)
+- Related ADRs: ADR-0005 (`IngestionRun` audit anchor), ADR-0009 (derived health), ADR-0010 (error handling/auto-disable), ADR-0023 (circuit breaker), ADR-0052 (live scheduler/in-flight guard), ADR-0058 (ingestion events), ADR-0061 (Tier-3 scheduler)
+
+### Feature-design / research cross-reference
+
+No dedicated `docs/product-research/reports/` deep-research brief exists specifically for the stalled-reconciliation/alerting feature (confirmed by BRD-0070's own appendix note). `docs/product-research/feature-designs/01-multi-source-ingestion.md` provides only general multi-source ingestion background, not feature-specific research, and is cited here for completeness rather than as a substantive source.
+
+### Diagrams
+
+None supplied; see Section 6.3 for the textual watchdog-reconciliation, manual-retry, and banner-resolution workflow steps.
+
+### Revision history
+
+| Version | Date | Author | Description of Changes |
+|---|---|---|---|
+| 1.0 | 2026-08-23 | FDD Writer (regenerated) | Regenerated from ADR-0070 and BRD-0070 to replace a defective batch-generated FDD (wrong H1 and flat BR-table-only Section 5) with a genuine per-capability functional design. |

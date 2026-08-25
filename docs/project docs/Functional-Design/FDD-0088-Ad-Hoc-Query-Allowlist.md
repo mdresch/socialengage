@@ -1,193 +1,296 @@
-# BRD-0088: Ad-hoc Query Allowlist
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | BRD-0088: Ad-hoc Query Allowlist |
-| Version | 1.0 |
+| Document Title | FDD-0088 Ad-Hoc Query Allowlist — Functional Design Document |
+| Version | 0.1 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
+| Author(s) | FDD Writer |
+| Reviewer(s) | Technical Lead (Menno) |
 | Status | Draft |
-| Related Documents | ../../adr/0088-ad-hoc-query-allowlist.md, ../Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0088-ad-hoc-query-allowlist.md and the business requirements in BRD-0088-Ad-Hoc-Query-Allowlist.md into functional design for **Ad Hoc Query Allowlist**.
-**What problem are we solving?** Tenant business analysts and brand-reputation managers need flexible, server-side aggregations to answer custom questions that the pre-built dashboard does not cover. Today, the platform does not expose a safe way for these users to explore their data, which either limits insight or pushes them toward unsanctioned, high-risk access patterns.
-
-**Who is affected?** The primary beneficiaries are `Tenant-Business-Analyst` and `Tenant-Brand-Reputation-Manager` personas. `Tenant-Admin` and `Topic-Center-Analyst` are secondary users, while the platform team gains a controlled, monitorable analytics surface.
-
-**What is the proposed solution at a glance?** A structured, allowlist-governed `POST /v1/analytics/query` endpoint that translates a JSON query into a safe, parameterized, RLS-scoped aggregation. Users select dimensions, metrics, filters, and a time grain, and receive a JSON or CSV result set without writing SQL or touching raw data.
-
-**What business value do we expect?** Ad-hoc analytical power without SQL-injection or cross-tenant data-exfiltration risk; faster insights from server-side aggregation; exportable results for external reporting; and a reusable foundation for future dashboard widgets.
+| Related Documents | ADR-0088 (ad-hoc query allowlist), ADR-0087 (preconfigured analytics views), ADR-0015 (tenant RLS), ADR-0044 (watchlist ownership), BRD-0088, `docs/product-research/feature-designs/21-ad-hoc-query-endpoint.md`, Stories 10.4 and 10.5 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- A structured query request format with `dimensions`, `metrics`, `filters`, `timeGrain`, `limit`, and `format`.
-- A hard-coded allowlist of dimensions (`date`, `platform`, `author`, `topic`, `sentiment`, `watchlist`, `source`) and metrics (`count`, `sum(reach)`, `sum(engagement)`, `avg(sentiment_score)`, `unique_authors`).
-- Validation that rejects unknown dimensions and metrics with a clear `400` error.
-- Translation of the structured query into safe, parameterized SQL scoped to the calling tenant.
-- JSON and CSV response formats.
-- Server-side resource guards: 30-second query timeout, 1,000-row hard cap, 60 requests-per-minute per-tenant rate limit (configurable).
-- Use of precomputed daily-count views where the query grain and filters match, with fallback to raw post data for drill-downs.
-- Read-only behavior: the endpoint accepts a `POST` body by convention but never writes data.
-- Backend support for `hour`, `day`, `week`, and `month` time grains.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- Arbitrary SQL, free-text query, or general-purpose query language support.
-- Saved, named, or shared ad-hoc queries (deferred pending open question resolution).
-- Natural-language query builder, AI explanation, or smart suggestions (future enhancements listed in the feature design).
-- Real-time streaming or continuous-query execution.
-- Client-side, in-browser aggregation over unbounded data sets.
+### 2.1 Purpose
+
+This document translates ADR-0088's decision — a structured, allowlist-validated `POST /v1/analytics/query` endpoint that safely translates a JSON query DSL into a parameterized, tenant-scoped aggregation, plus its consuming UI query builder — into a functional design covering validation, query building, resource guards, response shape, and UI behavior.
+
+**Note:** ADR-0088's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
+
+### 2.2 Scope
+
+- **In scope:** the structured query request shape (`dimensions`, `metrics`, `filters`, `timeGrain`, `limit`, `format`); allowlist validation of dimensions/metrics; the `QueryBuilder`'s safe SQL translation and tenant scoping; preference for precomputed `*DailyCount` views with fallback to `social_posts`; response shape (`columns`, `rows`, `rowCount`, `truncated`, `queryTimeMs`, `source`); resource guards (30s timeout, 1000-row cap, 60 req/min per-tenant rate limit); JSON/CSV output; read-only enforcement; the `AdHocQueryBuilder` UI.
+- **Out of scope:** arbitrary SQL or a general-purpose query language; saved/named/shared queries (deferred pending an open question); natural-language query building, AI explanation, or smart suggestions; real-time/continuous query execution; client-side aggregation over unbounded data.
+
+### 2.3 Target Audience
+
+Backend engineers implementing the query builder and endpoint, frontend engineers implementing the query-builder UI, QA authoring security/contract tests for injection and cross-tenant isolation, and the Product Owner.
+
+---
 
 ## 3. Context and Background
-See ADR Context.
-**What problem are we solving?** Tenant business analysts and brand-reputation managers need flexible, server-side aggregations to answer custom questions that the pre-built dashboard does not cover. Today, the platform does not expose a safe way for these users to explore their data, which either limits insight or pushes them toward unsanctioned, high-risk access patterns.
 
-**Who is affected?** The primary beneficiaries are `Tenant-Business-Analyst` and `Tenant-Brand-Reputation-Manager` personas. `Tenant-Admin` and `Topic-Center-Analyst` are secondary users, while the platform team gains a controlled, monitorable analytics surface.
+`Tenant-Business-Analyst` and `Tenant-Brand-Reputation-Manager` need flexible, server-side aggregation to answer questions the pre-built dashboard does not cover — but the platform must never accept arbitrary SQL, which would open SQL-injection and cross-tenant-exfiltration risk in a multi-tenant system built around RLS-first isolation (ADR-0015). ADR-0088 answers this with a narrow, structured JSON DSL that is validated against a hard-coded allowlist and translated into safe, parameterized SQL — never string concatenation of user input. It builds directly on ADR-0087's precomputed `*DailyCount` tables, preferring them when the requested grain/filters match and falling back to `social_posts` (with guards) only for drill-downs.
 
-**What is the proposed solution at a glance?** A structured, allowlist-governed `POST /v1/analytics/query` endpoint that translates a JSON query into a safe, parameterized, RLS-scoped aggregation. Users select dimensions, metrics, filters, and a time grain, and receive a JSON or CSV result set without writing SQL or touching raw data.
-
-**What business value do we expect?** Ad-hoc analytical power without SQL-injection or cross-tenant data-exfiltration risk; faster insights from server-side aggregation; exportable results for external reporting; and a reusable foundation for future dashboard widgets.
+Source requirements: ADR-0088, BRD-0088, Stories 10.4 (backend) and 10.5 (frontend) in `docs/user-stories/epic-10-adr-0086-to-0094.md`. Depends on ADR-0087 (Story 10.3) for the precomputed views it prefers.
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Enable tenant analysts to answer custom questions without writing SQL | `Tenant-Business-Analyst` can complete an ad-hoc query end-to-end in the UI or API within one session |
-| 2 | Preserve tenant data isolation and prevent injection attacks | No successful cross-tenant query or SQL-injection finding in security review; parameterized queries only |
-| 3 | Protect database performance under ad-hoc load | 95% of allowed queries complete within 30 seconds and return no more than 1,000 rows |
-| 4 | Create a reusable analytics foundation for future dashboard features | New dashboard widgets can be built on the same endpoint within one subsequent epic |
-
----
-
-**Positive consequences (from ADR):**
-1. **Analyst power without SQL risk:** users can answer custom questions without direct database access.
-2. **Performance guardrails:** the allowlist, time caps, and row limits prevent runaway queries.
-3. **Foundation for dashboards:** future dashboard widgets can be built on this endpoint.
-4. **Maintenance cost:** every new dimension or metric must be added to the allowlist and query builder.
-5. **Not a general query language:** users cannot express arbitrary analytics. The allowlist is intentionally narrow.
+| G1 | Give analysts custom-question power without SQL access | A tenant user can express a `dimensions`/`metrics`/`filters` query and get a result without writing SQL |
+| G2 | Eliminate SQL-injection and cross-tenant exfiltration risk | Every query is parameterized and RLS-scoped; no user input reaches SQL as text |
+| G3 | Protect shared database performance under ad-hoc load | Runtime capped at 30s, rows capped at 1000, rate-limited to 60 req/min per tenant |
+| G4 | Reuse the precomputed-view investment (ADR-0087) | Queries matching a `*DailyCount` view's grain/filters resolve from it, reported as `source:'precomputed'` |
 
 ---
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall let a tenant user build a structured query with dimensions, metrics, filters, time grain, and output format | Must | API accepts the request shape defined in ADR-0088; UI story 10.5 covers builder controls | Product Owner |
-| BR-002 | The system shall validate `dimensions` and `metrics` against a hard-coded allowlist | Must | Unknown dimensions return `400 UNKNOWN_DIMENSION`; unknown metrics return `400 UNKNOWN_METRIC` | Product Owner |
-| BR-003 | The system shall execute each query as a parameterized, tenant-scoped, read-only aggregation | Must | Query uses `withTenant()` RLS; no user input is concatenated into SQL; no writes occur | Technical Lead |
-| BR-004 | The system shall return query results as JSON or streaming CSV | Must | `format:'json'` returns a columns/rows/metadata payload; `format:'csv'` returns a downloadable stream | Product Owner |
-| BR-005 | The system shall prefer precomputed daily-count views and fall back to raw tables for drill-downs | Should | Same query against a precomputed view completes in under 5 seconds and reports `source:'precomputed'` | Technical Lead |
-| BR-006 | The system shall support `hour`, `day`, `week`, and `month` time grains for the `date` dimension | Must | Contract tests cover all four grains with valid and invalid combinations | Technical Lead |
 
-### 5.1 Architecture Decision
-See ADR Decision.
+### 5.1 Feature / Capability: Structured Query Request and Allowlist Validation
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant-Business-Analyst | Primary end user of ad-hoc queries | High | Build aggregations without SQL; export results for reporting |
-| Tenant-Brand-Reputation-Manager | Crisis and one-off investigations | High | Quickly run one-off queries during incidents |
-| Topic-Center-Analyst | Explores topic and author dimensions | Medium | Go beyond pre-built views for topic/author analysis |
-| Tenant-Admin | Access controller for tenant users | Medium | Decide which roles may use ad-hoc queries |
-| Platform-Admin / Sole-Operator | Platform health and cost owner | Medium | Prevent runaway queries and monitor usage |
-| Development Team | Builds the query builder and API | High | A bounded, safe contract that is testable and maintainable |
+- **Description:** Accepts a JSON query DSL and validates every field against a hard-coded allowlist before any query executes.
+- **Triggers:** `POST /v1/analytics/query` is called with a request body.
+- **Inputs:**
+  ```ts
+  {
+    dimensions: ('date'|'platform'|'author'|'topic'|'sentiment'|'watchlist'|'source')[],
+    metrics: ({type:'count'} | {type:'sum',field:'reach'|'engagement'} |
+              {type:'avg',field:'sentiment_score'} | {type:'unique',field:'author'})[],
+    filters?: { dateRange?: {start,end}, platform?, author?, topic?, sentiment?, watchlist? },
+    timeGrain?: 'hour'|'day'|'week'|'month',
+    limit?: number,   // default 100, hard cap 1000
+    format?: 'json'|'csv'
+  }
+  ```
+- **Processing:**
+  - Every `dimensions` entry is checked against the fixed allowlist; any value not on it is rejected before query construction begins.
+  - Every `metrics` entry's `type` (and, where applicable, `field`) is checked against the fixed allowlist.
+  - `timeGrain`, if present, must be compatible with the chosen dimensions (e.g., a `date` dimension is required for a `timeGrain` to be meaningful).
+  - `limit` defaults to 100; values above 1000 are rejected or clamped.
+  - `format` defaults to `json` when omitted.
+- **Outputs:** A validated, allowlist-conformant query object passed to the `QueryBuilder` (Section 5.2), or a `400` validation error.
+- **Error handling:** An unknown `dimensions` value returns `400 UNKNOWN_DIMENSION`. An unknown `metrics` type/field returns `400 UNKNOWN_METRIC`. An incompatible `timeGrain`/dimension combination returns a distinct validation error.
+- **Edge cases:** An empty `dimensions` array (metrics-only, e.g., a single overall `count`) must be explicitly handled as valid or rejected — a consistent, documented choice. A `filters.dateRange` with `start` after `end` is invalid.
+
+### 5.2 Feature / Capability: Safe Query Translation (`QueryBuilder`)
+
+- **Description:** Translates a validated structured query into a parameterized, tenant-scoped SQL `SELECT`, never concatenating user input into SQL text.
+- **Triggers:** Called after successful allowlist validation (Section 5.1).
+- **Inputs:** The validated query object; the caller's `tenant_id`.
+- **Processing:**
+  - Wraps the query with `withTenant()` (ADR-0015) so the resulting SQL is RLS-scoped to the caller's tenant.
+  - All filter/dimension/metric values are bound as query parameters, never interpolated into the SQL string.
+  - Determines whether the requested `dimensions`/`metrics`/`filters`/`timeGrain` combination matches a precomputed `*DailyCount` table's grain (ADR-0087); if so, builds the query against that table.
+  - Otherwise, falls back to querying `social_posts` (and related tables, e.g., `post_watchlist_matches`) directly, bounded by the row/time guards in Section 5.4.
+- **Outputs:** A parameterized SQL statement (and its parameter values) ready for execution; a `source` classification (`precomputed` or `raw`).
+- **Error handling:** A combination that cannot be satisfied by either a precomputed view or a safe raw-table query (e.g., an unsupported dimension/metric pairing not caught by the allowlist alone) is rejected with a clear error before execution.
+- **Edge cases:** A query that mixes dimensions spanning multiple precomputed tables (e.g., `topic` + `platform` together) may not correspond to any single `*DailyCount` table — this is explicitly called out as an open question (Q2) and must fall back to `social_posts` or be rejected, not silently produce an incorrect join.
+
+### 5.3 Feature / Capability: Read-Only, Rate-Limited Execution
+
+- **Description:** Executes the built query with resource guards and enforces strict read-only behavior.
+- **Triggers:** After `QueryBuilder` produces a safe query.
+- **Inputs:** The parameterized SQL/parameters; per-tenant current rate-limit usage.
+- **Processing:**
+  - Checks the caller's tenant against the per-tenant rate limit (default 60 requests/minute, configurable); rejects before executing if exceeded.
+  - Executes the query with a maximum runtime of 30 seconds; a query exceeding this is aborted.
+  - Caps the returned row count at 1000 (or the caller's smaller `limit`); if the underlying result would exceed this, the response is truncated and flagged.
+  - The query is verified/guaranteed read-only — it can never `INSERT`/`UPDATE`/`DELETE` any table, by construction of the `QueryBuilder` (SELECT-only) rather than by a runtime permission check alone.
+- **Outputs:** A result set within the row/time bounds, or a controlled timeout/rate-limit error.
+- **Error handling:** A timeout returns a clear error without exposing internal SQL, schema, or raw table names. A rate-limit violation returns a distinct `429`-class error.
+- **Edge cases:** A query that would return exactly the row cap (1000) is not marked truncated unless strictly more rows exist. Two rate-limit-adjacent requests arriving concurrently must not both bypass the limit due to a race.
+
+### 5.4 Feature / Capability: Response Shape and Output Format
+
+- **Description:** Returns results as JSON or a streaming CSV, always with execution metadata.
+- **Triggers:** Query execution (Section 5.3) completes successfully.
+- **Inputs:** The executed query's result rows; execution timing; the `source` classification; the requested `format`.
+- **Processing:**
+  - `format: 'json'` (default) returns `{ columns, rows, rowCount, truncated, queryTimeMs, source }`.
+  - `format: 'csv'` streams the same data as a downloadable CSV rather than buffering the full result in memory.
+  - `source` is `'precomputed'` when the query resolved from a `*DailyCount` table, `'raw'` when it fell back to `social_posts`.
+- **Outputs:** A JSON payload or a CSV stream.
+- **Error handling:** An unsupported `format` value is rejected during validation (Section 5.1), not at response-building time.
+- **Edge cases:** A zero-row result still returns valid `columns`/empty `rows`/`rowCount: 0`, not an error. CSV output must correctly escape values containing commas, quotes, or newlines.
+
+### 5.5 Feature / Capability: `AdHocQueryBuilder` UI
+
+- **Description:** A query-builder UI in the analytics dashboard that lets a user pick dimensions, metrics, filters, and time grain, and view/export results.
+- **Triggers:** User navigates to the ad-hoc query section of the dashboard.
+- **Inputs:** User selections for dimensions, metrics, filters, and time grain.
+- **Processing:**
+  - Offers only the allowlisted dimension/metric/time-grain options (mirroring the backend allowlist) so the user cannot construct an invalid request client-side.
+  - Enforces the same limits/caps as the backend (row cap, rate-limit awareness) so the UI does not encourage requests it knows will be rejected.
+  - Submits the structured query to `POST /v1/analytics/query`; renders results as a table, or triggers a CSV download.
+- **Outputs:** A rendered results table, or a downloaded CSV file.
+- **Error handling:** Errors (`UNKNOWN_DIMENSION`, `UNKNOWN_METRIC`, timeout, rate limit) are shown inline within the query builder, not as a full-page failure.
+- **Edge cases:** A user changing dimensions after selecting an incompatible `timeGrain` should have the UI reconcile or warn about the mismatch before submission, mirroring backend validation client-side where feasible.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 10.4 | epic-10-adr-0086-to-0094.md | As backend engineer, I want `POST /v1/analytics/query` to accept a structured, allowlisted query and return a safe aggregation, so that `Tenant-Business-Anal... | `dimensions` and `metrics` are validated against an allowlist.; `QueryBuilder` translates the structured request into a parameterized, tenant-scoped SQL quer... |
-| Story 10.5 | epic-10-adr-0086-to-0094.md | As `Tenant-Business-Analyst`, I want a query builder in the analytics dashboard that lets me pick dimensions and metrics and export results, so that I can ex... | `AdHocQueryBuilder` lets users select dimensions, metrics, filters, and time grain.; Results are shown in a table or downloaded as CSV.; Errors (unknown dime... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| `Tenant-Business-Analyst` | Primary end user of ad-hoc queries |
+| `Tenant-Brand-Reputation-Manager` | Runs one-off queries during incidents/investigations |
+| `Topic-Center-Analyst` | Explores topic/author dimensions beyond pre-built views |
+| `Tenant-Admin` | Controls which roles may use ad-hoc queries |
+| Platform-Admin / Sole-Operator | Monitors usage, rate limits, and performance |
+| Backend Engineer | Implements the allowlist, `QueryBuilder`, and endpoint |
+| Frontend Engineer | Implements `AdHocQueryBuilder` |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 10.4) | Backend engineer | Have `POST /v1/analytics/query` accept a structured, allowlisted query and return a safe aggregation | `Tenant-Business-Analyst` can ask custom questions without writing SQL | Dimensions/metrics validated against allowlist; `QueryBuilder` produces parameterized, tenant-scoped SQL; `timeGrain` supports hour/day/week/month; `limit` capped at 1000, runtime capped at 30s; prefers `*DailyCount`, falls back to `social_posts`; unknown values return `400`; `json`/`csv` supported; read-only; response includes `columns`/`rows`/`rowCount`/`truncated`/`queryTimeMs`/`source`; rate limit 60/min per tenant; contract tests cover allowed/disallowed/timeout |
+| US2 (Story 10.5) | `Tenant-Business-Analyst` | Have a query builder in the analytics dashboard to pick dimensions/metrics and export results | Explore data without SQL | `AdHocQueryBuilder` supports dimension/metric/filter/time-grain selection; results shown in a table or downloaded as CSV; errors (unknown dimension, timeout) shown inline; UI enforces the same limits/caps as the backend |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Backend query flow:**
+1. Client submits `POST /v1/analytics/query` with a structured query.
+2. Server validates `dimensions`/`metrics`/`timeGrain`/`limit`/`format` against the allowlist; rejects with `400 UNKNOWN_DIMENSION`/`400 UNKNOWN_METRIC` on failure.
+3. Server checks the tenant's rate-limit usage; rejects if exceeded.
+4. `QueryBuilder` determines whether the request matches a precomputed `*DailyCount` grain/filter combination; builds a parameterized, `withTenant()`-scoped SQL statement accordingly (precomputed or raw fallback).
+5. Server executes with a 30-second timeout and a 1000-row cap.
+6. Server returns `{ columns, rows, rowCount, truncated, queryTimeMs, source }` as JSON, or streams CSV.
+
+**UI query-builder flow:**
+1. User opens `AdHocQueryBuilder`, selects dimensions/metrics/filters/time grain from allowlisted options.
+2. User submits → the UI calls `POST /v1/analytics/query`.
+3. On success, results render in a table or download as CSV.
+4. On error, an inline message explains the failure (unknown selection, timeout, rate limit).
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| Dimension values | Allowed categorical fields such as `platform`, `source`, `author`, `topic`, `sentiment`, `watchlist`, `date` | `social_posts`, `post_watchlist_matches`, precomputed `*DailyCount` tables | Data Engineering | Tenant-scoped; some contain personal data (author) |
-| Metrics | Aggregated values: `count`, `sum(reach)`, `sum(engagement)`, `avg(sentiment_score)`, `unique_authors` | Computed at query time from `social_posts` or precomputed views | Data Engineering | Tenant-scoped; aggregated only |
-| Filter criteria | `dateRange`, `platform`, `author`, `topic`, `sentiment`, `watchlist` values submitted by the user | User input, validated against allowlist | Product Owner | Untrusted input; must be parameterized |
-| Query result metadata | `columns`, `rows`, `rowCount`, `truncated`, `queryTimeMs`, `source` | Generated by the endpoint at runtime | Technical Lead | Operational |
-| CSV export stream | Streaming result file for download | Generated by the endpoint at runtime | Technical Lead | Tenant-scoped; must not be cached across tenants |
+
+### 7.1 Data Inputs
+
+User-selected `dimensions`, `metrics`, `filters`, `timeGrain`, `limit`, `format`; the caller's authenticated `tenant_id`; source data from `social_posts`, `post_watchlist_matches`, and the `*DailyCount` tables (ADR-0087).
+
+### 7.2 Data Outputs
+
+Query result rows (`columns`/`rows`/`rowCount`/`truncated`/`queryTimeMs`/`source`); CSV export streams; rendered UI table.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `AdHocQueryRequest` | `dimensions[]`, `metrics[]`, `filters?`, `timeGrain?`, `limit` (default 100, max 1000), `format` (default `json`) | Validated against the allowlist; translated by `QueryBuilder` |
+| Allowlist (dimensions) | `date`, `platform`, `author`, `topic`, `sentiment`, `watchlist`, `source` | Fixed set; extending requires an ADR/BRD update |
+| Allowlist (metrics) | `count`; `sum(reach\|engagement)`; `avg(sentiment_score)`; `unique(author)` | Fixed set; extending requires an ADR/BRD update |
+| `AdHocQueryResponse` | `columns[]`, `rows[]` (`Record<string, string\|number>`), `rowCount`, `truncated`, `queryTimeMs`, `source` (`precomputed`\|`raw`) | Returned per request; `source` reflects whether `*DailyCount` or `social_posts` served the query |
+| Per-tenant rate-limit state | `tenant_id`, request count, window | Consulted/incremented on every request |
+
+### 7.4 Validation Rules
+
+- `dimensions` values must be members of the fixed allowlist; unknown values → `400 UNKNOWN_DIMENSION`.
+- `metrics` entries must be one of the allowlisted `{type, field?}` shapes; unknown → `400 UNKNOWN_METRIC`.
+- `timeGrain` must be compatible with the chosen dimensions.
+- `limit` defaults to 100; values above 1000 are rejected or clamped.
+- `filters.dateRange.start` must not be after `end`.
+- `format` must be `json` or `csv`.
+- The generated SQL must never contain unparameterized user input.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | Only allowlisted `dimensions` and `metrics` combinations may be accepted. |
-| BRU-002 | Every query is executed under the requesting tenant's RLS scope and cannot access another tenant's data. |
-| BRU-003 | The ad-hoc query endpoint is read-only and may not insert, update, or delete any table. |
-| BRU-004 | An unknown dimension must return `400 UNKNOWN_DIMENSION`; an unknown metric must return `400 UNKNOWN_METRIC`. |
-| BRU-005 | The maximum number of returned rows is 1,000; results that exceed the cap must be truncated and flagged. |
-| BRU-006 | The per-tenant request rate is limited to 60 per minute by default and must be configurable. |
-| BRU-007 | The selected `timeGrain` must be compatible with the chosen dimensions and metrics. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | Only allowlisted `dimensions`/`metrics` combinations may be accepted. | Request validation |
+| BR2 | Every query executes under the requesting tenant's RLS scope and cannot access another tenant's data. | `QueryBuilder` |
+| BR3 | The endpoint is read-only and may not insert, update, or delete any table. | Execution |
+| BR4 | An unknown dimension returns `400 UNKNOWN_DIMENSION`; an unknown metric returns `400 UNKNOWN_METRIC`. | Validation |
+| BR5 | The maximum number of returned rows is 1000; results exceeding the cap are truncated and flagged (`truncated: true`). | Execution/response |
+| BR6 | The per-tenant request rate is limited to 60/minute by default and is configurable. | Rate limiting |
+| BR7 | The selected `timeGrain` must be compatible with the chosen dimensions and metrics. | Validation |
+| BR8 | The query prefers a precomputed `*DailyCount` table when the grain/filters match; otherwise falls back to `social_posts` with guards. | `QueryBuilder` |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0087 – Preconfigured analytics views (`*DailyCount` tables) | Internal / Prerequisite | Technical Lead | Before Story 10.4 completion |
-| D-002 | ADR-0015 – Tenant RLS and `withTenant()` query model | Internal / Existing | Technical Lead | Already in place |
-| D-003 | ADR-0044 – Watchlist ownership and tenant-scoped watchlist data | Internal / Existing | Technical Lead | Already in place |
-| D-004 | Story 10.3 – Preconfigured analytics views (backend) | Internal / Story | Technical Lead | Before ad-hoc endpoint is fully validated |
-| D-005 | Story 10.4 – Ad-hoc query endpoint (backend) | Internal / Story | Technical Lead | Precedes Story 10.5 (UI) |
-| D-006 | Story 10.5 – Ad-hoc query UI (frontend) | Internal / Story | Product Owner | After Story 10.4 |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| `*DailyCount` tables (ADR-0087) | Inbound (read) | Preferred data source when grain/filters match | SQL (Postgres, RLS-scoped) |
+| `social_posts` / `post_watchlist_matches` | Inbound (read) | Fallback data source for drill-downs | SQL (Postgres, RLS-scoped) |
+| `withTenant()` (ADR-0015) | Wraps all queries | Enforces tenant RLS scoping | Internal query helper |
+| `AdHocQueryBuilder` (UI) | Inbound (consumer) | Calls the endpoint on the user's behalf | REST / JSON over HTTPS |
+| Per-tenant rate limiter | Bidirectional | Reads/increments request counts | Internal service |
 
 ---
 
-- ADR-0087 precomputed analytics views are available for the common daily-count roll-ups.
-- Tenant isolation is already enforced via the `withTenant()` RLS model (ADR-0015).
-- Users authorized to call the endpoint have an authenticated tenant context.
-- The query endpoint is read-only and will not be used for data modification.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Queries must be protected against SQL injection and cross-tenant exfiltration | Security | Must | Penetration/security review finds no vector; all inputs are parameterized |
-| NFR-002 | 95% of precomputed-view queries complete in under 5 seconds | Performance | Should | Measured over a 7-day production-like test period |
-| NFR-003 | Query runtime must not exceed 30 seconds and must fail gracefully | Reliability | Must | Timeout returns a controlled error without exposing SQL or schema details |
-| NFR-004 | Returned result sets must not exceed 1,000 rows | Performance | Must | Any larger result is truncated and `truncated:true` is returned |
-| NFR-005 | Requests must be rate-limited to 60 per minute per tenant (configurable) | Scalability | Must | Load test confirms the limit is enforced and over-limit requests are rejected |
-| NFR-006 | The query builder UI must be keyboard-accessible and responsive | Usability | Should | WCAG 2.1 keyboard-navigable controls; responsive layout verified |
+
+- **Security:** Queries are protected against SQL injection and cross-tenant exfiltration — parameterized inputs only, RLS-scoped execution (NFR-001).
+- **Performance:** 95% of precomputed-view queries complete under 5 seconds (NFR-002); overall runtime is hard-capped at 30 seconds and fails gracefully on timeout (NFR-003).
+- **Result size:** Returned result sets never exceed 1000 rows; larger results are truncated with `truncated:true` (NFR-004).
+- **Scalability:** Requests are rate-limited to 60/minute per tenant by default, configurable (NFR-005).
+- **Usability/Accessibility:** The query-builder UI is keyboard-accessible and responsive (NFR-006).
+- **Maintainability:** Every new dimension or metric requires an explicit allowlist and `QueryBuilder` update — an intentional, documented maintenance cost, not an oversight.
 
 ---
 
 ## 11. Error Handling and Exceptions
-1. **Analyst power without SQL risk:** users can answer custom questions without direct database access.
-2. **Performance guardrails:** the allowlist, time caps, and row limits prevent runaway queries.
-3. **Foundation for dashboards:** future dashboard widgets can be built on this endpoint.
-4. **Maintenance cost:** every new dimension or metric must be added to the allowlist and query builder.
-5. **Not a general query language:** users cannot express arbitrary analytics. The allowlist is intentionally narrow.
+
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Unknown `dimensions` value | `400 UNKNOWN_DIMENSION` | Request rejected before query construction |
+| Unknown `metrics` type/field | `400 UNKNOWN_METRIC` | Request rejected before query construction |
+| Incompatible `timeGrain`/dimension combination | Validation error (400) | Request rejected |
+| Query exceeds 30-second runtime | Controlled timeout error, no internal SQL/schema exposed | Query aborted server-side |
+| Result would exceed 1000 rows | N/A (not an error) | Response returned with `truncated: true` |
+| Per-tenant rate limit exceeded | Rate-limit error (429-class) | Request rejected before execution |
+| Query mixes dimensions spanning multiple/no matching precomputed table | Validation error, or safe raw fallback (implementation choice, must be documented) | No incorrect join is ever silently produced |
 
 ---
 
 ## 12. Assumptions and Dependencies
-- ADR-0087 precomputed analytics views are available for the common daily-count roll-ups.
-- Tenant isolation is already enforced via the `withTenant()` RLS model (ADR-0015).
-- Users authorized to call the endpoint have an authenticated tenant context.
-- The query endpoint is read-only and will not be used for data modification.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | SQL injection or cross-tenant data exfiltration | Low | High | Strict allowlist, parameterized queries only, tenant RLS, contract security tests | Technical Lead |
-| R-002 | Runaway queries degrade shared database performance | Medium | High | 30-second timeout, 1,000-row cap, 60 req/min rate limit, query-plan monitoring | Platform-Admin |
-| R-003 | Allowlist maintenance burden grows as new dimensions/metrics are requested | Medium | Medium | Gate additions through ADR/BRD updates; keep v1 allowlist intentionally narrow | Product Owner |
-| R-004 | Users are frustrated by a narrow allowlist and limited expressiveness | Medium | Medium | Document supported queries clearly; iterate based on usage analytics; keep open questions visible | Product Owner |
-| R-005 | Precomputed views are not ready when the endpoint ships | Medium | Medium | Sequence Story 10.3 before Story 10.4; fallback to raw tables is already required | Technical Lead |
+- ADR-0087 precomputed analytics views (`*DailyCount` tables) are available for common daily roll-ups (Story 10.3 precedes Story 10.4).
+- Tenant isolation is already enforced via `withTenant()` (ADR-0015).
+- Callers have an authenticated tenant context.
+- The endpoint is read-only and will never be used for data modification.
+- Depends on ADR-0088 being accepted before Stories 10.4/10.5 are implemented; Story 10.5 depends on Story 10.4.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should the `date` dimension support `hour` grain in v1, or only `day`/`week`/`month`? | Technical Lead | Before implementation |
+| Q2 | How should the endpoint handle a query that mixes dimensions not sharing a single precomputed view? | Technical Lead | Before implementation |
+| Q3 | Should users be able to save and share ad-hoc queries as named views? | Product Owner | Post-v1 candidate |
+| Q4 | What is the right rate-limit and row-cap for free vs. paid tiers? | Product Owner | Before implementation |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0088-ad-hoc-query-allowlist.md`
-- BRD: `../Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md`
-- Feature design: `docs/product-research/feature-designs/21-ad-hoc-query-endpoint.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+- **ADR:** `docs/adr/0088-ad-hoc-query-allowlist.md` (Status: Proposed)
+- **BRD:** `docs/project docs/Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md`
+- **Feature design:** `docs/product-research/feature-designs/21-ad-hoc-query-endpoint.md`
+- **Deep research:** none found for this feature at this time
+- **Related ADRs:** ADR-0087 (preconfigured analytics views), ADR-0015 (tenant RLS), ADR-0044 (watchlist ownership)
+- **User stories:** Story 10.4 (backend), Story 10.5 (frontend) in `docs/user-stories/epic-10-adr-0086-to-0094.md` — Blocked, pending ADR acceptance
+- **Glossary:**
+  - *Ad-hoc query* — a user-defined, one-off aggregation request not covered by a pre-built dashboard widget.
+  - *Allowlist* — the explicit set of allowed `dimensions`, `metrics`, and `timeGrain` values.
+  - *Time grain* — the level of date grouping (`hour`/`day`/`week`/`month`).
+  - *Drill-down* — a query requiring raw post-level data rather than a precomputed aggregate.
+- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0088/BRD-0088.

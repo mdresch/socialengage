@@ -1,9 +1,9 @@
-# Business Requirements Document — Admin UI Authentication, Session and Role-Gating Mechanism
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — Admin UI Authentication, Session and Role-Gating Mechanism |
+| Document Title | FDD-0036 Admin UI Authentication, Session and Role-Gating Mechanism — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

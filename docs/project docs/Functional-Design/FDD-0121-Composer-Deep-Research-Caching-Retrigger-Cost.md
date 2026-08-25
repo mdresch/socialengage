@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Composer Deep Research Caching, Re-Trigger, and Cost Justification — Business Requirements Document |
+| Document Title | FDD-0121 Composer Deep Research Caching, Re-Trigger, and Cost Justification — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

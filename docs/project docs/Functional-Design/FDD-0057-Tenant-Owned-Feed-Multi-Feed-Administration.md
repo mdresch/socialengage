@@ -1,9 +1,9 @@
-# Business Requirements Document – Tenant-Owned Feed Multi-Feed Administration
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document – Tenant-Owned Feed Multi-Feed Administration |
+| Document Title | FDD-0057 Tenant-Owned Feed Multi-Feed Administration — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

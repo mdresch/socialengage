@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Tenant Offboarding Data Lifecycle: Export and Deletion
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Tenant Offboarding Data Lifecycle: Export and Deletion |
+| Document Title | FDD-0039 Tenant Offboarding Data Lifecycle: Export and Deletion — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

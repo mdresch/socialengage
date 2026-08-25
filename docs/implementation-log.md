@@ -3158,3 +3158,50 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md
 - **Files touched:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts
 - **Epic-2 suite at merge:** PASS (34/34 suites, 315/315 tests)
+---
+
+## 2026-08-23 — Story 2.32 — social-listening-core@7854300
+
+- **Full commit:** `785430051b95c6c9f7fbc66a86123b4997883b62`
+- **Repo:** social-listening-core
+- **Story / ADR:** 2.32 / ADR-0076
+- **Contract:** social-listening-core/contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md; social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts
+- **Epic-2 suite at merge:** 34/35 suites, 317/318 tests (story-2.14 live MediaWiki AC3 exceeded 60s on the first epic-2 run; retested story-2.14 individually: PASS 8/8)
+---
+
+## 2026-08-24 — Story 3.14 — social-listening-core@e3e661b
+
+- **Full commit:** `e3e661b2c0129fb8762f5eaf172a8ae3cc75fee8`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.14 / ADR-0073
+- **Contract:** social-listening-core/contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts, social-listening-core/migrations/0041_create_outbound_activities.sql, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/outbound/outboundActivityStore.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Epic-3 suite at merge:** PASS (16/16 suites, 115/115 tests)
+---
+
+## 2026-08-24 — Story 3.15 — social-listening-core@8e7f312
+
+- **Full commit:** `8e7f31246f3c296bba6974048ddc7fafe84a79e4`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.15 / ADR-0075
+- **Contract:** social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md; social-listening-core/.claude/skills/outbound-post/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts, social-listening-core/migrations/0042_add_outbound_post_columns.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/outboundPostsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/outbound/outboundActivityStore.ts
+- **Epic-3 suite at merge:** PASS (17/17 suites, 126/126 tests)
+
+---
+
+## 2026-08-24 — Story 3.16 — social-listening-core@0d11e3f
+
+- **Full commit:** `0d11e3f16b7387709476bfed8a9659df5aaf85bb`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.16 / ADR-0074
+- **Contract:** social-listening-core/contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts
+- **SKILL.md:** social-listening-core/.claude/skills/tenant-export/SKILL.md; social-listening-core/.claude/skills/posts-api/SKILL.md
+- **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/tenant-export/SKILL.md, social-listening-core/contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantExportRouter.ts, social-listening-core/src/posts/csvExport.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/tenants/tenantExportStore.ts
+- **Epic-3 suite at merge:** PASS (18/18 suites, 131/131 tests)
+
+**heal-contract-failure walk (one attempt):** the initial `buildTenantWorkspaceExport()` query referenced non-existent `ingestion_runs.created_at`/`updated_at` columns; re-validating Intent/Contract/SKILL.md found the workspace export should include only run summary fields, so the query was corrected to `started_at`, `completed_at`, `connector_version`, and `error_summary`. `platform_credentials.status` and the `tenant_export` SKILL.md were also aligned with the FDD during the same pass.

@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — AI-Inferred Origin Location from Newswire Dateline Text
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — AI-Inferred Origin Location from Newswire Dateline Text |
+| Document Title | FDD-0056 AI-Inferred Origin Location from Newswire Dateline Text — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

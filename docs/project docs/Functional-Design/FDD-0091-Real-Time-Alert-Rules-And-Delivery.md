@@ -1,9 +1,9 @@
-# BRD-0091: Real-Time Alert Rules and Delivery
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | BRD-0091: Real-Time Alert Rules and Delivery |
+| Document Title | FDD-0091 Real-Time Alert Rules and Delivery — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

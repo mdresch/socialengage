@@ -1,182 +1,322 @@
-# BRD-0083: RAG Vector-Store RLS and Metadata
+# Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | BRD-0083: RAG Vector-Store RLS and Metadata |
-| Version | 1.0 |
+| Document Title | FDD-0083 RAG Vector-Store RLS and Metadata — Functional Design Document |
+| Version | 0.1 |
 | Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
+| Author(s) | FDD Writer |
+| Reviewer(s) | Technical Lead (Menno) |
 | Status | Draft |
-| Related Documents | ../../adr/0083-rag-vector-store-rls-and-metadata.md, ../Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md |
-
-## 2. Purpose and Scope
-### 2.1 Purpose
-This document translates the accepted architecture decision in 0083-rag-vector-store-rls-and-metadata.md and the business requirements in BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md into functional design for **RAG Vector Store RLS And Metadata**.
-The platform is introducing a tenant-scoped, vector-backed semantic search layer (RAG) so users can search and ask questions across the full text of ingested posts. Because vector stores are typically flat indexes shared across all tenants, a separate metadata and isolation scheme is required to keep one tenant's data from appearing in another tenant's search results.
-
-This BRD covers the metadata schema and row-level-security (RLS) rules for the RAG vector store as described in ADR-0083. It defines the mandatory metadata fields on every vector record, the `tenant_id` equality filter that must accompany every search, the query filters exposed to users, and the deletion/offboarding rules that keep the derived vector index in sync with the source `social_posts` table. The RAG feature overall remains in Proposed state; this document is a draft for review and may change if the parent ADR is revised or rejected.
+| Related Documents | ADR-0083 (RAG vector-store RLS and metadata), ADR-0081 (`RAGConnector` provider abstraction), ADR-0082 (chunking and embedding pipeline), ADR-0015 (tenant RLS), ADR-0043 (tenant deletion), BRD-0083, `docs/product-research/feature-designs/28-semantic-search-rag.md`, Story 9.9 |
 
 ---
 
-### 2.2 Scope
-**In scope:**
-- Mandatory metadata fields on every RAG vector record: `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at`, `watchlist_ids`, `sentiment`, `topics`.
-- A tenant-equality metadata filter applied on every `RAGConnector.search()` call.
-- The `RAGFilter` query contract: `watchlistId`, `platformId`, `topicId`, `sentiment`, `dateRange`.
-- Deletion and offboarding hooks: `RAGConnector.deletePost(tenantId, postId)` and `RAGConnector.deleteTenant(tenantId)`.
-- A reconciliation job that removes orphan vector records no longer present in `social_posts`.
-- Explicit exclusion of PII beyond public post content from the vector store.
+## 2. Purpose and Scope
 
-**Out of scope:**
-- The `RAGConnector` interface itself (covered by ADR-0081).
-- Post chunking, embedding model selection, and the indexing pipeline (covered by ADR-0082).
-- The `POST /v1/rag/search`, `POST /v1/rag/ask`, and `GET /v1/rag/status` endpoint contracts (covered by ADR-0084).
-- The admin UI search/ask components and loading patterns (covered by ADR-0085).
-- Selection of the default vector-store provider (Pinecone, Azure AI Search, or pgvector).
+### 2.1 Purpose
+
+This document translates ADR-0083's decision — the mandatory metadata schema for RAG vector records and the tenant-isolation rule every `RAGConnector.search()` call must enforce — into a functional design: the capabilities the vector-store metadata layer must provide, the data it holds, the workflow that keeps it consistent with `social_posts`, and the rules that keep it from ever leaking data across tenants.
+
+**Note:** ADR-0083's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
+
+### 2.2 Scope
+
+- **In scope:**
+  - The mandatory metadata envelope (`RAGChunkMetadata`) attached to every vector record.
+  - The tenant-equality filter that every `RAGConnector.search()` call must apply.
+  - The `RAGFilter` query contract (`watchlistId`, `platformId`, `topicId`, `sentiment`, `dateRange`) and how each is resolved (native metadata filter vs. `RAGSearchService` post-filter).
+  - Deletion and offboarding hooks: `RAGConnector.deletePost(tenantId, postId)` and `RAGConnector.deleteTenant(tenantId)`.
+  - The periodic reconciliation job that removes orphan vector records.
+  - The PII exclusion rule (no chunk text, no author, no PII beyond public post content, stored in the vector index).
+  - The `rag_chunks_sync` tracking table.
+
+- **Out of scope:**
+  - The `RAGConnector` interface's own method signatures and provider selection (ADR-0081).
+  - Post chunking strategy and embedding model selection (ADR-0082).
+  - The `POST /v1/rag/search`, `POST /v1/rag/ask`, and `GET /v1/rag/status` endpoint contracts (ADR-0084).
+  - Admin UI search/ask components and loading states (ADR-0085).
+  - Choice of vector-store product (Pinecone, Azure AI Search, or pgvector).
+
+### 2.3 Target Audience
+
+Backend engineers implementing `RAGConnector` and the indexing pipeline, QA authoring contract tests for tenant isolation, the Product Owner, and Security/Compliance reviewers concerned with cross-tenant data leakage.
+
+---
 
 ## 3. Context and Background
-See ADR Context.
-The platform is introducing a tenant-scoped, vector-backed semantic search layer (RAG) so users can search and ask questions across the full text of ingested posts. Because vector stores are typically flat indexes shared across all tenants, a separate metadata and isolation scheme is required to keep one tenant's data from appearing in another tenant's search results.
 
-This BRD covers the metadata schema and row-level-security (RLS) rules for the RAG vector store as described in ADR-0083. It defines the mandatory metadata fields on every vector record, the `tenant_id` equality filter that must accompany every search, the query filters exposed to users, and the deletion/offboarding rules that keep the derived vector index in sync with the source `social_posts` table. The RAG feature overall remains in Proposed state; this document is a draft for review and may change if the parent ADR is revised or rejected.
+Vector databases are typically flat, single-namespace indexes; unlike `social_posts`, they have no native concept of Postgres RLS. The project already enforces tenant isolation at the database layer (ADR-0015, ADR-0032) as a from-day-one property, not a retrofit. As the RAG (semantic search) feature (`docs/product-research/feature-designs/28-semantic-search-rag.md`) introduces a derived, vector-backed index of post content, that same isolation guarantee must be reproduced in a store that does not enforce it natively — otherwise a single flat index shared by all tenants could return another tenant's posts in a search result.
+
+Search also needs to filter by watchlist, platform, topic, sentiment, and date without a database round trip per candidate (which would defeat the point of a vector index), so each vector record must carry enough metadata to answer those filters directly.
+
+Source requirements: ADR-0083, BRD-0083, Story 9.9 (`docs/user-stories/epic-9-adr-0077-to-0085.md`). Dependencies: ADR-0081 (`RAGConnector` abstraction, Story 9.7), ADR-0082 (chunking/embedding pipeline, Story 9.8), ADR-0043 (tenant offboarding).
 
 ---
 
 ## 4. Goals and Objectives
-| # | Objective | Success Measure |
+
+| ID | Goal | Success Criteria |
 |---|---|---|
-| 1 | Enforce tenant isolation in the RAG vector index at the same level as database RLS | Every search returns only records owned by the caller's `tenant_id`; zero cross-tenant leakage in contract tests |
-| 2 | Enable rich, query-time filtering for semantic search | `watchlistId`, `platformId`, `topicId`, `sentiment`, and `dateRange` filters operate without joining back to `social_posts` at query time |
-| 3 | Maintain PII and source-of-truth discipline | No PII beyond public post content is stored in the vector store; original chunk text is reconstructed from `social_posts` |
-| 4 | Keep the vector index consistent with the rest of the tenant lifecycle | Post deletion and tenant offboarding remove the corresponding vector records within defined SLAs |
-
----
-
-**Positive consequences (from ADR):**
-1. **Strong tenant isolation:** every search is filtered by `tenant_id`, consistent with RLS elsewhere.
-2. **Rich filtering:** metadata enables the watchlist, platform, topic, and date filters in `POST /v1/rag/search`.
-3. **Reconstruction cost:** the UI must fetch `social_posts` to show the original chunk text. This is a deliberate trade-off for PII safety.
-4. **Metadata limits:** vector stores impose size limits on metadata. The chosen set fits within common limits but may need trimming if new fields are added.
+| G1 | Enforce tenant isolation in the vector index at parity with database RLS | Every `search()` call returns only the caller's `tenant_id`; contract tests prove zero cross-tenant leakage |
+| G2 | Enable rich, metadata-driven query-time filtering | `watchlistId`, `platformId`, `topicId`, `sentiment`, `dateRange` filters narrow results without a `social_posts` join at query time |
+| G3 | Keep PII surface minimal | No chunk text or author PII persists in the vector store; display text is reconstructed from `social_posts` |
+| G4 | Keep the vector index consistent with the source-of-truth lifecycle | Post deletion, tenant offboarding, and orphan reconciliation each remove the correct vector records |
 
 ---
 
 ## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | Every vector record shall include `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at`, `watchlist_ids`, `sentiment`, and `topics` metadata | Must | Contract test verifies each record has all mandatory fields on upsert | Product Owner |
-| BR-002 | `RAGConnector.search()` shall always apply a `tenant_id == caller.tenant_id` metadata equality filter | Must | No search call succeeds without a tenant filter; cross-tenant search returns zero results | Product Owner |
-| BR-003 | The system shall support `RAGFilter` for `watchlistId`, `platformId`, `topicId`, `sentiment`, and `dateRange` | Must | Each filter narrows results to matching metadata values; unsupported store features fall back to `RAGSearchService` post-filtering | Product Owner |
-| BR-004 | Post deletion shall remove the deleted post's vector records | Must | `DELETE /v1/posts/:id` triggers `RAGConnector.deletePost()` and the records are no longer searchable | Product Owner |
-| BR-005 | Tenant offboarding shall remove all vector records for that tenant | Must | Offboarding flow triggers `RAGConnector.deleteTenant()` and no records for the tenant remain | Product Owner |
-| BR-006 | A periodic reconciliation job shall delete orphan vector records whose `post_id` no longer exists in `social_posts` | Should | Reconciler scans `rag_chunks_sync` and removes dangling records within the configured retention window | Product Owner |
-| BR-007 | The vector store shall not store original chunk text or author PII beyond public post content | Must | Metadata and stored payload contain only identifiers, dates, labels, and arrays; original text is reconstructed from `social_posts` | Product Owner |
 
-### 5.1 Architecture Decision
-See ADR Decision.
+### 5.1 Feature / Capability: Metadata Envelope on Vector Upsert
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
-|---|---|---|---|
-| Tenant-Business-Analyst | Primary end user of semantic search | High | Confident that search results are scoped to the right tenant and filters return accurate subsets |
-| Topic-Center-Analyst | Primary end user of concept-related exploration | High | Reliable topic and date filters on vector search |
-| Tenant-Brand-Reputation-Manager | Primary end user of emerging-narrative discovery | High | No leakage of another tenant's posts in search results |
-| Platform Administrator | Operator of the vector index | Medium | Clear offboarding and deletion rules to satisfy tenant-data obligations |
-| Backend Engineer | Implements `RAGConnector` and metadata rules | High | Explicit, non-bypassable `tenant_id` filter and metadata schema |
-| Performance Review Agent | Monitors cost and latency | Low | Visibility into metadata overhead and query-time filter cost |
+- **Description:** Every chunk written to the vector store carries a fixed metadata envelope (`RAGChunkMetadata`) alongside its embedding, sufficient to enforce isolation and answer query filters without a database join.
+- **Triggers:** A chunk is produced by the chunking/embedding pipeline (ADR-0082) and upserted into the vector store.
+- **Inputs:** `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at` (from `social_posts`); `watchlist_ids` (from watchlist match results at indexing time); `sentiment`, `topics` (from AI enrichment, when available).
+- **Processing:**
+  - `tenant_id`, `post_id`, `chunk_index`, `platform_id`, and `published_at` are required on every record; upsert fails validation if any is missing.
+  - `watchlist_ids` defaults to an empty array when the post matched no watchlist.
+  - `sentiment` and `topics` are optional and are omitted (not written as null) when not yet available at index time.
+  - The embedding vector and this metadata are stored; the chunk's original text is **not** stored.
+  - `rag_chunks_sync` is updated with `post_id`, `last_indexed_at`, `chunk_count`, and `store_id` for the tenant.
+- **Outputs:** A vector-store record keyed by (implementation-defined vector ID) carrying the embedding and the metadata envelope; an updated `rag_chunks_sync` row.
+- **Error handling:** Missing a required field rejects the upsert before it reaches the store; the chunking/embedding pipeline retries per ADR-0082 and does not block the main ingestion pipeline.
+- **Edge cases:** A post with zero enrichment (no sentiment/topics yet) still indexes with the required fields only. A post that matches multiple watchlists carries all matching IDs in `watchlist_ids`. Metadata payload size approaching the store's documented per-record limit is a known constraint (NFR-002) — very large `watchlist_ids`/`topics` arrays may need trimming.
+
+### 5.2 Feature / Capability: Mandatory Tenant-Isolation Filter on Search
+
+- **Description:** Every call to `RAGConnector.search()` enforces a `tenant_id == caller.tenant_id` metadata equality filter, with no code path able to omit or override it.
+- **Triggers:** Any consumer (e.g., the RAG search/ask endpoints in ADR-0084) invokes `RAGConnector.search()`.
+- **Inputs:** `caller.tenant_id` (resolved server-side from the authenticated session, never from a client-supplied parameter), plus an optional `RAGFilter`.
+- **Processing:**
+  - The connector implementation injects the `tenant_id` equality filter into the underlying vector-store query before any other filter is applied.
+  - There is no "search across all tenants" mode or parameter; `tenant_id` is not a caller-settable filter field.
+  - If the vector store supports namespaces or per-tenant indices, the implementation may use them, but the metadata filter is still applied as defense in depth — namespaces alone are never sufficient.
+- **Outputs:** A result set containing only vectors whose `tenant_id` metadata matches the caller's tenant.
+- **Error handling:** If the caller's `tenant_id` cannot be resolved (e.g., unauthenticated context), `search()` must fail closed (return no results / raise an error) rather than search unfiltered.
+- **Edge cases:** A tenant with zero indexed posts returns an empty result set, not an error. A malformed or absent `RAGFilter` still applies the mandatory tenant filter.
+
+### 5.3 Feature / Capability: `RAGFilter` Query-Time Filtering
+
+- **Description:** Callers may narrow a search using `watchlistId`, `platformId`, `topicId`, `sentiment`, and `dateRange`, applied on top of the mandatory tenant filter.
+- **Triggers:** A `RAGFilter` object is supplied on a `search()` call.
+- **Inputs:** `RAGFilter { watchlistId?, platformId?, topicId?, sentiment?, dateRange?: { start, end } }`.
+- **Processing:**
+  - `watchlistId` matches any record whose `watchlist_ids` array contains the value (array-membership filter where the store supports it).
+  - `platformId` and `sentiment` are exact-match metadata filters.
+  - `topicId` matches any record whose `topics` array contains the value.
+  - `dateRange` is applied as a range filter on `published_at` (ISO 8601) where the store supports range filtering.
+  - For any filter the underlying vector store cannot express natively, `RAGSearchService` retrieves the tenant-filtered candidate set and post-filters in application code rather than omitting the filter.
+- **Outputs:** A result set narrowed by all supplied filter fields (AND semantics across fields).
+- **Error handling:** An unrecognized or malformed filter value is rejected with a validation error rather than silently ignored.
+- **Edge cases:** A `dateRange` with `start` after `end` is invalid and rejected. Combining a filter the store supports natively with one it does not (e.g., `platformId` native, `topicId` post-filtered) must still return the correct intersection.
+
+### 5.4 Feature / Capability: Post-Deletion Propagation
+
+- **Description:** Deleting a post removes its vector records from the index so it can no longer surface in search.
+- **Triggers:** `DELETE /v1/posts/:id` completes successfully against `social_posts`.
+- **Inputs:** `tenantId`, `postId`.
+- **Processing:** The deletion handler calls `RAGConnector.deletePost(tenantId, postId)`, which removes every vector record (all `chunk_index` values) for that `post_id` within that tenant's scope.
+- **Outputs:** No vector records for the deleted post remain queryable.
+- **Error handling:** If vector deletion fails after the relational delete succeeds, the failure is retried/logged and surfaced to the periodic reconciliation job as a safety net (Section 5.6) rather than silently leaving orphans indefinitely.
+- **Edge cases:** Deleting a post that was never indexed (e.g., indexing failed or is still pending) is a no-op, not an error.
+
+### 5.5 Feature / Capability: Tenant Offboarding Propagation
+
+- **Description:** Offboarding/deleting a tenant removes all of that tenant's vector records.
+- **Triggers:** The tenant deletion/offboarding flow (ADR-0043) executes.
+- **Inputs:** `tenantId`.
+- **Processing:** The offboarding flow calls `RAGConnector.deleteTenant(tenantId)`, which removes every vector record whose `tenant_id` metadata matches, regardless of `post_id`.
+- **Outputs:** Zero remaining vector records for the offboarded tenant.
+- **Error handling:** Offboarding must not be considered complete until vector deletion is confirmed or a reconciled follow-up guarantees it; this is bound by the tenant data-erasure SLA (NFR-004).
+- **Edge cases:** A tenant with a very large indexed corpus may require batched/paginated deletion against the vector store's API limits.
+
+### 5.6 Feature / Capability: Orphan Reconciliation Job
+
+- **Description:** A periodic job detects and removes vector records that have become orphaned (their `post_id` no longer exists in `social_posts`) but were not cleaned up by the direct deletion hooks — e.g., due to a transient failure in Section 5.4.
+- **Triggers:** Runs on a scheduled interval (operational cadence, not user-triggered).
+- **Inputs:** `rag_chunks_sync` entries (`post_id`, `last_indexed_at`, `chunk_count`, `store_id`, per tenant).
+- **Processing:** For each tracked `post_id`, the job checks whether the row still exists in `social_posts`. If not, it calls the equivalent of `deletePost` for that `post_id`/`tenant_id` and removes the corresponding `rag_chunks_sync` entry.
+- **Outputs:** Vector store and `rag_chunks_sync` converge to contain only posts that currently exist.
+- **Error handling:** A reconciliation pass that fails partway logs the failure and resumes cleanly on the next scheduled run rather than requiring a full rescan.
+- **Edge cases:** A post deleted and re-created with the same ID (if ever possible) must not be misclassified as orphaned; reconciliation keys on the current existence check, not on cached state.
+
+### 5.7 Feature / Capability: PII Exclusion
+
+- **Description:** The vector store never holds original chunk text or author/PII fields; only the metadata envelope and the embedding are stored.
+- **Triggers:** Applies continuously to every write path (upsert in 5.1).
+- **Inputs:** N/A (a constraint on what is written, not a separate trigger).
+- **Processing:** The indexing pipeline passes only the fields defined in `RAGChunkMetadata` to the vector store; chunk text and `author` are deliberately excluded from the write payload. Display of a cited chunk reconstructs the original text by fetching `social_posts` using `post_id` and `chunk_index`.
+- **Outputs:** A vector record containing identifiers, dates, labels, and arrays only — no free-text content, no author.
+- **Error handling:** A schema/contract check on the upsert payload rejects any write that includes disallowed fields (defense in depth against a future accidental regression).
+- **Edge cases:** If `social_posts` has been modified (e.g., body edited) after indexing, the reconstructed citation text reflects the current `social_posts` content, not a stale copy — this is a deliberate trade-off of the "no stored text" design.
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 9.9 | epic-9-adr-0077-to-0085.md | As backend engineer, I want vector records to carry tenant-scoped metadata and a mandatory `tenant_id` filter on every search, so that a multi-tenant vector ... | Every vector record has metadata: `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at`, `watchlist_ids`, `sentiment`, `topics`.; `RAGConnecto... |
+## 6. User Interaction and Workflows
 
+### 6.1 Primary Actors
+
+| Actor | Role |
+|---|---|
+| Backend Engineer | Implements `RAGConnector`, the metadata envelope, and the reconciliation job |
+| Tenant-Business-Analyst | End user of semantic search; relies on correct tenant scoping and filters |
+| Topic-Center-Analyst | End user relying on topic/date filters over the vector index |
+| Tenant-Brand-Reputation-Manager | End user relying on the index never leaking another tenant's posts |
+| Platform Administrator | Operates offboarding and monitors reconciliation/orphan metrics |
+| Consuming service (RAG search/ask endpoints, ADR-0084) | Calls `RAGConnector.search()` on the user's behalf |
+
+### 6.2 User Stories / Use Cases
+
+| ID | As a ... | I want to ... | So that ... | Acceptance Criteria |
+|---|---|---|---|---|
+| US1 (Story 9.9) | Backend engineer | Have vector records carry tenant-scoped metadata and a mandatory `tenant_id` filter on every search | A multi-tenant vector index cannot leak data across tenants | Every record has all mandatory metadata fields; `search()` always applies the `tenant_id` filter; `RAGFilter` fields work; `deletePost`/`deleteTenant` hooks fire; chunk text is never stored; reconciliation removes orphans; no PII beyond public post content |
+
+### 6.3 Workflow Diagrams / Steps
+
+**Indexing workflow (write path):**
+1. A post is enriched (sentiment/topics available where applicable) and chunked/embedded per ADR-0082.
+2. For each chunk, the indexing pipeline assembles the `RAGChunkMetadata` envelope (`tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at`, `watchlist_ids`, optional `sentiment`/`topics`).
+3. The pipeline validates required fields are present; if not, the chunk is not upserted and the failure is retried without blocking main ingestion.
+4. The embedding and metadata (never chunk text) are upserted into the vector store.
+5. `rag_chunks_sync` is updated for the post/tenant.
+
+**Search workflow (read path):**
+1. A consumer (e.g., the search endpoint, ADR-0084) calls `RAGConnector.search()` with the authenticated caller's `tenant_id` and an optional `RAGFilter`.
+2. The connector applies the mandatory `tenant_id` equality filter first.
+3. The connector applies each `RAGFilter` field natively where the store supports it.
+4. `RAGSearchService` post-filters any field the store cannot express natively, over the tenant-scoped candidate set only.
+5. Results are returned with `post_id`/`chunk_index` references for the caller to reconstruct/cite text from `social_posts`.
+
+**Deletion / offboarding workflow:**
+1. `DELETE /v1/posts/:id` succeeds → `RAGConnector.deletePost(tenantId, postId)` removes that post's chunks.
+2. Tenant offboarding (ADR-0043) executes → `RAGConnector.deleteTenant(tenantId)` removes all of the tenant's chunks.
+3. On its schedule, the reconciliation job cross-checks `rag_chunks_sync` against `social_posts` and deletes any orphaned vector records the direct hooks missed.
+
+---
 
 ## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `tenant_id` | Tenant identifier, equality-filtered on every search | `tenants` / caller context | Backend / RLS | Tenant identifier |
-| `post_id` | Reference back to the `social_posts` row | `social_posts` | Backend | Non-PII foreign key |
-| `chunk_index` | Zero-based chunk number within the post | `RAGChunkingService` | Backend | Non-PII |
-| `platform_id` | Connector platform identifier for the post | `social_posts` / connector | Backend | Non-PII |
-| `published_at` | ISO 8601 publication timestamp for date-range filters | `social_posts` | Backend | Non-PII |
-| `watchlist_ids` | Array of watchlist IDs the post matched at indexing time | `watchlist` matches | Backend | Tenant-internal |
-| `sentiment` | Optional sentiment label | Enrichment / ADR-0071 | Backend | Non-PII |
-| `topics` | Optional array of topic IDs from clustering | AI topic clustering | Backend | Non-PII |
-| `rag_chunks_sync` | Tracks `post_id`, `last_indexed_at`, `chunk_count`, `store_id` per tenant | New sync table | Backend | Tenant-internal |
+
+### 7.1 Data Inputs
+
+`social_posts` (post identity, `platform_id`, `published_at`); watchlist match results at indexing time (`watchlist_ids`); AI enrichment output (`sentiment`, `topics`); the authenticated caller's `tenant_id` (session context, not a request parameter); caller-supplied `RAGFilter`.
+
+### 7.2 Data Outputs
+
+Vector-store records (embedding + metadata, no text); `rag_chunks_sync` rows; search results (vector IDs / `post_id` + `chunk_index` references, no chunk text) returned to the calling service for citation and reconstruction.
+
+### 7.3 Data Model / Entities
+
+| Entity | Key Attributes | Relationships |
+|---|---|---|
+| `RAGChunkMetadata` (vector-store record) | `tenant_id` (required), `post_id` (required), `chunk_index` (required, 0..N), `platform_id` (required), `published_at` (required, ISO 8601), `watchlist_ids` (array, default empty), `sentiment` (optional string), `topics` (optional array) | Many records per `post_id` (one per chunk); belongs to one `tenant_id`; no stored text — links back to `social_posts` by `post_id` |
+| `RAGFilter` (query input, not persisted) | `watchlistId?`, `platformId?`, `topicId?`, `sentiment?`, `dateRange?: { start, end }` | Applied against `RAGChunkMetadata` fields on a `search()` call |
+| `rag_chunks_sync` (relational tracking table) | `tenant_id`, `post_id`, `last_indexed_at`, `chunk_count`, `store_id` | One row per (`tenant_id`, `post_id`); used by the reconciliation job to detect orphans against `social_posts` |
+| `social_posts` (source of truth, external to this ADR) | `id` (= `post_id`), `tenant_id`, `platform_id`, `published_at`, body text, `author` | Referenced, never duplicated in the vector store; original text/PII stays here only |
+
+### 7.4 Validation Rules
+
+- `tenant_id`, `post_id`, `chunk_index`, `platform_id`, `published_at` are required on every vector record; upsert without them is rejected.
+- `chunk_index` is a non-negative integer, unique per `post_id`.
+- `watchlist_ids` and `topics` are arrays (possibly empty); `sentiment` is a single optional string.
+- `published_at` must be a valid ISO 8601 timestamp.
+- No field other than those in `RAGChunkMetadata` may be written to a vector record (in particular: no chunk text, no `author`).
+- `RAGFilter.dateRange.start` must not be after `dateRange.end`.
 
 ---
 
 ## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | There is no "search across all tenants" mode; every `RAGConnector.search()` is scoped to one `tenant_id`. |
-| BRU-002 | `watchlist_ids` stored on a vector record is an array; the `watchlistId` filter matches any record that contains the requested value in that array. |
-| BRU-003 | `published_at` is stored as an ISO 8601 string and is used for `dateRange` filtering. |
-| BRU-004 | If the vector store supports namespaces or separate indices, they may be used in addition to — but never in place of — the mandatory `tenant_id` metadata filter. |
-| BRU-005 | `social_posts` is the only source of truth for original chunk text; the vector store stores only the embedding and metadata. |
-| BRU-006 | `author` and other PII shall not be written to the vector store. |
+
+| ID | Rule | Applies To |
+|---|---|---|
+| BR1 | There is no "search across all tenants" mode; every `search()` is scoped to exactly one `tenant_id`, resolved server-side. | `RAGConnector.search()` |
+| BR2 | `watchlist_ids` is an array; the `watchlistId` filter matches any record containing the requested value. | `RAGFilter` |
+| BR3 | `published_at` is stored as ISO 8601 and used for `dateRange` filtering. | Metadata envelope |
+| BR4 | Namespaces/separate indices may be used in addition to, but never instead of, the mandatory `tenant_id` metadata filter. | `RAGConnector` implementation |
+| BR5 | `social_posts` is the sole source of truth for original chunk text; the vector store holds only embedding + metadata. | Indexing and citation reconstruction |
+| BR6 | `author` and other PII beyond public post content are never written to the vector store. | Metadata envelope |
+| BR7 | A filter unsupported natively by the vector store is post-filtered by `RAGSearchService` over the tenant-scoped candidate set, never skipped. | `RAGFilter` resolution |
 
 ---
 
 ## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0081 `RAGConnector` provider abstraction | Internal ADR | Product Owner | Accepted before implementation |
-| D-002 | ADR-0082 post chunking and embedding pipeline | Internal ADR | Product Owner | Accepted before implementation |
-| D-003 | ADR-0015 tenant RLS at database layer | Internal ADR (Accepted) | Product Owner | Already in place |
-| D-004 | ADR-0043 tenant deletion / offboarding | Internal ADR | Product Owner | Accepted before implementation |
-| D-005 | Story 9.7 `RAGConnector` provider backend | Internal Story | Product Owner | Ready |
-| D-006 | Story 9.9 RAG vector-store RLS and metadata backend | Internal Story | Product Owner | Ready (this BRD) |
-| D-007 | Vector store provider selection and provisioning | External / Infrastructure | Platform Administrator | Before implementation |
+
+| System / Component | Direction | Purpose | Protocol / Format |
+|---|---|---|---|
+| Chunking/embedding pipeline (ADR-0082) | Inbound | Supplies chunks and embeddings to be upserted with metadata | Internal service call |
+| `social_posts` table | Bidirectional (read for metadata source + citation reconstruction; deletion trigger inbound) | Source of `post_id`, `platform_id`, `published_at`; source of truth for text reconstruction | SQL (Postgres, RLS-scoped) |
+| Watchlist matching | Inbound | Supplies `watchlist_ids` at index time | Internal service call |
+| AI enrichment (topics/sentiment, ADR-0071 context) | Inbound | Supplies optional `sentiment`/`topics` | Internal service call |
+| `DELETE /v1/posts/:id` handler | Inbound (trigger) | Triggers `RAGConnector.deletePost()` | Internal call following REST delete |
+| Tenant offboarding flow (ADR-0043) | Inbound (trigger) | Triggers `RAGConnector.deleteTenant()` | Internal call |
+| RAG search/ask endpoints (ADR-0084) | Outbound (consumer) | Calls `RAGConnector.search()` with caller `tenant_id` + `RAGFilter` | Internal service call |
+| Vector-store provider (Pinecone / Azure AI Search / pgvector — selection out of scope) | Outbound | Persists embeddings + metadata; executes filtered similarity search; executes deletions | Provider-native API, abstracted by `RAGConnector` |
+| `rag_chunks_sync` table | Bidirectional | Tracks indexed state per post/tenant for reconciliation | SQL (Postgres) |
+| Reconciliation job | Outbound (scheduled) | Deletes orphaned vector records | Internal scheduled process |
 
 ---
 
-- The chosen vector store supports metadata on each vector record and at least equality filtering on metadata fields.
-- `social_posts` remains the source of truth; the vector store is a derived index that can be rebuilt.
-- Watchlist, topic, and sentiment enrichment values are available at the time a post is chunked and indexed.
-- `published_at` is available in ISO 8601 form for every indexed post.
-
 ## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | Tenant-equality filter overhead shall not exceed 20% additional latency versus an unfiltered search on the same corpus | Performance | Should | Measured in contract tests with a representative tenant corpus |
-| NFR-002 | Metadata payload per vector record shall fit within the chosen vector store's documented metadata size limit | Scalability | Must | Largest expected record is validated against provider limit before production |
-| NFR-003 | Vector-store isolation rules shall be enforced by the `RAGConnector` implementation and shall be impossible to bypass through the public API | Security | Must | Static review and contract tests confirm no public path can omit the `tenant_id` filter |
-| NFR-004 | Deletion/offboarding operations shall complete within the tenant data-erasure SLA | Compliance | Must | Measured end-to-end from trigger to non-existence of records in vector index |
+
+- **Performance:** The mandatory `tenant_id` filter should not add more than ~20% latency versus an unfiltered search on the same corpus (NFR-001).
+- **Security / access control:** Tenant isolation is enforced inside `RAGConnector.search()` itself and must be impossible to bypass through any public API path — `tenant_id` is never a caller-settable parameter (NFR-003), consistent with the project's existing RLS-first posture (ADR-0015).
+- **Scalability:** Metadata payload per record must fit within the chosen vector store's documented metadata size limit (NFR-002); large `watchlist_ids`/`topics` arrays are a known risk requiring size budgeting.
+- **Reliability / availability:** Deletion/offboarding hooks are backstopped by the periodic reconciliation job so a transient failure does not leave a permanent orphan.
+- **Audit and logging:** Deletion, offboarding, and reconciliation actions should be logged sufficiently to demonstrate compliance with the tenant data-erasure SLA (NFR-004).
+- **Compliance:** Deletion/offboarding must complete within the tenant data-erasure SLA end-to-end, not just at the relational layer.
 
 ---
 
 ## 11. Error Handling and Exceptions
-1. **Strong tenant isolation:** every search is filtered by `tenant_id`, consistent with RLS elsewhere.
-2. **Rich filtering:** metadata enables the watchlist, platform, topic, and date filters in `POST /v1/rag/search`.
-3. **Reconstruction cost:** the UI must fetch `social_posts` to show the original chunk text. This is a deliberate trade-off for PII safety.
-4. **Metadata limits:** vector stores impose size limits on metadata. The chosen set fits within common limits but may need trimming if new fields are added.
+
+| Scenario | User-Facing Message | System Behavior |
+|---|---|---|
+| Upsert missing a required metadata field | N/A (internal pipeline error, surfaced to engineering) | Upsert rejected; pipeline retries per ADR-0082 without blocking main ingestion |
+| `search()` called without a resolvable `tenant_id` | Generic "unable to search" error to caller | Fails closed — no unfiltered search is ever executed |
+| Vector-store metadata payload exceeds provider size limit | N/A (internal validation error) | Upsert rejected before reaching the store; flagged for array trimming (R-001) |
+| `deletePost`/`deleteTenant` call fails after relational delete succeeds | N/A (background failure) | Logged and retried; reconciliation job catches any remaining orphan on its next run |
+| `RAGFilter.dateRange` invalid (`start` after `end`) | Validation error returned to caller | Request rejected before reaching the vector store |
+| Reconciliation pass fails partway through | N/A (operational alert) | Logged; resumes cleanly on next scheduled run, no full rescan required |
 
 ---
 
 ## 12. Assumptions and Dependencies
-- The chosen vector store supports metadata on each vector record and at least equality filtering on metadata fields.
-- `social_posts` remains the source of truth; the vector store is a derived index that can be rebuilt.
-- Watchlist, topic, and sentiment enrichment values are available at the time a post is chunked and indexed.
-- `published_at` is available in ISO 8601 form for every indexed post.
 
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | Vector store metadata size limits force truncation of `watchlist_ids` or `topics` | Medium | High | Size budget the metadata payload; validate largest record against provider limit; trim or compress arrays if needed | Technical Lead |
-| R-002 | A bypass of the `tenant_id` filter causes cross-tenant data leakage | Low | Critical | Enforce filter inside `RAGConnector.search()` only; contract-test every path; no public parameter can override `tenant_id` | Technical Lead |
-| R-003 | Reconstruction of chunk text from `social_posts` adds UI latency | Medium | Medium | Cache frequently cited posts; index `post_id`/`chunk_index` lookup; document trade-off in UX | Product Owner |
-| R-004 | Orphan vector records remain after post deletions or retention policy changes | Medium | High | Implement `deletePost`, `deleteTenant`, and periodic reconciliation; audit `rag_chunks_sync` | Backend Engineer |
-| R-005 | Metadata filter support varies across providers, causing inconsistent `RAGFilter` behavior | Medium | Medium | Abstract filter translation in `RAGConnector`; post-filter unsupported filters in `RAGSearchService` | Technical Lead |
+- The chosen vector store supports metadata on each record and at least equality filtering on metadata fields.
+- `social_posts` remains the source of truth and the vector store is a derived, rebuildable index.
+- Watchlist, topic, and sentiment enrichment values are available at chunking/indexing time (may be absent for not-yet-enriched posts).
+- `published_at` is available in ISO 8601 form for every indexed post.
+- Depends on ADR-0081 (`RAGConnector` abstraction, Story 9.7) and ADR-0082 (chunking/embedding pipeline, Story 9.8) being accepted and implemented first.
+- Depends on ADR-0043 (tenant offboarding) for the `deleteTenant` trigger point.
+- Vector-store provider selection and provisioning (external/infrastructure) must occur before implementation.
+
+---
+
+## 13. Open Questions
+
+| ID | Question | Owner | Target Resolution |
+|---|---|---|---|
+| Q1 | Should `watchlist_ids` be updated when a new watchlist later matches an already-indexed post, or is the watchlist filter applied at search time against `post_watchlist_matches` instead? | Technical Lead | Before implementation |
+| Q2 | How is metadata updated when `sentiment` or `topics` are corrected by a human-in-the-loop override (ADR-0071)? | Technical Lead | Before implementation |
+| Q3 | What is the maximum metadata payload the chosen vector store accepts per record? | Technical Lead | Before provider selection is finalized |
+| Q4 | Should `platform_id` be an indexed free-text string or a constrained `provider_id`/`platformId` enum? | Technical Lead | Before implementation |
 
 ---
 
 ## 14. Appendix
-- ADR: `../../adr/0083-rag-vector-store-rls-and-metadata.md`
-- BRD: `../Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md`
-- Feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md``
-- Deep research: `docs/product-research/reports/<feature>-deep-research.md``
-- User stories: see extracted stories above
+
+- **ADR:** `docs/adr/0083-rag-vector-store-rls-and-metadata.md` (Status: Proposed)
+- **BRD:** `docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md`
+- **Feature design:** `docs/product-research/feature-designs/28-semantic-search-rag.md`
+- **Deep research:** none found for this feature at this time
+- **Related ADRs:** ADR-0081 (`RAGConnector`), ADR-0082 (chunking/embedding), ADR-0015 (tenant RLS), ADR-0032 (users table RLS), ADR-0043 (tenant deletion)
+- **User stories:** Story 9.9 (`docs/user-stories/epic-9-adr-0077-to-0085.md`) — Blocked, pending ADR acceptance and Story 9.7
+- **Glossary:**
+  - *RAG* — Retrieval-Augmented Generation; a vector-backed retrieval step grounding generative answers in tenant posts.
+  - *Vector store* — a database optimized for storing/querying high-dimensional embeddings.
+  - *`RAGConnector`* — the provider-agnostic interface abstracting upsert/search/delete/status across vector stores (ADR-0081).
+  - *`RAGChunkMetadata`* — the fixed metadata envelope attached to every vector record.
+  - *`RAGFilter`* — the caller-supplied filter narrowing search by watchlist, platform, topic, sentiment, or date range.
+  - *`rag_chunks_sync`* — the relational tracking table recording indexed state per post/tenant.
+- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0083/BRD-0083.

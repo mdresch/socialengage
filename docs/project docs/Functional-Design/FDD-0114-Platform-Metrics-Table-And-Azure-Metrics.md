@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | SocialEngage – Platform Metrics Table and Azure Metrics Integration |
+| Document Title | FDD-0114 Platform Metrics Table and Azure Metrics Integration — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

@@ -1,9 +1,9 @@
-# Business Requirements Document — BRD-0011: Cursor-Based Pagination for the Posts API
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document — BRD-0011: Cursor-Based Pagination for the Posts API |
+| Document Title | FDD-0011 Cursor-Based Pagination for the Posts API — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |

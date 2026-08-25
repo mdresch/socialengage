@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document Title | Composed Post Author Mention Suggestions – Business Requirements Document |
+| Document Title | FDD-0100 Composed Post Author Mention Suggestions — Functional Design Document |
 | Version | 0.1 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer — Batch Agent |

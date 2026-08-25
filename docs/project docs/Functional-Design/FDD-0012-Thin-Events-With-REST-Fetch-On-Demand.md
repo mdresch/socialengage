@@ -1,9 +1,9 @@
-# Business Requirements Document (BRD) — Thin Events with REST Fetch On-Demand
+# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
 |---|---|
-| Document Title | Business Requirements Document (BRD) — Thin Events with REST Fetch On-Demand |
+| Document Title | FDD-0012 Thin Events with REST Fetch On-Demand — Functional Design Document |
 | Version | 1.0 |
 | Date | 2026-08-23 |
 | Author(s) | FDD Writer Batch Agent |
