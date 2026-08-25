@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-25 | 16:58 | — | — | Documentation | — | Merge origin/main (aa2488b) |
 | 2026-08-24 | 20:24 | — | — | Documentation | ADR-0080 | docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list (0a7c450) |
 | 2026-08-24 | 18:04 | — | — | Documentation | Story 9.1 | docs(trace): finalize Story 9.1 Built field and Implementation Log entry (f912b13) |
 | 2026-08-24 | 18:01 | — | — | Review | Story 9.1 | feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint (a4bf276) |

@@ -2816,3 +2816,9 @@
 - **Files touched:** docs/adr/README.md, docs/user-stories/README.md, docs/user-stories/epic-14-adr-0118-to-0121.md
 - **Status:** Pending review
 
+## 2026-08-25 — aa2488b — Merge origin/main
+
+- **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
+- **Files touched:** 
+- **Status:** Pending review
+

@@ -2980,3 +2980,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-25 — aa2488b — Merge origin/main
+
+- **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
+- **Files touched:** 
+- **Status:** Pending review
+
