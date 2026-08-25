@@ -2413,3 +2413,9 @@
 - **Files touched:** docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0075-outbound-social-post-publishing.md, docs/adr/0076-composer-deep-research-agent.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
 - **Status:** Pending review
 
+## 2026-08-25 — e2796ef — Scheduled doc review: 2026-08-25 — 53-entry batch across all three queues, plus a real history-rewrite finding
+
+- **Full commit:** `e2796ef9756a73686021781b9b1c15f33e2d3f45`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
