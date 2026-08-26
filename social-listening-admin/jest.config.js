@@ -9,6 +9,10 @@ module.exports = {
   // prove route-level redirect behavior rather than only unit-testing role-routing.ts.
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // CSS modules (e.g. page.module.css) — stubbed via identity-obj-proxy so
+    // Jest can import .tsx pages that use CSS modules without parsing the CSS
+    // itself. Standard Next.js Jest setup pattern.
+    '\\.module\\.css$': 'identity-obj-proxy',
   },
   // Story 6.19 — react-markdown and its whole unified/remark/mdast/micromark
   // dependency chain ship as ESM-only (`export {`), which Jest's default
