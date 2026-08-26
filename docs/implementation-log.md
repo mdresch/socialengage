@@ -3329,7 +3329,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ## 2026-08-25 Healing pass Story 4.4 + Story 9.5 social-listening-core
 
-- **Full commit:** 7920e48933336a27f595bfa80fe49deefca4f8b4
+- **Full commit:** 01bce70d1e9d74c31131a128eaaf6b98e1ab3629
 - **Repo:** social-listening-core
 - **Story / ADR:** 4.4 / ADR-0022 (pg_cron) + 9.5 / ADR-0080 (onboarding checklist)
 - **Contract:** social-listening-core/contracts/epic-4/story-4.4.derived-data-caching-and-refresh.contract.test.ts (7/7), social-listening-core/contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts (17/17)
