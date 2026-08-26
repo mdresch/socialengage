@@ -2236,3 +2236,9 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
+## 2026-08-26 — 8029cd9 — Scheduled doc review: 2026-08-26 — clear 49-entry backlog across all three review queues
+
+- **Full commit:** `8029cd951fd8c2fa72b2b13e5fed900ce26926f8`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts
+- **Status:** Pending review
+
