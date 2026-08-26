@@ -3338,3 +3338,15 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (96/96 suites, 824/824 tests)
 
 **Root cause was environmental, not a code regression.** The test isolation change (commit 56aec12, 2026-08-24) switched from a fixed `social_listening_test` database to per-run cloned `test_run_*` databases from a `social_listening_template` base, but the template creation logic in `jest.global-setup.js` had two gaps: (1) the template was created once and never re-migrated, so migration 0043 (`onboarding_checklist` column, Story 9.5) was missing from the template and every clone; (2) the template was created as an empty DB and migrated in place, but `CREATE EXTENSION pg_cron` (migration 0013, Story 4.4) only succeeds in `cron.database_name=social_listening_test` (pinned by `docker-compose.test.yml`'s server-startup GUC), so the `cron.job` foreign table was never in the template. Fix: the template is now created by first migrating `social_listening_test` (where pg_cron works) and then `CREATE DATABASE social_listening_template TEMPLATE social_listening_test` -- the template and all clones inherit the `cron` schema with `cron.job`, which reads from the bg worker's shared state regardless of which database queries it. A re-migration step was also added for when the template already exists, so newly-added migrations are picked up automatically without needing to drop and recreate the template. Two new entries added to `docs/environment-gotchas.md` under a new "Test database template" section.
+
+---
+
+## 2026-08-26 — Story 6.39 — social-listening-admin@e0abfdd
+
+- **Full commit:** `e0abfdd6e544d7196de121a8c47bddb87c8914a6`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.39 / ADR-0075
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts (10/10)
+- **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/lib/core-client.ts
+- **Epic-6 suite at merge:** PASS (39/40 suites, 513/532 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific HTTPS/DB issue, unrelated to this story)

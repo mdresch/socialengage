@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-26 | 14:24 | — | — | Documentation | Story 6.39 | docs: update Story 6.39 Built status and log implementation (8b25501) |
 | 2026-08-26 | 14:23 | — | — | Documentation | Story 6.39 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) (e0abfdd) |
 | 2026-08-26 | 09:54 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (00066ec) |
 | 2026-08-26 | 09:53 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (0ee011c) |

@@ -2695,3 +2695,9 @@
 - **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/tsconfig.json
 - **Status:** Pending review
 
+## 2026-08-26 — 8b25501 — docs: update Story 6.39 Built status and log implementation
+
+- **Full commit:** `8b25501c21e1429ae33196c79e05aebc454d91d5`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
