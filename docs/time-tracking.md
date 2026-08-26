@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-26 | 05:47 | — | — | Review | — | Scheduled doc review: 2026-08-26 — clear ~58-entry backlog across all three review queues (48e8b5d) |
 | 2026-08-25 | 16:58 | — | — | Documentation | — | Merge origin/main (aa2488b) |
 | 2026-08-24 | 20:24 | — | — | Documentation | ADR-0080 | docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list (0a7c450) |
 | 2026-08-24 | 18:04 | — | — | Documentation | Story 9.1 | docs(trace): finalize Story 9.1 Built field and Implementation Log entry (f912b13) |

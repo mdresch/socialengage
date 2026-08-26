@@ -3046,3 +3046,9 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5ff1879, 3a8ff91, aa2488b.
 
+## 2026-08-26 — 48e8b5d — Scheduled doc review: 2026-08-26 — clear ~58-entry backlog across all three review queues
+
+- **Full commit:** `48e8b5d94d5d0db4fa2b658bb20e75c216f7d9a0`
+- **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/.claude/skills/linkedin-connector/SKILL.md
+- **Status:** Pending review
+
