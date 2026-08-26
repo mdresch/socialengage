@@ -3338,3 +3338,16 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Full suite at merge:** PASS (96/96 suites, 824/824 tests)
 
 **Root cause was environmental, not a code regression.** The test isolation change (commit 56aec12, 2026-08-24) switched from a fixed `social_listening_test` database to per-run cloned `test_run_*` databases from a `social_listening_template` base, but the template creation logic in `jest.global-setup.js` had two gaps: (1) the template was created once and never re-migrated, so migration 0043 (`onboarding_checklist` column, Story 9.5) was missing from the template and every clone; (2) the template was created as an empty DB and migrated in place, but `CREATE EXTENSION pg_cron` (migration 0013, Story 4.4) only succeeds in `cron.database_name=social_listening_test` (pinned by `docker-compose.test.yml`'s server-startup GUC), so the `cron.job` foreign table was never in the template. Fix: the template is now created by first migrating `social_listening_test` (where pg_cron works) and then `CREATE DATABASE social_listening_template TEMPLATE social_listening_test` -- the template and all clones inherit the `cron` schema with `cron.job`, which reads from the bg worker's shared state regardless of which database queries it. A re-migration step was also added for when the template already exists, so newly-added migrations are picked up automatically without needing to drop and recreate the template. Two new entries added to `docs/environment-gotchas.md` under a new "Test database template" section.
+
+
+## 2026-08-26 Healing pass Story 6.2 social-listening-admin
+
+- **Full commit:** 3cb453d5a0a0b08906108f0b6a81e6fe05766469
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.2 / ADR-0035+ADR-0036 (role-gated routing shell)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts (21/21)
+- **SKILL.md:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md
+- **Files touched:** social-listening-admin/jest.config.js, social-listening-admin/package.json, social-listening-admin/package-lock.json
+- **Full suite at merge:** Story 6.2 contract 21/21 pass in isolation. Full admin suite run interrupted by user; core suite timeouts (Stories 1.10, 2.3, 2.14, 3.17) are the known environmental pattern from docs/environment-gotchas.md (real external service timing under full-suite load), not regressions.
+
+**Root cause was a regression introduced by the ADR-0073 stash recovery.** The home page redesign (recovered from a shelved stash in a prior session) added `import styles from './page.module.css'` to `src/app/page.tsx` -- the only CSS module import in the entire `src/` directory. Story 6.2's contract dynamically imports `page.tsx` (line 183) to test AC2 route-tree enforcement, so Jest tried to parse the CSS as JavaScript and failed with `SyntaxError: Unexpected token '.'`. The Jest config had a `moduleNameMapper` for the `@/*` path alias but no mapping for CSS modules. Fix: added `identity-obj-proxy` (the standard Next.js Jest CSS module stub) as a devDependency and mapped `\\.module\\.css$` to it in `jest.config.js`. This is the standard Next.js Jest setup pattern, not a contract weakening -- the contract's assertions are unchanged, only the test harness can now import the real page component again.
