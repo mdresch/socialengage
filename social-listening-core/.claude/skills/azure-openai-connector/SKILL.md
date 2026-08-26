@@ -28,6 +28,13 @@ description: The second real AIProviderConnector (Azure OpenAI Service, gpt-5-mi
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `AZURE_OPENAI_PROVIDER_ID` literal (`'azure-openai'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
 - `contracts/epic-2/story-2.17.azure-openai-summary-field.contract.test.ts` — a real call against the real Azure OpenAI resource returns a non-empty `summary` string, genuinely shorter than the input, alongside the five existing fields; a real `enrichPost()` result for a tenant served by this connector round-trips `summary` through `insertSocialPost()` into `SocialPost.enrichment.summary` unchanged; a tenant served by Azure AI Language instead (both providers connected/active, the existing fixed-order default) has `enrichment.summary` absent, not a placeholder.
 
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26, per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention — this section did not previously exist on this file.)*
+
+- `enrichPost.ts` calls this connector's `analyze()` as one of its ordered `PROVIDERS` — pre-existing, predates this convention.
+- `research()` is called by `src/composer/composerResearchService.ts`'s `performResearch()`, reached at the real production call site `POST /v1/composer/research` (`src/http/versions/v1/composerRouter.ts`) — relationship asserted by `story-3.17.composer-deep-research.contract.test.ts` (endpoint-level) and `story-2.32.azure-openai-research-capability.contract.test.ts` (connector-level).
+
 ## Registration transparency (ADR-0048)
 
 - **Registration location:** `src/connectors/azureOpenAi/azureOpenAiConnector.ts` (the connector object, `providerId: AZURE_OPENAI_PROVIDER_ID`), registered by a real `registerAIProviderConnector(azureOpenAiConnector)` call at the top of `src/connectors/azureAiLanguage/enrichPost.ts` (a module-load side effect), and appended to that same file's `PROVIDERS` array.
