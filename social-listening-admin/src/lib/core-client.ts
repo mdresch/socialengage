@@ -1242,6 +1242,51 @@ export async function removeTenantOwnedFeedActivation(id: string): Promise<Tenan
   return { status: response.status, body };
 }
 
+/**
+ * Story 6.39 (ADR-0075) — the per-Page outcome row returned by
+ * POST /v1/outbound/posts.  Reuses the existing OutboundActivity shape
+ * augmented with the target asset (Page) id/name for UI display.
+ */
+export interface PublishPostRow extends OutboundActivity {
+  targetAssetId: string;
+  targetAssetName: string;
+}
+
+export interface PublishPostOutcome {
+  status: number;
+  rows: PublishPostRow[];
+}
+
+/**
+ * Story 6.39 (ADR-0075) — creates real outbound posts on selected Facebook
+ * Pages (POST /v1/outbound/posts).  `targets` is the list of connected
+ * Facebook Page rows the user ticked in PublishTargetsDialog.  `text` is
+ * the composer's main text; `platformOverrides` carries per-platform text
+ * overrides (only Facebook is published in this story).  `linkPreview` is
+ * the optional OpenGraph card preview to attach.  Returns the raw HTTP
+ * status (201 all-sent, 207 partial) and the per-Page result rows so the
+ * caller can show per-Page external_url or error_code.
+ */
+export async function publishPost(input: {
+  text: string;
+  targets: { pageId: string; pageName: string }[];
+  platformOverrides?: Record<string, { text?: string }>;
+  linkPreview?: { url: string; title?: string; description?: string; image?: string; siteName?: string; hostname?: string } | null;
+}): Promise<PublishPostOutcome> {
+  const response = await authenticatedCoreFetch('/v1/outbound/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: input.text,
+      targets: input.targets.map((t) => ({ platform: 'facebook', targetAssetId: t.pageId, targetAssetName: t.pageName })),
+      platformOverrides: input.platformOverrides,
+      linkPreview: input.linkPreview,
+    }),
+  });
+  const body = await response.json().catch(() => ({ rows: [] }));
+  return { status: response.status, rows: Array.isArray(body.rows) ? body.rows : [] };
+}
+
 export interface TenantDeletionRequestOutcome {
   status: number;
   body: { tenantId?: string; deletionRequestedAt?: string; graceEndsAt?: string; error?: string };

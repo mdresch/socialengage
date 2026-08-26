@@ -47,7 +47,8 @@
     ".next/test-story-6-1/dev/types/**/*.ts",
     ".next/test-story-6-1/dev/dev/types/**/*.ts",
     ".next/test-story-6-7/dev/types/**/*.ts",
-    ".next/test-story-6-7/dev/dev/types/**/*.ts"
+    ".next/test-story-6-7/dev/dev/types/**/*.ts",
+    ".next/test-story-6-7/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

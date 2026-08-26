@@ -14,10 +14,12 @@ The `/tenant/compose` page and the `ComposePostModal` overlay in `PostsFeedClien
 | ADR | Decision | Story |
 |---|---|---|
 | ADR-0072 | Cross-Platform Polypost Composer and Multi-Network Preview Engine | 6.36 |
+| ADR-0075 | Outbound Social Post Publishing via Platform APIs | 6.39 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-6/story-6.36.polypost-composer.contract.test.ts` — asserts (a) `PolypostComposer` renders the platform toggle bar, editor toolbar, Upload Images / Import Doc / Markdown / Save Draft controls, and the initial text, (b) `PlatformPreviewRails` renders all seven network preview cards (LinkedIn, Instagram, Facebook, Bluesky, Mastodon, Threads, X/Twitter) and propagates media `altText`, (c) `CardLinkPreview` renders OpenGraph title, description, site name, image, and hostname, (d) `documentImport.cleanPastedText()` normalizes Markdown/plain text, (e) `ComposePostModal` renders when `isOpen` and nothing when closed, (f) the dedicated `/tenant/compose/page.tsx` exports a default `ComposePage` component that imports `PolypostComposer`, (g) `PostsFeedClient.tsx` contains a `Compose Post` trigger and the `ComposePostModal` import.
+- `contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts` — asserts (a) `core-client.ts` exports `publishPost` calling `POST /v1/outbound/posts` with a `{ rows: PublishPostRow[], status }` outcome, (b) the same-origin proxy `src/app/api/outbound/posts/route.ts` exists and forwards to `publishPost`, (c) `PolypostComposer.tsx` imports `PublishPostRow` and calls `fetch('/api/outbound/posts')` from `handleConfirmPublish` (not a simulated `setTimeout`), (d) non-Facebook platforms are rendered as disabled in `PublishTargetsDialog` with an explanatory note, (e) per-Page `externalUrl`/`errorCode` is shown in the status message, (f) `handleOpenPublishDialog` validates platform selection and content before opening.
 
 ## How to extend this safely
 
@@ -33,11 +35,13 @@ The `/tenant/compose` page and the `ComposePostModal` overlay in `PostsFeedClien
 - **Draft storage is tenant-isolated via `localStorage` keying.** `draftStorage.ts` must keep the tenant-scoped key prefix (`socialengage:drafts:${tenantId}`) and respect the `typeof window` guard so the contract suite does not crash under Node. The 50 most-recent-drafts limit and quota handling are intentional mitigations for `localStorage` size.
 - **Alt-Text on media attachments must propagate into the preview cards.** `MediaAttachment.altText` is optional but, when provided, must appear in the rendered `<img alt>` of every preview rail. The contract's `AC1` alt-text assertion checks `PlatformPreviewRails` output, not only `PolypostComposer`'s thumbnail list.
 - **The preview rails receive callbacks, not raw text/media.** `PlatformPreviewRails` takes `getTextForPlatform` and `getMediaForPlatform` so per-platform overrides (not yet a contract, but built into the props shape) can be added without changing the rails' signature.
-- **Publishing / scheduled posting is explicitly out of scope.** The Publish button now opens `PublishTargetsDialog.tsx`, which polls `GET /api/connectors/facebook/pages` and lets the user pick active connected Facebook Pages before the (still simulated) dispatch. Do not wire real social network write APIs, webhooks, or ad placement under the cover of "just a small follow-up." That is ADR-0072's named deferred scope and requires its own ADR.
+- **Publishing is now real for Facebook Pages (Story 6.39, ADR-0075).** The Publish button opens `PublishTargetsDialog.tsx`, which polls `GET /api/connectors/facebook/pages` and lets the user pick active connected Facebook Pages. On confirm, `handleConfirmPublish` calls `fetch('/api/outbound/posts')` (the same-origin BFF proxy) which forwards to `publishPost()` in `core-client.ts` → `POST /v1/outbound/posts` on core. Per-Page `externalUrl` (success) or `errorCode` (failure) is shown in the status message. Non-Facebook platforms are disabled in the dialog until their connector `publish()` is implemented. Scheduled posts, image media upload, and LinkedIn publish remain out of scope for this story.
 
 ## Known gaps / deferred work
 
-- Direct automated scheduled posting and social network write APIs are explicitly out of scope per ADR-0072. The `PublishTargetsDialog` page picker is UI-only and still simulates dispatch in `handlePublish`.
+- Scheduled posting (`scheduled_for` rows and the background scheduler) is out of scope for Story 6.39; the Schedule UI is present but does not yet create scheduled rows.
+- Image media upload to platform APIs is out of scope for Story 6.39; only text + link preview are sent.
+- LinkedIn and other non-Facebook platform publishing is disabled in `PublishTargetsDialog` until their connector `publish()` is implemented.
 - The multi-draft `localStorage` persistence is client-side only; cross-device draft sync is not built.
 - The OpenGraph scraper is a lightweight regex-based extractor. If a target site blocks the scraper or serves JavaScript-only meta tags, the graceful fallback returns hostname/title/description but not a full browser-rendered preview.
 
@@ -45,4 +49,5 @@ The `/tenant/compose` page and the `ComposePostModal` overlay in `PostsFeedClien
 
 - **`post-feed` `PostsFeedClient.tsx` calls `ComposePostModal`** from this component and opens it with a `Compose Post` button. This real call site is asserted in `story-6.36.polypost-composer.contract.test.ts`'s `AC5` source-inspection test.
 - **Same-origin API routes `src/app/api/composer/link-preview/route.ts` and `src/app/api/composer/ai-assist/route.ts`** are the only production server entry points the composer talks to. `PolypostComposer.tsx` calls `/api/composer/link-preview` from a `useEffect` and the AI toolbar calls `POST /api/composer/ai-assist`. These routes do not depend on `social-listening-core`.
-- **`PublishTargetsDialog.tsx` calls `GET /api/connectors/facebook/pages`** (a same-origin proxy to `social-listening-core`) to list the caller's connected Facebook Pages. It filters to Pages with `status === 'connected'` and a non-failing/non-disconnected `connectorHealth` before presenting them as tick-box targets. The dispatch itself remains a client-side simulation; no real write API is called.
+- **`PublishTargetsDialog.tsx` calls `GET /api/connectors/facebook/pages`** (a same-origin proxy to `social-listening-core`) to list the caller's connected Facebook Pages. It filters to Pages with `status === 'connected'` and a non-failing/non-disconnected `connectorHealth` before presenting them as tick-box targets. Non-Facebook selected platforms are rendered as disabled with an explanatory note.
+- **`POST /api/outbound/posts`** (same-origin BFF proxy at `src/app/api/outbound/posts/route.ts`) is the real publish path. `PolypostComposer.tsx`'s `handleConfirmPublish` calls this endpoint with the composer text, selected Page targets, per-platform overrides, and optional link preview. The proxy forwards to `publishPost()` in `core-client.ts` which calls `POST /v1/outbound/posts` on `social-listening-core`.
