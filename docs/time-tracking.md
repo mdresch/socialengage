@@ -15,7 +15,13 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-26 | 09:54 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (00066ec) |
+| 2026-08-26 | 09:53 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (0ee011c) |
+| 2026-08-25 | 17:11 | — | — | Documentation | — | chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com> (fbfe9ed) |
 | 2026-08-25 | 16:58 | — | — | Documentation | — | Merge origin/main (aa2488b) |
+| 2026-08-25 | 16:44 | — | — | Review | ADR-0081 | docs(adr): reviewed ADR-0081–0084, BRD/FDD-0081–0085, and Epic 9 stories (b12f5ec) |
+| 2026-08-25 | 10:11 | — | — | Documentation | ADR-0079 | docs(trace): align FDD-0079 and Stories 9.3/9.4 with ADR-0079's 2026-08-25 amendment (acb4ec9) |
+| 2026-08-25 | 08:51 | — | — | Documentation | — | chore(infra): extend multi-agent isolation to social-listening-admin; add user-story skill (4878510) |
 | 2026-08-24 | 20:24 | — | — | Documentation | ADR-0080 | docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list (0a7c450) |
 | 2026-08-24 | 18:04 | — | — | Documentation | Story 9.1 | docs(trace): finalize Story 9.1 Built field and Implementation Log entry (f912b13) |
 | 2026-08-24 | 18:01 | — | — | Review | Story 9.1 | feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint (a4bf276) |
@@ -81,6 +87,13 @@
 | 2026-08-22 | 01:13 | — | — | Documentation | — | docs: capture v1.5/v2 feature roadmap with ADRs 0077-0117 and user stories (658b392) |
 | 2026-08-22 | 18:47 | — | — | Review | — | Merge origin/main and keep local review tracking copies (298411d) |
 | 2026-08-22 | 18:16 | — | — | Review | — | docs: preserve local management and steward review tracking (c9b06b4) |
+| 2026-08-22 | 17:53 | — | — | Documentation | ADR-0073 | docs(adr): accept ADR-0073 and add user stories for outbound reply to ingested posts (f9273d5) |
+| 2026-08-22 | 17:30 | — | — | Documentation | Story 6.37 | docs: Implementation Log and Built field for Story 6.37 (6f6990f) |
+| 2026-08-22 | 17:26 | — | — | Documentation | Story 6.37 | feat: Story 6.37 — admin post-feed Facebook Page and matched watchlist attribution (ADR-0067) (b40041f) |
+| 2026-08-22 | 15:37 | — | — | Documentation | Story 6.37 | docs(user-stories): add Story 6.37 for ADR-0067 admin-side Facebook Page and watchlist attribution (5f962e8) |
+| 2026-08-22 | 15:35 | — | — | Documentation | ADR-0067 | docs(adr): amend ADR-0067 with admin-side Facebook Page and matched watchlist attribution (3d16bf1) |
+| 2026-08-22 | 15:23 | — | — | Documentation | Story 6.36 | docs: finalize Story 6.36 traceability and Implementation Log (ef24e9d) |
+| 2026-08-22 | 15:20 | — | — | Documentation | Story 6.36 | feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer (f459114) |
 | 2026-08-21 | 10:19 | — | — | Documentation | — | docs: sync tracking records (4af9dda) |
 | 2026-08-21 | 10:19 | — | — | Documentation | — | fix(core): improve LinkedIn credential parsing, profile fetching, and version handling (e31fe98) |
 | 2026-08-21 | 09:40 | — | — | Documentation | — | docs: sync tracking records (3f9024c) |
@@ -145,6 +158,7 @@
 | 2026-08-20 | 16:38 | — | — | Documentation | Story 8.10 | Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064) (75a0a4a) |
 | 2026-08-20 | 16:25 | — | — | Infrastructure | — | chore: record post-commit hook outputs for merge (4740537) |
 | 2026-08-20 | 16:24 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (93dadab) |
+| 2026-08-20 | 16:22 | — | — | Review | — | docs: record review logs for 8bc60a1 (ca847c0) |
 | 2026-08-20 | 16:20 | — | — | Documentation | Story 2.20 | Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064) (8bc60a1) |
 | 2026-08-20 | 14:05 | — | — | Review | — | docs: update review logs (ad3e8be) |
 | 2026-08-20 | 14:03 | — | — | Documentation | — | feat(analytics): add platform icons and brand coloring to Authors by Source widget (d2dff0d) |
@@ -190,7 +204,24 @@
 | 2026-08-19 | 19:54 | — | — | Documentation | Story 3.11 | docs: implementation log entry for Story 3.11 healing pass (6e6755e) |
 | 2026-08-19 | 19:52 | — | — | Documentation | Story 3.11 | fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo (63902a1) |
 | 2026-08-19 | 17:15 | — | — | Documentation | — | Writen the ADRs 0064 0065 0066 0067 0068 0069 (5d3ec45) |
+| 2026-08-19 | 13:41 | — | — | Documentation | Story 6.27 | docs: implementation log entry for Story 6.27 backend healing pass (49a7e26) |
+| 2026-08-19 | 13:41 | — | — | Documentation | — | heal(story-6.27): give the fan-out test enough real-world margin (1974d1d) |
+| 2026-08-19 | 12:44 | — | — | Documentation | Story 6.1 | docs: implementation log entry for Story 6.1 healing pass (afe53ac) |
+| 2026-08-19 | 12:43 | — | — | Documentation | — | heal(story-6.1): fix broken local-dev login and Jest TLS-trust gap (23e94fc) |
+| 2026-08-19 | 10:26 | — | — | Documentation | Story 6.24 | docs: implementation log entry for Story 6.24 (8fe2960) |
+| 2026-08-19 | 10:25 | — | — | Documentation | — | feat(story-6.24): connector status screen groups Connectors and AI Providers (5d76e44) |
 | 2026-08-19 | 05:28 | — | — | Review | — | Scheduled doc review: 2026-08-19 — clear 81-entry backlog across all three review queues (6080795) |
+| 2026-08-18 | 17:13 | — | — | Documentation | Story 6.11 | docs: implementation log entry for Story 6.11 Facebook title fix (afd846b) |
+| 2026-08-18 | 17:13 | — | — | Documentation | — | fix(post-feed): normalize Facebook post titles instead of raw JSON (fc011df) |
+| 2026-08-18 | 16:35 | — | — | Documentation | Story 6.27 | docs: implementation log entry for Story 6.27 (a02edb1) |
+| 2026-08-18 | 16:34 | — | — | Documentation | ADR-0060 | feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060) (b58b323) |
+| 2026-08-18 | 15:03 | — | — | Documentation | Story 1.15 | docs: implementation log entry for Story 1.15 (42b1e59) |
+| 2026-08-18 | 15:02 | — | — | Documentation | ADR-0061 | feat(story-1.15): Tier-3 per-user poll scheduling (ADR-0061) (b270662) |
+| 2026-08-18 | 14:25 | — | — | Documentation | — | docs(story-2.18): implementation log entry and Built field (87c6792) |
+| 2026-08-18 | 14:24 | — | — | Documentation | — | feat(story-2.18): Facebook connector captures post-level engagement counts (35e35c3) |
+| 2026-08-18 | 13:27 | — | — | Documentation | — | docs: analytics dashboard tab frontend specs (Overview, Sentiment, Source, Conversations, Location) (2de0b19) |
+| 2026-08-18 | 13:24 | — | — | Documentation | — | docs: add Social Ingest and Command Center Design brainstorm (Gemini/AI Studio) (d623dac) |
+| 2026-08-18 | 13:21 | — | — | Review | — | chore: SessionStart git-hook self-heal, plus queued review/time-tracking entries (be3807d) |
 | 2026-08-18 | — | — | auto | Documentation | ADR-0059 | docs: ADR-0059/0060/0061 acceptance and Story 6.27/1.15 governance update (7c0572c) |
 | 2026-08-18 | — | — | auto | Documentation | — | docs(story-6.23): implementation log entry and Built field (f6a1794) |
 | 2026-08-18 | — | — | auto | Documentation | — | feat(story-6.23): Facebook OAuth connect flow with Page selection (535338f) |

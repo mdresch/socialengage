@@ -3304,7 +3304,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 **Implemented 2026-08-23 in `ae5d16a` and verified against the Epic-6 contract suite.**
 
-## 2026-08-24 — Story 9.1 — social-listening-core@a4bf276
+## 2026-08-24 ï¿½ Story 9.1 ï¿½ social-listening-core@a4bf276
 
 - **Full commit:** 4bf27620f07cf9019878790abc245c16145b852
 - **Repo:** social-listening-core
@@ -3314,7 +3314,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/previewVolumeService.ts
 - **Epic-9 suite at merge:** PASS (1/1 suites, 16/16 tests). Full suite run identified pre-existing environmental failures (stale connection pools across 95 sequential suites in --runInBand mode, from the test DB mechanism change in commit 56aec12) unrelated to Story 9.1's purely-additive changes; individual epic-2 contracts (e.g. story-2.8) pass when run alone with Story 9.1's changes applied. Full suite deferred to CI on push.
 
-## 2026-08-25 — Story 9.5 — social-listening-core@3add125
+## 2026-08-25 ï¿½ Story 9.5 ï¿½ social-listening-core@3add125
 
 - **Full commit:** 3add1256fbfb4085c6c5e2f62bb32708b8736bed`n- **Repo:** social-listening-core
 - **Story / ADR:** 9.5 / ADR-0080 (Onboarding checklist state)
@@ -3323,5 +3323,18 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-core/.claude/skills/onboarding-checklist/SKILL.md, social-listening-core/contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts, social-listening-core/migrations/0043_add_tenants_onboarding_checklist.sql, social-listening-core/src/http/versions/v1/onboardingChecklistRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/tenants/onboardingChecklist.ts
 - **Epic-9 suite at merge:** PASS (2/2 suites, 33/33 tests). tsc typecheck clean. Full suite deferred to CI on push.
 
-**Resumed from a prior session that wrote the contract test, migration, and core module but stalled before the HTTP router and SKILL.md. Fixed two fixture bugs in the contract test (watchlist FK violation — needs a real user row; social_posts RLS violation — needs withTenant not bare pool) that the prior session never caught because the router didn't exist to run the test against.**
+**Resumed from a prior session that wrote the contract test, migration, and core module but stalled before the HTTP router and SKILL.md. Fixed two fixture bugs in the contract test (watchlist FK violation ï¿½ needs a real user row; social_posts RLS violation ï¿½ needs withTenant not bare pool) that the prior session never caught because the router didn't exist to run the test against.**
 
+
+
+## 2026-08-25 Healing pass Story 4.4 + Story 9.5 social-listening-core
+
+- **Full commit:** 7920e48933336a27f595bfa80fe49deefca4f8b4
+- **Repo:** social-listening-core
+- **Story / ADR:** 4.4 / ADR-0022 (pg_cron) + 9.5 / ADR-0080 (onboarding checklist)
+- **Contract:** social-listening-core/contracts/epic-4/story-4.4.derived-data-caching-and-refresh.contract.test.ts (7/7), social-listening-core/contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts (17/17)
+- **SKILL.md:** social-listening-core/.claude/skills/derived-data-caching-and-refresh/SKILL.md, social-listening-core/.claude/skills/onboarding-checklist/SKILL.md
+- **Files touched:** social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts, docs/environment-gotchas.md
+- **Full suite at merge:** PASS (96/96 suites, 824/824 tests)
+
+**Root cause was environmental, not a code regression.** The test isolation change (commit 56aec12, 2026-08-24) switched from a fixed `social_listening_test` database to per-run cloned `test_run_*` databases from a `social_listening_template` base, but the template creation logic in `jest.global-setup.js` had two gaps: (1) the template was created once and never re-migrated, so migration 0043 (`onboarding_checklist` column, Story 9.5) was missing from the template and every clone; (2) the template was created as an empty DB and migrated in place, but `CREATE EXTENSION pg_cron` (migration 0013, Story 4.4) only succeeds in `cron.database_name=social_listening_test` (pinned by `docker-compose.test.yml`'s server-startup GUC), so the `cron.job` foreign table was never in the template. Fix: the template is now created by first migrating `social_listening_test` (where pg_cron works) and then `CREATE DATABASE social_listening_template TEMPLATE social_listening_test` -- the template and all clones inherit the `cron` schema with `cron.job`, which reads from the bg worker's shared state regardless of which database queries it. A re-migration step was also added for when the template already exists, so newly-added migrations are picked up automatically without needing to drop and recreate the template. Two new entries added to `docs/environment-gotchas.md` under a new "Test database template" section.

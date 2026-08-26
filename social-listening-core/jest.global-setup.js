@@ -67,25 +67,66 @@ module.exports = async function globalSetup() {
     );
 
     if (tplCheck.rows.length === 0) {
-      console.log('🔨 Creating base template database social_listening_template...');
-      await maintClient.query('CREATE DATABASE social_listening_template');
-
+      // pg_cron's background worker is pinned to social_listening_test via
+      // docker-compose.test.yml's cron.database_name GUC. CREATE EXTENSION
+      // pg_cron (migration 0013) only succeeds in that specific database, so
+      // we migrate social_listening_test first, then clone it into the
+      // template — this gives the template (and every test_run_* clone) the
+      // cron schema with its cron.job foreign table. Without this, Story 4.4's
+      // AC5a contract fails with "relation cron.job does not exist" in every
+      // cloned test DB.
+      console.log('🔨 Migrating social_listening_test and creating template from it...');
       execSync('npx ts-node src/db/migrate.ts', {
         cwd: __dirname,
         stdio: 'inherit',
         env: {
           ...process.env,
-          PGDATABASE: 'social_listening_template',
+          PGDATABASE: 'social_listening_test',
         },
       });
 
+      // Terminate the pg_cron bg worker (and any other connections) so
+      // social_listening_test can be used as a CREATE DATABASE TEMPLATE source
+      await maintClient.query(`
+        SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
+        WHERE datname = 'social_listening_test' AND pid <> pg_backend_pid()
+      `);
+      await maintClient.query('CREATE DATABASE social_listening_template TEMPLATE social_listening_test');
+
       // Mark as template and disallow direct connections
       await maintClient.query(`
-        SELECT pg_terminate_backend(pid) 
-        FROM pg_stat_activity 
+        SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
         WHERE datname = 'social_listening_template' AND pid <> pg_backend_pid()
       `);
       await maintClient.query('ALTER DATABASE social_listening_template WITH is_template = true allow_connections = false');
+    } else {
+      // Template exists — re-migrate to pick up any newly-added migration files
+      // (e.g. 0043_add_tenants_onboarding_checklist.sql added after the template
+      // was first created). pg_cron's CREATE EXTENSION will silently skip via
+      // its EXCEPTION block since cron.database_name points at
+      // social_listening_test, not the template — but the cron schema and
+      // cron.job foreign table are already present from the original creation,
+      // so this is fine.
+      await maintClient.query('ALTER DATABASE social_listening_template WITH is_template = false allow_connections = true');
+      try {
+        execSync('npx ts-node src/db/migrate.ts', {
+          cwd: __dirname,
+          stdio: 'inherit',
+          env: {
+            ...process.env,
+            PGDATABASE: 'social_listening_template',
+          },
+        });
+      } finally {
+        await maintClient.query(`
+          SELECT pg_terminate_backend(pid)
+          FROM pg_stat_activity
+          WHERE datname = 'social_listening_template' AND pid <> pg_backend_pid()
+        `).catch(() => {});
+        await maintClient.query('ALTER DATABASE social_listening_template WITH is_template = true allow_connections = false');
+      }
     }
 
     // 3. Cleanup only old orphaned test databases (older than 1 hour)

@@ -70,7 +70,12 @@ async function ensureReady(): Promise<void> {
   try {
     const tplCheck = await client.query("SELECT 1 FROM pg_database WHERE datname = 'social_listening_template'");
     if (tplCheck.rows.length === 0) {
-      await client.query('CREATE DATABASE social_listening_template');
+      // pg_cron's bg worker is pinned to social_listening_test (see
+      // docker-compose.test.yml's cron.database_name GUC). CREATE EXTENSION
+      // pg_cron only succeeds there, so migrate it first and clone the
+      // template from it — gives the template (and every test_run_* clone)
+      // the cron schema with cron.job. See jest.global-setup.js for the
+      // full rationale.
       execSync('npx ts-node src/db/migrate.ts', {
         stdio: 'inherit',
         env: {
@@ -79,15 +84,44 @@ async function ensureReady(): Promise<void> {
           PGPORT: String(PG_CONNECTION.port),
           PGUSER: PG_CONNECTION.user,
           PGPASSWORD: PG_CONNECTION.password,
-          PGDATABASE: 'social_listening_template',
+          PGDATABASE: 'social_listening_test',
         },
       });
+      await client
+        .query(
+          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'social_listening_test' AND pid <> pg_backend_pid()`
+        )
+        .catch(() => {});
+      await client.query('CREATE DATABASE social_listening_template TEMPLATE social_listening_test');
       await client
         .query(
           `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'social_listening_template' AND pid <> pg_backend_pid()`
         )
         .catch(() => {});
       await client.query('ALTER DATABASE social_listening_template WITH is_template = true allow_connections = false');
+    } else {
+      // Template exists — re-migrate to pick up newly-added migration files
+      await client.query('ALTER DATABASE social_listening_template WITH is_template = false allow_connections = true');
+      try {
+        execSync('npx ts-node src/db/migrate.ts', {
+          stdio: 'inherit',
+          env: {
+            ...process.env,
+            PGHOST: PG_CONNECTION.host,
+            PGPORT: String(PG_CONNECTION.port),
+            PGUSER: PG_CONNECTION.user,
+            PGPASSWORD: PG_CONNECTION.password,
+            PGDATABASE: 'social_listening_template',
+          },
+        });
+      } finally {
+        await client
+          .query(
+            `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'social_listening_template' AND pid <> pg_backend_pid()`
+          )
+          .catch(() => {});
+        await client.query('ALTER DATABASE social_listening_template WITH is_template = true allow_connections = false');
+      }
     }
   } finally {
     await client.end();

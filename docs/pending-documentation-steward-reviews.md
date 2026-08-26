@@ -2500,6 +2500,192 @@
 ## 2026-08-25 — aa2488b — Merge origin/main
 
 - **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
-- **Files touched:** 
+- **Files touched:**
+- **Status:** Pending review
+
+## 2026-08-25 — 4878510 — chore(infra): extend multi-agent isolation to social-listening-admin; add user-story skill
+
+- **Full commit:** `4878510b65999cf372d225809acc31a4ab1122d8`
+- **Files touched:** .devin/skills/user-story/SKILL.md, CLAUDE.md, docs/implementation-methodology.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.7.self-service-signup.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/testUtils/devServerLock.ts, social-listening-admin/src/testUtils/portCleanup.ts, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-25 — acb4ec9 — docs(trace): align FDD-0079 and Stories 9.3/9.4 with ADR-0079's 2026-08-25 amendment
+
+- **Full commit:** `acb4ec9e966ea8add3c2442f4c92deda9df011b4`
+- **Files touched:** docs/adr/0079-crisis-template-bundle-and-activation.md, docs/project docs/Business-Requirements/BRD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Functional-Design/FDD-0079-Crisis-Template-Bundle-And-Activation.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-08-25 — b12f5ec — docs(adr): reviewed ADR-0081–0084, BRD/FDD-0081–0085, and Epic 9 stories
+
+- **Full commit:** `b12f5ecf708c9690c17e4828306214f8359899d0`
+- **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0082-rag-post-chunking-and-embedding.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Business-Requirements/BRD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-08-25 — fbfe9ed — chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+
+- **Full commit:** `fbfe9edc86995bfa99d3194e618fa184b391be2d`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts
+- **Status:** Pending review
+
+## 2026-08-18 — be3807d — chore: SessionStart git-hook self-heal, plus queued review/time-tracking entries
+
+- **Full commit:** `be3807d9c575e530b20f6671e6b17454769b443f`
+- **Files touched:** .claude/hooks/verify-git-hooks-installed.cjs, .claude/settings.json, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/README.md
+- **Status:** Pending review
+
+## 2026-08-18 — d623dac — docs: add Social Ingest and Command Center Design brainstorm (Gemini/AI Studio)
+
+- **Full commit:** `d623dac7fb88aa2015e368501e084e999a666ea2`
+- **Files touched:** docs/design/Social Ingest and Command Center Design/.env.example, docs/design/Social Ingest and Command Center Design/.gitignore, docs/design/Social Ingest and Command Center Design/Data Engineering and backend specification.md, docs/design/Social Ingest and Command Center Design/README.md, docs/design/Social Ingest and Command Center Design/bun.lock, docs/design/Social Ingest and Command Center Design/index.html, docs/design/Social Ingest and Command Center Design/metadata.json, docs/design/Social Ingest and Command Center Design/package.json, docs/design/Social Ingest and Command Center Design/server.ts, docs/design/Social Ingest and Command Center Design/src/App.tsx, docs/design/Social Ingest and Command Center Design/src/components/AnimatedChartTooltip.tsx, docs/design/Social Ingest and Command Center Design/src/components/ContentIntelligencePanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/GeminiChatbotPanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/LocationDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SentimentDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SourcesDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/index.css, docs/design/Social Ingest and Command Center Design/src/main.tsx, docs/design/Social Ingest and Command Center Design/src/types.ts, docs/design/Social Ingest and Command Center Design/tsconfig.json, docs/design/Social Ingest and Command Center Design/vite.config.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 2de0b19 — docs: analytics dashboard tab frontend specs (Overview, Sentiment, Source, Conversations, Location)
+
+- **Full commit:** `2de0b1925e2582fece7ddf7fddb2c16f7f502e03`
+- **Files touched:** docs/design/Analytics Dashboard Tab Specs/Location-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Overview-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Sentiment-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Source-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/conversations-tab-frontend-spec.md
+- **Status:** Pending review
+
+## 2026-08-18 — 35e35c3 — feat(story-2.18): Facebook connector captures post-level engagement counts
+
+- **Full commit:** `35e35c301a054dd950a08eade0883e9da42e8bcb`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.18.facebook-engagement-counts.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 87c6792 — docs(story-2.18): implementation log entry and Built field
+
+- **Full commit:** `87c67923f0af12d79df77619635290b49a74f32e`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
+- **Status:** Pending review
+
+## 2026-08-18 — b270662 — feat(story-1.15): Tier-3 per-user poll scheduling (ADR-0061)
+
+- **Full commit:** `b2706626a1a5b0a1ef67d1bac084783b80754a7b`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-activation/SKILL.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/migrations/0033_add_ingestion_runs_user_id.sql, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/connectorActivationStore.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 42b1e59 — docs: implementation log entry for Story 1.15
+
+- **Full commit:** `42b1e5928308222f142f7141dfd135ab99323384`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
+- **Status:** Pending review
+
+## 2026-08-18 — b58b323 — feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060)
+
+- **Full commit:** `b58b323cd18e4eb81dcc5adf93613c9c54b1bf75`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.23.facebook-oauth-connect-flow.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.27.facebook-multi-page-picker.contract.test.ts, social-listening-admin/src/app/api/connectors/facebook/oauth/select-page/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/[id]/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/credential-envelope-encryption/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts, social-listening-core/migrations/0034_create_facebook_connected_pages.sql, social-listening-core/migrations/0035_add_ingestion_runs_page_id.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/facebookConnectedPagesStore.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/credentials/credentialStore.ts, social-listening-core/src/http/versions/v1/facebookOAuthRouter.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
+- **Status:** Pending review
+
+## 2026-08-18 — a02edb1 — docs: implementation log entry for Story 6.27
+
+- **Full commit:** `a02edb1b9c7e118f49f839cbb9eabe30a9db60d7`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-18 — fc011df — fix(post-feed): normalize Facebook post titles instead of raw JSON
+
+- **Full commit:** `fc011dff25330c55d8c3b930e443dba51cbda272`
+- **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
+## 2026-08-18 — afd846b — docs: implementation log entry for Story 6.11 Facebook title fix
+
+- **Full commit:** `afd846be090f1e7183f9c8e0c732f964e1c7ea74`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-19 — 5d76e44 — feat(story-6.24): connector status screen groups Connectors and AI Providers
+
+- **Full commit:** `5d76e443262992672b0c89e29143959f7b8c127a`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx
+- **Status:** Pending review
+
+## 2026-08-19 — 8fe2960 — docs: implementation log entry for Story 6.24
+
+- **Full commit:** `8fe296034535020ea927febb99f7754706f08ab2`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-19 — 23e94fc — heal(story-6.1): fix broken local-dev login and Jest TLS-trust gap
+
+- **Full commit:** `23e94fc7c9ff52db4e2274d258b2afcbbd0dc8c4`
+- **Files touched:** social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/.gitignore, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json
+- **Status:** Pending review
+
+## 2026-08-19 — afe53ac — docs: implementation log entry for Story 6.1 healing pass
+
+- **Full commit:** `afe53ac0b85c9be14e97ea18d92ef0d3f3371b55`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-19 — 1974d1d — heal(story-6.27): give the fan-out test enough real-world margin
+
+- **Full commit:** `1974d1dd363242eae763e49c9db48c9a5cc2eb48`
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
+- **Status:** Pending review
+
+## 2026-08-19 — 49a7e26 — docs: implementation log entry for Story 6.27 backend healing pass
+
+- **Full commit:** `49a7e26b6f61bc7a3a88f44a8c59a4987de1e352`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-20 — ca847c0 — docs: record review logs for 8bc60a1
+
+- **Full commit:** `ca847c0eb230193f930c15f49169321432bd0f35`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-22 — f459114 — feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer
+
+- **Full commit:** `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59`
+- **Files touched:** docs/adr/0072-cross-platform-polypost-composer-and-multi-network-preview-engine.md, docs/adr/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts, social-listening-admin/src/components/composer/previews/InstagramPreviewCard.tsx, social-listening-admin/src/components/composer/previews/LinkedInPreviewCard.tsx
+- **Status:** Pending review
+
+## 2026-08-22 — ef24e9d — docs: finalize Story 6.36 traceability and Implementation Log
+
+- **Full commit:** `ef24e9d1440a25f543f93737cf244e6dc452900d`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — 3d16bf1 — docs(adr): amend ADR-0067 with admin-side Facebook Page and matched watchlist attribution
+
+- **Full commit:** `3d16bf193ce4e33d7792f4e747ff4e977e665172`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
+- **Status:** Pending review
+
+## 2026-08-22 — 5f962e8 — docs(user-stories): add Story 6.37 for ADR-0067 admin-side Facebook Page and watchlist attribution
+
+- **Full commit:** `5f962e893fd003babf94885321b738ae23c7180f`
+- **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — b40041f — feat: Story 6.37 — admin post-feed Facebook Page and matched watchlist attribution (ADR-0067)
+
+- **Full commit:** `b40041fc87d2d6d2e8820e709375630a3918b325`
+- **Files touched:** docs/adr/README.md, docs/user-stories/README.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts
+- **Status:** Pending review
+
+## 2026-08-22 — 6f6990f — docs: Implementation Log and Built field for Story 6.37
+
+- **Full commit:** `6f6990ff1623e3d2c390cc9458a971e2b3d023d1`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — f9273d5 — docs(adr): accept ADR-0073 and add user stories for outbound reply to ingested posts
+
+- **Full commit:** `f9273d560ee3807f3e177149ca641f8dfaa3deb4`
+- **Files touched:** docs/adr/0073-outbound-reply-to-ingested-posts.md, docs/adr/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-26 — 0ee011c — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `0ee011cefe422f4addb1e65cfc0cba4a616f303f`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 00066ec — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `00066ec85d20fc95ff54521e8633d0b25241c7ec`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
