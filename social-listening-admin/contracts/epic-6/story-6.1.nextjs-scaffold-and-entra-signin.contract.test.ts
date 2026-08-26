@@ -360,7 +360,7 @@ beforeAll(async () => {
   // file's own 2026-08-12 healing note above. Talks to this run's own isolated database
   // clone (no server needs to be up yet for this), idempotent, safe to run every time
   // this contract runs.
-  execSync(`node scripts/withDevEnv.js npx ts-node scripts/ensureContractTestIdentity.ts "${TEST_EMAIL}" tenant_admin`, {
+  execSync(`npx ts-node scripts/ensureContractTestIdentity.ts "${TEST_EMAIL}" tenant_admin`, {
     cwd: CORE_ROOT,
     env: { ...process.env, ...testDbEnv },
     stdio: 'pipe',
@@ -380,7 +380,7 @@ beforeAll(async () => {
   // core's shared local dev database, via withDevEnv.js's additive-only dotenv load.
   coreProcess = spawn(isWin ? 'npm.cmd' : 'npm', ['run', 'dev'], {
     cwd: CORE_ROOT,
-    env: { ...process.env, NODE_ENV: 'development', ...testDbEnv },
+    env: { ...process.env, NODE_ENV: 'development', WITH_DEV_ENV_RESPECT_PG: '1', ...testDbEnv },
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: isWin,
   });

@@ -191,6 +191,7 @@
 ## Story 5.11 — `GET /v1/me`: expose a signed-in caller's own resolved identity over HTTP
 
 **Source:** ADR-0036 §5 (Accepted 2026-08-04) · **Status:** Ready — ADR-0036 accepted 2026-08-04 ("ADR 0036 is approved"). This story resolves ADR-0036's own still-open "exact path, response shape, and name of the new core-side identity-exposure endpoint" Open Question at drafting time — the same way Story 5.8 resolved ADR-0031 §5's `domain`-column details and Story 6.7 resolved several of ADR-0037's own named open items directly, rather than treating an Accepted ADR's own flagged Open Question as a blocker to drafting the story it names as a prerequisite.
+**Built:** 2026-08-05 — social-listening-core@222f54f
 
 **No new ADR drafted for this story.** ADR-0036 §5 already decided the endpoint is required, additive, read-only, and — per its own Clarification, added after a Security & Architecture Reviewer finding pre-acceptance — must derive identity exclusively from `req.identity`, never a client-supplied override. ADR-0036 §5 explicitly characterizes it as "ordinary CRUD-adjacent surface... no new architectural decision of its own," the same category Stories 1.5 and 6.2–6.6 already build without their own ADR. What ADR-0036 left open was the path/response-shape bikeshed only, resolved directly below — not a fresh architectural question needing its own governance record.
 
@@ -218,6 +219,7 @@
 ## Story 5.12 — Platform Admin tenant management REST surface
 
 **Source:** ADR-0030, ADR-0031 (both Accepted) · **Status:** Ready — no new ADR needed. Both governing ADRs already fully locked the authorization boundary (which columns `platform_admin_role` may write, which tables it may touch at all) at the database layer; this story exposes that already-designed boundary over HTTP, the same "ordinary CRUD-adjacent surface, no new architectural decision" category Story 5.11 already established when resolving ADR-0036 §5's analogous gap.
+**Built:** 2026-08-05 — social-listening-core@e08b0c0
 
 **Built 2026-08-05** (`social-listening-core`, `contracts/epic-5/story-5.12.platform-admin-tenant-management.contract.test.ts`, full suite 38/38 suites — see `docs/implementation-log.md`). **Also closed a real, confirmed-missing piece of ADR-0037 §9 while building AC4:** that section decided `platform_admin_role` should gain `UPDATE(domain)` on `tenants`, but no migration ever actually granted it — confirmed directly, no prior migration file referenced it. `migrations/0020_grant_platform_admin_domain_update.sql` is that missing grant, not a new decision. This unblocks Story 6.6's own first of three named backend prerequisites.
 
@@ -242,6 +244,7 @@
 ## Story 5.13 — Platform Admin break-glass request/execute REST surface
 
 **Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0030 §3 and its two Clarifications already fully designed the two-phase mechanism this story exposes over HTTP; Story 5.7 already builds and contract-tests the underlying store/mechanism layer.
+**Built:** 2026-08-06 — social-listening-core@7b9cee5
 
 **Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts`, full suite 39/39 suites — see `docs/implementation-log.md`). Reused Story 5.7's own real-Entra-tenant test-cost discipline: exactly one real execute call in the whole contract, reused for the 409-on-retry check rather than triggering a second real Entra sequence. `targetUserId` is still caller-supplied — the Tenant-Admin-lookup-by-tenant-name gap (`platform-admin-access/SKILL.md`'s own named "Known gap") is unaffected, still open. This is the second of Story 6.6's three named backend prerequisites to close (after Story 5.12); Story 5.14 (audit-log query) is the last.
 
@@ -267,6 +270,7 @@
 ## Story 5.14 — Platform Admin audit-log query REST surface
 
 **Source:** ADR-0030 (Accepted) · **Status:** Ready — no new ADR needed. `platform_admin_audit_log`'s schema and write path already exist (Story 5.7); this story adds a read-only query endpoint over already-existing, already-Platform-Admin-scoped data.
+**Built:** 2026-08-06 — social-listening-core@8cf4391
 
 **Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.14.platform-admin-audit-log-rest-surface.contract.test.ts`, full suite 40/40 — see `docs/implementation-log.md`). Third and last of Story 6.6's three named backend prerequisites (5.12/5.13/5.14) to close.
 
@@ -288,6 +292,7 @@
 ## Story 5.15 — Self-service tenant sign-up backend endpoint
 
 **Source:** ADR-0037 (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §1–§9 already exhaustively designed this endpoint's own behavior, schema, and role; this story builds directly against an already-Accepted ADR's own "Named as required, not designed here" list, the same relationship Story 6.7 already has to this same ADR for the UI half.
+**Built:** 2026-08-06 — social-listening-core@135a5a1
 
 **Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.15.self-service-tenant-signup.contract.test.ts`, full suite 41/41 — see `docs/implementation-log.md`). Closes Story 6.7's own named cross-repo dependency. `domain_signup_attempts` now exists and is being written to (Story 5.15 is its sole writer); Story 5.16's own Tenant-Admin-facing read of that table is the next piece of this same gap.
 
@@ -315,6 +320,7 @@
 ## Story 5.16 — Same-Domain Invite Assist backend surface and Platform-Admin escalation
 
 **Source:** ADR-0037 §8b/§8c (Accepted) · **Status:** Ready — no new ADR needed. ADR-0037 §8b/§8c already exhaustively decided the data model, per-domain aggregation, and escalation-logging mechanics this story exposes; only the backend half of `docs/open-decisions.md` §1's own named gap ("has no owning story").
+**Built:** 2026-08-06 — social-listening-core@a251050
 
 **Built 2026-08-06** (`social-listening-core`, `contracts/epic-5/story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts`, full suite 42/42 — see `docs/implementation-log.md`). Closes the backend half of ADR-0037 §8b/§8c's own gap; Story 6.10 (the Tenant-Admin-facing screen) is the remaining piece.
 
@@ -337,6 +343,7 @@
 ## Story 5.17 — Audit trail for `access_ends_at` writes
 
 **Source:** ADR-0032 §9 (Accepted) · **Status:** Ready — no new ADR needed; this story resolves ADR-0032 §9's own named Open Question (the exact audit mechanism) directly, the same way Story 5.8 resolved ADR-0031 §5's `domain`-column details and Story 5.11 resolved ADR-0036 §5's endpoint shape — an implementation-time mechanics question, not a fresh architectural one, since the underlying principle (every `access_ends_at` write is auditable) is already decided.
+**Built:** 2026-08-10 — social-listening-core@5fe1999
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes ADR-0032 §9's own explicitly-deferred gap: "Auditing of `access_ends_at` writes is explicitly not this story's job... deferred to whoever resolves ADR-0030/ADR-0031's shared audit-log question." Only concrete once Story 1.9 exists to actually write the field.
 

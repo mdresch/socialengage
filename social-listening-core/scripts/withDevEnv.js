@@ -45,15 +45,34 @@ dotenv.config({ path: process.env.WITH_DEV_ENV_DOTENV_PATH || path.join(__dirnam
 // project) silently overrides the dev target instead of the reverse —
 // caught by story-1.4's own contract test asserting exactly this, now
 // re-proven against a conflicting .env value too, not just a shell one.
+//
+// WITH_DEV_ENV_RESPECT_PG=1 opts out of the forced PG vars — used by
+// cross-repo contract tests (e.g. Story 6.1) that spawn `npm run dev` with
+// their own isolated test-DB clone on a different port, where the forced
+// dev defaults would point at the wrong database.
+const respectPg = process.env.WITH_DEV_ENV_RESPECT_PG === '1';
+const pg = respectPg
+  ? {
+      PGHOST: process.env.PGHOST ?? 'localhost',
+      PGPORT: process.env.PGPORT ?? '5435',
+      PGDATABASE: process.env.PGDATABASE ?? 'social_listening_dev',
+      PGUSER: process.env.PGUSER ?? 'postgres',
+      PGPASSWORD: process.env.PGPASSWORD ?? 'postgres',
+      APP_PGUSER: process.env.APP_PGUSER ?? 'app_user',
+      APP_PGPASSWORD: process.env.APP_PGPASSWORD ?? 'app_user_password',
+    }
+  : {
+      PGHOST: 'localhost',
+      PGPORT: '5435',
+      PGDATABASE: 'social_listening_dev',
+      PGUSER: 'postgres',
+      PGPASSWORD: 'postgres',
+      APP_PGUSER: 'app_user',
+      APP_PGPASSWORD: 'app_user_password',
+    };
 const env = {
   ...process.env,
-  PGHOST: 'localhost',
-  PGPORT: '5435',
-  PGDATABASE: 'social_listening_dev',
-  PGUSER: 'postgres',
-  PGPASSWORD: 'postgres',
-  APP_PGUSER: 'app_user',
-  APP_PGPASSWORD: 'app_user_password',
+  ...pg,
 };
 
 const [command, ...args] = process.argv.slice(2);
