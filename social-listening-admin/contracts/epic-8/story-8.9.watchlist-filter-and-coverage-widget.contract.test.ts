@@ -26,7 +26,15 @@
  *       selecting a watchlist triggers server-side fetch with watchlistId;
  *       writes ?watchlist=<id> to deep-link URL; no client-side terms[] predicate;
  *   (2) id="widget-watchlist-coverage" renders Recharts donut with one slice per active watchlist,
- *       sized by real post count; zero-count active watchlists appear in legend;
+ *       sized by real post count; zero-count active watchlists appear in legend
+ *       — **narrowed 2026-08-20 (`fix(analytics): sort watchlist coverage descending by post
+ *       count and limit to top 6 items`, social-listening-admin@aa1e7f5): only true up to the
+ *       top 6 active watchlists by descending post count (ties broken alphabetically). Beyond
+ *       6 active watchlists, lower-ranked ones — including a zero-count one, if it doesn't make
+ *       the cut — are omitted from the legend entirely, not merely deprioritized. See this
+ *       file's own "sorts watchlists descending by post count and limits display to top 6
+ *       items" test below for the load-bearing behavior; this docstring previously described
+ *       only the pre-cap behavior and was never updated when that test was added.**;
  *   (3) EmptyState rendered when tenant has zero active watchlists, never sample data;
  *   (4) deep-link parse and serialize round-trips ?watchlist=<id>;
  *   (5) core-client.ts listPosts() forwards watchlistId parameter to core API.

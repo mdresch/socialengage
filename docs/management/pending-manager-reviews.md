@@ -1897,293 +1897,342 @@
 
 - **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
 - **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 532e713, d5ef459, d4c8ca0, 6673537.
 
 ## 2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713
 
 - **Full commit:** `d5ef4597f396b559dd9d75c9a6df6bdb6a5c179f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 532e713, d5ef459, d4c8ca0, 6673537.
 
 ## 2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459
 
 - **Full commit:** `d4c8ca0b276fadee003b8f407c3a9df87a08a144`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 532e713, d5ef459, d4c8ca0, 6673537.
 
 ## 2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits
 
 - **Full commit:** `66735370992a4a48420236e90a5b97ddf339ed8c`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 532e713, d5ef459, d4c8ca0, 6673537.
 
 ## 2026-08-19 — 5d3ec45 — Writen the ADRs 0064 0065 0066 0067 0068 0069
 
 - **Full commit:** `5d3ec452c00b3c2af73303387aee6f4c00d7723b`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md, docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0068-instagram-connector, docs/adr/0069-linkedin-connector, docs/design/Google AI Studio/server.ts, docs/design/frontend-design-future-devs.md, docs/project docs/Spark-Capture-AI-Provider-Model-Agnosticism.md, docs/project docs/Spark-Capture-Service-Bus-Purposeful-Downstream-Subscriptions.md, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-19 — 63902a1 — fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo
 
 - **Full commit:** `63902a11b3c2c83f3db8077ac0944440e6f1daa9`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/posts/socialPostStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-19 — 6e6755e — docs: implementation log entry for Story 3.11 healing pass
 
 - **Full commit:** `6e6755e8693a8708414a0b734f36374629fe320f`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-19 — 1d550a1 — docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate
 
 - **Full commit:** `1d550a1c8d749e634af4b065199d8303496763ce`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, CLAUDE.md, docs/implementation-log.md, docs/implementation-methodology.md, docs/templates/ci-workflow.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-19 — 7698563 — feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance
 
 - **Full commit:** `7698563ba34ec7f71ec5c4deac609965101381ba`
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/page.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-19 — 6a59885 — docs: implementation log entry for Story 8.7, Built hash finalized
 
 - **Full commit:** `6a598854f83063c1bd61fb8a7628420c78e52b0e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5d3ec45, 63902a1, 6e6755e, 1d550a1, 7698563, 6a59885.
 
 ## 2026-08-20 — 2859a76 — feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer
 
 - **Full commit:** `2859a76da56c066a11053e50feb96833fe0415a4`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/[id]/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — efa96e8 — fix(analytics-overview): unreadable white-on-white post title in drawer rows
 
 - **Full commit:** `efa96e8869d1b24b396cb2f7e9d00e872e20acc4`
 - **Files touched:** social-listening-admin/src/app/globals.css
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — cd6f41e — fix(post-feed): allocate the Newswire issuer to the author position
 
 - **Full commit:** `cd6f41e08dea95d06748056c97e54802e35c6fb7`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 75362d3 — fix(facebook-connector): denormalize Page id/name into rawPayload
 
 - **Full commit:** `75362d338413dd2a1e2cc36d12219b48798f9118`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 2fa45ba — fix(post-feed): surface Facebook Page author and original-post link
 
 - **Full commit:** `2fa45ba5bfb07660987e34c90019241081e50094`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 2f52c0f — feat(story-2.19): tenant-owned-feed per-feed name + per-item byline
 
 - **Full commit:** `2f52c0f1079249e9508c5878bc100ff2543468a7`
 - **Files touched:** docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.19.tenant-owned-feed-naming-and-byline.contract.test.ts, social-listening-core/contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts, social-listening-core/migrations/0037_add_tenant_owned_feed_activations_name.sql, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedStore.ts, social-listening-core/src/http/versions/v1/tenantOwnedFeedRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — e54f937 — docs: implementation log entry for Story 2.19, Built hash finalized
 
 - **Full commit:** `e54f937c9994e126bee7944e9b071be3e524e9c1`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — cc38b6a — feat(story-6.28): tenant-owned-feed friendly naming in setup UI
 
 - **Full commit:** `cc38b6a9909eb4347d39789bd07e7f1e5027137d`
 - **Files touched:** social-listening-admin/.claude/skills/tenant-owned-feed-connector-setup/SKILL.md, social-listening-admin/contracts/epic-6/story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/[id]/route.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/connect/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/tenant-owned-feed/TenantOwnedFeedSetup.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 1bb19f7 — docs: ADR filename fixes and governance review updates
 
 - **Full commit:** `1bb19f703bf8d28a085172934b1edc6b07a46666`
 - **Files touched:** docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0067-reconfirm-facebook-connector.md, docs/adr/0068-instagram-connector, docs/adr/0068-instagram-connector.md, docs/adr/0069-linkedin-connector, docs/adr/0069-linkedin-connector.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 983ae70 — docs: sync tracking and review registers
 
 - **Full commit:** `983ae70fc87dd679f695a486ad3bdd6ba37b38a0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 605e5a4 — feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget
 
 - **Full commit:** `605e5a430aaa535dea868af78acd5d222ed1ea72`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/analytics/summary/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 1fee797 — docs(story-8.9): record implementation and traceability for Story 8.9
 
 - **Full commit:** `1fee7974ac43b9892c227ac9b5c7c5f4251aff3a`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution
 
 - **Full commit:** `1320adbb2fd8e54a955dce7fa3092ab8eeaa274c`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution
 
 - **Full commit:** `3adc06068ea5736c6fac6a2ae0794a49e07be533`
 - **Files touched:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts, social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/migrations/0038_backfill_post_watchlist_matches.sql, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — af83d18 — docs(story-3.12): record Story 3.12 implementation and update traceability
 
 - **Full commit:** `af83d1870bb86467fb7f3370e6bfdb845ced3f69`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — aa1e7f5 — fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items
 
 - **Full commit:** `aa1e7f5802d2ca7af48ef119aca91f365af3af50`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 3e3c352 — docs: update review logs and time tracking
 
 - **Full commit:** `3e3c352bf6cbac8a13095db155665a370162b4cf`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line
 
 - **Full commit:** `3d7d7435a8a67f17d4e68b6b165e3772c8e747f6`
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.3.conversations-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.5.languages-breakdown-widget.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — ee03f09 — docs: update review logs and time tracking
 
 - **Full commit:** `ee03f09f33d03d94f23ff6d7f5703060af192356`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 1edd1e7 — feat(analytics): promote toolbar items to header for persistent visibility across all tabs
 
 - **Full commit:** `1edd1e7b091e1ba40799074aaefb0f8f43fbdd0d`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 8e50e38 — docs: update reviews and time tracking
 
 - **Full commit:** `8e50e387ba9fbdfe27e8cac2932de6d95ffa5f11`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable
 
 - **Full commit:** `76941c005b8fd6feb0a26b262f03b1a8af67e4f9`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/shell.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 6115e1b — docs: update review tracking
 
 - **Full commit:** `6115e1b4a1708a79f8d57df3380dbd28795081f9`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals
 
 - **Full commit:** `8d9b6f365123c8747d52f43a5804a70fe6f165c5`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 142638c — docs: update review logs
 
 - **Full commit:** `142638c24d5e21c5dc8a5fb627abcec7ae77713f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream
 
 - **Full commit:** `cb953f1d197bf09f6c7cfc1cbcc57950d5276038`
 - **Files touched:** social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — c3044d0 — docs: update review logs
 
 - **Full commit:** `c3044d0593e42deeb88fd941f0bd8f4039450cb1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column
 
 - **Full commit:** `72a15c91b2114e92f0a5496402d44b48acbca145`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 034e968 — docs: update review logs
 
 - **Full commit:** `034e968612549535e418d716e7f14b4c111c9173`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget
 
 - **Full commit:** `8cbb71a022a1c48e8bbef8a0795312ac07e4a74b`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 624c626 — docs: update review tracking
 
 - **Full commit:** `624c6263f819237845fa7982f4f7a31a59ebfef3`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget
 
 - **Full commit:** `d2dff0dd7e5a29bc37eb37b64f65c07499c756fe`
 - **Files touched:** social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — ad3e8be — docs: update review logs
 
 - **Full commit:** `ad3e8be50c8a8a784522d90390b378a98096b6bc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 2859a76, efa96e8, cd6f41e, 75362d3, 2fa45ba, 2f52c0f, e54f937, cc38b6a, 1bb19f7, 983ae70, 605e5a4, 1fee797, 1320adb, 3adc060, af83d18, aa1e7f5, 3e3c352, 3d7d743, ee03f09, 1edd1e7, 8e50e38, 76941c0, 6115e1b, 8d9b6f3, 142638c, cb953f1, c3044d0, 72a15c9, 034e968, 8cbb71a, 624c626, d2dff0d, ad3e8be.
 
 ## 2026-08-20 — 8bc60a1 — Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064)
 
 - **Full commit:** `8bc60a17381f19368dc34de4332ad62a18c8eb17`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts, social-listening-core/src/connectors/geo/geoCountryUtils.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
 ## 2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `93dadabf2c3e52e4e25c20f26acc61a5fbe8dc87`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
 ## 2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)
 
 - **Full commit:** `75a0a4a72328f56953c49f3622b3e0ebfd0830ea`
 - **Files touched:** docs/implementation-plan.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
 ## 2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log
 
 - **Full commit:** `168e5f75ae88234db755aea052b5c0d143bb8bdd`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
 ## 2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts
 
 - **Full commit:** `70035d7e03eeb2e2e3a3020938ba91cf511ab4d6`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/adr/README.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 
 ## 2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence
 
 - **Full commit:** `f00b34cf34d4185043728eba09aa2f9df7e58588`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8bc60a1, 93dadab, 75a0a4a, 168e5f7, 70035d7, f00b34c.
 

@@ -1515,297 +1515,291 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-20 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues
+## ~~2026-08-20 — 532e713 — Scheduled doc review: 2026-08-20 — clear 14-entry backlog across all three review queues~~
 
 - **Full commit:** `532e7134a7e254fcf70fbbfa6d6cb3bc3ffe1977`
 - **Files touched:** docs/implementation-plan.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean on its own terms at the time it ran, same pattern as the `6080795`/`17c563b` entries above.** This is this project's own prior scheduled doc-review pass. Spot-checked its landed corrections against real state: Epic 3's row addition of ADR-0063/Story 3.11 and Epic 8's row addition of ADR-0062 (correctly noted "Proposed 2026-08-19, not yet accepted" — accurate at that exact moment, before `7698563` accepted it later the same day)/ADR-0063/Stories 8.7/8.8/8.9 all match what `epic-3-data-model-storage-and-archival.md`/`epic-8-analytics-dashboard.md` actually said at the time. No drift introduced by this commit itself.
 
-## 2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713
+## ~~2026-08-20 — d5ef459 — chore: post-commit hook outputs for 532e713~~
 
 - **Full commit:** `d5ef4597f396b559dd9d75c9a6df6bdb6a5c179f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459
+## ~~2026-08-20 — d4c8ca0 — chore: post-commit hook outputs for d5ef459~~
 
 - **Full commit:** `d4c8ca0b276fadee003b8f407c3a9df87a08a144`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits
+## ~~2026-08-20 — 6673537 — fix(post-commit hook): stop the queue files from re-queuing their own bookkeeping commits~~
 
 - **Full commit:** `66735370992a4a48420236e90a5b97ddf339ed8c`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift against this role's own chartered files.** The `scripts/git-hooks/post-commit` behavioral change itself is outside this role's file scope (not an ADR, story, `SKILL.md`, or traceability table) and makes no factual claim about shipped/decided project state — nothing here for this role to check against git.
 
-## 2026-08-19 — 5d3ec45 — Writen the ADRs 0064 0065 0066 0067 0068 0069
+## ~~2026-08-19 — 5d3ec45 — Writen the ADRs 0064 0065 0066 0067 0068 0069~~
 
 - **Full commit:** `5d3ec452c00b3c2af73303387aee6f4c00d7723b`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md, docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0068-instagram-connector, docs/adr/0069-linkedin-connector, docs/design/Google AI Studio/server.ts, docs/design/frontend-design-future-devs.md, docs/project docs/Spark-Capture-AI-Provider-Model-Agnosticism.md, docs/project docs/Spark-Capture-Service-Bus-Purposeful-Downstream-Subscriptions.md, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — one significant, real gap found and corrected: ADR-0064 was drafted here and has never been formally accepted, despite everything downstream since treating it as if it were.** This commit drafted ADR-0064 (and 0065–0069) as `**Status:** Proposed (2026-08-19)`, with its own closing note explicitly stating "Left Proposed per project ADR-acceptance authority convention." Checked directly (`git log -p` on both the original stray-filename draft and its later-corrected slug): **no commit ever changed ADR-0064's own Status line away from Proposed, and no "Accepted by Menno" quote exists anywhere for it** — the one thing every other Accepted ADR in this series always carries. Yet two real stories (2.20, 8.10, both reviewed individually below) shipped citing it as accepted, and `docs/user-stories/README.md`'s Epics table already asserts "0064 (Accepted 2026-08-19)." **Not resolved by flipping the Status line myself** — this role is not chartered to make ADR-acceptance decisions, only to keep the paper trail's factual claims in sync with reality, and inventing an acceptance record without a real quote would be manufacturing one, not correcting a stale one. Instead: added the two missing master-index footnotes this file's own row already pointed at (³⁴ for ADR-0064, ³⁵ for ADR-0070 — both referenced by superscript in `docs/adr/README.md`'s table but had no footnote text at all, a separate, purely mechanical gap), with footnote 34 explicitly flagging the Status/no-acceptance-quote discrepancy for Menno to resolve. Also confirmed clean: the stray, un-slugged/space-containing ADR-0064/0067/0068/0069 filenames this commit created were each fully deleted-and-replaced (not left as duplicate cruft) within this same commit chain — see the `1bb19f7`/`8bc60a1` entries below for the specific commits that did the deletion, confirmed via `git diff-tree --name-status`.
 
-## 2026-08-19 — 63902a1 — fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo
+## ~~2026-08-19 — 63902a1 — fix: Story 3.11 heal — post_watchlist_matches FK conflict, ambiguous-column JOIN bug, fixture typo~~
 
 - **Full commit:** `63902a11b3c2c83f3db8077ac0944440e6f1daa9`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/contracts/epic-3/story-3.11.post-watchlist-match-persistence.contract.test.ts, social-listening-core/migrations/0036_create_post_watchlist_matches.sql, social-listening-core/src/posts/socialPostStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift; a genuinely thorough healing pass.** ADR-0063's own Amendment Log correctly documents the real `post_id` FK-into-a-partitioned-table conflict (verified against `data-retention-and-archival/SKILL.md`'s already-established identical precedent for `acquisition_id`), Story 3.11's own AC1/AC3 and a new closing Note are updated to match, and `post-watchlist-match-persistence/SKILL.md`'s Load-bearing constraints gained the matching entry — all three tell the identical, correct story with no internal contradiction.
 
-## 2026-08-19 — 6e6755e — docs: implementation log entry for Story 3.11 healing pass
+## ~~2026-08-19 — 6e6755e — docs: implementation log entry for Story 3.11 healing pass~~
 
 - **Full commit:** `6e6755e8693a8708414a0b734f36374629fe320f`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** File list matches `git diff-tree`; appended only. Notably self-aware: this entry's own "Context this entry closes the loop on" paragraph correctly discloses that Story 3.11's bulk implementation actually landed under `5d3ec45`'s unrelated "ADR drafting" commit message from a prior session, rather than silently presenting this healing pass as the whole story.
 
-## 2026-08-19 — 1d550a1 — docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate
+## ~~2026-08-19 — 1d550a1 — docs: methodology amendment — epic-scoped local validation, CI as the unconditional full-suite gate~~
 
 - **Full commit:** `1d550a1c8d749e634af4b065199d8303496763ce`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, CLAUDE.md, docs/implementation-log.md, docs/implementation-methodology.md, docs/templates/ci-workflow.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** `docs/implementation-methodology.md` gained its own dated 2026-08-19 Amendment Log entry for this exact change (verified directly) — this is not an instance of the "amendment made, log entry never added" gap; `CLAUDE.md`'s delegation/concurrency language added by this commit matches the current file on this branch; `docs/implementation-log.md`'s own append-only history is unaffected (only its template guidance changed).
 
-## 2026-08-19 — 7698563 — feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance
+## ~~2026-08-19 — 7698563 — feat: Story 8.7 — Overview Tab Enhancement (ADR-0062), folded in with ADR-0062/0063 acceptance~~
 
 - **Full commit:** `7698563ba34ec7f71ec5c4deac609965101381ba`
 - **Files touched:** docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Story 8.7's own header (Source/Status/`**Built:**` fields, epic-8 file) correctly cites `social-listening-admin@7698563` and ADR-0062's real 2026-08-19 acceptance with its verbatim quote; `docs/adr/README.md`'s footnote 32 and Proposed-section update match; unlike ADR-0064 (see the `5d3ec45` entry above), ADR-0062's acceptance is real and fully documented, so no discrepancy here.
 
-## 2026-08-19 — 6a59885 — docs: implementation log entry for Story 8.7, Built hash finalized
+## ~~2026-08-19 — 6a59885 — docs: implementation log entry for Story 8.7, Built hash finalized~~
 
 - **Full commit:** `6a598854f83063c1bd61fb8a7628420c78e52b0e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Log entry matches `git diff-tree`; Story 8.7's `**Built:**` field format (`YYYY-MM-DD — repo@hash`) matches the Built convention exactly.
 
-## 2026-08-20 — 2859a76 — feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer
+## ~~2026-08-20 — 2859a76 — feat(analytics-overview): live UI/UX refinements + stacked post-detail drawer~~
 
 - **Full commit:** `2859a76da56c066a11053e50feb96833fe0415a4`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/[id]/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Both touched `SKILL.md` files (`analytics-dashboard`, `post-feed`) gained real, dated "Relations to other components"/narrative entries describing the new stacked drawer (`GET /api/posts/[id]`, `flattenPost()`/`FlatPost` relocated into `postDisplay.ts`) that match the actual diff; no stale claim found.
 
-## 2026-08-20 — efa96e8 — fix(analytics-overview): unreadable white-on-white post title in drawer rows
+## ~~2026-08-20 — efa96e8 — fix(analytics-overview): unreadable white-on-white post title in drawer rows~~
 
 - **Full commit:** `efa96e8869d1b24b396cb2f7e9d00e872e20acc4`
 - **Files touched:** social-listening-admin/src/app/globals.css
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** A one-file CSS-only fix; no ADR, story, `SKILL.md`, or traceability claim references this level of detail.
 
-## 2026-08-20 — cd6f41e — fix(post-feed): allocate the Newswire issuer to the author position
+## ~~2026-08-20 — cd6f41e — fix(post-feed): allocate the Newswire issuer to the author position~~
 
 - **Full commit:** `cd6f41e08dea95d06748056c97e54802e35c6fb7`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** `post-feed/SKILL.md`'s new dated "Found live 2026-08-20" note accurately describes the real `extractAuthor()`/`rawPayload.issuer` gap and its fix, cross-referencing the Newswire connector's own "issuer-as-Author" design (ADR-0024) correctly.
 
-## 2026-08-20 — 75362d3 — fix(facebook-connector): denormalize Page id/name into rawPayload
+## ~~2026-08-20 — 75362d3 — fix(facebook-connector): denormalize Page id/name into rawPayload~~
 
 - **Full commit:** `75362d338413dd2a1e2cc36d12219b48798f9118`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** `facebook-connector/SKILL.md`'s contract-description and "How to extend this safely" both gained matching, accurate dated notes describing the `pageId`/`pageName` denormalization and its rationale (no `/v1/authors/:id` endpoint exists, `social-listening-admin` only reads `rawPayload`).
 
-## 2026-08-20 — 2fa45ba — fix(post-feed): surface Facebook Page author and original-post link
+## ~~2026-08-20 — 2fa45ba — fix(post-feed): surface Facebook Page author and original-post link~~
 
 - **Full commit:** `2fa45ba5bfb07660987e34c90019241081e50094`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** `post-feed/SKILL.md`'s new dated note correctly cross-references the companion `75362d3` core-side fix and accurately describes both the `extractAuthor()` Facebook branch and the `extractUrl()`/`permalink_url` fix, including the Analytics Overview drawer's own new footer action row.
 
-## 2026-08-20 — 2f52c0f — feat(story-2.19): tenant-owned-feed per-feed name + per-item byline
+## ~~2026-08-20 — 2f52c0f — feat(story-2.19): tenant-owned-feed per-feed name + per-item byline~~
 
 - **Full commit:** `2f52c0f1079249e9508c5878bc100ff2543468a7`
 - **Files touched:** docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/tenant-owned-feed-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.19.tenant-owned-feed-naming-and-byline.contract.test.ts, social-listening-core/contracts/epic-3/story-3.10.canonical-markdown-post-body-normalization.contract.test.ts, social-listening-core/migrations/0037_add_tenant_owned_feed_activations_name.sql, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedStore.ts, social-listening-core/src/http/versions/v1/tenantOwnedFeedRouter.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Story 2.19's own header, ADR-0050's Amendment Log entry, and Epic 2's master-table row all consistently and correctly cross-reference the admin-side counterpart (Story 6.28) as a separate, not-yet-built (at the time) piece — accurate.
 
-## 2026-08-20 — e54f937 — docs: implementation log entry for Story 2.19, Built hash finalized
+## ~~2026-08-20 — e54f937 — docs: implementation log entry for Story 2.19, Built hash finalized~~
 
 - **Full commit:** `e54f937c9994e126bee7944e9b071be3e524e9c1`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Log entry and `**Built:**` field (`social-listening-core@2f52c0f`) match `git diff-tree` and the Built convention's exact required shape.
 
-## 2026-08-20 — cc38b6a — feat(story-6.28): tenant-owned-feed friendly naming in setup UI
+## ~~2026-08-20 — cc38b6a — feat(story-6.28): tenant-owned-feed friendly naming in setup UI~~
 
 - **Full commit:** `cc38b6a9909eb4347d39789bd07e7f1e5027137d`
 - **Files touched:** social-listening-admin/.claude/skills/tenant-owned-feed-connector-setup/SKILL.md, social-listening-admin/contracts/epic-6/story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/[id]/route.ts, social-listening-admin/src/app/api/connectors/tenant-owned-feed/connect/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/tenant-owned-feed/TenantOwnedFeedSetup.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — a real, significant gap found and corrected: this story shipped with zero traceability anywhere except its own `SKILL.md` row.** Confirmed directly: `docs/user-stories/epic-6-tenant-admin-ui.md` jumped straight from Story 6.27 to Story 6.29 — **no Story 6.28 entry ever existed in that file at all**, despite `docs/user-stories/README.md`'s Epics table and story-count already naming "6.28," and despite this commit shipping a real, contract-verified feature (`tenant-owned-feed-connector-setup/SKILL.md`'s own updated row, a 12-test contract file). `docs/implementation-log.md` also had **no entry for this commit whatsoever** — the same class of gap this file's own `488ac49` precedent already found once before. **Corrected:** added a full Story 6.28 entry to `epic-6-tenant-admin-ui.md` (between 6.27 and 6.29, reconstructed from this commit's own diff and `SKILL.md` description), appended a new, dated `docs/implementation-log.md` entry for `cc38b6a` (per this log's own append-only, "closing a missing entry" precedent), and added Story 6.28 (plus Story 1.16/6.29/ADR-0070, found missing the same pass — see the `70035d7`/`f00b34c` entries below) to `docs/implementation-plan.md`'s Traceability table, which had never mentioned any of the four at all.
 
-## 2026-08-20 — 1bb19f7 — docs: ADR filename fixes and governance review updates
+## ~~2026-08-20 — 1bb19f7 — docs: ADR filename fixes and governance review updates~~
 
 - **Full commit:** `1bb19f703bf8d28a085172934b1edc6b07a46666`
 - **Files touched:** docs/adr/0066-active-watchlist-sourcing-via-bing-search-api.md, docs/adr/0067-reconfirm-facebook-connector, docs/adr/0067-reconfirm-facebook-connector.md, docs/adr/0068-instagram-connector, docs/adr/0068-instagram-connector.md, docs/adr/0069-linkedin-connector, docs/adr/0069-linkedin-connector.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean; confirmed the rename this commit's own message claims actually happened correctly, not just trusted.** `git diff-tree --name-status 1bb19f7` shows `D` for each of `docs/adr/0067-reconfirm-facebook-connector`, `0068-instagram-connector`, `0069-linkedin-connector` (no `.md`, the stray originals) and `A` for their properly-`.md`-suffixed replacements, in the same commit — no orphaned duplicate survives at current HEAD (`ls docs/adr/` confirms zero non-`.md` files in that directory). Content spot-checked identical modulo the extension.
 
-## 2026-08-20 — 983ae70 — docs: sync tracking and review registers
+## ~~2026-08-20 — 983ae70 — docs: sync tracking and review registers~~
 
 - **Full commit:** `983ae70fc87dd679f695a486ad3bdd6ba37b38a0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 605e5a4 — feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget
+## ~~2026-08-20 — 605e5a4 — feat(story-8.9): selectedTopic watchlist filter and Watchlist Coverage widget~~
 
 - **Full commit:** `605e5a430aaa535dea868af78acd5d222ed1ea72`
 - **Files touched:** social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/api/analytics/summary/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean at the time it shipped; the drift it later accumulated (via `aa1e7f5`, two commits later) is corrected under that entry below, not attributed here.** `analytics-dashboard/SKILL.md`'s new contract row and "zero-count watchlist in legend"/`EmptyState` description were fully accurate for what this commit itself actually built.
 
-## 2026-08-20 — 1fee797 — docs(story-8.9): record implementation and traceability for Story 8.9
+## ~~2026-08-20 — 1fee797 — docs(story-8.9): record implementation and traceability for Story 8.9~~
 
 - **Full commit:** `1fee7974ac43b9892c227ac9b5c7c5f4251aff3a`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Log entry, `**Built:**` field, and traceability table/Epics row updates for Story 8.9 all match `git diff-tree` and current reality.
 
-## 2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution
+## ~~2026-08-20 — 1320adb — docs(story-3.12): draft Story 3.12 and add ADR-0063 Amendment Log for historical backfill and discovery attribution~~
 
 - **Full commit:** `1320adbb2fd8e54a955dce7fa3092ab8eeaa274c`
 - **Files touched:** docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Drafting-only pass; ADR-0063's Amendment Log entry and Story 3.12's drafted (at the time) Ready/Blocked state are both accurate for a same-day drafting pass, later correctly updated to Built by `af83d18` below.
 
-## 2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution
+## ~~2026-08-20 — 3adc060 — feat(story-3.12): post-watchlist match historical backfill and discovery attribution~~
 
 - **Full commit:** `3adc06068ea5736c6fac6a2ae0794a49e07be533`
 - **Files touched:** social-listening-core/.claude/skills/post-watchlist-match-persistence/SKILL.md, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts, social-listening-core/contracts/epic-3/story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/migrations/0038_backfill_post_watchlist_matches.sql, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts, social-listening-core/src/events/publishSocialPostIngestedEvents.ts, social-listening-core/src/watchlists/postWatchlistMatchStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Both touched `SKILL.md` files gained accurate, dated entries describing the historical backfill and Wikipedia discovery-driven watchlist attribution; matches the real diff.
 
-## 2026-08-20 — af83d18 — docs(story-3.12): record Story 3.12 implementation and update traceability
+## ~~2026-08-20 — af83d18 — docs(story-3.12): record Story 3.12 implementation and update traceability~~
 
 - **Full commit:** `af83d1870bb86467fb7f3370e6bfdb845ced3f69`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Log entry, `**Built:**` field (`social-listening-core@3adc060`), and traceability table update for Story 3.12 all confirmed accurate.
 
-## 2026-08-20 — aa1e7f5 — fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items
+## ~~2026-08-20 — aa1e7f5 — fix(analytics): sort watchlist coverage descending by post count and limit to top 6 items~~
 
 - **Full commit:** `aa1e7f5802d2ca7af48ef119aca91f365af3af50`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — real drift found and corrected: a genuine behavior change that narrowed an already-documented guarantee, with the documentation never updated to match.** This commit adds a real, tested top-6-by-descending-count cap to the Watchlist Coverage widget (the new test's own comment: "7th and 8th items... are omitted from the coverage widget legend"). But the same contract file's own top-of-file docstring ("zero-count active watchlists appear in legend"), `social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md`'s matching contract-description line, and Story 8.9's own Acceptance Criteria in `docs/user-stories/epic-8-analytics-dashboard.md` ("Zero matched posts for a watchlist renders a zero-sized slice (not omitted — the watchlist still appears in the legend)") were all left stating the pre-cap, now only conditionally true, guarantee. **Corrected all three** with dated notes (not silent rewrites): the contract's own docstring, the `SKILL.md` contract-description line, and Story 8.9's AC bullet — each now states the cap applies and that a lower-ranked watchlist (including a zero-count one that doesn't make the top 6) is genuinely omitted, not merely deprioritized. Also fixed in the same pass: Story 8.10's header (`docs/user-stories/epic-8-analytics-dashboard.md`) still read `**Status:** Ready` despite its own `**Built:**` field already naming a real shipped commit — corrected to `Built 2026-08-20`, the exact class of drift the Built convention exists to catch.
 
-## 2026-08-20 — 3e3c352 — docs: update review logs and time tracking
+## ~~2026-08-20 — 3e3c352 — docs: update review logs and time tracking~~
 
 - **Full commit:** `3e3c352bf6cbac8a13095db155665a370162b4cf`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line
+## ~~2026-08-20 — 3d7d743 — fix(analytics): align topic selector, date range picker, and matching posts count on a single control line~~
 
 - **Full commit:** `3d7d7435a8a67f17d4e68b6b165e3772c8e747f6`
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.26.post-feed-dynamic-provider-filter.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.3.conversations-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.4.overview-enrichment-period-comparison.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.5.languages-breakdown-widget.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** A pure CSS/layout alignment fix touching several contract files' selector assertions but no behavioral change any `SKILL.md`/story/traceability claim describes at that level of detail; no stale claim found.
 
-## 2026-08-20 — ee03f09 — docs: update review logs and time tracking
+## ~~2026-08-20 — ee03f09 — docs: update review logs and time tracking~~
 
 - **Full commit:** `ee03f09f33d03d94f23ff6d7f5703060af192356`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 1edd1e7 — feat(analytics): promote toolbar items to header for persistent visibility across all tabs
+## ~~2026-08-20 — 1edd1e7 — feat(analytics): promote toolbar items to header for persistent visibility across all tabs~~
 
 - **Full commit:** `1edd1e7b091e1ba40799074aaefb0f8f43fbdd0d`
 - **Files touched:** social-listening-admin/contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** A pure UI-chrome relocation (toolbar moved from tab body to persistent header); no widget `id`, contract-described behavior, or `SKILL.md` claim changes meaning as a result.
 
-## 2026-08-20 — 8e50e38 — docs: update reviews and time tracking
+## ~~2026-08-20 — 8e50e38 — docs: update reviews and time tracking~~
 
 - **Full commit:** `8e50e387ba9fbdfe27e8cac2932de6d95ffa5f11`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable
+## ~~2026-08-20 — 76941c0 — feat(shell): add icons to sidebar navigation items and make sidebar collapsable~~
 
 - **Full commit:** `76941c005b8fd6feb0a26b262f03b1a8af67e4f9`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/components/shell/shell.test.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** No component `SKILL.md` exists for the shared shell/`AppSidebar.tsx`, and no other doc makes a claim about its layout at this level of detail — nothing to check against and nothing found stale.
 
-## 2026-08-20 — 6115e1b — docs: update review tracking
-
-- **Full commit:** `6115e1b4a1708a79f8d57df3380dbd28795081f9`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals
+## ~~2026-08-20 — 8d9b6f3 — feat(tenant): update overview metric cards with icons, full-width grid, and real actuals~~
 
 - **Full commit:** `8d9b6f365123c8747d52f43a5804a70fe6f165c5`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** `tenant/page.tsx` has no dedicated `SKILL.md` of its own and no traceability document describes its metric-card layout at this level of detail.
 
-## 2026-08-20 — 142638c — docs: update review logs
+## ~~2026-08-20 — 142638c — docs: update review logs~~
 
 - **Full commit:** `142638c24d5e21c5dc8a5fb627abcec7ae77713f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream
+## ~~2026-08-20 — cb953f1 — fix(tenant): show most-recently ingested posts first in recent ingestion stream~~
 
 - **Full commit:** `cb953f1d197bf09f6c7cfc1cbcc57950d5276038`
 - **Files touched:** social-listening-admin/src/app/tenant/page.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Same single-file, no-dedicated-`SKILL.md` scope as `8d9b6f3` above; no traceability claim references this screen's own ingestion-stream ordering.
 
-## 2026-08-20 — c3044d0 — docs: update review logs
+## ~~2026-08-20 — c3044d0 — docs: update review logs~~
 
 - **Full commit:** `c3044d0593e42deeb88fd941f0bd8f4039450cb1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column
+## ~~2026-08-20 — 72a15c9 — feat(analytics): place Sources and Authors widgets underneath volume graph in centre column~~
 
 - **Full commit:** `72a15c91b2114e92f0a5496402d44b48acbca145`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Confirmed the `widget-sources-volume`/`widget-top-authors` load-bearing `id` attributes (`analytics-dashboard/SKILL.md`'s own "never renamed" constraint) are unchanged by this purely visual column relocation — only the surrounding container moved, not the ids themselves.
 
-## 2026-08-20 — 034e968 — docs: update review logs
+## ~~2026-08-20 — 034e968 — docs: update review logs~~
 
 - **Full commit:** `034e968612549535e418d716e7f14b4c111c9173`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget
+## ~~2026-08-20 — 8cbb71a — feat(analytics): add well-known platform icons and dynamic percentage linebars to sources widget~~
 
 - **Full commit:** `8cbb71a022a1c48e8bbef8a0795312ac07e4a74b`
 - **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Purely presentational (icons, linebars) on top of the already-real `computeSourceBreakdown()` data — no claim in `analytics-dashboard/SKILL.md` about this widget's presentation layer to go stale.
 
-## 2026-08-20 — 624c626 — docs: update review tracking
+## ~~2026-08-20 — 624c626 — docs: update review tracking~~
 
 - **Full commit:** `624c6263f819237845fa7982f4f7a31a59ebfef3`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget
+## ~~2026-08-20 — d2dff0d — feat(analytics): add platform icons and brand coloring to Authors by Source widget~~
 
 - **Full commit:** `d2dff0dd7e5a29bc37eb37b64f65c07499c756fe`
 - **Files touched:** social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Same category as `8cbb71a` above — purely presentational, on top of already-real `computeAuthorsBySource()` data; `analytics-dashboard/SKILL.md`'s own "always exactly the three real connectors, zero-padded" rule for this widget is unaffected.
 
-## 2026-08-20 — ad3e8be — docs: update review logs
+## ~~2026-08-20 — ad3e8be — docs: update review logs~~
 
 - **Full commit:** `ad3e8be50c8a8a784522d90390b378a98096b6bc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — clean, no drift.** Pure queue/time-log bookkeeping.
 
-## 2026-08-20 — 8bc60a1 — Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064)
+## ~~2026-08-20 — 8bc60a1 — Story 2.20: Country-level geospatial extraction and normalization on post enrichment (ADR-0064)~~
 
 - **Full commit:** `8bc60a17381f19368dc34de4332ad62a18c8eb17`
 - **Files touched:** docs/adr/0064-location and geospatial insights from posts and authors.md, docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/implementation-log.md, docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-8-analytics-dashboard.md, social-listening-core/.claude/skills/social-post-enrichment/SKILL.md, social-listening-core/contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts, social-listening-core/src/connectors/geo/geoCountryUtils.ts, social-listening-core/src/connectors/gnews/pollGNewsSearch.ts, social-listening-core/src/connectors/newswire/pollNewswireFeeds.ts, social-listening-core/src/connectors/newswire/rssFeedParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/feedItemParser.ts, social-listening-core/src/connectors/tenantOwnedFeed/pollTenantOwnedFeed.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — this commit's own work is clean (correctly deletes the stray space-containing ADR-0064 filename and replaces it with the proper slug in the same commit, and correctly, honestly cites ADR-0064 as "Proposed 2026-08-19" rather than fabricating an acceptance — see the `5d3ec45` entry above for the wider ADR-0064 finding), but the real Story 2.20 `docs/implementation-log.md` entry this commit itself correctly appended was later destroyed by a different commit — a serious finding, corrected here.** Traced directly: `git show 8bc60a1 -- docs/implementation-log.md` proves this commit appended a correct "## 2026-08-20 — Story 2.20 — social-listening-core" entry. `git show 168e5f7 -- docs/implementation-log.md` (the very next commit to touch this file, reviewed below) proves that commit's diff **removed the entire Story 2.20 entry and replaced it, at the same file position, with the Story 8.10 entry** — not an append, an overwrite, in direct violation of this log's own single most important rule ("never edit or remove an existing entry"). **Restored:** appended a new, dated `docs/implementation-log.md` entry reconstructing the lost Story 2.20 record verbatim from this commit's own diff, with a note explaining the loss (per this log's own "closing a missing entry" precedent, e.g. its `488ac49` entry). Also fixed in the same pass: Story 2.20's own `**Built:**` field in `epic-2-ingestion-connectors-and-rate-limits.md` was missing its `@<short-hash>` suffix entirely (`"2026-08-20 — social-listening-core"`, not the Built convention's required `repo@hash` shape) — corrected to `@8bc60a1`.
 
-## 2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'
+## ~~2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'~~
 
 - **Full commit:** `93dadabf2c3e52e4e25c20f26acc61a5fbe8dc87`
-- **Files touched:** 
-- **Status:** Pending review
+- **Files touched:** (none)
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — trivially clean.** An empty merge commit — `git diff-tree --no-commit-id --name-only -r 93dadab` returns nothing. No content, nothing to check.
 
-## 2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)
+## ~~2026-08-20 — 75a0a4a — Story 8.10: Location & Geospatial Insights on Overview tab with SVG choropleth map (ADR-0064)~~
 
 - **Full commit:** `75a0a4a72328f56953c49f3622b3e0ebfd0830ea`
 - **Files touched:** docs/implementation-plan.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md, social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — this commit's own work is clean** (`analytics-dashboard/SKILL.md`'s new ADR-0064/Story 8.10 table row and contract-description line, and `docs/implementation-plan.md`'s own Phase 4 addition, all accurate) **— its real downstream drift (Story 8.10's Status/Built mismatch, and the log-entry-overwrite it was involved in) is corrected under the `168e5f7`/`aa1e7f5` entries, not attributed to this commit itself.**
 
-## 2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log
+## ~~2026-08-20 — 168e5f7 — docs: record Story 8.10 implementation in user stories and log~~
 
 - **Full commit:** `168e5f75ae88234db755aea052b5c0d143bb8bdd`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — the specific commit responsible for the Story 2.20 log-entry deletion found and restored above; also left Story 8.10's own header inconsistent, separately corrected.** `git show 168e5f7 -- docs/implementation-log.md` shows this commit's diff replacing the entire preceding "Story 2.20" entry with the new "Story 8.10" entry at the same position in the file — an overwrite, not an append, destroying real historical content. This was almost certainly an unintentional copy-paste-over-the-prior-entry mistake (the new entry itself is otherwise accurate and well-formed), not a deliberate edit, but the effect is the same regardless of intent: a real violation of this log's own append-only discipline. See the `8bc60a1` entry above for the restoration (a new, dated entry, not an edit to this commit's own placement) and `docs/implementation-methodology.md`'s existing convention for how this log treats such gaps. Separately: this same commit left `epic-8-analytics-dashboard.md`'s Story 8.10 header reading `**Status:** Ready` immediately above a `**Built:** 2026-08-20 — social-listening-admin@75a0a4a` field it had just added — the exact "Built field says shipped, Status line doesn't" gap the Built convention exists to catch; corrected under the `aa1e7f5` entry above (found in the same investigation, fixed there to avoid a duplicate edit).
 
-## 2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts
+## ~~2026-08-20 — 70035d7 — docs: draft ADR-0070, Story 1.16, and Story 6.29 for connector ingestion status, watchdog, and alerts~~
 
 - **Full commit:** `70035d7e03eeb2e2e3a3020938ba91cf511ab4d6`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/adr/README.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — this drafting pass's own touched files are internally consistent (ADR-0070 Proposed, Stories 1.16/6.29 correctly Blocked-then-Ready at the right points, README's Epics table and Proposed-tracker updated together) — the real gap is `docs/implementation-plan.md`'s Traceability table never being updated for any of it, corrected under the `f00b34c`/`cc38b6a` entries (fixed together as one Traceability-table pass, see the dated note appended to that file).**
 
-## 2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence
+## ~~2026-08-20 — f00b34c — docs: accept ADR-0070 and update Stories 1.16 and 6.29 with lock-safe watchdog and health precedence~~
 
 - **Full commit:** `f00b34cf34d4185043728eba09aa2f9df7e58588`
 - **Files touched:** docs/adr/0070-connector-ingestion-status-hanging-run-reconciliation-and-alerts.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-26 — real drift found and corrected: `docs/implementation-plan.md`'s Traceability table had never once mentioned Story 1.16, Story 6.29, or ADR-0070 at all, confirmed by direct grep returning zero matches for any of the three anywhere in that file, despite ADR-0070 being genuinely Accepted here (real Amendment Log entry, real "Accepted by Menno" quote — unlike ADR-0064) and both stories correctly Ready in their own epic files.** Corrected: added Story 1.16 to Phase 1's row and Story 6.29 (alongside Story 6.28, found missing in the same pass — see the `cc38b6a` entry above) to Phase 3's row, each correctly marked "drafted, not yet built," plus a new dated Documentation Steward note at the end of `docs/implementation-plan.md` explaining the combined finding. `docs/adr/README.md`'s own missing footnote 35 (referenced by ADR-0070's master-index row, no footnote text existed) was also added in the same pass — see the `5d3ec45` entry above.
 

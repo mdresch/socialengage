@@ -411,8 +411,8 @@
 
 ## Story 2.20 — Country-level geospatial extraction and normalization on post enrichment
 
-**Source:** ADR-0064 (Proposed 2026-08-19) · **Status:** Built 2026-08-20
-**Built:** 2026-08-20 — social-listening-core
+**Source:** ADR-0064 (Proposed 2026-08-19 — see `docs/adr/README.md` footnote 34's own 2026-08-26 Documentation Steward finding: this ADR's own Status line has never actually changed to Accepted, unlike this file's own honest "Proposed" citation here) · **Status:** Built 2026-08-20
+**Built:** 2026-08-20 — social-listening-core@8bc60a1 (Documentation Steward correction, 2026-08-26 — this field was missing its `@<short-hash>` suffix, the Built convention's own required shape; also restored a real `docs/implementation-log.md` entry for this same commit that had been accidentally overwritten by a later commit, see that log's own matching 2026-08-26 entry)
 
 **As a** core backend engineer,
 **I want** the ingestion and enrichment pipelines to extract, normalize, and store country-level geospatial metadata from connector payloads (`gnews`, `newswire`, `tenant-owned-feed`) into `social_posts.enrichment`,

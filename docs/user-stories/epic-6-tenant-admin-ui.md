@@ -687,6 +687,28 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ---
 
+## Story 6.28 — Tenant-owned-feed friendly naming in setup UI
+
+**Built:** 2026-08-20 — social-listening-admin@cc38b6a
+
+**Source:** ADR-0050 (2026-08-20 Amendment Log entry — a tenant-owner-set, optional `name` per activation, narrowing the UX half of Open Question 2; backend half is Story 2.19) · **Status:** Built 2026-08-20.
+
+**Documentation Steward note, added 2026-08-26:** this story's own entry was missing from this file entirely until now, despite being real and shipped — `social-listening-admin@cc38b6a` (2026-08-20), a real contract file (`contracts/epic-6/story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts`, 12 test cases by direct count), and its own `tenant-owned-feed-connector-setup/SKILL.md` row/contract citation (added the same commit) all confirm it shipped. `docs/user-stories/README.md`'s Epics table already listed "6.28" in Epic 6's story roster and `docs/implementation-plan.md`'s Traceability table already named it as built — only this epic file's own per-story entry, and the matching `docs/implementation-log.md` entry, had never been written. Reconstructed here from the commit's own diff (`git diff-tree --no-commit-id --name-only -r cc38b6a`) and the SKILL.md's own description of the change, not invented; a matching entry has been appended to `docs/implementation-log.md`.
+
+**As a** tenant owner administering more than one tenant-owned RSS/content feed,
+**I want** to give each feed activation an optional friendly display name (falling back to its domain when unset), and see each ingested item's own byline where the feed provides one,
+**so that** I can tell my feeds apart in the admin UI without having to recognize raw domains, matching the per-feed `name`/per-item `author` data `social-listening-core`'s own Story 2.19 already denormalizes into `rawPayload`.
+
+**Acceptance Criteria**
+- The "Connect a feed" form gains an optional Name field; the value is sent to `POST /connect` only when non-empty (an empty/whitespace-only value is never sent as an explicit empty string) — proven by the new contract's connect-modal assertions.
+- The "Edit" form is pre-filled from the activation's current `name`, and always re-sends `name` on submit: `null` when the field is left blank (an explicit clear, distinct from "field not sent"), the trimmed value otherwise — proven by the new contract's edit-modal assertions; the `[id]` PATCH proxy route distinguishes "not sent" from "sent as `null`" via `hasOwnProperty`, not merely falsiness.
+- Each list row shows `name` as its primary label when set, with `domain` demoted to a secondary line rather than hidden entirely; a row with no `name` set still shows `domain` as the primary label, unchanged from before this story.
+- `core-client.ts`'s `connectTenantOwnedFeed()`/`updateTenantOwnedFeedActivation()` both carry `name` through correctly; `updateTenantOwnedFeedActivation()`'s signature widened from a positional `(id, feedUrl)` to `(id, updates: { feedUrl?, name? })` — Story 6.20's own existing contract call was updated to match this shape, its real assertion (a PATCH with the given body, bearer-attached) unchanged.
+
+**Explicitly out of scope, per this story's own SKILL.md "Known gaps":** surfacing `rawPayload.feedName`/per-item byline (`social-listening-core`'s own Story 2.19 denormalization) anywhere in the Posts feed itself (`postDisplay.ts`, `PostsFeedClient.tsx`, `OverviewTab.tsx`) — only this setup screen's own list currently reads a feed's `name`; wiring it into the post feed's provider badge or a dedicated field is named as a plausible future story, not solved here, since it touches `extractProviderBadge()`'s own semantics (used for filtering/CSS/Analytics grouping today) and needs its own scoping pass.
+
+---
+
 ## Story 6.29 — Connector Ingestion Status Badges, Stalled Alerts Banner, and On-Demand Re-sync Action
 
 **Source:** ADR-0070 (Accepted 2026-08-20) · **Status:** Ready
