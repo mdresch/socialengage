@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-26 | 14:23 | — | — | Documentation | Story 6.39 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) (e0abfdd) |
 | 2026-08-26 | 09:54 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (00066ec) |
 | 2026-08-26 | 09:53 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (0ee011c) |
 | 2026-08-25 | 17:11 | — | — | Documentation | — | chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com> (fbfe9ed) |

@@ -3008,3 +3008,9 @@
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
+## 2026-08-26 — e0abfdd — feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075)
+
+- **Full commit:** `e0abfdd6e544d7196de121a8c47bddb87c8914a6`
+- **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/tsconfig.json
+- **Status:** Pending review
+

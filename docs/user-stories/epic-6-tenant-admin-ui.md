@@ -1125,7 +1125,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.39 — Polypost Composer Real Publish Flow
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-26 — social-listening-admin@e0abfdd
 **Depends on:** Story 3.15 (`POST /v1/outbound/posts` endpoint), Story 2.29 (Facebook Page `publish()`)
 
 **As a** Tenant User or Tenant-Admin,
