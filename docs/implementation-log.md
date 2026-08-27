@@ -3350,3 +3350,41 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
 - **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/lib/core-client.ts
 - **Epic-6 suite at merge:** PASS (39/40 suites, 513/532 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific HTTPS/DB issue, unrelated to this story)
+
+## 2026-08-26 Healing pass Story 6.2 social-listening-admin
+
+- **Full commit:** 3cb453d5a0a0b08906108f0b6a81e6fe05766469
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.2 / ADR-0035+ADR-0036 (role-gated routing shell)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts (21/21)
+- **SKILL.md:** social-listening-admin/.claude/skills/role-routing-shell/SKILL.md
+- **Files touched:** social-listening-admin/jest.config.js, social-listening-admin/package.json, social-listening-admin/package-lock.json
+- **Full suite at merge:** Story 6.2 contract 21/21 pass in isolation. Full admin suite run interrupted by user; core suite timeouts (Stories 1.10, 2.3, 2.14, 3.17) are the known environmental pattern from docs/environment-gotchas.md (real external service timing under full-suite load), not regressions.
+
+**Root cause was a regression introduced by the ADR-0073 stash recovery.** The home page redesign (recovered from a shelved stash in a prior session) added `import styles from './page.module.css'` to `src/app/page.tsx` -- the only CSS module import in the entire `src/` directory. Story 6.2's contract dynamically imports `page.tsx` (line 183) to test AC2 route-tree enforcement, so Jest tried to parse the CSS as JavaScript and failed with `SyntaxError: Unexpected token '.'`. The Jest config had a `moduleNameMapper` for the `@/*` path alias but no mapping for CSS modules. Fix: added `identity-obj-proxy` (the standard Next.js Jest CSS module stub) as a devDependency and mapped `\\.module\\.css$` to it in `jest.config.js`. This is the standard Next.js Jest setup pattern, not a contract weakening -- the contract's assertions are unchanged, only the test harness can now import the real page component again.
+
+
+## 2026-08-26 Story 6.40 social-listening-admin
+
+- **Full commit:** cf1f96c5e34730f0a24ef69d6cce13d307f28b26
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.40 / ADR-0074 (Tenant-Facing Workspace and Matched-Posts Export)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.40.tenant-settings-export-actions.contract.test.ts (21/21)
+- **SKILL.md:** social-listening-admin/.claude/skills/tenant-settings/SKILL.md (updated for Story 6.40 additions)
+- **Files touched:** social-listening-admin/src/app/tenant/settings/page.tsx (rewritten), social-listening-admin/src/lib/core-client.ts (exportWorkspace() + exportPostsCsv() added), social-listening-admin/src/app/api/tenants/export/workspace/route.ts (new), social-listening-admin/src/app/api/posts/export.csv/route.ts (new), social-listening-admin/contracts/epic-6/story-6.40.tenant-settings-export-actions.contract.test.ts (new), social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts (ADR-0074 amendments to AC2/AC3/AC4), social-listening-admin/contracts/epic-6/story-6.13.tenant-deletion-offboarding.contract.test.ts (ADR-0074 amendment to settings-page assertion), social-listening-admin/.claude/skills/tenant-settings/SKILL.md (updated), docs/user-stories/epic-6-tenant-admin-ui.md (Built field)
+- **Full suite at merge:** PASS — 51/51 suites, 710/710 tests (excluding Story 6.1's Entra sign-in tests, which require a live HTTPS dev server + real Entra tenant — known environment prerequisite, not a regression).
+
+**What was built.** The /tenant/settings page (Story 6.9's original read-only metadata display) is rewritten into a styled workspace profile with three sections: (1) a Workspace Configuration card rendering name/status/domain/seat counts/createdAt from getMyTenant() only, with createdAt formatted via toLocaleDateString() and domain falling back to an em dash when null; (2) a Data Export card with two real export buttons -- "Export Full Workspace (JSON)" (tenant_admin only, disabled not hidden for tenant_user with explanatory text) and "Export Matched Posts (CSV)" (both roles) -- wired through core-client.ts proxy routes to Story 3.16's backend endpoints; (3) a tenant_admin-only Offboarding and Decommission section linking to the existing /tenant/settings/delete page (Story 6.13). Two new core-client.ts functions (exportWorkspace(), exportPostsCsv()) serve as the sole Bearer-attachment choke point for both export calls, and two new same-origin proxy routes (/api/tenants/export/workspace and /api/posts/export.csv) stream the responses through with Content-Disposition headers for browser file download.
+
+**ADR-0074 amendments to earlier contracts.** Story 6.9's original AC2 prohibited any `role === 'tenant_admin'` check on the settings page; ADR-0074 adds role-gated affordances (offboarding link, workspace export button) inside the page, so AC2 was amended to allow affordance-level role gating while keeping page-level access ungated. Story 6.9's AC3 required "seats used" phrasing; Story 6.40 AC1 changes it to "N of M active" per ADR-0074. Story 6.9's AC4 prohibited any "posts" reference; ADR-0074 adds "Export Matched Posts (CSV)", so AC4 was amended to only prohibit watchlist/credential references. Story 6.13's settings-page assertion prohibited any `role === 'tenant_admin'` check; ADR-0074 adds the tenant_admin-only offboarding link, so the assertion was amended to verify the deletion page's own redirect gate instead. All amendments cite ADR-0074 explicitly in the contract test comments.
+
+---
+
+## 2026-08-26 — Story 6.41 — social-listening-admin (pending commit)
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.41 / ADR-0076
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts (14/14)
+- **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
+- **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts, social-listening-admin/src/app/api/composer/research/route.ts, social-listening-admin/src/components/composer/DeepResearchPanel.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/lib/core-client.ts
+- **Epic-6 suite at merge:** PASS (40/41 suites, 527/546 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific core server dependency, unrelated to this story)

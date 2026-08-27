@@ -12,13 +12,15 @@ import { DraftHistoryDrawer } from './DraftHistoryDrawer';
 import { CardLinkPreview } from './CardLinkPreview';
 import { PublishTargetsDialog } from './PublishTargetsDialog';
 import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
-import type { FacebookConnectedPageRow, PublishPostRow } from '@/lib/core-client';
+import type { FacebookConnectedPageRow, PublishPostRow, ComposerResearchResult } from '@/lib/core-client';
+import { DeepResearchPanel, type DeepResearchPanelState } from './DeepResearchPanel';
 
 interface PolypostComposerProps {
   initialText?: string;
   initialPlatforms?: SupportedPlatform[];
   onPublishSuccess?: () => void;
   onCancel?: () => void;
+  isPlatformAdmin?: boolean;
 }
 
 export function PolypostComposer({
@@ -26,6 +28,7 @@ export function PolypostComposer({
   initialPlatforms = ['linkedin', 'instagram', 'facebook', 'twitter', 'threads', 'bluesky'],
   onPublishSuccess,
   onCancel,
+  isPlatformAdmin = false,
 }: PolypostComposerProps) {
   const [mainText, setMainText] = useState(initialText);
   const [selectedPlatforms, setSelectedPlatforms] = useState<SupportedPlatform[]>(initialPlatforms);
@@ -45,6 +48,11 @@ export function PolypostComposer({
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+
+  // Deep Research state (ephemeral — not saved to draft storage)
+  const [researchState, setResearchState] = useState<DeepResearchPanelState>('idle');
+  const [researchResult, setResearchResult] = useState<ComposerResearchResult | null>(null);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   // Drafts & Link Preview states
   const [isDraftsOpen, setIsDraftsOpen] = useState(false);
@@ -225,6 +233,39 @@ export function PolypostComposer({
     const pos = textarea ? textarea.selectionStart : currentText.length;
     const next = currentText.slice(0, pos) + emoji + currentText.slice(pos);
     updateCurrentText(next);
+  };
+
+  // Deep Research handler — calls same-origin proxy route
+  const handleDeepResearch = async () => {
+    if (mainText.replace(/\s/g, '').length < 10) return;
+    setResearchState('loading');
+    setResearchResult(null);
+    setResearchError(null);
+    try {
+      const res = await fetch('/api/composer/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: mainText }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        const errMsg = body?.error || body?.code || `HTTP ${res.status}`;
+        setResearchError(errMsg);
+        setResearchState('error');
+      } else {
+        setResearchResult(body as ComposerResearchResult);
+        setResearchState('success');
+      }
+    } catch {
+      setResearchError('Network error — unable to reach the research service.');
+      setResearchState('error');
+    }
+  };
+
+  const handleCloseResearch = () => {
+    setResearchState('idle');
+    setResearchResult(null);
+    setResearchError(null);
   };
 
   // AI Assist API Call
@@ -736,6 +777,17 @@ export function PolypostComposer({
               >
                 ✨ Prompt
               </button>
+              {/* Deep Research button — disabled for platform_admin sessions or short draft text */}
+              <button
+                type="button"
+                disabled={isPlatformAdmin || mainText.replace(/\s/g, '').length < 10}
+                onClick={handleDeepResearch}
+                title={isPlatformAdmin ? 'Deep Research is not available for platform_admin sessions' : 'Research public conversation around your draft (requires 10+ characters)'}
+                className="composer-tag-chip"
+                style={{ background: 'rgba(168, 85, 247, 0.1)', color: 'var(--color-text-secondary)', fontWeight: 600 }}
+              >
+                🔬 Deep Research
+              </button>
             </div>
           </div>
 
@@ -850,6 +902,14 @@ export function PolypostComposer({
               </div>
             )}
           </div>
+
+          {/* Deep Research Panel (ephemeral) */}
+          <DeepResearchPanel
+            state={researchState}
+            result={researchResult}
+            error={researchError}
+            onClose={handleCloseResearch}
+          />
 
           {/* Detected Link Preview Card */}
           {linkPreview && (

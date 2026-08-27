@@ -20,6 +20,7 @@
     "@types/react-dom": "19.2.4",
     "autoprefixer": "^10.5.4",
     "dotenv": "17.4.2",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "30.4.2",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
