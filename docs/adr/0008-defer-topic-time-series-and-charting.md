@@ -43,3 +43,23 @@ Do not build a `TopicDailyCount` aggregation table, endpoint, or any charting UI
 **The pending supersession named directly above is now real: ADR-0054 was accepted by Menno on 2026-08-17** (via a structured approval decision in the orchestrating session — see ADR-0054's own Acceptance note for the exact mechanism). This ADR's Decision text above is **not edited** — per this file's own "don't rewrite history" discipline and `docs/adr/README.md`'s own governance-table convention, the original Decision stands as the historical record, with this dated note confirming which part of it is now superseded in practice.
 
 **Confirmed, exactly as the pending note above anticipated:** this ADR's "no `TopicDailyCount` aggregation table, endpoint" clause remains fully in force, untouched — ADR-0054 added no new `social-listening-core` endpoint, stored aggregate, or aggregation grain. This ADR's "any charting UI in this subsystem" clause is now superseded **in part**, narrowly bounded to exactly ADR-0054's own decided scope: client-side-computed charting inside `social-listening-admin` (`/tenant/analytics`, Epic 8, Stories 8.1–8.3), computed entirely from data `GET /posts`/`enrichment` already return, with zero new backend aggregation. Any charting UI or aggregation beyond that narrow scope — a stored `TopicDailyCount`-shaped table, a dedicated analytics/reporting subsystem, server-side pre-computed rollups — remains exactly as deferred as this ADR originally decided, unaffected by ADR-0054's acceptance.
+
+---
+
+## Pending supersession note (2026-08-27)
+
+**[ADR-0087](0087-preconfigured-analytics-views.md) (Proposed, revised 2026-08-27, not yet accepted) would supersede this ADR's remaining, still-in-force Decision clause — "no `TopicDailyCount` aggregation table, endpoint" — if accepted.** Named here exactly which part, per `docs/adr/README.md`'s own governance-table convention, the same convention this file already followed for ADR-0054's note above.
+
+**What would change:** ADR-0087 builds `TopicDailyCount` — along with four sibling tables (`SourceDailyCount`, `AuthorDailyCount`, `SentimentDailyCount`, `WatchlistDailyCount`) — as real, precomputed, tenant-scoped daily aggregate tables refreshed every 15 minutes by a scheduled `pg_cron` worker, plus a `GET /v1/analytics/:view` endpoint to serve them. This is exactly the aggregation table and endpoint this ADR's Decision declined to build, now built by the future subsystem this ADR's own Consequences anticipated ("the future subsystem can compute `TopicDailyCount` directly from existing data").
+
+**What would not change:** this ADR's "...or any charting UI" clause is untouched by ADR-0087, which authorizes no UI at all — that clause keeps its existing, already-realized narrow supersession via ADR-0054 above, unaffected by whatever happens to the aggregation-table clause here.
+
+Not yet in effect — takes effect only once ADR-0087 is actually accepted, per this file's own convention of not editing the original Decision text and instead appending a dated note.
+
+---
+
+## Supersession update (2026-08-27)
+
+**The pending supersession named directly above is now real: ADR-0087 was accepted by Menno on 2026-08-27**, verbatim: *"please accept hereby approval for ADR 0087"* (see ADR-0087's own Acceptance note for the full record). This ADR's Decision text above is **not edited** — per this file's own "don't rewrite history" discipline, the original Decision stands as the historical record, with this dated note confirming which part of it is now superseded in practice.
+
+**Confirmed, exactly as the pending note above anticipated:** this ADR's "no `TopicDailyCount` aggregation table, endpoint" clause is now superseded — ADR-0087 built exactly that table, plus four siblings (`SourceDailyCount`, `AuthorDailyCount`, `SentimentDailyCount`, `WatchlistDailyCount`) and a `GET /v1/analytics/:view` endpoint. This ADR's "any charting UI in this subsystem" clause remains governed exactly as the 2026-08-17 Supersession update above already recorded (ADR-0054's narrow, already-realized scope) — unaffected by ADR-0087's acceptance, which authorizes no UI of its own.
