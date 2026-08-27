@@ -1,6 +1,6 @@
 # ADR-0109: Connector health auto-disable and recovery
 
-**Status:** Proposed (2026-08-23)
+**Status:** Proposed (2026-08-23; revised 2026-08-28 with competitive research — see Amendment Log below)
 
 **Authorizes:** the auto-disable and recovery rules for `SocialConnector` health, including the `failing`/`degraded` state transitions, the `retryable` flag, and the `Platform-Admin`/`Tenant-Admin` re-enable path.
 
@@ -88,6 +88,12 @@ healthy -> degraded -> failing -> disabled
 - Should `Platform-Admin` be able to re-enable any tenant's connector, or only tenant-wide connectors?
 - How is the health-check attempt different from a normal poll? Does it have a smaller result set?
 - Should `disabled` connectors still count toward `connector_activations` billing, or are they paused?
+
+---
+
+## Amendment Log
+
+- 2026-08-28 — **Provenance note, no parameter or Decision change.** The `01-multi-source-ingestion-deep-research.md` competitive research brief (`c:/Users/menno/Documents/Second Brain/raw/01-multi-source-ingestion-deep-research.md`) was reviewed against this ADR. It contains no connector-health-specific or auto-disable-specific findings (its content is about source-type breadth and coverage, not failure/recovery mechanics). One general finding lends indirect support to this ADR's quota-protection rationale: Brandwatch markets that it ingests from "the forums that matter most" rather than crawling indiscriminately (https://www.brandwatch.com/datanetworks/forums/) — a targeted, cost-conscious ingestion posture consistent with this ADR's auto-disable-to-protect-quota design (Decision §2, Consequence 1). This does not change the 5-consecutive-failure threshold, the non-retryable-immediate-disable rule, or any other parameter — it is cited here only as external validation that quota-conscious connector operation is an industry-standard design goal, not a SocialEngage-specific invention. Status remains **Proposed**; the drafting persona does not hold ADR-acceptance authority.
 
 ---
 

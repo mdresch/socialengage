@@ -215,4 +215,27 @@ describe('Story 6.38 — Post Detail Reply Action, Composer Drawer, and Replies 
       expect(source).toContain('slideover-shifted');
     });
   });
+
+  // -----------------------------------------------------------------------
+  // AC6: Drawer tabs and Reply action button styling
+  // -----------------------------------------------------------------------
+  describe('AC6: Drawer tabs and Reply action button styling', () => {
+    it('PostDetailPanel renders styled tablist and reply action button', () => {
+      const panelSource = readSrc('app', 'tenant', 'posts', 'PostDetailPanel.tsx');
+      expect(panelSource).toContain('pf-detail-header');
+      expect(panelSource).toContain('pf-detail-tablist');
+      expect(panelSource).toContain('pf-detail-tab');
+      expect(panelSource).toContain('pf-reply-btn');
+    });
+
+    it('globals.css defines classes for drawer header, tabs, reply button and reply composer', () => {
+      const cssSource = readSrc('app', 'globals.css');
+      expect(cssSource).toContain('.pf-detail-header');
+      expect(cssSource).toContain('.pf-detail-tablist');
+      expect(cssSource).toContain('.pf-detail-tab');
+      expect(cssSource).toContain('.pf-reply-btn');
+      expect(cssSource).toContain('.reply-composer-drawer');
+      expect(cssSource).toContain('.replies-tab-list');
+    });
+  });
 });
