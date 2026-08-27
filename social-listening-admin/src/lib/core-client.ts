@@ -1985,6 +1985,41 @@ export async function executeAdHocAnalyticsQuery(
   return (await response.json()) as AdHocQueryClientResponse;
 }
 
+// ---------------------------------------------------------------------------
+// Story 10.6 / 10.7 (ADR-0089) — Platform Operations Telemetry Dashboard
+// ---------------------------------------------------------------------------
+
+export interface PlatformDashboardData {
+  throughputPostsSec: number;
+  avgIngestionLagSec: number;
+  errorRateLast24hPct: number;
+  totalTokensLast30d: number;
+  estimatedCostLast30dUsd: number;
+  connectors: Array<{
+    platformId: string;
+    status: 'healthy' | 'degraded' | 'error' | 'disconnected';
+    errorCountLast24h: number;
+    lastSuccessAt: string | null;
+  }>;
+  timeSeries: Array<{
+    timestamp: string;
+    ingestionVolume: number;
+    errorCount: number;
+  }>;
+}
+
+/**
+ * Story 10.6 / 10.7 (ADR-0089) — gets real-time platform operations dashboard telemetry.
+ */
+export async function getPlatformDashboard(): Promise<PlatformDashboardData> {
+  const response = await authenticatedCoreFetch('/v1/admin/platform-dashboard');
+  if (!response.ok) {
+    throw new Error(`Platform dashboard query failed: ${response.status}`);
+  }
+  return (await response.json()) as PlatformDashboardData;
+}
+
+
 
 
 

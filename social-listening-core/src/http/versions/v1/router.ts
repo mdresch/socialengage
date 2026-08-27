@@ -29,6 +29,8 @@ import { explainRouter } from './explainRouter';
 import { ragRouter } from './ragRouter';
 import { prospectingListsRouter } from './prospectingListsRouter';
 import { analyticsViewsRouter } from './analyticsViewsRouter';
+import { platformDashboardRouter } from './platformDashboardRouter';
+import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -61,6 +63,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
       res.status(503).json({ status: 'unavailable' });
     }
   });
+
+  /** Story 10.8 (ADR-0090) — posts data export (streaming CSV & async jobs). Mounted BEFORE generic /posts. */
+  v1Router.use('/posts', authMiddleware, postsExportRouter);
 
   /** Story 3.4 (ADR-0011) — see .claude/skills/posts-api/SKILL.md. */
   v1Router.use('/posts', authMiddleware, postsRouter);
@@ -131,6 +136,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 5.14 (ADR-0030 §5) — see .claude/skills/platform-admin-audit-log/SKILL.md. */
   v1Router.use('/admin/audit-log', authMiddleware, adminAuditLogRouter);
 
+  /** Story 10.6 (ADR-0089) — platform operations telemetry dashboard. */
+  v1Router.use('/admin', authMiddleware, platformDashboardRouter);
+
   /**
    * Story 5.15 (ADR-0037 §5) — the one route in this project accepting a
    * caller resolveIdentity() cannot match. claimsAuthMiddleware verifies
@@ -178,6 +186,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 10.3 (ADR-0087) — precomputed daily count analytics views. */
   v1Router.use('/analytics', authMiddleware, analyticsViewsRouter);
+
+  /** Story 10.8 (ADR-0090) — posts data export status. */
+  v1Router.use('/exports', authMiddleware, exportsStatusRouter);
 
   return v1Router;
 }
