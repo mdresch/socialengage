@@ -173,7 +173,7 @@ export function OnboardingChecklist({
       <div className="card-body" style={{ padding: '1rem 1.25rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
           {coreStepKeys.map((key) => {
-            const step = checklist.steps?.[key] || { completed: false, completedAt: null };
+            const step = (checklist.steps as Record<string, any>)?.[key] || { completed: false, completedAt: null };
             const meta = STEP_METADATA[key] || {
               title: key,
               description: '',
@@ -261,7 +261,7 @@ export function OnboardingChecklist({
           {showAdvanced && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem', marginTop: '0.75rem' }}>
               {advancedStepKeys.map((key) => {
-                const step = checklist.advancedSteps?.[key] || { completed: false, completedAt: null };
+                const step = (checklist.advancedSteps as Record<string, any>)?.[key] || { completed: false, completedAt: null };
                 const meta = STEP_METADATA[key] || {
                   title: key,
                   description: '',

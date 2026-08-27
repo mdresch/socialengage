@@ -1644,63 +1644,6 @@ export async function activateCrisisTemplate(
   return { status: response.status, body };
 }
 
-export interface ChecklistStep {
-  completed: boolean;
-  completedAt: string | null;
-  deepLink?: string;
-}
-
-export interface OnboardingChecklistResponse {
-  isComplete: boolean;
-  progressPercentage: number;
-  dismissed: boolean;
-  dismissedAt: string | null;
-  steps: {
-    connect_source: ChecklistStep;
-    build_watchlist: ChecklistStep;
-    invite_user: ChecklistStep;
-    verify_posts: ChecklistStep;
-    [key: string]: ChecklistStep;
-  };
-  advancedSteps?: {
-    enable_enrichment?: ChecklistStep;
-    configure_alerts?: ChecklistStep;
-    [key: string]: ChecklistStep | undefined;
-  };
-}
-
-export interface PatchOnboardingChecklistRequest {
-  dismissed?: boolean;
-  reset?: boolean;
-  hiddenAdvancedSteps?: string[];
-}
-
-/**
- * Story 9.6 (ADR-0080) — gets the tenant's onboarding checklist state.
- */
-export async function getOnboardingChecklist(tenantId: string): Promise<OnboardingChecklistResponse> {
-  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`);
-  if (!response.ok) {
-    throw new Error(`Failed to load onboarding checklist: ${response.status}`);
-  }
-  return (await response.json()) as OnboardingChecklistResponse;
-}
-
-/**
- * Story 9.6 (ADR-0080) — patches the tenant's onboarding checklist state (dismiss, reset, hide advanced).
- */
-export async function patchOnboardingChecklist(
-  tenantId: string,
-  input: PatchOnboardingChecklistRequest
-): Promise<{ status: number; body: any }> {
-  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  const body = await response.json().catch(() => ({}));
-  return { status: response.status, body };
-}
 
 export interface RAGSearchResultItem {
   postId: string;
