@@ -2743,3 +2743,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
 - **Status:** Pending review
 
+## 2026-08-27 — d1ab715 — feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5
+
+- **Full commit:** `d1ab715cc34ffede1dd5545fed688e3ea7e92a25`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+

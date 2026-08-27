@@ -164,7 +164,7 @@ fi
 if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/synthesize-telemetry.mjs" ]; then
   EPIC=$(echo "$SUBJECT" | grep -oE "Story [0-9]+\." | head -1 | grep -oE "[0-9]+" || true)
   if [ -n "$EPIC" ]; then
-    node scripts/synthesize-telemetry.mjs --capture --epic "$EPIC" >/dev/null 2>&1 &
+    node scripts/synthesize-telemetry.mjs --capture --epic "$EPIC" >/dev/null 2>&1 && \
     node scripts/synthesize-telemetry.mjs --compile --epic "$EPIC" >/dev/null 2>&1 &
   fi
 fi

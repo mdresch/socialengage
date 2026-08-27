@@ -80,6 +80,7 @@ Note why in the commit message — see `docs/templates/pre-commit-hook.md`.
 ## Files
 
 - `pre-commit` - The main hook script (POSIX shell)
+- `post-commit` - Queues each commit for three independent reviews (Ideal Manager, Documentation Steward, Learning & Development Writer) and, when the commit subject references a Story X.Y, runs the ADR-0122 telemetry capture + compile pipeline in the background
 - This README.md - Documentation
 
 ## Related Documentation
