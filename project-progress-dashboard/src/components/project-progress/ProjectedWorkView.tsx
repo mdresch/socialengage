@@ -30,7 +30,7 @@ export interface PhaseRoadmapItem {
 export function ProjectedWorkView({ onSelectItem }: ProjectedWorkViewProps) {
   const [selectedPhaseFilter, setSelectedPhaseFilter] = useState<string>("all");
 
-  const pendingStories = STORIES_LIST.filter((s) => !s.isBuilt);
+  const pendingStories = STORIES_LIST.filter((s) => !s.isBuilt && !s.isRetired);
 
   // Group pending stories by phase
   const phase45Stories = pendingStories.filter((s) => {

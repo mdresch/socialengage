@@ -40,6 +40,9 @@ storyFiles.sort().forEach(f => {
     const statusMatch = sec.match(/\*\*Status:\*\*\s*([^\n\r]+)/i) || sec.match(/Status:\s*([^\n\r]+)/i);
     if (statusMatch) status = statusMatch[1].replace(/·.*/, '').trim();
 
+    // Detect retired stories (superseded by another story, never built as specified)
+    const isRetired = status.toLowerCase().startsWith('retired');
+
     let source = '';
     const sourceMatch = sec.match(/\*\*Source:\*\*\s*([^\n\r]+)/i) || sec.match(/Source:\s*([^\n\r]+)/i);
     if (sourceMatch) source = sourceMatch[1].replace(/·.*/, '').trim();
@@ -68,7 +71,8 @@ storyFiles.sort().forEach(f => {
       source: source || epicTitle,
       status,
       isBuilt,
-      builtInfo: isBuilt ? builtInfo : 'Planned / Roadmap Backlog'
+      isRetired,
+      builtInfo: isBuilt ? builtInfo : (isRetired ? 'Retired — superseded by another story' : 'Planned / Roadmap Backlog')
     };
 
     allStories.push(storyItem);
@@ -86,9 +90,13 @@ storyFiles.sort().forEach(f => {
     }
 
     const epicData = epicMap.get(epicId);
-    epicData.total += 1;
-    if (isBuilt) epicData.built += 1;
-    else epicData.pending += 1;
+    // Retired stories are excluded from both built and pending counts
+    // (they're neither completed work nor pending work — they're superseded)
+    if (!isRetired) {
+      epicData.total += 1;
+      if (isBuilt) epicData.built += 1;
+      else epicData.pending += 1;
+    }
   });
 });
 
@@ -113,7 +121,7 @@ allStories.sort((a, b) => {
   return (partsA[1] || 0) - (partsB[1] || 0);
 });
 
-console.log(`✅ Parsed ${epicsSummary.length} Epics, ${allStories.length} User Stories (${allStories.filter(s => s.isBuilt).length} built, ${allStories.filter(s => !s.isBuilt).length} pending).`);
+console.log(`✅ Parsed ${epicsSummary.length} Epics, ${allStories.length} User Stories (${allStories.filter(s => s.isBuilt).length} built, ${allStories.filter(s => !s.isBuilt && !s.isRetired).length} pending, ${allStories.filter(s => s.isRetired).length} retired).`);
 
 // 2. Parse ADRs and Open Questions
 const adrDir = path.join(repoRoot, 'docs', 'adr');

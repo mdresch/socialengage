@@ -36,6 +36,7 @@ export interface StoryItem {
   source: string;
   status: string;
   isBuilt: boolean;
+  isRetired?: boolean;
   builtInfo?: string;
 }
 

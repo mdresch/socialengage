@@ -20,9 +20,9 @@ export interface OverviewViewProps {
 export function OverviewView({ onSelectItem, onNavigateTab }: OverviewViewProps) {
   const [simulatedPendingBuilt, setSimulatedPendingBuilt] = useState(false);
 
-  const baseTotalStories = STORIES_LIST.length;
+  const baseTotalStories = STORIES_LIST.filter((s) => !s.isRetired).length;
   const baseBuiltStories = STORIES_LIST.filter((s) => s.isBuilt).length;
-  
+
   const builtStories = simulatedPendingBuilt ? baseTotalStories : baseBuiltStories;
   const pendingStories = simulatedPendingBuilt ? 0 : baseTotalStories - baseBuiltStories;
   const progressPct = Math.round((builtStories / baseTotalStories) * 100);

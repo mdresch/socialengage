@@ -75,8 +75,8 @@ export function DetailDrawer({ item, onClose, onNavigateToItem }: DetailDrawerPr
                 <Badge variant="success">{item.data.conformance}</Badge>
               )}
               {!isContract && item.type === "story" && (
-                <Badge variant={item.data.isBuilt ? "success" : "warning"}>
-                  {item.data.isBuilt ? "Implemented" : "Pending"}
+                <Badge variant={item.data.isBuilt ? "success" : (item.data.isRetired ? "secondary" : "warning")}>
+                  {item.data.isBuilt ? "Implemented" : (item.data.isRetired ? "Retired" : "Pending")}
                 </Badge>
               )}
               {!isContract && item.type === "epic" && (

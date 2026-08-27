@@ -33,7 +33,8 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
       const matchBuilt =
         selectedBuiltStatus === "All" ||
         (selectedBuiltStatus === "Built" && story.isBuilt) ||
-        (selectedBuiltStatus === "Pending" && !story.isBuilt);
+        (selectedBuiltStatus === "Pending" && !story.isBuilt && !story.isRetired) ||
+        (selectedBuiltStatus === "Retired" && story.isRetired);
 
       return matchSearch && matchEpic && matchBuilt;
     });
@@ -41,7 +42,8 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
 
   const totalStories = STORIES_LIST.length;
   const builtStories = STORIES_LIST.filter((s) => s.isBuilt).length;
-  const pendingStories = totalStories - builtStories;
+  const retiredStories = STORIES_LIST.filter((s) => s.isRetired).length;
+  const pendingStories = STORIES_LIST.filter((s) => !s.isBuilt && !s.isRetired).length;
 
   const totalPages = Math.ceil(filteredStories.length / pageSize) || 1;
   const paginatedStories = useMemo(() => {
@@ -66,7 +68,7 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
     const rows = filteredStories
       .map(
         (s) =>
-          `"${s.storyId}","${s.epicTitle}","${s.title.replace(/"/g, '""')}","${s.source}","${s.isBuilt ? "Implemented" : "Pending"}","${(s.builtInfo || "").replace(/"/g, '""')}"`
+          `"${s.storyId}","${s.epicTitle}","${s.title.replace(/"/g, '""')}","${s.source}","${s.isBuilt ? "Implemented" : (s.isRetired ? "Retired" : "Pending")}","${(s.builtInfo || "").replace(/"/g, '""')}"`
       )
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
@@ -158,6 +160,7 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
                 <option value="All">All Stories ({totalStories})</option>
                 <option value="Built">Implemented / Built Only ({builtStories})</option>
                 <option value="Pending">Pending / Scheduled Only ({pendingStories})</option>
+                <option value="Retired">Retired / Superseded Only ({retiredStories})</option>
               </select>
             </div>
             <button
@@ -221,8 +224,8 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={story.isBuilt ? "success" : "warning"} className="text-xs">
-                        {story.isBuilt ? "Implemented" : "Pending"}
+                      <Badge variant={story.isBuilt ? "success" : (story.isRetired ? "secondary" : "warning")} className="text-xs">
+                        {story.isBuilt ? "Implemented" : (story.isRetired ? "Retired" : "Pending")}
                       </Badge>
                     </TableCell>
                   </TableRow>
