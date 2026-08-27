@@ -1,6 +1,8 @@
 # ADR-0091: Real-time alert rules and delivery
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the real-time alert rules engine, cooldown suppression, and alerts inbox triage workflow. Story 10.9 and Story 10.10 are fully implemented and verified.
 
 **Authorizes:** an `alert_rules` data model, threshold-evaluation engine, and delivery channels (in-app, email, webhook) for tenant-scoped and platform-scoped real-time alerts.
 

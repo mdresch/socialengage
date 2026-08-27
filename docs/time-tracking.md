@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 01:00 | — | — | Documentation | — | feat(youtube): integrate full SocialConnector lifecycle, registration and UI activation for YouTube (b24195a) |
 | 2026-08-27 | 00:31 | — | — | Documentation | — | docs(epic-10): mark Stories 10.1–10.14 as built and sync project progress dashboard (164/210 stories built) (086fcce) |
 | 2026-08-27 | 00:28 | — | — | Documentation | — | feat(epic-10): complete Batch 5 (Stories 10.11, 10.12, 10.13, 10.14) (fdb9bb8) |
 | 2026-08-27 | 23:39 | — | — | Documentation | — | feat(epic-10): complete Batch 4 (Stories 10.9, 10.10) (1a17f89) |

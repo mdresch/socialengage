@@ -1,6 +1,8 @@
-﻿# ADR-0090: Data export — posts CSV
+# ADR-0090: Data export — posts CSV
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the synchronous and asynchronous streaming CSV post export engine. Story 10.8 is fully implemented and verified.
 
 **Authorizes:** a `GET /v1/posts/export.csv` endpoint that lets a `Tenant-Admin` or `Tenant-User` export their matched posts to CSV, bounded by watchlist, date range, and size, with strict RLS and no raw-secret leakage.
 

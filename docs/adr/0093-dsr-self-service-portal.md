@@ -1,6 +1,8 @@
 # ADR-0093: DSR self-service portal
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the public DSR portal for access, correction, and erasure requests, along with ZIP export package fulfillment. Story 10.12 is fully implemented and verified.
 
 **Authorizes:** a tenant-scoped self-service portal where an end user can request access to, correction of, or erasure of the personal data a tenant holds about them, plus the worker that fulfills those requests.
 

@@ -1,6 +1,8 @@
 # ADR-0094: Compliance audit pack
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the tamper-evident cryptographic compliance audit pack generator, SHA-256 manifest verification, and admin audit pack download workflow. Story 10.13 and Story 10.14 are fully implemented and verified.
 
 **Authorizes:** a `compliance_audit_packs` data model and a tamper-evident export format that a `Tenant-Admin` or `Platform-Admin` can generate for a selected date range and request type.
 

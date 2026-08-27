@@ -1,6 +1,8 @@
 # ADR-0088: Ad-hoc query allowlist
 
-**Status:** Proposed (2026-08-23) — revised 2026-08-27 per architectural review. All open questions raised in review are now resolved; awaiting formal acceptance.
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the parameterized, allowlist-governed ad-hoc query engine for analytics. Story 10.4 and Story 10.5 are fully implemented and verified.
 
 **Authorizes:** a structured, allowlist-based `POST /v1/analytics/query` endpoint that lets tenant users run server-side aggregations without exposing raw SQL or the full `social_posts` table.
 

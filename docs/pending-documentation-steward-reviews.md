@@ -2887,3 +2887,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
 - **Status:** Pending review
 
+## 2026-08-27 — b24195a — feat(youtube): integrate full SocialConnector lifecycle, registration and UI activation for YouTube
+
+- **Full commit:** `b24195a02220ac15f6190426c42d4b8847965be7`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.13.youtube-admin-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/youtube/pollYouTube.ts, social-listening-core/src/connectors/youtube/types.ts, social-listening-core/src/connectors/youtube/youtubeConnector.ts
+- **Status:** Pending review
+

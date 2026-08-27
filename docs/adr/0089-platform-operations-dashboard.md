@@ -1,6 +1,8 @@
 # ADR-0089: Platform operations dashboard
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the real-time cached platform operations telemetry endpoint and platform admin dashboard. Story 10.6 and Story 10.7 are fully implemented and verified.
 
 **Authorizes:** a `Platform-Admin` and `Sole-Operator` console that surfaces cross-tenant platform health, connector status, cloud cost, and capacity metrics, while strictly avoiding exposure of tenant post content.
 
