@@ -1148,7 +1148,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.40 — Tenant settings screen: styled workspace profile, export actions, and offboarding link
 
 **Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Built — depends on Story 3.16 (backend endpoints)
-**Built:** 2026-08-26 — social-listening-admin@<pending>
+**Built:** 2026-08-26 — social-listening-admin@cf1f96c
 **Depends on:** Story 3.16 (`/v1/tenants/me/export/workspace` and posts CSV), existing `GET /v1/tenants/me` (Story 1.8), existing `/tenant/settings/delete` (Story 6.13)
 
 **As a** Tenant-Admin or tenant user,
