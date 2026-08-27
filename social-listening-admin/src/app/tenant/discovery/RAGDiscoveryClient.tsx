@@ -14,6 +14,7 @@ export function RAGDiscoveryClient({ watchlists, initialStatus }: RAGDiscoveryCl
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [selectedWatchlist, setSelectedWatchlist] = useState<string>('all');
   const [selectedSentiment, setSelectedSentiment] = useState<string>('all');
+  const [status, setStatus] = useState<RAGStatusResponse>(initialStatus);
 
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<RAGSearchResultItem[]>([]);
@@ -25,6 +26,18 @@ export function RAGDiscoveryClient({ watchlists, initialStatus }: RAGDiscoveryCl
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch live RAG status on mount
+  useEffect(() => {
+    fetch('/api/rag/status')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data.totalIndexedChunks === 'number') {
+          setStatus(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
@@ -114,8 +127,8 @@ export function RAGDiscoveryClient({ watchlists, initialStatus }: RAGDiscoveryCl
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: initialStatus.status === 'healthy' ? '#22c55e' : '#f59e0b' }} />
-          <span>{initialStatus.totalIndexedChunks} chunks indexed</span>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: status.status === 'healthy' ? '#22c55e' : '#f59e0b' }} />
+          <span>{status.totalIndexedChunks.toLocaleString()} chunks indexed</span>
         </div>
       </div>
 

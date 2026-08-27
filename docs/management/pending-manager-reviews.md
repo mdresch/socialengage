@@ -3268,3 +3268,15 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
 - **Status:** Pending review
 
+## 2026-08-27 — e2ba717 — feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline
+
+- **Full commit:** `e2ba717685c574c3626804cbb58d22aa9186eb16`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 13a38b0 — chore: remove ephemeral test db json
+
+- **Full commit:** `13a38b0662f0ecf3547a512fff810964cbe634cb`
+- **Files touched:** social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+

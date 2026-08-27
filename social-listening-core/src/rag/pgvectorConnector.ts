@@ -226,7 +226,7 @@ export class PgvectorRAGConnector implements RAGConnector {
     }
 
     try {
-      const pool = getPool();
+      const pool = getAdminPool ? getAdminPool() : getPool();
       await pool.query('DELETE FROM rag_chunks WHERE tenant_id = $1 AND post_id = $2', [tenantId, postId]);
     } catch {
       // Handled in-memory
@@ -243,7 +243,7 @@ export class PgvectorRAGConnector implements RAGConnector {
     }
 
     try {
-      const pool = getPool();
+      const pool = getAdminPool ? getAdminPool() : getPool();
       await pool.query('DELETE FROM rag_chunks WHERE tenant_id = $1', [tenantId]);
     } catch {
       // Handled in-memory
@@ -267,7 +267,7 @@ export class PgvectorRAGConnector implements RAGConnector {
   public async status(tenantId?: string): Promise<RAGConnectorStatus> {
     let count = 0;
     try {
-      const pool = getPool();
+      const pool = getAdminPool ? getAdminPool() : getPool();
       if (tenantId) {
         const res = await pool.query('SELECT count(*) FROM rag_chunks WHERE tenant_id = $1', [tenantId]);
         count = parseInt(res.rows[0]?.count, 10) || 0;

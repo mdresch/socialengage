@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 21:20 | — | — | Documentation | — | chore: remove ephemeral test db json (13a38b0) |
+| 2026-08-27 | 21:20 | — | — | Documentation | — | feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline (e2ba717) |
 | 2026-08-27 | 21:13 | — | — | Documentation | — | feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector (57d4be3) |
 | 2026-08-27 | 21:10 | — | — | Documentation | — | fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync (a57a0d5) |
 | 2026-08-27 | 20:39 | — | — | Documentation | — | fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist (4ae7f92) |
