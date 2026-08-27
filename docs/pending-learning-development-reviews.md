@@ -3110,3 +3110,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-3.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-08-27 — 8fd0aa4 — feat(story-9.6): Onboarding checklist UI (frontend)
+
+- **Full commit:** `8fd0aa4e816f7acb33240d3edd61623099e4ff79`
+- **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/README.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/components/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
