@@ -24,6 +24,8 @@ import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
+import { crisisTemplatesRouter } from './crisisTemplatesRouter';
+import { explainRouter } from './explainRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -158,6 +160,12 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.5 (ADR-0080) — tenant onboarding checklist state. */
   v1Router.use('/tenants', authMiddleware, onboardingChecklistRouter);
+
+  /** Story 9.3 (ADR-0079) — crisis template bundle & activation. */
+  v1Router.use('/crisis-templates', authMiddleware, crisisTemplatesRouter);
+
+  /** Story 9.2 (ADR-0078) — metric explainability endpoint. */
+  v1Router.use('/explain', authMiddleware, explainRouter);
 
   return v1Router;
 }

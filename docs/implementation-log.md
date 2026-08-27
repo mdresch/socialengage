@@ -3403,11 +3403,30 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 **Root cause was environmental, not a code regression.** The contract failed because the local HTTPS dev server (`https://socialengage.test:3000`) and real Entra tenant were not reachable by the test runner under Node.js v25.9.0 + headless Chromium. Three cumulative fixes: (1) the test's `fetch` calls that pass a custom `undici.Agent` now explicitly use `undici.fetch` instead of Node's global `fetch`, because Node v25's native `fetch` ignores the `{ dispatcher }` option when resolving self-signed TLS; (2) Playwright Chromium is launched with `--host-resolver-rules=MAP socialengage.test 127.0.0.1` and `--ignore-certificate-errors` so the headless browser resolves the test domain and trusts the local mkcert certificate; (3) the Entra CIAM "Stay signed in?" (KMSI) page does not render its Yes/No buttons reliably in Playwright's Chromium, so `performRealSignIn()` now waits for the `**/kmsi` URL and falls back to a JavaScript form submission that appends a hidden `action=No` input to the page's form and submits it. The user's local `.env` was also corrected so `ENTRA_ADMIN_REDIRECT_URI` is `https://socialengage.test:3000/api/auth/callback` — matching the `BASE_URL` the test and the Next.js dev server use. No source code under `src/` was changed; the contract test file and local environment config were the only changes.
 - **Epic-6 suite at merge:** PASS (40/41 suites, 527/546 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific core server dependency, unrelated to this story)
 
-## 2026-08-27 � Story 8.8 � social-listening-core + social-listening-admin (pending commit)
+## 2026-08-27 — Story 9.3 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 9.3 / ADR-0079, BRD-0079, FDD-0079
+- **Contract (backend):** social-listening-core/contracts/epic-9/story-9.3.crisis-templates.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/crisis-template-bundle/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0044_create_crisis_templates_and_tenant_activations.sql` (new)
+  - `social-listening-core/src/crisis/crisisTemplateStore.ts` (new)
+  - `social-listening-core/src/http/versions/v1/crisisTemplatesRouter.ts` (new)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted `/crisis-templates`)
+  - `social-listening-core/contracts/epic-9/story-9.3.crisis-templates.contract.test.ts` (new)
+  - `social-listening-core/.claude/skills/crisis-template-bundle/SKILL.md` (new)
+  - `docs/user-stories/epic-9-adr-0077-to-0085.md` (marked Story 9.3 Built)
+- **Suite at merge:** PASS (6/6 tests in story-9.3 contract, tsc typecheck zero errors)
+- **Key Implementation Details:**
+  - Created platform `crisis_templates` catalog with 5 standard seeded templates (`brand-crisis`, `product-recall`, `exec-attack`, `competitor-surge`, `data-breach`).
+  - Created tenant-scoped `tenant_crisis_templates` table with tenant RLS isolation and foreign-key cascade to `watchlists`.
+  - Implemented mustache token interpolation for query strings and JSON AST structures.
+  - Implemented transactional activation creating both concrete watchlist and tenant activation rows atomically via `withTenant()`.
+
+## 2026-08-27  Story 8.8  social-listening-core + social-listening-admin (pending commit)
 
 - **Commit:** f235174
-- **Repo:** social-listening-core + social-listening-admin (coordinated cross-repo story, per AGENTS.md repo boundaries � backend contract first, then frontend)
-- **Story / ADR:** 8.8 / ADR-0062 Decision �6
 - **Contract (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (7 tests � blocked from running by pre-existing Key Vault subscription-disabled environment issue, see docs/environment-gotchas.md; typecheck passes, implementation structurally verified)
 - **Contract (frontend):** social-listening-admin/contracts/epic-8/story-8.8.spike-storyteller-widget.contract.test.ts (16/16)
 - **SKILL.md:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md
