@@ -21,6 +21,7 @@ import { RunEnrichmentButton } from '../posts/RunEnrichmentButton';
 import { flattenPost, type FlatPost } from '../posts/postDisplay';
 import type { SocialPostFull, Watchlist } from '@/lib/core-client';
 import { CountryWorldMap } from './CountryWorldMap';
+import { SpikeStorytellerWidget } from './SpikeStorytellerWidget';
 import {
   applyOverviewFilters,
   computeActiveChips,
@@ -746,8 +747,13 @@ export function OverviewTab({
             )}
           </div>
 
-          {/* Story 8.8's grid slot — reserved, empty until that story ships. */}
-          <div className="an-widget" id="widget-spike-storyteller" />
+          {/* Story 8.8 (ADR-0062 Decision §6) — AI Spike Storyteller widget.
+              Rendered only when activeDateFilter is non-null (the user has
+              clicked a specific chart bar on the Volume & Projections
+              Timeline). Empty slot otherwise — Story 8.7's own boundary. */}
+          <div className="an-widget" id="widget-spike-storyteller">
+            {filters.activeDateFilter && <SpikeStorytellerWidget spikeDate={filters.activeDateFilter} />}
+          </div>
         </div>
       </div>
 
