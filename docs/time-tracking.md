@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 20:39 | — | — | Documentation | — | fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist (4ae7f92) |
 | 2026-08-27 | 20:16 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage into main (Epic 9 completed) (6fe3b5d) |
 | 2026-08-27 | 20:10 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage (3f21e11) |
 | 2026-08-27 | 20:05 | — | — | Review | Story 9.6 | chore(tracking): record post-commit review entries for Story 9.6 (bb3281c) |

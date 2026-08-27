@@ -3128,3 +3128,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-08-27 — 4ae7f92 — fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist
+
+- **Full commit:** `4ae7f926ee52e562673a8ca36e0573cefbf84ddb`
+- **Files touched:** social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
