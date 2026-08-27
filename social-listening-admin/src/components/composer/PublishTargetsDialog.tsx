@@ -27,7 +27,7 @@ export function PublishTargetsDialog({
 
   const hasFacebook = selectedPlatforms.includes('facebook');
   const hasNonPagePlatform = selectedPlatforms.some((p) => p !== 'facebook');
-  const canPublish = hasNonPagePlatform || selectedPageIds.size > 0;
+  const canPublish = selectedPageIds.size > 0;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -89,11 +89,31 @@ export function PublishTargetsDialog({
           </p>
         )}
 
-        {!loading && !error && !hasFacebook && (
-          <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text)' }}>
-            This will publish to{' '}
-            {selectedPlatforms.map((p) => PLATFORM_CONFIGS[p].name).join(', ')}.
-          </p>
+        {!loading && !error && !hasFacebook && hasNonPagePlatform && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            {selectedPlatforms.map((p) => (
+              <div
+                key={p}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                  fontSize: '0.875rem',
+                  opacity: 0.6,
+                }}
+              >
+                <input type="checkbox" disabled checked={false} />
+                <span>{PLATFORM_CONFIGS[p].name}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                  — not yet available for publishing
+                </span>
+              </div>
+            ))}
+            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+              Only Facebook Page publishing is supported in this release.
+              Other platforms will be enabled when their connector publish() is implemented.
+            </p>
+          </div>
         )}
 
         {!loading && !error && hasFacebook && pages.length === 0 && (

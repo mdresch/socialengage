@@ -142,6 +142,29 @@ export async function getMyTenant(): Promise<AdminTenant> {
   return (await response.json()) as AdminTenant;
 }
 
+/**
+ * Story 6.40 / ADR-0074 — proxies the full workspace JSON archive from
+ * `GET /v1/tenants/me/export/workspace` (Story 3.16). Returns the raw
+ * Response so the same-origin proxy route can stream the body through with
+ * the original Content-Type and status intact. `tenant_admin` only on the
+ * backend side (BRU-001); a `tenant_user` receives 403, which the proxy
+ * route passes through as-is.
+ */
+export async function exportWorkspace(): Promise<Response> {
+  return authenticatedCoreFetch('/v1/tenants/me/export/workspace');
+}
+
+/**
+ * Story 6.40 / ADR-0074 — proxies the matched-posts CSV export from
+ * `GET /v1/posts?format=csv` (Story 3.16). Returns the raw Response so the
+ * same-origin proxy route can stream the CSV body through with the original
+ * Content-Type and status intact. Available to both `tenant_admin` and
+ * `tenant_user` (BRU-002); `platform_admin` receives 403.
+ */
+export async function exportPostsCsv(): Promise<Response> {
+  return authenticatedCoreFetch('/v1/posts?format=csv');
+}
+
 export interface DomainSignupAttemptSummary {
   domain: string;
   distinctEmailCount: number;
@@ -1239,6 +1262,100 @@ export async function removeTenantOwnedFeedActivation(id: string): Promise<Tenan
     method: 'DELETE',
   });
   const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+/**
+ * Story 6.39 (ADR-0075) — the per-Page outcome row returned by
+ * POST /v1/outbound/posts.  Reuses the existing OutboundActivity shape
+ * augmented with the target asset (Page) id/name for UI display.
+ */
+export interface PublishPostRow extends OutboundActivity {
+  targetAssetId: string;
+  targetAssetName: string;
+}
+
+export interface PublishPostOutcome {
+  status: number;
+  rows: PublishPostRow[];
+}
+
+/**
+ * Story 6.39 (ADR-0075) — creates real outbound posts on selected Facebook
+ * Pages (POST /v1/outbound/posts).  `targets` is the list of connected
+ * Facebook Page rows the user ticked in PublishTargetsDialog.  `text` is
+ * the composer's main text; `platformOverrides` carries per-platform text
+ * overrides (only Facebook is published in this story).  `linkPreview` is
+ * the optional OpenGraph card preview to attach.  Returns the raw HTTP
+ * status (201 all-sent, 207 partial) and the per-Page result rows so the
+ * caller can show per-Page external_url or error_code.
+ */
+export async function publishPost(input: {
+  text: string;
+  targets: { pageId: string; pageName: string }[];
+  platformOverrides?: Record<string, { text?: string }>;
+  linkPreview?: { url: string; title?: string; description?: string; image?: string; siteName?: string; hostname?: string } | null;
+}): Promise<PublishPostOutcome> {
+  const response = await authenticatedCoreFetch('/v1/outbound/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: input.text,
+      targets: input.targets.map((t) => ({ platform: 'facebook', targetAssetId: t.pageId, targetAssetName: t.pageName })),
+      platformOverrides: input.platformOverrides,
+      linkPreview: input.linkPreview,
+    }),
+  });
+  const body = await response.json().catch(() => ({ rows: [] }));
+  return { status: response.status, rows: Array.isArray(body.rows) ? body.rows : [] };
+}
+
+/**
+ * Story 6.41 (ADR-0076) — the result shape returned by
+ * POST /v1/composer/research in social-listening-core.
+ */
+export interface ComposerResearchSource {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+}
+
+export interface ComposerResearchResult {
+  keyPhrases: string[];
+  relatedTopics: string[];
+  searchQueries: string[];
+  sources: ComposerResearchSource[];
+  contextSummary: string;
+  comparison: string;
+}
+
+export interface ComposerResearchOutcome {
+  status: number;
+  body: ComposerResearchResult | { error?: string; code?: string };
+}
+
+/**
+ * Story 6.41 (ADR-0076) — calls POST /v1/composer/research on
+ * social-listening-core, which orchestrates key-phrase extraction, one-off
+ * web searches (Brave/Bing), and LLM synthesis using the tenant's own
+ * credentials. Returns the raw HTTP status and response body.
+ */
+export async function composerResearch(input: {
+  text: string;
+  targetPlatforms?: string[];
+  maxSearchResultsPerQuery?: number;
+}): Promise<ComposerResearchOutcome> {
+  const response = await authenticatedCoreFetch('/v1/composer/research', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: input.text,
+      targetPlatforms: input.targetPlatforms,
+      maxSearchResultsPerQuery: input.maxSearchResultsPerQuery,
+    }),
+  });
+  const body = await response.json().catch(() => ({ error: 'Unknown error' }));
   return { status: response.status, body };
 }
 
