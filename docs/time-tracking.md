@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 21:10 | — | — | Documentation | — | fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync (a57a0d5) |
 | 2026-08-27 | 20:39 | — | — | Documentation | — | fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist (4ae7f92) |
 | 2026-08-27 | 20:16 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage into main (Epic 9 completed) (6fe3b5d) |
 | 2026-08-27 | 20:10 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage (3f21e11) |

@@ -7,6 +7,7 @@ import type {
   RAGChunkMetadata,
 } from './types';
 import { getPool } from '../db/pool';
+import { generateMockEmbedding } from './ragChunkingService';
 
 /**
  * Calculates cosine similarity between two numeric vectors.
@@ -111,6 +112,41 @@ export class PgvectorRAGConnector implements RAGConnector {
     }
 
     const { topK = 10, filter, minScore = 0.0 } = options;
+
+    // Load from DB if inMemoryChunks has no records for this tenant
+    const hasTenantChunks = Array.from(this.inMemoryChunks.values()).some((c) => c.metadata.tenant_id === tenantId);
+    if (!hasTenantChunks) {
+      try {
+        const pool = getPool();
+        const res = await pool.query(
+          `SELECT id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics
+           FROM rag_chunks
+           WHERE tenant_id = $1`,
+          [tenantId]
+        );
+        for (const row of res.rows) {
+          const chunkValues = generateMockEmbedding(row.content, this.dimension);
+          const chunk: RAGChunk = {
+            id: row.id,
+            values: chunkValues,
+            metadata: {
+              tenant_id: row.tenant_id,
+              post_id: row.post_id,
+              chunk_index: row.chunk_index,
+              content: row.content,
+              platform_id: row.platform_id,
+              published_at: row.published_at instanceof Date ? row.published_at.toISOString() : String(row.published_at),
+              watchlist_ids: row.watchlist_ids,
+              sentiment: row.sentiment,
+              topics: row.topics,
+            },
+          };
+          this.inMemoryChunks.set(row.id, chunk);
+        }
+      } catch {
+        // Degrade to in-memory
+      }
+    }
 
     const candidates: RAGSearchResult[] = [];
 
@@ -229,12 +265,24 @@ export class PgvectorRAGConnector implements RAGConnector {
 
   public async status(tenantId?: string): Promise<RAGConnectorStatus> {
     let count = 0;
-    if (tenantId) {
-      for (const chunk of this.inMemoryChunks.values()) {
-        if (chunk.metadata.tenant_id === tenantId) count++;
+    try {
+      const pool = getPool();
+      if (tenantId) {
+        const res = await pool.query('SELECT count(*) FROM rag_chunks WHERE tenant_id = $1', [tenantId]);
+        count = parseInt(res.rows[0]?.count, 10) || 0;
+      } else {
+        const res = await pool.query('SELECT count(*) FROM rag_chunks');
+        count = parseInt(res.rows[0]?.count, 10) || 0;
       }
-    } else {
-      count = this.inMemoryChunks.size;
+    } catch {
+      // Fallback to in-memory count
+      if (tenantId) {
+        for (const chunk of this.inMemoryChunks.values()) {
+          if (chunk.metadata.tenant_id === tenantId) count++;
+        }
+      } else {
+        count = this.inMemoryChunks.size;
+      }
     }
 
     return {

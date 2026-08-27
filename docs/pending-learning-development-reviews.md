@@ -3134,3 +3134,9 @@
 - **Files touched:** social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
+## 2026-08-27 — a57a0d5 — fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync
+
+- **Full commit:** `a57a0d5f29ff0faee0c4fcb272060e6269fe238b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
+- **Status:** Pending review
+
