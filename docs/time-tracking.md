@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 21:35 | — | — | Documentation | — | feat(dashboard): update Phase Milestone Story Velocity curve and synchronized telemetry (7cccf96) |
 | 2026-08-27 | 21:26 | — | — | Documentation | — | fix(rag): fetch live status on mount in RAGDiscoveryClient (a4dbb66) |
 | 2026-08-27 | 21:20 | — | — | Documentation | — | chore: remove ephemeral test db json (13a38b0) |
 | 2026-08-27 | 21:20 | — | — | Documentation | — | feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline (e2ba717) |

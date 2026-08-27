@@ -27,6 +27,7 @@ import { composerRouter } from './composerRouter';
 import { crisisTemplatesRouter } from './crisisTemplatesRouter';
 import { explainRouter } from './explainRouter';
 import { ragRouter } from './ragRouter';
+import { prospectingListsRouter } from './prospectingListsRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -170,6 +171,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.10 (ADR-0084) — RAG search, Q&A, and status endpoints. */
   v1Router.use('/rag', authMiddleware, ragRouter);
+
+  /** Story 10.1 (ADR-0086) — prospecting lists & author entries. */
+  v1Router.use('/prospecting-lists', authMiddleware, prospectingListsRouter);
 
   return v1Router;
 }
