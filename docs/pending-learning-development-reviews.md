@@ -3086,3 +3086,21 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
 - **Status:** Pending review
 
+## 2026-08-27 — 2ccc739 — fix(dashboard): recognize Relocated story status so Story 6.6 stub is not counted as pending
+
+- **Full commit:** `2ccc739d97c475292e1fc1e233b1d886343bec49`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 1f581dd — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
+
+- **Full commit:** `1f581dd9cdf144015dbe7b24b78b4363264c907c`
+- **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+
+## 2026-08-27 — a15222e — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
+
+- **Full commit:** `a15222ea2d56a4c77f82998aa8ebd2095ecd6807`
+- **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+

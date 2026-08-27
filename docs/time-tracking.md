@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 16:49 | — | — | Documentation | ADR-0086 | docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views) (a15222e) |
+| 2026-08-27 | 16:48 | — | — | Documentation | ADR-0086 | docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views) (1f581dd) |
+| 2026-08-27 | 14:25 | — | — | Documentation | Story 6.6 | fix(dashboard): recognize Relocated story status so Story 6.6 stub is not counted as pending (2ccc739) |
 | 2026-08-27 | 14:17 | — | — | Documentation | Story 3.7 | fix(dashboard): recognize Retired story status so Story 3.7 is not counted as pending (c490a99) |
 | 2026-08-27 | 12:47 | — | — | Design | ADR-0083 | Accept ADR-0083, ADR-0084, ADR-0085 — RAG vector store, search/ask endpoints, and UI/UX patterns (f5d56ab) |
 | 2026-08-27 | 12:43 | — | — | Infrastructure | — | fix(synthesis): run capture-compile sequentially in post-commit hook (0a7def7) |

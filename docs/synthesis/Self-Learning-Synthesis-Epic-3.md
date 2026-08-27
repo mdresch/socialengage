@@ -1,8 +1,8 @@
-# Self-Learning Synthesis: Epic 6 (Tenant Admin UI)
+# Self-Learning Synthesis: Epic 3 (API & Data Services)
 
 **Compiled Date:** 2026-08-27
-**Source Capture:** `raw/synthesis-epic-6-2026-08-27/`
-**Git HEAD:** `2ccc739d97c475292e1fc1e233b1d886343bec49`
+**Source Capture:** `raw/synthesis-epic-3-2026-08-27/`
+**Git HEAD:** `c490a9969df68a220df1403dc4accf1d9057b78e`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,9 +12,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 356 |
+| Git commits scanned | 347 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 29 |
+| Feature commits (this epic) | 8 |
 | Contract test files | 148 |
 | ADRs with Implementation Learnings | 5/121 |
 
@@ -28,35 +28,14 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
-| `64ac1f334d438317d89b507fd4f56ca58e0c9c80` | 2026-08-27 08:23:11 +0200 | feat(composer): Story 6.41 — Deep Research panel UI |
 | `cf1f96c5e34730f0a24ef69d6cce13d307f28b26` | 2026-08-27 07:18:58 +0200 | feat(admin): Story 6.40 / ADR-0074 — tenant settings styled workspace profile, export actions, and offboarding link |
-| `e0abfdd6e544d7196de121a8c47bddb87c8914a6` | 2026-08-26 14:23:04 +0200 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) |
-| `ae5d16a31e81b4627be3dd92dbb69fe2b3675c64` | 2026-08-24 13:12:02 +0200 | feat(admin): Story 6.38 / ADR-0073 — post detail reply composer and replies tab |
-| `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59` | 2026-08-22 15:20:41 +0200 | feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer |
-| `89eb97c22b115c76e058d241a275a8e26fa0b377` | 2026-08-21 08:37:34 +0200 | feat(admin): implement LinkedIn connector UI and OAuth proxy (Story 6.35, ADR-0069) |
-| `986a93cb25ced727d3ec9be6fb2fc4b41a2cf105` | 2026-08-21 08:36:53 +0200 | feat(admin): implement Instagram Business connector UI and OAuth proxy (Story 6.34, ADR-0068) |
-| `5ff540ae9c284abb0cc9e348ae4ef10234df9ffd` | 2026-08-21 00:18:15 +0200 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) |
-| `b0dc89e38aa2ee5476ba99db34f875cc11e70891` | 2026-08-20 21:26:36 +0200 | feat(admin): implement Facebook hosting Page attribution and author distinction display (Story 6.33 / ADR-0067) |
-| `9260f6f73f84f3f6a9955546878d54d0268d97ab` | 2026-08-20 20:57:14 +0200 | feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071) |
-| `be6c4cd081b8cef9b314f636707f51a6f057f575` | 2026-08-20 18:02:07 +0200 | feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070) |
-| `5d76e443262992672b0c89e29143959f7b8c127a` | 2026-08-19 10:25:49 +0200 | feat(story-6.24): connector status screen groups Connectors and AI Providers |
-| `b58b323cd18e4eb81dcc5adf93613c9c54b1bf75` | 2026-08-18 16:34:09 +0200 | feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060) |
-| `535338ff3dac36738d0240fb0d4994ec2d478e3f` | 2026-08-18 08:13:14 +0200 | feat(story-6.23): Facebook OAuth connect flow with Page selection |
-| `03c37c91c3ffabfd69c15bb7339abf9b2e77d8fd` | 2026-08-18 04:58:16 +0200 | feat(story-6.26): post feed's Provider filter derives its options from real data |
-| `65507164bac4ef7fdfb48d82627a940670b39155` | 2026-08-18 04:23:03 +0200 | feat(story-6.25): post feed shows most-recently-ingested posts first |
-| `8182706d5f57a8fcc9ad8f5d680ec4c6e9fbc402` | 2026-08-18 02:03:47 +0200 | feat(story-6.22): add Wikipedia to the watchlist screen's platform-source list |
-| `be1764d002bec66d5dac71d33c49b108c07f47ee` | 2026-08-17 21:37:46 +0200 | feat(admin): tenant-owned-feed multi-feed administration (Story 6.20, admin half) |
-| `e9d797f64f67984fcb88985d0076ff21ab070d30` | 2026-08-17 21:21:28 +0200 | feat(core): tenant-owned-feed multi-feed administration (Story 6.20, core half) |
-| `150124760d4f30c920f173b7fa783739c3901fdc` | 2026-08-17 19:49:07 +0200 | feat(admin): redesign the Team & Access screen (/tenant/users) |
-| `556bb65a75f501c2062f421ab8c4abd620ac5a15` | 2026-08-17 19:38:25 +0200 | feat(core): expose caller tenant's own seat counts on GET /v1/tenants/users |
-| `b837b390ad7de1a4acf61833f7191649c5022f0c` | 2026-08-17 19:27:33 +0200 | feat(admin): show detected language and clean the card-list post snippet |
-| `4f099a611faee8383e32d81efacbc97752b4a144` | 2026-08-17 18:35:42 +0200 | feat(admin): render post detail body as real Markdown (Story 6.19) |
-| `a27aa10cb5db80a1046de3e0a38274dbec42efd2` | 2026-08-17 17:37:32 +0200 | feat(admin): Story 6.14 — access-history view on the tenant users screen |
-| `a97cf300ff9edcfa9e8a11377ef4befa45b3c03a` | 2026-08-17 17:27:18 +0200 | feat(admin): Story 6.18 — post feed search/filter operates over all matched posts |
-| `feae698d9a7024381b824fd074866fb9069e4671` | 2026-08-12 13:52:34 +0200 | feat(social-listening-admin): show Active/Inactive on every connector, not just connected ones |
-| `51eecf0270472fb6d30f30bca3a53b6d0a9557f8` | 2026-08-12 13:38:00 +0200 | feat(social-listening-admin): rebuild Story 6.6 Platform Admin console for real |
-| `4046e75598214371efa888fbe6bca049e01bd1dd` | 2026-08-12 13:17:57 +0200 | feat(social-listening-admin): rebuild Story 6.5 connector status screen for real |
-| `fded97b08813d7ab686582410c7d99668e5d4eac` | 2026-08-12 13:10:44 +0200 | feat(social-listening-admin): rebuild Story 6.4 watchlist screen for real, against ADR-0044 |
+| `bdd9bcf6939f90255f6c2cbad1c9ae89a02c7d47` | 2026-08-24 10:56:05 +0200 | feat(composer): Story 3.17 POST /v1/composer/research Deep Research endpoint (ADR-0076) |
+| `0d11e3f16b7387709476bfed8a9659df5aaf85bb` | 2026-08-24 08:17:41 +0200 | feat(export): Story 3.16 tenant workspace and matched-posts exports (ADR-0074) |
+| `8e7f31246f3c296bba6974048ddc7fafe84a79e4` | 2026-08-24 07:00:44 +0200 | feat(outbound-post): Story 3.15 outbound post publishing audit table and POST/GET/DELETE /v1/outbound/posts |
+| `e3e661b2c0129fb8762f5eaf172a8ae3cc75fee8` | 2026-08-23 21:19:25 +0200 | feat(outbound-reply): Story 3.14 outbound_activities table and POST/GET /v1/posts/:id/replies |
+| `d9639dfbb7bf5153288abda80440fd86cdb2a8f6` | 2026-08-20 20:57:03 +0200 | feat(core): implement post enrichment overrides API and precedence guard (Story 3.13 / ADR-0071) |
+| `2f52c0f1079249e9508c5878bc100ff2543468a7` | 2026-08-20 09:20:26 +0200 | feat(story-2.19): tenant-owned-feed per-feed name + per-item byline |
+| `aa4f31767a6a59221b27677f4a5bdd3e6d82c66c` | 2026-08-17 18:20:39 +0200 | feat(core): expose body_markdown over GET /v1/posts and GET /v1/posts/:id |
 
 ## 4. Contract Test Inventory
 
@@ -250,7 +229,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 6.41, 6.40, 6.39, 6.38, 6.36, 6.35, 6.34, 6.30, 6.33, 6.31, 6.29, 6.20, 6.19, 6.14, 6.18, 6.6, 6.5, 6.4.
+Feature commits reference stories: 6.40, 3.17, 3.16, 3.15, 3.14, 3.13.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns
