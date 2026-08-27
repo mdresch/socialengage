@@ -1556,3 +1556,92 @@ export async function patchOnboardingChecklist(
   return { status: response.status, body };
 }
 
+export interface CrisisTemplateParameter {
+  name: string;
+  label: string;
+  type: string;
+  description: string;
+  required: boolean;
+  default?: string;
+}
+
+export interface CrisisTemplatePlaybookStep {
+  step: number;
+  action: string;
+  owner: string;
+  sla_minutes: number;
+}
+
+export interface CrisisTemplatePlaybook {
+  name: string;
+  severity: string;
+  escalation_contact: string;
+  steps: CrisisTemplatePlaybookStep[];
+}
+
+export interface CrisisTemplate {
+  template_key: string;
+  name: string;
+  description: string;
+  default_query: string;
+  default_thresholds: Record<string, unknown>;
+  parameters: CrisisTemplateParameter[];
+  playbook: CrisisTemplatePlaybook;
+}
+
+export interface ActivateCrisisTemplateInput {
+  variables: Record<string, string>;
+  customThresholds?: Record<string, unknown>;
+  notificationChannelIds: string[];
+}
+
+export interface ActivateCrisisTemplateResult {
+  tenantCrisisTemplateId: string;
+  watchlistId: string;
+  status: 'active';
+  playbook: CrisisTemplatePlaybook;
+  thresholds: Record<string, unknown>;
+  notificationChannelIds: string[];
+}
+
+/**
+ * Story 9.4 (ADR-0079, BRD-0079, FDD-0079) — lists active crisis templates.
+ */
+export async function listCrisisTemplates(): Promise<CrisisTemplate[]> {
+  const response = await authenticatedCoreFetch('/v1/crisis-templates');
+  if (!response.ok) {
+    throw new Error(`Failed to list crisis templates: ${response.status}`);
+  }
+  const payload = (await response.json()) as { templates?: CrisisTemplate[] };
+  return Array.isArray(payload.templates) ? payload.templates : [];
+}
+
+/**
+ * Story 9.4 (ADR-0079, BRD-0079, FDD-0079) — gets a single crisis template.
+ */
+export async function getCrisisTemplate(templateKey: string): Promise<CrisisTemplate> {
+  const response = await authenticatedCoreFetch(`/v1/crisis-templates/${encodeURIComponent(templateKey)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get crisis template ${templateKey}: ${response.status}`);
+  }
+  const payload = (await response.json()) as { template?: CrisisTemplate };
+  return payload.template as CrisisTemplate;
+}
+
+/**
+ * Story 9.4 (ADR-0079, BRD-0079, FDD-0079) — activates a crisis template.
+ */
+export async function activateCrisisTemplate(
+  templateKey: string,
+  input: ActivateCrisisTemplateInput
+): Promise<{ status: number; body: any }> {
+  const response = await authenticatedCoreFetch(`/v1/crisis-templates/${encodeURIComponent(templateKey)}/activate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+

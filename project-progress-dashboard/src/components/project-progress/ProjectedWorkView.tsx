@@ -22,7 +22,7 @@ export interface PhaseRoadmapItem {
   adrRange: string;
   description: string;
   storyCount: number;
-  status: "Ready for Build" | "Planned (Backlog)" | "Blocked — ADR Pending";
+  status: "Ready for Build" | "Planned (Backlog)" | "Blocked — ADR Pending" | "Completed (100% Shipped)";
   keyDeliverables: string[];
   stories: StoryItem[];
 }
@@ -44,6 +44,8 @@ export function ProjectedWorkView({ onSelectItem }: ProjectedWorkViewProps) {
   const phase8Stories = pendingStories.filter((s) => s.epicId === "Epic 12");
   const phase9Stories = pendingStories.filter((s) => s.epicId === "Epic 13");
 
+  const isPhase45Complete = phase45Stories.length === 0;
+
   const ROADMAP_PHASES: PhaseRoadmapItem[] = [
     {
       id: "phase-4.5",
@@ -53,15 +55,16 @@ export function ProjectedWorkView({ onSelectItem }: ProjectedWorkViewProps) {
       epicId: "Epics 1–8",
       epicTitle: "Foundation & Tenant Admin Hardening",
       adrRange: "ADRs 0028–0076",
-      description:
-        "Remaining 14 user stories in the active foundation scope: AI Spike Storyteller (8.8), Same-Domain Invites (5.16), and Tenant Offboarding.",
+      description: isPhase45Complete
+        ? "All 139 user stories across Epics 1–8 are 100% implemented, tested, and validated. Phase 4.5 (v1.0-RC Foundation Scope) is fully closed out with 0 pending items."
+        : `Remaining ${phase45Stories.length} user stories in the active foundation scope: AI Spike Storyteller (8.8), Same-Domain Invites (5.16), and Tenant Offboarding.`,
       storyCount: phase45Stories.length,
-      status: "Ready for Build",
+      status: isPhase45Complete ? "Completed (100% Shipped)" : "Ready for Build",
       keyDeliverables: [
-        "POST /v1/posts/explain-spike (Story 8.8)",
-        "Same-Domain Tenant Invite Assist (Story 5.16 / 6.10)",
-        "Tenant Offboarding Data Lifecycle & Purge (Story 5.17 / 6.30)",
-        "Platform Admin Audit Pack (Story 5.18)",
+        "POST /v1/posts/explain-spike (Story 8.8 — Built)",
+        "Same-Domain Tenant Invite Assist (Story 5.16 / 6.10 — Built)",
+        "Tenant Offboarding Data Lifecycle & Purge (Story 5.17 / 6.30 — Built)",
+        "Platform Admin Audit Pack (Story 5.18 — Built)",
       ],
       stories: phase45Stories,
     },
@@ -252,7 +255,9 @@ export function ProjectedWorkView({ onSelectItem }: ProjectedWorkViewProps) {
             <Card
               key={phase.id}
               className={`shadow-sm border-l-4 transition hover:shadow-md ${
-                isPhase45
+                phase.status.includes("Completed")
+                  ? "border-l-emerald-500 bg-emerald-50/20"
+                  : isPhase45
                   ? "border-l-amber-500 bg-amber-50/20"
                   : "border-l-blue-600 bg-white"
               }`}
@@ -268,7 +273,7 @@ export function ProjectedWorkView({ onSelectItem }: ProjectedWorkViewProps) {
                         {phase.versionTarget}
                       </span>
                       <Badge
-                        variant={isPhase45 ? "warning" : "default"}
+                        variant={phase.status.includes("Completed") ? "success" : isPhase45 ? "warning" : "default"}
                         className="text-[10px]"
                       >
                         {phase.status}

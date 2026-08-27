@@ -5,11 +5,12 @@ import type { Watchlist } from '@/lib/core-client';
 import { Slideover } from '@/components/ui';
 import { WatchlistForm } from './WatchlistForm';
 import { WatchlistRow } from './WatchlistRow';
+import { CrisisThresholdWizard } from './CrisisThresholdWizard';
 
 /**
  * Client wrapper for the Watchlists page — owns the "New watchlist" drawer
- * state. The Server Component (page.tsx) fetches data and passes it as props;
- * this component handles all interactive state.
+ * and "Crisis threshold wizard" state. The Server Component (page.tsx) fetches
+ * data and passes it as props; this component handles all interactive state.
  */
 export function WatchlistsClient({
   watchlists,
@@ -19,6 +20,7 @@ export function WatchlistsClient({
   connectedPlatforms: { id: string; name: string }[];
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const activeCount = watchlists.filter((w) => w.isActive).length;
 
@@ -30,13 +32,23 @@ export function WatchlistsClient({
           <strong>{watchlists.length}</strong> watchlist{watchlists.length !== 1 ? 's' : ''} (
           <span className="active-count">{activeCount} active</span>)
         </p>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={() => setDrawerOpen(true)}
-        >
-          + New watchlist
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setWizardOpen(true)}
+            data-testid="open-crisis-wizard-btn"
+          >
+            ⚡ Crisis Wizard
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setDrawerOpen(true)}
+          >
+            + New watchlist
+          </button>
+        </div>
       </div>
 
       {/* Watchlist Table */}
@@ -44,11 +56,16 @@ export function WatchlistsClient({
         <div className="empty-state">
           <p className="empty-state-title">No watchlists yet</p>
           <p className="empty-state-body">
-            Create your first monitoring watchlist to start capturing real-time social conversations and news.
+            Create your first monitoring watchlist or activate a standardized Crisis Template to start capturing real-time social conversations and news.
           </p>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setDrawerOpen(true)}>
-            New watchlist
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setWizardOpen(true)}>
+              ⚡ Launch Crisis Wizard
+            </button>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => setDrawerOpen(true)}>
+              New watchlist
+            </button>
+          </div>
         </div>
       ) : (
         <div className="data-table-wrapper">
@@ -98,6 +115,21 @@ export function WatchlistsClient({
           connectedPlatforms={connectedPlatforms}
         />
       </Slideover>
+
+      {/* Crisis Threshold Wizard Slideover */}
+      <Slideover
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        title="Crisis Threshold Wizard"
+        subtitle="Pre-configured crisis monitoring templates with advisory response playbooks"
+        width="lg"
+      >
+        <CrisisThresholdWizard
+          onClose={() => setWizardOpen(false)}
+          onSuccess={() => setWizardOpen(false)}
+        />
+      </Slideover>
     </>
   );
 }
+

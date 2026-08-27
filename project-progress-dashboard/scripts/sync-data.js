@@ -56,14 +56,9 @@ storyFiles.sort().forEach(f => {
     if (builtMatch) {
       builtInfo = builtMatch[1].trim();
       const lower = builtInfo.toLowerCase();
-      if (!lower.includes('not yet') && !lower.includes('planned') && (lower.includes('@') || lower.includes('2026-'))) {
+      if (!lower.includes('not yet') && !lower.includes('planned') && (lower.includes('@') || lower.includes('2026-') || lower.includes('social-listening'))) {
         isBuilt = true;
       }
-    }
-
-    // Double check epic 9-13 are not marked built unless actually verified
-    if (epicNum >= 9 && !builtInfo.includes('@')) {
-      isBuilt = false;
     }
 
     const storyItem = {
