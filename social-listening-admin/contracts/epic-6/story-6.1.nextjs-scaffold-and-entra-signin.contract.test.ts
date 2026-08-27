@@ -139,7 +139,7 @@ import { spawn, execSync, type ChildProcess } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent, setGlobalDispatcher, fetch as undiciFetch } from 'undici';
 import { chromium, type Browser, type BrowserContext } from '@playwright/test';
 import { encryptSession, decryptSession, SESSION_COOKIE_NAME } from '../../src/lib/session';
 import { fetchResolvedIdentity } from '../../src/lib/core-client';
@@ -271,7 +271,7 @@ function waitForCoreReady(timeoutMs: number): Promise<void> {
   return new Promise((resolve, reject) => {
     const poll = async () => {
       try {
-        const res = await fetch(`${CORE_BASE_URL}/v1/health`);
+        const res = await undiciFetch(`${CORE_BASE_URL}/v1/health`);
         if (res.status < 500) {
           resolve();
           return;
@@ -297,14 +297,14 @@ function waitForCoreReady(timeoutMs: number): Promise<void> {
  * exact same point in the suite. A short retry absorbs that without masking a real
  * redirect/status bug, which would fail consistently, not just on the first attempt.
  */
-async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<Response> {
+async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<any> {
   for (let i = 0; i < attempts; i++) {
     try {
       // Explicit dispatcher — see this file's own 2026-08-19 healing note above
       // `trustedDispatcher`'s declaration for why setGlobalDispatcher() alone
       // isn't enough inside Jest. Every caller of this function targets
       // BASE_URL (https://socialengage.test), never CORE_BASE_URL.
-      return await fetch(url, { ...init, dispatcher: trustedDispatcher } as RequestInit);
+      return await undiciFetch(url, { ...init, dispatcher: trustedDispatcher } as any);
     } catch (err) {
       if (i === attempts - 1) throw err;
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -319,7 +319,7 @@ function waitForServerReady(timeoutMs: number): Promise<void> {
     const poll = async () => {
       try {
         // Explicit dispatcher — see trustedDispatcher's own 2026-08-19 healing note.
-        const res = await fetch(`${BASE_URL}/sign-in`, { dispatcher: trustedDispatcher } as RequestInit);
+        const res = await undiciFetch(`${BASE_URL}/sign-in`, { dispatcher: trustedDispatcher } as any);
         if (res.status < 500) {
           resolve();
           return;
@@ -433,14 +433,20 @@ beforeAll(async () => {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       // Explicit dispatcher — see trustedDispatcher's own 2026-08-19 healing note.
-      await fetch(`${BASE_URL}/`, { redirect: 'manual', dispatcher: trustedDispatcher } as RequestInit);
+      await undiciFetch(`${BASE_URL}/`, { redirect: 'manual', dispatcher: trustedDispatcher } as any);
       break;
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--ignore-certificate-errors',
+      '--host-resolver-rules=MAP socialengage.test 127.0.0.1',
+    ],
+  });
 }, 240_000);
 
 afterAll(async () => {
@@ -525,9 +531,49 @@ async function performRealSignIn(context: BrowserContext) {
     await acceptBtn.click();
     await page.waitForTimeout(1000);
   }
+  // KMSI page: Entra CIAM's "Stay signed in?" page renders its interactive
+  // elements via JavaScript that may not complete in headless Chromium within
+  // a fixed timeout. Wait for the KMSI URL, then try multiple strategies to
+  // dismiss it — preferring "No" but falling back to form submission or "Yes".
+  try {
+    await page.waitForURL('**/kmsi', { timeout: 10_000 });
+  } catch {
+    // Not on KMSI page — continue
+  }
   const noBtn = page.getByRole('button', { name: 'No' });
-  if ((await noBtn.count()) > 0) {
+  if ((await noBtn.count()) > 0 && await noBtn.first().isVisible()) {
     await noBtn.click();
+  } else {
+    const noInput = page.locator('input[type="submit"][value="No"]');
+    if ((await noInput.count()) > 0) {
+      await noInput.click();
+    } else {
+      // Submit the KMSI form with a "No" action via JavaScript — the Entra
+      // CIAM KMSI page has a form with hidden fields; appending an action=No
+      // input and submitting programmatically completes the flow.
+      try {
+        await page.evaluate(() => {
+          const form = document.querySelector('form');
+          if (form) {
+            const action = document.createElement('input');
+            action.type = 'hidden';
+            action.name = 'action';
+            action.value = 'No';
+            form.appendChild(action);
+            (form as HTMLFormElement).submit();
+          }
+        });
+      } catch {
+        // Fallback: try clicking "Yes" — either choice completes the flow
+        const yesBtn = page.getByRole('button', { name: 'Yes' });
+        const yesInput = page.locator('input[type="submit"][value="Yes"]');
+        if ((await yesBtn.count()) > 0) {
+          await yesBtn.click();
+        } else if ((await yesInput.count()) > 0) {
+          await yesInput.click();
+        }
+      }
+    }
   }
 
   await page.waitForURL(`${BASE_URL}/`, { timeout: 20_000 });
