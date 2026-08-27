@@ -3050,3 +3050,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-08-27 — 4595a20 — docs(adr-0122): complete Story 14.5 self-learning synthesis remediation
+
+- **Full commit:** `4595a200866fdaa9a8576aa57b1fce05b12ad5f1`
+- **Files touched:** docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0076-composer-deep-research-agent.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Lessons-Learned-Register.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0121.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
+- **Status:** Pending review
+

@@ -29,32 +29,51 @@ sequenceDiagram
     participant Reg as Lessons-Learned-Register.md
     participant Sprint as Sprint Outputs
 
-    Dev->>Engine: Trigger Synthesis (post-sprint / milestone)
-    Engine->>Git: Extract commits, heal(...) passes, and test outputs
-    Git-->>Engine: Raw telemetry data
-    Engine->>Gotcha: Append/Update environment & test quirks
-    Engine->>ADR: Append '## Implementation Learnings' section
-    Engine->>Reg: Append generalized architectural patterns
-    Engine->>Sprint: Generate Self-Learning-Synthesis-Epic-X.md
-    Engine-->>Dev: Return 3-sentence brief & summary table
+    Dev->>Engine: --capture --epic N (post-sprint / milestone)
+    Engine->>Git: Extract git log, heal(...) commits, impl-log, test inventory
+    Git-->>Raw: Persist raw telemetry to vault raw/synthesis-epic-N-date/
+    Dev->>Engine: --compile --epic N
+    Engine->>Raw: Read latest capture from raw/
+    Raw-->>Engine: Parsed telemetry (commits, tests, ADR status, gotchas)
+    Engine->>Sprint: Generate Self-Learning-Synthesis-Epic-N.md (repo + vault)
+    Engine-->>Dev: Actionable recommendations (gotchas, ADR annotations, patterns)
+    Dev->>Gotcha: Manually verify/update environment & test quirks
+    Dev->>ADR: Manually append '## Implementation Learnings' sections
+    Dev->>Reg: Manually append generalized architectural patterns
 `
 
 ---
 
 ## 3. Component & Schema Specifications
 
-### 3.1 Telemetry Extraction Engine
-- **Input Sources**:
-  - git log -n <count> --stat (Focusing on commit prefixes: heal(...), ix(...), eat(...)).
-  - docs/implementation-log.md (Implementation and Built milestone records).
-  - Jest contract test output logs and global setup files (jest.global-setup.js, 	estDbClone.ts).
-- **Processing Logic**:
-  - Filters out cosmetic whitespace commits.
-  - Groups changes by Epic and Story ID (e.g., Story 6.39, Story 6.40).
-  - Flags any commit containing explicit runtime error handling or environment workarounds.
+### 3.1 Telemetry Extraction Engine (`scripts/synthesize-telemetry.mjs`)
+
+The engine is implemented as a Node.js ESM script with three modes:
+
+**`--capture --epic <N> [--with-tests] [--vault <path>]`**
+Dumps raw telemetry from the git repo into the Second Brain vault's `raw/` folder under `raw/synthesis-epic-<N>-<date>/`. Captures:
+- `repo-telemetry/git-log.txt` — `git log -n 50 --stat --format` output (hash, author, date, subject).
+- `repo-telemetry/healing-commits.txt` — filtered `heal(...)` and `fix(...)` commits with full messages and bodies.
+- `repo-telemetry/feature-commits.txt` — `feat(...)` commits matching the epic's story numbers.
+- `repo-telemetry/impl-log-excerpt.md` — last 200 lines of `docs/implementation-log.md`.
+- `repo-telemetry/contract-tests.json` — inventory of all `*.contract.test.ts` files with modification timestamps.
+- `repo-telemetry/environment-gotchas.md` — snapshot of the current gotchas file.
+- `repo-telemetry/adr-inventory.json` — all ADR files with a boolean `hasLearnings` flag.
+- `repo-telemetry/jest-<repo>.json` — (optional, `--with-tests`) Jest `--json` output per repo.
+- `manifest.json` — capture metadata (epic, date, git HEAD, branch, file list).
+
+**`--compile --epic <N> [--vault <path>]`**
+Reads the latest capture from `raw/`, parses the telemetry, and generates:
+- `docs/synthesis/Self-Learning-Synthesis-Epic-<N>.md` (in the repo).
+- `Sprint - Social Engage - Epic <N>/Outputs/Self-Learning-Synthesis-Epic-<N>.md` (in the vault).
+- Console output with actionable recommendations: healing commits to verify in gotchas, stories to check for ADR annotations, and a prompt to check for new cross-cutting patterns.
+
+The generated synthesis artifact includes: a telemetry summary table, healing/fix commit listing, feature commit listing, contract test inventory grouped by directory, ADR annotation status (annotated vs. unannotated), environment gotchas section summary, and synthesis recommendations.
+
+**`(no args)` — legacy verification mode**
+Scans the last 25 git commits and verifies that the three self-learning artifacts (environment-gotchas.md, Lessons-Learned-Register.md, synthesis artifacts) exist. Prints a summary to stdout.
 
 ---
-
 ### 3.2 environment-gotchas.md Schema Standard
 Entries written to  must adhere to the standard table schema:
 

@@ -1,51 +1,262 @@
-﻿# Self-Learning Synthesis: Epic 6 (Tenant Admin UI & Core Contract Integrations)
+# Self-Learning Synthesis: Epic 6 (Tenant Admin UI)
 
-**Compiled Date:** 2026-08-27  
-**Source Telemetry:** Git commits `01bce70` through `64ac1f3` (Stories 6.38–6.41 & Healing passes)  
+**Compiled Date:** 2026-08-27
+**Source Capture:** `raw/synthesis-epic-6-2026-08-27/`
+**Git HEAD:** `4595a200866fdaa9a8576aa57b1fce05b12ad5f1`
+**Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
 
-## 1. Executive Summary & Telemetry Ingestion
+## 1. Telemetry Summary
 
-Epic 6 (*Tenant Admin UI*) covers `social-listening-admin`, server-side session authentication with Entra External ID (CIAM), role-gated shells, and integration with `social-listening-core`.
+| Metric | Value |
+|--------|-------|
+| Git commits scanned | 349 |
+| Healing / fix commits | 1 |
+| Feature commits (this epic) | 29 |
+| Contract test files | 148 |
+| ADRs with Implementation Learnings | 5/121 |
 
-During recent delivery of Stories 6.38–6.41 (Outbound Replies, Polypost Composer Publish, Workspace Exports, and Deep Research), runtime testing and contract verification uncovered three critical architectural constraints and three environment failure modes that were successfully healed and codified.
+## 2. Healing & Fix Passes
+
+| Commit | Subject |
+|--------|---------|
+| `4595a200866fdaa9a8576aa57b1fce05b12ad5f1` | docs(adr-0122): complete Story 14.5 self-learning synthesis remediation |
+
+## 3. Feature Commits (This Epic)
+
+| Commit | Date | Subject |
+|--------|------|---------|
+| `64ac1f334d438317d89b507fd4f56ca58e0c9c80` | 2026-08-27 08:23:11 +0200 | feat(composer): Story 6.41 — Deep Research panel UI |
+| `cf1f96c5e34730f0a24ef69d6cce13d307f28b26` | 2026-08-27 07:18:58 +0200 | feat(admin): Story 6.40 / ADR-0074 — tenant settings styled workspace profile, export actions, and offboarding link |
+| `e0abfdd6e544d7196de121a8c47bddb87c8914a6` | 2026-08-26 14:23:04 +0200 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) |
+| `ae5d16a31e81b4627be3dd92dbb69fe2b3675c64` | 2026-08-24 13:12:02 +0200 | feat(admin): Story 6.38 / ADR-0073 — post detail reply composer and replies tab |
+| `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59` | 2026-08-22 15:20:41 +0200 | feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer |
+| `89eb97c22b115c76e058d241a275a8e26fa0b377` | 2026-08-21 08:37:34 +0200 | feat(admin): implement LinkedIn connector UI and OAuth proxy (Story 6.35, ADR-0069) |
+| `986a93cb25ced727d3ec9be6fb2fc4b41a2cf105` | 2026-08-21 08:36:53 +0200 | feat(admin): implement Instagram Business connector UI and OAuth proxy (Story 6.34, ADR-0068) |
+| `5ff540ae9c284abb0cc9e348ae4ef10234df9ffd` | 2026-08-21 00:18:15 +0200 | feat(admin): expose brave search connector setup and watchlist sourcing (Story 6.30, ADR-0065) |
+| `b0dc89e38aa2ee5476ba99db34f875cc11e70891` | 2026-08-20 21:26:36 +0200 | feat(admin): implement Facebook hosting Page attribution and author distinction display (Story 6.33 / ADR-0067) |
+| `9260f6f73f84f3f6a9955546878d54d0268d97ab` | 2026-08-20 20:57:14 +0200 | feat(admin): implement post enrichment cascading edit drawer and entity categorization (Story 6.31 / ADR-0071) |
+| `be6c4cd081b8cef9b314f636707f51a6f057f575` | 2026-08-20 18:02:07 +0200 | feat(admin): implement Story 6.29 connector ingestion status badges, stalled alerts banner, and on-demand re-sync (ADR-0070) |
+| `5d76e443262992672b0c89e29143959f7b8c127a` | 2026-08-19 10:25:49 +0200 | feat(story-6.24): connector status screen groups Connectors and AI Providers |
+| `b58b323cd18e4eb81dcc5adf93613c9c54b1bf75` | 2026-08-18 16:34:09 +0200 | feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060) |
+| `535338ff3dac36738d0240fb0d4994ec2d478e3f` | 2026-08-18 08:13:14 +0200 | feat(story-6.23): Facebook OAuth connect flow with Page selection |
+| `03c37c91c3ffabfd69c15bb7339abf9b2e77d8fd` | 2026-08-18 04:58:16 +0200 | feat(story-6.26): post feed's Provider filter derives its options from real data |
+| `65507164bac4ef7fdfb48d82627a940670b39155` | 2026-08-18 04:23:03 +0200 | feat(story-6.25): post feed shows most-recently-ingested posts first |
+| `8182706d5f57a8fcc9ad8f5d680ec4c6e9fbc402` | 2026-08-18 02:03:47 +0200 | feat(story-6.22): add Wikipedia to the watchlist screen's platform-source list |
+| `be1764d002bec66d5dac71d33c49b108c07f47ee` | 2026-08-17 21:37:46 +0200 | feat(admin): tenant-owned-feed multi-feed administration (Story 6.20, admin half) |
+| `e9d797f64f67984fcb88985d0076ff21ab070d30` | 2026-08-17 21:21:28 +0200 | feat(core): tenant-owned-feed multi-feed administration (Story 6.20, core half) |
+| `150124760d4f30c920f173b7fa783739c3901fdc` | 2026-08-17 19:49:07 +0200 | feat(admin): redesign the Team & Access screen (/tenant/users) |
+| `556bb65a75f501c2062f421ab8c4abd620ac5a15` | 2026-08-17 19:38:25 +0200 | feat(core): expose caller tenant's own seat counts on GET /v1/tenants/users |
+| `b837b390ad7de1a4acf61833f7191649c5022f0c` | 2026-08-17 19:27:33 +0200 | feat(admin): show detected language and clean the card-list post snippet |
+| `4f099a611faee8383e32d81efacbc97752b4a144` | 2026-08-17 18:35:42 +0200 | feat(admin): render post detail body as real Markdown (Story 6.19) |
+| `a27aa10cb5db80a1046de3e0a38274dbec42efd2` | 2026-08-17 17:37:32 +0200 | feat(admin): Story 6.14 — access-history view on the tenant users screen |
+| `a97cf300ff9edcfa9e8a11377ef4befa45b3c03a` | 2026-08-17 17:27:18 +0200 | feat(admin): Story 6.18 — post feed search/filter operates over all matched posts |
+| `feae698d9a7024381b824fd074866fb9069e4671` | 2026-08-12 13:52:34 +0200 | feat(social-listening-admin): show Active/Inactive on every connector, not just connected ones |
+| `51eecf0270472fb6d30f30bca3a53b6d0a9557f8` | 2026-08-12 13:38:00 +0200 | feat(social-listening-admin): rebuild Story 6.6 Platform Admin console for real |
+| `4046e75598214371efa888fbe6bca049e01bd1dd` | 2026-08-12 13:17:57 +0200 | feat(social-listening-admin): rebuild Story 6.5 connector status screen for real |
+| `fded97b08813d7ab686582410c7d99668e5d4eac` | 2026-08-12 13:10:44 +0200 | feat(social-listening-admin): rebuild Story 6.4 watchlist screen for real, against ADR-0044 |
+
+## 4. Contract Test Inventory
+
+Total: 148 contract test files.
+
+### social-listening-admin/contracts (52 files)
+
+- `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
+- `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-26)
+- `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
+- `story-6.11.post-feed.contract.test.ts` (modified 2026-08-20)
+- `story-6.12.tenant-owned-feed-connector-setup.contract.test.ts` (modified 2026-08-17)
+- `story-6.13.tenant-deletion-offboarding.contract.test.ts` (modified 2026-08-27)
+- `story-6.14.access-history-view.contract.test.ts` (modified 2026-08-17)
+- `story-6.15.connector-activation-controls.contract.test.ts` (modified 2026-08-17)
+- `story-6.16.manual-enrichment-button.contract.test.ts` (modified 2026-08-12)
+- `story-6.17.tenant-owned-feed-activation-control.contract.test.ts` (modified 2026-08-17)
+- `story-6.18.post-feed-search-all-posts.contract.test.ts` (modified 2026-08-17)
+- `story-6.19.post-body-markdown-rendering.contract.test.ts` (modified 2026-08-17)
+- `story-6.2.resolved-identity-migration-ripple.contract.test.ts` (modified 2026-08-17)
+- `story-6.2.role-gated-routing-shell.contract.test.ts` (modified 2026-08-20)
+- `story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts` (modified 2026-08-20)
+- `story-6.21.wikipedia-connector-ui.contract.test.ts` (modified 2026-08-20)
+- `story-6.22.wikipedia-watchlist-platform-source.contract.test.ts` (modified 2026-08-18)
+- `story-6.23.facebook-oauth-connect-flow.contract.test.ts` (modified 2026-08-20)
+- `story-6.24.connector-status-ai-provider-grouping.contract.test.ts` (modified 2026-08-19)
+- `story-6.25.post-feed-newest-first.contract.test.ts` (modified 2026-08-18)
+- `story-6.26.post-feed-dynamic-provider-filter.contract.test.ts` (modified 2026-08-20)
+- `story-6.27.facebook-multi-page-picker.contract.test.ts` (modified 2026-08-20)
+- `story-6.28.tenant-owned-feed-friendly-naming.contract.test.ts` (modified 2026-08-20)
+- `story-6.29.connector-ingestion-status-and-stalled-alerts.contract.test.ts` (modified 2026-08-20)
+- `story-6.3.connector-connect-disconnect.contract.test.ts` (modified 2026-08-17)
+- `story-6.30.brave-search-connector-ui.contract.test.ts` (modified 2026-08-20)
+- `story-6.31.post-enrichment-cascading-edit-drawer.contract.test.ts` (modified 2026-08-20)
+- `story-6.32.bing-search-connector-ui.contract.test.ts` (modified 2026-08-20)
+- `story-6.33.facebook-page-attribution-display.contract.test.ts` (modified 2026-08-20)
+- `story-6.34.instagram-connector-ui.contract.test.ts` (modified 2026-08-21)
+- `story-6.35.linkedin-connector-ui.contract.test.ts` (modified 2026-08-21)
+- `story-6.36.polypost-composer.contract.test.ts` (modified 2026-08-22)
+- `story-6.37.post-page-and-watchlist-attribution.contract.test.ts` (modified 2026-08-22)
+- `story-6.38.post-detail-reply-action.contract.test.ts` (modified 2026-08-24)
+- `story-6.39.polypost-composer-real-publish-flow.contract.test.ts` (modified 2026-08-27)
+- `story-6.4.watchlist-management-screen.contract.test.ts` (modified 2026-08-12)
+- `story-6.40.tenant-settings-export-actions.contract.test.ts` (modified 2026-08-27)
+- `story-6.41.composer-deep-research-panel-ui.contract.test.ts` (modified 2026-08-27)
+- `story-6.5.connector-status-view.contract.test.ts` (modified 2026-08-21)
+- `story-6.6.platform-admin-console.contract.test.ts` (modified 2026-08-12)
+- `story-6.7.self-service-signup.contract.test.ts` (modified 2026-08-24)
+- `story-6.8.user-invitation-management-screen.contract.test.ts` (modified 2026-08-17)
+- `story-6.9.tenant-settings-screen.contract.test.ts` (modified 2026-08-27)
+- `story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (modified 2026-08-20)
+- `story-8.10.location-and-geospatial-insights.contract.test.ts` (modified 2026-08-20)
+- `story-8.2.sentiment-tab.contract.test.ts` (modified 2026-08-21)
+- `story-8.3.conversations-tab.contract.test.ts` (modified 2026-08-20)
+- `story-8.4.overview-enrichment-period-comparison.contract.test.ts` (modified 2026-08-20)
+- `story-8.5.languages-breakdown-widget.contract.test.ts` (modified 2026-08-20)
+- `story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts` (modified 2026-08-20)
+- `story-8.7.overview-tab-enhancement.contract.test.ts` (modified 2026-08-20)
+- `story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts` (modified 2026-08-20)
+
+### social-listening-core/contracts (96 files)
+
+- `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
+- `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
+- `story-1.11.connector-activation.contract.test.ts` (modified 2026-08-17)
+- `story-1.12.connector-status-includes-activation.contract.test.ts` (modified 2026-08-20)
+- `story-1.13.live-ingestion-polling-scheduler.contract.test.ts` (modified 2026-08-21)
+- `story-1.14.poll-scheduler-skip-in-flight.contract.test.ts` (modified 2026-08-18)
+- `story-1.15.tier3-poll-scheduling.contract.test.ts` (modified 2026-08-18)
+- `story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts` (modified 2026-08-21)
+- `story-1.2.postgres-jsonb.contract.test.ts` (modified 2026-08-01)
+- `story-1.3.api-versioning.contract.test.ts` (modified 2026-08-01)
+- `story-1.4.persistent-local-dev-database.contract.test.ts` (modified 2026-08-12)
+- `story-1.5.watchlist-crud.contract.test.ts` (modified 2026-08-12)
+- `story-1.6.connector-connect-disconnect.contract.test.ts` (modified 2026-08-03)
+- `story-1.7.ownership-tier-connect-disconnect.contract.test.ts` (modified 2026-08-17)
+- `story-1.8.tenant-self-view.contract.test.ts` (modified 2026-08-09)
+- `story-1.9.user-invite-offboard.contract.test.ts` (modified 2026-08-17)
+- `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
+- `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
+- `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
+- `story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts` (modified 2026-08-12)
+- `story-2.13.wikipedia-connector.contract.test.ts` (modified 2026-08-17)
+- `story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts` (modified 2026-08-20)
+- `story-2.15.facebook-connector.contract.test.ts` (modified 2026-08-20)
+- `story-2.16.azure-ai-language-classified-document-error.contract.test.ts` (modified 2026-08-18)
+- `story-2.17.azure-openai-summary-field.contract.test.ts` (modified 2026-08-18)
+- `story-2.18.facebook-engagement-counts.contract.test.ts` (modified 2026-08-18)
+- `story-2.19.tenant-owned-feed-naming-and-byline.contract.test.ts` (modified 2026-08-20)
+- `story-2.2.per-tenant-rate-limiting.contract.test.ts` (modified 2026-08-01)
+- `story-2.20.geospatial-enrichment.contract.test.ts` (modified 2026-08-20)
+- `story-2.21.brave-search-active-watchlist-connector.contract.test.ts` (modified 2026-08-20)
+- `story-2.22.bing-search-active-watchlist-connector.contract.test.ts` (modified 2026-08-20)
+- `story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts` (modified 2026-08-20)
+- `story-2.24.instagram-connector.contract.test.ts` (modified 2026-08-21)
+- `story-2.25.linkedin-connector.contract.test.ts` (modified 2026-08-21)
+- `story-2.26.connector-reply-framework.contract.test.ts` (modified 2026-08-23)
+- `story-2.27.facebook-page-reply-implementation.contract.test.ts` (modified 2026-08-23)
+- `story-2.28.connector-publish-framework.contract.test.ts` (modified 2026-08-23)
+- `story-2.29.facebook-page-post-publishing.contract.test.ts` (modified 2026-08-23)
+- `story-2.3.error-handling-auto-disable.contract.test.ts` (modified 2026-08-25)
+- `story-2.30.linkedin-post-publishing.contract.test.ts` (modified 2026-08-23)
+- `story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` (modified 2026-08-23)
+- `story-2.32.azure-openai-research-capability.contract.test.ts` (modified 2026-08-23)
+- `story-2.4.bounded-queues-and-dead-lettering.contract.test.ts` (modified 2026-08-25)
+- `story-2.5.proportional-failure-threshold.contract.test.ts` (modified 2026-08-17)
+- `story-2.6.newswire-connector.contract.test.ts` (modified 2026-08-25)
+- `story-2.7.gnews-connector.contract.test.ts` (modified 2026-08-25)
+- `story-2.8.azure-ai-language-connector.contract.test.ts` (modified 2026-08-12)
+- `story-2.9.second-ai-provider-connector.contract.test.ts` (modified 2026-08-12)
+- `story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts` (modified 2026-08-17)
+- `story-6.27.facebook-multi-page-support.contract.test.ts` (modified 2026-08-19)
+- `story-6.37.watchlist-raw-payload.contract.test.ts` (modified 2026-08-22)
+- `story-3.1.author-normalization.contract.test.ts` (modified 2026-08-01)
+- `story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` (modified 2026-08-20)
+- `story-3.11.post-watchlist-match-persistence.contract.test.ts` (modified 2026-08-20)
+- `story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts` (modified 2026-08-20)
+- `story-3.13.post-enrichment-overrides.contract.test.ts` (modified 2026-08-20)
+- `story-3.14.outbound-reply-audit.contract.test.ts` (modified 2026-08-23)
+- `story-3.15.outbound-post-publishing-audit.contract.test.ts` (modified 2026-08-23)
+- `story-3.16.tenant-workspace-and-posts-export.contract.test.ts` (modified 2026-08-24)
+- `story-3.17.composer-deep-research.contract.test.ts` (modified 2026-08-24)
+- `story-3.2.ingestion-run-audit-anchor.contract.test.ts` (modified 2026-08-01)
+- `story-3.2.ingestion-run-retryable-field.contract.test.ts` (modified 2026-08-01)
+- `story-3.3.watchlist-matching.contract.test.ts` (modified 2026-08-01)
+- `story-3.4.cursor-pagination.contract.test.ts` (modified 2026-08-03)
+- `story-3.5.tiered-retention-and-archival.contract.test.ts` (modified 2026-08-01)
+- `story-3.6.watchlist-boolean-ast.contract.test.ts` (modified 2026-08-01)
+- `story-3.8.self-service-tenant-initiated-deletion.contract.test.ts` (modified 2026-08-12)
+- `story-3.9.author-follower-count-at-publish.contract.test.ts` (modified 2026-08-12)
+- `story-6.16.post-manual-enrich-endpoint.contract.test.ts` (modified 2026-08-12)
+- `story-6.19.post-body-markdown-exposure.contract.test.ts` (modified 2026-08-17)
+- `story-4.1.author-topic-signals.contract.test.ts` (modified 2026-08-03)
+- `story-4.2.topic-time-series-deferred.contract.test.ts` (modified 2026-08-10)
+- `story-4.3.derived-connector-health.contract.test.ts` (modified 2026-08-01)
+- `story-4.3.health-derivation-index.contract.test.ts` (modified 2026-08-01)
+- `story-4.4.derived-data-caching-and-refresh.contract.test.ts` (modified 2026-08-06)
+- `story-5.1.thin-events.contract.test.ts` (modified 2026-08-03)
+- `story-5.10.retire-x-tenant-id.contract.test.ts` (modified 2026-08-12)
+- `story-5.11.get-v1-me.contract.test.ts` (modified 2026-08-05)
+- `story-5.12.platform-admin-tenant-management.contract.test.ts` (modified 2026-08-12)
+- `story-5.13.platform-admin-break-glass-rest-surface.contract.test.ts` (modified 2026-08-07)
+- `story-5.14.platform-admin-audit-log-rest-surface.contract.test.ts` (modified 2026-08-06)
+- `story-5.15.self-service-tenant-signup.contract.test.ts` (modified 2026-08-10)
+- `story-5.16.same-domain-invite-assist-backend-surface.contract.test.ts` (modified 2026-08-06)
+- `story-5.17.access-history-read-endpoint.contract.test.ts` (modified 2026-08-10)
+- `story-5.18.signup-rate-limiting.contract.test.ts` (modified 2026-08-10)
+- `story-5.19.wire-ingestion-events.contract.test.ts` (modified 2026-08-17)
+- `story-5.2.per-tenant-event-filtering.contract.test.ts` (modified 2026-08-05)
+- `story-5.3.credential-envelope-encryption.contract.test.ts` (modified 2026-08-03)
+- `story-5.4.tenant-isolation-rls.contract.test.ts` (modified 2026-08-01)
+- `story-5.5.event-schema-versioning.contract.test.ts` (modified 2026-08-05)
+- `story-5.6.entra-authentication.contract.test.ts` (modified 2026-08-03)
+- `story-5.7.platform-admin-rls-bypass.contract.test.ts` (modified 2026-08-07)
+- `story-5.8.tenants-table-rls.contract.test.ts` (modified 2026-08-03)
+- `story-5.9.users-table-identity-resolution.contract.test.ts` (modified 2026-08-09)
+- `story-9.1.watchlist-preview-volume.contract.test.ts` (modified 2026-08-24)
+- `story-9.5.onboarding-checklist-state.contract.test.ts` (modified 2026-08-25)
+
+## 5. ADR Implementation Learnings Status
+
+**Annotated (5):**
+- 0036-admin-ui-authentication-session-and-role-gating-mechanism
+- 0074-tenant-facing-workspace-and-posts-export
+- 0076-composer-deep-research-agent
+- 0090-data-export-posts-csv
+- 0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop
+
+**Not yet annotated (116):** _Not all ADRs need annotations — only those whose upfront assumptions were refined by implementation._
+
+## 6. Environment Gotchas (Snapshot)
+
+Current gotchas file has 8 sections:
+
+- Real Azure / external-service timing
+- Azure CLI / credential context
+- Jest parallel-worker collisions against shared real resources
+- Test database template (jest.global-setup.js / testDbClone.ts)
+- Local dev environment / scripts
+- Auth / identity wiring
+- Jest environment surprises
+- npm / transitive dependency surprises
+
+## 7. Synthesis Recommendations
+
+The following are surfaced from the captured telemetry for manual review:
+
+### Environment Gotchas to Verify
+
+- **`4595a200866fdaa9a8576aa57b1fce05b12ad5f1`** — docs(adr-0122): complete Story 14.5 self-learning synthesis remediation: verify this is indexed in `docs/environment-gotchas.md`. If not, add an entry with root cause and permanent guardrail.
+
+### ADR In-Place Annotations to Verify
+
+Feature commits reference stories: 6.41, 6.40, 6.39, 6.38, 6.36, 6.35, 6.34, 6.30, 6.33, 6.31, 6.29, 6.20, 6.19, 6.14, 6.18, 6.6, 6.5, 6.4.
+Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
+
+### Lessons-Learned-Register Patterns
+
+Check whether any new cross-cutting architectural patterns emerged from this epic's implementation that should be added to the `Reusable Architectural & System Patterns` section.
 
 ---
 
-## 2. Reusable Architectural Patterns Codified
-
-### A. Same-Origin Route Proxy Pattern (ADR-0036 Enforced)
-- **Problem**: Client-side React components in `social-listening-admin` must invoke `social-listening-core` REST endpoints without exposing Entra CIAM bearer tokens or session secrets to browser JavaScript.
-- **Learned Pattern**: Create dedicated Next.js App Router route handlers under `src/app/api/.../route.ts` (e.g., `api/outbound/posts`, `api/posts/export.csv`, `api/composer/research`).
-- **Mechanism**: The route handler retrieves the session via `getSession()`, attaches `Authorization: Bearer <token>`, forwards the payload via `core-client.ts`, and streams/proxies the response.
-- **Verified Commits**: `c643553` (Story 6.1), `443819e` (Story 6.2).
-
-### B. Streaming Export Handler for Large Payloads (ADR-0074 / ADR-0090)
-- **Problem**: Full workspace JSON exports and posts CSV downloads can easily exceed memory buffers if buffered entirely in Node.js memory before returning.
-- **Learned Pattern**: Proxy endpoints stream chunks directly from `social-listening-core` to the client response pipe, maintaining constant $O(1)$ memory overhead regardless of tenant dataset size.
-- **Verified Commits**: `cf1f96c` (Story 6.40 export routes).
-
-### C. Multi-Platform Asset Resolution & Partial Success (`207 Multi-Status`)
-- **Problem**: When authoring a post across multiple networks (Facebook, LinkedIn, etc.), some platforms may succeed while others fail (e.g., expired Page access token or network timeout).
-- **Learned Pattern**: `PublishTargetsDialog` and `PolypostComposer` consume `207 Multi-Status` payloads from core, mapping individual target asset IDs to per-platform status toasts (`published` with live URL vs `failed` with localized error code).
-- **Verified Commits**: `e0abfdd` (Story 6.39).
-
----
-
-## 3. Environment & Test Infrastructure Gotchas Indexed
-
-| Issue & Component | Root Cause Analysis | Verified Permanent Guardrail | Source Commit |
-| :--- | :--- | :--- | :--- |
-| **Jest CSS Module Parsing** (`social-listening-admin`) | Jest dynamically imports `page.tsx` during route-gating contract tests, failing on `.module.css` syntax. | Added `identity-obj-proxy` to `devDependencies` and mapped `\\.module\\.css$` in `jest.config.js`. | `3cb453d` |
-| **`pg_cron` in Test DB Clones** (`social-listening-core`) | `CREATE EXTENSION pg_cron` only succeeds in the configured `cron.database_name` (`social_listening_test`). | Clone templates by first migrating `social_listening_test`, then running `CREATE DATABASE ... TEMPLATE social_listening_test`. | `01bce70` |
-| **Cross-Repo Port Collisions** (`withDevEnv.js`) | `withDevEnv.js` forced `PGPORT=5435` (dev DB), breaking contract tests running against test DB on `5434`. | Added `WITH_DEV_ENV_RESPECT_PG=1` opt-in flag to allow cross-repo test suites to override Postgres port variables. | `761f086` |
-
----
-
-## 4. Immediate Actionable Safeguards for Remaining Stories
-
-1. **Ephemeral State for AI Panels**: Do not persist Deep Research or LLM exploratory output to `localStorage` draft state; keep AI analysis ephemeral to avoid corrupting active post drafts across sessions (`64ac1f3`).
-2. **Strict Gating on Sensitive Actions**: Ensure export buttons and offboarding links on `/tenant/settings` verify `session.identity.role === 'tenant_admin'` on the server side in addition to UI conditional rendering.
-3. **Graceful Degraded States**: When non-Facebook connectors (LinkedIn, Instagram) lack live `publish()` implementations, render platform targets as disabled with informative tooltips rather than omitting them entirely.
+*Generated by `scripts/synthesize-telemetry.mjs --compile` per ADR-0122.*
