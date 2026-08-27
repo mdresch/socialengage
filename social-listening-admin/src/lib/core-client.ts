@@ -142,6 +142,29 @@ export async function getMyTenant(): Promise<AdminTenant> {
   return (await response.json()) as AdminTenant;
 }
 
+/**
+ * Story 6.40 / ADR-0074 — proxies the full workspace JSON archive from
+ * `GET /v1/tenants/me/export/workspace` (Story 3.16). Returns the raw
+ * Response so the same-origin proxy route can stream the body through with
+ * the original Content-Type and status intact. `tenant_admin` only on the
+ * backend side (BRU-001); a `tenant_user` receives 403, which the proxy
+ * route passes through as-is.
+ */
+export async function exportWorkspace(): Promise<Response> {
+  return authenticatedCoreFetch('/v1/tenants/me/export/workspace');
+}
+
+/**
+ * Story 6.40 / ADR-0074 — proxies the matched-posts CSV export from
+ * `GET /v1/posts?format=csv` (Story 3.16). Returns the raw Response so the
+ * same-origin proxy route can stream the CSV body through with the original
+ * Content-Type and status intact. Available to both `tenant_admin` and
+ * `tenant_user` (BRU-002); `platform_admin` receives 403.
+ */
+export async function exportPostsCsv(): Promise<Response> {
+  return authenticatedCoreFetch('/v1/posts?format=csv');
+}
+
 export interface DomainSignupAttemptSummary {
   domain: string;
   distinctEmailCount: number;

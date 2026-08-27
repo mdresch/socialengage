@@ -61,28 +61,43 @@ describe('Story 6.9 — Tenant settings screen', () => {
     });
   });
 
-  describe('AC2: visible to both tenant_admin and tenant_user — no additional role gate', () => {
-    it("gates only on the 'tenant' shell (Story 6.2), never on a specific role value", () => {
+  describe('AC2: visible to both tenant_admin and tenant_user — no additional role gate on page access', () => {
+    // ADR-0074 Amendment (Story 6.40): the page itself remains gated only on
+    // the 'tenant' shell — both roles see the settings page. However,
+    // ADR-0074 adds role-gated *affordances* inside the page (offboarding
+    // link, workspace export button) that check `role === 'tenant_admin'`.
+    // This is a role-gated affordance, not a role gate on the page. The
+    // original AC2 assertion prohibited ANY `role === 'tenant_admin'` check;
+    // ADR-0074 supersedes that to allow affordance-level role gating while
+    // keeping page-level access ungated.
+    it("gates page access only on the 'tenant' shell (Story 6.2)", () => {
       const source = readSrc(...pagePath);
       expect(source).toContain("isShellAllowed(identity, 'tenant')");
-      expect(source).not.toMatch(/role\s*===\s*['"]tenant_admin['"]/);
     });
   });
 
-  describe('AC3: seat counts shown as "N of M seats used," never raw numbers alone', () => {
-    it("renders the 'of' / 'seats used' phrasing around activeSeatCount and licenseSeatCount", () => {
+  describe('AC3: seat counts shown as "N of M active," never raw numbers alone', () => {
+    // ADR-0074 Amendment (Story 6.40): the phrasing changed from "N of M
+    // seats used" to "N of M active" per Story 6.40 AC1. Both counts are
+    // still shown in relation, never as raw numbers alone.
+    it("renders both activeSeatCount and licenseSeatCount in relation with 'of' phrasing", () => {
       const source = readSrc(...pagePath);
       expect(source).toMatch(/tenant\.activeSeatCount/);
       expect(source).toMatch(/tenant\.licenseSeatCount/);
-      expect(source.toLowerCase()).toMatch(/seats used/);
       expect(source).toMatch(/\bof\b/);
+      expect(source.toLowerCase()).toMatch(/active/);
     });
   });
 
-  describe('AC4: no tenant-content data — settings/administrative metadata only', () => {
-    it('never references posts, watchlists, or credentials on this screen', () => {
+  describe('AC4: no tenant-content data in the metadata cards — export actions are ADR-0074 additions', () => {
+    // ADR-0074 Amendment (Story 6.40): the original AC4 prohibited any
+    // reference to "posts/watchlists/credentials" on this screen. ADR-0074
+    // explicitly adds "Export Matched Posts (CSV)" as a real export button
+    // on this screen, so "posts" now legitimately appears. The metadata
+    // cards themselves remain settings/administrative metadata only — no
+    // post content, watchlist queries, or credential secrets are displayed.
+    it('metadata cards do not reference watchlists or credentials', () => {
       const source = readSrc(...pagePath);
-      expect(source.toLowerCase()).not.toMatch(/\bpost(s)?\b/);
       expect(source.toLowerCase()).not.toContain('watchlist');
       expect(source.toLowerCase()).not.toContain('credential');
     });
