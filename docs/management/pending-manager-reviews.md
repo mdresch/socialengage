@@ -3202,3 +3202,9 @@
 - **Files touched:** docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/0085-rag-ui-ux-and-loading-patterns.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md
 - **Status:** Pending review
 
+## 2026-08-27 — c490a99 — fix(dashboard): recognize Retired story status so Story 3.7 is not counted as pending
+
+- **Full commit:** `c490a9969df68a220df1403dc4accf1d9057b78e`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
+- **Status:** Pending review
+

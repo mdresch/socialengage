@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 14:17 | — | — | Documentation | Story 3.7 | fix(dashboard): recognize Retired story status so Story 3.7 is not counted as pending (c490a99) |
 | 2026-08-27 | 12:47 | — | — | Design | ADR-0083 | Accept ADR-0083, ADR-0084, ADR-0085 — RAG vector store, search/ask endpoints, and UI/UX patterns (f5d56ab) |
 | 2026-08-27 | 12:43 | — | — | Infrastructure | — | fix(synthesis): run capture-compile sequentially in post-commit hook (0a7def7) |
 | 2026-08-27 | 12:40 | — | — | Infrastructure | ADR-0122 | feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5 (d1ab715) |

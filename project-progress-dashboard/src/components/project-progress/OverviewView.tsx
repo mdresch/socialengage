@@ -20,7 +20,7 @@ export interface OverviewViewProps {
 export function OverviewView({ onSelectItem, onNavigateTab }: OverviewViewProps) {
   const [simulatedPendingBuilt, setSimulatedPendingBuilt] = useState(false);
 
-  const baseTotalStories = STORIES_LIST.filter((s) => !s.isRetired).length;
+  const baseTotalStories = STORIES_LIST.filter((s) => !s.isRetired && !s.isRelocated).length;
   const baseBuiltStories = STORIES_LIST.filter((s) => s.isBuilt).length;
 
   const builtStories = simulatedPendingBuilt ? baseTotalStories : baseBuiltStories;
