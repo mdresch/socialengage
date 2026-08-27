@@ -2851,3 +2851,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
 - **Status:** Pending review
 
+## 2026-08-27 — 6cc1089 — feat(story-10.1): prospecting list model and sharing backend (ADR-0086)
+
+- **Full commit:** `6cc1089fb45986d9ccf42c2373135471e71bf33c`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.1.prospecting-list-model.contract.test.ts, social-listening-core/migrations/0048_create_prospecting_lists_and_entries.sql, social-listening-core/src/http/versions/v1/prospectingListsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/prospecting/prospectingListStore.ts
+- **Status:** Pending review
+

@@ -28,6 +28,7 @@ import { crisisTemplatesRouter } from './crisisTemplatesRouter';
 import { explainRouter } from './explainRouter';
 import { ragRouter } from './ragRouter';
 import { prospectingListsRouter } from './prospectingListsRouter';
+import { analyticsViewsRouter } from './analyticsViewsRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -175,5 +176,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 10.1 (ADR-0086) — prospecting lists & author entries. */
   v1Router.use('/prospecting-lists', authMiddleware, prospectingListsRouter);
 
+  /** Story 10.3 (ADR-0087) — precomputed daily count analytics views. */
+  v1Router.use('/analytics', authMiddleware, analyticsViewsRouter);
+
   return v1Router;
 }
+

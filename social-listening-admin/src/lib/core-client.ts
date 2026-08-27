@@ -1739,4 +1739,252 @@ export async function getRAGStatus(): Promise<RAGStatusResponse> {
   return (await response.json()) as RAGStatusResponse;
 }
 
+// ---------------------------------------------------------------------------
+// Story 10.1 / 10.2 (ADR-0086) — Prospecting Lists & Social Selling
+// ---------------------------------------------------------------------------
+
+export interface ProspectingList {
+  id: string;
+  tenant_id: string;
+  owner_id: string;
+  name: string;
+  description: string | null;
+  shared: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProspectingListEntry {
+  id: string;
+  prospecting_list_id: string;
+  tenant_id: string;
+  author_id: string;
+  platform_id: string;
+  topic: string | null;
+  engagement_score: string | null;
+  authenticity_score: string | null;
+  influence_score: string | null;
+  reach_score: string | null;
+  relationship_stage: 'new' | 'contacted' | 'engaged' | 'converted' | 'passed';
+  notes: string | null;
+  tags: string[];
+  custom_attributes: Record<string, unknown>;
+  added_by_user_id: string;
+  added_at: string;
+  updated_at: string;
+}
+
+export interface ProspectingListsResponse {
+  lists: ProspectingList[];
+}
+
+export interface ProspectingEntriesResponse {
+  entries: ProspectingListEntry[];
+  nextCursor: string | null;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — creates a prospecting list.
+ */
+export async function createProspectingList(input: {
+  name: string;
+  description?: string | null;
+  shared?: boolean;
+}): Promise<ProspectingList> {
+  const response = await authenticatedCoreFetch('/v1/prospecting-lists', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create prospecting list: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingList;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — lists all prospecting lists visible to the caller.
+ */
+export async function listProspectingLists(): Promise<ProspectingListsResponse> {
+  const response = await authenticatedCoreFetch('/v1/prospecting-lists');
+  if (!response.ok) {
+    throw new Error(`Failed to list prospecting lists: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingListsResponse;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — gets a single prospecting list.
+ */
+export async function getProspectingList(listId: string): Promise<ProspectingList> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get prospecting list: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingList;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — updates a prospecting list (owner-only).
+ */
+export async function updateProspectingList(
+  listId: string,
+  input: { name?: string; description?: string | null; shared?: boolean }
+): Promise<ProspectingList> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update prospecting list: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingList;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — deletes a prospecting list (owner-only).
+ */
+export async function deleteProspectingList(listId: string): Promise<void> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`Failed to delete prospecting list: ${response.status}`);
+  }
+}
+
+/**
+ * Story 10.1 (ADR-0086) — lists entries in a prospecting list (cursor-paginated).
+ */
+export async function listProspectingEntries(
+  listId: string,
+  options?: { limit?: number; cursor?: string }
+): Promise<ProspectingEntriesResponse> {
+  const params = new URLSearchParams();
+  if (options?.limit) params.set('limit', String(options.limit));
+  if (options?.cursor) params.set('cursor', options.cursor);
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/entries${qs}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list prospecting entries: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingEntriesResponse;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — adds an author entry to a prospecting list.
+ */
+export async function addProspectingEntry(
+  listId: string,
+  input: {
+    author_id: string;
+    platform_id?: string;
+    topic?: string | null;
+    engagement_score?: number | null;
+    authenticity_score?: number | null;
+    influence_score?: number | null;
+    reach_score?: number | null;
+    relationship_stage?: 'new' | 'contacted' | 'engaged' | 'converted' | 'passed';
+    notes?: string | null;
+    tags?: string[];
+    custom_attributes?: Record<string, unknown>;
+  }
+): Promise<ProspectingListEntry> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/entries`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const status = response.status;
+    throw Object.assign(new Error(`Failed to add entry: ${status}`), { status });
+  }
+  return (await response.json()) as ProspectingListEntry;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — updates an entry's stage, notes, tags, or custom attributes.
+ */
+export async function updateProspectingEntry(
+  listId: string,
+  entryId: string,
+  input: {
+    relationship_stage?: 'new' | 'contacted' | 'engaged' | 'converted' | 'passed';
+    notes?: string | null;
+    tags?: string[];
+    custom_attributes?: Record<string, unknown>;
+  }
+): Promise<ProspectingListEntry> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/entries/${entryId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update entry: ${response.status}`);
+  }
+  return (await response.json()) as ProspectingListEntry;
+}
+
+/**
+ * Story 10.1 (ADR-0086) — removes an entry from a prospecting list.
+ */
+export async function deleteProspectingEntry(listId: string, entryId: string): Promise<void> {
+  const response = await authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/entries/${entryId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`Failed to delete entry: ${response.status}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Story 10.4 / 10.5 (ADR-0088) — Ad-Hoc Analytics Query Builder
+// ---------------------------------------------------------------------------
+
+export interface AdHocQueryPayload {
+  dimensions?: string[];
+  metrics?: string[];
+  timeGrain?: 'day' | 'hour' | 'week' | 'month';
+  filters?: {
+    startDate?: string;
+    endDate?: string;
+    platforms?: string[];
+    sentiments?: string[];
+    watchlists?: string[];
+    authors?: string[];
+  };
+  limit?: number;
+  format?: 'json' | 'csv';
+}
+
+export interface AdHocQueryClientResponse {
+  dimensions: string[];
+  metrics: string[];
+  rowCount: number;
+  executionTimeMs: number;
+  data: Record<string, any>[];
+  csv?: string;
+}
+
+/**
+ * Story 10.4 / 10.5 (ADR-0088) — executes parameterized ad-hoc aggregation query.
+ */
+export async function executeAdHocAnalyticsQuery(
+  payload: AdHocQueryPayload
+): Promise<AdHocQueryClientResponse> {
+  const response = await authenticatedCoreFetch('/v1/analytics/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Ad-hoc query failed: ${response.status}`);
+  }
+  return (await response.json()) as AdHocQueryClientResponse;
+}
+
+
+
 
