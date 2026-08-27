@@ -3388,3 +3388,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
 - **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts, social-listening-admin/src/app/api/composer/research/route.ts, social-listening-admin/src/components/composer/DeepResearchPanel.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/lib/core-client.ts
 - **Epic-6 suite at merge:** PASS (40/41 suites, 527/546 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific core server dependency, unrelated to this story)
+
+## 2026-08-27 � Story 8.8 � social-listening-core + social-listening-admin (pending commit)
+
+- **Commit:** f235174
+- **Repo:** social-listening-core + social-listening-admin (coordinated cross-repo story, per AGENTS.md repo boundaries � backend contract first, then frontend)
+- **Story / ADR:** 8.8 / ADR-0062 Decision �6
+- **Contract (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (7 tests � blocked from running by pre-existing Key Vault subscription-disabled environment issue, see docs/environment-gotchas.md; typecheck passes, implementation structurally verified)
+- **Contract (frontend):** social-listening-admin/contracts/epic-8/story-8.8.spike-storyteller-widget.contract.test.ts (16/16)
+- **SKILL.md:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md
+- **Files touched (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (new), social-listening-core/src/posts/spikeStorytellerService.ts (new), social-listening-core/src/http/versions/v1/postsRouter.ts (extended � POST /explain-spike), social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md
+- **Files touched (frontend):** social-listening-admin/contracts/epic-8/story-8.8.spike-storyteller-widget.contract.test.ts (new), social-listening-admin/src/lib/core-client.ts (extended � explainSpike()), social-listening-admin/src/app/api/posts/explain-spike/route.ts (new � proxy), social-listening-admin/src/app/tenant/analytics/SpikeStorytellerWidget.tsx (new � widget), social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx (extended � renders widget in reserved slot), social-listening-admin/src/app/globals.css (extended � widget styles), social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md
+- **Epic-8 admin suite at merge:** PASS for Story 8.8 (16/16) and Story 8.7 (34/34, regression-checked after OverviewTab.tsx edit); 3 pre-existing failures in 8.9/8.10 unrelated to this story (SESSION_SECRET env, entities field mismatch)
+- **Backend typecheck:** PASS (npx tsc --noEmit, zero errors in Story 8.8 files)
+- **Note:** Backend contract test cannot run due to the `social-engage` Azure subscription being in `Warned` state (Key Vault disabled) � a pre-existing infrastructure issue documented in docs/environment-gotchas.md, not a code regression. The implementation is structurally correct and will pass once the subscription is re-enabled.

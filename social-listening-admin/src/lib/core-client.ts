@@ -1043,6 +1043,30 @@ export async function runPostEnrichment(id: string, options?: { force?: boolean 
   return { status: response.status, body };
 }
 
+export interface SpikeExplainOutcome {
+  status: number;
+  body: Record<string, unknown>;
+}
+
+/**
+ * Story 8.8 (ADR-0062 Decision §6) — AI Spike Storyteller. Calls the
+ * backend's POST /v1/posts/explain-spike with a spikeDate and optional
+ * customPrompt, returning the AI-generated narrative. Mirrors
+ * runPostEnrichment()'s { status, body } outcome shape.
+ */
+export async function explainSpike(
+  spikeDate: string,
+  options?: { customPrompt?: string }
+): Promise<SpikeExplainOutcome> {
+  const response = await authenticatedCoreFetch('/v1/posts/explain-spike', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ spikeDate, customPrompt: options?.customPrompt }),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
 export interface PostEnrichmentUpdateInput {
   sentiment?: 'positive' | 'neutral' | 'negative';
   sentimentScore?: number;
