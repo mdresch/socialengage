@@ -6,8 +6,24 @@ import { getPool } from '../../../db/pool';
 import { PoolClient } from 'pg';
 
 import { executeAdHocQuery, AdHocQueryRequest } from '../../../analytics/adHocQueryEngine';
+import { generateAiInsightsDigest } from '../../../analytics/aiDigestGenerator';
 
 export const analyticsViewsRouter = Router();
+
+// GET /v1/analytics/digest (Story 10.14, ADR-0094)
+analyticsViewsRouter.get('/digest', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const period = req.query.period === 'weekly' ? 'weekly' : 'daily';
+
+  try {
+    const digest = await generateAiInsightsDigest(identity.tenantId, identity.userId, period);
+    res.json(digest);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to generate AI insights digest.' });
+  }
+});
 
 // POST /v1/analytics/query (Story 10.4, ADR-0088)
 analyticsViewsRouter.post('/query', async (req, res) => {

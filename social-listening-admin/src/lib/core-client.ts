@@ -2155,6 +2155,112 @@ export async function updateTenantAlertStatus(
   return (await response.json()) as TenantAlertItem;
 }
 
+// ---------------------------------------------------------------------------
+// Story 10.11 / 10.12 (ADR-0092) — Webhook Subscriptions & Notifications
+// ---------------------------------------------------------------------------
+
+export interface WebhookSubscriptionItem {
+  id: string;
+  tenant_id: string;
+  url: string;
+  secret: string;
+  events: string[];
+  enabled: boolean;
+  retry_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 10.11 (ADR-0092) — lists tenant webhook subscriptions.
+ */
+export async function listWebhookSubscriptions(): Promise<{ subscriptions: WebhookSubscriptionItem[] }> {
+  const response = await authenticatedCoreFetch('/v1/webhooks/subscriptions');
+  if (!response.ok) {
+    throw new Error(`Failed to list webhooks: ${response.status}`);
+  }
+  return (await response.json()) as { subscriptions: WebhookSubscriptionItem[] };
+}
+
+/**
+ * Story 10.11 (ADR-0092) — creates a webhook subscription.
+ */
+export async function createWebhookSubscription(input: {
+  url: string;
+  events?: string[];
+  secret?: string;
+}): Promise<WebhookSubscriptionItem> {
+  const response = await authenticatedCoreFetch('/v1/webhooks/subscriptions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create webhook: ${response.status}`);
+  }
+  return (await response.json()) as WebhookSubscriptionItem;
+}
+
+/**
+ * Story 10.11 (ADR-0092) — deletes a webhook subscription.
+ */
+export async function deleteWebhookSubscription(id: string): Promise<void> {
+  const response = await authenticatedCoreFetch(`/v1/webhooks/subscriptions/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`Failed to delete webhook: ${response.status}`);
+  }
+}
+
+/**
+ * Story 10.11 (ADR-0092) — triggers a test ping delivery.
+ */
+export async function testWebhookSubscription(id: string): Promise<{ success: boolean; results: any[] }> {
+  const response = await authenticatedCoreFetch(`/v1/webhooks/subscriptions/${id}/test`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to test webhook: ${response.status}`);
+  }
+  return (await response.json()) as { success: boolean; results: any[] };
+}
+
+// ---------------------------------------------------------------------------
+// Story 10.14 (ADR-0094) — AI Insights Digest
+// ---------------------------------------------------------------------------
+
+export interface AiInsightsDigestResponse {
+  tenantId: string;
+  period: 'daily' | 'weekly';
+  generatedAt: string;
+  executiveSummary: string;
+  sentimentBreakdown: {
+    positivePct: number;
+    neutralPct: number;
+    negativePct: number;
+    trend: 'improving' | 'stable' | 'declining';
+  };
+  topThemes: Array<{
+    theme: string;
+    postCount: number;
+    sentimentScore: number;
+  }>;
+  strategicRecommendations: string[];
+}
+
+/**
+ * Story 10.14 (ADR-0094) — gets AI-generated executive intelligence digest.
+ */
+export async function getAiInsightsDigest(period: 'daily' | 'weekly' = 'daily'): Promise<AiInsightsDigestResponse> {
+  const response = await authenticatedCoreFetch(`/v1/analytics/digest?period=${period}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get AI digest: ${response.status}`);
+  }
+  return (await response.json()) as AiInsightsDigestResponse;
+}
+
+
 
 
 

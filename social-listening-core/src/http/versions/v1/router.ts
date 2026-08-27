@@ -32,6 +32,8 @@ import { analyticsViewsRouter } from './analyticsViewsRouter';
 import { platformDashboardRouter } from './platformDashboardRouter';
 import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
 import { alertRulesRouter } from './alertRulesRouter';
+import { webhooksRouter } from './webhooksRouter';
+import { youtubeConnectorRouter } from './youtubeConnectorRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -116,6 +118,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
    */
   v1Router.use('/connectors/linkedin/oauth', authMiddleware, linkedinOAuthRouter);
 
+  /** Story 10.13 (ADR-0093) — YouTube Data API v3 Ingestion Connector. */
+  v1Router.use('/connectors/youtube', authMiddleware, youtubeConnectorRouter);
+
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);
 
@@ -193,6 +198,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
   v1Router.use('/alerts', authMiddleware, alertRulesRouter);
+
+  /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
+  v1Router.use('/webhooks', authMiddleware, webhooksRouter);
 
   return v1Router;
 }
