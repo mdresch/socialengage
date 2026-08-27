@@ -1,4 +1,4 @@
-# ADR-0076: Composer Deep Research Agent — Context Summary from Post Text, Key Phrases, and Search Results
+﻿# ADR-0076: Composer Deep Research Agent — Context Summary from Post Text, Key Phrases, and Search Results
 
 **Status:** Accepted (2026-08-23)
 
@@ -179,3 +179,13 @@ This ADR directly sources the following implementation stories, all blocked on i
 - ADR-0028: Credential Creation Authority by Ownership Tier
 - ADR-0015: Tenant Isolation via Postgres Row-Level Security
 - ADR-0003: Per-Tenant Per-Provider Rate Limiting
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-08-27 per ADR-0122)
+
+- **Ephemeral UI Lifecycle**: Deep Research results (`DeepResearchPanel.tsx`) must strictly live in ephemeral React state. They must never be serialized into `localStorage` post drafts (`social-listening-admin-draft-state`), preventing stale context summaries from polluting subsequent post authoring sessions.
+- **Intentional Dismissal vs. Network Disconnect**:
+  - *Explicit Close*: Dismissing the panel clears active research results from memory immediately.
+  - *In-Flight Abort / Disconnect*: If the user closes the panel while a research request is running, the client aborts the fetch controller to release proxy handles; if a network timeout occurs, a retryable error toast is shown without clearing the draft text.
+- **Reference Commits**: `64ac1f3` (Story 6.41 Deep Research panel UI & ephemeral state management).

@@ -1,4 +1,4 @@
-# ADR-0074: Tenant-Facing Workspace and Matched-Posts Export
+﻿# ADR-0074: Tenant-Facing Workspace and Matched-Posts Export
 
 **Status:** Accepted (2026-08-23)
 
@@ -113,3 +113,14 @@ Resolved during acceptance review on 2026-08-23:
 2. **Async export for large tenants:** V1 remains synchronous and capped. Async background export to Azure Blob Storage is deferred to a later ADR/story (see ADR-0111).
 3. **Workspace JSON exact column set:** Export is a "safe metadata" archive, not a raw dump. Include tenant, users list, watchlists with full query AST, connector activations, and `platform_credentials` non-secret metadata (provider, `owner_type`, active/inactive, created date). For posts, include the same canonical fields as the CSV (`id`, `published_at`, `provider`, `author_name`, `author_url`, `title`, `body_markdown`, `url`, `sentiment`, `keywords`, `watchlist_ids`). Exclude `rawPayload`, full `enrichment` JSONB internals, credential secrets, OAuth refresh tokens, and Key Vault envelopes. Exclude archived `ingestion_runs` raw rows; include only run summary rows if audit continuity is required.
 4. **CSV watchlist match expansion:** A single `watchlist_ids` column with comma-separated watchlist IDs. One-row-per-match expansion is deferred to a future "exploded export" option.
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-08-27 per ADR-0122)
+
+- **`$O(1)` Memory-Bounded Chunked Streaming**: In `social-listening-admin`, the proxy route handlers (`src/app/api/tenants/export/workspace/route.ts` and `src/app/api/posts/export.csv/route.ts`) stream response chunks directly from `social-listening-core` to the client response stream, maintaining constant `$O(1)` memory consumption in Node.js runtime.
+- **Operational Trade-offs & Protocol Limits**:
+  - *Connection Handle Hold*: Proxying large synchronous downloads holds Node.js server connections open for the duration of the transfer.
+  - *Timeout Limits*: Next.js serverless/route handler timeouts constrain single synchronous export duration (bounded by v1 synchronous caps; unbounded multi-gigabyte exports are delegated to asynchronous Azure Blob Storage exports per ADR-0111).
+  - *Backpressure*: Proxy pipelines use Node.js `ReadableStream` piping to propagate client backpressure automatically to the core service.
+- **Reference Commits**: `cf1f96c` (Story 6.40 workspace and CSV streaming export routes), `12d4f69` (Story 6.40 PR merge).
