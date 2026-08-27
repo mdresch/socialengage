@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 05:20 | — | — | Review | — | chore: sync review-queue tracking for the 2026-08-27 doc review commit (a7e2c5f) |
 | 2026-08-27 | 05:19 | — | — | Review | — | Scheduled doc review: Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-27) (fa6ce2d) |
 | 2026-08-26 | 09:54 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (00066ec) |
 | 2026-08-26 | 09:53 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (0ee011c) |
