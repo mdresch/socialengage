@@ -2019,6 +2019,143 @@ export async function getPlatformDashboard(): Promise<PlatformDashboardData> {
   return (await response.json()) as PlatformDashboardData;
 }
 
+// ---------------------------------------------------------------------------
+// Story 10.9 / 10.10 (ADR-0091) — Real-Time Alert Engine & Alerts Inbox
+// ---------------------------------------------------------------------------
+
+export interface AlertRuleItem {
+  id: string;
+  tenant_id: string;
+  name: string;
+  type: 'volume_spike' | 'negative_sentiment_spike' | 'influential_post' | 'connector_error' | 'keyword_burst';
+  thresholds: Record<string, any>;
+  watchlist_id: string | null;
+  platform_id: string | null;
+  cooldown_minutes: number;
+  last_triggered_at: string | null;
+  channels: string[];
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TenantAlertItem {
+  id: string;
+  tenant_id: string;
+  alert_rule_id: string;
+  triggered_at: string;
+  severity: 'info' | 'warning' | 'critical';
+  summary: string;
+  payload: Record<string, any>;
+  status: 'active' | 'acknowledged' | 'resolved' | 'snoozed';
+  acknowledged_at: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+/**
+ * Story 10.9 (ADR-0091) — lists alert rules for tenant.
+ */
+export async function listAlertRules(): Promise<{ rules: AlertRuleItem[] }> {
+  const response = await authenticatedCoreFetch('/v1/alerts/rules');
+  if (!response.ok) {
+    throw new Error(`Failed to list alert rules: ${response.status}`);
+  }
+  return (await response.json()) as { rules: AlertRuleItem[] };
+}
+
+/**
+ * Story 10.9 (ADR-0091) — creates an alert rule.
+ */
+export async function createAlertRule(input: {
+  name: string;
+  type: string;
+  thresholds?: Record<string, any>;
+  watchlist_id?: string | null;
+  platform_id?: string | null;
+  cooldown_minutes?: number;
+  channels?: string[];
+  enabled?: boolean;
+}): Promise<AlertRuleItem> {
+  const response = await authenticatedCoreFetch('/v1/alerts/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create alert rule: ${response.status}`);
+  }
+  return (await response.json()) as AlertRuleItem;
+}
+
+/**
+ * Story 10.9 (ADR-0091) — updates an alert rule.
+ */
+export async function updateAlertRule(
+  ruleId: string,
+  input: Partial<AlertRuleItem>
+): Promise<AlertRuleItem> {
+  const response = await authenticatedCoreFetch(`/v1/alerts/rules/${ruleId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update alert rule: ${response.status}`);
+  }
+  return (await response.json()) as AlertRuleItem;
+}
+
+/**
+ * Story 10.9 (ADR-0091) — deletes an alert rule.
+ */
+export async function deleteAlertRule(ruleId: string): Promise<void> {
+  const response = await authenticatedCoreFetch(`/v1/alerts/rules/${ruleId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`Failed to delete alert rule: ${response.status}`);
+  }
+}
+
+/**
+ * Story 10.9 (ADR-0091) — lists alerts in inbox.
+ */
+export async function listTenantAlerts(options?: {
+  status?: string;
+  limit?: number;
+}): Promise<{ alerts: TenantAlertItem[] }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set('status', options.status);
+  if (options?.limit) params.set('limit', String(options.limit));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+
+  const response = await authenticatedCoreFetch(`/v1/alerts/inbox${qs}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list alerts: ${response.status}`);
+  }
+  return (await response.json()) as { alerts: TenantAlertItem[] };
+}
+
+/**
+ * Story 10.9 (ADR-0091) — updates alert triage status.
+ */
+export async function updateTenantAlertStatus(
+  alertId: string,
+  status: 'acknowledged' | 'resolved' | 'snoozed'
+): Promise<TenantAlertItem> {
+  const response = await authenticatedCoreFetch(`/v1/alerts/inbox/${alertId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update alert status: ${response.status}`);
+  }
+  return (await response.json()) as TenantAlertItem;
+}
+
+
 
 
 

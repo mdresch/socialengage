@@ -31,6 +31,7 @@ import { prospectingListsRouter } from './prospectingListsRouter';
 import { analyticsViewsRouter } from './analyticsViewsRouter';
 import { platformDashboardRouter } from './platformDashboardRouter';
 import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
+import { alertRulesRouter } from './alertRulesRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -189,6 +190,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 10.8 (ADR-0090) — posts data export status. */
   v1Router.use('/exports', authMiddleware, exportsStatusRouter);
+
+  /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
+  v1Router.use('/alerts', authMiddleware, alertRulesRouter);
 
   return v1Router;
 }
