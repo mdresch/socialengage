@@ -60,4 +60,51 @@ describe('Story 10.13 — YouTube Connector Contract', () => {
     expect(updatedStatus.body.maxDailyQuota).toBe(10000);
     expect(updatedStatus.body.quotaUsedToday).toBeGreaterThanOrEqual(100);
   });
+
+  it('AC3: SocialConnector interface compliance (normalize, rate limits, count preview)', async () => {
+    const { getSocialConnector } = await import('../../src/connectors/registry');
+    const { bootstrapConnectors } = await import('../../src/connectors/bootstrapConnectors');
+
+    bootstrapConnectors();
+
+    const connector = getSocialConnector('youtube');
+    expect(connector).toBeDefined();
+    expect(connector?.providerId).toBe('youtube');
+    expect(connector?.authMode).toBe('api_key');
+    expect(connector?.deliveryMode).toBe('poll');
+    expect(connector?.getRateLimitConfig()).toEqual({
+      requestsPerWindow: 10000,
+      windowSeconds: 86400,
+    });
+
+    // Test normalize
+    const sampleRaw = {
+      id: 'yt-123',
+      snippet: {
+        channelId: 'UC_test_chan',
+        title: 'Brand Spotlight Video',
+        description: 'Review of the latest features',
+      },
+    };
+    const normalized = connector?.normalize(sampleRaw);
+    expect(normalized).toMatchObject({
+      externalId: 'yt-123',
+      authorExternalId: 'UC_test_chan',
+      rawPayload: expect.objectContaining({
+        providerId: 'youtube',
+        title: 'Brand Spotlight Video',
+      }),
+    });
+
+    // Test count preview
+    const countResult = await connector?.count?.(
+      { tenantId: '00000000-0000-0000-0000-000000000000' },
+      { ast: { type: 'TERM', value: 'tech' }, timeWindow: {} }
+    );
+    expect(countResult).toMatchObject({
+      count: expect.any(Number),
+      confidence: 'estimate',
+      rateLimitCost: 100,
+    });
+  });
 });

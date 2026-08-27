@@ -112,6 +112,15 @@ const PLATFORMS: PlatformDefinition[] = [
     personalScopeAllowed: true,
     tenantScopeAllowed: false,
   },
+  {
+    id: 'youtube',
+    name: 'YouTube Data API',
+    authMode: 'api_key',
+    category: 'Ingestion',
+    description: 'Ingests comments, community discussions, and video descriptions matching brand watchlists via YouTube Data API v3.',
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
 ];
 
 async function loadRow(platform: PlatformDefinition): Promise<ConnectorStatusRow> {
