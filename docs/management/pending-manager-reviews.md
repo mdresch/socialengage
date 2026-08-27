@@ -3179,3 +3179,9 @@
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
+## 2026-08-27 — fa6ce2d — Scheduled doc review: Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-27)
+
+- **Full commit:** `fa6ce2d63952b38f48508b504b6b7ab79c42a2b8`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
