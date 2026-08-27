@@ -3116,3 +3116,9 @@
 - **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/README.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/components/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
+## 2026-08-27 — 3f21e11 — Merge branch 'main' of https://github.com/mdresch/socialengage
+
+- **Full commit:** `3f21e11c83eda7656a8e75bcd8003467736cc55a`
+- **Files touched:** 
+- **Status:** Pending review
+

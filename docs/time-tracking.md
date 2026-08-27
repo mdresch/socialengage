@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 20:10 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage (3f21e11) |
 | 2026-08-27 | 20:05 | — | — | Review | Story 9.6 | chore(tracking): record post-commit review entries for Story 9.6 (bb3281c) |
 | 2026-08-27 | 20:05 | — | — | Review | Story 9.6 | chore(tracking): record post-commit review entries for Story 9.6 (e0018a4) |
 | 2026-08-27 | 20:04 | — | — | Documentation | — | feat(story-9.6): Onboarding checklist UI (frontend) (8fd0aa4) |
