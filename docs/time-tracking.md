@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 12:43 | — | — | Infrastructure | — | fix(synthesis): run capture-compile sequentially in post-commit hook (0a7def7) |
 | 2026-08-27 | 12:40 | — | — | Infrastructure | ADR-0122 | feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5 (d1ab715) |
 | 2026-08-27 | 12:36 | — | — | Documentation | ADR-0122 | feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122 (6f4f25e) |
 | 2026-08-27 | 12:10 | — | — | Documentation | Story 14.5 | docs(adr-0122): complete Story 14.5 self-learning synthesis remediation (4595a20) |

@@ -1,112 +1,118 @@
-# ADR-0085: RAG UI/UX and loading patterns
+﻿# ADR-0085: RAG UI/UX, Streaming Patterns, and Citation Mechanics
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-27)
 
-**Authorizes:** the React components, loading states, and citation UX for `POST /v1/rag/search` and `POST /v1/rag/ask` in `social-listening-admin`.
+**Drafted 2026-08-23 · Revised 2026-08-27 per architectural review.** Authorizes the React component architecture, Server-Sent Events (SSE) streaming UX, interactive Markdown citation mechanics, normalized match badging, and accessible loading patterns for `POST /v1/rag/search` and `POST /v1/rag/ask` in `social-listening-admin`.
 
-**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md` and `docs/project docs/Stakeholder Management/Performance-Review-Agent-Stakeholder-Profile.md`
+**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md`, ADR-0081/0082/0083/0084, and `Performance-Review-Agent-Stakeholder-Profile.md`.
 
 ---
 
 ## Context
 
-### 1. RAG search is a new interaction pattern
-`docs/product-research/feature-designs/28-semantic-search-rag.md` introduces natural-language search and Q&A over posts. The UI must make results feel trustworthy and fast without overwhelming the user. `Tenant-Reader` and `Tenant-User` are the primary consumers, so legibility and transparency are more important than power-user features.
+### 1. Unified Search and Generative Synthesis Interface
+`docs/product-research/feature-designs/28-semantic-search-rag.md` introduces natural-language semantic discovery and Q&A over social mentions. The UI must serve both `Tenant-Reader` (seeking quick high-level answers) and `Tenant-User` (performing deep discovery) with maximum transparency and trust.
 
-### 2. Loading patterns are already defined
-`docs/project docs/Stakeholder Management/Performance-Review-Agent-Stakeholder-Profile.md` sets the loading-state conventions: no loader under 300 ms, skeleton/shimmer for 300 ms–1.5 s, and progress/detailed message for longer. `RAGSearch` and `RAGAsk` fall into the middle two categories.
+### 2. Alignment with Streaming & Citation Contracts (ADR-0084)
+Per ADR-0084, `POST /v1/rag/ask` supports real-time SSE streaming (`event: citations`, `event: delta`, `event: done`), inline citation markers `[^1]`, normalized `[0.00..1.00]` scoring, and explicit honest refusals (`confidence: 'unsupported'`). The UI must provide real-time token rendering and interactive citation linking rather than static progress bars.
 
-### 3. Citations are required for trust
-Because `RAGAsk` answers are AI-generated, the UI must show which posts the answer came from. Clicks must take the user to the original post.
+### 3. Design System Loading Standards
+Per stakeholder loading conventions: no loader under 300 ms, shimmer/skeleton for 300 ms–1.5 s, and phased progress/streaming for conversational generation.
 
 ---
 
 ## Decision
 
-### 1. Component hierarchy
-```
-RAGSearchPage
-├── RAGSearchBox
-│   └── RAGFilterBar
-├── RAGSearchLoading           // skeleton list for search
-├── RAGResultsList
+### 1. Component Hierarchy
+```text
+RAGDiscoveryPage (/app/discovery)
+├── RAGHeader (Title, Status indicator via /v1/rag/status)
+├── RAGUnifiedSearchBox
+│   ├── ModeSelectorTabs ( [ Semantic Search ] | [ Ask AI Assistant ] )
+│   ├── SearchInputField (with Cmd+K shortcut badge)
+│   └── RAGFilterBar (Platform, Watchlist, DateRange, Topic, Sentiment)
+├── RAGEmptyState (Quick-start query suggestions & trending topics)
+├── RAGSearchLoading (Card skeleton list, 300ms–1.5s)
+├── RAGSearchResultsList
 │   └── RAGResultCard
-│       └── RAGResultSnippet
-│           └── Link → /tenant/posts/:postId
+│       ├── RelevanceMatchBadge (e.g. "94% Match")
+│       ├── RAGResultSnippet (Text with highlighted match terms)
+│       └── PostMetadataBar (PlatformIcon, PublishedAt, SentimentPill, Link -> /app/posts/:id)
 └── RAGAskPanel
-    ├── RAGAskInput
-    ├── RAGAskLoading          // progress bar for ask
-    ├── RAGAskAnswer
-    └── RAGCitationsList
-        └── RAGCitationCard
-            └── Link → /tenant/posts/:postId
+    ├── RAGAskStreamingView (Token delta typewriter effect + typing cursor)
+    ├── RAGAskMarkdownAnswer (Sanitized markdown renderer with interactive [^1] citation pills)
+    ├── RAGConfidenceBadge (High / Medium / Low / Unsupported)
+    ├── RAGRefusalCallout (Displayed when isGrounded: false / unsupported)
+    └── RAGCitationsRail
+        └── RAGCitationCard (1-based index badge, snippet, platform icon, Link -> /app/posts/:id)
 ```
 
-### 2. `RAGSearchBox` UX
-- A single, prominent text input with placeholder: "Ask anything about your mentions..."
-- Optional filter chips for `watchlist`, `platform`, `topic`, `sentiment`, `date range`.
-- Submit on `Enter` or click.
-- Empty and initial state shows a few example queries and the most recent topics.
+---
 
-### 3. `RAGResultCard` UX
-- Shows the matching text snippet, highlighted where the query semantically matched.
-- Displays `platform`, `publishedAt`, `watchlist`, and `sentiment`.
-- Clicking the card navigates to the full post.
-- Uses a skeleton card while loading.
+### 2. Search & Ask Interaction Modes
 
-### 4. `RAGAsk` UX
-- A two-step panel: question input at the top, answer and citations below.
-- The answer is shown in a distinct card with a confidence badge (`high`/`medium`/`low`).
-- Citations are listed directly below the answer, each with a snippet and a link.
-- `RAGAskLoading` uses a progress bar with a message like "Reading your posts..." because `ask` may take > 1.5 s.
+#### 1. Semantic Search Mode (`POST /v1/rag/search`)
+- Executes search on Enter or filter change.
+- Results render in `RAGSearchResultsList`.
+- Each `RAGResultCard` displays a normalized match badge (`score >= 0.85`: "Strong Match", `0.70–0.84`: "Relevant").
+- Clicking a card navigates directly to `/app/posts/${postId}`.
 
-### 5. Loading patterns
-- `RAGSearch`: use a **skeleton list** (medium wait, 300 ms–1.5 s).
-- `RAGAsk`: use a **progress bar** with a descriptive message (long wait, > 1.5 s).
-- If `search` returns in < 300 ms, show no loader.
-- Errors are shown inline, not as full-page failures.
+#### 2. Generative Q&A Mode (`POST /v1/rag/ask`) via Server-Sent Events
+- **Phase 1 (0–600ms)**: Renders a brief shimmer skeleton on the citations rail and answer box.
+- **Phase 2 (Immediate Citations + Stream)**:
+  - On `event: citations`: Instantly mounts citation cards in `RAGCitationsRail`.
+  - On `event: delta`: Streams markdown text into `RAGAskStreamingView` with an active typing cursor.
+- **Phase 3 (Completion & Grounding)**:
+  - On `event: done`: Locks the response, parses inline `[^1]` markers into interactive citation pill buttons, and displays `RAGConfidenceBadge`.
 
-### 6. Accessibility
-- Search input has an `aria-label` and results are announced via `aria-live`.
-- Citation links have clear text, not just "click here".
-- The answer card is marked `aria-live="polite"` so screen readers announce generated text.
+---
+
+### 3. Citation Mechanics & Grounding UI
+
+#### 1. Interactive Inline Citation Pills
+- Inline tags `[^1]`, `[^2]` render as subtle clickable pills: `[1]`.
+- **Hover**: Temporarily highlights and scrolls to the corresponding card in `RAGCitationsRail`.
+- **Click**: Opens an inline preview popover displaying the exact chunk snippet and post metadata.
+
+#### 2. Honest Refusals & Unsupported Context
+- If `confidence: 'unsupported'` or `isGrounded: false`, the UI renders a non-alarmist `RAGRefusalCallout`:
+  > **Limited Context in Indexed Posts**  
+  > The indexed posts do not contain sufficient evidence to answer this question reliably.
+- Suggestion chips are displayed below the callout: *"Broaden date filter"*, *"Switch to semantic search"*, *"Verify watchlist scope"*.
+
+---
+
+### 4. Loading & Accessibility Standards
+
+- **Perceived Latency Thresholds**:
+  - `< 300ms`: Instant render without loading indicators.
+  - `300ms – 1.5s`: Mount `RAGSearchLoading` skeleton cards.
+  - `> 1.5s` (Ask Mode): Immediate citation pop-in followed by token streaming.
+- **Accessibility**:
+  - `RAGUnifiedSearchBox` includes explicit `aria-label="Semantic search and Q&A input"`.
+  - Streamed answers use `aria-live="polite"` so screen readers announce generated text without interrupting existing user actions.
+  - Citation pills have accessible labels: `aria-label="Citation 1: Post on LinkedIn from 2026-08-25"`.
 
 ---
 
 ## Consequences
 
-1. **Trust through provenance:** every answer is paired with the posts that support it.
-2. **Performance expectations are set:** skeleton and progress patterns prevent user abandonment.
-3. **Low-friction entry:** a single search box keeps `Tenant-Reader` and `Tenant-User` from learning a query language.
-4. **Component reuse:** `RAGResultCard` can be embedded in the post feed, dashboards, and the composer.
+### Positive
+- **Instant Perceived Speed**: Streaming tokens and immediate citation delivery eliminate static wait times.
+- **High Trust & Traceability**: Interactive `[^1]` pills and citation side-rails make source verification effortless.
+- **Resilient Fallback UX**: Clear guidance on unsupported questions eliminates user confusion and AI hallucination risk.
+- **Consistent Design Language**: Adheres strictly to the established 300ms/1.5s loading guidelines and normalized score badges.
+
+### Trade-offs & Mitigations
+- **Markdown Parsing Complexity**: Requires secure client-side markdown parsing. *Mitigated by using lightweight, strict GFM parsers with HTML sanitization.*
+- **Mobile Layout Constraints**: Dual-column (Answer + Citations Rail) layout is wide. *Mitigated by stacking Citations accordion-style below the answer on mobile breakpoints (< 768px).*
 
 ---
 
-## Alternatives considered
-
-1. **Put `RAGSearch` and `RAGAsk` on separate pages.**
-   - *Rejected:* it fragments the experience. A single panel with two modes keeps the UI compact.
-
-2. **Show only the AI answer, with citations hidden behind an expander.**
-   - *Rejected:* it hides the most important trust signal. Citations are always visible.
-
-3. **Use a full-screen preloader for `RAGAsk`.**
-   - *Rejected:* it blocks the rest of the UI unnecessarily. A panel-level progress bar is less disruptive.
-
----
-
-## Open questions
-
-- Should the search box support auto-complete for common questions?
-- Should the answer be rendered as Markdown, or as plain text with linkified citations?
-- How should the UI handle `low`-confidence answers — show a warning, or re-run the search with a broader query?
-- Should `RAGAsk` be available from the post feed, the dashboard, or a dedicated `/tenant/ask` page?
-
----
-
-## Footnotes
-
-- Related feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
-- Related stakeholder profile: `docs/project docs/Stakeholder Management/Performance-Review-Agent-Stakeholder-Profile.md`
-- Related scoping: `docs/product-research/feature-adr-scoping.md`
-- Related ADRs: `ADR-0084` (search and ask endpoint), `ADR-0081` (`RAGConnector`)
+## Related Notes
+- `docs/product-research/feature-designs/28-semantic-search-rag.md`
+- `docs/adr/0081-rag-connector-provider-abstraction.md`
+- `docs/adr/0082-rag-post-chunking-and-embedding.md`
+- `docs/adr/0083-rag-vector-store-rls-and-metadata.md`
+- `docs/adr/0084-rag-search-and-ask-endpoint.md`
+- `docs/project docs/Stakeholder Management/Performance-Review-Agent-Stakeholder-Profile.md`

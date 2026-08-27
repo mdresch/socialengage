@@ -3190,3 +3190,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
 - **Status:** Pending review
 
+## 2026-08-27 — 0a7def7 — fix(synthesis): run capture-compile sequentially in post-commit hook
+
+- **Full commit:** `0a7def75f57922f064ce0277641b40dfd543516a`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md, scripts/git-hooks/README.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+

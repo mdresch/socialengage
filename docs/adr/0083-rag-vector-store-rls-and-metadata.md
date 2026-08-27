@@ -1,108 +1,126 @@
-# ADR-0083: RAG vector-store RLS and metadata
+﻿# ADR-0083: RAG vector-store RLS and metadata
 
-**Status:** Proposed (2026-08-23); revised 2026-08-25 to align with ADR-0081's architectural-review revision — `content` (chunk text) is now stored in `RAGChunkMetadata`, the `RAGFilter` shape is aligned to ADR-0081's canonical form, and the deterministic vector ID scheme is referenced.
+**Status:** Accepted (2026-08-27)
 
-**Authorizes:** the metadata schema for vector chunks and the tenant-isolation rule that every `RAGConnector.search()` must enforce at query time.
+**Drafted 2026-08-23 · Revised 2026-08-25 · Accepted 2026-08-27 per architectural review.** Authorizes the metadata schema for vector chunks, mandatory vector index pre-filtering, in-place metadata patch semantics, post redaction lifecycle, and the tenant-isolation rule that every `RAGConnector.search()` must enforce at query time.
 
-**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md` and `docs/product-research/feature-adr-scoping.md`
+**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md`, `docs/product-research/feature-adr-scoping.md`, and ADR-0081/0082.
 
 ---
 
 ## Context
 
-### 1. Vector stores are typically flat indexes
-Most vector databases (Pinecone, Azure AI Search, pgvector) support a single index or namespace. Multi-tenant data must be filtered at query time using metadata. The `RAGConnector` abstraction (ADR-0081) must make this boundary explicit and impossible to bypass.
+### 1. Vector stores are flat multi-tenant indexes
+Most managed vector databases (Pinecone, Azure AI Search, pgvector) operate on a shared index or namespace. Multi-tenant data must be strictly isolated at query time using metadata filters. The `RAGConnector` abstraction (ADR-0081) must make this tenant boundary impossible to bypass.
 
-### 2. The project already enforces tenant isolation at the database layer
-`ADR-0015` and `ADR-0032` established tenant RLS on `social_posts`, `watchlists`, and other tables. The RAG layer is a derived index and must inherit the same isolation. A vector query must never return chunks from another tenant.
+### 2. Tenant isolation must match database layer RLS
+`ADR-0015` and `ADR-0032` established tenant RLS on `social_posts`, `watchlists`, and other tables. The RAG vector layer is a derived index and must inherit equivalent isolation. A vector query must never return candidate vectors or content from another tenant.
 
-### 3. Metadata supports filters and citations
-Search needs to filter by `watchlistIds`, `platformId`, `dateRange`, and `topics`. Each vector record must carry enough metadata to answer these filters without joining back to `social_posts` at query time. It also needs `post_id` and `chunk_index` (and, per ADR-0081 revision, `content`) so the UI can cite the original post and display chunk text directly.
+### 3. Metadata supports pre-filtering, citations, and content retrieval
+Vector search needs to filter by `watchlistIds`, `platformId`, `dateRange`, `topics`, and `sentiment`. Storing `content` (chunk text payload) directly in vector metadata eliminates high-latency secondary SQL lookups during RAG generation (ADR-0081/0082 revision). `post_id` and `chunk_index` enable deterministic citations back to source posts.
 
 ---
 
 ## Decision
 
-### 1. Required metadata fields on every vector record
+### 1. Required metadata schema on every vector record
 ```ts
-interface RAGChunkMetadata {
-  tenant_id: string;         // required, equality-filtered on every search
-  post_id: string;           // to link back to social_posts
+export type PlatformId =
+  | 'facebook'
+  | 'instagram'
+  | 'linkedin'
+  | 'bluesky'
+  | 'threads'
+  | 'x'
+  | 'rss'
+  | 'newswire'
+  | 'wikipedia'
+  | string;
+
+export interface RAGChunkMetadata {
+  tenant_id: string;         // Required: strict equality-filtered on every search
+  post_id: string;           // Links back to social_posts
   chunk_index: number;       // 0..N for this post
-  content: string;           // chunk text payload (per ADR-0081 revision) — enables direct RAG generation without a secondary SQL lookup
-  platform_id: string;       // connector platform
+  content: string;           // Chunk text payload (bounded <= 256 tokens / ~1.5 KB)
+  platform_id: PlatformId;   // Typed platform identifier
   published_at: string;      // ISO 8601, for date-range filtering
-  watchlist_ids: string[];   // empty array if none
-  sentiment?: string;        // e.g. 'positive' | 'negative' | 'neutral'
-  topics?: string[];         // topic IDs from topic clustering
+  watchlist_ids: string[];   // Array of matching watchlist IDs (empty array if none)
+  sentiment?: string;        // 'positive' | 'negative' | 'neutral' | 'unassigned'
+  topics?: string[];         // Topic IDs from AI topic clustering
 }
 ```
-The full, authoritative interface shape (including `RAGFilter`, `RAGSearchOptions`, `RAGSearchResult`, and the deterministic vector ID convention) is defined in ADR-0081; this ADR scopes itself to the metadata schema and isolation rule.
 
-### 2. Tenant isolation by metadata filter
-- Every `RAGConnector.search()` call must include a metadata filter `tenant_id == caller.tenant_id`.
+- **Payload Size Boundary**: Total metadata payload per chunk is strictly bounded to $< 4\text{ KB}$ (well beneath the safe ceiling of 8 KB and provider limits: Pinecone 40 KB, pgvector unbounded JSONB, Azure AI Search 16 MB).
+
+---
+
+### 2. Mandatory tenant isolation by query-time filter
+- Every `RAGConnector.search()` call must include an index-level metadata equality filter: `tenant_id == caller.tenantId`.
 - There is no "search across all tenants" mode.
-- If the vector store supports namespaces (Pinecone) or separate indices, the implementation may use them, but the metadata filter is still mandatory as a defense in depth.
+- If the vector store supports physical namespaces (Pinecone) or partitioned indices, the implementation may utilize them, but the `tenant_id` metadata filter remains mandatory as defense-in-depth.
 
-### 3. Queryable metadata support
-The `RAGFilter` passed to `search()` is the canonical, provider-agnostic shape defined in ADR-0081:
-```ts
-interface RAGFilter {
-  platformId?: string | string[];   // exact match
-  sentiment?: string | string[];    // exact match
-  watchlistIds?: string[];          // array-membership match in watchlist_ids
-  topics?: string[];                // array-membership match in topics
-  dateRange?: { from?: string; to?: string };  // ISO 8601 range filter on published_at
-}
-```
-- `tenant_id` is never a `RAGFilter` field — it comes from the mandatory `tenantId` parameter on `search()` (ADR-0081 Decision §2).
-- Each connector implementation translates `RAGFilter` to vendor-native filter syntax (Pinecone Mongo-style operators, Azure AI Search OData `$filter`, pgvector SQL `WHERE`); provider-specific syntax stays inside the connector.
-- `watchlist_ids` uses the store's array-membership filter if available; otherwise `RAGSearchService` post-filters.
-- `published_at` uses a range filter (`dateRange.from`/`dateRange.to`) when the store supports it.
+---
 
-### 4. Deletion and offboarding
-- On `DELETE /v1/posts/:id`, call `RAGConnector.deletePost(tenantId, postId)`. Vector ids follow `${tenantId}:${postId}:${chunkIndex}` (ADR-0081 Decision §7), so this is a predictable id-range delete where the provider supports it, and a metadata-filter delete (`post_id == postId` AND `tenant_id == tenantId`) otherwise.
-- On tenant deletion/offboarding (ADR-0043), call `RAGConnector.deleteTenant(tenantId)` — a metadata-filter delete on `tenant_id`.
-- A periodic reconciliation job scans `rag_chunks_sync` for `post_id`s no longer in `social_posts` and deletes the orphan vector records.
+### 3. Queryable metadata support & Mandatory Pre-Filtering
+- **Pre-Filtering Mandate**: All metadata filters must execute **prior to or during graph traversal (k-NN search)** within the vector index. Application-level post-filtering on nearest neighbor candidates is prohibited as a primary mechanism because it causes severe recall drop-off and pagination skew.
+- **Provider Filter Translation**:
+  - **Pinecone**: Mongo-style `$in`, `$eq`, `$and` operators.
+  - **Azure AI Search**: OData `$filter` expressions (e.g., `watchlist_ids/any(w: search.in(w, '...'))`).
+  - **pgvector**: SQL `WHERE tenant_id = $1 AND platform_id = ANY($2) AND watchlist_ids && $3`.
+- **Over-Fetching Fallback**: If a third-party vector store lacks native array-membership pre-filtering on `watchlist_ids`, `RAGSearchService` must over-fetch ($k \times 3$) candidates before applying in-memory post-filters to mitigate recall degradation.
 
-### 5. No PII beyond public post content; chunk text stored as derived copy
-The vector store holds `chunk_index` and `content` (the chunk text payload, per ADR-0081 revision). `content` is a derived copy of already-public post text, stored alongside the embedding so `search()` results can be used directly for RAG generation (Q&A answers, daily-digest summaries) without a secondary SQL lookup to `social_posts`. `social_posts` remains the source of truth — `content` is rebuildable from it. `author` and other PII are not stored in the vector store; only public post content and its derived metadata (sentiment, topics, watchlist matches) appear in vector-record metadata.
+---
+
+### 4. Lifecycle Management (Deletions, Updates, Redactions, Offboarding)
+
+1. **Post Deletion (`DELETE /v1/posts/:id`)**:
+   - Invokes `RAGConnector.deletePost(tenantId, postId)`.
+   - Executed via metadata filter (`post_id == postId` AND `tenant_id == tenantId`) or by generating deterministic batch ID arrays (`${tenantId}:${postId}:${0..chunkCount - 1}`) and invoking provider batch delete.
+2. **Post Modification / Content Redaction (`PATCH/PUT /v1/posts/:id`)**:
+   - When post text is modified or sanitized upstream in `social_posts`, the system invokes `deletePost(tenantId, postId)` followed by fresh chunking, re-embedding, and upserting to guarantee no stale or redacted text persists in `content`.
+3. **Metadata Patching & Human-in-the-Loop Overrides (ADR-0071)**:
+   - When sentiment, topics, or watchlist assignments change without text edits, the system calls `RAGConnector.updateMetadata(tenantId, postId, partialMetadata)`.
+   - Providers supporting partial metadata updates (Pinecone `update()`, pgvector `UPDATE`) update metadata fields in-place without re-generating embeddings.
+   - Providers without partial update support re-upsert the existing vector with the updated metadata object.
+4. **Tenant Offboarding & Deletion (ADR-0043)**:
+   - Invokes `RAGConnector.deleteTenant(tenantId)` to execute a bulk metadata delete by `tenant_id` (or drop tenant namespace).
+5. **Reconciliation Background Worker**:
+   - A periodic background worker compares `rag_chunks_sync` against `social_posts` to garbage-collect orphaned vector records and reconcile metadata drift.
 
 ---
 
 ## Consequences
 
-1. **Strong tenant isolation:** every search is filtered by `tenant_id`, consistent with RLS elsewhere.
-2. **Rich filtering:** metadata enables the watchlist, platform, topic, sentiment, and date filters in `POST /v1/rag/search`.
-3. **Stored chunk text:** `content` is stored as a derived copy alongside the embedding, so RAG generation does not require a secondary SQL lookup. This is a deliberate trade-off: slightly larger vector-record payloads in exchange for retrieval convenience. `social_posts` remains the source of truth and the index is rebuildable.
-4. **Metadata limits:** vector stores impose size limits on metadata. The chosen set (including `content`) fits within common limits but may need trimming if new fields are added; `content` is the largest field and is bounded by the chunk size (ADR-0082, default 256 tokens).
+### Positive
+- **Guaranteed Isolation**: Strict `tenant_id` pre-filtering prevents vector data leakage across tenants.
+- **High Recall & Accurate Ranking**: Vector pre-filtering prevents candidate truncation and pagination skew.
+- **Zero SQL Round-Trip on RAG**: Storing `content` directly in metadata enables instant RAG synthesis (Q&A, summaries) without secondary SQL queries.
+- **Reduced Write Amplification**: Metadata-only patches (`updateMetadata`) avoid expensive embedding recomputation when sentiment or topics are updated.
+- **Privacy Compliance**: Content redaction and post deletions cleanly purge vector copies.
+
+### Trade-offs & Mitigations
+- **Storage Footprint**: Storing chunk text inside vector metadata increases vector storage volume slightly. *Mitigated by 256-token chunk bounds and high-utility RAG retrieval speed.*
+- **Over-fetch Cost on Limited Stores**: Stores lacking array-any filtering incur minor over-fetch latency. *Mitigated by native SQL array support in default pgvector deployment.*
 
 ---
 
-## Alternatives considered
+## Resolved Questions
 
-1. **Store no chunk text in the vector store; reconstruct from `social_posts` on every retrieval.**
-   - *Rejected (reversed 2026-08-25 per ADR-0081 architectural review):* forcing a secondary SQL lookup for every RAG generation step (Q&A answers, daily-digest summaries) adds latency and coupling that outweighs the PII-surface benefit. `content` is now stored as a derived copy of already-public post text; `social_posts` remains the source of truth and the index is rebuildable. The original PII-safety concern is preserved by storing only public post content (no `author` or other PII) in vector-record metadata.
-
-2. **One vector index per tenant.**
-   - *Rejected:* it multiplies index-management and cost overhead. Metadata filtering is the standard, scalable pattern.
-
-3. **Join vector search results back to `social_posts` for filters.**
-   - *Rejected:* it would force a database round trip for every candidate, defeating the performance benefit of the vector index. Metadata filters keep search fast.
-
----
-
-## Open questions
-
-- Should `watchlist_ids` be updated when a new watchlist matches an already-indexed post, or is the watchlist filter applied at search time against `post_watchlist_matches`?
-- How is metadata updated when `sentiment` or `topics` are corrected by a human-in-the-loop override (ADR-0071)?
-- What is the maximum metadata payload the chosen vector store accepts per record?
-- Should `platform_id` be an indexed string or a `provider_id`/`platformId` enum?
+1. **Updating `watchlist_ids` vs. query-time join?**
+   - **Resolved (2026-08-27):** Stored as an index-time metadata array on each chunk. Updated via partial metadata patching (`updateMetadata`) when watchlists change. Query-time SQL joins are avoided to preserve vector search performance.
+2. **Human-in-the-loop metadata overrides (ADR-0071)?**
+   - **Resolved (2026-08-27):** Handled via `RAGConnector.updateMetadata(tenantId, postId, partialMetadata)` without re-embedding text.
+3. **Maximum metadata payload limit?**
+   - **Resolved (2026-08-27):** Bounded $< 4\text{ KB}$ per record with an 8 KB hard ceiling, well within Pinecone (40 KB) and pgvector limits.
+4. **`platform_id` format?**
+   - **Resolved (2026-08-27):** Typed string union (`PlatformId`) matching the core platform enum across the service.
 
 ---
 
-## Footnotes
-
-- Related feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
-- Related scoping: `docs/product-research/feature-adr-scoping.md`
-- Related ADRs: `ADR-0081` (`RAGConnector`), `ADR-0082` (chunking and embedding), `ADR-0015` (tenant RLS), `ADR-0043` (tenant deletion)
+## Related Notes
+- `docs/product-research/feature-designs/28-semantic-search-rag.md`
+- `docs/adr/0081-rag-connector-provider-abstraction.md`
+- `docs/adr/0082-rag-post-chunking-and-embedding.md`
+- `docs/adr/0015-tenant-isolation-via-postgres-row-level-security.md`
+- `docs/adr/0043-self-service-tenant-initiated-deletion.md`
+- `docs/adr/0071-human-in-the-loop-post-enrichment-overrides-and-cascading-drawer-ui.md`
