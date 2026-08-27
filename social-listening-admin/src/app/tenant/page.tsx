@@ -7,13 +7,16 @@ import {
   listWatchlists,
   getConnectorStatus,
   listPosts,
+  getOnboardingChecklist,
   type AdminTenant,
   type Watchlist,
   type ConnectorStatus,
   type SocialPostSummary,
+  type OnboardingChecklistResponse,
 } from '@/lib/core-client';
 import { RelativeTime } from '@/components/ui';
 import { StatusBadge } from '@/components/ui';
+import { OnboardingChecklist } from '@/components/OnboardingChecklist';
 import { extractDisplayText, extractProviderBadge, extractEnrichmentSummary } from './posts/postDisplay';
 
 const PLATFORMS = [
@@ -49,9 +52,10 @@ export default async function TenantShellPage() {
   }
 
   const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
+  const tenantId = identity?.type === 'tenant_user' ? identity.tenantId : undefined;
 
   // Fetch all data in parallel — each source degrades independently on failure.
-  const [tenant, watchlists, connectors, allPosts] = await Promise.all([
+  const [tenant, watchlists, connectors, allPosts, onboardingChecklist] = await Promise.all([
     getMyTenant().catch((): AdminTenant | null => null),
     listWatchlists().catch((): Watchlist[] => []),
     Promise.all(
@@ -67,6 +71,14 @@ export default async function TenantShellPage() {
         return (page.posts ?? []).reverse();
       } catch {
         return [];
+      }
+    })(),
+    (async () => {
+      try {
+        if (!tenantId) return null;
+        return await getOnboardingChecklist(tenantId);
+      } catch {
+        return null;
       }
     })(),
   ]);
@@ -110,6 +122,13 @@ export default async function TenantShellPage() {
           )}
         </div>
       </div>
+
+      {/* Onboarding Setup Checklist (Story 9.6 / ADR-0080) */}
+      <OnboardingChecklist
+        initialData={onboardingChecklist}
+        tenantId={tenantId}
+        isTenantAdmin={isTenantAdmin}
+      />
 
       {/* Degraded connector alert banner */}
       {degradedConnectors.length > 0 && (

@@ -3400,15 +3400,13 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts
 - **Epic-6 suite at merge:** PASS (Story 6.1 contract: 19/19)
 
-**Root cause was environmental, not a code regression.** The contract failed because the local HTTPS dev server (`https://socialengage.test:3000`) and real Entra tenant were not reachable by the test runner under Node.js v25.9.0 + headless Chromium. Three cumulative fixes: (1) the test's `fetch` calls that pass a custom `undici.Agent` now explicitly use `undici.fetch` instead of Node's global `fetch`, because Node v25's native `fetch` ignores the `{ dispatcher }` option when resolving self-signed TLS; (2) Playwright Chromium is launched with `--host-resolver-rules=MAP socialengage.test 127.0.0.1` and `--ignore-certificate-errors` so the headless browser resolves the test domain and trusts the local mkcert certificate; (3) the Entra CIAM "Stay signed in?" (KMSI) page does not render its Yes/No buttons reliably in Playwright's Chromium, so `performRealSignIn()` now waits for the `**/kmsi` URL and falls back to a JavaScript form submission that appends a hidden `action=No` input to the page's form and submits it. The user's local `.env` was also corrected so `ENTRA_ADMIN_REDIRECT_URI` is `https://socialengage.test:3000/api/auth/callback` — matching the `BASE_URL` the test and the Next.js dev server use. No source code under `src/` was changed; the contract test file and local environment config were the only changes.
+**Root cause was environmental, not a code regression.** The contract failed because the local HTTPS dev server (`https://socialengage.test:3000`) and real Entra tenant and were not reachable by the test runner under Node.js v25.9.0 + headless Chromium. Three cumulative fixes: (1) the test's `fetch` calls that pass a custom `undici.Agent` now explicitly use `undici.fetch` instead of Node's global `fetch`, because Node v25's native `fetch` ignores the `{ dispatcher }` option when resolving self-signed TLS; (2) Playwright Chromium is launched with `--host-resolver-rules=MAP socialengage.test 127.0.0.1` and `--ignore-certificate-errors` so the headless browser resolves the test domain and trusts the local mkcert certificate; (3) the Entra CIAM "Stay signed in?" (KMSI) page does not render its Yes/No buttons reliably in Playwright's Chromium, so `performRealSignIn()` now waits for the `**/kmsi` URL and falls back to a JavaScript form submission that appends a hidden `action=No` input to the page's form and submits it. The user's local `.env` was also corrected so `ENTRA_ADMIN_REDIRECT_URI` is `https://socialengage.test:3000/api/auth/callback` — matching the `BASE_URL` the test and the Next.js dev server use. No source code under `src/` was changed; the contract test file and local environment config were the only changes.
 - **Epic-6 suite at merge:** PASS (40/41 suites, 527/546 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific core server dependency, unrelated to this story)
 
-## 2026-08-27 � Story 8.8 � social-listening-core + social-listening-admin (pending commit)
+## 2026-08-27 — Story 8.8 — social-listening-core + social-listening-admin (pending commit)
 
 - **Commit:** f235174
-- **Repo:** social-listening-core + social-listening-admin (coordinated cross-repo story, per AGENTS.md repo boundaries � backend contract first, then frontend)
-- **Story / ADR:** 8.8 / ADR-0062 Decision �6
-- **Contract (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (7 tests � blocked from running by pre-existing Key Vault subscription-disabled environment issue, see docs/environment-gotchas.md; typecheck passes, implementation structurally verified)
+- **Contract (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (7 tests — blocked from running by pre-existing Key Vault subscription-disabled environment issue, see docs/environment-gotchas.md; typecheck passes, implementation structurally verified)
 - **Contract (frontend):** social-listening-admin/contracts/epic-8/story-8.8.spike-storyteller-widget.contract.test.ts (16/16)
 - **SKILL.md:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md
 - **Files touched (backend):** social-listening-core/contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts (new), social-listening-core/src/posts/spikeStorytellerService.ts (new), social-listening-core/src/http/versions/v1/postsRouter.ts (extended � POST /explain-spike), social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md
@@ -3416,3 +3414,27 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Epic-8 admin suite at merge:** PASS for Story 8.8 (16/16) and Story 8.7 (34/34, regression-checked after OverviewTab.tsx edit); 3 pre-existing failures in 8.9/8.10 unrelated to this story (SESSION_SECRET env, entities field mismatch)
 - **Backend typecheck:** PASS (npx tsc --noEmit, zero errors in Story 8.8 files)
 - **Note:** Backend contract test cannot run due to the `social-engage` Azure subscription being in `Warned` state (Key Vault disabled) � a pre-existing infrastructure issue documented in docs/environment-gotchas.md, not a code regression. The implementation is structurally correct and will pass once the subscription is re-enabled.
+
+## 2026-08-27 — Story 9.6 — social-listening-admin (pending commit)
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 9.6 / ADR-0080 (Onboarding checklist UI)
+- **Contract (frontend):** social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts (16/16)
+- **SKILL.md:** social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md
+- **Files touched:**
+  - `social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts` (new — 16/16 contract tests)
+  - `social-listening-admin/src/lib/core-client.ts` (extended — `getOnboardingChecklist()`, `patchOnboardingChecklist()`, TypeScript interfaces)
+  - `social-listening-admin/src/app/api/onboarding-checklist/route.ts` (new — same-origin BFF GET/PATCH proxy)
+  - `social-listening-admin/src/components/OnboardingChecklist.tsx` (new — Client Component setup guide widget)
+  - `social-listening-admin/src/app/tenant/page.tsx` (extended — fetches checklist state and mounts `OnboardingChecklist`)
+  - `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md` (new — component skill documentation)
+  - `docs/user-stories/epic-9-adr-0077-to-0085.md` (updated — Story 9.6 marked Built)
+- **Epic-9 admin contract suite:** PASS (16/16 tests passing, 0.76s)
+- **Acceptance criteria satisfied:**
+  - AC1: `OnboardingChecklist` renders core steps with completion status and progress percentage.
+  - AC2: Step deep-links map to tenant routes (`/tenant/connectors`, `/tenant/watchlists`, `/tenant/users`, `/tenant/posts`).
+  - AC3: Auto-check status reflection upon return navigation / focus re-fetch.
+  - AC4: Dismiss and reopen round-trip functionality (`PATCH { dismissed: true }` / `{ dismissed: false }`).
+  - AC5: Empty (0%) and completed (100%) states handled gracefully with celebratory styling.
+  - AC6: Advanced steps (`enable_enrichment`, `configure_alerts`) display and toggle visibility without gating workflows.
+  - AC7: Role gating: `tenant_admin` mutation controls vs `tenant_user` read-only visibility.

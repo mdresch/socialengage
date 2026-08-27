@@ -1486,3 +1486,73 @@ export async function queryAdminAuditLog(input?: {
   }
   return (await response.json()) as AdminAuditLogPage;
 }
+
+export interface ChecklistStep {
+  completed: boolean;
+  completedAt: string | null;
+  deepLink: string;
+}
+
+export interface AdvancedChecklistStep extends ChecklistStep {
+  hidden: boolean;
+}
+
+/** REST response shape for GET/PATCH /v1/tenants/:id/onboarding-checklist (ADR-0080 / Story 9.5 / Story 9.6). */
+export interface OnboardingChecklistResponse {
+  isComplete: boolean;
+  progressPercentage: number;
+  dismissed: boolean;
+  dismissedAt: string | null;
+  steps: {
+    connect_source: ChecklistStep;
+    build_watchlist: ChecklistStep;
+    invite_user: ChecklistStep;
+    verify_posts: ChecklistStep;
+  };
+  advancedSteps: {
+    enable_enrichment: AdvancedChecklistStep;
+    configure_alerts: AdvancedChecklistStep;
+  };
+}
+
+export interface PatchOnboardingChecklistRequest {
+  dismissed?: boolean;
+  reset?: boolean;
+  hiddenAdvancedSteps?: string[];
+}
+
+export interface OnboardingChecklistOutcome {
+  status: number;
+  body: OnboardingChecklistResponse | { error?: string };
+}
+
+/**
+ * Story 9.6 (ADR-0080) — reads the tenant's onboarding checklist state
+ * (GET /v1/tenants/:id/onboarding-checklist). Accessible to both tenant_admin
+ * and tenant_user.
+ */
+export async function getOnboardingChecklist(tenantId: string): Promise<OnboardingChecklistResponse> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`);
+  if (!response.ok) {
+    throw new Error(`Failed to load onboarding checklist: ${response.status}`);
+  }
+  return (await response.json()) as OnboardingChecklistResponse;
+}
+
+/**
+ * Story 9.6 (ADR-0080) — mutates dismissal state or advanced-step visibility
+ * (PATCH /v1/tenants/:id/onboarding-checklist). Restricted to tenant_admin.
+ */
+export async function patchOnboardingChecklist(
+  tenantId: string,
+  patch: PatchOnboardingChecklistRequest
+): Promise<OnboardingChecklistOutcome> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
