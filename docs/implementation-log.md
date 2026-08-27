@@ -3387,4 +3387,18 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Contract:** social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts (14/14)
 - **SKILL.md:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md
 - **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts, social-listening-admin/src/app/api/composer/research/route.ts, social-listening-admin/src/components/composer/DeepResearchPanel.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/lib/core-client.ts
+
+---
+
+## 2026-08-27 — Healing pass: Story 6.1 — social-listening-admin
+
+- **Full commit:** `d91af2204bc7a0981e3f0a28a35a6e12601b9e2e`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.1 / ADR-0029 (Entra External ID) + ADR-0035 (admin UI shape)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts (19/19)
+- **SKILL.md:** social-listening-admin/.claude/skills/nextjs-entra-auth/SKILL.md
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts
+- **Epic-6 suite at merge:** PASS (Story 6.1 contract: 19/19)
+
+**Root cause was environmental, not a code regression.** The contract failed because the local HTTPS dev server (`https://socialengage.test:3000`) and real Entra tenant were not reachable by the test runner under Node.js v25.9.0 + headless Chromium. Three cumulative fixes: (1) the test's `fetch` calls that pass a custom `undici.Agent` now explicitly use `undici.fetch` instead of Node's global `fetch`, because Node v25's native `fetch` ignores the `{ dispatcher }` option when resolving self-signed TLS; (2) Playwright Chromium is launched with `--host-resolver-rules=MAP socialengage.test 127.0.0.1` and `--ignore-certificate-errors` so the headless browser resolves the test domain and trusts the local mkcert certificate; (3) the Entra CIAM "Stay signed in?" (KMSI) page does not render its Yes/No buttons reliably in Playwright's Chromium, so `performRealSignIn()` now waits for the `**/kmsi` URL and falls back to a JavaScript form submission that appends a hidden `action=No` input to the page's form and submits it. The user's local `.env` was also corrected so `ENTRA_ADMIN_REDIRECT_URI` is `https://socialengage.test:3000/api/auth/callback` — matching the `BASE_URL` the test and the Next.js dev server use. No source code under `src/` was changed; the contract test file and local environment config were the only changes.
 - **Epic-6 suite at merge:** PASS (40/41 suites, 527/546 tests — the 1 failing suite is the pre-existing story-6.1 environment-specific core server dependency, unrelated to this story)
