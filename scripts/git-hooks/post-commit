@@ -146,4 +146,27 @@ if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ]; then
     "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Learning & Development Writer (\`.claude/agents/learning-development-writer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Writer may edit the three manuals under docs/manuals/ directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting manual edit is actually committed. Most commits resolve with 'no user-facing change' — a legitimate outcome, not a non-answer."
 fi
 
+# ─── ADR-0122 Self-Learning Synthesis capture + compile ─────────────────────
+# Non-blocking: the commit has already succeeded. If the commit subject
+# references a Story X.Y, extract the epic number X and run the telemetry
+# capture + compile pipeline so the raw/ folder and synthesis artifact stay
+# fresh after every story-related commit. Skipped for bookkeeping-only
+# commits and commits that don't reference a story number.
+#
+# The capture overwrites today's raw/synthesis-epic-<N>-<date>/ directory
+# (same date = same folder), so multiple commits in one day keep the latest
+# state without accumulating duplicates. The compile regenerates the
+# synthesis artifact in docs/synthesis/ and the vault's Sprint Outputs.
+#
+# Failures are silently swallowed (post-commit must never block), matching
+# the same "fail open" posture as the review-queue appends above.
+
+if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/synthesize-telemetry.mjs" ]; then
+  EPIC=$(echo "$SUBJECT" | grep -oE "Story [0-9]+\." | head -1 | grep -oE "[0-9]+" || true)
+  if [ -n "$EPIC" ]; then
+    node scripts/synthesize-telemetry.mjs --capture --epic "$EPIC" >/dev/null 2>&1 &
+    node scripts/synthesize-telemetry.mjs --compile --epic "$EPIC" >/dev/null 2>&1 &
+  fi
+fi
+
 exit 0
