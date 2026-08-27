@@ -1575,3 +1575,157 @@ export async function activateCrisisTemplate(
   return { status: response.status, body };
 }
 
+export interface ChecklistStep {
+  completed: boolean;
+  completedAt: string | null;
+  deepLink?: string;
+}
+
+export interface OnboardingChecklistResponse {
+  isComplete: boolean;
+  progressPercentage: number;
+  dismissed: boolean;
+  dismissedAt: string | null;
+  steps: {
+    connect_source: ChecklistStep;
+    build_watchlist: ChecklistStep;
+    invite_user: ChecklistStep;
+    verify_posts: ChecklistStep;
+    [key: string]: ChecklistStep;
+  };
+  advancedSteps?: {
+    enable_enrichment?: ChecklistStep;
+    configure_alerts?: ChecklistStep;
+    [key: string]: ChecklistStep | undefined;
+  };
+}
+
+export interface PatchOnboardingChecklistRequest {
+  dismissed?: boolean;
+  reset?: boolean;
+  hiddenAdvancedSteps?: string[];
+}
+
+/**
+ * Story 9.6 (ADR-0080) — gets the tenant's onboarding checklist state.
+ */
+export async function getOnboardingChecklist(tenantId: string): Promise<OnboardingChecklistResponse> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`);
+  if (!response.ok) {
+    throw new Error(`Failed to load onboarding checklist: ${response.status}`);
+  }
+  return (await response.json()) as OnboardingChecklistResponse;
+}
+
+/**
+ * Story 9.6 (ADR-0080) — patches the tenant's onboarding checklist state (dismiss, reset, hide advanced).
+ */
+export async function patchOnboardingChecklist(
+  tenantId: string,
+  input: PatchOnboardingChecklistRequest
+): Promise<{ status: number; body: any }> {
+  const response = await authenticatedCoreFetch(`/v1/tenants/${encodeURIComponent(tenantId)}/onboarding-checklist`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, body };
+}
+
+export interface RAGSearchResultItem {
+  postId: string;
+  chunkIndex: number;
+  score: number;
+  platformId: string;
+  publishedAt: string;
+  snippet: string;
+  internalUrl: string;
+}
+
+export interface RAGSearchResponse {
+  results: RAGSearchResultItem[];
+  totalReturned: number;
+}
+
+export interface RAGAskCitation {
+  citationIndex: number;
+  postId: string;
+  chunkIndex: number;
+  snippet: string;
+  platformId: string;
+  publishedAt: string;
+  internalUrl: string;
+}
+
+export interface RAGAskResponse {
+  answer: string;
+  citations: RAGAskCitation[];
+  confidence: 'high' | 'medium' | 'low' | 'unsupported';
+  isGrounded: boolean;
+}
+
+export interface RAGStatusResponse {
+  status: 'healthy' | 'degraded';
+  totalIndexedChunks: number;
+  syncStatus: {
+    synced: number;
+    pending: number;
+    failed: number;
+  };
+  lagMinutes: number;
+}
+
+/**
+ * Story 9.11 (ADR-0084, ADR-0085) — searches vector index semantically.
+ */
+export async function searchRAG(input: {
+  query: string;
+  searchMode?: 'semantic' | 'hybrid';
+  filter?: Record<string, any>;
+  pagination?: { topK?: number };
+}): Promise<RAGSearchResponse> {
+  const response = await authenticatedCoreFetch('/v1/rag/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`RAG search failed: ${response.status}`);
+  }
+  return (await response.json()) as RAGSearchResponse;
+}
+
+/**
+ * Story 9.11 (ADR-0084, ADR-0085) — answers questions with grounding and citations.
+ */
+export async function askRAG(input: {
+  question: string;
+  filter?: Record<string, any>;
+  maxChunks?: number;
+  stream?: boolean;
+}): Promise<RAGAskResponse> {
+  const response = await authenticatedCoreFetch('/v1/rag/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`RAG ask failed: ${response.status}`);
+  }
+  return (await response.json()) as RAGAskResponse;
+}
+
+/**
+ * Story 9.11 (ADR-0084, ADR-0085) — gets RAG vector index status.
+ */
+export async function getRAGStatus(): Promise<RAGStatusResponse> {
+  const response = await authenticatedCoreFetch('/v1/rag/status');
+  if (!response.ok) {
+    throw new Error(`RAG status failed: ${response.status}`);
+  }
+  return (await response.json()) as RAGStatusResponse;
+}
+
+
+

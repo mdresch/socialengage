@@ -26,6 +26,7 @@ import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
 import { crisisTemplatesRouter } from './crisisTemplatesRouter';
 import { explainRouter } from './explainRouter';
+import { ragRouter } from './ragRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -166,6 +167,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.2 (ADR-0078) — metric explainability endpoint. */
   v1Router.use('/explain', authMiddleware, explainRouter);
+
+  /** Story 9.10 (ADR-0084) — RAG search, Q&A, and status endpoints. */
+  v1Router.use('/rag', authMiddleware, ragRouter);
 
   return v1Router;
 }
