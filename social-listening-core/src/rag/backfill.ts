@@ -1,11 +1,11 @@
-import { getPool } from '../db/pool';
+import { getAdminPool } from '../db/adminPool';
 import { indexPostForRAG } from './ragIndexingPipeline';
 
 /**
  * Backfills existing social_posts into the RAG vector store (rag_chunks table).
  */
 export async function backfillRAG(tenantId?: string): Promise<{ indexed: number; failed: number }> {
-  const pool = getPool();
+  const pool = getAdminPool();
   let query = `
     SELECT sp.id,
            sp.tenant_id,
@@ -56,6 +56,9 @@ export async function backfillRAG(tenantId?: string): Promise<{ indexed: number;
         indexed++;
       } else {
         failed++;
+      }
+      if ((indexed + failed) % 250 === 0) {
+        console.log(`[RAG Backfill] Progress: ${indexed + failed} / ${res.rows.length} posts processed (Synced: ${indexed}, Failed: ${failed})...`);
       }
     } catch (err: any) {
       failed++;

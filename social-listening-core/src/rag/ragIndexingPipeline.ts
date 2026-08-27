@@ -2,6 +2,7 @@ import { getRagConnector } from './ragConnectorRegistry';
 import { RAGChunkingService, SplitPostInput } from './ragChunkingService';
 import type { RAGConnector } from './types';
 import { getPool } from '../db/pool';
+import { getAdminPool } from '../db/adminPool';
 
 export interface IndexPostResult {
   chunkCount: number;
@@ -94,7 +95,7 @@ export async function indexPostForRAG(
       syncTracker.set(syncKey, syncRecord);
 
       try {
-        const pool = getPool();
+        const pool = getAdminPool ? getAdminPool() : getPool();
         await pool.query(
           `INSERT INTO rag_chunks_sync (
             tenant_id, post_id, chunk_count, embedding_model, status, last_indexed_at, error_message, updated_at

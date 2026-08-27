@@ -3262,3 +3262,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
 - **Status:** Pending review
 
+## 2026-08-27 — 57d4be3 — feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector
+
+- **Full commit:** `57d4be3df763b09f37aa28ea9d57b10ea28c361b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+

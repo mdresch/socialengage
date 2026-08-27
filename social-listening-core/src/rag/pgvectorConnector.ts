@@ -7,6 +7,7 @@ import type {
   RAGChunkMetadata,
 } from './types';
 import { getPool } from '../db/pool';
+import { getAdminPool } from '../db/adminPool';
 import { generateMockEmbedding } from './ragChunkingService';
 
 /**
@@ -66,9 +67,9 @@ export class PgvectorRAGConnector implements RAGConnector {
       });
     }
 
-    // Try executing database upsert if pool is configured
+    // Try executing database upsert
     try {
-      const pool = getPool();
+      const pool = getAdminPool ? getAdminPool() : getPool();
       for (const chunk of vectors) {
         const recordId = chunk.id || `${tenantId}:${chunk.metadata.post_id}:${chunk.metadata.chunk_index}`;
         await pool.query(
@@ -117,7 +118,7 @@ export class PgvectorRAGConnector implements RAGConnector {
     const hasTenantChunks = Array.from(this.inMemoryChunks.values()).some((c) => c.metadata.tenant_id === tenantId);
     if (!hasTenantChunks) {
       try {
-        const pool = getPool();
+        const pool = getAdminPool ? getAdminPool() : getPool();
         const res = await pool.query(
           `SELECT id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics
            FROM rag_chunks
