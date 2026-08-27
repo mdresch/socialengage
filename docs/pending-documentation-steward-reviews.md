@@ -2689,27 +2689,39 @@
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
-## 2026-08-26 — e0abfdd — feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075)
+## 2026-08-26 — 01064dd — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
-- **Full commit:** `e0abfdd6e544d7196de121a8c47bddb87c8914a6`
-- **Files touched:** social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/PublishTargetsDialog.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/tsconfig.json
+- **Full commit:** `01064dddc82c895b5f197531592c8f73416c9580`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
-## 2026-08-26 — 8b25501 — docs: update Story 6.39 Built status and log implementation
+## 2026-08-26 — 7920e48 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
-- **Full commit:** `8b25501c21e1429ae33196c79e05aebc454d91d5`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Full commit:** `7920e48933336a27f595bfa80fe49deefca4f8b4`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
-## 2026-08-26 — c68c14e — docs: append implementation log for Story 6.39
+## 2026-08-26 — 01bce70 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
-- **Full commit:** `c68c14ee78b3d241d966fa53d71e10b242478c21`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Full commit:** `01bce70d1e9d74c31131a128eaaf6b98e1ab3629`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
 - **Status:** Pending review
 
-## 2026-08-26 — 16043b0 — chore(dashboard): sync telemetry data for Story 6.39
+## 2026-08-26 — 0e4b787 — docs(trace): fix healing pass implementation log commit hash
 
-- **Full commit:** `16043b00915400b6790454cee05b06e095232d90`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Full commit:** `0e4b78769144ef9db78f8592953ea67df1e36772`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-26 — 3cb453d — heal(story-6.2): add CSS module mapper to Jest config for page.module.css import
+
+- **Full commit:** `3cb453d5a0a0b08906108f0b6a81e6fe05766469`
+- **Files touched:** social-listening-admin/jest.config.js, social-listening-admin/package-lock.json, social-listening-admin/package.json
+- **Status:** Pending review
+
+## 2026-08-26 — fe8ef00 — docs(trace): add Story 6.2 healing pass implementation log entry
+
+- **Full commit:** `fe8ef0015a8cd0326da3d33ad021e421805c38b8`
+- **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
