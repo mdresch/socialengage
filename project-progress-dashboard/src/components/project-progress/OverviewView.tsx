@@ -243,10 +243,10 @@ export function OverviewView({ onSelectItem, onNavigateTab }: OverviewViewProps)
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Phase Milestone Story Velocity</CardTitle>
-              <CardDescription>Cumulative story delivery trajectory across project phases (Phases 0 → 4.5).</CardDescription>
+              <CardDescription>Cumulative story delivery trajectory across project phases (Phases 0 → 9).</CardDescription>
             </div>
-            <Badge variant="outline" className="font-mono text-xs">
-              Trajectory: On Schedule
+            <Badge variant="outline" className="font-mono text-xs text-emerald-700 bg-emerald-50 border-emerald-200">
+              Trajectory: On Schedule (150/212 Stories)
             </Badge>
           </div>
         </CardHeader>

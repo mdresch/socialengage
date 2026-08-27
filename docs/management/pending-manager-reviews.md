@@ -3280,3 +3280,9 @@
 - **Files touched:** social-listening-core/.jest-test-db-40920.json
 - **Status:** Pending review
 
+## 2026-08-27 — a4dbb66 — fix(rag): fetch live status on mount in RAGDiscoveryClient
+
+- **Full commit:** `a4dbb663a292007930d6d2632dfc3c67429a7832`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+

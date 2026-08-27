@@ -15,17 +15,17 @@ export const MILESTONES: VelocityMilestone[] = [
   { phase: "Phase 1", name: "MVP Ingestion & Connectors", cumulativeStories: 34, totalPhaseStories: 26, status: "Completed" },
   { phase: "Phase 2", name: "AI Enrichment & Rate Gates", cumulativeStories: 82, totalPhaseStories: 48, status: "Completed" },
   { phase: "Phase 3", name: "Eventing & Platform Admin", cumulativeStories: 110, totalPhaseStories: 28, status: "Completed" },
-  { phase: "Phase 4", name: "Tenant Admin UI & Analytics", cumulativeStories: 125, totalPhaseStories: 15, status: "Current" },
-  { phase: "Phase 4.5", name: "Active Foundation Hardening (Epics 1–8)", cumulativeStories: 139, totalPhaseStories: 14, status: "Planned" },
-  { phase: "Phase 5", name: "v1.5 Crisis & RAG Search (Epic 9)", cumulativeStories: 150, totalPhaseStories: 11, status: "Planned" },
-  { phase: "Phase 6", name: "v1.6 Analytics & Trust DSR (Epic 10)", cumulativeStories: 164, totalPhaseStories: 14, status: "Planned" },
+  { phase: "Phase 4", name: "Tenant Admin UI & Analytics", cumulativeStories: 125, totalPhaseStories: 15, status: "Completed" },
+  { phase: "Phase 4.5", name: "Active Foundation Hardening (Epics 1–8)", cumulativeStories: 139, totalPhaseStories: 14, status: "Completed" },
+  { phase: "Phase 5", name: "v1.5 Crisis & RAG Search (Epic 9)", cumulativeStories: 150, totalPhaseStories: 11, status: "Completed" },
+  { phase: "Phase 6", name: "v1.6 Analytics & Trust DSR (Epic 10)", cumulativeStories: 164, totalPhaseStories: 14, status: "Current" },
   { phase: "Phase 7", name: "v1.7 Workflow & Publishing (Epic 11)", cumulativeStories: 176, totalPhaseStories: 12, status: "Planned" },
   { phase: "Phase 8", name: "v1.8 AI Refinement & API (Epic 12)", cumulativeStories: 192, totalPhaseStories: 16, status: "Planned" },
   { phase: "Phase 9", name: "v2.0 Media & CRM Push (Epic 13)", cumulativeStories: 206, totalPhaseStories: 14, status: "Planned" },
 ];
 
 export function VelocityAreaChart() {
-  const [activeIdx, setActiveIdx] = useState<number | null>(4); // Default to current Phase 4
+  const [activeIdx, setActiveIdx] = useState<number | null>(6); // Default to completed Phase 5 (Epic 9)
 
   const width = 640;
   const height = 180;
