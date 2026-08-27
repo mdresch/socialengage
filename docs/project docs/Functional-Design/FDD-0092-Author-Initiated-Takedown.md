@@ -5,9 +5,9 @@
 |---|---|
 | Document Title | FDD-0092 Author Initiated Takedown — Functional Design Document |
 | Version | 1.0 |
-| Date | 2026-08-23 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved |
 | Related Documents | ../../adr/0092-author-initiated-takedown.md, ../Business-Requirements/BRD-0092-Author-Initiated-Takedown.md |
 
 ## 2. Purpose and Scope

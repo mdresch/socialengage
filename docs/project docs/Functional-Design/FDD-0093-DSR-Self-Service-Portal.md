@@ -5,9 +5,9 @@
 |---|---|
 | Document Title | FDD-0093 DSR Self-Service Portal — Functional Design Document |
 | Version | 1.0 |
-| Date | 2026-08-23 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved |
 | Related Documents | ../../adr/0093-dsr-self-service-portal.md, ../Business-Requirements/BRD-0093-DSR-Self-Service-Portal.md |
 
 ## 2. Purpose and Scope
@@ -101,7 +101,7 @@ See ADR Decision.
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
 | `data_subject_requests` | Tracks request type, status, requester email, received/resolved dates, SLA | ADR-0092/0093 | Platform | Personal data / legal |
-| `correction_proposals` | Holds proposed corrections pending Tenant-Admin review | ADR-0093 | Tenant | Personal data |
+| `correction_proposals` | Holds proposed corrections pending Tenant-Admin review | ADR-0093 (Accepted 2026-08-28) | Tenant | Personal data |
 | Access package ZIP | CSV of posts, JSON profile, manifest, stored in Blob | ADR-0090/0093 | Tenant | Personal data |
 | `social_posts` | Public posts redacted during erasure or corrected via enrichment | Existing | Tenant | Public / personal |
 | `users` | Tenant user record, removable on verified erasure | Existing | Tenant | Personal data |

@@ -5,17 +5,17 @@
 | Field | Value |
 |---|---|
 | Document Title | Real-Time Alert Rules and Delivery – Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno (Business Sponsor / Product Owner / Technical Lead) |
-| Status | Draft for review – source ADR-0091 is **Proposed** and may change |
+| Status | Draft for review – source ADR-0091 (Accepted 2026-08-28) is **Proposed** and may change |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0091, feature design `09-real-time-alerts.md`, and Epic 10 stories |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0091 (Accepted 2026-08-28), feature design `09-real-time-alerts.md`, and Epic 10 stories |
 
 ---
 
@@ -25,7 +25,7 @@ Users currently discover reputation spikes, campaign surges, and connector probl
 
 The proposed solution authorizes an `alert_rules` data model, a threshold-evaluation worker, and multi-channel delivery (in-app, email, webhook) for both tenant-scoped and platform-scoped real-time alerts. Rules can fire on keyword mentions, topic volume, negative-sentiment share, post volume over a watchlist, or connector-health state changes. Each rule carries a configurable cooldown to prevent alert spam. When a threshold is crossed, the system stores a `tenant_alerts` row and dispatches the alert through the channels the rule owner has opted into.
 
-Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
+Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 (Accepted 2026-08-28) is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
 
 ---
 
@@ -174,11 +174,11 @@ Expected outcomes include faster crisis response, better operational awareness o
 
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
-| `alert_rules` | Tenant/user-owned rule definitions, thresholds, and delivery preferences | ADR-0091 | Tenant / Rule owner | Tenant configuration; no PII |
-| `tenant_alerts` | One row per rule trigger, including payload, status, and acknowledgment | ADR-0091 | Tenant / Rule owner | May include alert summaries; no raw post bodies |
+| `alert_rules` | Tenant/user-owned rule definitions, thresholds, and delivery preferences | ADR-0091 (Accepted 2026-08-28) | Tenant / Rule owner | Tenant configuration; no PII |
+| `tenant_alerts` | One row per rule trigger, including payload, status, and acknowledgment | ADR-0091 (Accepted 2026-08-28) | Tenant / Rule owner | May include alert summaries; no raw post bodies |
 | `watchlist_id` | Optional reference to the watchlist a post-based rule filters on | ADR-0044 | Tenant | Same sensitivity as watchlist query |
-| `threshold` | Rule-specific JSONB threshold such as `minPosts`, `negativePct`, or `keyword` | ADR-0091 | Rule owner | Tenant configuration |
-| `delivery` | JSONB of selected channels: in-app, email list, webhook list | ADR-0091 | Rule owner | Tenant configuration; may include webhook URLs |
+| `threshold` | Rule-specific JSONB threshold such as `minPosts`, `negativePct`, or `keyword` | ADR-0091 (Accepted 2026-08-28) | Rule owner | Tenant configuration |
+| `delivery` | JSONB of selected channels: in-app, email list, webhook list | ADR-0091 (Accepted 2026-08-28) | Rule owner | Tenant configuration; may include webhook URLs |
 | `SocialPostIngestedEvent` | Event stream that triggers post-based rule evaluation | ADR-0012 | Platform | Post metadata only |
 | `ConnectorHealthChangedEvent` | Event stream that triggers connector-health rule evaluation | ADR-0013 | Platform | Health status and platform id |
 
@@ -205,7 +205,7 @@ Expected outcomes include faster crisis response, better operational awareness o
 | R-003 | Synchronous evaluation slows ingestion | Low | High | Decouple via `AlertEvaluationWorker` (asynchronous) | Technical Lead |
 | R-004 | Multi-tenant data leakage via alerts or rule payloads | Low | High | Enforce RLS, omit raw PII from payloads, sign webhooks | Technical Lead |
 | R-005 | Webhook signing convention not yet finalized | Medium | Medium | Coordinate with ADR-0092 before implementation | Product Owner |
-| R-006 | ADR-0091 is still Proposed and may change | High | Medium | Treat this BRD as draft; re-validate after ADR acceptance | Product Owner |
+| R-006 | ADR-0091 (Accepted 2026-08-28) is still Proposed and may change | High | Medium | Treat this BRD as draft; re-validate after ADR acceptance | Product Owner |
 
 ---
 
@@ -213,7 +213,7 @@ Expected outcomes include faster crisis response, better operational awareness o
 
 | ID | Dependency | Type | Owner | Expected Resolution |
 |---|---|---|---|---|
-| D-001 | ADR-0091 acceptance | Internal | Menno | Upon ADR review and approval |
+| D-001 | ADR-0091 (Accepted 2026-08-28) acceptance | Internal | Menno | Upon ADR review and approval |
 | D-002 | `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent` (ADR-0012/0013) | Internal | Technical Lead | Already built |
 | D-003 | Watchlists (ADR-0044) | Internal | Technical Lead | Already built |
 | D-004 | Precomputed analytics views (ADR-0087) for fast threshold evaluation | Internal | Technical Lead | In progress |
@@ -254,7 +254,7 @@ Expected outcomes include faster crisis response, better operational awareness o
 
 ### 16.1 Reference Documents
 
-- ADR-0091: Real-time alert rules and delivery (`docs/adr/0091-real-time-alert-rules-and-delivery.md`)
+- ADR-0091 (Accepted 2026-08-28): Real-time alert rules and delivery (`docs/adr/0091-real-time-alert-rules-and-delivery.md`)
 - Feature design: Real-time alerts (`docs/product-research/feature-designs/09-real-time-alerts.md`)
 - Feature-to-ADR scoping plan (`docs/product-research/feature-adr-scoping.md`)
 - Related ADRs: ADR-0012, ADR-0013, ADR-0044, ADR-0087

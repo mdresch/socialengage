@@ -5,19 +5,19 @@
 | Field | Value |
 |---|---|
 | Document Title | SocialEngage – Author-initiated Takedown Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
-| Author(s) | BRD Writer Agent (synthesized from ADR-0092, feature design 14, feature-adr-scoping, and Epic 10 stories) |
+| Version | 1.0 |
+| Date | 2026-08-28 |
+| Author(s) | BRD Writer Agent (synthesized from ADR-0092 (Accepted 2026-08-28), feature design 14, feature-adr-scoping, and Epic 10 stories) |
 | Approver(s) | Menno, Business Sponsor / Product Owner / Technical Lead |
-| Status | Draft |
+| Status | Approved |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial BRD drafted from Proposed ADR-0092 and related feature design |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial BRD drafted from Proposed ADR-0092 (Accepted 2026-08-28) and related feature design |
 
-> **Note:** This BRD is based on ADR-0092, which is currently **Proposed**. It is a draft for review and may change if the ADR is revised before acceptance.
+> **Note:** This BRD is based on ADR-0092 (Accepted 2026-08-28), which is currently **Proposed**. It is a draft for review and may change if the ADR is revised before acceptance.
 
 ---
 
@@ -260,7 +260,7 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 
 ### Reference Documents
 
-- ADR-0092: Author-initiated takedown — `docs/adr/0092-author-initiated-takedown.md` (Proposed)
+- ADR-0092 (Accepted 2026-08-28): Author-initiated takedown — `docs/adr/0092-author-initiated-takedown.md` (Proposed)
 - Feature design 14: Author-initiated takedown — `docs/product-research/feature-designs/14-author-initiated-takedown.md`
 - Feature-to-ADR Scoping Plan — `docs/product-research/feature-adr-scoping.md`
 - Epic 10 user stories — `docs/user-stories/epic-10-adr-0086-to-0094.md`

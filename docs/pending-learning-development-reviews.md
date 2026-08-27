@@ -3212,3 +3212,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.13.youtube-admin-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/youtube/pollYouTube.ts, social-listening-core/src/connectors/youtube/types.ts, social-listening-core/src/connectors/youtube/youtubeConnector.ts
 - **Status:** Pending review
 
+## 2026-08-27 — fb40e92 — docs(adr): approve ADR-0088 through ADR-0094 (93 total accepted ADRs) and sync dashboard
+
+- **Full commit:** `fb40e920a76b7ab50f8f92516c5613a8fba0b94b`
+- **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/0089-platform-operations-dashboard.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0091-real-time-alert-rules-and-delivery.md, docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+

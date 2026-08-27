@@ -5,9 +5,9 @@
 |---|---|
 | Document Title | FDD-0094 Compliance Audit Pack — Functional Design Document |
 | Version | 1.0 |
-| Date | 2026-08-23 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved |
 | Related Documents | ../../adr/0094-compliance-audit-pack.md, ../Business-Requirements/BRD-0094-Compliance-Audit-Pack.md |
 
 ## 2. Purpose and Scope

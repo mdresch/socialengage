@@ -5,9 +5,9 @@
 |---|---|
 | Document Title | FDD-0090 Data Export — Posts CSV — Functional Design Document |
 | Version | 1.0 |
-| Date | 2026-08-23 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved |
 | Related Documents | ../../adr/0090-data-export-posts-csv.md, ../Business-Requirements/BRD-0090-Data-Export-Posts-CSV.md |
 
 ## 2. Purpose and Scope
@@ -17,7 +17,7 @@ Tenants need a reliable, self-service way to download their matched social-liste
 
 The proposed capability is a bounded, on-demand CSV export of posts visible to the caller. Synchronous exports serve the common case (up to 10,000 rows by default, with a hard cap of 50,000). Requests exceeding the synchronous threshold are handed off to an asynchronous background job that writes the file to Azure Blob Storage and returns a presigned download URL. The export shape intentionally omits raw internal JSONB fields and credential material, producing an analysis-ready file rather than a debugging dump.
 
-> **Draft notice:** ADR-0090 has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
+> **Draft notice:** ADR-0090 (Accepted 2026-08-28) has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
 
 ---
 
@@ -45,7 +45,7 @@ Tenants need a reliable, self-service way to download their matched social-liste
 
 The proposed capability is a bounded, on-demand CSV export of posts visible to the caller. Synchronous exports serve the common case (up to 10,000 rows by default, with a hard cap of 50,000). Requests exceeding the synchronous threshold are handed off to an asynchronous background job that writes the file to Azure Blob Storage and returns a presigned download URL. The export shape intentionally omits raw internal JSONB fields and credential material, producing an analysis-ready file rather than a debugging dump.
 
-> **Draft notice:** ADR-0090 has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
+> **Draft notice:** ADR-0090 (Accepted 2026-08-28) has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
 
 ---
 
@@ -139,10 +139,10 @@ See ADR Decision.
 ## 9. Interfaces and Integrations
 | ID | Dependency | Type | Owner | Expected Resolution |
 |---|---|---|---|---|
-| D-001 | ADR-0090 acceptance | Internal | Product Owner / Menno | Upon ADR review |
+| D-001 | ADR-0090 (Accepted 2026-08-28) acceptance | Internal | Product Owner / Menno | Upon ADR review |
 | D-002 | `withTenant()` RLS helpers and `GET /v1/posts` filtering (existing) | Internal | Engineering | Already in place |
 | D-003 | Azure Blob Storage and presigned-SAS generation | External | Platform Operations | Already provisioned |
-| D-004 | `POST /v1/posts/export` async worker and `export_jobs` table design | Internal | Engineering | Defined by ADR-0090 / Story 10.8 |
+| D-004 | `POST /v1/posts/export` async worker and `export_jobs` table design | Internal | Engineering | Defined by ADR-0090 (Accepted 2026-08-28) / Story 10.8 |
 | D-005 | Future DSR self-service portal (`15-dsr-self-service-portal`) | Internal | Product Owner | Reuses this export shape; not a blocker for v1 |
 
 ---

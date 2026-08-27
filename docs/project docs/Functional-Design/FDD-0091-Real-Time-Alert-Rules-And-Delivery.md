@@ -5,9 +5,9 @@
 |---|---|
 | Document Title | FDD-0091 Real-Time Alert Rules and Delivery — Functional Design Document |
 | Version | 1.0 |
-| Date | 2026-08-23 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
+| Status | Approved |
 | Related Documents | ../../adr/0091-real-time-alert-rules-and-delivery.md, ../Business-Requirements/BRD-0091-Real-Time-Alert-Rules-And-Delivery.md |
 
 ## 2. Purpose and Scope
@@ -17,7 +17,7 @@ Users currently discover reputation spikes, campaign surges, and connector probl
 
 The proposed solution authorizes an `alert_rules` data model, a threshold-evaluation worker, and multi-channel delivery (in-app, email, webhook) for both tenant-scoped and platform-scoped real-time alerts. Rules can fire on keyword mentions, topic volume, negative-sentiment share, post volume over a watchlist, or connector-health state changes. Each rule carries a configurable cooldown to prevent alert spam. When a threshold is crossed, the system stores a `tenant_alerts` row and dispatches the alert through the channels the rule owner has opted into.
 
-Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
+Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 (Accepted 2026-08-28) is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
 
 ---
 
@@ -48,7 +48,7 @@ Users currently discover reputation spikes, campaign surges, and connector probl
 
 The proposed solution authorizes an `alert_rules` data model, a threshold-evaluation worker, and multi-channel delivery (in-app, email, webhook) for both tenant-scoped and platform-scoped real-time alerts. Rules can fire on keyword mentions, topic volume, negative-sentiment share, post volume over a watchlist, or connector-health state changes. Each rule carries a configurable cooldown to prevent alert spam. When a threshold is crossed, the system stores a `tenant_alerts` row and dispatches the alert through the channels the rule owner has opted into.
 
-Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
+Expected outcomes include faster crisis response, better operational awareness of connector health, and a foundation for the `20-crisis-threshold-wizard` feature. Because ADR-0091 (Accepted 2026-08-28) is still **Proposed**, this BRD is a draft for review; its requirements may be revised once the ADR is accepted.
 
 ---
 
@@ -111,11 +111,11 @@ See ADR Decision.
 ## 7. Data Requirements
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
-| `alert_rules` | Tenant/user-owned rule definitions, thresholds, and delivery preferences | ADR-0091 | Tenant / Rule owner | Tenant configuration; no PII |
-| `tenant_alerts` | One row per rule trigger, including payload, status, and acknowledgment | ADR-0091 | Tenant / Rule owner | May include alert summaries; no raw post bodies |
+| `alert_rules` | Tenant/user-owned rule definitions, thresholds, and delivery preferences | ADR-0091 (Accepted 2026-08-28) | Tenant / Rule owner | Tenant configuration; no PII |
+| `tenant_alerts` | One row per rule trigger, including payload, status, and acknowledgment | ADR-0091 (Accepted 2026-08-28) | Tenant / Rule owner | May include alert summaries; no raw post bodies |
 | `watchlist_id` | Optional reference to the watchlist a post-based rule filters on | ADR-0044 | Tenant | Same sensitivity as watchlist query |
-| `threshold` | Rule-specific JSONB threshold such as `minPosts`, `negativePct`, or `keyword` | ADR-0091 | Rule owner | Tenant configuration |
-| `delivery` | JSONB of selected channels: in-app, email list, webhook list | ADR-0091 | Rule owner | Tenant configuration; may include webhook URLs |
+| `threshold` | Rule-specific JSONB threshold such as `minPosts`, `negativePct`, or `keyword` | ADR-0091 (Accepted 2026-08-28) | Rule owner | Tenant configuration |
+| `delivery` | JSONB of selected channels: in-app, email list, webhook list | ADR-0091 (Accepted 2026-08-28) | Rule owner | Tenant configuration; may include webhook URLs |
 | `SocialPostIngestedEvent` | Event stream that triggers post-based rule evaluation | ADR-0012 | Platform | Post metadata only |
 | `ConnectorHealthChangedEvent` | Event stream that triggers connector-health rule evaluation | ADR-0013 | Platform | Health status and platform id |
 
@@ -137,7 +137,7 @@ See ADR Decision.
 ## 9. Interfaces and Integrations
 | ID | Dependency | Type | Owner | Expected Resolution |
 |---|---|---|---|---|
-| D-001 | ADR-0091 acceptance | Internal | Menno | Upon ADR review and approval |
+| D-001 | ADR-0091 (Accepted 2026-08-28) acceptance | Internal | Menno | Upon ADR review and approval |
 | D-002 | `SocialPostIngestedEvent` and `ConnectorHealthChangedEvent` (ADR-0012/0013) | Internal | Technical Lead | Already built |
 | D-003 | Watchlists (ADR-0044) | Internal | Technical Lead | Already built |
 | D-004 | Precomputed analytics views (ADR-0087) for fast threshold evaluation | Internal | Technical Lead | In progress |
@@ -186,7 +186,7 @@ See ADR Decision.
 | R-003 | Synchronous evaluation slows ingestion | Low | High | Decouple via `AlertEvaluationWorker` (asynchronous) | Technical Lead |
 | R-004 | Multi-tenant data leakage via alerts or rule payloads | Low | High | Enforce RLS, omit raw PII from payloads, sign webhooks | Technical Lead |
 | R-005 | Webhook signing convention not yet finalized | Medium | Medium | Coordinate with ADR-0092 before implementation | Product Owner |
-| R-006 | ADR-0091 is still Proposed and may change | High | Medium | Treat this BRD as draft; re-validate after ADR acceptance | Product Owner |
+| R-006 | ADR-0091 (Accepted 2026-08-28) is still Proposed and may change | High | Medium | Treat this BRD as draft; re-validate after ADR acceptance | Product Owner |
 
 ---
 
