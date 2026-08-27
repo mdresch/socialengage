@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 07:29 | — | — | Review | — | Merge remote-tracking branch 'origin/main' into docs-review/2026-08-27 (c905fd0) |
 | 2026-08-27 | 05:20 | — | — | Review | — | chore: sync review-queue tracking for the 2026-08-27 doc review commit (a7e2c5f) |
 | 2026-08-27 | 05:19 | — | — | Review | — | Scheduled doc review: Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-27) (fa6ce2d) |
 | 2026-08-26 | 14:27 | — | — | Documentation | Story 6.39 | chore(dashboard): sync telemetry data for Story 6.39 (16043b0) |

@@ -2719,3 +2719,9 @@
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
 - **Status:** Pending review
 
+## 2026-08-27 — c905fd0 — Merge remote-tracking branch 'origin/main' into docs-review/2026-08-27
+
+- **Full commit:** `c905fd0ef108487dfb3cdbd85ae424813e12ab09`
+- **Files touched:** 
+- **Status:** Pending review
+
