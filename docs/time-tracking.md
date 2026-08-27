@@ -15,9 +15,11 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-08-27 | 20:13 | — | — | Documentation | — | feat(epic-9): complete remaining stories 9.6-9.11 (Onboarding UI, RAG pipeline, semantic search & generative Q&A) (c4021b3) |
-| 2026-08-27 | 19:57 | — | — | Documentation | Story 9.4 | feat(epic-9): implement Story 9.4 (Crisis Threshold Wizard UI) and update project-progress-dashboard sync parser (5ecab17) |
-| 2026-08-27 | 19:33 | — | — | Documentation | Story 9.2 | feat(epic-9): implement Story 9.2 (metric explainability) and Story 9.3 (crisis templates), add 4-way Obsidian traceability linker (e822c6d) |
+| 2026-08-27 | 20:10 | — | — | Documentation | — | Merge branch 'main' of https://github.com/mdresch/socialengage (3f21e11) |
+| 2026-08-27 | 20:05 | — | — | Review | Story 9.6 | chore(tracking): record post-commit review entries for Story 9.6 (bb3281c) |
+| 2026-08-27 | 20:05 | — | — | Review | Story 9.6 | chore(tracking): record post-commit review entries for Story 9.6 (e0018a4) |
+| 2026-08-27 | 20:04 | — | — | Documentation | — | feat(story-9.6): Onboarding checklist UI (frontend) (8fd0aa4) |
+| 2026-08-27 | 16:52 | — | — | Documentation | — | chore(synthesis): commit self-learning synthesis outputs and tracking docs (b3599e5) |
 | 2026-08-27 | 16:49 | — | — | Documentation | ADR-0086 | docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views) (a15222e) |
 | 2026-08-27 | 16:48 | — | — | Documentation | ADR-0086 | docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views) (1f581dd) |
 | 2026-08-27 | 14:25 | — | — | Documentation | Story 6.6 | fix(dashboard): recognize Relocated story status so Story 6.6 stub is not counted as pending (2ccc739) |
