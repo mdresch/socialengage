@@ -3394,3 +3394,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.4.daily-digest-ui.contract.test.ts, social-listening-admin/src/app/api/digest/preferences/route.ts, social-listening-admin/src/app/api/digest/preview/route.ts, social-listening-admin/src/app/tenant/settings/digest/DigestPreferencesView.tsx, social-listening-admin/src/app/tenant/settings/digest/page.tsx, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.jest-test-db-30356.json
 - **Status:** Pending review
 
+## 2026-08-28 — f723f60 — feat(topics): implement Story 11.5 — Topic evolution timeline backend (ADR-0097)
+
+- **Full commit:** `f723f605002a292520c2a958425c5f68bfd8770b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.jest-test-db-30356.json, social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts, social-listening-core/migrations/0056_create_topic_daily_counts.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicEvolutionService.ts
+- **Status:** Pending review
+

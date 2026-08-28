@@ -2477,6 +2477,68 @@ export async function previewDailyDigest(
   return (await response.json()) as DigestPreviewResponse;
 }
 
+// ---------------------------------------------------------------------------
+// Story 11.5 / 11.6 (ADR-0097) — Topic Evolution Timeline
+// ---------------------------------------------------------------------------
+
+export interface TopicEvolutionPoint {
+  date: string;
+  mentionCount: number;
+  uniqueAuthors: number;
+  sentiment: {
+    positive: number;
+    negative: number;
+    neutral: number;
+    mixed: number;
+  };
+  topAuthors: Array<{ authorId: string; authorName: string; count: number }>;
+  topKeywords: Array<{ keyword: string; count: number }>;
+  trend: 'rising' | 'stable' | 'falling';
+}
+
+export interface TopicEvolutionResponse {
+  topicId: string;
+  topicName: string;
+  startDate: string;
+  endDate: string;
+  granularity: 'day' | 'week' | 'month';
+  points: TopicEvolutionPoint[];
+  previousPeriodPoints?: Array<{
+    date: string;
+    mentionCount: number;
+    uniqueAuthors: number;
+  }>;
+}
+
+/**
+ * Story 11.5 / 11.6 (ADR-0097) — queries topic evolution longitudinal time-series data.
+ */
+export async function getTopicEvolution(options: {
+  topic?: string;
+  topicId?: string;
+  topicName?: string;
+  start?: string;
+  end?: string;
+  granularity?: 'day' | 'week' | 'month';
+  compareToPrevious?: boolean;
+}): Promise<TopicEvolutionResponse> {
+  const params = new URLSearchParams();
+  if (options.topic) params.set('topic', options.topic);
+  if (options.topicId) params.set('topicId', options.topicId);
+  if (options.topicName) params.set('topicName', options.topicName);
+  if (options.start) params.set('start', options.start);
+  if (options.end) params.set('end', options.end);
+  if (options.granularity) params.set('granularity', options.granularity);
+  if (options.compareToPrevious) params.set('compareToPrevious', 'true');
+
+  const response = await authenticatedCoreFetch(`/v1/topics/evolution?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch topic evolution: ${response.status}`);
+  }
+  return (await response.json()) as TopicEvolutionResponse;
+}
+
+
 
 
 

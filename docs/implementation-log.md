@@ -3591,8 +3591,31 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Key Implementation Details:**
   - Created `topic_daily_counts` table with RLS for precomputed fast longitudinal query execution.
   - Implemented 7-day slope linear regression trend classification (`rising` if $> +5\%/\text{day}$, `falling` if $< -5\%/\text{day}$, otherwise `stable`).
-  - Added support for flexible time bucketing (`day`, `week`, `month`) and period-over-period comparison (`compareToPrevious`).
   - Mounted `GET /v1/topics/evolution` endpoint with token-based tenant identity enforcement via `requireTenantUser()`.
+
+---
+
+## 2026-08-28 — Story 11.6 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.6 / ADR-0097, BRD-0097, FDD-0097
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.6.topic-evolution-ui.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — Topic Evolution types and client methods)
+  - `social-listening-admin/src/app/api/topics/evolution/route.ts` (new — BFF proxy for topic evolution queries)
+  - `social-listening-admin/src/app/tenant/analytics/TopicEvolutionTimeline.tsx` (new — multi-series timeline, trend annotation, keyword clusters, author widgets)
+  - `social-listening-admin/src/app/tenant/analytics/topics/page.tsx` (new — dedicated topic evolution analytics page)
+  - `social-listening-admin/contracts/epic-11/story-11.6.topic-evolution-ui.contract.test.ts` (new)
+  - `social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.6 Built)
+- **Suite at merge:** PASS (6/6 tests in story-11.6 contract, 20/20 in epic-11 admin suite)
+- **Key Implementation Details:**
+  - Built `TopicEvolutionTimeline` with stacked sentiment volume bars, interactive hover inspection, and prior period ghost comparison overlay.
+  - Implemented `TrendAnnotation` badge displaying slope classification (`rising` 🔥, `falling` 📉, `stable` ➡️).
+  - Built `AuthorSparkline` (top driver authors) and `KeywordHeatmap` (keyword frequency breakdown) detail widgets.
+  - Implemented deep link synchronization and URL state management (`topic`, `granularity`, `compareToPrevious`).
+
 
 
 

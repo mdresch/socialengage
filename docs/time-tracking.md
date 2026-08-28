@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 11:08 | — | — | Documentation | Story 11.5 | feat(topics): implement Story 11.5 — Topic evolution timeline backend (ADR-0097) (f723f60) |
 | 2026-08-28 | 10:12 | — | — | Documentation | Story 11.4 | feat(digest-ui): implement Story 11.4 — Daily digest email UI (ADR-0096) (754db11) |
 | 2026-08-28 | 10:01 | — | — | Documentation | Story 11.3 | feat(digest): implement Story 11.3 — Daily digest email (ADR-0096) (0052a8f) |
 | 2026-08-28 | 09:32 | — | — | Documentation | Story 11.2 | feat(crm-ui): implement Story 11.2 — Case handoff to CRM UI (ADR-0095) (a76b564) |
