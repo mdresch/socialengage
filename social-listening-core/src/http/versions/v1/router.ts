@@ -35,6 +35,7 @@ import { alertRulesRouter } from './alertRulesRouter';
 import { webhooksRouter } from './webhooksRouter';
 import { youtubeConnectorRouter } from './youtubeConnectorRouter';
 import { createCRMRoutes } from '../../routes/crmRoutes';
+import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -67,6 +68,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
       res.status(503).json({ status: 'unavailable' });
     }
   });
+
+  /** Story 11.3 (ADR-0096) — public one-click unsubscribe route. */
+  v1Router.use('/', createPublicDigestRoutes());
 
   /** Story 10.8 (ADR-0090) — posts data export (streaming CSV & async jobs). Mounted BEFORE generic /posts. */
   v1Router.use('/posts', authMiddleware, postsExportRouter);
@@ -205,6 +209,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 11.1 (ADR-0095) — CRM connectors, field mappings, and case handoff. */
   v1Router.use('/', authMiddleware, createCRMRoutes());
+
+  /** Story 11.3 (ADR-0096) — daily digest preferences, previews, and unsubscribe. */
+  v1Router.use('/', authMiddleware, createDigestRoutes());
 
   return v1Router;
 }

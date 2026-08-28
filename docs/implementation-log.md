@@ -3519,4 +3519,33 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added "Push to CRM" action button to `PostDetailPanel` and author lead rows in `ProspectingListDetailView`.
   - Added BFF proxy endpoints under `/api/crm/` and typed client methods in `core-client.ts`.
 
+---
+
+## 2026-08-28 — Story 11.3 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.3 / ADR-0096, BRD-0096, FDD-0096
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.3.daily-digest-email.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/daily-digest-email/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0054_create_user_digest_preferences.sql` (new)
+  - `social-listening-core/migrations/0055_grant_user_digest_preferences_platform_admin.sql` (new)
+  - `social-listening-core/src/digest/digestPreferenceStore.ts` (new)
+  - `social-listening-core/src/digest/dailyDigestBuilder.ts` (new)
+  - `social-listening-core/src/digest/dailyDigestRenderer.ts` (new)
+  - `social-listening-core/src/digest/dailyDigestScheduler.ts` (new)
+  - `social-listening-core/src/http/routes/digestRoutes.ts` (new)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted digest routes and public unsubscribe)
+  - `social-listening-core/contracts/epic-11/story-11.3.daily-digest-email.contract.test.ts` (new)
+  - `social-listening-core/.claude/skills/daily-digest-email/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.3 Built)
+- **Suite at merge:** PASS (6/6 tests in story-11.3 contract, tsc typecheck zero errors)
+- **Key Implementation Details:**
+  - Implemented `user_digest_preferences` table with timezone-aware settings, delivery hour, and topic/post/AI inclusion flags.
+  - Built hourly scheduler query matching `EXTRACT(HOUR FROM (now() AT TIME ZONE timezone)) = EXTRACT(HOUR FROM send_at_local)` with 20-hour duplicate suppression cooldown (`last_sent_at < now() - INTERVAL '20 hours'`).
+  - Aggregated 24-hour sentiment, platform, topic, and notable post data with blended impact score ranking ($(\text{reach} \times 0.4) + (\text{engagement} \times 0.4) + (\text{negative} ? 300 : 0)$).
+  - Implemented dual-MIME email renderer (`text/html` and `text/plain`) with RFC 8058 one-click unsubscribe links.
+  - Implemented authenticated endpoints `GET /v1/users/me/digest-preferences`, `POST /v1/users/me/digest-preferences`, `POST /v1/users/me/digest-previews`, and public endpoint `GET /v1/digest/unsubscribe`.
+
+
 
