@@ -1,192 +1,204 @@
 # Functional Design Document
 
 ## 1. Document Control
+
 | Field | Value |
 |---|---|
-| Document Title | FDD-0095 Case Handoff To CRM — Functional Design Document |
-| Version | 1.0 |
-| Date | 2026-08-23 |
-| Author(s) | FDD Writer Batch Agent |
-| Status | Draft |
-| Related Documents | ../../adr/0095-case-handoff-to-crm.md, ../Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md |
+| Document Title | FDD-0095 Case and Lead Handoff to CRM — Functional Design Document |
+| Version | 1.1 |
+| Date | 2026-08-28 |
+| Author(s) | Technical Lead & Architecture Review Team |
+| Reviewer(s) | Technical Lead (Menno) |
+| Status | Approved |
+| Related Documents | `docs/adr/0095-case-handoff-to-crm.md` (Accepted 2026-08-28), `docs/project docs/Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md`, ADR-0051 (Connector Activation & Credentials), ADR-0073 / ADR-0075 (`outbound_activities`), ADR-0086 / ADR-0117 (Prospecting Lists & CRM Push), ADR-0044 (Tenancy & Ownership), Stories 11.1 and 11.2 |
+
+---
 
 ## 2. Purpose and Scope
+
 ### 2.1 Purpose
-This document translates the accepted architecture decision in 0095-case-handoff-to-crm.md and the business requirements in BRD-0095-Case-Handoff-To-CRM.md into functional design for **Case Handoff To CRM**.
-This BRD defines the business requirements for ADR-0095 *Case handoff to CRM*. The feature lets a `Tenant-Social-Care-Agent` or `Tenant-Brand-Reputation-Manager` escalate a social-inbox item directly into an external CRM (HubSpot or Salesforce) as a lead, opportunity, or support case, without leaving the SocialEngage platform.
+This document translates the accepted architectural decisions in **ADR-0095** and business requirements in **BRD-0095** into the detailed functional specification for **Case and Lead Handoff to CRM**.
 
-Currently, social care teams must manually copy post context, author details, and sentiment into their CRM or support tool, which causes context loss, duplicate data entry, and slower resolution. The proposed solution is a pluggable `CRMConnector` integration that pushes a typed case payload to the tenant's configured CRM, stores the resulting `crmCaseId` and `crmUrl`, and records the action in `outbound_activities` for audit and retry. In v1, the handoff is one-way, supports HubSpot and Salesforce, and reuses the existing connector-activation and outbound-activity patterns already established by ADR-0051, ADR-0073, and ADR-0075.
-
-**Note:** ADR-0095 is currently `Proposed`. This BRD is a draft for review and may change once the ADR is accepted.
-
----
+This capability enables social care agents (`Tenant-Social-Care-Agent`), brand managers (`Tenant-Brand-Reputation-Manager`), and social sellers (`Social-Selling-Strategist`) to escalate social-inbox items, care issues, or prospective leads directly into an external CRM (Microsoft Dynamics 365, Salesforce, or HubSpot) without manual data entry.
 
 ### 2.2 Scope
+
 **In scope:**
-- A `CRMConnector` interface (`pushCase`, `validateCredentials`, `status`) for CRM integrations.
-- HubSpot and Salesforce v1 connector implementations.
-- `POST /v1/inbox/items/:id/case` endpoint that accepts a case-type, optional assignee, notes, and custom fields.
-- Storage of CRM credentials in `platform_credentials` with `credential_type = 'crm'`.
-- Default field mapping from `CRMCasePayload` to CRM-specific object fields.
-- Tenant-admin-configurable field overrides in a `crm_field_mappings` table.
-- `outbound_activities` record with `activity_type='crm_handoff'` for every push.
-- Idempotent and retryable push behavior where the target CRM allows it.
-- UI action on post detail and inbox item to create a case, choose connector/case type, and display the resulting CRM link.
+- A pluggable `CRMConnector` interface (`pushEntity`, `validateCredentials`, `status`) supporting Microsoft Dynamics 365 (Dataverse Web API v9.2), Salesforce (REST API), and HubSpot (CRM v3 API).
+- Generalized `CRMCasePayload` supporting both post-level escalation (`POST /v1/inbox/items/:id/case`) and author-level prospecting pushes (`POST /v1/prospecting-lists/:id/crm-handoff` per ADR-0117).
+- Typed CRM entity mapping (`lead`, `opportunity`, `support`) across Dynamics 365, Salesforce, and HubSpot.
+- Storage of CRM credentials in `platform_credentials` with `credential_type = 'crm'` (ADR-0051).
+- Tenant-admin-configurable field overrides via a `crm_field_mappings` database table.
+- Comprehensive outbound audit logging in `outbound_activities` with `activity_type = 'crm_handoff'`.
+- Fail-closed deduplication with `409 Conflict` returning existing CRM links unless `allowDuplicate: true` is passed.
+- UI modal on post details, inbox items, and prospecting lists to configure and trigger handoff.
 
 **Out of scope:**
-- Bidirectional synchronization (CRM status updates pulled back into SocialEngage).
-- CRM providers other than HubSpot and Salesforce in v1.
-- Automatic case creation without user confirmation.
-- AI-generated summaries or priority recommendations (deferred; listed as future enhancements in the feature design).
-- Generic `POST /v1/crm/push` that exposes raw CRM objects.
-
-## 3. Context and Background
-See ADR Context.
-This BRD defines the business requirements for ADR-0095 *Case handoff to CRM*. The feature lets a `Tenant-Social-Care-Agent` or `Tenant-Brand-Reputation-Manager` escalate a social-inbox item directly into an external CRM (HubSpot or Salesforce) as a lead, opportunity, or support case, without leaving the SocialEngage platform.
-
-Currently, social care teams must manually copy post context, author details, and sentiment into their CRM or support tool, which causes context loss, duplicate data entry, and slower resolution. The proposed solution is a pluggable `CRMConnector` integration that pushes a typed case payload to the tenant's configured CRM, stores the resulting `crmCaseId` and `crmUrl`, and records the action in `outbound_activities` for audit and retry. In v1, the handoff is one-way, supports HubSpot and Salesforce, and reuses the existing connector-activation and outbound-activity patterns already established by ADR-0051, ADR-0073, and ADR-0075.
-
-**Note:** ADR-0095 is currently `Proposed`. This BRD is a draft for review and may change once the ADR is accepted.
+- Bidirectional synchronization (pulling external CRM updates back into SocialEngage in v1).
+- Automatic / background case creation without explicit user action in v1.
+- Direct raw object creation bypassing typed entity schemas.
 
 ---
 
-## 4. Goals and Objectives
-| # | Objective | Success Measure |
-|---|---|---|
-| 1 | Close the loop between social listening and CRM/support workflows | A social-inbox item can be escalated to a CRM in a single action |
-| 2 | Preserve full context during escalation | CRM case contains post excerpt, author, sentiment, platform, and a link back to the original item |
-| 3 | Maintain auditability and compliance | Every handoff is recorded in `outbound_activities` with status and retry capability |
-| 4 | Support multiple CRM vendors without vendor lock-in | HubSpot and Salesforce connectors ship in v1; the `CRMConnector` interface allows additional providers |
-| 5 | Reduce manual data entry and duplicate cases | Batched/idempotent pushes prevent duplicate CRM records where the CRM supports it |
+## 3. Architecture & Functional Components
+
+### 3.1 `CRMConnector` Provider Abstraction
+
+```ts
+export type CRMProviderType = 'dynamics365' | 'salesforce' | 'hubspot';
+export type CRMEntityType = 'lead' | 'opportunity' | 'support';
+
+export interface CRMCasePayload {
+  tenantId: string;
+  authorId: string;
+  authorName: string;
+  authorHandle?: string;
+  authorPublicUrl?: string;
+  postId?: string;                   // Optional for author-only prospecting pushes
+  postExcerpt?: string;
+  platformId: string;
+  publishedAt?: string;
+  sentiment?: string;
+  watchlistId?: string;
+  entityType: CRMEntityType;          // 'lead' | 'opportunity' | 'support'
+  assignedTo?: string;               // External CRM User / Queue ID
+  notes?: string;
+  customFields?: Record<string, any>;
+}
+
+export interface CRMPushResult {
+  crmRecordId: string;
+  crmRecordUrl: string;
+  entityType: string;
+  rawResponse?: Record<string, any>;
+}
+
+export interface CRMConnector {
+  readonly id: string;
+  readonly provider: CRMProviderType;
+  
+  pushEntity(
+    ctx: ConnectorContext,
+    payload: CRMCasePayload
+  ): Promise<CRMPushResult>;
+  
+  validateCredentials(ctx: ConnectorContext): Promise<boolean>;
+  status(ctx: ConnectorContext): Promise<ConnectorStatus>;
+}
+```
+
+### 3.2 Provider Implementations & Entity Mappings
+
+| Generic Type | Microsoft Dynamics 365 (Dataverse v9.2) | Salesforce | HubSpot (CRM v3) |
+| :--- | :--- | :--- | :--- |
+| **`lead`** | `leads` entity (`subject`, `description`, `lastname`, `leadsourcecode`) | `Lead` (`LastName`, `Company`, `Description`, `LeadSource`) | `contacts` + `deals` (`leadstatus`, `dealname`) |
+| **`opportunity`** | `opportunities` entity (`name`, `description`, `customerid_contact@odata.bind`) | `Opportunity` (`Name`, `StageName`, `CloseDate`, `Description`) | `deals` (`dealname`, `pipeline`, `amount`) |
+| **`support`** | `incidents` entity (`title`, `description`, `casetypecode`) | `Case` (`Subject`, `Description`, `Origin`, `Priority`) | `tickets` (`hs_ticket_subject`, `content`, `hs_pipeline_stage`) |
+
+**Microsoft Dynamics 365 Integration Details:**
+- **Auth Flow:** Azure AD (Entra ID) OAuth 2.0 Client Credentials or User Delegation (`https://<org>.crm.dynamics.com/.default`).
+- **REST Surface:** Dataverse Web API v9.2 `GET`/`POST https://<org>.crm.dynamics.com/api/data/v9.2/<entityset>`.
+- **Deep Links:** Generated as `https://<org>.crm.dynamics.com/main.aspx?etn=<entity>&id={<guid>}&pagetype=entityrecord`.
 
 ---
 
-**Positive consequences (from ADR):**
-1. **CRM integration is pluggable:** the platform supports HubSpot and Salesforce v1, with room for more.
-2. **Actionable listening:** a post can become a CRM record in one click.
-3. **Reuses outbound audit:** the handoff follows the same `outbound_activities` pattern as replies and publishing.
-4. **Field-mapping complexity:** custom mappings require validation but are essential for CRM adoption.
+## 4. Database Schema (`crm_field_mappings`)
+
+```sql
+CREATE TABLE crm_field_mappings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  crm_connector_id text NOT NULL,
+  entity_type text NOT NULL CHECK (entity_type IN ('lead', 'opportunity', 'support')),
+  source_field text NOT NULL,        -- e.g. 'authorName', 'postExcerpt', 'notes'
+  target_field text NOT NULL,        -- e.g. 'subject' (Dynamics), 'Description' (Salesforce)
+  is_required boolean NOT NULL DEFAULT false,
+  default_value text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_crm_field_mapping UNIQUE (tenant_id, crm_connector_id, entity_type, source_field)
+);
+
+CREATE INDEX idx_crm_field_mappings_lookup 
+  ON crm_field_mappings(tenant_id, crm_connector_id, entity_type);
+```
 
 ---
 
-## 5. Functional Requirements
-| ID | Requirement | Priority | Acceptance Criteria | Owner |
-|---|---|---|---|---|
-| BR-001 | The system shall provide a `CRMConnector` interface with `pushCase`, `validateCredentials`, and `status` methods | Must | Interface compiles; at least two providers implement it | Technical Lead |
-| BR-002 | The system shall support HubSpot and Salesforce CRM providers in v1 | Must | Each provider can push a `CRMCasePayload` and return `crmCaseId` and `crmUrl` | Product Owner |
-| BR-003 | The system shall expose `POST /v1/inbox/items/:id/case` to create a CRM case from an inbox/social item | Must | Endpoint accepts `crmConnectorId`, `caseType`, `assignedTo`, `notes`, and `customFields`; returns `outboundActivityId`, `crmCaseId`, and `crmUrl` | Product Owner |
-| BR-004 | The system shall store CRM credentials in `platform_credentials` with `credential_type='crm'` | Must | Credentials are isolated by ownership tier and tenant/user | Technical Lead |
-| BR-005 | The system shall allow a `Tenant-Admin` to override default CRM field mappings via a `crm_field_mappings` table | Should | Mapping overrides are tenant-scoped and validated before use | Product Owner |
-| BR-006 | The system shall record every handoff in `outbound_activities` with `activity_type='crm_handoff'` | Must | Record includes `post_id`, `author_id`, `crm_case_id`, `crm_url`, and `response_status` | Technical Lead |
-| BR-007 | The system shall support idempotent `pushCase` calls where the CRM allows it | Should | Retry of the same `post_id` to the same connector does not create a duplicate CRM record | Technical Lead |
-| BR-008 | The UI shall provide a "Create case in CRM" action on `PostDetail` and `InboxItem` | Must | Action opens a dialog and, on success, displays the CRM link | Product Owner |
-| BR-009 | The UI dialog shall let the user choose the CRM connector, `caseType`, assignee, and notes | Should | All optional fields are clearly labeled and validated | Product Owner |
-| BR-010 | The UI shall surface connector errors and allow the user to retry a failed handoff | Should | Error messages explain the failure; retry reuses the same `outbound_activities` anchor | Product Owner |
+## 5. API Specifications
 
-Priority levels: Must / Should / Could / Won't (MoSCoW)
+### 5.1 `POST /v1/inbox/items/:id/case`
 
-### 5.1 Architecture Decision
-See ADR Decision.
+- **URL Parameter:** `:id` (Social Post ID or Inbox Item ID)
+- **Authorization:** `Tenant-User` or `Tenant-Admin` with active CRM connector.
 
-## 6. User Interaction and Workflows
-### 6.1 Primary Actors
-| Stakeholder | Role / Interest | Impact | Key Needs |
+**Request Body (`application/json`):**
+```json
+{
+  "crmConnectorId": "dynamics365-production",
+  "entityType": "support",
+  "assignedTo": "queue-support-tier1",
+  "notes": "Customer reported billing issue on LinkedIn post",
+  "customFields": {
+    "severity": "high"
+  },
+  "allowDuplicate": false
+}
+```
+
+**Success Response (`201 Created`):**
+```json
+{
+  "outboundActivityId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "crmRecordId": "inc-98213-abc",
+  "crmRecordUrl": "https://contoso.crm.dynamics.com/main.aspx?etn=incident&id={00000000-0000-0000-0000-000000000000}&pagetype=entityrecord",
+  "status": "success"
+}
+```
+
+**Duplicate Response (`409 Conflict`):**
+```json
+{
+  "error": "Item already pushed to CRM",
+  "crmRecordId": "inc-98213-abc",
+  "crmRecordUrl": "https://contoso.crm.dynamics.com/main.aspx?etn=incident&id={00000000-0000-0000-0000-000000000000}&pagetype=entityrecord",
+  "outboundActivityId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+---
+
+## 6. Outbound Activities Audit Trail
+
+Every handoff creates an entry in `outbound_activities`:
+- `tenant_id`: Invoking tenant ID.
+- `activity_type`: `'crm_handoff'`.
+- `post_id`: Associated `social_posts.id` (nullable for author-only prospecting handoffs).
+- `author_id`: Target `authors.id`.
+- `connector_id`: CRM connector identifier.
+- `external_id`: External record ID returned by CRM.
+- `external_url`: Deep link to view record in CRM portal.
+- `status`: `'success' | 'failed'`.
+- `error_details`: Captured error payload on failure.
+
+---
+
+## 7. Functional Requirements Matrix
+
+| ID | Requirement | Priority | Acceptance Criteria |
 |---|---|---|---|
-| Tenant-Social-Care-Agent | Primary user; escalates inbox items to CRM | High | One-click handoff with clear confirmation and CRM link |
-| Tenant-User | Reviews assigned conversations | High | See linked CRM case on the inbox item |
-| Tenant-Admin | Configures CRM connector and field mappings | High | Secure credential setup and customizable mapping per tenant |
-| Tenant-Brand-Reputation-Manager | Tracks which reputation issues are handed off | Medium | Visibility into handoff status and linked support cases |
-| Product Owner | Defines feature scope and acceptance | Medium | Clean contract, pluggable design, and auditable handoffs |
-| Technical Lead | Reviews architecture and security | Medium | Reuse of existing connector patterns and secure credential storage |
+| FR-001 | `CRMConnector` provider abstraction | Must | Interface supports `pushEntity`, `validateCredentials`, `status` across Dynamics 365, Salesforce, and HubSpot |
+| FR-002 | Microsoft Dynamics 365 Dataverse Integration | Must | Supports Azure AD OAuth 2.0, Dataverse Web API v9.2, and canonical deep links |
+| FR-003 | Post & Prospecting List Escalation | Must | Generalized payload cleanly supports post escalations and author prospecting pushes |
+| FR-004 | Custom Field Mapping Schema | Should | `crm_field_mappings` table stores tenant-specific field overrides with RLS |
+| FR-005 | Fail-Closed Deduplication | Must | Returns `409 Conflict` with existing CRM links unless `allowDuplicate: true` |
+| FR-006 | Outbound Activity Audit Logging | Must | Records every push in `outbound_activities` with retry support on failure |
+| FR-007 | Front-end CRM Escalation Modal | Must | Post detail, inbox, and prospecting lists render CRM handoff dialog with link feedback |
 
 ---
 
-### 6.2 User Stories
-| ID | Epic | Intent | Acceptance Criteria |
-|---|---|---|---|
-| Story 11.1 | epic-11-adr-0095-to-0100.md | As backend engineer, I want a `CRMConnector` interface, HubSpot and Salesforce implementations, and `POST /v1/inbox/:id/case`, so that a `Tenant-Social-Care-... | `CRMConnector` interface with `pushCase()`, `validateCredentials()`, and `status()`.; CRM credentials stored in `platform_credentials` with `credential_type=... |
-| Story 11.2 | epic-11-adr-0095-to-0100.md | As `Tenant-Social-Care-Agent`, I want a "Create case in CRM" action on the post detail and inbox item, so that I can push a relevant post into our CRM withou... | "Create case" button on `PostDetail` and `InboxItem`.; A modal lets the user pick the CRM connector, `caseType`, assignee, and optional notes.; On success, t... |
+## 8. Non-Functional Requirements
 
-
-## 7. Data Requirements
-| Data Element | Description | Source | Owner | Sensitivity |
-|---|---|---|---|---|
-| `CRMCasePayload` (postId, authorId, authorName, authorPublicUrl, postExcerpt, platformId, publishedAt, sentiment, watchlistId, caseType, assignedTo) | Typed payload pushed to the CRM | `social_posts` / `inbox_items` | Product / Engineering | Personal data (author details) |
-| `outbound_activities` row (`activity_type='crm_handoff'`) | Audit and idempotency anchor | Generated at handoff | Engineering | Operational |
-| `platform_credentials` with `credential_type='crm'` | CRM authentication secrets | Tenant/user activation | Engineering | High (credentials) |
-| `crm_field_mappings` | Tenant overrides of default field mapping | Tenant-Admin configuration | Product | Operational |
-| `crmCaseId` / `crmUrl` | External reference returned by the CRM | CRM provider response | Product | Operational |
-
----
-
-## 8. Business Rules and Logic
-| ID | Rule |
-|---|---|
-| BRU-001 | A user may only hand off an inbox item to a CRM connector that is activated for their tenant or user tier. |
-| BRU-002 | A `Tenant-Admin` or `Tenant-User` may activate a CRM connector for themselves; a `Tenant-Admin` may also activate it tenant-wide. |
-| BRU-003 | A handoff must write an `outbound_activities` row with `activity_type='crm_handoff'` before returning a success response. |
-| BRU-004 | Custom `crm_field_mappings` are validated to ensure target fields exist for the selected CRM provider. |
-| BRU-005 | A `post_id` + `crm_connector_id` combination is the idempotency anchor for retry. |
-| BRU-006 | PII may only be sent to the CRM if the integration contract and tenant configuration explicitly allow it. |
-
----
-
-## 9. Interfaces and Integrations
-| ID | Dependency | Type | Owner | Expected Resolution |
-|---|---|---|---|---|
-| D-001 | ADR-0051 connector activation pattern | Internal | Technical Lead | Already in place |
-| D-002 | ADR-0073/0075 `outbound_activities` pattern | Internal | Technical Lead | Already in place |
-| D-003 | `docs/product-research/feature-designs/23-case-handoff-to-crm.md` | Internal | Product Owner | Already in place |
-| D-004 | Story 11.1 (backend `CRMConnector` and `POST /v1/inbox/:id/case`) | Internal | Engineering | Required before Story 11.2 |
-| D-005 | Story 11.2 (case handoff UI) | Internal | Engineering | Depends on Story 11.1 |
-
----
-
-- The tenant has already activated a CRM connector with valid credentials.
-- The user performing the handoff has the appropriate role (`Tenant-Social-Care-Agent`, `Tenant-Brand-Reputation-Manager`, etc.).
-- HubSpot and Salesforce APIs remain available and reachable from the platform.
-- The existing `outbound_activities` table can accommodate `crm_handoff` rows.
-
-## 10. Non-Functional Considerations
-| ID | Requirement | Category | Priority | Acceptance Criteria |
-|---|---|---|---|---|
-| NFR-001 | CRM credentials and field mappings must be isolated per tenant/user | Security | Must | RLS and ownership-tier checks prevent cross-tenant access |
-| NFR-002 | Handoff API response time should be under 5 seconds for the 95th percentile | Performance | Should | Monitored in production for 30 days |
-| NFR-003 | Handoff failures are retried and logged without data loss | Reliability | Must | Failed `outbound_activities` can be retried; no silent drops |
-| NFR-004 | The connector framework is extensible to new CRM providers | Maintainability | Must | New provider requires only a new `CRMConnector` implementation and field mapping |
-| NFR-005 | UI is keyboard-navigable and provides clear success/error messages | Accessibility | Should | Dialog passes basic keyboard and screen-reader checks |
-
----
-
-## 11. Error Handling and Exceptions
-1. **CRM integration is pluggable:** the platform supports HubSpot and Salesforce v1, with room for more.
-2. **Actionable listening:** a post can become a CRM record in one click.
-3. **Reuses outbound audit:** the handoff follows the same `outbound_activities` pattern as replies and publishing.
-4. **Field-mapping complexity:** custom mappings require validation but are essential for CRM adoption.
-
----
-
-## 12. Assumptions and Dependencies
-- The tenant has already activated a CRM connector with valid credentials.
-- The user performing the handoff has the appropriate role (`Tenant-Social-Care-Agent`, `Tenant-Brand-Reputation-Manager`, etc.).
-- HubSpot and Salesforce APIs remain available and reachable from the platform.
-- The existing `outbound_activities` table can accommodate `crm_handoff` rows.
-
-## 13. Open Questions / Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| R-001 | CRM API rate limits cause handoff failures | Medium | High | Implement idempotent retries, queue failed pushes, and surface retry UI | Technical Lead |
-| R-002 | Field mapping errors produce invalid CRM records | Medium | Medium | Validate `crm_field_mappings` and provide default mappings per provider | Product Owner |
-| R-003 | Low adoption by social care agents | Medium | Medium | Include one-click action, clear CRM link, and training for new UI | Product Owner |
-| R-004 | HubSpot/Salesforce object model changes break mapping | Low | Medium | Abstract mapping behind `CRMConnector`; keep provider-specific logic isolated | Technical Lead |
-| R-005 | PII sent to CRM without proper consent | Low | High | Enforce tenant-level PII consent flag and default to minimal payload | Product Owner |
-
----
-
-## 14. Appendix
-- ADR: `../../adr/0095-case-handoff-to-crm.md`
-- BRD: `../Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md`
-- Feature design: `docs/product-research/feature-designs/23-case-handoff-to-crm.md``
-- Feature design: `docs/product-research/feature-designs/06-unified-social-inbox.md``
-- Deep research: `docs/product-research/reports/23-case-handoff-to-crm-deep-research.md``
-- User stories: see extracted stories above
+- **Security & Multi-Tenancy:** All credentials, field mappings, and activity records are strictly isolated via PostgreSQL RLS.
+- **Latency & Reliability:** Handoff operations complete within 3 seconds under normal network conditions; failures write detailed diagnostic payloads to `outbound_activities`.
+- **Maintainability:** Adding a new CRM requires only a single class implementing `CRMConnector` with no changes to core listening pipelines.
