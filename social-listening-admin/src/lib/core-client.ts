@@ -2667,6 +2667,158 @@ export async function getConnectorTargets(platformId: string): Promise<Connector
   return Array.isArray(payload.targets) ? payload.targets : [];
 }
 
+export type AdminInboxStatus = 'open' | 'assigned' | 'snoozed' | 'resolved';
+export type AdminInboxPriority = 'urgent' | 'high' | 'normal' | 'low';
+
+export interface AdminInboxItem {
+  id: string;
+  tenantId: string;
+  postId: string;
+  watchlistId?: string | null;
+  providerId: string;
+  status: AdminInboxStatus;
+  priority: AdminInboxPriority;
+  assignedTo?: string | null;
+  snoozedUntil?: string | null;
+  notes?: string | null;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  post?: {
+    id: string;
+    rawPayload?: any;
+    publishedAt?: string;
+    sentiment?: string;
+    reach?: number;
+  };
+}
+
+export interface ListInboxItemsOptions {
+  status?: string;
+  priority?: string;
+  assignedTo?: string;
+  providerId?: string;
+  watchlistId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — lists triage inbox items with filters.
+ */
+export async function listInboxItems(
+  options?: ListInboxItemsOptions
+): Promise<{ items: AdminInboxItem[]; total: number }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set('status', options.status);
+  if (options?.priority) params.set('priority', options.priority);
+  if (options?.assignedTo) params.set('assignedTo', options.assignedTo);
+  if (options?.providerId) params.set('providerId', options.providerId);
+  if (options?.watchlistId) params.set('watchlistId', options.watchlistId);
+  if (options?.limit) params.set('limit', String(options.limit));
+  if (options?.offset) params.set('offset', String(options.offset));
+
+  const response = await authenticatedCoreFetch(`/v1/inbox?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list inbox items: ${response.status}`);
+  }
+  return (await response.json()) as { items: AdminInboxItem[]; total: number };
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — gets a single inbox item.
+ */
+export async function getInboxItem(id: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — updates notes/tags/priority on an inbox item.
+ */
+export async function updateInboxItem(
+  id: string,
+  updates: { notes?: string; tags?: string[]; priority?: AdminInboxPriority }
+): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — assigns an inbox item.
+ */
+export async function assignInboxItem(id: string, assignedTo: string | null): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/assign`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ assignedTo }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to assign inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — snoozes an inbox item.
+ */
+export async function snoozeInboxItem(id: string, snoozedUntil: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/snooze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ snoozedUntil }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to snooze inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — marks an inbox item resolved.
+ */
+export async function resolveInboxItem(id: string, notes?: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/resolve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to resolve inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — replies to an inbox item and marks it resolved.
+ */
+export async function replyToInboxItem(
+  id: string,
+  body: string
+): Promise<{ activityId: string; externalId: string | null; externalUrl: string | null; status: 'resolved' }> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to reply to inbox item: ${response.status}`);
+  }
+  return (await response.json()) as { activityId: string; externalId: string | null; externalUrl: string | null; status: 'resolved' };
+}
+
+
 
 
 

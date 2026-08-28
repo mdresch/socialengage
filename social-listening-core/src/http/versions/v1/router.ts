@@ -34,6 +34,7 @@ import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
 import { alertRulesRouter } from './alertRulesRouter';
 import { webhooksRouter } from './webhooksRouter';
 import { youtubeConnectorRouter } from './youtubeConnectorRouter';
+import { inboxRouter } from './inboxRouter';
 import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 import { createPublishingRoutes } from '../../routes/publishingRoutes';
@@ -214,6 +215,10 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 11.3 (ADR-0096) — daily digest preferences, previews, and unsubscribe. */
   v1Router.use('/', authMiddleware, createDigestRoutes());
+
+  /** Story 11.9 (ADR-0099) — unified social inbox and triage. */
+  v1Router.use('/inbox/items', authMiddleware, inboxRouter);
+  v1Router.use('/inbox', authMiddleware, inboxRouter);
 
   return v1Router;
 }

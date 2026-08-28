@@ -3672,3 +3672,51 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Built `OutboundComposerModal` supporting multi-network selection, target asset dropdowns, and "Publish Now" vs "Schedule for Later" dispatch modes.
   - Built `OutboundPostsView` table queue with status tabs, status badges, cancel button, and rescheduling modal with date/time pickers.
   - Connected BFF proxies and typed core client functions for complete lifecycle management.
+
+## 2026-08-28 — Story 11.9 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.9 / ADR-0099, BRD-0099, FDD-0099
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.9.social-inbox-and-reply.contract.test.ts (8/8 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/social-inbox/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0059_create_inbox_items.sql` (new — inbox_items schema, status/priority checks, RLS, indexes)
+  - `social-listening-core/src/inbox/inboxItemStore.ts` (new — triage, priority derivation, assignment, snooze, resolve, reply execution, redaction resolver)
+  - `social-listening-core/src/http/versions/v1/inboxRouter.ts` (new — GET /v1/inbox, POST, GET /:id, PATCH /:id, POST assign/snooze/resolve/reply)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted inboxRouter at /inbox and /inbox/items)
+  - `social-listening-core/contracts/epic-11/story-11.9.social-inbox-and-reply.contract.test.ts` (new — 8/8 contract tests)
+  - `social-listening-core/.claude/skills/social-inbox/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.9 Built)
+- **Suite at merge:** PASS (8/8 tests in story-11.9 contract, 32/32 in epic-11 core suite)
+- **Key Implementation Details:**
+  - Created `inbox_items` table with RLS tenant isolation, priority heuristics (`urgent`, `high`, `normal`, `low`), and lifecycle status transitions (`open`, `assigned`, `snoozed`, `resolved`).
+  - Integrated with `outboundEngagementService` for direct social reply execution and instant auto-resolution.
+  - Implemented `autoResolveRedactedPostItems` hook for compliance when posts are deleted or redacted.
+
+---
+
+## 2026-08-28 — Story 11.10 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.10 / ADR-0099, BRD-0099, FDD-0099
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.10.social-inbox-ui.contract.test.ts (10/10 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — inbox types and API client functions)
+  - `social-listening-admin/src/app/api/inbox/route.ts` (new — BFF proxy for inbox list)
+  - `social-listening-admin/src/app/api/inbox/[id]/route.ts` (new — BFF proxy for single item GET/PATCH)
+  - `social-listening-admin/src/app/api/inbox/[id]/assign/route.ts` (new — BFF proxy for assignment)
+  - `social-listening-admin/src/app/api/inbox/[id]/snooze/route.ts` (new — BFF proxy for snooze)
+  - `social-listening-admin/src/app/api/inbox/[id]/resolve/route.ts` (new — BFF proxy for resolution)
+  - `social-listening-admin/src/app/api/inbox/[id]/reply/route.ts` (new — BFF proxy for reply execution)
+  - `social-listening-admin/src/app/tenant/inbox/InboxView.tsx` (new — master-detail social care workdesk with priority filters)
+  - `social-listening-admin/src/app/tenant/inbox/InboxItemDetail.tsx` (new — triage detail pane, snooze panel, team notes, inline reply composer)
+  - `social-listening-admin/src/app/tenant/inbox/page.tsx` (new — dedicated social care route page)
+  - `social-listening-admin/contracts/epic-11/story-11.10.social-inbox-ui.contract.test.ts` (new — 10/10 contract tests)
+  - `social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.10 Built)
+- **Suite at merge:** PASS (10/10 tests in story-11.10 contract, 38/38 in epic-11 admin suite)
+- **Key Implementation Details:**
+  - Built two-pane responsive workdesk `InboxView` with priority tabs (`All`, `Urgent`, `High`, `Snoozed`, `Resolved`) and search filter.
+  - Implemented `InboxItemDetail` with post sentiment/reach signals, snooze duration dropdown, internal team notes editor, and inline reply composer.
+  - Connected BFF proxies and typed core client functions for complete triage lifecycle.
