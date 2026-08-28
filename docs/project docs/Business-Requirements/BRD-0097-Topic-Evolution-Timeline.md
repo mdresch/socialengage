@@ -1,4 +1,4 @@
-# Business Requirements Document (BRD) — Topic Evolution Timeline
+﻿# Business Requirements Document (BRD) — Topic Evolution Timeline
 
 ## 1. Document Control
 

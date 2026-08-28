@@ -1,6 +1,6 @@
-# ADR-0118: Additional Social Platform Publishing
+﻿# ADR-0118: Additional Social Platform Publishing
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Records the project's intent to extend ADR-0075's `SocialConnector.publish?()` outbound post path to Instagram, Bluesky, Mastodon, Threads, and X, and establishes a build order and shared design constraints for this second wave of publishing connectors. No primary-source API verification has been performed for these platforms yet; each requires its own connector-specific ADR before implementation.
 

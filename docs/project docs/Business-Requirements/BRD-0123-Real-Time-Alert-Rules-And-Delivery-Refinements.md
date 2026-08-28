@@ -1,7 +1,7 @@
 ﻿# BRD-0123: Real-Time Alert Rules and Delivery Refinements
 
 **Document Control**
-- **Status:** Proposed
+- **Status:** Approved (2026-08-28)
 - **Date:** 2026-08-28
 - **Source ADR:** ADR-0123 (Proposed 2026-08-28)
 - **Primary Stakeholders:** Tenant-Admin, Platform-Admin, SecOps

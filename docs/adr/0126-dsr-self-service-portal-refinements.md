@@ -1,6 +1,6 @@
 ﻿# ADR-0126: DSR self-service portal refinements — Article 18 restriction flags and verified receipts
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** refinements to ADR-0093's Data Subject Request (DSR) portal: GDPR Article 18 restriction-of-processing flag propagation into active ingestion/search indexers, and cryptographically signed request confirmation receipts.
 

@@ -1,7 +1,7 @@
 ﻿# FDD-0124: Data Export Posts CSV Sampling and Bounded Lookback
 
 **Document Control**
-- **Status:** Proposed
+- **Status:** Approved (2026-08-28)
 - **Date:** 2026-08-28
 - **Source ADR:** ADR-0124 (Proposed 2026-08-28)
 

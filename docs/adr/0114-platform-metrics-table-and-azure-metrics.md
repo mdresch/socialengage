@@ -1,6 +1,6 @@
-# ADR-0114: Platform metrics table and Azure Metrics integration
+﻿# ADR-0114: Platform metrics table and Azure Metrics integration
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `platform_metrics` table, the Azure Metrics ingestion path, and the aggregation rules that feed the Platform Operations Dashboard (ADR-0089).
 

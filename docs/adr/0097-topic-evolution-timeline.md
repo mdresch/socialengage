@@ -1,6 +1,6 @@
-# ADR-0097: Topic evolution timeline
+﻿# ADR-0097: Topic evolution timeline
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a time-series topic-evolution endpoint (`GET /v1/topics/evolution`) that uses `TopicDailyCount` and `AuthorTopicSignal` to surface how topics, sentiment, and key authors change over time.
 

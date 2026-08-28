@@ -1,6 +1,6 @@
 ﻿# BRD-0138: RAG-Vector-Store-Namespace-Per-Tenant-Isolation
 
-**Status:** Proposed (2026-08-28)
+**Status:** Approved (2026-08-28)
 **Source:** ADR-0138
 
 ## Summary

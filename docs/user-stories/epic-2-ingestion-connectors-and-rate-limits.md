@@ -1,4 +1,4 @@
-# Epic 2: Ingestion, Connectors & Rate Limits
+﻿# Epic 2: Ingestion, Connectors & Rate Limits
 
 ## Story 2.1 — Unified provider connector framework
 

@@ -1,6 +1,6 @@
 ﻿# BRD-0130: Onboarding-Checklist-State-Refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Approved (2026-08-28)
 **Source:** ADR-0130
 
 ## Summary

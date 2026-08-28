@@ -1,4 +1,4 @@
-# BRD-0091: Real-Time Alert Rules and Delivery
+﻿# BRD-0091: Real-Time Alert Rules and Delivery
 
 ## 1. Document Control
 

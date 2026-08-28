@@ -1,6 +1,6 @@
-# ADR-0124: Data export — posts CSV sampling and bounded lookback
+﻿# ADR-0124: Data export — posts CSV sampling and bounded lookback
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** two additive refinements to ADR-0090's `GET /v1/posts/export.csv` contract — an explicit maximum lookback (date-range) bound, and an opt-in sampling mode offered as an alternative to a hard block or forced async hand-off when a request would exceed the synchronous row threshold — driven by competitive research across Brandwatch, Hootsuite, and Meltwater.
 

@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 08:22 | — | — | Documentation | ADR-0095 | docs: approve FDD-0095, BRD-0095, and update Stories 11.1-11.2 per accepted ADR-0095 (4dedbff) |
 | 2026-08-28 | 08:20 | — | — | Documentation | ADR-0095 | docs(adr): update ADR-0095 with Dynamics 365, generalized CRM payload, and field mappings (4eac552) |
 | 2026-08-27 | 01:34 | — | — | Documentation | — | style(posts): polish post details drawer header, tabs, and reply buttons (f7a93b1) |
 | 2026-08-27 | 01:04 | — | — | Documentation | ADR-0088 | docs: approve and sync FDDs, BRDs, and User Stories for ADR-0088 through ADR-0094 (de86579) |

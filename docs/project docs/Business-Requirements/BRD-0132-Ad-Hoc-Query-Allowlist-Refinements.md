@@ -1,6 +1,6 @@
 ﻿# BRD-0132: Ad-Hoc-Query-Allowlist-Refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Approved (2026-08-28)
 **Source:** ADR-0132
 
 ## Summary

@@ -1,6 +1,6 @@
-# ADR-0109: Connector health auto-disable and recovery
+﻿# ADR-0109: Connector health auto-disable and recovery
 
-**Status:** Proposed (2026-08-23; revised 2026-08-28 with competitive research — see Amendment Log below)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the auto-disable and recovery rules for `SocialConnector` health, including the `failing`/`degraded` state transitions, the `retryable` flag, and the `Platform-Admin`/`Tenant-Admin` re-enable path.
 

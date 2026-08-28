@@ -1,6 +1,6 @@
 ﻿# ADR-0129: Prospecting list model refinements — deduplicated CRM sync and scoped team sharing
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** refinements to ADR-0086: deduplicated contact sync schemas and workspace-scoped role-based list sharing.
 

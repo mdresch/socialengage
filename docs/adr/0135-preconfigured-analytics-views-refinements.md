@@ -1,6 +1,6 @@
-# ADR-0135: Preconfigured analytics views — refinements
+﻿# ADR-0135: Preconfigured analytics views — refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a binding correction to how ADR-0087's five `*DailyCount` tables are implemented — as ordinary, RLS-protected Postgres tables only, never literal `CREATE MATERIALIZED VIEW` objects — because PostgreSQL does not support Row-Level Security on materialized views at all; plus two smaller, confirmatory refinements (bi-temporal late-arrival tracking, TimescaleDB deferral).
 

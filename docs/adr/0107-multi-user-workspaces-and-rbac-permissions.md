@@ -1,6 +1,6 @@
-# ADR-0107: Multi-user workspaces and RBAC permissions
+﻿# ADR-0107: Multi-user workspaces and RBAC permissions
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** per-connector and per-watchlist permissions, fine-grained feature gating, and the `tenant_user` role matrix that extends `tenant_admin` and `tenant_user` beyond the current coarse role split.
 

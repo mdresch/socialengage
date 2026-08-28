@@ -1,4 +1,4 @@
-# Epic 6: Tenant Admin UI
+﻿# Epic 6: Tenant Admin UI
 
 Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js scaffold; only `src/lib/core-client.ts` and Story 1.1's own contract exist). Three sources feed this epic: **ADR-0036** (Story 6.1 — the authentication/session/role-gating mechanism), **ADR-0037** (Story 6.7 — self-service tenant sign-up, added same day), both reasoned architecturally significant enough for their own ADR per this series' own established bar, unlike Stories 1.5/1.6/1.7's ordinary CRUD precedent; and **Phase 1/Phase 3's own "also build, not storied" framing** (`docs/implementation-plan.md`) for Stories 6.2–6.14 (excluding 6.6, relocated — see below), following Story 1.5's own precedent for ordinary CRUD/UI surface that doesn't need an ADR.
 

@@ -1,6 +1,6 @@
-# ADR-0119: Editing and Deleting Published Outbound Posts
+﻿# ADR-0119: Editing and Deleting Published Outbound Posts
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Extends ADR-0075's outbound post publishing and ADR-0073's `outbound_activities` audit model to support editing and deleting already-published posts and replies. Preserves the append-only audit trail by recording every edit and delete as a separate `outbound_activity_revision` row.
 

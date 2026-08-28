@@ -1,6 +1,6 @@
-# ADR-0113: Metric explainability prompt and caching
+﻿# ADR-0113: Metric explainability prompt and caching
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the prompt template, caching strategy, determinism rules, and confidence grading for `POST /v1/explain` (ADR-0078).
 

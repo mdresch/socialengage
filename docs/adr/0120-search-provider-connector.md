@@ -1,6 +1,6 @@
-# ADR-0120: SearchProviderConnector — Shared One-Off Search Abstraction
+﻿# ADR-0120: SearchProviderConnector — Shared One-Off Search Abstraction
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Generalizes the one-off search helpers used by ADR-0076's Composer Deep Research into a first-class `SearchProviderConnector` abstraction, so Brave Search, Bing Search, and future search providers can be called on demand without duplicating query building and rate-limit logic across features.
 

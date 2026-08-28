@@ -1,4 +1,4 @@
-# Business Requirements Document — Publishing and Scheduling
+﻿# Business Requirements Document — Publishing and Scheduling
 
 ## 1. Document Control
 

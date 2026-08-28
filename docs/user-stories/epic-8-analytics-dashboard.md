@@ -1,4 +1,4 @@
-# Epic 8: Analytics Dashboard
+﻿# Epic 8: Analytics Dashboard
 
 **Created 2026-08-17**, sourced entirely from a new ADR — [ADR-0054](../adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md) (Accepted 2026-08-17) — drafted at Menno's own direct request to bring a Tenant-facing Analytics Dashboard into formal scope for `social-listening-admin`, previously out of scope per `docs/design/frontend-design-specification.md` §10 (citing ADR-0008). Every story below was originally drafted **Blocked — pending ADR-0054's acceptance**, the same convention every other ADR-sourced story in this series follows (e.g. Story 3.8/ADR-0043, Story 1.5/ADR-0044).
 

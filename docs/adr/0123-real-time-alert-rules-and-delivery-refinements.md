@@ -1,6 +1,6 @@
-# ADR-0123: Real-time alert rules and delivery — refinements
+﻿# ADR-0123: Real-time alert rules and delivery — refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** four additive refinements to ADR-0091's `alert_rules` engine and delivery model — rule-level noise exclusion, a hard per-rule daily alert cap alongside the existing cooldown, sensitivity-preset UX for threshold configuration, and a pre-save alert-volume preview — driven by competitive research across Brandwatch, Meltwater, Mention, and Sprout Social.
 

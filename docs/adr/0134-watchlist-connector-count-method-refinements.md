@@ -1,6 +1,6 @@
-# ADR-0134: Watchlist connector count and preview endpoint — refinements
+﻿# ADR-0134: Watchlist connector count and preview endpoint — refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** targeted refinements to ADR-0077's `POST /v1/watchlists/preview-volume` endpoint and `SocialConnector.count?()` method — a documented connector-implementation priority order, an explicit confidence-display contract for the UI, and a new, additive `estimatedCost` projection block on the `WatchlistVolumePreview` response.
 

@@ -1,6 +1,6 @@
 ﻿# ADR-0127: Compliance audit pack refinements — Merkle-tree hash chaining and verifiable evidence bundles
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** refinements to ADR-0094's compliance audit pack generation: Merkle-tree cryptographic hash chaining across audit log entries and automated evidence bundle generation for SOC 2 / ISO 27001 audits.
 

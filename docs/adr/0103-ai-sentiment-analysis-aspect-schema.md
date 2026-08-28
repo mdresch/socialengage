@@ -1,6 +1,6 @@
-# ADR-0103: AI sentiment analysis aspect schema
+﻿# ADR-0103: AI sentiment analysis aspect schema
 
-**Status:** Proposed (2026-08-23; revised 2026-08-28 with competitive research — see Revision below)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** an `enrichment.sentiment` schema with optional aspect-based sentiment and per-language support, plus a confidence grade and a human-override path.
 

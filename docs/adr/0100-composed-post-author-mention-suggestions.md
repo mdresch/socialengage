@@ -1,6 +1,6 @@
-# ADR-0100: Composed post author mention suggestions
+﻿# ADR-0100: Composed post author mention suggestions
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `POST /v1/composer/mention-suggestions` endpoint that suggests relevant authors to mention or tag while a user is composing a post, based on `AuthorTopicSignal`, `RAG` search, and the composed message.
 

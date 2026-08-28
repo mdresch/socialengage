@@ -1,6 +1,6 @@
 ﻿# FDD-0131: Crisis-Template-Bundle-And-Activation-Refinements
 
-**Status:** Proposed (2026-08-28)
+**Status:** Approved (2026-08-28)
 **Source:** ADR-0131
 
 ## Technical Design

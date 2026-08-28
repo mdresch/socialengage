@@ -1,6 +1,6 @@
-# ADR-0125: Author-initiated takedown refinements — SLA, risk-flagging, and redaction propagation scope
+﻿# ADR-0125: Author-initiated takedown refinements — SLA, risk-flagging, and redaction propagation scope
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** research-driven refinements to ADR-0092's author-initiated takedown flow: a default response SLA on `data_subject_requests`, an explicit CAPTCHA requirement on the public form, a human-reviewed (never auto-deciding) risk-flag field, and an explicit, enumerated list of derived tables a granted takedown must propagate into.
 

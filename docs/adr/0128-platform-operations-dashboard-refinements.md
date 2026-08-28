@@ -1,6 +1,6 @@
 ﻿# ADR-0128: Platform operations dashboard refinements — quota burn-rate forecasting and connector health playbooks
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** refinements to ADR-0089's Platform Operations Dashboard: tenant token/quota burn-rate projections and guided connector health remediation playbooks for Platform-Admins.
 

@@ -1,6 +1,6 @@
 ﻿# BRD-0136: RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant
 
-**Status:** Proposed (2026-08-28)
+**Status:** Approved (2026-08-28)
 **Source:** ADR-0136
 
 ## Summary

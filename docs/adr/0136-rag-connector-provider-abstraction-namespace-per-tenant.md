@@ -1,6 +1,6 @@
-# ADR-0136: RAGConnector provider abstraction — namespace-per-tenant isolation
+﻿# ADR-0136: RAGConnector provider abstraction — namespace-per-tenant isolation
 
-**Status:** Proposed (2026-08-28)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a revised `RAGConnector` interface that supersedes ADR-0081, changing the *primary* tenant-isolation mechanism each provider implementation must offer from a shared-index metadata filter to **physical per-tenant isolation (namespace, shard, or database-enforced row-level security), where the provider supports it**, with the mandatory `tenant_id` metadata filter retained as defense-in-depth. All other parts of ADR-0081's Decision (interface shape, deterministic vector IDs, chunk batching, hybrid search, vector dimension configuration, dedicated registry) are carried forward unchanged.
 

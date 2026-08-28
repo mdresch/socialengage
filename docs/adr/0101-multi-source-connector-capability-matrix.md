@@ -1,6 +1,6 @@
-# ADR-0101: Multi-source connector capability matrix
+﻿# ADR-0101: Multi-source connector capability matrix
 
-**Status:** Proposed (2026-08-23; revised 2026-08-28 with competitive research — see Revision below)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `SocialConnector` capability matrix (`poll`, `count`, `publish`, `reply`, `backfill`) and the `GET /v1/connectors/capabilities` endpoint that lets the UI render the right actions per platform.
 

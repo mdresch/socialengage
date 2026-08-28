@@ -1,6 +1,6 @@
-# ADR-0106: API and integrations — versioning and webhooks
+﻿# ADR-0106: API and integrations — versioning and webhooks
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the public API versioning convention (`/v1/`), rate limiting, and tenant-configured webhooks that deliver `ServiceBus` events to the tenant's own endpoints.
 

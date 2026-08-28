@@ -1,6 +1,6 @@
-# ADR-0116: Semantic drift detection
+﻿# ADR-0116: Semantic drift detection
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a v2 `SemanticDriftService` that uses vector embeddings from `RAGConnector` (ADR-0081–0085) to detect when a topic's meaning has shifted over time, and the `GET /v1/topics/:id/drift` endpoint.
 

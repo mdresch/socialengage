@@ -1,6 +1,6 @@
-# ADR-0104: AI topic clustering post-topics schema
+﻿# ADR-0104: AI topic clustering post-topics schema
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `post_topics` many-to-many table, `topics` catalog, and `TopicClusteringService` refresh contract for AI-driven topic clustering, plus the `selectedTopic` dashboard filter.
 

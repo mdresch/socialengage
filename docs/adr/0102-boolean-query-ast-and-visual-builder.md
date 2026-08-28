@@ -1,6 +1,6 @@
-# ADR-0102: Boolean query AST and visual builder
+﻿# ADR-0102: Boolean query AST and visual builder
 
-**Status:** Proposed (2026-08-23; revised 2026-08-28 with competitive research — see Revision below)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a canonical `WatchlistAST` JSON schema for boolean queries, the `BooleanQueryBuilder` UI component, and the per-connector AST validation rules that prevent unsupported operators from reaching a connector.
 

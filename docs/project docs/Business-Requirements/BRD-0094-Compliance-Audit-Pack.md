@@ -1,4 +1,4 @@
-# Business Requirements Document (BRD) — Compliance Audit Pack
+﻿# Business Requirements Document (BRD) — Compliance Audit Pack
 
 > **Note:** This BRD is based on **ADR-0094 (Accepted 2026-08-28)** which is currently **Proposed** (2026-08-23). The content is therefore a draft for review and may change if the ADR is revised before acceptance.
 

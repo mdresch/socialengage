@@ -1,6 +1,6 @@
-# ADR-0099: Unified social inbox and reply
+﻿# ADR-0099: Unified social inbox and reply
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `inbox_items` data model, triage states, priority, assignment, and the `SocialConnector.reply?()` method for replying to ingested posts from the inbox.
 

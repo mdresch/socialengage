@@ -1,6 +1,6 @@
-# ADR-0098: Publishing and scheduling
+﻿# ADR-0098: Publishing and scheduling
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `SocialConnector.publish?()` optional method, an `outbound_activities` `activity_type='post'`, and a `POST /v1/outbound/posts` endpoint that supports immediate or scheduled publishing across connected platforms.
 

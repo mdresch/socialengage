@@ -1,4 +1,4 @@
-# Business Requirements Document — Per-Connector Query Translation and Validation
+﻿# Business Requirements Document — Per-Connector Query Translation and Validation
 
 ## 1. Document Control
 

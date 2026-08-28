@@ -1,6 +1,6 @@
-# ADR-0105: Dashboards and analytics widget contracts
+﻿# ADR-0105: Dashboards and analytics widget contracts
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `GET /v1/analytics/dashboard` contract, per-widget data shapes, filter rules, `selectedTopic` integration, and the `WidgetRenderer` component hierarchy for the analytics dashboard.
 
