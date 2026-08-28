@@ -2373,6 +2373,111 @@ export async function deleteCRMFieldMapping(id: string): Promise<boolean> {
   return response.ok;
 }
 
+// ---------------------------------------------------------------------------
+// Story 11.3 / 11.4 (ADR-0096) — Daily Digest Email
+// ---------------------------------------------------------------------------
+
+export interface UserDigestPreferences {
+  id: string;
+  tenantId: string;
+  userId: string;
+  isEnabled: boolean;
+  sendAtLocal: string;
+  timezone: string;
+  watchlistIds: string[];
+  includeAiSummary: boolean;
+  includeTopPosts: boolean;
+  includeTopicBreakdown: boolean;
+  lastSentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DigestPreviewResponse {
+  data: {
+    tenantName: string;
+    recipientName: string;
+    recipientEmail: string;
+    dateRangeLabel: string;
+    totalMentions: number;
+    sentimentDistribution: {
+      positive: number;
+      neutral: number;
+      negative: number;
+      mixed: number;
+    };
+    topTopics: Array<{ topic: string; count: number; deltaPercentage?: number }>;
+    topPlatforms: Array<{ platform: string; count: number }>;
+    notablePosts: Array<{
+      postId: string;
+      platform: string;
+      authorName: string;
+      authorHandle?: string;
+      excerpt: string;
+      publishedAt: string;
+      url?: string;
+      impactScore: number;
+    }>;
+    aiSummary?: {
+      narrative: string;
+      keyThemes: string[];
+      sentimentTrend: string;
+    };
+    unsubscribeUrl: string;
+  };
+  rendered: {
+    subject: string;
+    html: string;
+    text: string;
+  };
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — gets current user's daily digest preferences.
+ */
+export async function getUserDigestPreferences(): Promise<UserDigestPreferences> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-preferences');
+  if (!response.ok) {
+    throw new Error(`Failed to get digest preferences: ${response.status}`);
+  }
+  return (await response.json()) as UserDigestPreferences;
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — updates current user's daily digest preferences.
+ */
+export async function upsertUserDigestPreferences(
+  input: Partial<UserDigestPreferences>
+): Promise<UserDigestPreferences> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-preferences', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update digest preferences: ${response.status}`);
+  }
+  return (await response.json()) as UserDigestPreferences;
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — generates a one-off preview of the daily digest.
+ */
+export async function previewDailyDigest(
+  customPreferences?: Partial<UserDigestPreferences>
+): Promise<DigestPreviewResponse> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-previews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(customPreferences || {}),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to preview daily digest: ${response.status}`);
+  }
+  return (await response.json()) as DigestPreviewResponse;
+}
+
+
 
 
 

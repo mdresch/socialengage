@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 10:01 | — | — | Documentation | Story 11.3 | feat(digest): implement Story 11.3 — Daily digest email (ADR-0096) (0052a8f) |
 | 2026-08-28 | 09:32 | — | — | Documentation | Story 11.2 | feat(crm-ui): implement Story 11.2 — Case handoff to CRM UI (ADR-0095) (a76b564) |
 | 2026-08-28 | 09:00 | — | — | Documentation | Story 11.1 | feat(crm): implement Story 11.1 — CRM connector and case handoff (ADR-0095) (264c4fd) |
 | 2026-08-28 | 08:38 | — | — | Documentation | ADR-0096 | docs(adr): update ADR-0096 with timezone-aware scheduling, precomputed views, and AI summary bounds (cff52e1) |

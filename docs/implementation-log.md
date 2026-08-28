@@ -3547,5 +3547,31 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented dual-MIME email renderer (`text/html` and `text/plain`) with RFC 8058 one-click unsubscribe links.
   - Implemented authenticated endpoints `GET /v1/users/me/digest-preferences`, `POST /v1/users/me/digest-preferences`, `POST /v1/users/me/digest-previews`, and public endpoint `GET /v1/digest/unsubscribe`.
 
+---
+
+## 2026-08-28 — Story 11.4 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.4 / ADR-0096, BRD-0096, FDD-0096
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.4.daily-digest-ui.contract.test.ts (7/7 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — digest preferences and preview client methods)
+  - `social-listening-admin/src/app/api/digest/preferences/route.ts` (new — BFF proxy for preferences GET/POST)
+  - `social-listening-admin/src/app/api/digest/preview/route.ts` (new — BFF proxy for preview generation POST)
+  - `social-listening-admin/src/app/tenant/settings/digest/DigestPreferencesView.tsx` (new — preferences view and live HTML preview modal)
+  - `social-listening-admin/src/app/tenant/settings/digest/page.tsx` (new — digest settings route page)
+  - `social-listening-admin/src/app/tenant/settings/page.tsx` (extended — linked to daily digest configuration)
+  - `social-listening-admin/contracts/epic-11/story-11.4.daily-digest-ui.contract.test.ts` (new)
+  - `social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.4 Built)
+- **Suite at merge:** PASS (7/7 tests in story-11.4 contract, 14/14 in epic-11 admin suite)
+- **Key Implementation Details:**
+  - Built `DigestPreferencesView` with local delivery time, IANA timezone selector, subscription enable switch, and content toggles.
+  - Implemented live interactive preview modal with sandboxed iframe rendering full dual-MIME email simulation.
+  - Connected preferences management into `/tenant/settings` with direct deep link.
+  - Built BFF proxy endpoints under `/api/digest/` and typed client methods in `core-client.ts`.
+
+
 
 
