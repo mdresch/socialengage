@@ -23,7 +23,7 @@ The unifying abstraction every social platform integration and every AI enrichme
 | ADR-0050 | Tenant-owned-domain RSS connector — the first `SocialConnector` with its own dedicated router (`tenantOwnedFeedRouter.ts`), mounted before the generic `/connectors` router rather than adding routes inside it | 2.11 |
 | ADR-0049 | `SocialConnector` gains `canProvideFollowerCountAtPublish` (Open Question 5's capability-declaration shape, resolved as a boolean analogous to `supportedQueryFeatures`); `NormalizedPost` gains the matching `authorFollowerCountAtPublish` — see `.claude/skills/social-post-lineage/SKILL.md` for the storage-layer half | 3.9 |
 | ADR-0073 | `SocialConnector` gains optional `reply?()` and `getOutboundRateLimitConfig?()`; `RequestGate` gains `acquireForOutbound()` per `(tenantId, providerId, 'outbound')` | 2.26 |
-|| ADR-0075 | `SocialConnector` gains optional `publish?()` and `OutboundPostPayload`; `RequestGate` gains `acquireForOutboundPost()` per `(tenantId, providerId, 'outbound_post')` | 2.28 |
+| ADR-0075 | `SocialConnector` gains optional `publish?()` and `OutboundPostPayload`; `RequestGate` gains `acquireForOutboundPost()` per `(tenantId, providerId, 'outbound_post')` | 2.28 |
 
 ||| ADR-0076 | `AIProviderConnector` gains optional `research?()` method; `SearchSnippet`, `ResearchOptions`, and `ResearchResult` shapes added to `src/connectors/types.ts` | 2.32 |
 
