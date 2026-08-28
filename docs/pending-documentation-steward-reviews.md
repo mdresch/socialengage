@@ -2221,11 +2221,11 @@
 - **Files touched:** .claude/skills/implement-story/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r c63752e`, exact match.
 - **Status:** ~~Pending review~~ **Reviewed 2026-08-28 — out of this role's chartered file scope, checked for consistency anyway.** `.claude/skills/implement-story/SKILL.md` is a process skill, not a component `SKILL.md` (the connector/UI kind this role's charter names) or one of the enumerated traceability files. Checked it against `docs/implementation-methodology.md` anyway since it's the mandatory-workflow doc CLAUDE.md points to: `implementation-methodology.md`'s own Step 1 (lines 26-30) already carries the matching "ADR > BRD/FDD > User Story" hierarchy rule and BRD/FDD-reading instructions — this commit is `implement-story/SKILL.md` catching its own Step 1 language up to match, not a new, undocumented process. Consistent, no drift.
 
-## 2026-08-23 — 3df8ccf — docs(skills): include BRD/FDD context in heal-contract-failure
+## ~~2026-08-23 — 3df8ccf — docs(skills): include BRD/FDD context in heal-contract-failure~~
 
 - **Full commit:** `3df8ccfab8fef88f98724ce6c5ac011679f7ef43`
-- **Files touched:** .claude/skills/heal-contract-failure/SKILL.md
-- **Status:** Pending review
+- **Files touched:** .claude/skills/heal-contract-failure/SKILL.md — confirmed via `git diff-tree --no-commit-id --name-only -r 3df8ccf`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-08-28 — out of this role's chartered file scope; consistent with its own sibling change.** Same reasoning as `c63752e` immediately above — mirrors that commit's Step-1 BRD/FDD language for `heal-contract-failure/SKILL.md`'s own Step 1, consistent with `docs/implementation-methodology.md`'s already-updated hierarchy rule. No drift.
 
 ## 2026-08-23 — f1e0f9b — feat(core): Connector publish framework and outbound post rate gate (Story 2.28, ADR-0075)
 
