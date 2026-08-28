@@ -2538,6 +2538,136 @@ export async function getTopicEvolution(options: {
   return (await response.json()) as TopicEvolutionResponse;
 }
 
+export interface OutboundPostAsset {
+  type: 'image' | 'video' | 'link-card';
+  url?: string;
+  alt?: string;
+  target?: string;
+}
+
+export interface PublishOutboundPostInput {
+  text: string;
+  assets?: OutboundPostAsset[];
+  targetPlatforms: string[];
+  scheduledFor?: string | null;
+  assetTargets?: Record<string, string>;
+  perPlatformOverrides?: Record<string, string>;
+}
+
+export interface PublishOutboundPostResult {
+  activityIds: string[];
+  scheduledFor: string | null;
+}
+
+export interface OutboundActivityItem {
+  id: string;
+  tenantId: string;
+  userId: string;
+  providerId: string;
+  targetAssetId?: string | null;
+  targetAssetType?: string | null;
+  activityType: string;
+  body: string;
+  status: 'scheduled' | 'publishing' | 'published' | 'pending' | 'sent' | 'failed' | 'cancelled';
+  externalId?: string | null;
+  externalUrl?: string | null;
+  errorCode?: string | null;
+  scheduledFor?: string | null;
+  publishedAt?: string | null;
+  createdAt: string;
+  sentAt?: string | null;
+  failedAt?: string | null;
+  cancelledAt?: string | null;
+}
+
+export interface ConnectorTargetItem {
+  id: string;
+  name: string;
+  type: string;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — creates immediate or scheduled outbound posts across platforms.
+ */
+export async function publishOutboundPost(input: PublishOutboundPostInput): Promise<PublishOutboundPostResult> {
+  const response = await authenticatedCoreFetch('/v1/outbound/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to publish outbound post: ${response.status}`);
+  }
+  return (await response.json()) as PublishOutboundPostResult;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — lists outbound posts queue with optional status filter.
+ */
+export async function listOutboundPosts(options?: {
+  status?: string;
+  providerId?: string;
+  limit?: number;
+}): Promise<{ posts: OutboundActivityItem[]; count: number }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set('status', options.status);
+  if (options?.providerId) params.set('providerId', options.providerId);
+  if (options?.limit) params.set('limit', String(options.limit));
+
+  const response = await authenticatedCoreFetch(`/v1/outbound/posts?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list outbound posts: ${response.status}`);
+  }
+  return (await response.json()) as { posts: OutboundActivityItem[]; count: number };
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — cancels a scheduled outbound post.
+ */
+export async function cancelOutboundActivity(activityId: string): Promise<OutboundActivityItem> {
+  const response = await authenticatedCoreFetch(`/v1/outbound/activities/${encodeURIComponent(activityId)}/cancel`, {
+    method: 'PATCH',
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to cancel outbound activity: ${response.status}`);
+  }
+  return (await response.json()) as OutboundActivityItem;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — reschedules a scheduled outbound post.
+ */
+export async function rescheduleOutboundActivity(
+  activityId: string,
+  scheduledFor: string
+): Promise<OutboundActivityItem> {
+  const response = await authenticatedCoreFetch(`/v1/outbound/activities/${encodeURIComponent(activityId)}/reschedule`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scheduledFor }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to reschedule outbound activity: ${response.status}`);
+  }
+  return (await response.json()) as OutboundActivityItem;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — gets available targets for an asset-targeting platform.
+ */
+export async function getConnectorTargets(platformId: string): Promise<ConnectorTargetItem[]> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/targets`);
+  if (!response.ok) {
+    return [];
+  }
+  const payload = (await response.json()) as { targets?: ConnectorTargetItem[] };
+  return Array.isArray(payload.targets) ? payload.targets : [];
+}
+
+
 
 
 

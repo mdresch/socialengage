@@ -16,6 +16,7 @@ import {
   getMostRecentRunStatusForUser,
 } from '../../../ingestion/ingestionRunStore';
 import { deriveConnectorHealth } from '../../../connectors/connectorHealth';
+import { getPlatformTargets } from '../../../publishing/outboundPublishingService';
 
 function parseOwnerType(value: unknown): CredentialOwnerType | null {
   if (value === undefined || value === 'tenant') return 'tenant';
@@ -395,4 +396,22 @@ connectorsRouter.post(['/:platformId/retry', '/:platformId/users/:userId/retry']
     });
   }
 });
+
+/**
+ * Story 11.7 (ADR-0098) — lists available target assets (pages, accounts, boards) for a platform.
+ */
+connectorsRouter.get('/:platformId/targets', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+  const { tenantId, userId } = identity;
+  const { platformId } = req.params;
+
+  try {
+    const targets = await getPlatformTargets(tenantId, userId, platformId);
+    res.json({ platformId, targets });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to fetch platform targets' });
+  }
+});
+
 

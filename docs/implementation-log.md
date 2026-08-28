@@ -3621,3 +3621,54 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 
 
+
+## 2026-08-28 — Story 11.7 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.7 / ADR-0098, BRD-0098, FDD-0098
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.7.publishing-and-scheduling.contract.test.ts (7/7 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/outbound-publishing/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0057_widen_outbound_activities_for_publishing.sql` (new — widen status, add published_at/assets/scheduler index)
+  - `social-listening-core/migrations/0058_ensure_outbound_activities_nullable_credential.sql` (new — ensure nullable credential_id/post_id)
+  - `social-listening-core/src/publishing/outboundPublishingService.ts` (new — create, cancel, reschedule, list, targets discovery)
+  - `social-listening-core/src/publishing/outboundPublishScheduler.ts` (new — background scheduler worker for due posts)
+  - `social-listening-core/src/connectors/linkedin/linkedinConnector.ts` (extended — added targetAssets and publish support)
+  - `social-listening-core/src/http/routes/publishingRoutes.ts` (new — POST /v1/outbound/posts, PATCH cancel/reschedule)
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (extended — GET /v1/connectors/:platformId/targets)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted publishing routes)
+  - `social-listening-core/contracts/epic-11/story-11.7.publishing-and-scheduling.contract.test.ts` (new)
+  - `social-listening-core/.claude/skills/outbound-publishing/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.7 Built)
+- **Suite at merge:** PASS (7/7 tests in story-11.7 contract, 24/24 in epic-11 core suite)
+- **Key Implementation Details:**
+  - Widened `outbound_activities` schema with `scheduled_for`, `published_at`, and `assets`.
+  - Implemented `createOutboundPost` with `400 MISSING_ASSET_TARGET` fail-closed validation for platforms requiring asset targets.
+  - Implemented `runScheduledPublishBatch` background scheduler worker executing due scheduled posts.
+  - Added `GET /v1/connectors/:platformId/targets` endpoint for target page/account discovery.
+
+---
+
+## 2026-08-28 — Story 11.8 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.8 / ADR-0098, BRD-0098, FDD-0098
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.8.publishing-ui.contract.test.ts (8/8 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/publishing-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — publishing and scheduling types and client methods)
+  - `social-listening-admin/src/app/api/outbound/posts/route.ts` (new — BFF proxy for outbound posts POST & GET)
+  - `social-listening-admin/src/app/api/outbound/activities/[id]/cancel/route.ts` (new — BFF proxy for activity cancellation)
+  - `social-listening-admin/src/app/api/outbound/activities/[id]/reschedule/route.ts` (new — BFF proxy for activity rescheduling)
+  - `social-listening-admin/src/app/api/connectors/[platformId]/targets/route.ts` (new — BFF proxy for connector targets)
+  - `social-listening-admin/src/components/composer/OutboundComposerModal.tsx` (new — multi-network composer with immediate & scheduled dispatch)
+  - `social-listening-admin/src/app/tenant/posts/outbound/OutboundPostsView.tsx` (new — queue management, status filters, cancel & reschedule actions)
+  - `social-listening-admin/src/app/tenant/posts/outbound/page.tsx` (new — dedicated outbound posts route page)
+  - `social-listening-admin/contracts/epic-11/story-11.8.publishing-ui.contract.test.ts` (new)
+  - `social-listening-admin/.claude/skills/publishing-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.8 Built)
+- **Suite at merge:** PASS (8/8 tests in story-11.8 contract, 28/28 in epic-11 admin suite)
+- **Key Implementation Details:**
+  - Built `OutboundComposerModal` supporting multi-network selection, target asset dropdowns, and "Publish Now" vs "Schedule for Later" dispatch modes.
+  - Built `OutboundPostsView` table queue with status tabs, status badges, cancel button, and rescheduling modal with date/time pickers.
+  - Connected BFF proxies and typed core client functions for complete lifecycle management.

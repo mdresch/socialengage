@@ -36,6 +36,7 @@ import { webhooksRouter } from './webhooksRouter';
 import { youtubeConnectorRouter } from './youtubeConnectorRouter';
 import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
+import { createPublishingRoutes } from '../../routes/publishingRoutes';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -174,7 +175,8 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 3.8 (ADR-0043) — see .claude/skills/self-service-tenant-deletion/SKILL.md. */
   v1Router.use('/tenants/self-service-deletion', authMiddleware, selfServiceTenantDeletionRouter);
 
-  /** Story 3.15 (ADR-0075) — outbound post publishing and scheduling. */
+  /** Story 3.15 (ADR-0075) / Story 11.7 (ADR-0098) — outbound post publishing, scheduling, and asset targeting. */
+  v1Router.use('/', authMiddleware, createPublishingRoutes(authMiddleware));
   v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
 
   /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */

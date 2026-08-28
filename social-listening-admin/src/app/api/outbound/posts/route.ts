@@ -1,20 +1,26 @@
-/**
- * Story 6.39 (ADR-0075) — same-origin BFF proxy for creating real outbound
- * posts on connected Facebook Pages.
- * POST /api/outbound/posts forwards to publishPost() and returns the
- * per-Page result rows with their HTTP status.
- */
+import { NextRequest, NextResponse } from 'next/server';
+import { publishOutboundPost, listOutboundPosts } from '@/lib/core-client';
 
-import { NextResponse } from 'next/server';
-import { publishPost } from '@/lib/core-client';
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const result = await publishOutboundPost(body);
+    return NextResponse.json(result, { status: 202 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to publish outbound post' }, { status: 400 });
+  }
+}
 
-export async function POST(request: Request) {
-  const payload = await request.json().catch(() => ({}));
-  const outcome = await publishPost({
-    text: typeof payload.text === 'string' ? payload.text : '',
-    targets: Array.isArray(payload.targets) ? payload.targets : [],
-    platformOverrides: payload.platformOverrides,
-    linkPreview: payload.linkPreview ?? null,
-  });
-  return NextResponse.json({ rows: outcome.rows }, { status: outcome.status });
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status') || undefined;
+    const providerId = searchParams.get('providerId') || undefined;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined;
+
+    const result = await listOutboundPosts({ status, providerId, limit });
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to list outbound posts' }, { status: 500 });
+  }
 }

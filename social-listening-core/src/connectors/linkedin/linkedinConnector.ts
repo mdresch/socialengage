@@ -763,11 +763,34 @@ export const linkedinConnector: SocialConnector = {
   },
 
   /**
-   * Story 2.30 (ADR-0075) — optional outbound post publishing. This is the
-   * first LinkedIn `SocialConnector.publish()` implementation, gated on a
-   * valid `w_member_social` or `w_organization_social` scope.
+   * Story 2.30 (ADR-0075) / Story 11.7 (ADR-0098) — optional outbound post publishing.
    */
   publish: publishToLinkedIn,
+
+  targetAssets: async (tenantId: string, userId: string, credential: string) => {
+    let credObj: LinkedInCredential | null = null;
+    try {
+      if (credential) {
+        credObj = JSON.parse(credential);
+      }
+    } catch {
+      // ignore
+    }
+    const targets: Array<{ id: string; name: string; type: string }> = [];
+    if (credObj?.memberId) {
+      targets.push({
+        id: `urn:li:person:${credObj.memberId}`,
+        name: credObj.memberName || 'LinkedIn Personal Profile',
+        type: 'linkedin_person',
+      });
+    }
+    targets.push({
+      id: `urn:li:organization:corp-${tenantId.slice(0, 8)}`,
+      name: 'Company LinkedIn Page',
+      type: 'linkedin_organization',
+    });
+    return targets;
+  },
 
   normalize(rawItem: unknown): NormalizedPost {
     const raw = rawItem as RawLinkedInPost;
