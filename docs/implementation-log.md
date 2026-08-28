@@ -3572,6 +3572,29 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Connected preferences management into `/tenant/settings` with direct deep link.
   - Built BFF proxy endpoints under `/api/digest/` and typed client methods in `core-client.ts`.
 
+---
+
+## 2026-08-28 — Story 11.5 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.5 / ADR-0097, BRD-0097, FDD-0097
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/topic-evolution/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0056_create_topic_daily_counts.sql` (new — migration for topic daily counts table)
+  - `social-listening-core/src/topics/topicEvolutionService.ts` (new — longitudinal aggregation and trend slope detection)
+  - `social-listening-core/src/http/versions/v1/topicsRouter.ts` (extended — mounted GET /v1/topics/evolution)
+  - `social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts` (new)
+  - `social-listening-core/.claude/skills/topic-evolution/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.5 Built)
+- **Suite at merge:** PASS (6/6 tests in story-11.5 contract, tsc typecheck zero errors)
+- **Key Implementation Details:**
+  - Created `topic_daily_counts` table with RLS for precomputed fast longitudinal query execution.
+  - Implemented 7-day slope linear regression trend classification (`rising` if $> +5\%/\text{day}$, `falling` if $< -5\%/\text{day}$, otherwise `stable`).
+  - Added support for flexible time bucketing (`day`, `week`, `month`) and period-over-period comparison (`compareToPrevious`).
+  - Mounted `GET /v1/topics/evolution` endpoint with token-based tenant identity enforcement via `requireTenantUser()`.
+
+
 
 
 
