@@ -3224,3 +3224,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
 - **Status:** Pending review
 
+## 2026-08-28 — 4860f96 — Scheduled doc review: Ideal Manager pass (2026-08-28)
+
+- **Full commit:** `4860f96d3bc3c86b6e99a19d6e9940df762be030`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** Pending review
+
