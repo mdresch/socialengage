@@ -3461,3 +3461,35 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - AC5: Empty (0%) and completed (100%) states handled gracefully with celebratory styling.
   - AC6: Advanced steps (`enable_enrichment`, `configure_alerts`) display and toggle visibility without gating workflows.
   - AC7: Role gating: `tenant_admin` mutation controls vs `tenant_user` read-only visibility.
+
+---
+
+## 2026-08-28 — Story 11.1 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.1 / ADR-0095, BRD-0095, FDD-0095
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.1.crm-connector-and-case-handoff.contract.test.ts (5/5 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/crm-connector/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/migrations/0053_create_crm_tables_and_outbound_crm_handoff.sql` (new)
+  - `social-listening-core/src/connectors/crm/types.ts` (new)
+  - `social-listening-core/src/connectors/crm/dynamics365Connector.ts` (new)
+  - `social-listening-core/src/connectors/crm/salesforceConnector.ts` (new)
+  - `social-listening-core/src/connectors/crm/hubspotConnector.ts` (new)
+  - `social-listening-core/src/connectors/crm/crmRegistry.ts` (new)
+  - `social-listening-core/src/crm/crmFieldMappingStore.ts` (new)
+  - `social-listening-core/src/crm/crmHandoffService.ts` (new)
+  - `social-listening-core/src/http/routes/crmRoutes.ts` (new)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted CRM routes)
+  - `social-listening-core/contracts/epic-11/story-11.1.crm-connector-and-case-handoff.contract.test.ts` (new)
+  - `social-listening-core/.claude/skills/crm-connector/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.1 Built)
+- **Suite at merge:** PASS (5/5 tests in story-11.1 contract, 20/20 in epic-10 contract suite)
+- **Key Implementation Details:**
+  - Implemented `CRMConnector` provider abstraction supporting Microsoft Dynamics 365 (Dataverse Web API v9.2), Salesforce, and HubSpot.
+  - Added tier-1 Microsoft Dynamics 365 integration with Azure AD OAuth and Dataverse canonical deep link generation (`https://<org>.crm.dynamics.com/main.aspx?etn=<entity>&id={<guid>}&pagetype=entityrecord`).
+  - Created `crm_field_mappings` table with PostgreSQL Row-Level Security for tenant-specific field overrides.
+  - Implemented `POST /v1/inbox/items/:id/case` and `POST /v1/crm/field-mappings` endpoints.
+  - Implemented fail-closed deduplication returning `409 Conflict` if the item was already successfully pushed to the connector, unless `allowDuplicate: true` is passed.
+  - Recorded all handoff attempts in `outbound_activities` with `activity_type = 'crm_handoff'` and diagnostic details.
+

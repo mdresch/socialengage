@@ -34,6 +34,7 @@ import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
 import { alertRulesRouter } from './alertRulesRouter';
 import { webhooksRouter } from './webhooksRouter';
 import { youtubeConnectorRouter } from './youtubeConnectorRouter';
+import { createCRMRoutes } from '../../routes/crmRoutes';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -201,6 +202,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
   v1Router.use('/webhooks', authMiddleware, webhooksRouter);
+
+  /** Story 11.1 (ADR-0095) — CRM connectors, field mappings, and case handoff. */
+  v1Router.use('/', authMiddleware, createCRMRoutes());
 
   return v1Router;
 }
