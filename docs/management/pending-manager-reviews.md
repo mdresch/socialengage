@@ -3410,3 +3410,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** Pending review
 
+## 2026-08-28 — 89b6e75 — Scheduled doc review: Documentation Steward pass, continued (2026-08-28)
+
+- **Full commit:** `89b6e752bd45fb4011b504e8babd46e553b644e8`
+- **Files touched:** docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md
+- **Status:** Pending review
+
