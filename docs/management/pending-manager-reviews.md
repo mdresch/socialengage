@@ -3422,3 +3422,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
 - **Status:** Pending review
 
+## 2026-08-28 — 95e6d3a — Queue commit e875e18 for Manager, Documentation Steward, and Learning & Development review
+
+- **Full commit:** `95e6d3a70c52929ad76e48b31f9ba2aefd6aa548`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
+- **Status:** Pending review
+
