@@ -1,4 +1,4 @@
-# ADR-0091: Real-time alert rules and delivery
+﻿# ADR-0091: Real-time alert rules and delivery
 
 **Status:** Accepted (2026-08-28)
 
@@ -119,3 +119,7 @@ alert_rules (
 - Related feature design: `docs/product-research/feature-designs/09-real-time-alerts.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0012`/`ADR-0013` (events), `ADR-0044` (watchlists), `ADR-0087` (precomputed views, for fast threshold evaluation)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0123 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 and §5 would be extended by ADR-0123's own §1–§4 — specifically rule-level noise exclusions (excluded_watchlist_ids, excluded_topic_ids), a hard per-rule daily cap (max_alerts_per_day), sensitivity presets, and a pre-save alert volume preview endpoint (POST /v1/alert-rules/preview). This is a pending note only: ADR-0123 is currently Proposed, not accepted. Per ADR-0047 §2, don't assume already-shipped code changes automatically — it would only change once ADR-0123's own story is actually built following acceptance. This ADR's original Decision and Consequences text above is unchanged and remains the historical record.

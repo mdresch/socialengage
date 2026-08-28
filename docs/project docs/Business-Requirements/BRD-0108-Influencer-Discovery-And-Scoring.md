@@ -1,4 +1,4 @@
-# BRD-0108: Influencer Discovery and Scoring
+﻿# BRD-0108: Influencer Discovery and Scoring
 
 > **Note:** ADR-0108 is currently **Proposed** (2026-08-23). This Business Requirements Document is therefore a draft for review and may change before the ADR is accepted.
 
@@ -284,3 +284,5 @@ Categories include: Performance, Security, Reliability, Scalability, Usability, 
 | Product Owner | Menno | | |
 | Technical Lead | Menno | | |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place per  5-influencer-discovery-deep-research.md. Implements multi-platform engagement reach score and author authority tiers.

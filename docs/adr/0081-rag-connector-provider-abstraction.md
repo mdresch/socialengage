@@ -1,4 +1,4 @@
-# ADR-0081: RAGConnector provider abstraction
+﻿# ADR-0081: RAGConnector provider abstraction
 
 **Status:** Accepted (2026-08-25). Originally Proposed 2026-08-23; revised 2026-08-25 per architectural review ("Accept with minor revisions") — added `content`/`RAGFilter`/`RAGSearchOptions`/`RAGSearchResult` to the interface, vector ID scheme, batching responsibility, hybrid-search/score-threshold options, and resolved all four open questions (Decisions §3, §7–§13). Accepted the same day by the Business Sponsor / Product Owner / Technical Lead following the review verdict "Approved / Ready to Merge."
 
@@ -166,3 +166,7 @@ The embedding vector dimension is specified in connector configuration (e.g. 153
 - Related feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0002` (`AIProviderConnector`), `ADR-0028` (credential ownership tiers), `ADR-0015` (tenant RLS)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0136 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0136's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0136 is currently Proposed, not accepted.

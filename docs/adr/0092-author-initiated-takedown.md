@@ -1,4 +1,4 @@
-# ADR-0092: Author-initiated takedown
+﻿# ADR-0092: Author-initiated takedown
 
 **Status:** Accepted (2026-08-28)
 
@@ -107,3 +107,7 @@ data_subject_requests (
 - Related feature design: `docs/product-research/feature-designs/14-author-initiated-takedown.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0043` (tenant deletion/offboarding), `ADR-0083` (RAG deletion sync), `ADR-0031` (audit log)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0125 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1–§3 would be extended by ADR-0125's own §1–§4 — specifically a default 45-day response SLA clock, required CAPTCHA on the public form, advisory-only risk-flagging, and explicit redaction propagation into derived AI enrichment tables (social_posts.enrichment). This is a pending note only: ADR-0125 is currently Proposed, not accepted.

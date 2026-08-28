@@ -1,4 +1,4 @@
-# ADR-0094: Compliance audit pack
+﻿# ADR-0094: Compliance audit pack
 
 **Status:** Accepted (2026-08-28)
 
@@ -116,3 +116,7 @@ POST /v1/compliance/audit-packs
 - Related feature design: `docs/product-research/feature-designs/16-compliance-audit-pack.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0031` (audit log), `ADR-0092` (takedown), `ADR-0093` (DSR), `ADR-0016` (Azure Blob Storage)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0127 (Proposed, 2026-08-28) is accepted, this ADR's Decision §2 would be refined by ADR-0127's own §1–§3 — specifically Merkle-tree hash chaining for audit log integrity verification and multi-format evidence bundle export. This is a pending note only: ADR-0127 is currently Proposed, not accepted.

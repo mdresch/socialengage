@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 
@@ -337,3 +337,5 @@ BooleanQueryBuilder
 | Version | Date | Author | Description |
 |---|---|---|---|
 | 0.1 | 2026-08-23 | FDD Writer — Batch Agent | Initial synthesis from ADR-0102 and BRD-0102. |
+
+> **Technical Revision (2026-08-28):** Added AST node validation contract for NEAR proximity node conversion to Postgres 	squery <-> operator.

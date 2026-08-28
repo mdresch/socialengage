@@ -1,4 +1,4 @@
-# Unified Social Inbox and Reply – Business Requirements Document
+﻿# Unified Social Inbox and Reply – Business Requirements Document
 
 ## 1. Document Control
 
@@ -278,3 +278,5 @@ Expected business value includes faster response times to public complaints, cle
 | Product Owner | Menno | | |
 | Technical Lead | Menno | | |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place per  6-unified-social-inbox-deep-research.md. Adds collision detection (real-time presence) and multi-agent assignment routing.

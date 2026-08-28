@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-27 | 01:34 | — | — | Documentation | — | style(posts): polish post details drawer header, tabs, and reply buttons (f7a93b1) |
 | 2026-08-27 | 01:04 | — | — | Documentation | ADR-0088 | docs: approve and sync FDDs, BRDs, and User Stories for ADR-0088 through ADR-0094 (de86579) |
 | 2026-08-27 | 01:03 | — | — | Documentation | ADR-0088 | docs(adr): approve ADR-0088 through ADR-0094 (93 total accepted ADRs) and sync dashboard (fb40e92) |
 | 2026-08-27 | 01:00 | — | — | Documentation | — | feat(youtube): integrate full SocialConnector lifecycle, registration and UI activation for YouTube (b24195a) |

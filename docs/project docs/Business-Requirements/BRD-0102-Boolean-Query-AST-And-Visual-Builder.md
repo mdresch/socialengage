@@ -1,4 +1,4 @@
-# BRD-0102: Boolean Query AST and Visual Builder
+﻿# BRD-0102: Boolean Query AST and Visual Builder
 
 ## 1. Document Control
 
@@ -266,3 +266,5 @@ After this initiative, every watchlist is stored as a canonical `WatchlistAST` o
 | Product Owner | Menno | | |
 | Technical Lead | Menno | | |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place per  2-boolean-query-builder-deep-research.md. Cites Brandwatch/Sprinklr proximity operator models (NEAR/n) and validates AST recursion limits (depth 10).

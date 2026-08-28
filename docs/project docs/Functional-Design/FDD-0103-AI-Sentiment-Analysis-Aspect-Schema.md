@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 
@@ -323,3 +323,5 @@ Constraints: the schema must remain queryable/aggregatable in Postgres JSONB wit
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
 | 0.2 | 2026-08-23 | FDD Writer Agent | Regenerated with a real per-capability Section 5 breakdown, data model, and workflow detail, replacing the prior defective BRD-table copy |
+
+> **Technical Revision (2026-08-28):** Defined spect_sentiments JSONB schema and index structure on social_posts table for high-performance multi-aspect aggregations.

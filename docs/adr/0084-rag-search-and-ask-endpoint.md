@@ -153,3 +153,7 @@ export interface RAGStatusResponse {
 - `docs/adr/0082-rag-post-chunking-and-embedding.md`
 - `docs/adr/0083-rag-vector-store-rls-and-metadata.md`
 - `docs/adr/0078-metric-explainability-and-confidence-scoring.md`
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0139 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0139's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0139 is currently Proposed, not accepted.

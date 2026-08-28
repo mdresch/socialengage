@@ -1,4 +1,4 @@
-# ADR-0088: Ad-hoc query allowlist
+﻿# ADR-0088: Ad-hoc query allowlist
 
 **Status:** Accepted (2026-08-28)
 
@@ -153,3 +153,7 @@ The endpoint is `POST` by convention (because it accepts a body) but is strictly
 *Revised 2026-08-27 (pre-acceptance), first pass: removed the duplicate `platform`/`source` dimension; documented `topic_id`'s real source (ADR-0104) and merge semantics; added response-level `warnings` for the three partial-coverage metrics inherited from ADR-0087; named the `unique(author)` × `platform`/`sentiment` always-raw-fallback case explicitly; surfaced (left open) whether `watchlist` grouping/filtering should be scoped to the caller's own watchlists.*
 
 *Revised 2026-08-27 (pre-acceptance), second pass: resolved the watchlist-privacy question — `dimensions: ['watchlist']`/`filters.watchlist` are owner-scoped via `watchlists.owner_id = app.user_id` (ADR-0044's predicate), never enumerating or exposing another user's private watchlist. Every open question raised in review is now resolved; this ADR is awaiting formal acceptance.*
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0132 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0132's own §1–§3 — specifically parameterized AST template validation and query cost governor limits. This is a pending note only: ADR-0132 is currently Proposed, not accepted.

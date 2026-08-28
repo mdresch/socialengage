@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 
@@ -329,3 +329,5 @@ interface SocialConnector {
 | Version | Date | Author | Description |
 |---|---|---|---|
 | 0.1 | 2026-08-23 | FDD Writer — Batch Agent | Initial synthesis from ADR-0101 and BRD-0101. |
+
+> **Technical Revision (2026-08-28):** Refined connector capability matrix schema to explicitly include supportsStreaming, maxBatchSize, and minimumPollIntervalSeconds per research brief  1-multi-source-ingestion-deep-research.md.

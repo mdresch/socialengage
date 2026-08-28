@@ -1,4 +1,4 @@
-# ADR-0087: Preconfigured analytics views
+﻿# ADR-0087: Preconfigured analytics views
 
 **Status:** Accepted (2026-08-27)
 
@@ -194,3 +194,7 @@ Aggregate rows contain counts, sums, and identifiers only. The `watchlist_id` li
 *Revised 2026-08-27 (pre-acceptance), third pass: resolved the ADR-0054 relationship — added Decision §8, a scoped, widget-by-widget partial supersession of ADR-0054's client-side data-source strategy (Overview/Sentiment/Sources/Watchlist-Coverage widgets move to these tables; word cloud, languages, per-author sentiment, Spike Storyteller, and Location stay client-side, since no table here covers phrase, language, per-author-sentiment, or geo data; post drill-down stays on `GET /v1/posts` regardless) — and added the required matching "Pending supersession note" to ADR-0054's own Decision §3, alongside ADR-0062's existing one on the same clause.*
 
 *Revised 2026-08-27 (pre-acceptance), fourth pass: resolved the last open item — `sum_engagement` confirmed Facebook-only for v1, `NULL` elsewhere, matching `sum_reach`'s existing partial-coverage precedent. Every open question raised in review is now resolved; this ADR is awaiting formal acceptance.*
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0135 (Proposed, 2026-08-28) is accepted, this ADR's Decision §3 would be refined by ADR-0135's own §2 — specifically clarifying that the five *DailyCount views must be implemented as ordinary Postgres tables with RLS policies, not literal Postgres MATERIALIZED VIEW objects (which do not support RLS). This is a pending note only: ADR-0135 is currently Proposed, not accepted.
