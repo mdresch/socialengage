@@ -3376,3 +3376,9 @@
 - **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/0089-platform-operations-dashboard.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0091-real-time-alert-rules-and-delivery.md, docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
 - **Status:** Pending review
 
+## 2026-08-28 — a2f134e — Scheduled doc review: Learning & Development Writer pass (2026-08-28)
+
+- **Full commit:** `a2f134e912c829cf05b3af8be4dc4b38528447e8`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md
+- **Status:** Pending review
+

@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 05:10 | — | — | Review | — | Scheduled doc review: Learning & Development Writer pass (2026-08-28) (a2f134e) |
 | 2026-08-27 | 01:03 | — | — | Documentation | ADR-0088 | docs(adr): approve ADR-0088 through ADR-0094 (93 total accepted ADRs) and sync dashboard (fb40e92) |
 | 2026-08-27 | 01:00 | — | — | Documentation | — | feat(youtube): integrate full SocialConnector lifecycle, registration and UI activation for YouTube (b24195a) |
 | 2026-08-27 | 00:31 | — | — | Documentation | — | docs(epic-10): mark Stories 10.1–10.14 as built and sync project progress dashboard (164/210 stories built) (086fcce) |
