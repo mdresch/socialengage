@@ -2896,119 +2896,141 @@
 
 - **Full commit:** `e7d69a1c46fa15fc743b4b4804d10c5aa08c533e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — a920eee — docs(trace): backfill Story 6.33 Built field and Implementation Log entry
 
 - **Full commit:** `a920eee973b2bceaca7b109a4cef0e34e6271e4e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — ebf4144 — docs(trace): backfill Story 6.34 Built field and Implementation Log entry
 
 - **Full commit:** `ebf4144af00be0689cbfef279e69fceb298d5d31`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 3c64c15 — docs(trace): backfill Story 6.35 Built field and Implementation Log entry
 
 - **Full commit:** `3c64c154a257a690c011e6289509a33e3917388e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — b62e2c0 — feat(admin): Story 6.38 contract
 
 - **Full commit:** `b62e2c0fa72298e57372e0b9ca92cdac9b83a1ff`
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — ae5d16a — feat(admin): Story 6.38 / ADR-0073 — post detail reply composer and replies tab
 
 - **Full commit:** `ae5d16a31e81b4627be3dd92dbb69fe2b3675c64`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/replies/route.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostRepliesTab.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/ReplyComposerDrawer.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — ef1e984 — docs(trace): finalize Story 6.38 Built field and Implementation Log entry
 
 - **Full commit:** `ef1e9842e71f2a8d69f83250fb0a90242850a7b9`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 9fb2086 — docs(trace): backfill Story 6.16 Built field
 
 - **Full commit:** `9fb20866569c2d721e1e59dcc716a23ae5b9e4d5`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 68b70be — docs(trace): backfill Story 6.9 Built field
 
 - **Full commit:** `68b70be2c396380729f2c8a979b12ba73a467c95`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — c7ecbc3 — docs(trace): backfill Story 6.10 Built field
 
 - **Full commit:** `c7ecbc30303356417ddb4dedb09fb3138c228597`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — f49bba1 — docs(trace): backfill Story 1.9 Built field
 
 - **Full commit:** `f49bba16d8d90ab248dc5f838c813b11c7426c2b`
 - **Files touched:** docs/user-stories/epic-1-repository-and-api-foundation.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 44b4962 — feat(dashboard): transform into enterprise telemetry portal with sidebar, test contracts, extended roadmap, and ADR open questions resolution center
 
 - **Full commit:** `44b49623c9e02af9a3800d29232c470e6b141839`
 - **Files touched:** project-progress-dashboard/package-lock.json, project-progress-dashboard/package.json, project-progress-dashboard/postcss.config.mjs, project-progress-dashboard/src/app/globals.css, project-progress-dashboard/src/app/page.tsx, project-progress-dashboard/src/components/charts/DonutChart.tsx, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/AdrOpenQuestionsView.tsx, project-progress-dashboard/src/components/project-progress/AdrView.tsx, project-progress-dashboard/src/components/project-progress/ArchitectureExplorerView.tsx, project-progress-dashboard/src/components/project-progress/BrdView.tsx, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/FddView.tsx, project-progress-dashboard/src/components/project-progress/GlobalSearchDialog.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/SidebarNav.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/components/project-progress/TestContractsView.tsx, project-progress-dashboard/src/components/project-progress/TraceabilityView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 8e16327 — feat(dashboard): add automated repository sync script and predev/prebuild triggers
 
 - **Full commit:** `8e1632725425a9d02c84c35bf52507bdab3e7cdc`
 - **Files touched:** project-progress-dashboard/package.json, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 7f2e1f9 — docs(adr): accept ADR-0080 with milestone locking, bundled query reconciliation, and TypeScript contracts
 
 - **Full commit:** `7f2e1f953b2cb3aead42a4cfa96f418daa53d485`
 - **Files touched:** docs/adr/0080-onboarding-checklist-state.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — a9f73c4 — docs(onboarding): approve BRD-0080 and FDD-0080 and unblock Stories 9.5 and 9.6 following ADR-0080 acceptance
 
 - **Full commit:** `a9f73c41b689912189459de9ae7733bad76d1847`
 - **Files touched:** docs/project docs/Business-Requirements/BRD-0080-Onboarding-Checklist-State.md, docs/project docs/Functional-Design/FDD-0080-Onboarding-Checklist-State.md, docs/user-stories/epic-9-adr-0077-to-0085.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 56aec12 — chore(infra): update implement-story and heal-contract-failure skills and Postgres template DB test harness
 
 - **Full commit:** `56aec12e232732780e88a294afd9c152fb659f67`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, docs/implementation-methodology.md, social-listening-core/jest.config.js, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/migrations/0013_enable_pg_cron_and_refresh_author_topic_signals.sql, social-listening-core/src/db/adminPool.ts, social-listening-core/src/db/identityResolverPool.ts, social-listening-core/src/db/platformAdminPool.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/db/tenantDeletionPool.ts, social-listening-core/src/db/tenantSignupPool.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — a4bf276 — feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint
 
 - **Full commit:** `a4bf27620f07cf9019878790abc245c16145b852`
 - **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/previewVolumeService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — f912b13 — docs(trace): finalize Story 9.1 Built field and Implementation Log entry
 
 - **Full commit:** `f912b139d8f92b16bf711652e6a27d5490c192ff`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 0a7c450 — docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list
 
 - **Full commit:** `0a7c4500cadcd5b4d0e481e2bf314365be321934`
 - **Files touched:** docs/adr/README.md, docs/user-stories/README.md, docs/user-stories/epic-14-adr-0118-to-0121.md
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
+
 ## 2026-08-24 — 5ff1879 — Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24)
 
 - **Full commit:** `5ff1879ee65e477e0e7861323f6a9820a0c1cbd0`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-28:** see docs/management/manager-register.md's entry reviewing e7d69a1/a920eee/ebf4144/3c64c15/b62e2c0/ae5d16a/ef1e984/9fb2086/68b70be/c7ecbc3/f49bba1/44b4962/8e16327/7f2e1f9/a9f73c4/56aec12/a4bf276/f912b13/0a7c450/5ff1879.
 
 ## 2026-08-24 — 3a8ff91 — Scheduled doc review: Documentation Steward pass (2026-08-24)
 
