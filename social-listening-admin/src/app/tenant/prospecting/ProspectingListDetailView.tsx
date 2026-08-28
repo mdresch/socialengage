@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ProspectingList, ProspectingListEntry } from '@/lib/core-client';
+import { CRMHandoffModal } from '@/components/crm/CRMHandoffModal';
 
 const STAGE_LABELS: Record<string, string> = {
   new: 'New Lead',
@@ -46,6 +47,7 @@ export function ProspectingListDetailView({
   const [editNotes, setEditNotes] = useState('');
   const [savingEntry, setSavingEntry] = useState(false);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [crmAuthor, setCrmAuthor] = useState<{ authorId: string; authorName: string; postExcerpt?: string } | null>(null);
 
   const refreshEntries = useCallback(async () => {
     try {
@@ -305,6 +307,14 @@ export function ProspectingListDetailView({
                               <button
                                 className="btn btn-secondary btn-sm"
                                 style={{ fontSize: '0.75rem' }}
+                                title="Push author lead to CRM"
+                                onClick={() => setCrmAuthor({ authorId: entry.author_id, authorName: entry.author_id, postExcerpt: entry.notes || undefined })}
+                              >
+                                💼 CRM
+                              </button>
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.75rem' }}
                                 onClick={() => handleStartEditEntry(entry)}
                               >
                                 Edit
@@ -329,6 +339,15 @@ export function ProspectingListDetailView({
           </table>
         </div>
       )}
+
+      <CRMHandoffModal
+        isOpen={Boolean(crmAuthor)}
+        onClose={() => setCrmAuthor(null)}
+        authorId={crmAuthor?.authorId}
+        authorName={crmAuthor?.authorName}
+        postExcerpt={crmAuthor?.postExcerpt}
+        defaultEntityType="lead"
+      />
     </div>
   );
 }

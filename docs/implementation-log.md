@@ -3493,3 +3493,30 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented fail-closed deduplication returning `409 Conflict` if the item was already successfully pushed to the connector, unless `allowDuplicate: true` is passed.
   - Recorded all handoff attempts in `outbound_activities` with `activity_type = 'crm_handoff'` and diagnostic details.
 
+---
+
+## 2026-08-28 — Story 11.2 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.2 / ADR-0095, BRD-0095, FDD-0095
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.2.case-handoff-ui.contract.test.ts (7/7 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — CRM client methods and TypeScript types)
+  - `social-listening-admin/src/app/api/crm/push/route.ts` (new — BFF proxy for CRM push)
+  - `social-listening-admin/src/app/api/crm/connectors/route.ts` (new — BFF proxy for CRM connectors)
+  - `social-listening-admin/src/app/api/crm/field-mappings/route.ts` (new — BFF proxy for field mappings)
+  - `social-listening-admin/src/components/crm/CRMHandoffModal.tsx` (new — CRM escalation modal component)
+  - `social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx` (extended — integrated Push to CRM action)
+  - `social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx` (extended — integrated CRM lead escalation)
+  - `social-listening-admin/contracts/epic-11/story-11.2.case-handoff-ui.contract.test.ts` (new)
+  - `social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.2 Built)
+- **Suite at merge:** PASS (7/7 tests in story-11.2 contract, 21/21 in regression suites)
+- **Key Implementation Details:**
+  - Implemented `CRMHandoffModal` with Dynamics 365, Salesforce, and HubSpot selection, entity type picker (`support`, `lead`, `opportunity`), assignee, and notes.
+  - Implemented `409 Conflict` duplicate handling surfacing direct link to existing CRM record and one-click override (`allowDuplicate = true`).
+  - Added "Push to CRM" action button to `PostDetailPanel` and author lead rows in `ProspectingListDetailView`.
+  - Added BFF proxy endpoints under `/api/crm/` and typed client methods in `core-client.ts`.
+
+

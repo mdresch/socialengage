@@ -12,6 +12,7 @@ import {
 } from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostRepliesTab } from './PostRepliesTab';
+import { CRMHandoffModal } from '@/components/crm/CRMHandoffModal';
 import type { OutboundActivity } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
@@ -120,6 +121,7 @@ export function PostDetailPanel({
 }) {
   const [showRawJson, setShowRawJson] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'replies'>('details');
+  const [isCrmOpen, setIsCrmOpen] = useState(false);
 
   const supportedReplyProviders = ['facebook'];
   const isReplySupported = supportedReplyProviders.includes(post.provider);
@@ -159,17 +161,42 @@ export function PostDetailPanel({
             )}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => onReply?.()}
-          disabled={!canReply}
-          aria-label="Reply"
-          title={replyTooltip}
-          className="pf-reply-btn"
-        >
-          <IconReply />
-          <span>Reply</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => setIsCrmOpen(true)}
+            aria-label="Push to CRM"
+            title="Escalate post to CRM (Dynamics 365, Salesforce, HubSpot)"
+            className="pf-crm-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <span>💼</span>
+            <span>Push to CRM</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onReply?.()}
+            disabled={!canReply}
+            aria-label="Reply"
+            title={replyTooltip}
+            className="pf-reply-btn"
+          >
+            <IconReply />
+            <span>Reply</span>
+          </button>
+        </div>
       </div>
 
       {activeTab === 'details' && (
@@ -583,6 +610,14 @@ export function PostDetailPanel({
         <PostRepliesTab postId={post.id} optimisticReplies={optimisticReplies} refreshToken={repliesRefresh} />
       </div>
     )}
+
+    <CRMHandoffModal
+      isOpen={isCrmOpen}
+      onClose={() => setIsCrmOpen(false)}
+      postId={post.id}
+      authorName={post.authorName}
+      postExcerpt={post.snippet || post.bodyMarkdown}
+    />
   </div>
   );
 }

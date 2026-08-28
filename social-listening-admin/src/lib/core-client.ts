@@ -2260,6 +2260,120 @@ export async function getAiInsightsDigest(period: 'daily' | 'weekly' = 'daily'):
   return (await response.json()) as AiInsightsDigestResponse;
 }
 
+// ---------------------------------------------------------------------------
+// Story 11.1 / 11.2 (ADR-0095) — CRM Connector & Case Handoff
+// ---------------------------------------------------------------------------
+
+export interface PushCaseToCRMInput {
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  assignedTo?: string;
+  notes?: string;
+  customFields?: Record<string, any>;
+  allowDuplicate?: boolean;
+  authorId?: string;
+}
+
+export interface PushCaseToCRMResponse {
+  outboundActivityId: string;
+  crmRecordId: string;
+  crmRecordUrl: string;
+  status: 'success';
+}
+
+export interface CRMConnectorStatusItem {
+  id: string;
+  provider: 'dynamics365' | 'salesforce' | 'hubspot';
+  status: {
+    isActive: boolean;
+    provider: string;
+    lastValidatedAt?: string;
+  };
+}
+
+export interface CRMFieldMappingItem {
+  id: string;
+  tenantId: string;
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  sourceField: string;
+  targetField: string;
+  isRequired: boolean;
+  defaultValue: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — pushes a case/lead to an external CRM.
+ */
+export async function pushCaseToCRM(id: string, payload: PushCaseToCRMInput): Promise<Response> {
+  return authenticatedCoreFetch(`/v1/inbox/items/${id}/case`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — lists available CRM connectors.
+ */
+export async function listCRMConnectors(): Promise<CRMConnectorStatusItem[]> {
+  const response = await authenticatedCoreFetch('/v1/crm/connectors');
+  if (!response.ok) {
+    throw new Error(`Failed to list CRM connectors: ${response.status}`);
+  }
+  return (await response.json()) as CRMConnectorStatusItem[];
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — lists custom CRM field mappings.
+ */
+export async function listCRMFieldMappings(crmConnectorId?: string, entityType?: string): Promise<CRMFieldMappingItem[]> {
+  const params = new URLSearchParams();
+  if (crmConnectorId) params.append('crmConnectorId', crmConnectorId);
+  if (entityType) params.append('entityType', entityType);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await authenticatedCoreFetch(`/v1/crm/field-mappings${query}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list CRM field mappings: ${response.status}`);
+  }
+  return (await response.json()) as CRMFieldMappingItem[];
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — creates or updates custom CRM field mapping.
+ */
+export async function upsertCRMFieldMapping(mapping: {
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  sourceField: string;
+  targetField: string;
+  isRequired?: boolean;
+  defaultValue?: string | null;
+}): Promise<CRMFieldMappingItem> {
+  const response = await authenticatedCoreFetch('/v1/crm/field-mappings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(mapping),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to upsert CRM field mapping: ${response.status}`);
+  }
+  return (await response.json()) as CRMFieldMappingItem;
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — deletes custom CRM field mapping.
+ */
+export async function deleteCRMFieldMapping(id: string): Promise<boolean> {
+  const response = await authenticatedCoreFetch(`/v1/crm/field-mappings/${id}`, {
+    method: 'DELETE',
+  });
+  return response.ok;
+}
+
+
 
 
 
