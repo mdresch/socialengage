@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 05:16 | — | — | Review | — | Scheduled doc review: Documentation Steward pass, final (2026-08-28) (fd38ed3) |
 | 2026-08-28 | 05:15 | — | — | Review | — | Queue commit 95e6d3a for Manager, Documentation Steward, and Learning & Development review (3495a00) |
 | 2026-08-28 | 05:14 | — | — | Review | — | Queue commit e875e18 for Manager, Documentation Steward, and Learning & Development review (95e6d3a) |
 | 2026-08-28 | 05:14 | — | — | Review | — | Queue commit 89b6e75 for Manager, Documentation Steward, and Learning & Development review (e875e18) |
