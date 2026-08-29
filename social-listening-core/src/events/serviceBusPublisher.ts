@@ -31,6 +31,12 @@ export async function publishEvent(
   body: unknown,
   options: PublishEventOptions = {}
 ): Promise<void> {
+  if (!process.env.SERVICE_BUS_NAMESPACE) {
+    // SERVICE_BUS_NAMESPACE is not configured in this environment (typical for local dev).
+    // Skip publishing rather than attempting connection to an unresolvable default host.
+    console.debug(`[ingestion-events] dev: SERVICE_BUS_NAMESPACE not set, skipping publish (tenant=${tenantId})`);
+    return;
+  }
   const client = new ServiceBusClient(namespaceHost(), new DefaultAzureCredential());
   try {
     const sender = client.createSender(TOPIC_NAME);
