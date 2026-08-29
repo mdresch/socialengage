@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 20:25 | — | — | Infrastructure | Story 12.12 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) (f1a2b93) |
+| 2026-08-29 | 20:22 | — | — | Infrastructure | Story 12.11 | feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend) (563fbce) |
 | 2026-08-29 | 19:41 | — | — | Infrastructure | Story 12.11 | feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend) (90fe8f5) |
 | 2026-08-29 | 19:34 | — | — | Documentation | Story 12.10 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) (ffc5294) |
 | 2026-08-29 | 19:33 | — | — | Documentation | Story 12.10 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) (d221cd6) |

@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-29
 **Source Capture:** `raw/synthesis-epic-12-2026-08-29/`
-**Git HEAD:** `ffc5294f7f54658267439d4d39c9f8db8b202297`
+**Git HEAD:** `563fbce6b6d581a54b1249f96ed6b8ebca3a7f63`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 933 |
+| Git commits scanned | 945 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 10 |
-| Contract test files | 196 |
+| Feature commits (this epic) | 11 |
+| Contract test files | 197 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,6 +28,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `563fbce6b6d581a54b1249f96ed6b8ebca3a7f63` | 2026-08-29 19:41:42 +0200 | feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend) |
 | `ffc5294f7f54658267439d4d39c9f8db8b202297` | 2026-08-29 19:33:12 +0200 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) |
 | `ee2b3e037ed95ec914c9cd87125d3d922c2e47ee` | 2026-08-29 18:50:55 +0200 | feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend) |
 | `5ce07949b2d502fcad60b89695eb33ff2a7a7eff` | 2026-08-29 18:27:22 +0200 | feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend) |
@@ -41,7 +42,7 @@
 
 ## 4. Contract Test Inventory
 
-Total: 196 contract test files.
+Total: 197 contract test files.
 
 ### social-listening-admin/contracts (73 files)
 
@@ -119,7 +120,7 @@ Total: 196 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (123 files)
+### social-listening-core/contracts (124 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -153,6 +154,7 @@ Total: 196 contract test files.
 - `story-11.7.publishing-and-scheduling.contract.test.ts` (modified 2026-08-28)
 - `story-11.9.social-inbox-and-reply.contract.test.ts` (modified 2026-08-28)
 - `story-12.1.connector-capability-matrix.contract.test.ts` (modified 2026-08-29)
+- `story-12.11.public-api-and-webhooks.contract.test.ts` (modified 2026-08-29)
 - `story-12.3.boolean-query-ast.contract.test.ts` (modified 2026-08-29)
 - `story-12.5.ai-sentiment-aspect-schema.contract.test.ts` (modified 2026-08-29)
 - `story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` (modified 2026-08-29)
@@ -279,7 +281,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 12.10, 12.9, 12.8, 12.7, 12.6, 12.5, 12.4, 12.3, 12.2, 12.1.
+Feature commits reference stories: 12.11, 12.10, 12.9, 12.8, 12.7, 12.6, 12.5, 12.4, 12.3, 12.2, 12.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

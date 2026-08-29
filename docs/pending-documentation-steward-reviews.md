@@ -3091,3 +3091,15 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
 - **Status:** Pending review
 
+## 2026-08-29 — 563fbce — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)
+
+- **Full commit:** `563fbce6b6d581a54b1249f96ed6b8ebca3a7f63`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
+- **Status:** Pending review
+
+## 2026-08-29 — f1a2b93 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)
+
+- **Full commit:** `f1a2b9308264d73f782378284d2b87b6d0e39d00`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/components/webhooks/WebhookForm.tsx, social-listening-admin/src/components/webhooks/WebhooksView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
