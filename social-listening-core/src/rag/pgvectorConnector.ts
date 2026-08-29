@@ -276,7 +276,10 @@ export class PgvectorRAGConnector implements RAGConnector {
         count = parseInt(res.rows[0]?.count, 10) || 0;
       }
     } catch {
-      // Fallback to in-memory count
+      // Handled in fallback below
+    }
+
+    if (count === 0) {
       if (tenantId) {
         for (const chunk of this.inMemoryChunks.values()) {
           if (chunk.metadata.tenant_id === tenantId) count++;
