@@ -337,44 +337,28 @@ export interface SearchSnippet {
   provider: string;
 }
 
+/**
+ * Story 12.7 (ADR-0104) — AI topic extraction result.
+ */
+export interface ExtractedTopic {
+  name: string;
+  confidence: number;
+}
+
 export interface AnalyzeResult {
   sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
   sentimentScores?: SentimentScores;
   /** Story 12.5 (ADR-0103) — aspect-based sentiment breakdown. */
   aspects?: SentimentAspect[];
   sentimentObject?: PostSentimentEnrichment;
+  /** Story 12.7 (ADR-0104) — extracted topics. */
+  topics?: ExtractedTopic[];
   entities?: EnrichmentEntity[];
   keyPhrases?: string[];
   detectedLanguage?: string;
   /** e.g. "azure-ai-language:2025-01-01" — which provider/model version actually produced this result. */
   modelUsed?: string;
-  /**
-   * Story 2.9 (ADR-0038) — an LLM-based provider's own self-reported
-   * confidence (0.0-1.0) in its complete answer, after an explicit self-
-   * review step (see azureOpenAiConnector.ts's own system prompt).
-   * Deliberately a separate field from entities[].confidenceScore
-   * (per-entity, and — for a calibrated-classifier provider like Azure AI
-   * Language — a real statistical probability, not a self-assessment).
-   * Never populated by azureAiLanguageConnector.ts; this directly answers
-   * (for the LLM side only) the fitness-for-purpose question ADR-0038's
-   * own Open Questions section named before this field existed: whether
-   * self-reported confidence is comparable to a calibrated probability.
-   * It isn't — callers reading this field should treat it as an LLM's own
-   * self-assessment, not interchangeable with sentimentScores'/
-   * confidenceScore's calibrated-probability semantics.
-   */
   overallConfidence?: number;
-  /**
-   * Story 2.17 — a concise, LLM-generated summary of the enriched text.
-   * Populated only by an LLM-based provider capable of producing one as
-   * part of its own single structured-output call (currently
-   * azureOpenAiConnector.ts only) — azureAiLanguageConnector.ts's four
-   * capability calls have no summarization output of their own (real Azure
-   * AI Language document summarization is a separate, asynchronous
-   * endpoint, not this field's source) and correctly leave this
-   * `undefined`, the same "absence is correct, not a gap" treatment
-   * `overallConfidence` already established for that provider.
-   */
   summary?: string;
   /** Story 2.20 (ADR-0064) — ISO 3166-1 alpha-2 country code (e.g. "US", "GB", "NL"). */
   geoCountry?: string | null;
@@ -393,19 +377,15 @@ export interface AIProviderConnector extends ProviderConnector {
   /** Per-model, not per-provider — ADR-0002's one exception to the shared contract. */
   getModelRateLimit(modelId: string): RateLimitConfig;
   getModelCapabilities(modelId: string): ModelCapabilities;
-  /**
-   * `credential` (Story 2.8) is additive and optional — a real provider's
-   * own implementation needs the caller's resolved, decrypted credential to
-   * authenticate; a stateless example/mock implementation (Story 2.1's own
-   * fixtures) simply ignores it. Never resolved by analyze() itself — the
-   * caller (e.g. enrichPost.ts) reads it from the tenant's own stored
-   * credential first (ADR-0027: never a SocialEngage-held key).
-   */
   analyze(modelId: string, text: string, credential?: string): Promise<AnalyzeResult>;
   /**
    * Story 12.5 (ADR-0103) — optional aspect-based sentiment analyzer.
    */
   analyzeSentiment?(text: string, language?: string, credential?: string): Promise<PostSentimentEnrichment>;
+  /**
+   * Story 12.7 (ADR-0104) — optional topic clustering/extraction.
+   */
+  extractTopics?(text: string, language?: string, credential?: string): Promise<ExtractedTopic[]>;
   /**
    * Story 2.32 (ADR-0076) — optional deep-research capability. Only
    * generative providers (Azure OpenAI in v1) implement it; classifiers

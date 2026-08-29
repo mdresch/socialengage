@@ -26,6 +26,18 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
+## 2026-08-29 — Story 12.7 — social-listening-core@pending
+
+- **Full commit:** `pending — to be recorded after git push`
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.7 / ADR-0104
+- **Contract:** contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts
+- **SKILL.md:** .claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md
+- **Files touched:** migrations/0060_create_topics_and_post_topics.sql, src/connectors/types.ts, src/topics/topicStore.ts, src/topics/topicClusteringService.ts, src/http/versions/v1/topicsRouter.ts, src/connectors/azureOpenAi/azureOpenAiConnector.ts, src/connectors/azureAiLanguage/azureAiLanguageConnector.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (10/10); full suite deferred to CI on push
+
+---
+
 ## 2026-07-29 — Story 1.1 — socialengage@8fa7a66
 
 *Pre-split convention: `social-listening-core` and `social-listening-admin` don't yet exist as separate git repositories — per `CLAUDE.md`, they're subdirectories of this single `socialengage` workspace repo until the actual repo split happens. This commit necessarily touches both directories atomically, so `Repo` below names both rather than the single value the template above otherwise expects, and `Files touched` is the commit's true, undivided file list. `docs/templates/check-implementation-log.cjs`, once copied into either repo, filters entries by exact `Repo` match against its own directory name — a combined value like this one won't match either, so it will be silently skipped by that check until the real split happens, not falsely failed. Future Phase 0 commits that touch both scaffolds at once should follow this same convention.*

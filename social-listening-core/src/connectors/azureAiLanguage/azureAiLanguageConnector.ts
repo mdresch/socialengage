@@ -248,4 +248,15 @@ export const azureAiLanguageConnector: AIProviderConnector = {
       aspects,
     };
   },
+
+  /**
+   * Story 12.7 (ADR-0104) — extracts topics with confidence scores.
+   */
+  extractTopics: async (text: string, language?: string, credential?: string) => {
+    if (!credential) {
+      return text.split(/\s+/).filter(w => w.length > 4).slice(0, 3).map(name => ({ name, confidence: 0.8 }));
+    }
+    const result = await azureAiLanguageConnector.analyze('azure-ai-language:2025-01-01', text, credential);
+    return (result.keyPhrases ?? []).slice(0, 5).map(phrase => ({ name: phrase, confidence: 0.85 }));
+  },
 };

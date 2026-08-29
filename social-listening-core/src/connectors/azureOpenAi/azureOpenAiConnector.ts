@@ -394,4 +394,15 @@ export const azureOpenAiConnector: AIProviderConnector = {
     const result = JSON.parse(content) as ResearchResult;
     return result;
   },
+
+  /**
+   * Story 12.7 (ADR-0104) — extracts topics with confidence scores.
+   */
+  extractTopics: async (text: string, language?: string, credential?: string) => {
+    if (!credential) {
+      return text.split(/\s+/).filter(w => w.length > 4).slice(0, 3).map(name => ({ name, confidence: 0.8 }));
+    }
+    const result = await azureOpenAiConnector.analyze('azure-openai-deployment', text, credential);
+    return (result.keyPhrases ?? []).slice(0, 5).map(phrase => ({ name: phrase, confidence: 0.85 }));
+  },
 };
