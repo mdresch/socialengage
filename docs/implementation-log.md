@@ -3841,6 +3841,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented comprehensive `evaluateWatchlistAst` supporting fallback in-process matching for AST clauses across posts.
   - Added bidirectional parser `parseBooleanQueryToAst` and serializer `astToBooleanQuery` for legacy and text query interop.
 
+---
 
+## 2026-08-29 — Story 12.4 — social-listening-admin
 
-
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.4 / ADR-0102, BRD-0102, FDD-0102
+- **Contract:** social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/watchlist-ast.ts` (new — canonical `WatchlistAST` types, `parseBooleanQueryToAst`, `astToBooleanQuery`, `validateAstAgainstCapabilities`)
+  - `social-listening-admin/src/lib/core-client.ts` (extended — `WatchlistAST`, `ConnectorQueryCapabilities`, `getConnectorQueryCapabilities()`, `ast` in `Watchlist`)
+  - `social-listening-admin/src/app/api/connectors/[platformId]/query-capabilities/route.ts` (new — BFF proxy route for connector query capabilities)
+  - `social-listening-admin/src/components/watchlists/BooleanQueryBuilder.tsx` (new — Guided visual builder & Advanced text editor with live capability warnings)
+  - `social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx` (extended — integrated `BooleanQueryBuilder`, AST transmission, and 422 `UNSUPPORTED_QUERY_CLAUSE` error handling)
+  - `social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts` (new — 6/6 passing)
+  - `social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.4 Built)
+- **Suite at merge:** PASS (6/6 tests in story-12.4 contract, 72/72 admin suites passing, 889/889 tests)
+- **Key Implementation Details:**
+  - Implemented `BooleanQueryBuilder` component supporting Guided (visual blocks) and Advanced (direct text query) modes with seamless bidirectional AST synchronization.
+  - Supported all canonical clause types (`keyword`, `phrase`, `hashtag`, `mention`, `author`, `source`, `sentiment`, `date`, `nested`) and operators (`AND`, `OR`, `NOT`).
+  - Added accessibility-compliant operator badges combining color with explicit text labels and symbol indicators.
+  - Implemented per-platform query capability checks in the frontend that warn the user before saving when unsupported clauses are present.
+  - Added BFF route `GET /api/connectors/[platformId]/query-capabilities` proxying to Core API.
+  - Integrated `BooleanQueryBuilder` directly into `WatchlistForm.tsx` for watchlist creation and editing with full RFC 7396 merge-patch and 422 error display.

@@ -858,12 +858,16 @@ export async function getCoreHealthStatus(): Promise<'ok' | 'unavailable'> {
   }
 }
 
+import { WatchlistAST, ConnectorQueryCapabilities } from './watchlist-ast';
+export type { WatchlistAST, ConnectorQueryCapabilities };
+
 export interface Watchlist {
   id: string;
   name: string;
   matchType: string;
   terms: string[] | null;
   booleanQuery?: string;
+  ast?: WatchlistAST;
   platformIds: string[];
   isActive: boolean;
   version: number;
@@ -873,7 +877,16 @@ export interface Watchlist {
 
 export interface WatchlistActionOutcome {
   status: number;
-  body: { code?: string; details?: string[]; current_version?: number; [key: string]: unknown };
+  body: { code?: string; details?: string[]; offendingClause?: unknown; reason?: string; current_version?: number; [key: string]: unknown };
+}
+
+/**
+ * Story 12.3 / 12.4 (ADR-0102) — fetch per-connector query capabilities.
+ */
+export async function getConnectorQueryCapabilities(platformId: string): Promise<ConnectorQueryCapabilities | null> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/query-capabilities`);
+  if (!response.ok) return null;
+  return (await response.json()) as ConnectorQueryCapabilities;
 }
 
 /**
@@ -906,6 +919,7 @@ export async function createWatchlist(input: {
   matchType: 'keyword' | 'hashtag' | 'account' | 'boolean';
   terms?: string[] | null;
   booleanQuery?: string | null;
+  ast?: WatchlistAST | null;
   platformIds?: string[];
 }): Promise<WatchlistActionOutcome> {
   const response = await authenticatedCoreFetch('/v1/watchlists', {
