@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-29
 **Source Capture:** `raw/synthesis-epic-12-2026-08-29/`
-**Git HEAD:** `8210feddc279366a8b1bf91c93f520981f51c990`
+**Git HEAD:** `c2cf37d0613229a562731f97a58d3f69103cfa78`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 914 |
+| Git commits scanned | 919 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 4 |
-| Contract test files | 190 |
+| Feature commits (this epic) | 5 |
+| Contract test files | 191 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,6 +28,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `c2cf37d0613229a562731f97a58d3f69103cfa78` | 2026-08-29 16:11:52 +0200 | feat(core): implement AI sentiment aspect schema (Story 12.5, ADR-0103) |
 | `8210feddc279366a8b1bf91c93f520981f51c990` | 2026-08-29 15:33:13 +0200 | feat(admin): implement Story 12.4 boolean query visual builder (ADR-0102) |
 | `36ad068150ab7a2f29a9c29efb57173aa6ef85de` | 2026-08-29 15:07:26 +0200 | feat(core): Story 12.3 - Boolean query AST and visual builder backend (ADR-0102) |
 | `bae500b2b5a0b449d6e97493ada8e863b55db4db` | 2026-08-29 12:48:51 +0200 | feat(admin): implement Story 12.2 connector capability matrix UI |
@@ -35,7 +36,7 @@
 
 ## 4. Contract Test Inventory
 
-Total: 190 contract test files.
+Total: 191 contract test files.
 
 ### social-listening-admin/contracts (70 files)
 
@@ -110,7 +111,7 @@ Total: 190 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-27)
 
-### social-listening-core/contracts (120 files)
+### social-listening-core/contracts (121 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -145,6 +146,7 @@ Total: 190 contract test files.
 - `story-11.9.social-inbox-and-reply.contract.test.ts` (modified 2026-08-28)
 - `story-12.1.connector-capability-matrix.contract.test.ts` (modified 2026-08-29)
 - `story-12.3.boolean-query-ast.contract.test.ts` (modified 2026-08-29)
+- `story-12.5.ai-sentiment-aspect-schema.contract.test.ts` (modified 2026-08-29)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
@@ -184,7 +186,7 @@ Total: 190 contract test files.
 - `story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` (modified 2026-08-20)
 - `story-3.11.post-watchlist-match-persistence.contract.test.ts` (modified 2026-08-20)
 - `story-3.12.post-watchlist-match-backfill-and-discovery-attribution.contract.test.ts` (modified 2026-08-20)
-- `story-3.13.post-enrichment-overrides.contract.test.ts` (modified 2026-08-20)
+- `story-3.13.post-enrichment-overrides.contract.test.ts` (modified 2026-08-29)
 - `story-3.14.outbound-reply-audit.contract.test.ts` (modified 2026-08-23)
 - `story-3.15.outbound-post-publishing-audit.contract.test.ts` (modified 2026-08-29)
 - `story-3.16.tenant-workspace-and-posts-export.contract.test.ts` (modified 2026-08-24)
@@ -267,7 +269,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 12.4, 12.3, 12.2, 12.1.
+Feature commits reference stories: 12.5, 12.4, 12.3, 12.2, 12.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

@@ -3460,3 +3460,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/query-capabilities/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/BooleanQueryBuilder.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/watchlist-ast.ts
 - **Status:** Pending review
 
+## 2026-08-29 — c2cf37d — feat(core): implement AI sentiment aspect schema (Story 12.5, ADR-0103)
+
+- **Full commit:** `c2cf37d0613229a562731f97a58d3f69103cfa78`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.5.ai-sentiment-aspect-schema.contract.test.ts, social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Status:** Pending review
+
