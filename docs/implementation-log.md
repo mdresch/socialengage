@@ -26,15 +26,27 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.7 — social-listening-core@pending
+## 2026-08-29 — Story 12.7 — social-listening-core@21820f4
 
-- **Full commit:** `pending — to be recorded after git push`
+- **Full commit:** `21820f4` (see git log)
 - **Repo:** social-listening-core
 - **Story / ADR:** 12.7 / ADR-0104
 - **Contract:** contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts
 - **SKILL.md:** .claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md
 - **Files touched:** migrations/0060_create_topics_and_post_topics.sql, src/connectors/types.ts, src/topics/topicStore.ts, src/topics/topicClusteringService.ts, src/http/versions/v1/topicsRouter.ts, src/connectors/azureOpenAi/azureOpenAiConnector.ts, src/connectors/azureAiLanguage/azureAiLanguageConnector.ts
 - **Full suite at merge:** Epic-12 suite at merge: PASS (10/10); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.8 — social-listening-admin@pending
+
+- **Full commit:** `pending — to be recorded after git push`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.8 / ADR-0104
+- **Contract:** contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts
+- **SKILL.md:** .claude/skills/topic-curation-ui/SKILL.md
+- **Files touched:** src/components/topics/topicCurationUtils.ts, src/components/topics/TopicBadge.tsx, src/components/topics/TopicsView.tsx, src/components/topics/TopicSelector.tsx, src/lib/core-client.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (12/12); full suite deferred to CI on push
 
 ---
 

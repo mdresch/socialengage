@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 18:22 | — | — | Documentation | Story 12.7 | feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend) (21820f4) |
 | 2026-08-29 | 17:14 | — | — | Documentation | — | chore: sync doc tracking (67a915c) |
 | 2026-08-29 | 17:13 | — | — | Documentation | — | chore: sync doc tracking (9ed8291) |
 | 2026-08-29 | 16:53 | — | — | Documentation | — | feat(posts): normalize YouTube video and comment display in post feed (8587070) |

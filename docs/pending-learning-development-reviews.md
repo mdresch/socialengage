@@ -3374,3 +3374,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/sentiment/SentimentAspectsList.tsx, social-listening-admin/src/components/sentiment/SentimentBadge.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
+## 2026-08-29 — 21820f4 — feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend)
+
+- **Full commit:** `21820f4106eacf3a47635bf2be3ee3883592b65a`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts, social-listening-core/migrations/0060_create_topics_and_post_topics.sql, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicClusteringService.ts, social-listening-core/src/topics/topicStore.ts
+- **Status:** Pending review
+

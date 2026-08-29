@@ -2921,6 +2921,85 @@ export async function getConnectorCapabilities(): Promise<{ connectors: Connecto
   return { connectors: Array.isArray(payload.connectors) ? payload.connectors : [] };
 }
 
+// ─── Story 12.8 (ADR-0104): Topic curation API client ────────────────────────
+
+export interface TopicRecord {
+  id: string;
+  tenant_id: string;
+  name: string;
+  slug: string;
+  status: 'active' | 'merged' | 'hidden';
+  merged_into_topic_id: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TopicsListResponse {
+  topics: TopicRecord[];
+}
+
+/**
+ * GET /v1/topics — lists all active topics for the current tenant.
+ */
+export async function listTopics(token: string): Promise<TopicsListResponse> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`listTopics failed: ${response.status}`);
+  return response.json() as Promise<TopicsListResponse>;
+}
+
+/**
+ * POST /v1/topics/:id/rename — renames a topic and updates its slug.
+ */
+export async function renameTopic(
+  token: string,
+  id: string,
+  name: string
+): Promise<TopicRecord> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/rename`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error(`renameTopic failed: ${response.status}`);
+  return response.json() as Promise<TopicRecord>;
+}
+
+/**
+ * POST /v1/topics/:id/merge — merges a source topic into a target topic.
+ */
+export async function mergeTopic(
+  token: string,
+  id: string,
+  targetTopicId: string
+): Promise<{ ok: true; target: TopicRecord }> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/merge`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetTopicId }),
+  });
+  if (!response.ok) throw new Error(`mergeTopic failed: ${response.status}`);
+  return response.json() as Promise<{ ok: true; target: TopicRecord }>;
+}
+
+/**
+ * POST /v1/topics/:id/hide — hides a topic so it is excluded from default list.
+ */
+export async function hideTopic(
+  token: string,
+  id: string
+): Promise<TopicRecord> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/hide`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`hideTopic failed: ${response.status}`);
+  return response.json() as Promise<TopicRecord>;
+}
+
+
 
 
 
