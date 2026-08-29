@@ -11,6 +11,11 @@ import {
 } from '../../../watchlists/watchlistStore';
 import { previewWatchlistVolume, watchlistToAst } from '../../../watchlists/previewVolumeService';
 import { requireTenantUserIdentity } from '../../auth/requireTenantUser';
+import {
+  shareWatchlist,
+  listWatchlistShares,
+  removeWatchlistShare,
+} from '../../../watchlists/watchlistShareStore';
 
 import {
   WatchlistAST,
@@ -286,7 +291,7 @@ watchlistsRouter.post('/preview-volume', async (req, res) => {
     return;
   }
 
-  try {
+    try {
     const preview = await previewWatchlistVolume({
       tenantId: identity.tenantId,
       ast,
@@ -296,5 +301,62 @@ watchlistsRouter.post('/preview-volume', async (req, res) => {
     res.json(preview);
   } catch (err) {
     res.status(500).json({ code: 'internal_error' });
+  }
+});
+
+// ─── Story 12.13 (ADR-0107): Watchlist sharing endpoints ───────────────────────
+
+/**
+ * POST /v1/watchlists/:id/shares — share a watchlist with another user.
+ */
+watchlistsRouter.post('/:id/shares', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+
+  const { sharedWithUserId, permission } = req.body || {};
+  if (!sharedWithUserId) {
+    res.status(400).json({ error: 'sharedWithUserId is required.' });
+    return;
+  }
+
+  try {
+    const share = await shareWatchlist(identity.tenantId, identity.userId, {
+      watchlistId: req.params.id,
+      sharedWithUserId,
+      permission,
+    });
+    res.status(201).json(share);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to share watchlist.' });
+  }
+});
+
+/**
+ * GET /v1/watchlists/:id/shares — list shares for a watchlist.
+ */
+watchlistsRouter.get('/:id/shares', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+
+  try {
+    const shares = await listWatchlistShares(identity.tenantId, req.params.id, identity.userId);
+    res.json({ shares });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to list shares.' });
+  }
+});
+
+/**
+ * DELETE /v1/watchlists/:id/shares/:userId — remove a share.
+ */
+watchlistsRouter.delete('/:id/shares/:userId', async (req, res) => {
+  const identity = requireTenantUserIdentity(req, res);
+  if (!identity) return;
+
+  try {
+    await removeWatchlistShare(identity.tenantId, req.params.id, req.params.userId, identity.userId);
+    res.status(204).end();
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to remove share.' });
   }
 });

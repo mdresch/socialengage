@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.12 — social-listening-admin@f1a2b93
+## 2026-08-29 — Story 12.13 — social-listening-core@a81742a
 
-- **Full commit:** `f1a2b93` (see git log)
+- **Full commit:** `a81742a` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.13 / ADR-0107
+- **Contract:** contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts
+- **SKILL.md:** .claude/skills/multi-user-workspaces-rbac/SKILL.md
+- **Files touched:** migrations/0061_create_watchlist_shares_and_feature_gates.sql, migrations/0062_update_watchlists_rls_for_sharing.sql, src/auth/permissionMatrix.ts, src/watchlists/watchlistShareStore.ts, src/http/versions/v1/watchlistsRouter.ts, src/tenants/tenantStore.ts, src/http/versions/v1/tenantSelfViewRouter.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (12/12); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.12 — social-listening-admin@95c8a97
+
+- **Full commit:** `95c8a97` (see git log)
 - **Repo:** social-listening-admin
 - **Story / ADR:** 12.12 / ADR-0106
 - **Contract:** contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts
