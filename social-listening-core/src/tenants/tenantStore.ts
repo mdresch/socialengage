@@ -13,6 +13,7 @@ export interface TenantRow {
   license_seat_count: number;
   active_seat_count: number;
   domain: string | null;
+  feature_gates?: Record<string, any>;
   created_at: Date;
   updated_at: Date;
 }
@@ -28,6 +29,7 @@ export interface Tenant {
   licenseSeatCount: number;
   activeSeatCount: number;
   domain: string | null;
+  featureGates: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +38,7 @@ export interface CreateTenantInput {
   name: string;
   licenseSeatCount: number;
   domain?: string;
+  featureGates?: Record<string, any>;
 }
 
 export interface UpdateTenantAdminInput {
@@ -46,6 +49,7 @@ export interface UpdateTenantAdminInput {
   domain?: string | null;
   /** Enhancement, 2026-08-12 — migration 0017's GRANT UPDATE to platform_admin_role is column-scoped (status, license_seat_count only), confirmed directly; migration 0029 adds the missing UPDATE(name) grant, same pattern as migration 0020 did for domain. */
   name?: string;
+  featureGates?: Record<string, any>;
 }
 
 /** Exported for Story 5.15's selfServiceSignup.ts, which inserts via a different pool but the same Tenant shape. */
@@ -57,6 +61,7 @@ export function mapRowToTenant(row: TenantRow): Tenant {
     licenseSeatCount: row.license_seat_count,
     activeSeatCount: row.active_seat_count,
     domain: row.domain,
+    featureGates: row.feature_gates || {},
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -215,3 +220,36 @@ export async function decrementActiveSeatCount(tenantId: string): Promise<Tenant
     return rows.length > 0 ? mapRowToTenant(rows[0]) : null;
   });
 }
+
+/**
+ * Story 12.13 (ADR-0107): Reads feature gates for a tenant.
+ */
+export async function getTenantFeatureGates(tenantId: string): Promise<Record<string, any>> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ feature_gates: Record<string, any> }>(
+      `SELECT feature_gates FROM tenants WHERE id = $1`,
+      [tenantId]
+    );
+    return rows[0]?.feature_gates || {};
+  });
+}
+
+/**
+ * Story 12.13 (ADR-0107): Updates feature gates for a tenant.
+ */
+export async function updateTenantFeatureGates(
+  tenantId: string,
+  featureGates: Record<string, any>
+): Promise<Record<string, any>> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<{ feature_gates: Record<string, any> }>(
+      `UPDATE tenants
+       SET feature_gates = $2
+       WHERE id = $1
+       RETURNING feature_gates`,
+      [tenantId, JSON.stringify(featureGates)]
+    );
+    return rows[0]?.feature_gates || {};
+  });
+}
+

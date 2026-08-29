@@ -15,12 +15,20 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-08-29 | 18:33 | — | — | Documentation | — | fix(events): skip Service Bus publish when SERVICE_BUS_NAMESPACE is unset (37d0bf5) |
-| 2026-08-29 | 18:32 | — | — | Documentation | — | feat(ui): story 10.13 - add YouTube platform icon and provider pill styling (c380c03) |
+| 2026-08-29 | 21:57 | — | — | Documentation | Story 12.14 | feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend) (f6df74c) |
+| 2026-08-29 | 21:55 | — | — | Documentation | Story 12.13 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) (da86059) |
+| 2026-08-29 | 21:35 | — | — | Documentation | Story 12.13 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) (a81742a) |
+| 2026-08-29 | 20:26 | — | — | Infrastructure | Story 12.12 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) (95c8a97) |
+| 2026-08-29 | 20:25 | — | — | Infrastructure | Story 12.12 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) (f1a2b93) |
+| 2026-08-29 | 20:22 | — | — | Infrastructure | Story 12.11 | feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend) (563fbce) |
+| 2026-08-29 | 19:41 | — | — | Infrastructure | Story 12.11 | feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend) (90fe8f5) |
+| 2026-08-29 | 19:34 | — | — | Documentation | Story 12.10 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) (ffc5294) |
+| 2026-08-29 | 19:33 | — | — | Documentation | Story 12.10 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) (d221cd6) |
+| 2026-08-29 | 19:29 | — | — | Documentation | Story 12.9 | feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend) (ee2b3e0) |
+| 2026-08-29 | 18:27 | — | — | Documentation | Story 12.8 | feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend) (5ce0794) |
 | 2026-08-29 | 18:22 | — | — | Documentation | Story 12.7 | feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend) (21820f4) |
 | 2026-08-29 | 17:14 | — | — | Documentation | — | chore: sync doc tracking (67a915c) |
 | 2026-08-29 | 17:13 | — | — | Documentation | — | chore: sync doc tracking (9ed8291) |
-| 2026-08-29 | 16:53 | — | — | Documentation | — | chore: update time tracking (b835cf2) |
 | 2026-08-29 | 16:53 | — | — | Documentation | — | feat(posts): normalize YouTube video and comment display in post feed (8587070) |
 | 2026-08-29 | 16:47 | — | — | Documentation | — | fix(connectors): add youtube, brave-search, and bing-search cadences to status view (2a4ea31) |
 | 2026-08-29 | 16:25 | — | — | Documentation | — | docs: sync tracking (43cda19) |

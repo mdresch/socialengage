@@ -5,6 +5,7 @@ import {
   createWebhookSubscription,
   listWebhookSubscriptions,
   getWebhookSubscription,
+  updateWebhookSubscription,
   deleteWebhookSubscription,
   dispatchWebhookEvent,
 } from '../../../webhooks/webhookDispatcher';
@@ -40,6 +41,33 @@ webhooksRouter.get('/subscriptions', async (req, res) => {
     res.json({ subscriptions });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to list webhook subscriptions.' });
+  }
+});
+
+// PATCH /v1/webhooks/subscriptions/:id (Story 12.11, ADR-0106)
+webhooksRouter.patch('/subscriptions/:id', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const { url, events, secret, enabled, active } = req.body || {};
+
+  try {
+    const updated = await updateWebhookSubscription(identity.tenantId, identity.userId, req.params.id, {
+      url,
+      events,
+      secret,
+      enabled,
+      active,
+    });
+
+    if (!updated) {
+      res.status(404).json({ error: 'Webhook subscription not found.' });
+      return;
+    }
+
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to update webhook subscription.' });
   }
 });
 

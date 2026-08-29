@@ -1,7 +1,11 @@
 import { Router } from 'express';
-import { requireTenantUser } from '../../auth/requireTenantUser';
+import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import { RequestWithIdentity } from '../../auth/requestIdentity';
-import { getOwnTenant } from '../../../tenants/tenantStore';
+import {
+  getOwnTenant,
+  getTenantFeatureGates,
+  updateTenantFeatureGates,
+} from '../../../tenants/tenantStore';
 
 export const tenantSelfViewRouter = Router();
 
@@ -25,4 +29,47 @@ tenantSelfViewRouter.get('/', async (req, res) => {
   }
 
   res.json(tenant);
+});
+
+/**
+ * GET /v1/tenants/me/features (Story 12.13, ADR-0107) — returns the caller's own
+ * tenant's active feature gates.
+ */
+tenantSelfViewRouter.get('/features', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  try {
+    const featureGates = await getTenantFeatureGates(identity.tenantId);
+    res.json({ featureGates });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to get feature gates.' });
+  }
+});
+
+/**
+ * PATCH /v1/tenants/me/features (Story 12.13, ADR-0107) — updates the caller's own
+ * tenant's feature gates. Restricted to tenant_admin.
+ */
+tenantSelfViewRouter.patch('/features', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  if (identity.role !== 'tenant_admin') {
+    res.status(403).json({ error: 'Only tenant_admin may update feature gates.' });
+    return;
+  }
+
+  const { featureGates } = req.body || {};
+  if (!featureGates || typeof featureGates !== 'object') {
+    res.status(400).json({ error: 'featureGates object is required.' });
+    return;
+  }
+
+  try {
+    const updated = await updateTenantFeatureGates(identity.tenantId, featureGates);
+    res.json({ featureGates: updated });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to update feature gates.' });
+  }
 });

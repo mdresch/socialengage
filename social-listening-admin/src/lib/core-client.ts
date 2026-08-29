@@ -2999,6 +2999,128 @@ export async function hideTopic(
   return response.json() as Promise<TopicRecord>;
 }
 
+// ─── Story 12.10 (ADR-0105): Dashboard API client ────────────────────────────
+
+export interface DashboardQueryParamsInput {
+  watchlistId?: string | null;
+  selectedTopic?: string | null;
+  timeRange?: string | null;
+  granularity?: string | null;
+  includeExplanation?: boolean;
+}
+
+/**
+ * GET /v1/analytics/dashboard — fetches typed dashboard widgets and filter metadata.
+ */
+export async function fetchDashboardData(
+  token: string,
+  params: DashboardQueryParamsInput = {}
+): Promise<{ widgets: any[]; filters: any }> {
+  const q = new URLSearchParams();
+  if (params.watchlistId) q.set('watchlistId', params.watchlistId);
+  if (params.selectedTopic) q.set('selectedTopic', params.selectedTopic);
+  if (params.timeRange) q.set('timeRange', params.timeRange);
+  if (params.granularity) q.set('granularity', params.granularity);
+  if (params.includeExplanation) q.set('includeExplanation', 'true');
+
+  const url = `${getBaseUrl()}/v1/analytics/dashboard${q.toString() ? `?${q.toString()}` : ''}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`fetchDashboardData failed: ${response.status}`);
+  return response.json();
+}
+
+// ─── Story 12.12 (ADR-0106): Webhook Management API client ────────────────────
+
+export interface WebhookSubscriptionItem {
+  id: string;
+  tenant_id: string;
+  url: string;
+  secret: string;
+  events: string[];
+  enabled: boolean;
+  retry_count: number;
+  created_at: string;
+  updated_at: string;
+  last_delivery_status?: 'success' | 'failed' | 'pending';
+}
+
+export interface CreateWebhookSubscriptionInput {
+  url: string;
+  events: string[];
+  secret?: string;
+  enabled?: boolean;
+}
+
+export interface UpdateWebhookSubscriptionInput {
+  url?: string;
+  events?: string[];
+  secret?: string;
+  enabled?: boolean;
+}
+
+export async function listWebhooks(token: string): Promise<WebhookSubscriptionItem[]> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`listWebhooks failed: ${res.status}`);
+  const data = await res.json();
+  return data.subscriptions || [];
+}
+
+export async function createWebhook(
+  token: string,
+  input: CreateWebhookSubscriptionInput
+): Promise<WebhookSubscriptionItem> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`createWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+export async function updateWebhook(
+  token: string,
+  id: string,
+  input: UpdateWebhookSubscriptionInput
+): Promise<WebhookSubscriptionItem> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`updateWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteWebhook(token: string, id: string): Promise<void> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`deleteWebhook failed: ${res.status}`);
+}
+
+export async function testWebhook(token: string, id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}/test`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`testWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+
+
 
 
 

@@ -38,9 +38,81 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.8 — social-listening-admin@pending
+## 2026-08-29 — Story 12.14 — social-listening-admin@f6df74c
 
-- **Full commit:** `pending — to be recorded after git push`
+- **Full commit:** `f6df74c` (see git log)
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.14 / ADR-0107
+- **Contract:** contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts
+- **SKILL.md:** .claude/skills/workspace-settings-ui/SKILL.md
+- **Files touched:** src/components/settings/WorkspaceSettingsView.tsx
+- **Full suite at merge:** Epic-12 suite at merge: PASS (5/5); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.13 — social-listening-core@da86059
+
+- **Full commit:** `da86059` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.13 / ADR-0107
+- **Contract:** contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts
+- **SKILL.md:** .claude/skills/multi-user-workspaces-rbac/SKILL.md
+- **Files touched:** migrations/0061_create_watchlist_shares_and_feature_gates.sql, migrations/0062_update_watchlists_rls_for_sharing.sql, src/auth/permissionMatrix.ts, src/watchlists/watchlistShareStore.ts, src/http/versions/v1/watchlistsRouter.ts, src/tenants/tenantStore.ts, src/http/versions/v1/tenantSelfViewRouter.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (12/12); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.12 — social-listening-admin@95c8a97
+
+- **Full commit:** `95c8a97` (see git log)
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.12 / ADR-0106
+- **Contract:** contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts
+- **SKILL.md:** .claude/skills/webhook-management-ui/SKILL.md
+- **Files touched:** src/components/webhooks/WebhookForm.tsx, src/components/webhooks/WebhooksView.tsx, src/lib/core-client.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (6/6); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.11 — social-listening-core@563fbce
+
+- **Full commit:** `563fbce` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.11 / ADR-0106
+- **Contract:** contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts
+- **SKILL.md:** .claude/skills/public-api-and-webhooks/SKILL.md
+- **Files touched:** src/http/rateLimitMiddleware.ts, src/webhooks/webhookDispatcher.ts, src/http/versions/v1/webhooksRouter.ts, src/http/app.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (10/10); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.10 — social-listening-admin@ffc5294
+
+- **Full commit:** `ffc5294` (see git log)
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.10 / ADR-0105
+- **Contract:** contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts
+- **SKILL.md:** .claude/skills/dashboard-widget-renderer/SKILL.md
+- **Files touched:** src/components/analytics/dashboard/dashboardTypes.ts, src/components/analytics/dashboard/widgets/MetricTile.tsx, src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, src/components/analytics/dashboard/widgets/BarChart.tsx, src/components/analytics/dashboard/widgets/PieChart.tsx, src/components/analytics/dashboard/widgets/RankedList.tsx, src/components/analytics/dashboard/widgets/DataTable.tsx, src/components/analytics/dashboard/WidgetRenderer.tsx, src/components/analytics/dashboard/FilterBar.tsx, src/components/analytics/dashboard/WidgetGrid.tsx, src/components/analytics/dashboard/DashboardView.tsx, src/lib/core-client.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (13/13); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.9 — social-listening-core@ee2b3e0
+
+- **Full commit:** `ee2b3e0` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.9 / ADR-0105
+- **Contract:** contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts
+- **SKILL.md:** .claude/skills/dashboard-widget-contracts/SKILL.md
+- **Files touched:** src/analytics/dashboard/widgetRegistry.ts, src/analytics/dashboard/dashboardService.ts, src/http/versions/v1/analyticsViewsRouter.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (11/11); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.8 — social-listening-admin@5ce0794
+
+- **Full commit:** `5ce0794` (see git log)
 - **Repo:** social-listening-admin
 - **Story / ADR:** 12.8 / ADR-0104
 - **Contract:** contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts
