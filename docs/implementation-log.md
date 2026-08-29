@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.8 — social-listening-admin@pending
+## 2026-08-29 — Story 12.9 — social-listening-core@846710b
 
-- **Full commit:** `pending — to be recorded after git push`
+- **Full commit:** `846710b` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.9 / ADR-0105
+- **Contract:** contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts
+- **SKILL.md:** .claude/skills/dashboard-widget-contracts/SKILL.md
+- **Files touched:** src/analytics/dashboard/widgetRegistry.ts, src/analytics/dashboard/dashboardService.ts, src/http/versions/v1/analyticsViewsRouter.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (11/11); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.8 — social-listening-admin@5ce0794
+
+- **Full commit:** `5ce0794` (see git log)
 - **Repo:** social-listening-admin
 - **Story / ADR:** 12.8 / ADR-0104
 - **Contract:** contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts

@@ -3502,15 +3502,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts, social-listening-core/migrations/0060_create_topics_and_post_topics.sql, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicClusteringService.ts, social-listening-core/src/topics/topicStore.ts
 - **Status:** Pending review
 
-## 2026-08-29 — c380c03 — feat(ui): story 10.13 - add YouTube platform icon and provider pill styling
+## 2026-08-29 — 5ce0794 — feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend)
 
-- **Full commit:** `c380c03d178ad8c1890587b679b2fb5155c4c904`
-- **Files touched:** .agents/skills/heal-contract-failure/SKILL.md, .agents/skills/implement-story/SKILL.md, .codex/agents/ba-requirements-analyst.toml, .codex/agents/documentation-steward.toml, .codex/agents/ideal-manager.toml, .codex/agents/knowledge-graph-semantic-data-modeling-reviewer.toml, .codex/agents/learning-development-writer.toml, .codex/agents/persona-tenant-admin.toml, .codex/agents/persona-tenant-business-analyst.toml, .codex/agents/persona-tenant-reader.toml, .codex/agents/qa-contract-author.toml, .codex/hooks.json, .codex/hooks/enforce-contract-first.cjs, .codex/hooks/verify-git-hooks-installed.cjs, docs/time-tracking.md, social-listening-admin/next-env.d.ts, social-listening-admin/package-lock.json, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/components/ui/PlatformIcon.tsx, social-listening-admin/src/components/ui/index.ts
-- **Status:** Pending review
-
-## 2026-08-29 — 37d0bf5 — fix(events): skip Service Bus publish when SERVICE_BUS_NAMESPACE is unset
-
-- **Full commit:** `37d0bf5fa6598ca71da418976b3395aa5d3d3a59`
-- **Files touched:** social-listening-core/src/events/serviceBusPublisher.ts
+- **Full commit:** `5ce07949b2d502fcad60b89695eb33ff2a7a7eff`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/topics/TopicBadge.tsx, social-listening-admin/src/components/topics/TopicSelector.tsx, social-listening-admin/src/components/topics/TopicsView.tsx, social-listening-admin/src/components/topics/topicCurationUtils.ts, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
