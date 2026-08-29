@@ -3007,3 +3007,15 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/capabilities/route.ts, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/components/connectors/ConnectorCapabilityBadges.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
+## 2026-08-29 — 36ad068 — feat(core): Story 12.3 - Boolean query AST and visual builder backend (ADR-0102)
+
+- **Full commit:** `36ad068150ab7a2f29a9c29efb57173aa6ef85de`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/newswire/newswireConnector.ts, social-listening-core/src/connectors/queryCapabilities.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/connectors/wikipedia/wikipediaConnector.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/ast.ts, social-listening-core/src/watchlists/matcher.ts, social-listening-core/src/watchlists/watchlistStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 8210fed — feat(admin): implement Story 12.4 boolean query visual builder (ADR-0102)
+
+- **Full commit:** `8210feddc279366a8b1bf91c93f520981f51c990`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/query-capabilities/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/BooleanQueryBuilder.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/watchlist-ast.ts
+- **Status:** Pending review
+

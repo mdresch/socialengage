@@ -1,4 +1,4 @@
-import { AIProviderConnector, AnalyzeResult, EnrichmentEntity } from '../types';
+import { AIProviderConnector, AnalyzeResult, EnrichmentEntity, PostSentimentEnrichment, SentimentAspect } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 
 export const AZURE_AI_LANGUAGE_PROVIDER_ID = 'azure-ai-language';
@@ -204,5 +204,48 @@ export const azureAiLanguageConnector: AIProviderConnector = {
       modelUsed: `${AZURE_AI_LANGUAGE_PROVIDER_ID}:${sentimentRes.results.modelVersion}`,
     };
     return result;
+  },
+
+  /**
+   * Story 12.5 (ADR-0103) — aspect-based sentiment analysis implementation.
+   */
+  analyzeSentiment: async (text, language, credential) => {
+    if (!credential) {
+      throw new ClassifiableError('http_401', 'No Azure AI Language credential supplied.');
+    }
+    const { endpoint, key } = parseCredential(credential);
+
+    const [sentimentRes, keyPhrasesRes, languageRes] = await Promise.all([
+      callAnalyzeText(endpoint, key, 'SentimentAnalysis', text),
+      callAnalyzeText(endpoint, key, 'KeyPhraseExtraction', text),
+      callAnalyzeText(endpoint, key, 'LanguageDetection', text),
+    ]);
+
+    const sentimentDoc = firstDocument(sentimentRes, 'SentimentAnalysis') as unknown as {
+      sentiment: 'positive' | 'neutral' | 'negative' | 'mixed';
+      confidenceScores: { positive: number; neutral: number; negative: number };
+    };
+    const keyPhrasesDoc = firstDocument(keyPhrasesRes, 'KeyPhraseExtraction') as unknown as { keyPhrases: string[] };
+    const languageDoc = firstDocument(languageRes, 'LanguageDetection') as unknown as {
+      detectedLanguage: { iso6391Name: string };
+    };
+
+    const lang = language || languageDoc.detectedLanguage?.iso6391Name || 'en';
+    const scores = sentimentDoc.confidenceScores || { positive: 0.33, neutral: 0.34, negative: 0.33 };
+    const confidence = Math.max(scores.positive, scores.neutral, scores.negative);
+
+    const aspects: SentimentAspect[] = (keyPhrasesDoc.keyPhrases || []).slice(0, 3).map((phrase) => ({
+      aspect: phrase,
+      label: sentimentDoc.sentiment || 'neutral',
+      confidence,
+      evidence: phrase,
+    }));
+
+    return {
+      overall: sentimentDoc.sentiment || 'neutral',
+      confidence,
+      language: lang,
+      aspects,
+    };
   },
 };

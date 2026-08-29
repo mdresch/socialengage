@@ -3890,3 +3890,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Resolved `Credential storage is not configured (KEY_VAULT_KEY_ID missing)` by adding `getKeyVaultKeyId()` with safe fallback to `${KEY_VAULT_URI}/keys/platform-credentials-dek-wrap` in non-test mode.
   - Enforced strict unit test assertion isolation for Story 1.7 AC9 when `NODE_ENV === 'test'`.
   - Normalized onboarding checklist deep link navigation across both core backend and admin frontend to route to live `/tenant/*` paths.
+
+---
+
+## 2026-08-29 — Story 12.5 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.5 / ADR-0103, BRD-0103, FDD-0103
+- **Contract:** social-listening-core/contracts/epic-12/story-12.5.ai-sentiment-aspect-schema.contract.test.ts (6/6 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/src/connectors/types.ts` (extended — `SentimentAspect`, `SentimentOverridden`, `PostSentimentEnrichment`, `AnalyzeResult.aspects`, `AIProviderConnector.analyzeSentiment`)
+  - `social-listening-core/src/posts/socialPostStore.ts` (extended — `normalizePostSentiment`, updated `updatePostEnrichment` to record `overridden` block with `previousValue` lineage and aspect breakdown)
+  - `social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts` (extended — implemented `analyzeSentiment` with aspect extraction)
+  - `social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts` (extended — implemented `analyzeSentiment` with keyphrase aspects)
+  - `social-listening-core/contracts/epic-12/story-12.5.ai-sentiment-aspect-schema.contract.test.ts` (new — 6/6 passing)
+  - `social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts` (healed — updated for ADR-0103 structured sentiment compatibility)
+  - `social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.5 Built)
+- **Suite at merge:** PASS (6/6 tests in story-12.5 contract, 9/9 in healed story-3.13 contract)
+- **Key Implementation Details:**
+  - Implemented rich aspect-based sentiment enrichment schema in `types.ts` with `SentimentAspect`, `SentimentOverridden`, and `PostSentimentEnrichment` (`overall`, `confidence`, `language`, `aspects`, `overridden`).
+  - Added optional `analyzeSentiment` capability to `AIProviderConnector` interface and implemented aspect extraction in both `azureOpenAiConnector` and `azureAiLanguageConnector`.
+  - Added `normalizePostSentiment` helper in `socialPostStore.ts` for zero-downtime backward compatibility with legacy flat string sentiments.
+  - Enhanced `updatePostEnrichment` to support aspect-rich sentiment updates and record full human-in-the-loop lineage (`by`, `at`, `reason`, and `previousValue` capturing previous overall and confidence).
+

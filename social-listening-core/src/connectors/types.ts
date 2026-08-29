@@ -278,6 +278,34 @@ export interface SentimentScores {
 }
 
 /**
+ * Story 12.5 (ADR-0103) — Aspect-based sentiment breakdown.
+ */
+export interface SentimentAspect {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export interface SentimentOverridden {
+  by: string;
+  at: string;
+  reason?: string;
+  previousValue?: {
+    overall: string;
+    confidence: number;
+  };
+}
+
+export interface PostSentimentEnrichment {
+  overall: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  language: string;
+  aspects?: SentimentAspect[];
+  overridden?: SentimentOverridden;
+}
+
+/**
  * Story 2.8 (ADR-0038) — widened from its original, never-yet-implemented-
  * against-a-real-provider shape (sentiment?: string; entities?: string[]) to
  * match what a real provider's own output actually looks like — confirmed
@@ -312,6 +340,9 @@ export interface SearchSnippet {
 export interface AnalyzeResult {
   sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
   sentimentScores?: SentimentScores;
+  /** Story 12.5 (ADR-0103) — aspect-based sentiment breakdown. */
+  aspects?: SentimentAspect[];
+  sentimentObject?: PostSentimentEnrichment;
   entities?: EnrichmentEntity[];
   keyPhrases?: string[];
   detectedLanguage?: string;
@@ -371,6 +402,10 @@ export interface AIProviderConnector extends ProviderConnector {
    * credential first (ADR-0027: never a SocialEngage-held key).
    */
   analyze(modelId: string, text: string, credential?: string): Promise<AnalyzeResult>;
+  /**
+   * Story 12.5 (ADR-0103) — optional aspect-based sentiment analyzer.
+   */
+  analyzeSentiment?(text: string, language?: string, credential?: string): Promise<PostSentimentEnrichment>;
   /**
    * Story 2.32 (ADR-0076) — optional deep-research capability. Only
    * generative providers (Azure OpenAI in v1) implement it; classifiers

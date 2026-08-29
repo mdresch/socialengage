@@ -1,4 +1,4 @@
-import { AIProviderConnector, AnalyzeResult, EnrichmentEntity, ResearchOptions, ResearchResult, SearchSnippet } from '../types';
+import { AIProviderConnector, AnalyzeResult, EnrichmentEntity, PostSentimentEnrichment, ResearchOptions, ResearchResult, SearchSnippet, SentimentAspect } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 
 export const AZURE_OPENAI_PROVIDER_ID = 'azure-openai';
@@ -339,6 +339,38 @@ export const azureOpenAiConnector: AIProviderConnector = {
       modelUsed: `${AZURE_OPENAI_PROVIDER_ID}:${deployment}`,
     };
     return result;
+  },
+
+  /**
+   * Story 12.5 (ADR-0103) — aspect-based sentiment analysis implementation.
+   */
+  analyzeSentiment: async (text, language, credential) => {
+    if (!credential) {
+      throw new ClassifiableError('http_401', 'No Azure OpenAI credential supplied.');
+    }
+    const { endpoint, key, deployment } = parseCredential(credential);
+    const response = await callChatCompletions(endpoint, key, deployment, text);
+    const content = response.choices[0]?.message.content;
+    if (!content) {
+      throw new ClassifiableError('network', 'Azure OpenAI returned no structured-output content.');
+    }
+
+    const structured = JSON.parse(content) as StructuredEnrichment;
+    const lang = language || structured.detectedLanguage || 'unknown';
+    const confidence = structured.overallConfidence ?? 0.8;
+    const aspects: SentimentAspect[] = (structured.keyPhrases || []).slice(0, 3).map((phrase) => ({
+      aspect: phrase,
+      label: structured.sentiment || 'neutral',
+      confidence,
+      evidence: phrase,
+    }));
+
+    return {
+      overall: structured.sentiment || 'neutral',
+      confidence,
+      language: lang,
+      aspects,
+    };
   },
 
   /**

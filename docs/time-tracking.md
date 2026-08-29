@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 15:33 | — | — | Documentation | Story 12.4 | feat(admin): implement Story 12.4 boolean query visual builder (ADR-0102) (8210fed) |
+| 2026-08-29 | 15:07 | — | — | Documentation | Story 12.3 | feat(core): Story 12.3 - Boolean query AST and visual builder backend (ADR-0102) (36ad068) |
 | 2026-08-29 | 12:48 | — | — | Documentation | Story 12.2 | feat(admin): implement Story 12.2 connector capability matrix UI (bae500b) |
 | 2026-08-29 | 12:01 | — | — | Documentation | Story 12.1 | feat(core): implement Story 12.1 connector capability matrix (ADR-0101) (6f20605) |
 | 2026-08-29 | 10:04 | — | — | Documentation | — | fix(contracts): heal story-1.13, story-3.15, story-4.2, and story-9.7/9.9/9.10 contracts (58895f0) |
