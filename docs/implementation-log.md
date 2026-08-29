@@ -3965,3 +3965,16 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Enhanced `PostDetailPanel` and `EnrichmentEditDrawer` to support aspect display, mixed sentiments, and human-in-the-loop audit reasons.
 
 
+---
+
+## 2026-08-29 — Healing pass: Story 6.11 — social-listening-admin
+
+- **Full commit:** `daf9c3f36146ca508f00cd64736be2c4b77295fb`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 6.11 / ADR-0059 (Facebook connector `Page is the Author`/rawPayload shape)
+- **Contract:** social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts (31/31)
+- **SKILL.md:** social-listening-admin/.claude/skills/post-feed/SKILL.md
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/[id]/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Epic-6 suite at merge:** PASS (Story 6.11 contract: 31/31)
+
+**Found-live regression.** Facebook posts (Story 2.15/ADR-0059) have no `title` field in their `rawPayload`; `extractDisplayText()` was falling through to raw JSON for every real Facebook post. Fixed by making `extractDisplayText()` recognize `providerId === 'facebook'` and return `{ title: '', snippet: message }`, with `permalink_url` as the snippet fallback for media-only posts. The contract assertions were updated to expect `title` empty and `snippet` populated. The same commit also corrects the `PostsFeedClient` and detail page to pass the `snippet` through to the card/Slideover display so the post body renders instead of an empty title.
