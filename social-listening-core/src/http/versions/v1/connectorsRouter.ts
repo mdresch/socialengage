@@ -9,7 +9,12 @@ import {
   listActiveUserActivations,
   ConnectorActivationOwnerType,
 } from '../../../connectors/connectorActivationStore';
-import { getSocialConnector, getAIProviderConnector } from '../../../connectors/registry';
+import {
+  getSocialConnector,
+  getAIProviderConnector,
+  getConnectorCapabilities,
+  listConnectorCapabilities,
+} from '../../../connectors/registry';
 import {
   reconcileStaleIngestionRuns,
   getMostRecentRunStatus,
@@ -27,6 +32,17 @@ function parseOwnerType(value: unknown): CredentialOwnerType | null {
 export const connectorsRouter = Router();
 
 /**
+ * Story 12.1 (ADR-0101 §3) — GET /v1/connectors/capabilities
+ * Lists all registered connectors and their capability matrix.
+ */
+connectorsRouter.get('/capabilities', async (req, res) => {
+  const caller = requireTenantUserIdentity(req as any, res);
+  if (!caller) return;
+  const connectors = listConnectorCapabilities(caller.tenantId);
+  res.json({ connectors });
+});
+
+/**
  * GET /v1/connectors/:platformId (Story 4.4, ADR-0022) — ConnectorHealth
  * served from the in-process TTL cache, never a live recompute per request.
  * Tenant identity comes from the resolved, token-authenticated caller
@@ -39,13 +55,15 @@ export const connectorsRouter = Router();
  * folded into the 60-second health cache above (ADR-0022's own dated note
  * on this exact question). No change to `ConnectorHealth`'s own four
  * fields or the cache itself.
+ *
+ * Story 12.1 (ADR-0101 §4) — response includes `capabilities`.
  */
-connectorsRouter.get('/:platformId', async (req, res) => {
+connectorsRouter.get(['/:platformId', '/:platformId/health'], async (req, res) => {
   const caller = requireTenantUserIdentity(req as any, res);
   if (!caller) return;
   const { tenantId, userId: callerUserId } = caller;
 
-  const platformId = req.params.platformId;
+  const platformId = Array.isArray(req.params.platformId) ? req.params.platformId[0] : req.params.platformId;
 
   const [tenantHealth, userHealth, isTenantActive, isCallerActive, activeUsers] = await Promise.all([
     getCachedConnectorHealth(tenantId, platformId),
@@ -57,7 +75,9 @@ connectorsRouter.get('/:platformId', async (req, res) => {
   // Use userHealth if user has a credential or activation, otherwise fallback to tenantHealth
   const health = (userHealth && userHealth.credentialStatus !== null) ? userHealth : tenantHealth;
   const isActive = isTenantActive || isCallerActive || activeUsers.length > 0;
-  res.json({ ...health, isActive });
+  const capabilities = getConnectorCapabilities(platformId, tenantId);
+
+  res.json({ platformId, ...health, isActive, capabilities });
 });
 
 /**

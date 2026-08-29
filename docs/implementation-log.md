@@ -3767,3 +3767,27 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Created `MentionSuggestionsDropdown` component with author avatar/initials, handle, reason, source badges, and clickable insertion.
   - Integrated into `OutboundComposerModal` with 300ms debounced input listeners and mention tag insertion at active selection.
 
+---
+
+## 2026-08-29 — Story 12.1 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.1 / ADR-0101, BRD-0101, FDD-0101
+- **Contract (backend):** social-listening-core/contracts/epic-12/story-12.1.connector-capability-matrix.contract.test.ts (7/7 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/src/connectors/types.ts` (extended — `SocialConnectorCapabilities` interface with `sourceType`, `poll`, `count`, `publish`, `reply`, `backfill` and `getCapabilities?` method)
+  - `social-listening-core/src/connectors/registry.ts` (extended — `getConnectorCapabilities`, `listConnectorCapabilities`, and `ConnectorCapabilitySummary`)
+  - `social-listening-core/src/connectors/facebook/facebookConnector.ts` (extended — explicit `getCapabilities()` implementation)
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (extended — `GET /v1/connectors/capabilities` and capabilities enrichment on `GET /:platformId/health`)
+  - `social-listening-core/contracts/epic-12/story-12.1.connector-capability-matrix.contract.test.ts` (new — 7/7 passing)
+  - `social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.1 Built)
+- **Suite at merge:** PASS (7/7 tests in story-12.1 contract)
+- **Key Implementation Details:**
+  - Defined canonical `SocialConnectorCapabilities` with required `sourceType` taxonomy (`social`, `news`, `forum`, `review`, `broadcast`, `blog`, `wiki`).
+  - Added registry-level capability resolution in `getConnectorCapabilities(platformId, tenantId)` and full listing via `listConnectorCapabilities(tenantId)`.
+  - Exposed authenticated endpoint `GET /v1/connectors/capabilities` returning registered connector definitions and capability matrix.
+  - Enriched `GET /v1/connectors/:platformId/health` response with `capabilities` and `platformId`.
+
+

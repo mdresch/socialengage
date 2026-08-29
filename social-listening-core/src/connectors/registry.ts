@@ -1,4 +1,4 @@
-import { AIProviderConnector, SocialConnector } from './types';
+import { AIProviderConnector, SocialConnector, SocialConnectorCapabilities } from './types';
 
 const socialConnectors = new Map<string, SocialConnector>();
 const aiProviderConnectors = new Map<string, AIProviderConnector>();
@@ -25,6 +25,73 @@ export function listSocialConnectors(): SocialConnector[] {
 
 export function listAIProviderConnectors(): AIProviderConnector[] {
   return [...aiProviderConnectors.values()];
+}
+
+/**
+ * Story 12.1 (ADR-0101 §1–§6) — Resolve capability matrix for a connector.
+ */
+export function getConnectorCapabilities(providerId: string, tenantId?: string): SocialConnectorCapabilities {
+  const connector = socialConnectors.get(providerId);
+  if (connector?.getCapabilities) {
+    return connector.getCapabilities(tenantId);
+  }
+
+  // Sensible default resolution based on connector attributes and known provider IDs
+  let sourceType: SocialConnectorCapabilities['sourceType'] = 'social';
+  if (['gnews', 'newswire', 'brave-search', 'bing-search'].includes(providerId)) {
+    sourceType = 'news';
+  } else if (['tenant-owned-feed', 'rss', 'atom'].includes(providerId)) {
+    sourceType = 'blog';
+  } else if (['wikipedia', 'wiki'].includes(providerId)) {
+    sourceType = 'wiki';
+  }
+
+  const poll = connector?.poll
+    ? { cadenceMs: connector.pollCadenceMs || 15 * 60 * 1000, supportsTimeWindow: true }
+    : connector?.pollUser
+    ? { cadenceMs: connector.pollCadenceMs || 30 * 60 * 1000, supportsTimeWindow: true }
+    : Boolean(connector?.deliveryMode === 'poll');
+
+  const capabilities: SocialConnectorCapabilities = {
+    sourceType,
+    poll,
+  };
+
+  if (connector?.count) {
+    capabilities.count = { supportsExactCount: true };
+  }
+
+  if (connector?.publish) {
+    capabilities.publish = {
+      supportsScheduling: true,
+      supportedAssetTypes: ['text', 'image', 'video'],
+    };
+  }
+
+  if (connector?.reply) {
+    capabilities.reply = true;
+  }
+
+  return capabilities;
+}
+
+export interface ConnectorCapabilitySummary {
+  platformId: string;
+  name: string;
+  authMode: 'oauth' | 'api_key' | 'none';
+  capabilities: SocialConnectorCapabilities;
+}
+
+/**
+ * Story 12.1 (ADR-0101 §3) — List all registered connectors and their capabilities.
+ */
+export function listConnectorCapabilities(tenantId?: string): ConnectorCapabilitySummary[] {
+  return listSocialConnectors().map((c) => ({
+    platformId: c.providerId,
+    name: c.providerId.charAt(0).toUpperCase() + c.providerId.slice(1).replace(/-/g, ' '),
+    authMode: c.authMode,
+    capabilities: getConnectorCapabilities(c.providerId, tenantId),
+  }));
 }
 
 /** Test-only: isolates contract files that register connectors under colliding providerIds. */

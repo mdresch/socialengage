@@ -238,6 +238,22 @@ export interface SocialConnector extends ProviderConnector {
     ctx: ConnectorContext,
     args: { ast: WatchlistAST; timeWindow: TimeWindow; limit: number }
   ): Promise<ConnectorSampleResult>;
+  /**
+   * Story 12.1 (ADR-0101) — optional explicit capability matrix method.
+   */
+  getCapabilities?(tenantId?: string): SocialConnectorCapabilities;
+}
+
+/**
+ * Story 12.1 (ADR-0101) — Unified capability declaration for social & news connectors.
+ */
+export interface SocialConnectorCapabilities {
+  sourceType: 'social' | 'news' | 'forum' | 'review' | 'broadcast' | 'blog' | 'wiki';
+  poll: boolean | { cadenceMs: number; supportsTimeWindow: boolean };
+  count?: { supportsExactCount: boolean };
+  publish?: { supportsScheduling: boolean; supportedAssetTypes: string[] };
+  reply?: boolean;
+  backfill?: { supportsHistorical: boolean; maxLookbackDays: number };
 }
 
 export interface ModelCapabilities {
