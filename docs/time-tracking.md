@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-28 | 12:46 | — | — | Documentation | Story 11.9 | feat(epic-11): implement Story 11.9 (backend unified social inbox & reply) and Story 11.10 (frontend unified social inbox UI) (b42315f) |
 | 2026-08-28 | 12:00 | — | — | Documentation | Story 11.7 | feat(epic-11): implement Story 11.7 (backend publishing and scheduling) and Story 11.8 (frontend publishing and scheduling UI) (7f0d9e1) |
 | 2026-08-28 | 11:22 | — | — | Documentation | Story 11.6 | feat(topics-ui): implement Story 11.6 — Topic evolution timeline UI (ADR-0097) (0fd5ffd) |
 | 2026-08-28 | 11:08 | — | — | Documentation | Story 11.5 | feat(topics): implement Story 11.5 — Topic evolution timeline backend (ADR-0097) (f723f60) |

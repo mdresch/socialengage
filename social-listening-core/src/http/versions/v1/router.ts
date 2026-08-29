@@ -35,6 +35,7 @@ import { alertRulesRouter } from './alertRulesRouter';
 import { webhooksRouter } from './webhooksRouter';
 import { youtubeConnectorRouter } from './youtubeConnectorRouter';
 import { inboxRouter } from './inboxRouter';
+import { mentionSuggestionsRouter } from './mentionSuggestionsRouter';
 import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 import { createPublishingRoutes } from '../../routes/publishingRoutes';
@@ -219,6 +220,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 11.9 (ADR-0099) — unified social inbox and triage. */
   v1Router.use('/inbox/items', authMiddleware, inboxRouter);
   v1Router.use('/inbox', authMiddleware, inboxRouter);
+
+  /** Story 11.11 (ADR-0100) — composed post author mention suggestions. */
+  v1Router.use('/composer', authMiddleware, mentionSuggestionsRouter);
 
   return v1Router;
 }

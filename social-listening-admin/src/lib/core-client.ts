@@ -2818,6 +2818,42 @@ export async function replyToInboxItem(
   return (await response.json()) as { activityId: string; externalId: string | null; externalUrl: string | null; status: 'resolved' };
 }
 
+export interface MentionSuggestionItem {
+  authorId: string;
+  authorName: string;
+  platformId: string;
+  handle: string;
+  reason: string;
+  matchSource: 'topic' | 'rag' | 'keyword';
+  confidence: number;
+}
+
+export interface GetMentionSuggestionsParams {
+  text: string;
+  targetPlatforms: string[];
+  watchlistId?: string;
+  maxSuggestions?: number;
+}
+
+/**
+ * Story 11.11 / 11.12 (ADR-0100) — gets author mention suggestions for composer drafts.
+ */
+export async function getMentionSuggestions(
+  params: GetMentionSuggestionsParams
+): Promise<MentionSuggestionItem[]> {
+  const response = await authenticatedCoreFetch(`/v1/composer/mention-suggestions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    return [];
+  }
+  const payload = (await response.json()) as { suggestions?: MentionSuggestionItem[] };
+  return Array.isArray(payload.suggestions) ? payload.suggestions : [];
+}
+
+
 
 
 

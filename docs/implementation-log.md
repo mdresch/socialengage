@@ -3720,3 +3720,50 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Built two-pane responsive workdesk `InboxView` with priority tabs (`All`, `Urgent`, `High`, `Snoozed`, `Resolved`) and search filter.
   - Implemented `InboxItemDetail` with post sentiment/reach signals, snooze duration dropdown, internal team notes editor, and inline reply composer.
   - Connected BFF proxies and typed core client functions for complete triage lifecycle.
+
+---
+
+## 2026-08-28 — Story 11.11 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.11 / ADR-0100, BRD-0100, FDD-0100
+- **Contract (backend):** social-listening-core/contracts/epic-11/story-11.11.mention-suggestions.contract.test.ts (5/5 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/mention-suggestions/SKILL.md (new)
+- **Files touched (backend):**
+  - `social-listening-core/src/composer/mentionSuggestionsService.ts` (new — multi-signal weighted scoring combining AuthorTopicSignal, keyword match, RAG search, draft exclusion, platform filtering, max limits)
+  - `social-listening-core/src/http/versions/v1/mentionSuggestionsRouter.ts` (new — POST /v1/composer/mention-suggestions route handler)
+  - `social-listening-core/src/http/versions/v1/router.ts` (extended — mounted mentionSuggestionsRouter at /composer/mention-suggestions)
+  - `social-listening-core/contracts/epic-11/story-11.11.mention-suggestions.contract.test.ts` (new — 5/5 contract tests)
+  - `social-listening-core/.claude/skills/mention-suggestions/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.11 Built)
+- **Suite at merge:** PASS (5/5 tests in story-11.11 contract)
+- **Key Implementation Details:**
+  - Implemented `suggestMentionsForPost` combining `AuthorTopicSignal` (highest weight 0.5), keyword overlap (weight 0.3), and RAG search (weight 0.2) signals.
+  - Added duplicate author deduplication and excluded authors already mentioned with `@handle` in draft text.
+  - Enforced target platform filtering (`targetPlatforms`) and validated with `422 INVALID_PLATFORMS` for empty arrays.
+  - Implemented `maxSuggestions` capping between 1 and 10 (default 5).
+  - Mounted authenticated endpoint `POST /v1/composer/mention-suggestions`.
+
+---
+
+## 2026-08-28 — Story 11.12 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 11.12 / ADR-0100, BRD-0100, FDD-0100
+- **Contract (frontend):** social-listening-admin/contracts/epic-11/story-11.12.mention-suggestions-ui.contract.test.ts (4/4 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — `MentionSuggestionItem`, `GetMentionSuggestionsParams`, and `getMentionSuggestions` client function)
+  - `social-listening-admin/src/app/api/composer/mention-suggestions/route.ts` (new — BFF proxy route for mention suggestions)
+  - `social-listening-admin/src/components/composer/MentionSuggestionsDropdown.tsx` (new — mention suggestion pill list with match source badges `TOPIC`, `RAG`, `KEYWORD` and click-to-insert)
+  - `social-listening-admin/src/components/composer/OutboundComposerModal.tsx` (extended — debounced 300ms draft trigger and cursor mention insertion)
+  - `social-listening-admin/contracts/epic-11/story-11.12.mention-suggestions-ui.contract.test.ts` (new — 4/4 contract tests)
+  - `social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-11-adr-0095-to-0100.md` (marked Story 11.12 Built)
+- **Suite at merge:** PASS (4/4 tests in story-11.12 contract, 42/42 in epic-11 admin suite)
+- **Key Implementation Details:**
+  - Extended `core-client.ts` with `getMentionSuggestions` API method and TypeScript interfaces.
+  - Created BFF proxy endpoint `POST /api/composer/mention-suggestions` with error handling.
+  - Created `MentionSuggestionsDropdown` component with author avatar/initials, handle, reason, source badges, and clickable insertion.
+  - Integrated into `OutboundComposerModal` with 300ms debounced input listeners and mention tag insertion at active selection.
+

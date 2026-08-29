@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import type { ConnectorTargetItem, OutboundPostAsset } from '@/lib/core-client';
+import type { ConnectorTargetItem, OutboundPostAsset, MentionSuggestionItem } from '@/lib/core-client';
+import { MentionSuggestionsDropdown } from './MentionSuggestionsDropdown';
 
 interface OutboundComposerModalProps {
   isOpen: boolean;
@@ -27,6 +28,45 @@ export function OutboundComposerModal({ isOpen, onClose, onPostCreated }: Outbou
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Story 11.12: Mention suggestions state
+  const [mentionSuggestions, setMentionSuggestions] = useState<MentionSuggestionItem[]>([]);
+  const [mentionLoading, setMentionLoading] = useState(false);
+
+  // AC1: 300ms debounced mention suggestions fetch
+  useEffect(() => {
+    if (!text.trim() || selectedPlatforms.length === 0) {
+      setMentionSuggestions([]);
+      return;
+    }
+    setMentionLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/composer/mention-suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, targetPlatforms: selectedPlatforms }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setMentionSuggestions(data.suggestions || []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setMentionLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [text, selectedPlatforms]);
+
+  const handleInsertMention = (handle: string) => {
+    const mentionTag = `@${handle}`;
+    if (!text.includes(mentionTag)) {
+      setText((prev) => (prev ? `${prev} ${mentionTag} ` : `${mentionTag} `));
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -265,6 +305,13 @@ export function OutboundComposerModal({ isOpen, onClose, onPostCreated }: Outbou
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem', fontSize: '0.75rem', color: '#64748b' }}>
               {text.length} characters
             </div>
+
+            {/* Story 11.12: Mention Suggestions Dropdown */}
+            <MentionSuggestionsDropdown
+              suggestions={mentionSuggestions}
+              loading={mentionLoading}
+              onSelectMention={handleInsertMention}
+            />
           </div>
 
           {/* Target Platforms */}
