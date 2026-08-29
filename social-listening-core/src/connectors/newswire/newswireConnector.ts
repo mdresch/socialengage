@@ -23,6 +23,7 @@ export const newswireConnector: SocialConnector = {
   providerId: NEWSWIRE_PROVIDER_ID,
   authMode: 'none',
   deliveryMode: 'poll',
+  sourceType: 'news',
 
   // Conservative fixed-window placeholder — neither wire publishes a rate
   // limit for its public feeds (ADR-0024's Implementation defaults).

@@ -135,6 +135,7 @@ export const bingSearchConnector: SocialConnector = {
   providerId: BING_SEARCH_PROVIDER_ID,
   authMode: 'api_key',
   deliveryMode: 'poll',
+  sourceType: 'news',
 
   getRateLimitConfig: () => ({
     // 150 transactions per second max, quota-safe 1-4 hour polling schedule

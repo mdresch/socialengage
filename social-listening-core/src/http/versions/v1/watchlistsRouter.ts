@@ -12,6 +12,13 @@ import {
 import { previewWatchlistVolume, watchlistToAst } from '../../../watchlists/previewVolumeService';
 import { requireTenantUserIdentity } from '../../auth/requireTenantUser';
 
+import {
+  WatchlistAST,
+  validateWatchlistAst,
+  parseBooleanQueryToAst,
+} from '../../../watchlists/ast';
+import { validateAstForConnector } from '../../../connectors/queryCapabilities';
+
 export const watchlistsRouter = Router();
 
 const MATCH_TYPES = ['keyword', 'hashtag', 'account', 'boolean'];
@@ -38,7 +45,7 @@ watchlistsRouter.post('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req, res);
   if (!identity) return;
 
-  const { name, matchType, terms, booleanQuery, platformIds, isActive } = req.body;
+  const { name, matchType, terms, booleanQuery, ast, platformIds, isActive } = req.body;
 
   if (!name || typeof name !== 'string') {
     res.status(400).json({ code: 'bad_request' });
@@ -57,13 +64,29 @@ watchlistsRouter.post('/', async (req, res) => {
     return;
   }
 
-  const details = validateWatchlistShape(matchType, terms ?? null, booleanQuery ?? null);
+  const details = validateWatchlistShape(matchType, terms ?? null, booleanQuery ?? null, ast ?? null);
   if (details.length > 0) {
     res.status(422).json({ code: 'validation_failed', details });
     return;
   }
 
-  const input: CreateWatchlistInput = { name, matchType, terms, booleanQuery, platformIds, isActive };
+  // Story 12.3: Per-connector query AST capability validation
+  const effectiveAst: WatchlistAST | null = ast ?? (booleanQuery ? parseBooleanQueryToAst(booleanQuery) : null);
+  if (effectiveAst && Array.isArray(platformIds)) {
+    for (const platformId of platformIds) {
+      const astCheck = validateAstForConnector(effectiveAst, platformId);
+      if (!astCheck.valid) {
+        res.status(422).json({
+          code: astCheck.code ?? 'UNSUPPORTED_QUERY_CLAUSE',
+          offendingClause: astCheck.offendingClause,
+          reason: astCheck.reason,
+        });
+        return;
+      }
+    }
+  }
+
+  const input: CreateWatchlistInput = { name, matchType, terms, booleanQuery, ast, platformIds, isActive };
 
   try {
     const watchlist = await createWatchlist(identity.tenantId, identity.userId, input);
@@ -145,6 +168,7 @@ watchlistsRouter.patch('/:id', async (req, res) => {
   if ('matchType' in body) patch.matchType = body.matchType;
   if ('terms' in body) patch.terms = body.terms;
   if ('booleanQuery' in body) patch.booleanQuery = body.booleanQuery;
+  if ('ast' in body) patch.ast = body.ast;
   if ('platformIds' in body) patch.platformIds = body.platformIds;
   if ('isActive' in body) patch.isActive = body.isActive;
 
@@ -159,6 +183,21 @@ watchlistsRouter.patch('/:id', async (req, res) => {
   if ('platformIds' in patch && patch.platformIds != null && !Array.isArray(patch.platformIds)) {
     res.status(400).json({ code: 'bad_request' });
     return;
+  }
+
+  // Story 12.3: Per-connector query AST capability validation on patch
+  if (patch.ast && patch.platformIds) {
+    for (const platformId of patch.platformIds) {
+      const astCheck = validateAstForConnector(patch.ast, platformId);
+      if (!astCheck.valid) {
+        res.status(422).json({
+          code: astCheck.code ?? 'UNSUPPORTED_QUERY_CLAUSE',
+          offendingClause: astCheck.offendingClause,
+          reason: astCheck.reason,
+        });
+        return;
+      }
+    }
   }
 
   try {

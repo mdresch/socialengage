@@ -3813,5 +3813,34 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented `ConnectorCapabilityBadges` component rendering visual capability chips with status indicators.
   - Integrated dynamic capability check in `OutboundComposerModal` to ensure only publish-capable platforms can be targeted.
 
+---
+
+## 2026-08-29 — Story 12.3 — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.3 / ADR-0102, BRD-0102, FDD-0102
+- **Contract:** social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts (8/8 passing)
+- **SKILL.md:** social-listening-core/.claude/skills/boolean-query-ast/SKILL.md (new)
+- **Files touched:**
+  - `social-listening-core/src/watchlists/ast.ts` (extended — canonical `WatchlistAST` schema, `validateWatchlistAst`, `parseBooleanQueryToAst`, `astToBooleanQuery`)
+  - `social-listening-core/src/connectors/queryCapabilities.ts` (new — `ConnectorQueryCapabilities`, `getConnectorQueryCapabilities`, and `validateAstForConnector`)
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (extended — `GET /v1/connectors/:platformId/query-capabilities`)
+  - `social-listening-core/src/http/versions/v1/watchlistsRouter.ts` (extended — `ast` support on POST `/` and PATCH `/:id` with connector capability 422 validation)
+  - `social-listening-core/src/watchlists/watchlistStore.ts` (extended — `ast` support in types and query string derivation)
+  - `social-listening-core/src/watchlists/matcher.ts` (extended — `evaluateWatchlistAst` in-memory fallback evaluation)
+  - `social-listening-core/src/connectors/types.ts` (extended — optional `sourceType` on `SocialConnector`)
+  - `social-listening-core/src/connectors/registry.ts` (updated — dynamic capability `sourceType` resolution)
+  - `social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts` (new — 8/8 passing)
+  - `social-listening-core/.claude/skills/boolean-query-ast/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.3 Built)
+- **Suite at merge:** PASS (8/8 tests in story-12.3 contract)
+- **Key Implementation Details:**
+  - Standardized `WatchlistAST` clause hierarchy supporting `keyword`, `phrase`, `hashtag`, `mention`, `author`, `source`, `sentiment`, `date`, and `nested`.
+  - Added connector query capabilities registry with per-platform query limits, supported operators, and supported clause types.
+  - Implemented `validateAstForConnector(ast, platformId)` and wired into `POST /v1/watchlists` and `PATCH /v1/watchlists/:id` to enforce 422 `UNSUPPORTED_QUERY_CLAUSE` errors at save time.
+  - Implemented comprehensive `evaluateWatchlistAst` supporting fallback in-process matching for AST clauses across posts.
+  - Added bidirectional parser `parseBooleanQueryToAst` and serializer `astToBooleanQuery` for legacy and text query interop.
+
+
 
 

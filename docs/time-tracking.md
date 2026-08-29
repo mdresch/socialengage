@@ -15,6 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 12:48 | — | — | Documentation | Story 12.2 | feat(admin): implement Story 12.2 connector capability matrix UI (bae500b) |
+| 2026-08-29 | 12:01 | — | — | Documentation | Story 12.1 | feat(core): implement Story 12.1 connector capability matrix (ADR-0101) (6f20605) |
+| 2026-08-29 | 10:04 | — | — | Documentation | — | fix(contracts): heal story-1.13, story-3.15, story-4.2, and story-9.7/9.9/9.10 contracts (58895f0) |
+| 2026-08-29 | 09:46 | — | — | Documentation | — | fix(contracts): heal story-6.39 contract for story-11.8 outbound publishing (994b4b8) |
 | 2026-08-29 | 08:07 | — | — | Review | Story 11.11 | chore(tracking): record post-commit review and time tracking entries for Story 11.11 & 11.12 (8477fce) (58e9c05) |
 | 2026-08-29 | 08:06 | — | — | Documentation | Story 11.11 | feat(epic-11): implement Story 11.11 (backend mention suggestions) and Story 11.12 (frontend mention suggestions UI) (8477fce) |
 | 2026-08-28 | 12:46 | — | — | Documentation | Story 11.9 | feat(epic-11): implement Story 11.9 (backend unified social inbox & reply) and Story 11.10 (frontend unified social inbox UI) (b42315f) |

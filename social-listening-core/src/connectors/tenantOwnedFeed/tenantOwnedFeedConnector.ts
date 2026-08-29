@@ -24,6 +24,7 @@ export const tenantOwnedFeedConnector: SocialConnector = {
   providerId: TENANT_OWNED_FEED_PROVIDER_ID,
   authMode: 'none',
   deliveryMode: 'poll',
+  sourceType: 'blog',
 
   // ADR-0050's own conservative fixed-window default: one poll per feed URL
   // per 30 minutes — no published rate limit exists for a tenant's own feed.

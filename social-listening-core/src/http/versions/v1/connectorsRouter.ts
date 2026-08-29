@@ -22,6 +22,7 @@ import {
 } from '../../../ingestion/ingestionRunStore';
 import { deriveConnectorHealth } from '../../../connectors/connectorHealth';
 import { getPlatformTargets } from '../../../publishing/outboundPublishingService';
+import { getConnectorQueryCapabilities } from '../../../connectors/queryCapabilities';
 
 function parseOwnerType(value: unknown): CredentialOwnerType | null {
   if (value === undefined || value === 'tenant') return 'tenant';
@@ -40,6 +41,25 @@ connectorsRouter.get('/capabilities', async (req, res) => {
   if (!caller) return;
   const connectors = listConnectorCapabilities(caller.tenantId);
   res.json({ connectors });
+});
+
+/**
+ * Story 12.3 (ADR-0102 §3) — GET /v1/connectors/:platformId/query-capabilities
+ * Returns the query capabilities (supported clauses, operators, and limits) for a connector.
+ */
+connectorsRouter.get('/:platformId/query-capabilities', async (req, res) => {
+  const caller = requireTenantUserIdentity(req as any, res);
+  if (!caller) return;
+
+  const platformId = Array.isArray(req.params.platformId) ? req.params.platformId[0] : req.params.platformId;
+  const queryCaps = getConnectorQueryCapabilities(platformId);
+
+  if (!queryCaps) {
+    res.status(404).json({ code: 'not_found', message: `Connector '${platformId}' not found.` });
+    return;
+  }
+
+  res.json(queryCaps);
 });
 
 /**

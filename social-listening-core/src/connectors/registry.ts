@@ -36,15 +36,7 @@ export function getConnectorCapabilities(providerId: string, tenantId?: string):
     return connector.getCapabilities(tenantId);
   }
 
-  // Sensible default resolution based on connector attributes and known provider IDs
-  let sourceType: SocialConnectorCapabilities['sourceType'] = 'social';
-  if (['gnews', 'newswire', 'brave-search', 'bing-search'].includes(providerId)) {
-    sourceType = 'news';
-  } else if (['tenant-owned-feed', 'rss', 'atom'].includes(providerId)) {
-    sourceType = 'blog';
-  } else if (['wikipedia', 'wiki'].includes(providerId)) {
-    sourceType = 'wiki';
-  }
+  const sourceType: SocialConnectorCapabilities['sourceType'] = connector?.sourceType ?? 'social';
 
   const poll = connector?.poll
     ? { cadenceMs: connector.pollCadenceMs || 15 * 60 * 1000, supportsTimeWindow: true }

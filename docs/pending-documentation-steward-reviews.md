@@ -2983,3 +2983,27 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.12.mention-suggestions-ui.contract.test.ts, social-listening-admin/src/app/api/composer/mention-suggestions/route.ts, social-listening-admin/src/components/composer/MentionSuggestionsDropdown.tsx, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/contracts/epic-11/story-11.11.mention-suggestions.contract.test.ts, social-listening-core/src/composer/mentionSuggestionsService.ts, social-listening-core/src/http/versions/v1/mentionSuggestionsRouter.ts, social-listening-core/src/http/versions/v1/router.ts
 - **Status:** Pending review
 
+## 2026-08-29 — 994b4b8 — fix(contracts): heal story-6.39 contract for story-11.8 outbound publishing
+
+- **Full commit:** `994b4b8fac6b382a44a7fbbfa3a0b88176e4e05e`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/next-env.d.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 58895f0 — fix(contracts): heal story-1.13, story-3.15, story-4.2, and story-9.7/9.9/9.10 contracts
+
+- **Full commit:** `58895f01d8c24bba9061cc8a1b9f052c20bd2a29`
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts, social-listening-core/contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 6f20605 — feat(core): implement Story 12.1 connector capability matrix (ADR-0101)
+
+- **Full commit:** `6f20605e450ba778fe79be5a6218f0876c14bf7a`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/contracts/epic-12/story-12.1.connector-capability-matrix.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts
+- **Status:** Pending review
+
+## 2026-08-29 — bae500b — feat(admin): implement Story 12.2 connector capability matrix UI
+
+- **Full commit:** `bae500b2b5a0b449d6e97493ada8e863b55db4db`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/capabilities/route.ts, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/components/connectors/ConnectorCapabilityBadges.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+

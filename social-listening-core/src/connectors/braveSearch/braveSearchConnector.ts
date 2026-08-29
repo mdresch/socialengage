@@ -80,6 +80,7 @@ export const braveSearchConnector: SocialConnector = {
   providerId: BRAVE_SEARCH_PROVIDER_ID,
   authMode: 'api_key',
   deliveryMode: 'poll',
+  sourceType: 'news',
 
   getRateLimitConfig: () => ({
     // 2,000 requests/month on typical tier, paced at 1 req/sec in scheduler

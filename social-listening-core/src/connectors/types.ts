@@ -125,6 +125,7 @@ export interface OutboundPostPayload {
 
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
+  readonly sourceType?: SocialConnectorCapabilities['sourceType'];
   normalize(rawItem: unknown): NormalizedPost;
   /** Optional, authMode-agnostic hook — a specific connector's OAuth exchange
    * logic (if any) lives in its own implementation, not this interface. */
