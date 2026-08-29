@@ -3472,3 +3472,15 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-08-29 — 2a4ea31 — fix(connectors): add youtube, brave-search, and bing-search cadences to status view
+
+- **Full commit:** `2a4ea316d3c661e405a6d1f6099fa0b1e156764b`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx
+- **Status:** Pending review
+
+## 2026-08-29 — 8587070 — feat(posts): normalize YouTube video and comment display in post feed
+
+- **Full commit:** `85870700e897b208403ff4824799b9fdc59a2bcb`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
