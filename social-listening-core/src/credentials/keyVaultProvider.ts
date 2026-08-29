@@ -21,6 +21,15 @@ export function getKeyClient(): KeyClient {
   return new KeyClient(vaultUrl(), credential());
 }
 
+export function getKeyVaultKeyId(): string | undefined {
+  return (
+    process.env.KEY_VAULT_KEY_ID ||
+    (process.env.NODE_ENV !== 'test' && process.env.KEY_VAULT_URI
+      ? `${process.env.KEY_VAULT_URI.replace(/\/$/, '')}/keys/platform-credentials-dek-wrap`
+      : undefined)
+  );
+}
+
 /** Envelope-encrypts a data-encryption key (DEK) under a Key Vault key. */
 export async function wrapDek(keyId: string, dek: Buffer): Promise<Buffer> {
   const cryptoClient = new CryptographyClient(keyId, credential());

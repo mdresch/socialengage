@@ -3866,3 +3866,27 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented per-platform query capability checks in the frontend that warn the user before saving when unsupported clauses are present.
   - Added BFF route `GET /api/connectors/[platformId]/query-capabilities` proxying to Core API.
   - Integrated `BooleanQueryBuilder` directly into `WatchlistForm.tsx` for watchlist creation and editing with full RFC 7396 merge-patch and 422 error display.
+
+---
+
+## 2026-08-29 — Healing Pass — Key Vault Envelope Encryption Resolution & Onboarding Deep Links (spans both repos)
+
+- **Repo:** social-listening-core and social-listening-admin
+- **Story / ADR:** 1.7 / ADR-0014, ADR-0028, ADR-0034; 9.5 & 9.6 / ADR-0080
+- **Contract:**
+  - `contracts/epic-1/story-1.7.ownership-tier-connect-disconnect.contract.test.ts` (12/12 passing)
+  - `social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts` (16/16 passing)
+  - `contracts/epic-9/story-9.5.onboarding-checklist-state.contract.test.ts` (17/17 passing)
+- **Files touched:**
+  - `social-listening-core/src/credentials/keyVaultProvider.ts` (extended — added `getKeyVaultKeyId()` with non-test automatic URI fallback)
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (updated — uses `getKeyVaultKeyId()`)
+  - `social-listening-core/src/http/versions/v1/facebookOAuthRouter.ts` (updated — uses `getKeyVaultKeyId()`)
+  - `social-listening-core/src/http/versions/v1/instagramOAuthRouter.ts` (updated — uses `getKeyVaultKeyId()`)
+  - `social-listening-core/src/http/versions/v1/linkedinOAuthRouter.ts` (updated — uses `getKeyVaultKeyId()`)
+  - `social-listening-core/.env.example` (updated — documented `KEY_VAULT_URI` and `KEY_VAULT_KEY_ID`)
+  - `social-listening-core/src/tenants/onboardingChecklist.ts` (fixed — updated `DEEP_LINKS` to point to `/tenant/*`)
+  - `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx` (fixed — added `normalizeDeepLink()` for `/tenant/*` views)
+- **Key Implementation Details:**
+  - Resolved `Credential storage is not configured (KEY_VAULT_KEY_ID missing)` by adding `getKeyVaultKeyId()` with safe fallback to `${KEY_VAULT_URI}/keys/platform-credentials-dek-wrap` in non-test mode.
+  - Enforced strict unit test assertion isolation for Story 1.7 AC9 when `NODE_ENV === 'test'`.
+  - Normalized onboarding checklist deep link navigation across both core backend and admin frontend to route to live `/tenant/*` paths.

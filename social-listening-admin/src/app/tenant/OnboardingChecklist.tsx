@@ -51,6 +51,18 @@ const STEP_METADATA: Record<
   },
 };
 
+function normalizeDeepLink(deepLink?: string, fallback: string = '/tenant'): string {
+  if (!deepLink) return fallback;
+  if (deepLink.startsWith('/settings/connectors')) return '/tenant/connectors';
+  if (deepLink.startsWith('/watchlists')) return '/tenant/watchlists';
+  if (deepLink.startsWith('/settings/users')) return '/tenant/users';
+  if (deepLink.startsWith('/posts')) return '/tenant/posts';
+  if (deepLink.startsWith('/settings/enrichment')) return '/tenant/connectors';
+  if (deepLink.startsWith('/settings/alerts')) return '/tenant/watchlists';
+  if (deepLink.startsWith('/tenant/')) return deepLink;
+  return fallback;
+}
+
 export function OnboardingChecklist({
   tenantId,
   initialChecklist,
@@ -180,7 +192,7 @@ export function OnboardingChecklist({
               defaultLink: '/tenant',
               icon: '📌',
             };
-            const link = step.deepLink || meta.defaultLink;
+            const link = normalizeDeepLink(step.deepLink, meta.defaultLink);
 
             return (
               <a
@@ -268,7 +280,7 @@ export function OnboardingChecklist({
                   defaultLink: '/tenant',
                   icon: '⚙️',
                 };
-                const link = step.deepLink || meta.defaultLink;
+                const link = normalizeDeepLink(step.deepLink, meta.defaultLink);
 
                 return (
                   <a

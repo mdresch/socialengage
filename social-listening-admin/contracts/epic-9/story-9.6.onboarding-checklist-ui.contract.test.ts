@@ -85,6 +85,12 @@ describe('Story 9.6 — Onboarding checklist UI (frontend)', () => {
       expect(source).toContain('/tenant/watchlists');
       expect(source).toContain('/tenant/users');
       expect(source).toContain('/tenant/posts');
+
+      const tenantSource = readSrc('app', 'tenant', 'OnboardingChecklist.tsx');
+      expect(tenantSource).toContain('/tenant/connectors');
+      expect(tenantSource).toContain('/tenant/watchlists');
+      expect(tenantSource).toContain('/tenant/users');
+      expect(tenantSource).toContain('/tenant/posts');
     });
   });
 

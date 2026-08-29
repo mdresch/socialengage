@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getCachedConnectorHealth } from '../../../connectors/connectorHealthCache';
 import { storeCredential, deleteCredential, CredentialOwnerType } from '../../../credentials/credentialStore';
+import { getKeyVaultKeyId } from '../../../credentials/keyVaultProvider';
 import { authMethodFor } from '../../../credentials/platformAuth';
 import { requireTenantUser, requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import {
@@ -165,7 +166,7 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
   // than let an unset KEY_VAULT_KEY_ID reach storeCredential()/wrapDek() as
   // an invalid key identifier, which CryptographyClient can only reject
   // with an opaque downstream error (Story 1.7 AC9, healing note 2026-08-17).
-  const keyVaultKeyId = process.env.KEY_VAULT_KEY_ID;
+  const keyVaultKeyId = getKeyVaultKeyId();
   if (!keyVaultKeyId) {
     res.status(500).json({ error: 'Credential storage is not configured (KEY_VAULT_KEY_ID missing).' });
     return;
