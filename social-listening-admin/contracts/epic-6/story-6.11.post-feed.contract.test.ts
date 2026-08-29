@@ -262,18 +262,19 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
     // need an actual DOM/markup render of PostsFeedClient itself, which
     // this repo's own established testing approach doesn't do. This new
     // test calls extractDisplayText() directly instead, which is what
-    // actually proves the fix.
-    it('extractDisplayText() renders a real Facebook-shaped rawPayload (message, no title field) as its own message text, never raw JSON (found-live regression, dated note above)', async () => {
+    it('extractDisplayText() renders a real Facebook-shaped rawPayload (message, no title field) as snippet with empty title, never raw JSON (found-live regression, dated note above)', async () => {
       const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
       const result = extractDisplayText(FACEBOOK_POST.rawPayload);
-      expect(result.title).toBe('Excited to announce our new product launch next week!');
-      expect(result.title).not.toContain('"providerId"');
+      expect(result.title).toBe('');
+      expect(result.snippet).toBe('Excited to announce our new product launch next week!');
+      expect(result.snippet).not.toContain('"providerId"');
     });
 
-    it('extractDisplayText() falls back to permalink_url for a Facebook post with no message text (media-only post)', async () => {
+    it('extractDisplayText() falls back to permalink_url in snippet for a Facebook post with no message text (media-only post)', async () => {
       const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
       const result = extractDisplayText({ providerId: 'facebook', id: 'ext-5', permalink_url: 'https://facebook.com/1/posts/ext-5', created_time: '2026-08-12T08:20:00.000Z' });
-      expect(result.title).toBe('https://facebook.com/1/posts/ext-5');
+      expect(result.title).toBe('');
+      expect(result.snippet).toBe('https://facebook.com/1/posts/ext-5');
     });
 
     // 2026-08-20, dated note: found-live regression, same shape as the

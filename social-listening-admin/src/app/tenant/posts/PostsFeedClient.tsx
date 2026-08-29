@@ -164,7 +164,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const inTitle = post.title.toLowerCase().includes(q);
+        const inTitle = post.title ? post.title.toLowerCase().includes(q) : false;
         const inSnippet = post.snippet ? post.snippet.toLowerCase().includes(q) : false;
         const inAuthor = post.author ? post.author.toLowerCase().includes(q) : false;
         const inPageName = post.pageName ? post.pageName.toLowerCase().includes(q) : false;
@@ -364,7 +364,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePost(post); }}
-              aria-label={`Inspect: ${post.title}`}
+              aria-label={`Inspect: ${post.title || post.snippet || post.id}`}
             >
               {/* Header row */}
               <div className="pf-post-card-meta">
@@ -426,12 +426,12 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               </div>
 
               {/* Title & snippet */}
-              <h2 className="pf-post-card-title">{post.title}</h2>
+              {post.title ? <h2 className="pf-post-card-title">{post.title}</h2> : null}
               {(post.instagramContext?.thumbnailUrl || post.instagramContext?.mediaUrl) && (
                 <div className="pf-post-media-preview">
                   <img
                     src={post.instagramContext.thumbnailUrl || post.instagramContext.mediaUrl || ''}
-                    alt={post.title}
+                    alt={post.title || post.snippet || 'Post preview'}
                     className="pf-media-thumbnail"
                     loading="lazy"
                   />

@@ -66,10 +66,24 @@ export function extractAuthor(rawPayload: unknown): string | null {
 /**
  * `rawPayload` is heterogeneous per connector (GNews: title+description;
  * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary; YouTube: title/description or text/comment).
+ *
+ * Facebook posts do not carry an article/video title. Their text is the post
+ * body (message), so extractDisplayText() treats it as snippet rather than
+ * populating title with the entire body text.
  */
 export function extractDisplayText(rawPayload: unknown): DisplayText {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
+    const isFacebook = p.providerId === 'facebook' || p.provider === 'facebook';
+
+    if (isFacebook) {
+      const message = typeof p.message === 'string' && p.message.length > 0 ? p.message : null;
+      return {
+        title: '',
+        snippet: message ?? (typeof p.permalink_url === 'string' ? p.permalink_url : null),
+      };
+    }
+
     if (typeof p.title === 'string' && p.title.length > 0) {
       return { title: p.title, snippet: typeof p.description === 'string' ? p.description : null };
     }
