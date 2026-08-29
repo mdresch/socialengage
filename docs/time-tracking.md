@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 18:33 | — | — | Documentation | — | fix(events): skip Service Bus publish when SERVICE_BUS_NAMESPACE is unset (37d0bf5) |
+| 2026-08-29 | 18:32 | — | — | Documentation | — | feat(ui): story 10.13 - add YouTube platform icon and provider pill styling (c380c03) |
 | 2026-08-29 | 18:22 | — | — | Documentation | Story 12.7 | feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend) (21820f4) |
 | 2026-08-29 | 17:14 | — | — | Documentation | — | chore: sync doc tracking (67a915c) |
 | 2026-08-29 | 17:13 | — | — | Documentation | — | chore: sync doc tracking (9ed8291) |
