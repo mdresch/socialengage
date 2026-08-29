@@ -2883,6 +2883,9 @@ button:disabled {
 }
 
 .cs-card-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -3125,6 +3128,7 @@ button:disabled {
 .cv-platform-icon-emerald { background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; }
 .cv-platform-icon-amber   { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
 .cv-platform-icon-pink    { background: #fdf2f8; border: 1px solid #fbcfe8; color: #db2777; }
+.cv-platform-icon-red     { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
 
 .cv-card-name {
   font-size: 0.9375rem;
@@ -3145,6 +3149,33 @@ button:disabled {
 .cv-card-subtitle-emerald { color: #059669; }
 .cv-card-subtitle-amber   { color: #b45309; }
 .cv-card-subtitle-pink    { color: #db2777; }
+.cv-card-subtitle-red     { color: #dc2626; }
+
+/* Provider pills across feeds */
+.provider-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.provider-pill-youtube           { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+.provider-pill-facebook          { background: #eff6ff; border-color: #bfdbfe; color: #1877f2; }
+.provider-pill-instagram         { background: #fdf2f8; border-color: #fbcfe8; color: #db2777; }
+.provider-pill-linkedin          { background: #eff6ff; border-color: #bfdbfe; color: #0a66c2; }
+.provider-pill-gnews             { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+.provider-pill-newswire          { background: #eef2ff; border-color: #c7d2fe; color: #4338ca; }
+.provider-pill-tenant-owned-feed { background: #f8fafc; border-color: #e2e8f0; color: #475569; }
+.provider-pill-wikipedia         { background: #ecfdf5; border-color: #a7f3d0; color: #059669; }
+.provider-pill-brave-search      { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.provider-pill-bing-search       { background: #f0f9ff; border-color: #bae6fd; color: #0284c7; }
 
 .cv-card-description {
   font-size: 0.8125rem;

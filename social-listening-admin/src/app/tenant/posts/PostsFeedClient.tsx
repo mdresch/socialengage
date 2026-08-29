@@ -4,9 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
 import { flattenPost, type FlatPost } from './postDisplay';
-import { RelativeTime } from '@/components/ui';
-import { Slideover } from '@/components/ui';
-import { EmptyState } from '@/components/ui';
+import { RelativeTime, Slideover, EmptyState, PlatformIcon } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostDetailPanel } from './PostDetailPanel';
 import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
@@ -372,13 +370,18 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               <div className="pf-post-card-meta">
                 <div className="pf-post-card-meta-left">
                   <span className={providerClass(post.provider)}>
-                    {post.provider === 'facebook'
-                      ? 'Facebook Page'
-                      : post.provider === 'instagram'
-                      ? 'Instagram Business'
-                      : post.provider === 'linkedin'
-                      ? 'LinkedIn'
-                      : post.provider.replace(/_/g, ' ')}
+                    <PlatformIcon platformId={post.provider} size={13} />
+                    <span>
+                      {post.provider === 'facebook'
+                        ? 'Facebook Page'
+                        : post.provider === 'instagram'
+                        ? 'Instagram Business'
+                        : post.provider === 'linkedin'
+                        ? 'LinkedIn'
+                        : post.provider === 'youtube'
+                        ? 'YouTube'
+                        : post.provider.replace(/_/g, ' ')}
+                    </span>
                   </span>
                   {post.provider === 'facebook' ? (
                     <>

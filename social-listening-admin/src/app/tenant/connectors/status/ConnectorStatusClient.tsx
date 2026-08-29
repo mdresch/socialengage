@@ -2,7 +2,7 @@
 
 import { useState, type ReactElement } from 'react';
 import type { ConnectorStatus } from '@/lib/core-client';
-import { StatusBadge, type StatusBadgeVariant } from '@/components/ui';
+import { StatusBadge, type StatusBadgeVariant, PlatformIcon } from '@/components/ui';
 import { RelativeTime } from '@/components/ui';
 import { ActivateDeactivateButton } from '../ActivateDeactivateButton';
 
@@ -308,7 +308,10 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
       <div className="cs-card-top">
         <div className="cs-card-info">
           <div className="cs-card-title-row">
-            <h2 className="cs-card-name">{platform.name}</h2>
+            <h2 className="cs-card-name">
+              <PlatformIcon platformId={platform.id} size={18} />
+              <span>{platform.name}</span>
+            </h2>
             {badge}
             <span className="cs-category-pill">{platform.category}</span>
           </div>
