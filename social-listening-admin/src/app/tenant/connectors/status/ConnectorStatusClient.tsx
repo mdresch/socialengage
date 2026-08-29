@@ -137,6 +137,9 @@ const POLL_INTERVAL_MINUTES: Record<string, number> = {
   facebook: 30,
   instagram: 30,
   linkedin: 60,
+  youtube: 15,
+  'brave-search': 60,
+  'bing-search': 60,
 };
 
 /** Story 6.24 — mirrors `CONSECUTIVE_FAILURE_CEILING` (`social-listening-core/src/connectors/connectorHealth.ts`), the real, single global ceiling. Not importable across the repo boundary; restated here, kept in sync by hand. */
