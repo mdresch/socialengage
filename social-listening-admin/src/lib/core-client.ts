@@ -2999,6 +2999,39 @@ export async function hideTopic(
   return response.json() as Promise<TopicRecord>;
 }
 
+// ─── Story 12.10 (ADR-0105): Dashboard API client ────────────────────────────
+
+export interface DashboardQueryParamsInput {
+  watchlistId?: string | null;
+  selectedTopic?: string | null;
+  timeRange?: string | null;
+  granularity?: string | null;
+  includeExplanation?: boolean;
+}
+
+/**
+ * GET /v1/analytics/dashboard — fetches typed dashboard widgets and filter metadata.
+ */
+export async function fetchDashboardData(
+  token: string,
+  params: DashboardQueryParamsInput = {}
+): Promise<{ widgets: any[]; filters: any }> {
+  const q = new URLSearchParams();
+  if (params.watchlistId) q.set('watchlistId', params.watchlistId);
+  if (params.selectedTopic) q.set('selectedTopic', params.selectedTopic);
+  if (params.timeRange) q.set('timeRange', params.timeRange);
+  if (params.granularity) q.set('granularity', params.granularity);
+  if (params.includeExplanation) q.set('includeExplanation', 'true');
+
+  const url = `${getBaseUrl()}/v1/analytics/dashboard${q.toString() ? `?${q.toString()}` : ''}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`fetchDashboardData failed: ${response.status}`);
+  return response.json();
+}
+
+
 
 
 

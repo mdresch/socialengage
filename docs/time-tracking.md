@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 19:33 | — | — | Documentation | Story 12.10 | feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend) (d221cd6) |
+| 2026-08-29 | 19:29 | — | — | Documentation | Story 12.9 | feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend) (ee2b3e0) |
 | 2026-08-29 | 18:27 | — | — | Documentation | Story 12.8 | feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend) (5ce0794) |
 | 2026-08-29 | 18:22 | — | — | Documentation | Story 12.7 | feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend) (21820f4) |
 | 2026-08-29 | 17:14 | — | — | Documentation | — | chore: sync doc tracking (67a915c) |

@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.9 — social-listening-core@846710b
+## 2026-08-29 — Story 12.10 — social-listening-admin@d221cd6
 
-- **Full commit:** `846710b` (see git log)
+- **Full commit:** `d221cd6` (see git log)
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.10 / ADR-0105
+- **Contract:** contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts
+- **SKILL.md:** .claude/skills/dashboard-widget-renderer/SKILL.md
+- **Files touched:** src/components/analytics/dashboard/dashboardTypes.ts, src/components/analytics/dashboard/widgets/MetricTile.tsx, src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, src/components/analytics/dashboard/widgets/BarChart.tsx, src/components/analytics/dashboard/widgets/PieChart.tsx, src/components/analytics/dashboard/widgets/RankedList.tsx, src/components/analytics/dashboard/widgets/DataTable.tsx, src/components/analytics/dashboard/WidgetRenderer.tsx, src/components/analytics/dashboard/FilterBar.tsx, src/components/analytics/dashboard/WidgetGrid.tsx, src/components/analytics/dashboard/DashboardView.tsx, src/lib/core-client.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (13/13); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.9 — social-listening-core@ee2b3e0
+
+- **Full commit:** `ee2b3e0` (see git log)
 - **Repo:** social-listening-core
 - **Story / ADR:** 12.9 / ADR-0105
 - **Contract:** contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts
