@@ -1081,14 +1081,40 @@ export async function explainSpike(
   return { status: response.status, body };
 }
 
+export interface SentimentAspect {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export interface SentimentOverridden {
+  by: string;
+  at: string;
+  reason?: string;
+  previousValue?: {
+    overall: string;
+    confidence: number;
+  };
+}
+
+export interface PostSentimentEnrichment {
+  overall: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  language: string;
+  aspects?: SentimentAspect[];
+  overridden?: SentimentOverridden;
+}
+
 export interface PostEnrichmentUpdateInput {
-  sentiment?: 'positive' | 'neutral' | 'negative';
+  sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed' | (Partial<PostSentimentEnrichment> & { reason?: string });
   sentimentScore?: number;
   keyPhrases?: string[];
   detectedLanguage?: string | null;
   geoCountry?: string | null;
   geoCountryName?: string | null;
   summary?: string | null;
+  reason?: string;
 }
 
 export interface PostEnrichmentUpdateOutcome {

@@ -3915,3 +3915,29 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added `normalizePostSentiment` helper in `socialPostStore.ts` for zero-downtime backward compatibility with legacy flat string sentiments.
   - Enhanced `updatePostEnrichment` to support aspect-rich sentiment updates and record full human-in-the-loop lineage (`by`, `at`, `reason`, and `previousValue` capturing previous overall and confidence).
 
+---
+
+## 2026-08-29 — Story 12.6 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.6 / ADR-0103, BRD-0103, FDD-0103
+- **Contract:** social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts (9/9 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — added `SentimentAspect`, `SentimentOverridden`, `PostSentimentEnrichment`, updated `PostEnrichmentUpdateInput`)
+  - `social-listening-admin/src/app/tenant/posts/postDisplay.ts` (extended — added `SentimentAspectSummary`, `SentimentConfidenceTier`, `getSentimentConfidenceTier()`, updated `PostEnrichmentSummary` and `extractEnrichmentSummary()`)
+  - `social-listening-admin/src/components/sentiment/SentimentBadge.tsx` (new — accessible sentiment badge with confidence score and `strong`/`moderate`/`needs-review` tier pills)
+  - `social-listening-admin/src/components/sentiment/SentimentAspectsList.tsx` (new — aspect-level breakdown cards with label chips, confidence %, and evidence quotes)
+  - `social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx` (extended — embedded `SentimentBadge` and `SentimentAspectsList` into Azure AI Cognitive Analysis panel)
+  - `social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx` (extended — support for mixed sentiment, confidence score, and override audit reason)
+  - `social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts` (new — 9/9 passing)
+  - `social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.6 Built)
+- **Suite at merge:** PASS (9/9 tests in story-12.6 contract)
+- **Key Implementation Details:**
+  - Added confidence tiering function `getSentimentConfidenceTier` implementing the ADR-0103 Section 6 standard (>=0.8 Strong, >=0.5 Moderate, <0.5 Needs review).
+  - Built reusable `SentimentBadge` with emoji indicators, numeric confidence percentages, and color-coded tier pills with WCAG-compliant contrast.
+  - Built `SentimentAspectsList` displaying aspect names, sentiment pills, confidence scores, and quoted evidence phrases with graceful empty-state fallback.
+  - Enhanced `PostDetailPanel` and `EnrichmentEditDrawer` to support aspect display, mixed sentiments, and human-in-the-loop audit reasons.
+
+

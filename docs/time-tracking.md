@@ -15,8 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 17:13 | — | — | Documentation | — | chore: sync doc tracking (9ed8291) |
 | 2026-08-29 | 16:53 | — | — | Documentation | — | feat(posts): normalize YouTube video and comment display in post feed (8587070) |
 | 2026-08-29 | 16:47 | — | — | Documentation | — | fix(connectors): add youtube, brave-search, and bing-search cadences to status view (2a4ea31) |
+| 2026-08-29 | 16:25 | — | — | Documentation | — | docs: sync tracking (43cda19) |
 | 2026-08-29 | 16:14 | — | — | Review | — | docs: update review documents and time tracking (009bf95) |
 | 2026-08-29 | 16:11 | — | — | Documentation | Story 12.5 | feat(core): implement AI sentiment aspect schema (Story 12.5, ADR-0103) (c2cf37d) |
 | 2026-08-29 | 15:33 | — | — | Documentation | Story 12.4 | feat(admin): implement Story 12.4 boolean query visual builder (ADR-0102) (8210fed) |

@@ -128,8 +128,38 @@ export interface PostEnrichmentNamedEntity {
   category: string | null;
 }
 
+/**
+ * Story 12.6 (ADR-0103) — Aspect-level sentiment summary.
+ */
+export interface SentimentAspectSummary {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export type SentimentConfidenceTier = 'strong' | 'moderate' | 'needs-review';
+
+/**
+ * Story 12.6 (ADR-0103 §6) — derives confidence tier from confidence score.
+ * - confidence >= 0.8 -> 'strong'
+ * - 0.5 <= confidence < 0.8 -> 'moderate'
+ * - confidence < 0.5 -> 'needs-review'
+ */
+export function getSentimentConfidenceTier(confidence: number): SentimentConfidenceTier {
+  if (confidence >= 0.8) return 'strong';
+  if (confidence >= 0.5) return 'moderate';
+  return 'needs-review';
+}
+
 export interface PostEnrichmentSummary {
   sentiment: string | null;
+  /** Story 12.6 (ADR-0103) — confidence score (0.0 to 1.0) */
+  sentimentConfidence?: number | null;
+  /** Story 12.6 (ADR-0103 §6) — derived presentation confidence tier */
+  sentimentTier?: SentimentConfidenceTier;
+  /** Story 12.6 (ADR-0103) — aspect-level sentiment breakdown */
+  sentimentAspects?: SentimentAspectSummary[];
   sentimentScores: SentimentScores | null;
   entities: string[];
   namedEntities?: PostEnrichmentNamedEntity[];
@@ -165,7 +195,26 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   if (!enrichment || typeof enrichment !== 'object') return null;
   const e = enrichment as Record<string, unknown>;
 
-  const sentiment = typeof e.sentiment === 'string' ? e.sentiment : null;
+  let sentiment: string | null = null;
+  let sentimentConfidence: number | null = null;
+  let sentimentAspects: SentimentAspectSummary[] | undefined = undefined;
+
+  if (typeof e.sentiment === 'string') {
+    sentiment = e.sentiment;
+    sentimentConfidence = typeof e.sentimentScore === 'number' ? e.sentimentScore : null;
+  } else if (e.sentiment && typeof e.sentiment === 'object') {
+    const s = e.sentiment as Record<string, unknown>;
+    sentiment = typeof s.overall === 'string' ? s.overall : null;
+    sentimentConfidence = typeof s.confidence === 'number' ? s.confidence : (typeof e.sentimentScore === 'number' ? e.sentimentScore : null);
+    if (Array.isArray(s.aspects)) {
+      sentimentAspects = s.aspects.filter(
+        (a): a is SentimentAspectSummary =>
+          Boolean(a && typeof a === 'object' && typeof (a as any).aspect === 'string' && typeof (a as any).label === 'string')
+      );
+    }
+  }
+
+  const sentimentTier = sentimentConfidence !== null ? getSentimentConfidenceTier(sentimentConfidence) : undefined;
 
   let sentimentScores: SentimentScores | null = null;
   if (e.sentimentScores && typeof e.sentimentScores === 'object') {
@@ -233,6 +282,9 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed && !geoCountry && !override) return null;
   return {
     sentiment,
+    sentimentConfidence,
+    sentimentTier,
+    sentimentAspects,
     sentimentScores,
     entities,
     namedEntities,

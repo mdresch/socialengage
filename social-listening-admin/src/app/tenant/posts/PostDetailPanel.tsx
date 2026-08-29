@@ -13,6 +13,8 @@ import {
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostRepliesTab } from './PostRepliesTab';
 import { CRMHandoffModal } from '@/components/crm/CRMHandoffModal';
+import { SentimentBadge } from '@/components/sentiment/SentimentBadge';
+import { SentimentAspectsList } from '@/components/sentiment/SentimentAspectsList';
 import type { OutboundActivity } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
@@ -95,6 +97,8 @@ export interface PostDetailPanelPost {
   bodyMarkdown: string | null;
   snippet: string | null;
   provider: string;
+  author?: string | null;
+  authorName?: string | null;
   pageName?: string | null;
   pageId?: string | null;
   watchlistId?: string | null;
@@ -317,17 +321,35 @@ export function PostDetailPanel({
             )}
           </div>
 
-          {/* Sentiment scores */}
+          {/* Sentiment scores and aspect breakdown */}
           {post.enrichmentSummary.sentiment && (
             <div className="pf-sentiment-section">
-              <div className="pf-sentiment-header">
-                <span>Sentiment: <strong>{post.enrichmentSummary.sentiment}</strong></span>
+              <div className="pf-sentiment-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="pf-detail-field-label" style={{ margin: 0 }}>Overall Sentiment</span>
+                  <SentimentBadge
+                    sentiment={post.enrichmentSummary.sentiment}
+                    confidence={post.enrichmentSummary.sentimentConfidence}
+                    tier={post.enrichmentSummary.sentimentTier}
+                  />
+                </div>
                 {post.enrichmentSummary.sentimentScores && (
                   <span className="pf-sentiment-sub">Confidence Distribution</span>
                 )}
               </div>
+
+              {/* Aspect-level sentiment breakdown */}
+              {post.enrichmentSummary.sentimentAspects && post.enrichmentSummary.sentimentAspects.length > 0 && (
+                <div style={{ marginTop: '12px', marginBottom: '12px' }}>
+                  <span className="pf-detail-field-label" style={{ fontSize: '0.8rem', color: '#4b5563', marginBottom: '6px', display: 'block' }}>
+                    Aspect-Level Sentiment Breakdown
+                  </span>
+                  <SentimentAspectsList aspects={post.enrichmentSummary.sentimentAspects} />
+                </div>
+              )}
+
               {post.enrichmentSummary.sentimentScores && (
-                <div className="pf-sentiment-bars">
+                <div className="pf-sentiment-bars" style={{ marginTop: '8px' }}>
                   {(['positive', 'neutral', 'negative'] as const).map((key) => {
                     const score = post.enrichmentSummary!.sentimentScores![key];
                     const pct = (score * 100).toFixed(0);
@@ -615,8 +637,8 @@ export function PostDetailPanel({
       isOpen={isCrmOpen}
       onClose={() => setIsCrmOpen(false)}
       postId={post.id}
-      authorName={post.authorName}
-      postExcerpt={post.snippet || post.bodyMarkdown}
+      authorName={post.authorName || post.author || undefined}
+      postExcerpt={(post.snippet || post.bodyMarkdown) ?? undefined}
     />
   </div>
   );
