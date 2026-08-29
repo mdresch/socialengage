@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.10 — social-listening-admin@d221cd6
+## 2026-08-29 — Story 12.11 — social-listening-core@90fe8f5
 
-- **Full commit:** `d221cd6` (see git log)
+- **Full commit:** `90fe8f5` (see git log)
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.11 / ADR-0106
+- **Contract:** contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts
+- **SKILL.md:** .claude/skills/public-api-and-webhooks/SKILL.md
+- **Files touched:** src/http/rateLimitMiddleware.ts, src/webhooks/webhookDispatcher.ts, src/http/versions/v1/webhooksRouter.ts, src/http/app.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (10/10); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.10 — social-listening-admin@ffc5294
+
+- **Full commit:** `ffc5294` (see git log)
 - **Repo:** social-listening-admin
 - **Story / ADR:** 12.10 / ADR-0105
 - **Contract:** contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts
