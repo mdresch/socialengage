@@ -61,6 +61,20 @@ describe('Story 10.13 — YouTube Connector Contract', () => {
     expect(updatedStatus.body.quotaUsedToday).toBeGreaterThanOrEqual(100);
   });
 
+  it('AC4: Connect YouTube via API key credential payload and verify activation', async () => {
+    const tenant = await createTenantFixture(`T-10.13-yt-key-${randomUUID()}`);
+    const admin = await createInvitedUser(tenant.id, { email: `admin-${randomUUID()}@example.com` });
+
+    const res = await request(app)
+      .post('/v1/connectors/youtube/connect')
+      .set('X-Test-Identity', testIdentityHeaderValue(tenant.id, { userId: admin.id, role: 'tenant_admin' }))
+      .send({ credential: 'AIzaSyFakeYouTubeApiKey12345', ownerType: 'tenant' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.platformId).toBe('youtube');
+    expect(res.body.status).toBe('connected');
+  });
+
   it('AC3: SocialConnector interface compliance (normalize, rate limits, count preview)', async () => {
     const { getSocialConnector } = await import('../../src/connectors/registry');
     const { bootstrapConnectors } = await import('../../src/connectors/bootstrapConnectors');
