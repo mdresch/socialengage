@@ -104,7 +104,29 @@ export function OutboundComposerModal({ isOpen, onClose, onPostCreated }: Outbou
     }
   };
 
+  const [capabilitiesMap, setCapabilitiesMap] = useState<Record<string, boolean>>({
+    linkedin: true,
+    facebook: true,
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/connectors/capabilities')
+      .then((res) => (res.ok ? res.json() : { connectors: [] }))
+      .then((data) => {
+        if (Array.isArray(data.connectors)) {
+          const map: Record<string, boolean> = {};
+          data.connectors.forEach((c: any) => {
+            map[c.platformId] = Boolean(c.capabilities?.publish);
+          });
+          setCapabilitiesMap((prev) => ({ ...prev, ...map }));
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
+
   const handleTogglePlatform = (platformId: string) => {
+    if (capabilitiesMap[platformId] === false) return;
     setSelectedPlatforms((prev) => {
       const next = prev.includes(platformId) ? prev.filter((p) => p !== platformId) : [...prev, platformId];
       if (!prev.includes(platformId)) {

@@ -2853,6 +2853,35 @@ export async function getMentionSuggestions(
   return Array.isArray(payload.suggestions) ? payload.suggestions : [];
 }
 
+export interface SocialConnectorCapabilities {
+  sourceType: 'social' | 'news' | 'forum' | 'review' | 'broadcast' | 'blog' | 'wiki';
+  poll: boolean | { cadenceMs: number; supportsTimeWindow: boolean };
+  count?: { supportsExactCount: boolean };
+  publish?: { supportsScheduling: boolean; supportedAssetTypes: string[] };
+  reply?: boolean;
+  backfill?: { supportsHistorical: boolean; maxLookbackDays: number };
+}
+
+export interface ConnectorCapabilitySummary {
+  platformId: string;
+  name: string;
+  authMode: 'oauth' | 'api_key' | 'none';
+  capabilities: SocialConnectorCapabilities;
+}
+
+/**
+ * Story 12.1 / 12.2 (ADR-0101) — gets dynamic capability matrix for all connectors.
+ */
+export async function getConnectorCapabilities(): Promise<{ connectors: ConnectorCapabilitySummary[] }> {
+  const response = await authenticatedCoreFetch('/v1/connectors/capabilities', { method: 'GET' });
+  if (!response.ok) {
+    return { connectors: [] };
+  }
+  const payload = (await response.json()) as { connectors?: ConnectorCapabilitySummary[] };
+  return { connectors: Array.isArray(payload.connectors) ? payload.connectors : [] };
+}
+
+
 
 
 

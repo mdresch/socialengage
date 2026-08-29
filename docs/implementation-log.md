@@ -3790,4 +3790,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Exposed authenticated endpoint `GET /v1/connectors/capabilities` returning registered connector definitions and capability matrix.
   - Enriched `GET /v1/connectors/:platformId/health` response with `capabilities` and `platformId`.
 
+---
+
+## 2026-08-29 — Story 12.2 — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.2 / ADR-0101, BRD-0101, FDD-0101
+- **Contract (frontend):** social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts (4/4 passing)
+- **SKILL.md:** social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md (new)
+- **Files touched (frontend):**
+  - `social-listening-admin/src/lib/core-client.ts` (extended — `SocialConnectorCapabilities`, `ConnectorCapabilitySummary`, and `getConnectorCapabilities()`)
+  - `social-listening-admin/src/app/api/connectors/capabilities/route.ts` (new — BFF proxy route for capability matrix)
+  - `social-listening-admin/src/components/connectors/ConnectorCapabilityBadges.tsx` (new — badges UI for `poll`, `publish`, `reply`, `count`, `backfill`)
+  - `social-listening-admin/src/components/composer/OutboundComposerModal.tsx` (extended — capability gating for target network selection)
+  - `social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts` (new — 4/4 passing)
+  - `social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md` (new)
+  - `docs/user-stories/epic-12-adr-0101-to-0108.md` (marked Story 12.2 Built)
+- **Suite at merge:** PASS (4/4 tests in story-12.2 contract, 71/71 admin suites passing, 883/883 tests)
+- **Key Implementation Details:**
+  - Extended core-client with `getConnectorCapabilities` and TypeScript definitions for connector capabilities.
+  - Implemented Next.js BFF proxy `GET /api/connectors/capabilities` communicating with Core API.
+  - Implemented `ConnectorCapabilityBadges` component rendering visual capability chips with status indicators.
+  - Integrated dynamic capability check in `OutboundComposerModal` to ensure only publish-capable platforms can be targeted.
+
+
 
