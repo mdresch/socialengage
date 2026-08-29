@@ -30,18 +30,23 @@ export function extractUrl(rawPayload: unknown): string | null {
     if (typeof p.permalink_url === 'string') return p.permalink_url;
     if (typeof p.permalink === 'string') return p.permalink;
     if (typeof p.postUrl === 'string') return p.postUrl;
+    if (typeof p.videoId === 'string' && p.videoId.length > 0) {
+      return `https://www.youtube.com/watch?v=${encodeURIComponent(p.videoId)}`;
+    }
   }
   return null;
 }
 
 /**
- * Extracts `author` (or `source.name` / `username`) from rawPayload, best-effort.
+ * Extracts `author` (or `source.name` / `username` / `channelTitle`) from rawPayload, best-effort.
  */
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
     if (typeof p.author === 'string' && p.author !== 'Facebook Page') return p.author;
     if (typeof p.authorName === 'string' && p.authorName !== 'Facebook Page') return p.authorName;
+    if (typeof p.authorDisplayName === 'string') return p.authorDisplayName;
+    if (typeof p.channelTitle === 'string') return p.channelTitle;
     if (p.from && typeof p.from === 'object') {
       const from = p.from as Record<string, unknown>;
       if (typeof from.name === 'string' && from.name !== 'Facebook Page') return from.name;
@@ -60,13 +65,22 @@ export function extractAuthor(rawPayload: unknown): string | null {
 
 /**
  * `rawPayload` is heterogeneous per connector (GNews: title+description;
- * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary).
+ * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary; YouTube: title/description or text/comment).
  */
 export function extractDisplayText(rawPayload: unknown): DisplayText {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    if (typeof p.title === 'string') {
+    if (typeof p.title === 'string' && p.title.length > 0) {
       return { title: p.title, snippet: typeof p.description === 'string' ? p.description : null };
+    }
+    if (typeof p.text === 'string' && p.text.length > 0) {
+      return { title: p.text, snippet: typeof p.description === 'string' ? p.description : null };
+    }
+    if (typeof p.textDisplay === 'string' && p.textDisplay.length > 0) {
+      return { title: p.textDisplay, snippet: null };
+    }
+    if (typeof p.textOriginal === 'string' && p.textOriginal.length > 0) {
+      return { title: p.textOriginal, snippet: null };
     }
     if (typeof p.commentary === 'string' && p.commentary.length > 0) {
       return { title: p.commentary, snippet: null };

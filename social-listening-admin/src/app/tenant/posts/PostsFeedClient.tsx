@@ -83,6 +83,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   'bing-search': 'Bing Search',
   instagram: 'Instagram Business',
   linkedin: 'LinkedIn',
+  youtube: 'YouTube',
 };
 
 function providerLabel(providerId: string): string {
