@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-29 | 21:57 | — | — | Documentation | Story 12.14 | feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend) (f6df74c) |
+| 2026-08-29 | 21:55 | — | — | Documentation | Story 12.13 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) (da86059) |
 | 2026-08-29 | 21:35 | — | — | Documentation | Story 12.13 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) (a81742a) |
 | 2026-08-29 | 20:26 | — | — | Infrastructure | Story 12.12 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) (95c8a97) |
 | 2026-08-29 | 20:25 | — | — | Infrastructure | Story 12.12 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) (f1a2b93) |

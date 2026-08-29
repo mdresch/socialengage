@@ -3556,3 +3556,15 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
 - **Status:** Pending review
 
+## 2026-08-29 — da86059 — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)
+
+- **Full commit:** `da86059e1db111b27c6d3a3e88531bb044e1614b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — f6df74c — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+
+- **Full commit:** `f6df74c811da6410acf70fd5ad68330a81d96d9b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
+- **Status:** Pending review
+

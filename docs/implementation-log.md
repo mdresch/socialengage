@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.13 — social-listening-core@a81742a
+## 2026-08-29 — Story 12.14 — social-listening-admin@f6df74c
 
-- **Full commit:** `a81742a` (see git log)
+- **Full commit:** `f6df74c` (see git log)
+- **Repo:** social-listening-admin
+- **Story / ADR:** 12.14 / ADR-0107
+- **Contract:** contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts
+- **SKILL.md:** .claude/skills/workspace-settings-ui/SKILL.md
+- **Files touched:** src/components/settings/WorkspaceSettingsView.tsx
+- **Full suite at merge:** Epic-12 suite at merge: PASS (5/5); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.13 — social-listening-core@da86059
+
+- **Full commit:** `da86059` (see git log)
 - **Repo:** social-listening-core
 - **Story / ADR:** 12.13 / ADR-0107
 - **Contract:** contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts
