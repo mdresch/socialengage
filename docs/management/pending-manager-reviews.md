@@ -3568,3 +3568,21 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
 - **Status:** Pending review
 
+## 2026-08-29 — 0ac8cd4 — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+
+- **Full commit:** `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
+- **Status:** Pending review
+
+## 2026-08-30 — fa3a218 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+
+- **Full commit:** `fa3a21882d542859c170196be3d9bc9a5e700d7b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-30 — 3e5ff0a — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+
+- **Full commit:** `3e5ff0abf9e48a233e4f8b0ba08bb26022403578`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+

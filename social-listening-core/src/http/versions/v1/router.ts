@@ -39,6 +39,7 @@ import { mentionSuggestionsRouter } from './mentionSuggestionsRouter';
 import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 import { createPublishingRoutes } from '../../routes/publishingRoutes';
+import { influencersRouter } from './influencersRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -223,6 +224,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 11.11 (ADR-0100) — composed post author mention suggestions. */
   v1Router.use('/composer', authMiddleware, mentionSuggestionsRouter);
+
+  /** Story 12.15 (ADR-0108) — influencer discovery and multi-factor scoring. */
+  v1Router.use('/influencers', authMiddleware, influencersRouter);
 
   return v1Router;
 }

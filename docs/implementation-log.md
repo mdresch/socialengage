@@ -38,9 +38,21 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
-## 2026-08-29 — Story 12.14 — social-listening-admin@f6df74c
+## 2026-08-29 — Story 12.15 — social-listening-core@pending
 
-- **Full commit:** `f6df74c` (see git log)
+- **Full commit:** `pending — to be recorded after git push`
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.15 / ADR-0108
+- **Contract:** contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts
+- **SKILL.md:** .claude/skills/influencer-discovery-and-scoring/SKILL.md
+- **Files touched:** migrations/0063_add_author_scoring_columns.sql, src/authors/influencerService.ts, src/http/versions/v1/influencersRouter.ts, src/http/versions/v1/router.ts
+- **Full suite at merge:** Epic-12 suite at merge: PASS (7/7); full suite deferred to CI on push
+
+---
+
+## 2026-08-29 — Story 12.14 — social-listening-admin@0ac8cd4
+
+- **Full commit:** `0ac8cd4` (see git log)
 - **Repo:** social-listening-admin
 - **Story / ADR:** 12.14 / ADR-0107
 - **Contract:** contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts
