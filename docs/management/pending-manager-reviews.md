@@ -3710,3 +3710,9 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
+## 2026-08-31 — 7dac132 — Merge remote-tracking branch 'origin/main' into main
+
+- **Full commit:** `7dac1322b6f72938ad06e8d0ebf2eb86c20b17a2`
+- **Files touched:** 
+- **Status:** Pending review
+
