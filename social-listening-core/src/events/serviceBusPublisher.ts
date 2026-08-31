@@ -9,7 +9,7 @@ export const TOPIC_NAME = 'social-listening-events';
  * keyVaultProvider.ts.
  */
 export function namespaceHost(): string {
-  return process.env.SERVICE_BUS_NAMESPACE ?? 'social-listening-dev.servicebus.windows.net';
+  return process.env.SERVICE_BUS_NAMESPACE ?? 'sociallistening-bus.servicebus.windows.net';
 }
 
 export interface PublishEventOptions {

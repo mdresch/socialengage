@@ -273,7 +273,9 @@ describe('Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health D
       const platformId = `plat-failing-precedence-${randomUUID()}`;
       await setConnectorActivation(tenantId, platformId, 'tenant', true);
 
-      // Create 20 consecutive non-retryable failures
+      // Create 20 consecutive retryable failures. Under ADR-0109 (Story 13.1)
+      // the `failing` threshold is 5 consecutive failed runs of any kind, and
+      // a non-retryable latest run would take precedence as `disabled`.
       for (let i = 0; i < 20; i++) {
         const { id } = await startIngestionRun(tenantId, {
           platformId,
@@ -282,7 +284,7 @@ describe('Story 1.16 — Ingestion Run Watchdog Reconciliation, Stalled Health D
         });
         await withTenant(tenantId, async (client) => {
           await client.query(
-            `UPDATE ingestion_runs SET status = 'failed', retryable = false, completed_at = NOW() - INTERVAL '2 hours', started_at = NOW() - INTERVAL '2 hours', error_summary = 'HTTP 500' WHERE id = $1`,
+            `UPDATE ingestion_runs SET status = 'failed', retryable = true, completed_at = NOW() - INTERVAL '2 hours', started_at = NOW() - INTERVAL '2 hours', error_summary = 'HTTP 500' WHERE id = $1`,
             [id]
           );
         });

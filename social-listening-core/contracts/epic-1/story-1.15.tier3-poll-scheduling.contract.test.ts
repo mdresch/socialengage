@@ -239,8 +239,11 @@ describe('Story 1.15 — Tier-3 poll scheduling', () => {
       await setConnectorActivation(tenantId, platformId, 'user', true, userA, userA);
       await setConnectorActivation(tenantId, platformId, 'user', true, userB, userB);
 
-      // Drive user A's own health to 'failing' via 20 consecutive non-retryable failures.
-      for (let i = 0; i < 20; i++) {
+      // Drive user A's own health to a blocked state via non-retryable failures.
+      // 2026-08-31 (supersession note, ADR-0109): a non-retryable failure now
+      // immediately disables the connector (`disabled`), rather than accumulating
+      // to `failing`. The per-user isolation assertion below is unchanged.
+      for (let i = 0; i < 5; i++) {
         const run = await startIngestionRun(tenantId, { platformId, triggerType: 'poll', connectorVersion: '1.0.0', userId: userA });
         await completeIngestionRun(tenantId, run.id, { status: 'failed', postsIngested: 0, postsSkipped: 0, retryable: false });
       }
@@ -249,7 +252,7 @@ describe('Story 1.15 — Tier-3 poll scheduling', () => {
       await completeIngestionRun(tenantId, runB.id, { status: 'succeeded', postsIngested: 1, postsSkipped: 0 });
 
       const healthA = await deriveConnectorHealth(tenantId, platformId, undefined, userA);
-      expect(healthA.status).toBe('failing');
+      expect(healthA.status).toBe('disabled');
 
       const allowedForB = await shouldAttemptIngestion(tenantId, platformId, 'user', userB);
       expect(allowedForB).toBe(true);

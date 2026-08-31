@@ -5,7 +5,7 @@ import { DefaultAzureCredential } from '@azure/identity';
 const WRAP_ALGORITHM = 'RSA-OAEP-256';
 
 function vaultUrl(): string {
-  return process.env.KEY_VAULT_URI ?? 'https://social-listening-dev-kv.vault.azure.net/';
+  return process.env.KEY_VAULT_URI ?? 'https://sociallistening-kv.vault.azure.net/';
 }
 
 /**

@@ -97,6 +97,18 @@ healthy -> degraded -> failing -> disabled
 
 ---
 
+## Acceptance / Implementation note
+
+**Accepted 2026-08-28; implemented 2026-08-31 (Story 13.1).** The implementation in `src/connectors/connectorHealth.ts`, `src/http/versions/v1/connectorsRouter.ts`, `src/ingestion/runIngestionAttempt.ts`, `src/ingestion/ingestionRunStore.ts`, and `src/events/connectorIngestionAlertEvent.ts`:
+- adds `disabled` to `ConnectorHealthStatus`;
+- lowers the absolute consecutive-failure ceiling to 5 failed `ingestion_runs`;
+- immediately derives `disabled` on any non-retryable failed run (`reconnect_required` remains the credential-class 401/403 variant, also a blocked state);
+- removes the half-open probe for `failing` and requires manual `POST /v1/connectors/:platformId/enable`;
+- makes `POST /v1/connectors/:platformId/enable` perform a single health-check `ingestion_runs` attempt that, on success, returns the connector to `healthy`, and on failure resets the failure streak to 1 and leaves it `failing`;
+- adds `connector_disabled` to `ConnectorIngestionAlertEvent` and emits it on `failing` → `disabled`/`reconnect_required` transitions.
+
+This supersedes ADR-0023's 20-consecutive-failure ceiling and the 2026-08-17 half-open probe for `failing`; see ADR-0023's own Supersession update (2026-08-31) and the affected contracts' dated notes.
+
 ## Footnotes
 
 - Related feature design: `docs/product-research/feature-designs/01-multi-source-ingestion.md`
