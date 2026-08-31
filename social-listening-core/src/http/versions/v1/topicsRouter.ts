@@ -1,4 +1,6 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
+import { RequestWithIdentity } from '../../auth/requestIdentity';
+import { requireTenantUser } from '../../auth/requireTenantUser';
 import {
   listTopics,
   getTopicById,
@@ -11,22 +13,23 @@ import { getTopicEvolution } from '../../../topics/topicEvolutionService';
 
 export const topicsRouter = Router();
 
-function getTenantId(req: Request): string {
-  const tenantId = req.headers['x-tenant-id'] as string;
-  if (!tenantId) {
-    throw new Error('x-tenant-id header is required');
-  }
-  return tenantId;
-}
 
 /**
  * Story 11.5 (ADR-0097) — GET /v1/topics/evolution
  * Topic evolution time series. Mounted BEFORE :id / :topic parameter routes.
  */
-topicsRouter.get('/evolution', async (req: Request, res: Response) => {
+topicsRouter.get('/evolution', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
-    const { topic, topicId, topicName, start, end, granularity, compareToPrevious } = req.query;
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
+
+    const rawGranularity = req.query.granularity as string | undefined;
+    if (rawGranularity && !['day', 'week', 'month'].includes(rawGranularity)) {
+      return res.status(400).json({ error: 'granularity must be one of day, week, month' });
+    }
+
+    const { topic, topicId, topicName, start, end, compareToPrevious } = req.query;
+    const granularity = rawGranularity as 'day' | 'week' | 'month' | undefined;
 
     const result = await getTopicEvolution(tenantId, {
       topic: topic as string | undefined,
@@ -34,7 +37,7 @@ topicsRouter.get('/evolution', async (req: Request, res: Response) => {
       topicName: topicName as string | undefined,
       start: start as string | undefined,
       end: end as string | undefined,
-      granularity: granularity as 'day' | 'week' | 'month' | undefined,
+      granularity,
       compareToPrevious: compareToPrevious === 'true',
     });
 
@@ -49,9 +52,10 @@ topicsRouter.get('/evolution', async (req: Request, res: Response) => {
  * Story 12.7 (ADR-0104 §4) — GET /v1/topics
  * Lists active or all topics for the tenant.
  */
-topicsRouter.get('/', async (req: Request, res: Response) => {
+topicsRouter.get('/', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const status = req.query.status as 'active' | 'merged' | 'hidden' | 'all' | undefined;
     const search = req.query.search as string | undefined;
 
@@ -66,7 +70,7 @@ topicsRouter.get('/', async (req: Request, res: Response) => {
 /**
  * Story 4.1 (ADR-0007) — GET /v1/topics/:topic/authors
  */
-topicsRouter.get('/:topic/authors', async (req: Request, res: Response) => {
+topicsRouter.get('/:topic/authors', async (req: RequestWithIdentity, res: Response) => {
   const topic = req.params.topic as string;
   const sortBy = (req.query.sortBy as string) ?? 'mentionCount';
 
@@ -75,7 +79,8 @@ topicsRouter.get('/:topic/authors', async (req: Request, res: Response) => {
   }
 
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const authors = await getAuthorTopicSignals(tenantId, topic, sortBy as AuthorTopicSortBy);
     res.json({ topic, authors });
   } catch (err: any) {
@@ -87,9 +92,10 @@ topicsRouter.get('/:topic/authors', async (req: Request, res: Response) => {
 /**
  * Story 12.7 (ADR-0104 §4) — GET /v1/topics/:id
  */
-topicsRouter.get('/:id', async (req: Request, res: Response) => {
+topicsRouter.get('/:id', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const id = req.params.id as string;
     const topic = await getTopicById(tenantId, id);
     if (!topic) {
@@ -105,9 +111,10 @@ topicsRouter.get('/:id', async (req: Request, res: Response) => {
 /**
  * Story 12.7 (ADR-0104 §4) — POST /v1/topics/:id/rename
  */
-topicsRouter.post('/:id/rename', async (req: Request, res: Response) => {
+topicsRouter.post('/:id/rename', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const id = req.params.id as string;
     const { name } = req.body ?? {};
 
@@ -126,9 +133,10 @@ topicsRouter.post('/:id/rename', async (req: Request, res: Response) => {
 /**
  * Story 12.7 (ADR-0104 §4) — POST /v1/topics/:id/merge
  */
-topicsRouter.post('/:id/merge', async (req: Request, res: Response) => {
+topicsRouter.post('/:id/merge', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const id = req.params.id as string;
     const { targetTopicId } = req.body ?? {};
 
@@ -147,9 +155,10 @@ topicsRouter.post('/:id/merge', async (req: Request, res: Response) => {
 /**
  * Story 12.7 (ADR-0104 §4) — POST /v1/topics/:id/hide
  */
-topicsRouter.post('/:id/hide', async (req: Request, res: Response) => {
+topicsRouter.post('/:id/hide', async (req: RequestWithIdentity, res: Response) => {
   try {
-    const tenantId = getTenantId(req);
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
     const id = req.params.id as string;
     const topic = await hideTopic(tenantId, id);
     res.status(200).json({ topic });
