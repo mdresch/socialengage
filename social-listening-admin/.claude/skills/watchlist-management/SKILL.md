@@ -27,5 +27,9 @@ Confirmed directly: `src/app/tenant/watchlists/page.tsx` rendered a hardcoded lo
 - `updateWatchlist(id, patch, expectedVersion)` sends `patch` **verbatim** — building the only-the-changed-fields object is always the caller's job (`WatchlistForm.tsx`'s `buildEditPatch()`, or `WatchlistRow.tsx`'s own inline `{isActive: ...}` literal), never this function's.
 - A `204 No Content` (successful delete) has no JSON body — `deleteWatchlist()` must not call `response.json()` on it.
 
+## Cross-component behavior
+- Story 13.3 adds connector-aware warnings to `WatchlistForm` via `BooleanQueryBuilder` (see `.claude/skills/watchlist-builder/SKILL.md` and `.claude/skills/boolean-query-visual-builder/SKILL.md`). `WatchlistForm` disables the save button when the builder reports `hasErrors` (query-limit violations), not for unsupported-clause warnings.
+
 ## Contracts
 - `contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts` (rewritten 2026-08-12 — real behavioral assertions: mocked-fetch core-client unit tests, Route Handler proxy tests, and structural source checks, per the same node-testEnvironment split Stories 6.3/6.8 already established; no jsdom in this repo).
+- `contracts/epic-13/story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` — query-capability warnings and save gating in `WatchlistForm`.

@@ -36,14 +36,141 @@ export interface ConnectorQueryCapabilities {
   platformId: string;
   supportedClauses: ClauseType[];
   supportedOperators: Array<'AND' | 'OR' | 'NOT'>;
+  /** Legacy top-level limits (kept for Story 12.4 compatibility). */
   maxLength?: number;
   maxClauses?: number;
+  /** Normalized `limits` object returned by `GET /v1/connectors/:platformId/query-capabilities`. */
+  limits?: {
+    maxLength?: number;
+    maxClauses?: number;
+  };
 }
 
 export interface AstWarning {
   platformId: string;
   clause: WatchlistClause;
   message: string;
+}
+
+export interface AstError {
+  platformId: string;
+  code: 'TOO_MANY_CLAUSES' | 'QUERY_TOO_LONG';
+  message: string;
+}
+
+function clauseCountLimit(caps: ConnectorQueryCapabilities): number | undefined {
+  return caps.maxClauses ?? caps.limits?.maxClauses;
+}
+
+function queryLengthLimit(caps: ConnectorQueryCapabilities): number | undefined {
+  return caps.maxLength ?? caps.limits?.maxLength;
+}
+
+/**
+ * Counts every clause node in an AST, including nested children.
+ */
+export function countClauses(ast: WatchlistAST): number {
+  let count = 0;
+  function walk(clauses: WatchlistClause[]) {
+    for (const clause of clauses) {
+      count++;
+      if (clause.type === 'nested') {
+        walk(clause.clauses);
+      }
+    }
+  }
+  walk(ast.clauses);
+  return count;
+}
+
+/**
+ * Returns a map of clause path -> per-platform warnings.
+ * Paths are: 'root.operator', 'root.clauses.0', 'root.clauses.0.clauses.1', ...
+ */
+export function getWarningsByClausePath(
+  ast: WatchlistAST,
+  capabilitiesList: ConnectorQueryCapabilities[]
+): Record<string, AstWarning[]> {
+  const map: Record<string, AstWarning[]> = {};
+
+  function add(path: string, warning: AstWarning) {
+    const list = (map[path] ??= []);
+    list.push(warning);
+  }
+
+  for (const caps of capabilitiesList) {
+    if (!caps.supportedOperators.includes(ast.operator)) {
+      add('root.operator', {
+        platformId: caps.platformId,
+        clause: { type: 'keyword', value: '' },
+        message: `Platform '${caps.platformId}' does not support root operator '${ast.operator}'. This clause will run as fallback matching.`,
+      });
+    }
+  }
+
+  function walk(clauses: WatchlistClause[], pathPrefix: string) {
+    clauses.forEach((clause, index) => {
+      const path = `${pathPrefix}.clauses.${index}`;
+      for (const caps of capabilitiesList) {
+        if (!caps.supportedClauses.includes(clause.type)) {
+          add(path, {
+            platformId: caps.platformId,
+            clause,
+            message: `Platform '${caps.platformId}' does not support clause type '${clause.type}'. This clause will run as fallback matching.`,
+          });
+        }
+
+        if (clause.type === 'nested') {
+          if (!caps.supportedOperators.includes(clause.operator)) {
+            add(path, {
+              platformId: caps.platformId,
+              clause,
+              message: `Platform '${caps.platformId}' does not support operator '${clause.operator}' in nested group. This clause will run as fallback matching.`,
+            });
+          }
+          walk(clause.clauses, path);
+        }
+      }
+    });
+  }
+
+  walk(ast.clauses, 'root');
+  return map;
+}
+
+/**
+ * Validates an AST against connector query-length and clause-count limits.
+ * Returns errors that should block saving (actual 422-style errors).
+ */
+export function validateAstQueryLimits(
+  ast: WatchlistAST,
+  capabilitiesList: ConnectorQueryCapabilities[]
+): AstError[] {
+  const errors: AstError[] = [];
+  const totalClauses = countClauses(ast);
+  const query = astToBooleanQuery(ast);
+
+  for (const caps of capabilitiesList) {
+    const maxClauses = clauseCountLimit(caps);
+    if (typeof maxClauses === 'number' && totalClauses > maxClauses) {
+      errors.push({
+        platformId: caps.platformId,
+        code: 'TOO_MANY_CLAUSES',
+        message: `Platform '${caps.platformId}' supports at most ${maxClauses} clauses (got ${totalClauses}).`,
+      });
+    }
+
+    const maxLength = queryLengthLimit(caps);
+    if (typeof maxLength === 'number' && query.length > maxLength) {
+      errors.push({
+        platformId: caps.platformId,
+        code: 'QUERY_TOO_LONG',
+        message: `Platform '${caps.platformId}' query must not exceed ${maxLength} characters (got ${query.length}).`,
+      });
+    }
+  }
+
+  return errors;
 }
 
 /**
