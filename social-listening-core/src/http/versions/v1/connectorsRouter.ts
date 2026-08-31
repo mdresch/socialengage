@@ -16,12 +16,16 @@ import {
   getConnectorCapabilities,
   listConnectorCapabilities,
 } from '../../../connectors/registry';
+import { withTenant } from '../../../db/withTenant';
 import {
   reconcileStaleIngestionRuns,
   getMostRecentRunStatus,
   getMostRecentRunStatusForUser,
 } from '../../../ingestion/ingestionRunStore';
-import { deriveConnectorHealth } from '../../../connectors/connectorHealth';
+import { deriveConnectorHealth, runConnectorHealthCheck, ConnectorHealthStatus } from '../../../connectors/connectorHealth';
+import { logPlatformAdminAction } from '../../../admin/platformAdminAuditLog';
+import { getResolvedIdentity } from '../../auth/requireTenantUser';
+import { ResolvedIdentity } from '../../../identity/identityResolution';
 import { getPlatformTargets } from '../../../publishing/outboundPublishingService';
 import { getConnectorQueryCapabilities } from '../../../connectors/queryCapabilities';
 
@@ -436,6 +440,149 @@ connectorsRouter.post(['/:platformId/retry', '/:platformId/users/:userId/retry']
       details: err instanceof Error ? err.message : String(err),
     });
   }
+});
+
+/**
+ * POST /v1/connectors/:platformId/enable (Story 13.1, ADR-0109) — manual
+ * re-enable of a `failing`/`disabled`/`reconnect_required` connector with a
+ * health-check attempt. Authorization: tenant_admin, platform_admin, or the
+ * owning Tier-3 user. Success -> `healthy`; failure -> `failing` with the
+ * consecutive-failure counter reset to 1. Every call is recorded in
+ * `platform_admin_audit_log`.
+ */
+connectorsRouter.post('/:platformId/enable', async (req, res) => {
+  const resolvedIdentity = getResolvedIdentity(req as any);
+
+  let tenantId: string;
+  let actorIdentity: string;
+  let isPlatformAdmin = false;
+
+  if (resolvedIdentity.type === 'tenant_user') {
+    tenantId = resolvedIdentity.tenantId;
+    actorIdentity = `${resolvedIdentity.role}:${resolvedIdentity.userId}`;
+  } else if (resolvedIdentity.type === 'platform_admin') {
+    const suppliedTenantId = req.body.tenantId;
+    if (!suppliedTenantId || typeof suppliedTenantId !== 'string') {
+      res.status(400).json({ error: 'tenantId (string) is required for Platform Admin re-enable.' });
+      return;
+    }
+    tenantId = suppliedTenantId;
+    actorIdentity = `platform_admin:${resolvedIdentity.adminId}`;
+    isPlatformAdmin = true;
+  } else {
+    res.status(403).json({ error: 'This route requires a tenant user or Platform Admin identity.' });
+    return;
+  }
+
+  const platformId = Array.isArray(req.params.platformId) ? req.params.platformId[0] : req.params.platformId;
+  const ownerType = (parseOwnerType(req.body.ownerType) as ConnectorActivationOwnerType) ?? 'tenant';
+  const suppliedUserId = typeof req.body.userId === 'string' ? req.body.userId : undefined;
+
+  const isTenantWide = ownerType === 'tenant';
+  let targetUserId: string | undefined;
+  if (!isTenantWide) {
+    if (suppliedUserId) {
+      targetUserId = suppliedUserId;
+    } else if (resolvedIdentity.type === 'tenant_user') {
+      targetUserId = resolvedIdentity.userId;
+    } else {
+      res.status(400).json({ error: 'userId is required for Platform Admin to re-enable a user-bound connector.' });
+      return;
+    }
+  }
+
+  // Authorization
+  if (resolvedIdentity.type === 'tenant_user') {
+    if (ownerType === 'tenant' && resolvedIdentity.role !== 'tenant_admin') {
+      res.status(403).json({ error: 'Only a tenant_admin may re-enable a tenant-wide connector.' });
+      return;
+    }
+    if (ownerType === 'user' && resolvedIdentity.role !== 'tenant_admin' && targetUserId !== resolvedIdentity.userId) {
+      res.status(403).json({ error: 'Only the owning user or a tenant_admin may re-enable a user-bound connector.' });
+      return;
+    }
+  }
+
+  // Guardrails: the connector must exist.
+  const connector = getSocialConnector(platformId);
+  if (!connector) {
+    res.status(404).json({ error: `Connector '${platformId}' is not registered.` });
+    return;
+  }
+
+  // Only blocked states may be re-enabled — checked before capability guards so
+  // an already-healthy connector returns 409 regardless of whether it exposes
+  // a poll/healthCheck method in the current test fixture.
+  const currentHealth = await deriveConnectorHealth(
+    tenantId,
+    platformId,
+    undefined,
+    isTenantWide ? undefined : targetUserId
+  );
+  const reEnableable: ConnectorHealthStatus[] = ['failing', 'disabled', 'reconnect_required'];
+  if (!reEnableable.includes(currentHealth.status)) {
+    res.status(409).json({
+      error: `Connector is ${currentHealth.status}; re-enable only applies to failing, disabled, or reconnect_required.`,
+    });
+    return;
+  }
+
+  if (!connector.poll && !connector.pollUser && !connector.healthCheck) {
+    res.status(400).json({ error: `Connector '${platformId}' does not support health checks.` });
+    return;
+  }
+  if (ownerType === 'user' && !connector.pollUser && !connector.healthCheck) {
+    res.status(400).json({ error: `Connector '${platformId}' does not support user-bound health checks.` });
+    return;
+  }
+
+  // No concurrent health check
+  await reconcileStaleIngestionRuns();
+  const currentStatus = isTenantWide
+    ? await getMostRecentRunStatus(tenantId, platformId)
+    : await getMostRecentRunStatusForUser(tenantId, platformId, targetUserId!);
+  if (currentStatus === 'running') {
+    res.status(409).json({ error: 'Ingestion run already in progress.' });
+    return;
+  }
+
+  try {
+    await runConnectorHealthCheck({
+      tenantId,
+      platformId,
+      userId: isTenantWide ? undefined : targetUserId,
+    });
+  } catch (err) {
+    // runConnectorHealthCheck already records the failed health_check run;
+    // derive the resulting health below and return it.
+  }
+
+  const newHealth = await deriveConnectorHealth(
+    tenantId,
+    platformId,
+    undefined,
+    isTenantWide ? undefined : targetUserId
+  );
+
+  await withTenant(tenantId, async (client) => {
+    await logPlatformAdminAction(
+      {
+        actorIdentity,
+        operation: 'connector_enable',
+        targetTenantId: tenantId,
+        detail: {
+          platformId,
+          ownerType,
+          userId: targetUserId,
+          previousStatus: currentHealth.status,
+          newStatus: newHealth.status,
+        },
+      },
+      client
+    );
+  });
+
+  res.status(200).json({ platformId, health: newHealth });
 });
 
 /**

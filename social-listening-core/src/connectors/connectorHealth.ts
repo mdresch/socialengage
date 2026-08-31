@@ -1,15 +1,22 @@
 import { withTenant } from '../db/withTenant';
 import { isConnectorActive, ConnectorActivationOwnerType } from './connectorActivationStore';
+import {
+  startIngestionRun,
+  completeIngestionRun,
+  updateIngestionRunTriggerType,
+  TriggerType,
+} from '../ingestion/ingestionRunStore';
+import { ClassifiableError, isCredentialError, isRetryable } from '../ingestion/errorClassification';
+import { RunIngestionAttemptResult } from '../ingestion/runIngestionAttempt';
+import { getSocialConnector } from './registry';
 
 /**
  * Story 2.15 (ADR-0059 Decision §4) added 'reconnect_required' — a
  * credential-class failure (password change, admin removal, grant
  * revocation — anything Meta returns as a 401/403 for) on the most recent
- * run. Distinct from 'failing': a rate-limit/network blip is something the
- * connector will recover from on its own; a revoked OAuth grant will not,
- * no matter how many times it's retried, and needs the connecting
- * individual to actually reconnect (ADR-0059 Decision §4's own named silent-
- * failure problem this status exists to surface honestly).
+ * run. Story 13.1 (ADR-0109) added 'disabled' for any non-retryable,
+ * non-credential failure on the most recent run, and made both
+ * 'reconnect_required' and 'disabled' blocked states.
  */
 export type ConnectorHealthStatus =
   | 'healthy'
@@ -17,6 +24,7 @@ export type ConnectorHealthStatus =
   | 'failing'
   | 'disconnected'
   | 'reconnect_required'
+  | 'disabled'
   | 'stalled';
 export type CredentialStatus = 'valid' | 'expiring_soon' | 'expired' | 'revoked';
 
@@ -25,6 +33,8 @@ export interface ConnectorHealth {
   lastSuccessfulFetchAt: string | null;
   lastAttemptAt: string | null;
   consecutiveFailures: number;
+  /** Story 13.1 (ADR-0109) — consecutive successes since the last failure or health-check reset, used for degraded->healthy auto-recovery. */
+  consecutiveSuccesses: number;
   credentialStatus: CredentialStatus | null;
   lastSuccessfulPostsIngested?: number | null;
 }
@@ -41,28 +51,15 @@ export const MIN_STALL_CADENCE_MS = 45 * 60 * 1000;
 export const MAX_INGESTION_SILENCE_MS = 24 * 60 * 60 * 1000;
 
 /**
- * `failing` derivation (Story 2.5, ADR-0023) — supersedes the original flat
- * "≥10 failures/hour" placeholder (ADR-0009/ADR-0010's own text, see each
- * ADR's "Supersession update" note). `degraded`/`disconnected`/`healthy`
- * are unaffected — ADR-0023 changes only this one rule. See
- * .claude/skills/connector-health-and-error-handling/SKILL.md.
+ * Story 13.1 (ADR-0109) — auto-disable threshold reduced to 5 consecutive
+ * failed `ingestion_runs` of any kind (retryable or not), superseding
+ * ADR-0023's 20-consecutive ceiling. The rate-relative rule and the
+ * half-open probe are removed; `degraded` auto-recovery uses 3 consecutive
+ * successes.
  */
-const RATE_FAILURE_THRESHOLD = 0.5;
-const RATE_ATTEMPT_FLOOR = 5;
-const CONSECUTIVE_FAILURE_CEILING = 20;
+const CONSECUTIVE_FAILURE_THRESHOLD = 5;
+const CONSECUTIVE_SUCCESS_RECOVERY = 3;
 const RECENT_WINDOW_MS = 60 * 60 * 1000;
-
-/**
- * ADR-0023 Clarification (2026-08-17) — the rate rule already self-heals as
- * its 1-hour window ages; the absolute ceiling had no equivalent, since it
- * scans unboundedly backward for an unbroken failure streak with no time
- * dimension to decay through. Once `failing`, shouldAttemptIngestion() now
- * allows exactly one probe attempt through once the last attempt is older
- * than this cooldown — a standard circuit-breaker "half-open" allowance,
- * not a change to the 50%/5-attempt-floor/20-consecutive numbers
- * themselves. See connector-health-and-error-handling/SKILL.md.
- */
-const PROBE_COOLDOWN_MS = 15 * 60 * 1000;
 
 interface IngestionRunRow {
   status: 'running' | 'succeeded' | 'failed';
@@ -72,6 +69,7 @@ interface IngestionRunRow {
   retryable: boolean | null;
   is_credential_failure: boolean | null;
   posts_ingested: number;
+  trigger_type: TriggerType;
 }
 
 /**
@@ -97,8 +95,11 @@ interface IngestionRunRow {
  * the credentialStatus sub-query — only `userId` does, unchanged from
  * Story 1.15.
  *
- * Story 1.16 (ADR-0070 §2) — derives 'stalled' status with strict precedence:
- * disconnected -> reconnect_required -> failing -> stalled -> degraded -> healthy.
+ * Story 13.1 (ADR-0109) — `trigger_type='health_check'` is a reset boundary.
+ * When a run with this trigger type is encountered while scanning, only that
+ * run and any newer runs are considered for consecutive-failure / -success
+ * counting. This lets a failed re-enable attempt reset the counter to 1 and
+ * a successful re-enable attempt immediately return `healthy`.
  */
 export async function deriveConnectorHealth(
   tenantId: string,
@@ -119,7 +120,8 @@ export async function deriveConnectorHealth(
       runConditions.push(`user_id = $${runParams.length}`);
     }
     const { rows: runs } = await client.query<IngestionRunRow>(
-      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure, posts_ingested FROM ingestion_runs
+      `SELECT status, started_at, completed_at, error_summary, retryable, is_credential_failure, posts_ingested, trigger_type
+       FROM ingestion_runs
        WHERE ${runConditions.join(' AND ')} ORDER BY started_at DESC`,
       runParams
     );
@@ -143,9 +145,20 @@ export async function deriveConnectorHealth(
         lastSuccessfulFetchAt: null,
         lastAttemptAt: null,
         consecutiveFailures: 0,
+        consecutiveSuccesses: 0,
         credentialStatus,
         lastSuccessfulPostsIngested: null,
       };
+    }
+
+    // Build a relevant slice: start at the most recent run and stop at (and
+    // include) the first health_check run encountered when scanning backward.
+    const relevantRuns: IngestionRunRow[] = [];
+    for (const run of runs) {
+      relevantRuns.push(run);
+      if (run.trigger_type === 'health_check') {
+        break;
+      }
     }
 
     const cutoff = Date.now() - RECENT_WINDOW_MS;
@@ -154,44 +167,87 @@ export async function deriveConnectorHealth(
     let lastSuccessfulFetchAt: string | null = null;
     let lastSuccessfulPostsIngested: number | null = null;
     let consecutiveFailures = 0;
-    let sawSuccess = false;
+    let consecutiveSuccesses = 0;
+    let stopped = false;
 
-    for (const run of runs) {
-      // If the credential was renewed/reconnected after this run, past failure does not count against new credential
+    const leadingStatus = relevantRuns[0].status;
+
+    for (const run of relevantRuns) {
+      if (stopped) break;
+
       const isBeforeCurrentCredential = credentialCreatedAt ? run.started_at < credentialCreatedAt : false;
-      const isNonRetryableFailure = run.status === 'failed' && run.retryable !== true && !isBeforeCurrentCredential;
+      if (isBeforeCurrentCredential) {
+        // The current credential was created after this run; older runs must
+        // not count against the new credential. Stop scanning.
+        stopped = true;
+        break;
+      }
+
       const withinWindow = run.started_at.getTime() >= cutoff;
-      if (isNonRetryableFailure && withinWindow) recentFailures += 1;
-      if (run.status === 'succeeded' && withinWindow) recentSuccesses += 1;
+      if (run.status === 'failed' && withinWindow) {
+        recentFailures += 1;
+      }
+      if (run.status === 'succeeded' && withinWindow) {
+        recentSuccesses += 1;
+      }
       if (run.status === 'succeeded' && lastSuccessfulFetchAt === null) {
         lastSuccessfulFetchAt = run.completed_at ? run.completed_at.toISOString() : null;
         lastSuccessfulPostsIngested = run.posts_ingested ?? 0;
       }
-      if (!sawSuccess) {
-        if (isNonRetryableFailure) consecutiveFailures += 1;
-        else if (run.status === 'succeeded' || isBeforeCurrentCredential) sawSuccess = true;
+
+      if (leadingStatus === 'failed') {
+        if (run.status === 'failed') {
+          consecutiveFailures += 1;
+        } else {
+          stopped = true;
+        }
+      } else {
+        // leadingStatus === 'succeeded' or 'running'
+        if (run.status === 'succeeded') {
+          consecutiveSuccesses += 1;
+        } else if (run.status === 'running') {
+          // A running row in the middle does not break or advance a success
+          // streak, but it also does not count as a success.
+          continue;
+        } else {
+          stopped = true;
+        }
       }
     }
 
-    const recentAttempts = recentFailures + recentSuccesses;
-    const rateFailing =
-      recentAttempts >= RATE_ATTEMPT_FLOOR && recentFailures / recentAttempts >= RATE_FAILURE_THRESHOLD;
-    const ceilingFailing = consecutiveFailures >= CONSECUTIVE_FAILURE_CEILING;
+    const latestRun = relevantRuns[0];
+    const latestIsBeforeCredential = credentialCreatedAt ? latestRun.started_at < credentialCreatedAt : false;
 
-    // Strict precedence order (ADR-0070 §2):
-    // 1. reconnect_required (credential failure on runs[0] occurring AFTER current credential issuance)
-    const isLatestRunCredentialFailure =
-      runs[0].status === 'failed' &&
-      runs[0].is_credential_failure === true &&
-      (!credentialCreatedAt || runs[0].started_at >= credentialCreatedAt);
-    const isReconnectRequired = isLatestRunCredentialFailure;
+    // 1. reconnect_required (credential failure on the latest run occurring
+    //    AFTER current credential issuance).
+    const isReconnectRequired =
+      latestRun.status === 'failed' &&
+      latestRun.is_credential_failure === true &&
+      !latestIsBeforeCredential;
 
-    // 2. failing (rate or ceiling)
-    const isFailing = rateFailing || ceilingFailing;
+    // 2. disabled (explicitly non-retryable, non-credential failure on the
+    //    latest run). Only `retryable = false` disables; `null` is treated as
+    //    unclassified/legacy and does not immediately disable, but it still
+    //    counts toward the consecutive-failure threshold.
+    const isDisabled =
+      latestRun.status === 'failed' &&
+      latestRun.retryable === false &&
+      latestRun.is_credential_failure !== true &&
+      !latestIsBeforeCredential;
 
-    // 3. stalled (active connector, valid credentials, not failing or reconnect_required, and cadence or silence breached)
+    // 3. failing — either the threshold of 5 consecutive failures, or a
+    //    failed health-check run (which always returns the connector to
+    //    `failing` with the counter reset to 1).
+    const isFailing =
+      latestRun.status === 'failed' &&
+      !isReconnectRequired &&
+      !isDisabled &&
+      (latestRun.trigger_type === 'health_check' || consecutiveFailures >= CONSECUTIVE_FAILURE_THRESHOLD);
+
+    // 4. stalled — active connector, valid credentials, not failing/disabled/
+    //    reconnect_required, and cadence or silence breached.
     let isStalled = false;
-    if (!isReconnectRequired && !isFailing) {
+    if (!isReconnectRequired && !isDisabled && !isFailing) {
       let isConnectorActiveState = options?.isConnectorActive;
       if (isConnectorActiveState === undefined) {
         if (userId) {
@@ -211,38 +267,45 @@ export async function deriveConnectorHealth(
         }
       }
 
-      const hasValidCredentials = credentialStatus === null || credentialStatus === 'valid' || credentialStatus === 'expiring_soon';
+      const hasValidCredentials =
+        credentialStatus === null || credentialStatus === 'valid' || credentialStatus === 'expiring_soon';
 
       if (isConnectorActiveState && hasValidCredentials) {
         const now = options?.now ?? Date.now();
         const effectiveCadenceMs = options?.effectiveCadenceMs ?? DEFAULT_EFFECTIVE_CADENCE_MS;
         const stallCadenceThreshold = Math.max(MIN_STALL_CADENCE_MS, STALL_CADENCE_MULTIPLIER * effectiveCadenceMs);
-        const lastAttemptMs = runs[0].started_at.getTime();
+        const lastAttemptMs = latestRun.started_at.getTime();
         const lastSuccessMs = lastSuccessfulFetchAt ? new Date(lastSuccessfulFetchAt).getTime() : -Infinity;
 
-        const isCadenceBreached = (now - lastAttemptMs) >= stallCadenceThreshold;
-        const isSilenceBreached = (now - lastSuccessMs) >= MAX_INGESTION_SILENCE_MS;
+        const isCadenceBreached = now - lastAttemptMs >= stallCadenceThreshold;
+        const isSilenceBreached = now - lastSuccessMs >= MAX_INGESTION_SILENCE_MS;
         if (isCadenceBreached || isSilenceBreached) {
           isStalled = true;
         }
       }
     }
 
-    const status: ConnectorHealthStatus = isReconnectRequired
-      ? 'reconnect_required'
-      : isFailing
-        ? 'failing'
-        : isStalled
-          ? 'stalled'
-          : recentFailures > 0 && recentSuccesses > 0
-            ? 'degraded'
-            : 'healthy';
+    let status: ConnectorHealthStatus;
+    if (isReconnectRequired) {
+      status = 'reconnect_required';
+    } else if (isDisabled) {
+      status = 'disabled';
+    } else if (isFailing) {
+      status = 'failing';
+    } else if (isStalled) {
+      status = 'stalled';
+    } else if (recentFailures > 0 && recentSuccesses > 0 && consecutiveSuccesses < CONSECUTIVE_SUCCESS_RECOVERY) {
+      status = 'degraded';
+    } else {
+      status = 'healthy';
+    }
 
     return {
       status,
       lastSuccessfulFetchAt,
-      lastAttemptAt: runs[0].started_at.toISOString(),
+      lastAttemptAt: latestRun.started_at.toISOString(),
       consecutiveFailures,
+      consecutiveSuccesses,
       credentialStatus,
       lastSuccessfulPostsIngested,
     };
@@ -253,6 +316,11 @@ export async function deriveConnectorHealth(
  * Auto-disable is *behavior*, not stored state (ADR-0009's whole point): the
  * scheduler consults the same derived health this module already computes,
  * rather than a separate "disabled" flag anyone could write independently.
+ *
+ * Story 13.1 (ADR-0109) — `failing`, `disabled`, and `reconnect_required` are
+ * all blocked states: the scheduler stops polling them. The half-open probe
+ * for `failing` is removed; manual re-enable (`POST .../enable`) is the only
+ * recovery path.
  *
  * Story 1.11 (ADR-0051) extends this with a second, independent
  * requirement: the matching-scope activation row (`connector_activations`
@@ -268,25 +336,14 @@ export async function shouldAttemptIngestion(
   ownerType: ConnectorActivationOwnerType = 'tenant',
   userId?: string
 ): Promise<boolean> {
-  // Story 1.15: forward ownerType/userId into deriveConnectorHealth() so a
-  // Tier-3 user's eligibility check reads that user's own health, not the
-  // tenant-wide (or another user's) health — a real, previously-silent
-  // Story 1.11 bug (this call used to ignore both arguments entirely).
   const health = await deriveConnectorHealth(
     tenantId,
     platformId,
     undefined,
     ownerType === 'user' ? userId : undefined
   );
-  if (health.status === 'failing') {
-    const withinProbeCooldown =
-      health.lastAttemptAt !== null && Date.now() - new Date(health.lastAttemptAt).getTime() < PROBE_COOLDOWN_MS;
-    if (withinProbeCooldown) return false;
-    // Cooldown elapsed: fall through to the normal activation check below,
-    // allowing exactly one probe attempt. A success clears the streak via
-    // deriveConnectorHealth()'s own existing scan-until-a-success logic,
-    // unmodified; a failure just restarts the cooldown (lastAttemptAt
-    // updates either way).
+  if (health.status === 'failing' || health.status === 'disabled' || health.status === 'reconnect_required') {
+    return false;
   }
   return isConnectorActive(tenantId, platformId, ownerType, userId);
 }
@@ -305,4 +362,70 @@ export async function getAutoDisableReason(
     );
     return rows.length > 0 ? rows[0].error_summary : null;
   });
+}
+
+export interface RunConnectorHealthCheckInput {
+  tenantId: string;
+  platformId: string;
+  /** Tier-3 (user-bound) scope — omitted for tenant-wide connectors. */
+  userId?: string;
+  pageId?: string;
+}
+
+/**
+ * Story 13.1 (ADR-0109) — the manual re-enable health check.
+ *
+ * If the connector exposes `healthCheck()`, it is invoked directly and is
+ * expected to call `runIngestionAttempt()` with `trigger_type='health_check'`.
+ * If the connector omits `healthCheck()` (all existing connectors as of this
+ * story), the check falls back to a single `connector.poll()` or
+ * `connector.pollUser()` call and the resulting run's `trigger_type` is
+ * rewritten to `health_check` so `deriveConnectorHealth()` treats it as a
+ * reset boundary.
+ */
+export async function runConnectorHealthCheck(
+  input: RunConnectorHealthCheckInput
+): Promise<RunIngestionAttemptResult> {
+  const connector = getSocialConnector(input.platformId);
+  if (!connector) {
+    throw new Error(`Connector not registered for platform: ${input.platformId}`);
+  }
+
+  if (connector.healthCheck) {
+    return connector.healthCheck(input.tenantId, input.userId);
+  }
+
+  if (input.userId && connector.pollUser) {
+    const result = await connector.pollUser(input.tenantId, input.userId);
+    await updateIngestionRunTriggerType(input.tenantId, result.runId, 'health_check');
+    return result;
+  }
+
+  if (connector.poll) {
+    const result = await connector.poll(input.tenantId);
+    await updateIngestionRunTriggerType(input.tenantId, result.runId, 'health_check');
+    return result;
+  }
+
+  // Connector has no poll, pollUser, or healthCheck — perform a minimal
+  // connectivity-style attempt and record it as a health_check run. This is
+  // the no-poll fallback (e.g. a push-only connector); it fails the health
+  // check so the connector returns to `failing` / `disabled` as appropriate.
+  const run = await startIngestionRun(input.tenantId, {
+    platformId: input.platformId,
+    triggerType: 'health_check',
+    connectorVersion: '1.0.0',
+    userId: input.userId,
+    pageId: input.pageId,
+  });
+  const errorSummary = 'Connector has no poll or healthCheck implementation';
+  await completeIngestionRun(input.tenantId, run.id, {
+    status: 'failed',
+    postsIngested: 0,
+    postsSkipped: 0,
+    errorSummary,
+    retryable: false,
+    isCredentialFailure: false,
+  });
+  return { runId: run.id, status: 'failed', errorSummary };
 }

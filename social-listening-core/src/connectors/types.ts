@@ -216,6 +216,16 @@ export interface SocialConnector extends ProviderConnector {
    */
   pollUser?(tenantId: string, userId: string): Promise<RunIngestionAttemptResult>;
   /**
+   * Story 13.1 (ADR-0109) — optional dedicated health-check method used by the
+   * manual re-enable flow (`POST /v1/connectors/:platformId/enable`). If a
+   * connector implements this, `runConnectorHealthCheck()` delegates to it and
+   * the run is opened with `trigger_type='health_check'` from the start. If a
+   * connector omits this, the re-enable endpoint falls back to
+   * `connector.poll()` / `connector.pollUser()` and rewrites the run's
+   * `trigger_type` after the fact.
+   */
+  healthCheck?(tenantId: string, userId?: string): Promise<RunIngestionAttemptResult>;
+  /**
    * Story 9.1 (ADR-0077 §1) — optional per-connector post-count estimate for
    * the watchlist volume preview. Connectors whose platform exposes a
    * total-results field (GNews `totalArticles`, Brave/Bing page counts)

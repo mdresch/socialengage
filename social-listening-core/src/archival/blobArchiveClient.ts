@@ -9,7 +9,7 @@ const CONTAINER_NAME = 'social-listening-archive';
  * keyVaultProvider.ts/serviceBusPublisher.ts.
  */
 function accountName(): string {
-  return process.env.ARCHIVE_STORAGE_ACCOUNT ?? 'sociallisteningdev';
+  return process.env.ARCHIVE_STORAGE_ACCOUNT ?? 'sociallisteningmcpp';
 }
 
 function client(): BlobServiceClient {
