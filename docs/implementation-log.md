@@ -4219,3 +4219,17 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added rich interactive popups showing country name, buzz post volume, and sentiment index.
   - Maintained click-to-filter drill-down functionality linking directly to the slideover matching posts drawer.
 
+---
+
+## 2026-08-31 — Healing: Story 11.5 topic evolution timeline — social-listening-core@a5c926c
+
+- **Full commit:** `a5c926c9cd44fb6f6343f125d913a8ef66ce9c2a`
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.5 / ADR-0097
+- **Contract:** `contracts/epic-11/story-11.5.topic-evolution.contract.test.ts`
+- **SKILL.md:** `.claude/skills/tenant-auth-middleware/SKILL.md`
+- **Files touched:** `social-listening-core/src/http/versions/v1/topicsRouter.ts`, `social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts`
+- **Story contract at merge:** PASS (7/7)
+- **Epic-11 suite at merge:** PASS (37/37)
+- **Notes:** `topicsRouter.ts` was still reading `X-Tenant-Id` directly, which broke the test auth bypass that supplies `X-Test-Identity`. Switched all topic routes to `requireTenantUser(req, res)`/`RequestWithIdentity`. Added route-level validation for `granularity` (`day`, `week`, `month`) so the existing `rejects invalid granularity` AC passes with the correct error message. Added a contract test verifying `X-Tenant-Id` alone is not accepted by the endpoint.
+
