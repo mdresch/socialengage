@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-31
 **Source Capture:** `raw/synthesis-epic-13-2026-08-31/`
-**Git HEAD:** `89db5a69928d6de074625546f05fab3214c5ace6`
+**Git HEAD:** `3f5d2a58f57d57492b8e374e6985594df9a57dd2`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 511 |
+| Git commits scanned | 461 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 2 |
-| Contract test files | 204 |
+| Feature commits (this epic) | 4 |
+| Contract test files | 205 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,14 +28,16 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `9cef02affb9fe639b79174618dc72a36b5b7c1ba` | 2026-08-31 23:20:08 +0200 | feat(epic-13): merge Story 13.3 query capability warnings into main |
+| `ef4e0f29e7745778d9ee2e6e1cd9fae1337a41ed` | 2026-08-31 23:18:26 +0200 | feat(epic-13): implement Story 13.3 query capability warnings in watchlist builder (frontend) |
 | `e48c4a76a35bd42d219a6ba1d8162166fcccf69b` | 2026-08-31 22:39:58 +0200 | feat(epic-13): implement Story 13.2 — per-connector query translation and validation (backend) |
 | `0240f80b5863a103619840f06e1d8d601fe29b25` | 2026-08-31 22:08:26 +0200 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) |
 
 ## 4. Contract Test Inventory
 
-Total: 204 contract test files.
+Total: 205 contract test files.
 
-### social-listening-admin/contracts (76 files)
+### social-listening-admin/contracts (77 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -55,9 +57,10 @@ Total: 204 contract test files.
 - `story-12.14.workspace-settings-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.16.influencer-discovery-ui.contract.test.ts` (modified 2026-08-30)
 - `story-12.2.connector-capability-matrix-ui.contract.test.ts` (modified 2026-08-29)
-- `story-12.4.boolean-query-visual-builder.contract.test.ts` (modified 2026-08-29)
+- `story-12.4.boolean-query-visual-builder.contract.test.ts` (modified 2026-08-31)
 - `story-12.6.ai-sentiment-aspect-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.8.topic-curation-selected-topic-ui.contract.test.ts` (modified 2026-08-29)
+- `story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (modified 2026-08-31)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
 - `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
@@ -144,7 +147,7 @@ Total: 204 contract test files.
 - `story-11.1.crm-connector-and-case-handoff.contract.test.ts` (modified 2026-08-28)
 - `story-11.11.mention-suggestions.contract.test.ts` (modified 2026-08-28)
 - `story-11.3.daily-digest-email.contract.test.ts` (modified 2026-08-28)
-- `story-11.5.topic-evolution.contract.test.ts` (modified 2026-08-28)
+- `story-11.5.topic-evolution.contract.test.ts` (modified 2026-08-31)
 - `story-11.7.publishing-and-scheduling.contract.test.ts` (modified 2026-08-28)
 - `story-11.9.social-inbox-and-reply.contract.test.ts` (modified 2026-08-28)
 - `story-12.1.connector-capability-matrix.contract.test.ts` (modified 2026-08-29)
@@ -279,7 +282,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 13.2, 13.1.
+Feature commits reference stories: 13.3, 13.2, 13.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns
