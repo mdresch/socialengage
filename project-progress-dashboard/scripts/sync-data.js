@@ -53,12 +53,26 @@ storyFiles.sort().forEach(f => {
     let builtInfo = 'Built: not yet';
     let isBuilt = false;
     const builtMatch = sec.match(/\*\*Built:\*\*\s*([^\n\r]+)/i) || sec.match(/Built:\s*([^\n\r]+)/i);
+    const statusLower = status.toLowerCase();
+    const isStatusBuilt = statusLower.startsWith('complete') || statusLower.startsWith('built') || statusLower.startsWith('shipped');
+
     if (builtMatch) {
       builtInfo = builtMatch[1].trim();
       const lower = builtInfo.toLowerCase();
-      if (!lower.includes('not yet') && !lower.includes('planned') && (lower.includes('@') || lower.includes('2026-') || lower.includes('social-listening'))) {
+      if (!lower.includes('not yet') && !lower.includes('planned') && (
+        lower.startsWith('yes') ||
+        lower.includes('contract') ||
+        lower.includes('pass') ||
+        lower.includes('@') ||
+        lower.includes('2026-') ||
+        lower.includes('social-listening') ||
+        isStatusBuilt
+      )) {
         isBuilt = true;
       }
+    } else if (isStatusBuilt) {
+      isBuilt = true;
+      builtInfo = status;
     }
 
     const storyItem = {

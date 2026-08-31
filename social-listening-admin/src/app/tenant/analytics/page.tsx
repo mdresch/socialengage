@@ -7,7 +7,7 @@ import { fetchAnalyticsSummary, fetchWatchlistCoverage } from './fetchAnalyticsS
 import { AnalyticsClient } from './AnalyticsClient';
 import { parseOverviewFiltersFromSearchParams, computeAnalyticsSummary, type DateRangeFilter } from './analyticsData';
 
-const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources'] as const;
+const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources', 'location'] as const;
 export type AnalyticsTab = (typeof TAB_VALUES)[number];
 
 function defaultDateRange(): DateRangeFilter {

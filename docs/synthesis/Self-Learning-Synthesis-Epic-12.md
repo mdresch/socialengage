@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-31
 **Source Capture:** `raw/synthesis-epic-12-2026-08-31/`
-**Git HEAD:** `060267514e379e6977cb132e23d28817581502b1`
+**Git HEAD:** `bbfbb043aaf91608f026b741c78f8a14d0e49542`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -28,7 +28,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
-| `060267514e379e6977cb132e23d28817581502b1` | 2026-08-31 07:28:08 +0200 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) |
+| `bbfbb043aaf91608f026b741c78f8a14d0e49542` | 2026-08-31 07:28:08 +0200 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) |
 | `ee9ffe51710c818f364f8af199fceb4c48b1a7ae` | 2026-08-30 13:34:41 +0200 | feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend) |
 | `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586` | 2026-08-29 21:57:50 +0200 | feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend) |
 | `da86059e1db111b27c6d3a3e88531bb044e1614b` | 2026-08-29 21:35:46 +0200 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) |

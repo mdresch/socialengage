@@ -88,14 +88,14 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
         <CardHeader className="pb-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Epics Delivery Matrix (Epics 1–13)</CardTitle>
+              <CardTitle>Epics Delivery Matrix (Epics 1–19)</CardTitle>
               <CardDescription>
                 Click any epic below to filter the story backlog table.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="success" className="text-xs py-1 px-3">
-                {builtStories} Built (93.2%)
+                {builtStories} Built ({totalStories > 0 ? ((builtStories / totalStories) * 100).toFixed(1) : 0}%)
               </Badge>
               <Badge variant={pendingStories > 0 ? "warning" : "default"} className="text-xs py-1 px-3">
                 {pendingStories} Pending

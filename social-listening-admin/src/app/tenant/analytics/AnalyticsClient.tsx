@@ -20,6 +20,7 @@ import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
 import { SentimentTab } from './SentimentTab';
 import { ConversationsTab } from './ConversationsTab';
+import { LocationTab } from './LocationTab';
 import type { AnalyticsTab } from './page';
 
 function providerPillClass(providerId: string): string {
@@ -69,6 +70,7 @@ const TABS: { id: AnalyticsTab; label: string }[] = [
   { id: 'sentiment', label: 'Sentiment' },
   { id: 'conversations', label: 'Conversations' },
   { id: 'sources', label: 'Sources' },
+  { id: 'location', label: 'Location' },
 ];
 
 interface AnalyticsClientProps {
@@ -214,7 +216,7 @@ export function AnalyticsClient({
   }
 
   return (
-    <div className="an-shell" id="tenant-analytics-dashboard">
+    <div className="an-shell an-root" id="tenant-analytics-dashboard">
       <div className="an-header">
         <div className="an-header-title-wrap">
           <h1 className="an-page-title">Analytics</h1>
@@ -290,9 +292,10 @@ export function AnalyticsClient({
             hideHeaderControls={true}
           />
         )}
-        {activeTab === 'sources' && <SourcesTab summary={summary} />}
+        {activeTab === 'sources' && <SourcesTab summary={summary} previousSummary={previousSummary} range={range} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
+        {activeTab === 'location' && <LocationTab summary={summary} previousSummary={previousSummary} range={range} />}
       </div>
 
       {drawerOpen && (

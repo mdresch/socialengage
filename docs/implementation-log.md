@@ -26,6 +26,19 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
+## 2026-08-31 — Geo Backfill Utility — social-listening-core@6948420
+
+- **Full commit:** `694842045a9b3e4568b7fde3e68b28f7e9cf3b00`
+- **Repo:** social-listening-core
+- **Story / ADR:** Geo-location backfill (analytics feature, ADR-0064 / Story 2.20)
+- **Contract:** contracts/epic-2/story-2.20.geospatial-enrichment.contract.test.ts
+- **SKILL.md:** .agents/skills/implement-story/SKILL.md
+- **Files touched:** src/connectors/geo/backfillGeoLocations.ts, package.json
+- **Epic-2 suite at merge:** PASS (12/12)
+- **Notes:** Non-story data backfill utility. Enriched 2,644 historical posts that lacked `geoCountry` in the `social_posts.enrichment` JSONB column. Final DB location coverage: 4,757 / 4,757 posts (100%). Breakdown: GNews via `source.country` (198, high), Facebook via connected-page name (668, high), Newswire via issuer suffix (1,125, medium), Instagram via page heuristic (108, high), Tenant-Owned Feed via domain (117, high), Wikipedia via URL language prefix (327, medium), YouTube + Brave Search (101, low). Added `npm run geo:backfill` script for future re-runs on new historical data.
+
+---
+
 ## 2026-08-29 — Story 12.7 — social-listening-core@21820f4
 
 - **Full commit:** `21820f4` (see git log)
@@ -4074,3 +4087,115 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Epic-6 suite at merge:** PASS (Story 6.11 contract: 31/31)
 
 **Found-live regression.** Facebook posts (Story 2.15/ADR-0059) have no `title` field in their `rawPayload`; `extractDisplayText()` was falling through to raw JSON for every real Facebook post. Fixed by making `extractDisplayText()` recognize `providerId === 'facebook'` and return `{ title: '', snippet: message }`, with `permalink_url` as the snippet fallback for media-only posts. The contract assertions were updated to expect `title` empty and `snippet` populated. The same commit also corrects the `PostsFeedClient` and detail page to pass the `snippet` through to the card/Slideover display so the post body renders instead of an empty title.
+
+---
+
+## 2026-08-31 — Story 8.2 & Story 8.7 UI Polish — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.2, 8.7 / ADR-0054, ADR-0062
+- **Contracts:**
+  - `contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.3.conversations-tab.contract.test.ts` (18/18)
+  - `contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts` (32/32)
+- **SKILL.md:** `social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md`
+- **Files touched:**
+  - `social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/AnimatedChartTooltip.tsx`
+  - `social-listening-admin/src/app/globals.css`
+- **Full suite at merge:** PASS (69/69 tests)
+
+**Key Enhancements:**
+- Rebuilt Sentiment tab into a 3-column Microsoft Social Engagement layout:
+  - Left column: Location Insights map, Top Fans, Top Critics.
+  - Center column: Sentiment History composed dual-direction volume bar and index line chart, Negative Key Phrases cloud, Sources by Sentiment.
+  - Right column: Sentiment Index gauge card, Positive Key Phrases cloud, Sentiment Coverage Donut.
+- Implemented Dual-Direction Volume Bar chart: Positive volume renders upwards from zero (green `#15803d`), Negative volume renders downwards from zero (red `#dc2626`).
+- Integrated Prior Week Sentiment Index benchmark (`lastWeek`) as a dashed trend line (`#94a3b8`, `3 3`) with legend and tooltip integration.
+- Enhanced `AnimatedChartTooltip` and `.ad-tooltip` styles with sleek dark/black container (`#090d16`), elevation shadows, and color-coded values (positive volume green `#4ade80`, negative volume red `#f87171`, sentiment index blue `#38bdf8`, benchmark slate `#cbd5e1`).
+- Restyled Key Phrase word clouds with glowing luminous typography for positive key phrases and matte restrained crimson tones for negative phrases.
+- Added Double Donut Chart for Sentiment Coverage & Source (inner ring: Enriched vs Unenriched volume; outer ring: Automated AI vs Manual Human-edited volume).
+
+---
+
+## 2026-08-31 — Analytics Loading Optimization & Location Tab — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.1, 8.10 / ADR-0054, ADR-0064
+- **Contracts:**
+  - `contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.3.conversations-tab.contract.test.ts` (18/18)
+  - `contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts` (32/32)
+  - `contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts` (20/20)
+- **SKILL.md:** `social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md`
+- **Files touched:**
+  - `social-listening-admin/src/app/tenant/analytics/LocationTab.tsx` (new)
+  - `social-listening-admin/src/app/tenant/analytics/loading.tsx` (new)
+  - `social-listening-admin/src/app/tenant/analytics/page.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts`
+  - `social-listening-admin/src/app/globals.css`
+  - `social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts`
+- **Full suite at merge:** PASS (108/108 tests)
+
+**Key Enhancements:**
+- Added `loading.tsx` streaming skeleton with live elapsed time counter and dynamic status messages for smooth perceived performance on large datasets.
+- Bounded watchlist coverage query pagination in `fetchAnalyticsSummary.ts` to prevent duplicate parallel scans on initial server component render.
+- Implemented `LocationTab.tsx` adhering to the 3-column Microsoft Social Engagement design:
+  - **Left Column**: Location Sentiment Gauge (-10 to +10 with smiley gauge, delta change, slider), Sentiment by Country/Region (ranked list with score, progress bar, trend arrow), Location Groups (Continental grouping with volume bars).
+  - **Center Column**: Location Insights interactive SVG World Map (equirectangular projection, dynamic volume clusters, hover tooltip with sentiment & buzz, map mode switcher, volume scale), Locations (Top countries breakdown), Cities (Top metropolitan areas).
+  - **Right Column**: Location Coverage Donut (Author location vs Post location vs Unknown), Phrases by Country/Region (grouped cloud tags with frequency styling), Languages (detected languages breakdown).
+- Integrated matching posts slideover drawer with drill-down filtering by country, continent, language, and phrases.
+
+---
+
+## 2026-08-31 — Sources Tab Widget Upgrades — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.1, 8.6 / ADR-0054, ADR-0061
+- **Contracts:**
+  - `contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.3.conversations-tab.contract.test.ts` (18/18)
+  - `contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts` (9/9)
+  - `contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts` (32/32)
+  - `contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts` (20/20)
+- **SKILL.md:** `social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md`
+- **Files touched:**
+  - `social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx`
+  - `social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx`
+- **Full suite at merge:** PASS (117/117 tests)
+
+**Key Enhancements:**
+- Rebuilt `SourcesTab.tsx` with high-density Microsoft Social Engagement layout:
+  - **Top Row (3 Columns)**:
+    - Left Column: Sources by Sentiment (platform icon badges, net sentiment score, emerald proportion bars, trend arrows) & Location Insights mini map.
+    - Center Column: Sources History multi-line timeline chart with interactive provider legend filters and dark elevated tooltip.
+    - Right Column: Activities donut (Posts vs Shares vs Replies) & Phrases by Sources with provider icon badges and frequency sizing.
+  - **Bottom Row (4 Cards)**:
+    - Authors by Source (multi-segmented donut with user avatar silhouette in center, unique author counts, and total author count display).
+    - Sources Breakdown (ranked providers list with volume count and colored progress bars).
+    - Volume Change by Source (comparative deltas against prior period with progress bars and trend arrows).
+    - Languages (detected languages breakdown with progress bars).
+- Integrated interactive drill-down slideover drawer for viewing matching source posts.
+
+---
+
+## 2026-08-31 — Interactive Leaflet Real World Map for Location Tab — social-listening-admin
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** 8.10 / ADR-0064
+- **Contracts:** Epic-8 full suite (117/117 passing)
+- **Files touched:**
+  - `social-listening-admin/src/app/tenant/analytics/InteractiveWorldMap.tsx` (new)
+  - `social-listening-admin/src/app/tenant/analytics/LocationTab.tsx`
+  - `social-listening-admin/src/app/globals.css`
+  - `social-listening-admin/package.json`
+- **Key Enhancements:**
+  - Integrated Leaflet with CartoDB Positron / Voyager high-resolution raster tiles, replacing the static SVG world silhouette.
+  - Added smooth pan, pinch/scroll zoom, country and city detail labels, and coastlines.
+  - Implemented interactive custom HTML cluster pins sized dynamically by post buzz volume and colored by mode (Buzz, Sentiment, Trend).
+  - Added rich interactive popups showing country name, buzz post volume, and sentiment index.
+  - Maintained click-to-filter drill-down functionality linking directly to the slideover matching posts drawer.
+

@@ -218,6 +218,7 @@ function PlatformSourceIcon({ providerId }: { providerId: string }) {
  */
 export function OverviewTab({
   summary,
+  previousSummary,
   range,
   initialFilters,
   watchlists = [],
@@ -316,10 +317,56 @@ export function OverviewTab({
 
   const sentimentSplit = useMemo(() => computeSentimentSplitFromFlat(filteredPosts), [filteredPosts]);
   const sentimentIndex = useMemo(() => computeSentimentIndex(sentimentSplit), [sentimentSplit]);
+
+  const sentimentDelta = useMemo(() => {
+    if (filteredPosts.length === 0 || sentimentIndex === null) return null;
+
+    const dates = filteredPosts
+      .map((p) => (p.publishedAt ? new Date(p.publishedAt).getTime() : null))
+      .filter((t): t is number => t !== null && !isNaN(t));
+
+    if (dates.length === 0) return null;
+
+    const maxDate = Math.max(...dates);
+    const sevenDaysMs = 7 * 86400_000;
+    const fourteenDaysMs = 14 * 86400_000;
+
+    const current7DaysPosts = filteredPosts.filter((p) => {
+      if (!p.publishedAt) return false;
+      const t = new Date(p.publishedAt).getTime();
+      return t >= maxDate - sevenDaysMs && t <= maxDate;
+    });
+
+    const prev7DaysPosts = filteredPosts.filter((p) => {
+      if (!p.publishedAt) return false;
+      const t = new Date(p.publishedAt).getTime();
+      return t >= maxDate - fourteenDaysMs && t < maxDate - sevenDaysMs;
+    });
+
+    if (prev7DaysPosts.length === 0) {
+      if (previousSummary && previousSummary.sentimentSplit) {
+        const prevIdx = computeSentimentIndex(previousSummary.sentimentSplit);
+        if (prevIdx !== null) {
+          return Math.round((sentimentIndex - prevIdx) * 10) / 10;
+        }
+      }
+      return null;
+    }
+
+    const currentSplit = computeSentimentSplitFromFlat(current7DaysPosts);
+    const prevSplit = computeSentimentSplitFromFlat(prev7DaysPosts);
+
+    const currIdx = computeSentimentIndex(currentSplit);
+    const prevIdx = computeSentimentIndex(prevSplit);
+
+    if (currIdx === null || prevIdx === null) return null;
+    return Math.round((currIdx - prevIdx) * 10) / 10;
+  }, [filteredPosts, sentimentIndex, previousSummary]);
+
   const sourceBreakdown = useMemo(() => computeSourceBreakdownFromFlat(filteredPosts), [filteredPosts]);
   const authorsBySource = useMemo(() => computeAuthorsBySource(filteredPosts), [filteredPosts]);
   const topAuthors = useMemo(() => computeTopAuthorsByVolume(filteredPosts), [filteredPosts]);
-  const phraseFrequency = useMemo(() => computePhraseFrequency(filteredPosts, 20), [filteredPosts]);
+  const phraseFrequency = useMemo(() => computePhraseFrequency(filteredPosts, 10), [filteredPosts]);
   // 2026-08-19 follow-up: capped to the top 6 (already ranked descending by
   // computeLanguageBreakdown()) at Menno's own request — a long-tail list of
   // every language present was more clutter than signal.
@@ -466,7 +513,30 @@ export function OverviewTab({
             <div className="an-widget-header">
               <span className="an-widget-title">Sentiment</span>
             </div>
-            <SentimentGaugeSVG index={sentimentIndex} split={sentimentSplit} onSegmentClick={toggleSentimentFilter} activeSegment={filters.activeSentimentFilter} />
+            <SentimentGaugeSVG
+              index={sentimentIndex}
+              split={sentimentSplit}
+              onSegmentClick={toggleSentimentFilter}
+              activeSegment={filters.activeSentimentFilter}
+              sentimentDelta={sentimentDelta}
+            />
+          </div>
+
+          <div className="an-widget" id="widget-location-insights">
+            <div className="an-widget-header">
+              <span className="an-widget-title">Location Insights</span>
+            </div>
+            {countryBreakdown.length === 0 ? (
+              <EmptyState heading="No geographic data yet" body="Posts with country metadata or regional datelines will appear here." />
+            ) : (
+              <div className="an-location-insights-body">
+                <CountryWorldMap
+                  countryBreakdown={countryBreakdown}
+                  selectedCountry={filters.activeCountryFilter}
+                  onSelectCountry={toggleCountryFilter}
+                />
+              </div>
+            )}
           </div>
 
           <div className="an-widget" id="widget-authors-by-source">
@@ -564,58 +634,6 @@ export function OverviewTab({
                     )}
                   </ComposedChart>
                 </ResponsiveContainer>
-              </div>
-            )}
-          </div>
-
-          <div className="an-widget" id="widget-location-insights">
-            <div className="an-widget-header">
-              <span className="an-widget-title">Location &amp; geospatial insights</span>
-              <span className="an-widget-sublabel">Conversations by market</span>
-            </div>
-            {countryBreakdown.length === 0 ? (
-              <EmptyState heading="No geographic data yet" body="Posts with country metadata or regional datelines will appear here." />
-            ) : (
-              <div className="an-location-insights-body">
-                <CountryWorldMap
-                  countryBreakdown={countryBreakdown}
-                  selectedCountry={filters.activeCountryFilter}
-                  onSelectCountry={toggleCountryFilter}
-                />
-                <div className="an-top-countries-wrap">
-                  <div className="an-top-countries-title">Top Countries</div>
-                  <ul className="an-top-countries-list">
-                    {countryBreakdown.slice(0, 6).map((c) => {
-                      const isSelected = filters.activeCountryFilter === c.countryCode;
-                      return (
-                        <li key={c.countryCode}>
-                          <button
-                            type="button"
-                            className={`an-country-row${isSelected ? ' an-country-row-active' : ''}`}
-                            onClick={() => toggleCountryFilter(c.countryCode)}
-                          >
-                            <div className="an-country-identity">
-                              <span className="an-country-code-badge">{c.countryCode}</span>
-                              <span className="an-country-name">{c.name}</span>
-                            </div>
-                            <div className="an-country-bar-wrap">
-                              <div className="an-country-bar-track">
-                                <div
-                                  className="an-country-bar-fill"
-                                  style={{ width: `${Math.min(100, Math.max(3, c.share))}%` }}
-                                />
-                              </div>
-                            </div>
-                            <div className="an-country-stat">
-                              <span className="an-country-count">{c.count.toLocaleString()}</span>
-                              <span className="an-country-share">{c.share.toFixed(1)}%</span>
-                            </div>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
               </div>
             )}
           </div>
@@ -874,10 +892,58 @@ interface SentimentGaugeSVGProps {
   split: { positive: number; neutral: number; negative: number };
   activeSegment: 'positive' | 'neutral' | 'negative' | null;
   onSegmentClick: (value: 'positive' | 'neutral' | 'negative') => void;
+  sentimentDelta?: number | null;
 }
 
-/** Story 8.7 review follow-up (2026-08-19) — the resulting sentiment index is placed in front of (to the left of, per the original design spec's own §5) the donut ring, not just implied by its arc proportions. */
-function SentimentGaugeSVG({ index, split, activeSegment, onSegmentClick }: SentimentGaugeSVGProps) {
+function SentimentSmiley({ index }: { index: number | null }) {
+  if (index === null) {
+    return (
+      <g opacity="0.35">
+        <circle cx="50" cy="50" r="16" fill="none" stroke="#94a3b8" strokeWidth="1.5" />
+        <circle cx="45" cy="47" r="1.5" fill="#94a3b8" />
+        <circle cx="55" cy="47" r="1.5" fill="#94a3b8" />
+        <line x1="45" y1="54" x2="55" y2="54" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" />
+      </g>
+    );
+  }
+
+  if (index >= 2.0) {
+    // Green Positive Smiley — net positive majority (index > 0 = more positives than negatives)
+    return (
+      <g aria-label="Positive sentiment">
+        <circle cx="50" cy="50" r="17" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+        <circle cx="45" cy="46.5" r="1.75" fill="#059669" />
+        <circle cx="55" cy="46.5" r="1.75" fill="#059669" />
+        <path d="M 43 52 Q 50 59 57 52" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+      </g>
+    );
+  }
+
+  if (index >= -2.0) {
+    // Amber Neutral Smiley — balanced (index near 0)
+    return (
+      <g aria-label="Neutral sentiment">
+        <circle cx="50" cy="50" r="17" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.5" />
+        <circle cx="45" cy="46.5" r="1.75" fill="#d97706" />
+        <circle cx="55" cy="46.5" r="1.75" fill="#d97706" />
+        <line x1="44" y1="53.5" x2="56" y2="53.5" stroke="#d97706" strokeWidth="2" strokeLinecap="round" />
+      </g>
+    );
+  }
+
+  // Red Negative Smiley
+  return (
+    <g aria-label="Negative sentiment">
+      <circle cx="50" cy="50" r="17" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+      <circle cx="45" cy="46.5" r="1.75" fill="#dc2626" />
+      <circle cx="55" cy="46.5" r="1.75" fill="#dc2626" />
+      <path d="M 43 55.5 Q 50 48.5 57 55.5" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** Story 8.7 review follow-up — sentiment index on left, smiley inside donut chart, and 7-day delta change on right. */
+function SentimentGaugeSVG({ index, split, activeSegment, onSegmentClick, sentimentDelta }: SentimentGaugeSVGProps) {
   const total = split.positive + split.neutral + split.negative;
   const segments: Array<{ key: 'positive' | 'neutral' | 'negative'; value: number; color: string }> = [
     { key: 'negative', value: split.negative, color: SENTIMENT_COLORS.negative },
@@ -889,36 +955,66 @@ function SentimentGaugeSVG({ index, split, activeSegment, onSegmentClick }: Sent
   return (
     <div className="an-gauge-wrap">
       <div className="an-gauge-top-row">
-        <span className="an-gauge-index" title="Sentiment index (0–10, 10 = fully positive)">
+        <span className="an-gauge-index" title="Net sentiment index (−10 to +10). Positive majority → above 0; negative majority → below 0.">
           {index === null ? '—' : index.toFixed(1)}
         </span>
-        <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="Sentiment gauge">
+        <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="Sentiment gauge with smiley icon">
           <circle cx="50" cy="50" r={GAUGE_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="8" />
-          {total === 0
-            ? null
-            : segments.map((seg) => {
-                if (seg.value === 0) return null;
-                const length = (seg.value / total) * GAUGE_CIRCUMFERENCE;
-                const dashOffset = -offset;
-                offset += length;
-                return (
-                  <circle
-                    key={seg.key}
-                    cx="50"
-                    cy="50"
-                    r={GAUGE_RADIUS}
-                    fill="none"
-                    stroke={seg.color}
-                    strokeWidth="8"
-                    strokeDasharray={`${length} ${GAUGE_CIRCUMFERENCE - length}`}
-                    strokeDashoffset={dashOffset}
-                    transform="rotate(-90 50 50)"
-                    className={`an-gauge-segment${activeSegment === seg.key ? ' an-gauge-segment-active' : ''}`}
-                    onClick={() => onSegmentClick(seg.key)}
-                  />
-                );
-              })}
+          {total > 0 &&
+            segments.map((seg) => {
+              if (seg.value === 0) return null;
+              const length = (seg.value / total) * GAUGE_CIRCUMFERENCE;
+              const dashOffset = -offset;
+              offset += length;
+              return (
+                <circle
+                  key={seg.key}
+                  cx="50"
+                  cy="50"
+                  r={GAUGE_RADIUS}
+                  fill="none"
+                  stroke={seg.color}
+                  strokeWidth="8"
+                  strokeDasharray={`${length} ${GAUGE_CIRCUMFERENCE - length}`}
+                  strokeDashoffset={dashOffset}
+                  transform="rotate(-90 50 50)"
+                  className={`an-gauge-segment${activeSegment === seg.key ? ' an-gauge-segment-active' : ''}`}
+                  onClick={() => onSegmentClick(seg.key)}
+                />
+              );
+            })}
+          {/* Smiley in center of donut chart */}
+          <SentimentSmiley index={index} />
         </svg>
+
+        {/* Change index number compared to previous 7 days */}
+        <div
+          className="an-gauge-delta-wrap"
+          title={
+            sentimentDelta !== null && sentimentDelta !== undefined
+              ? `Change compared to previous 7 days: ${sentimentDelta > 0 ? `+${sentimentDelta.toFixed(1)}` : sentimentDelta.toFixed(1)}`
+              : 'Previous 7 days data not available'
+          }
+        >
+          {sentimentDelta !== null && sentimentDelta !== undefined ? (
+            <>
+              <span
+                className={`an-gauge-delta-pill ${
+                  sentimentDelta > 0
+                    ? 'an-gauge-delta-up'
+                    : sentimentDelta < 0
+                      ? 'an-gauge-delta-down'
+                      : 'an-gauge-delta-flat'
+                }`}
+              >
+                {sentimentDelta > 0 ? `+${sentimentDelta.toFixed(1)}` : sentimentDelta.toFixed(1)}
+              </span>
+              <span className="an-gauge-delta-label">vs prev 7d</span>
+            </>
+          ) : (
+            <span className="an-gauge-delta-none">—</span>
+          )}
+        </div>
       </div>
       {total > 0 && (
         <>
@@ -992,13 +1088,15 @@ function getPlatformColor(providerId: string): string {
 
 function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsBySourceWidgetProps) {
   let offset = 0;
+  const sortedBySource = [...summary.bySource].sort((a, b) => b.uniqueAuthorCount - a.uniqueAuthorCount);
+
   return (
     <div className="an-authors-by-source-wrap">
       <svg width="80" height="80" viewBox="0 0 80 80" role="img" aria-label="Authors by source">
         <circle cx="40" cy="40" r={AUTHORS_DONUT_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="6" />
         {summary.totalUniqueAuthors === 0
           ? null
-          : summary.bySource.map((source) => {
+          : sortedBySource.map((source) => {
               if (source.uniqueAuthorCount === 0) return null;
               const length = (source.uniqueAuthorCount / summary.totalUniqueAuthors) * AUTHORS_DONUT_CIRCUMFERENCE;
               const dashOffset = -offset;
@@ -1023,7 +1121,7 @@ function AuthorsBySourceWidget({ summary, activeSource, onRowClick }: AuthorsByS
         </text>
       </svg>
       <ul className="an-source-mini-list an-authors-by-source-list">
-        {summary.bySource.map((source) => (
+        {sortedBySource.map((source) => (
           <li key={source.providerId}>
             <button
               type="button"

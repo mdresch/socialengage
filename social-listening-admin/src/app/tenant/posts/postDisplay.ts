@@ -43,21 +43,40 @@ export function extractUrl(rawPayload: unknown): string | null {
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    if (typeof p.author === 'string' && p.author !== 'Facebook Page') return p.author;
-    if (typeof p.authorName === 'string' && p.authorName !== 'Facebook Page') return p.authorName;
-    if (typeof p.authorDisplayName === 'string') return p.authorDisplayName;
-    if (typeof p.channelTitle === 'string') return p.channelTitle;
+    if (typeof p.author === 'string' && p.author.trim().length > 0 && p.author !== 'Facebook Page') return p.author.trim();
+    if (typeof p.authorName === 'string' && p.authorName.trim().length > 0 && p.authorName !== 'Facebook Page') return p.authorName.trim();
+    if (typeof p.authorDisplayName === 'string' && p.authorDisplayName.trim().length > 0) return p.authorDisplayName.trim();
+    if (typeof p.channelTitle === 'string' && p.channelTitle.trim().length > 0) return p.channelTitle.trim();
     if (p.from && typeof p.from === 'object') {
       const from = p.from as Record<string, unknown>;
-      if (typeof from.name === 'string' && from.name !== 'Facebook Page') return from.name;
+      if (typeof from.name === 'string' && from.name.trim().length > 0 && from.name !== 'Facebook Page') return from.name.trim();
     }
-    if (typeof p.memberName === 'string') return p.memberName;
-    if (typeof p.username === 'string') return p.username;
-    if (typeof p.issuer === 'string') return p.issuer;
-    if (typeof p.pageName === 'string' && p.pageName !== 'Facebook Page') return p.pageName;
+    if (typeof p.memberName === 'string' && p.memberName.trim().length > 0) return p.memberName.trim();
+    if (typeof p.username === 'string' && p.username.trim().length > 0) return p.username.trim();
+    if (typeof p.issuer === 'string' && p.issuer.trim().length > 0) return p.issuer.trim();
+    if (typeof p.pageName === 'string' && p.pageName.trim().length > 0 && p.pageName !== 'Facebook Page') return p.pageName.trim();
+    if (typeof p.page_name === 'string' && p.page_name.trim().length > 0 && p.page_name !== 'Facebook Page') return p.page_name.trim();
+    if (p.page && typeof p.page === 'object') {
+      const page = p.page as Record<string, unknown>;
+      if (typeof page.name === 'string' && page.name.trim().length > 0 && page.name !== 'Facebook Page') return page.name.trim();
+    }
     if (p.source && typeof p.source === 'object') {
       const src = p.source as Record<string, unknown>;
-      if (typeof src.name === 'string') return src.name;
+      if (typeof src.name === 'string' && src.name.trim().length > 0) return src.name.trim();
+    }
+
+    // Fallback for Facebook posts when generic 'Facebook Page' or pageId is present
+    const isFacebook = p.providerId === 'facebook' || p.provider === 'facebook';
+    if (isFacebook) {
+      if (typeof p.pageName === 'string' && p.pageName.trim().length > 0) return p.pageName.trim();
+      if (typeof p.page_name === 'string' && p.page_name.trim().length > 0) return p.page_name.trim();
+      if (p.from && typeof p.from === 'object') {
+        const from = p.from as Record<string, unknown>;
+        if (typeof from.name === 'string' && from.name.trim().length > 0) return from.name.trim();
+      }
+      if (typeof p.pageId === 'string' && p.pageId.trim().length > 0) return `Facebook Page (${p.pageId.trim()})`;
+      if (typeof p.page_id === 'string' && p.page_id.trim().length > 0) return `Facebook Page (${p.page_id.trim()})`;
+      if (typeof p.author === 'string' && p.author.trim().length > 0) return p.author.trim();
     }
   }
   return null;

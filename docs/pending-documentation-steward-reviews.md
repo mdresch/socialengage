@@ -3163,3 +3163,15 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** Pending review
 
+## 2026-08-31 — bbfbb04 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+
+- **Full commit:** `bbfbb043aaf91608f026b741c78f8a14d0e49542`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 6948420 — feat(geo): add backfillGeoLocations.ts and geo:backfill npm script (no-story: backfill utility only, not a story impl) - Backfilled 2,644 posts; final coverage 4757/4757 (100%) - Contract story-2.20 PASS (12/12)
+
+- **Full commit:** `6948420d52db6f6676e295c908ebaa6e6f7f24f4`
+- **Files touched:** social-listening-core/package.json, social-listening-core/src/connectors/geo/backfillGeoLocations.ts
+- **Status:** Pending review
+
