@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-31
 **Source Capture:** `raw/synthesis-epic-13-2026-08-31/`
-**Git HEAD:** `2609da540d3175d54daa2d08c1c9ac0d2eab6054`
+**Git HEAD:** `89db5a69928d6de074625546f05fab3214c5ace6`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 568 |
+| Git commits scanned | 511 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 1 |
-| Contract test files | 203 |
+| Feature commits (this epic) | 2 |
+| Contract test files | 204 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,11 +28,12 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `e48c4a76a35bd42d219a6ba1d8162166fcccf69b` | 2026-08-31 22:39:58 +0200 | feat(epic-13): implement Story 13.2 — per-connector query translation and validation (backend) |
 | `0240f80b5863a103619840f06e1d8d601fe29b25` | 2026-08-31 22:08:26 +0200 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) |
 
 ## 4. Contract Test Inventory
 
-Total: 203 contract test files.
+Total: 204 contract test files.
 
 ### social-listening-admin/contracts (76 files)
 
@@ -113,7 +114,7 @@ Total: 203 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (127 files)
+### social-listening-core/contracts (128 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -155,6 +156,7 @@ Total: 203 contract test files.
 - `story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` (modified 2026-08-29)
 - `story-12.9.dashboard-widget-contracts.contract.test.ts` (modified 2026-08-29)
 - `story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts` (modified 2026-08-31)
+- `story-13.2.per-connector-query-translation-and-validation.contract.test.ts` (modified 2026-08-31)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
@@ -277,7 +279,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 13.1.
+Feature commits reference stories: 13.2, 13.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

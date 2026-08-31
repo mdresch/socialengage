@@ -4221,6 +4221,20 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
+## 2026-08-31 — Healing: Story 11.5 topic evolution timeline — social-listening-core@a5c926c
+
+- **Full commit:** `a5c926c9cd44fb6f6343f125d913a8ef66ce9c2a`
+- **Repo:** social-listening-core
+- **Story / ADR:** 11.5 / ADR-0097
+- **Contract:** `contracts/epic-11/story-11.5.topic-evolution.contract.test.ts`
+- **SKILL.md:** `.claude/skills/tenant-auth-middleware/SKILL.md`
+- **Files touched:** `social-listening-core/src/http/versions/v1/topicsRouter.ts`, `social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts`
+- **Story contract at merge:** PASS (7/7)
+- **Epic-11 suite at merge:** PASS (37/37)
+- **Notes:** `topicsRouter.ts` was still reading `X-Tenant-Id` directly, which broke the test auth bypass that supplies `X-Test-Identity`. Switched all topic routes to `requireTenantUser(req, res)`/`RequestWithIdentity`. Added route-level validation for `granularity` (`day`, `week`, `month`) so the existing `rejects invalid granularity` AC passes with the correct error message. Added a contract test verifying `X-Tenant-Id` alone is not accepted by the endpoint.
+
+---
+
 ## 2026-08-31 — Story 13.1 — social-listening-core@29b274c
 
 - **Full commit:** `29b274c9ad2bd12b0e49c2d3c0a5e5d0f9f5d5f3`
@@ -4274,7 +4288,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - `social-listening-core/src/connectors/queryTranslation.ts` (new)
   - `social-listening-core/src/connectors/queryCapabilities.ts` (refactored to delegate to translators)
   - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (existing query-capabilities route now uses translator)
-  - `social-listening-core/src/http/versions/v1/watchlistsRouter.ts` (existing save-time validation already wired)
+  - `social-listening-core/src/users/versions/v1/watchlistsRouter.ts` (existing save-time validation already wired)
   - `docs/user-stories/epic-13-adr-0109-to-0117.md`
 - **Full suite at merge:** Epic-13 suite passes (47/47 tests). Typecheck passes. Targeted cross-epic run (epic-2/3/9/12/13) passed for non-environmental suites; the same environmental/foreign-contract failures observed in Story 13.1 remain (missing GNews/Facebook/YouTube credentials, Azure AI keys, long tenant-deletion timeout).
 

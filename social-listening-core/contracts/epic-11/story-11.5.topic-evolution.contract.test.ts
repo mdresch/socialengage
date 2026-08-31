@@ -148,7 +148,17 @@ describe('Story 11.5 — Topic Evolution Timeline (Backend)', () => {
     });
   });
 
-  describe('AC5: Tenant Isolation', () => {
+  describe('AC5: Authentication', () => {
+    it('rejects requests with only a stray X-Tenant-Id header', async () => {
+      const res = await request(app)
+        .get('/v1/topics/evolution?topic=Artificial Intelligence')
+        .set('x-tenant-id', tenant.id);
+
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('AC6: Tenant Isolation', () => {
     it('does not leak other tenants data into timeline', async () => {
       const res = await request(app)
         .get('/v1/topics/evolution?topic=Artificial Intelligence')
