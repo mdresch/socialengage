@@ -11,6 +11,7 @@ import {
   astToBooleanQuery,
   validateAstAgainstCapabilities,
   WatchlistAST,
+  ClauseType,
 } from '../../src/lib/watchlist-ast';
 
 const ADMIN_ROOT = path.resolve(__dirname, '..', '..');
@@ -61,7 +62,7 @@ describe('Story 12.4 — Boolean query visual builder (frontend)', () => {
 
       const gnewsCaps = {
         platformId: 'gnews',
-        supportedClauses: ['keyword', 'phrase', 'source', 'date', 'nested'],
+        supportedClauses: ['keyword', 'phrase', 'source', 'date', 'nested'] as ClauseType[],
         supportedOperators: ['AND', 'OR', 'NOT'] as Array<'AND' | 'OR' | 'NOT'>,
       };
 

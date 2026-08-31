@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   WatchlistAST,
   WatchlistClause,
   ClauseType,
   DateOperator,
   ConnectorQueryCapabilities,
-  validateAstAgainstCapabilities,
+  getWarningsByClausePath,
+  validateAstQueryLimits,
   astToBooleanQuery,
   parseBooleanQueryToAst,
   AstWarning,
+  AstError,
 } from '@/lib/watchlist-ast';
 
 export interface BooleanQueryBuilderProps {
@@ -19,6 +21,7 @@ export interface BooleanQueryBuilderProps {
   onChange: (ast: WatchlistAST, queryString: string) => void;
   selectedPlatformIds?: string[];
   disabled?: boolean;
+  onValidationChange?: (state: { hasWarnings: boolean; hasErrors: boolean }) => void;
 }
 
 const CLAUSE_TYPE_LABELS: Record<ClauseType, { label: string; icon: string; placeholder: string }> = {
@@ -53,6 +56,7 @@ export function BooleanQueryBuilder({
   onChange,
   selectedPlatformIds = [],
   disabled = false,
+  onValidationChange,
 }: BooleanQueryBuilderProps) {
   const [mode, setMode] = useState<'guided' | 'advanced'>('guided');
   const [ast, setAst] = useState<WatchlistAST>(() => {
@@ -69,6 +73,9 @@ export function BooleanQueryBuilder({
 
   const [capabilitiesList, setCapabilitiesList] = useState<ConnectorQueryCapabilities[]>([]);
   const [showAstPreview, setShowAstPreview] = useState(false);
+
+  const onValidationChangeRef = useRef(onValidationChange);
+  onValidationChangeRef.current = onValidationChange;
 
   // Fetch capabilities for target platforms
   useEffect(() => {
@@ -147,7 +154,15 @@ export function BooleanQueryBuilder({
     updateAstAndNotify({ ...ast, clauses: updatedClauses });
   };
 
-  const warnings: AstWarning[] = validateAstAgainstCapabilities(ast, capabilitiesList);
+  const warningsByPath = getWarningsByClausePath(ast, capabilitiesList);
+  const warnings = Object.values(warningsByPath).flat();
+  const errors: AstError[] = validateAstQueryLimits(ast, capabilitiesList);
+  const hasWarnings = warnings.length > 0;
+  const hasErrors = errors.length > 0;
+
+  useEffect(() => {
+    onValidationChangeRef.current?.({ hasWarnings, hasErrors });
+  }, [hasWarnings, hasErrors]);
 
   return (
     <div className="boolean-query-builder card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-md)' }}>
@@ -184,8 +199,8 @@ export function BooleanQueryBuilder({
         </button>
       </div>
 
-      {/* Warnings Section */}
-      {warnings.length > 0 && (
+      {/* Errors Section */}
+      {errors.length > 0 && (
         <div
           role="alert"
           style={{
@@ -195,6 +210,32 @@ export function BooleanQueryBuilder({
             padding: 'var(--space-3)',
             marginBottom: 'var(--space-3)',
             color: 'var(--danger-400, #f87171)',
+          }}
+        >
+          <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 'var(--space-1)' }}>
+            🚫 Cannot save — query exceeds platform limits:
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: '0.8rem' }}>
+            {errors.map((e, idx) => (
+              <li key={idx}>
+                <strong>[{e.platformId}]</strong> {e.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Warnings Section */}
+      {warnings.length > 0 && (
+        <div
+          role="status"
+          style={{
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            border: '1px solid rgba(234, 179, 8, 0.3)',
+            borderRadius: 'var(--radius-sm)',
+            padding: 'var(--space-3)',
+            marginBottom: 'var(--space-3)',
+            color: 'var(--warning-400, #facc15)',
           }}
         >
           <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 'var(--space-1)' }}>
@@ -228,7 +269,7 @@ export function BooleanQueryBuilder({
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               Match clauses with operator:
             </span>
-            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               {OPERATOR_OPTIONS.map((op) => (
                 <button
                   key={op.value}
@@ -242,6 +283,9 @@ export function BooleanQueryBuilder({
                   {op.label}
                 </button>
               ))}
+              {warningsByPath['root.operator'] && (
+                <WarningChip warnings={warningsByPath['root.operator']} />
+              )}
             </div>
           </div>
 
@@ -251,7 +295,8 @@ export function BooleanQueryBuilder({
               <ClauseRowItem
                 key={idx}
                 clause={clause}
-                index={idx}
+                path={`root.clauses.${idx}`}
+                allWarnings={warningsByPath}
                 onChange={(updated) => updateClause(idx, updated)}
                 onDelete={() => removeClause(idx)}
                 disabled={disabled}
@@ -320,18 +365,37 @@ export function BooleanQueryBuilder({
   );
 }
 
+function WarningChip({ warnings }: { warnings?: AstWarning[] }) {
+  if (!warnings || warnings.length === 0) return null;
+  return (
+    <span
+      role="img"
+      aria-label={warnings.map((w) => w.platformId + ': ' + w.message).join(' | ')}
+      title={warnings.map((w) => w.platformId + ': ' + w.message).join(' | ')}
+      style={{ cursor: 'help', fontSize: '0.85rem', marginLeft: '4px' }}
+    >
+      ⚠️
+    </span>
+  );
+}
+
 function ClauseRowItem({
   clause,
+  path,
+  allWarnings,
   onChange,
   onDelete,
   disabled,
 }: {
   clause: WatchlistClause;
-  index: number;
+  path: string;
+  allWarnings: Record<string, AstWarning[]>;
   onChange: (clause: WatchlistClause) => void;
   onDelete: () => void;
   disabled?: boolean;
 }) {
+  const warnings = allWarnings[path];
+
   if (clause.type === 'nested') {
     return (
       <div
@@ -356,6 +420,7 @@ function ClauseRowItem({
               <option value="OR">| OR</option>
               <option value="NOT">! NOT</option>
             </select>
+            {warnings && warnings.length > 0 && <WarningChip warnings={warnings} />}
           </div>
           <button
             type="button"
@@ -373,7 +438,8 @@ function ClauseRowItem({
             <ClauseRowItem
               key={childIdx}
               clause={childClause}
-              index={childIdx}
+              path={`${path}.clauses.${childIdx}`}
+              allWarnings={allWarnings}
               onChange={(updatedChild) => {
                 const newClauses = [...clause.clauses];
                 newClauses[childIdx] = updatedChild;
@@ -493,6 +559,9 @@ function ClauseRowItem({
           disabled={disabled}
         />
       )}
+
+      {/* Warning chip */}
+      {warnings && warnings.length > 0 && <WarningChip warnings={warnings} />}
 
       {/* Delete button */}
       <button

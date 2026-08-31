@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useCallback, type FormEvent } from 'react';
 import type { Watchlist } from '@/lib/core-client';
 import { TagInput } from '@/components/ui';
 import { BooleanQueryBuilder } from '@/components/watchlists/BooleanQueryBuilder';
@@ -98,6 +98,11 @@ export function WatchlistForm({
   const [platformIds, setPlatformIds] = useState<string[]>(watchlist?.platformIds ?? []);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [hasErrors, setHasErrors] = useState(false);
+
+  const handleValidationChange = useCallback((state: { hasErrors: boolean }) => {
+    setHasErrors(state.hasErrors);
+  }, []);
 
   function togglePlatform(id: string) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]));
@@ -247,6 +252,7 @@ export function WatchlistForm({
               setAst(newAst);
               setBooleanQuery(newQueryString);
             }}
+            onValidationChange={handleValidationChange}
           />
           <p className="wl-form-hint" style={{ marginTop: 'var(--space-1)' }}>
             Evaluated against titles and bodies during stream ingestion.
@@ -313,7 +319,7 @@ export function WatchlistForm({
           <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || hasErrors}>
             {submitting ? 'Saving…' : 'Save changes'}
           </button>
         </div>
@@ -321,7 +327,7 @@ export function WatchlistForm({
 
       {mode === 'create' && !onCancel && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || hasErrors}>
             {submitting ? 'Creating…' : 'Create watchlist'}
           </button>
         </div>
