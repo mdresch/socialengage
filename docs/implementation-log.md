@@ -4299,3 +4299,21 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - Native query generation covers keyword, phrase, hashtag, mention, author, source, date, and nested clauses with platform-specific render modes (e.g., YouTube `channelId`/`publishedAfter`, GNews `from`/`to`).
 - Fallback matching (`evaluateWatchlistAst`) remains the safety net and is proven consistent with native translation on the reference corpus.
 
+---
+
+## 2026-08-31 — Story 13.3 — social-listening-admin@ef4e0f2
+
+- **Full commit:** `ef4e0f29e7745778d9ee2e6e1cd9fae1337a41ed`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.3 / ADR-0110
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (10/10)
+- **SKILL.md:** `social-listening-admin/.claude/skills/watchlist-builder/SKILL.md` (new); `social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md` (updated); `social-listening-admin/.claude/skills/watchlist-management/SKILL.md` (updated)
+- **Files touched:**
+  - `social-listening-admin/contracts/epic-13/story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (new)
+  - `social-listening-admin/src/lib/watchlist-ast.ts` (added `getWarningsByClausePath`, `validateAstQueryLimits`, `countClauses`, `AstError`, `limits` support)
+  - `social-listening-admin/src/components/watchlists/BooleanQueryBuilder.tsx` (per-clause warning chips, native title tooltips, separate `hasErrors`/`hasWarnings` reporting)
+  - `social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx` (gates save on `hasErrors`, passes `selectedPlatformIds` and `onValidationChange`)
+  - `social-listening-admin/.claude/skills/watchlist-builder/SKILL.md` (new)
+  - `social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md` (updated)
+  - `social-listening-admin/.claude/skills/watchlist-management/SKILL.md` (updated)
+- **Full suite at merge:** Epic-13 suite passes (10/10). Epic-12 suite passes (59/59). Story 6.4 watchlist-management suite passes (25/25). Admin typecheck passes for changed files; pre-existing type errors in unrelated epic-8/epic-6 analytics and composer files, and environmental/foreign-credential failures in full `npm run test:contracts`, are not Story 13.3 regressions.
