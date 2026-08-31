@@ -177,12 +177,12 @@ export function CountryWorldMap({
   }, [markers]);
 
   return (
-    <div className="an-location-globe-card relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
+    <div className="an-location-globe-card relative w-full flex flex-col items-center justify-center overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
       {/* 3D WebGL Globe Canvas Container */}
-      <div className="relative mx-auto flex items-center justify-center" style={{ width: '100%', maxWidth: '340px', aspectRatio: '1/1' }}>
+      <div className="relative mx-auto flex items-center justify-center" style={{ width: '100%', maxWidth: 'min(340px, 100%)', aspectRatio: '1/1' }}>
         <canvas
           ref={canvasRef}
-          style={{ width: '100%', height: '100%', cursor: 'grab', contain: 'layout paint size' }}
+          style={{ width: '100%', height: '100%', display: 'block', cursor: 'grab', contain: 'layout paint size' }}
           onPointerDown={(e) => {
             pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
             if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing';
@@ -209,19 +209,9 @@ export function CountryWorldMap({
           }}
         />
 
-        {/* Floating Globe HUD / Compass Badge */}
-        <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1.5 rounded-full bg-white/80 dark:bg-slate-800/80 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-300 shadow-xs backdrop-blur-xs">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          <span>3D Globe</span>
-        </div>
-
       </div>
 
-      {/* Screen-reader accessible country breakdown list */}
+      {/* Screen-reader / contract-accessible country breakdown list — visually hidden, never displayed. */}
       <div className="sr-only" aria-live="polite">
         {countryBreakdown.map((c) => (
           <span key={c.countryCode}>

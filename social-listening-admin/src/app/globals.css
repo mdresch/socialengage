@@ -5328,7 +5328,18 @@ button:disabled {
   width: 100%;
 }
 
-.an-author-initials {
+.an-author-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.an-author-avatar .an-author-initials {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5339,6 +5350,27 @@ button:disabled {
   color: var(--color-accent-contrast);
   font-size: 0.6875rem;
   font-weight: 650;
+}
+
+.an-author-platform-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--color-accent);
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  z-index: 2;
+}
+
+.an-author-platform-badge svg {
+  width: 10px;
+  height: 10px;
 }
 
 .an-overview-header-controls {
@@ -6016,6 +6048,23 @@ button:disabled {
   justify-content: center;
   align-items: center;
   gap: var(--space-3);
+}
+
+.an-location-globe-card {
+  width: 100%;
+  max-width: 340px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .an-top-countries-wrap {
@@ -7783,6 +7832,15 @@ button:disabled {
   font-weight: 600;
   font-family: var(--font-mono, monospace);
   color: var(--color-text-primary);
+}
+
+.an-conversations-entity-row {
+  padding-left: var(--space-2);
+}
+
+.an-conversations-entity-type {
+  text-transform: capitalize;
+  font-size: 0.75rem;
 }
 
 .an-conversations-cloud-hero {
