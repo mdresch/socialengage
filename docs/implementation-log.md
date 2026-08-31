@@ -4219,3 +4219,44 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added rich interactive popups showing country name, buzz post volume, and sentiment index.
   - Maintained click-to-filter drill-down functionality linking directly to the slideover matching posts drawer.
 
+---
+
+## 2026-08-31 — Story 13.1 — social-listening-core@29b274c
+
+- **Full commit:** `29b274c9ad2bd12b0e49c2d3c0a5e5d0f9f5d5f3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.1 / ADR-0109
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts` (18/18)
+- **SKILL.md:** `social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md` (updated)
+- **Files touched:**
+  - `social-listening-core/contracts/epic-13/story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts` (new)
+  - `social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts` (healed, ADR-0109 supersession note)
+  - `social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts` (healed)
+  - `social-listening-core/contracts/epic-2/story-2.5.proportional-failure-threshold.contract.test.ts` (healed)
+  - `social-listening-core/contracts/epic-2/story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts` (healed)
+  - `social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts` (healed)
+  - `social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts` (healed)
+  - `social-listening-core/migrations/0064_add_health_check_trigger_type.sql` (new)
+  - `social-listening-core/src/connectors/connectorHealth.ts`
+  - `social-listening-core/src/connectors/types.ts`
+  - `social-listening-core/src/ingestion/ingestionRunStore.ts`
+  - `social-listening-core/src/ingestion/runIngestionAttempt.ts`
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts`
+  - `social-listening-core/src/events/connectorIngestionAlertEvent.ts`
+  - `social-listening-core/src/admin/platformAdminAuditLog.ts`
+  - `social-listening-core/src/credentials/keyVaultProvider.ts` (dev default update)
+  - `social-listening-core/src/archival/blobArchiveClient.ts` (dev default update)
+  - `social-listening-core/src/events/serviceBusPublisher.ts` (dev default update)
+  - `social-listening-core/.env.example`
+  - `docs/adr/0109-connector-health-auto-disable-and-recovery.md`
+  - `docs/adr/0023-proportional-connector-failure-threshold.md`
+  - `docs/adr/README.md`
+  - `docs/user-stories/epic-13-adr-0109-to-0117.md`
+- **Full suite at merge:** Partial — Story 13.1 contract and healed earlier contracts pass (18/18 + 36/37 affected tests); full accumulated suite is 107/127 suites, 905/919 tests passing. The remaining 20 failures are environmental/foreign-contract (missing Azure AI keys, GNews/Facebook/YouTube credentials, and one long-running tenant-deletion timeout), not regressions from this story. Key Vault and Blob/Service Bus defaults were updated to the live `rg-social-listening` resources (`sociallistening-kv`, `sociallisteningmcpp`, `sociallistening-bus`).
+
+**Notes:**
+- Literal ADR-0109 interpretation: 5 consecutive failed runs -> `failing`; any non-retryable run immediately -> `disabled`; `reconnect_required` is the credential-class variant and also blocks polling.
+- `POST /v1/connectors/:platformId/enable` performs a single health-check attempt, logs to `platform_admin_audit_log`, and on failure resets the streak to 1 leaving the connector `failing`.
+- `shouldAttemptIngestion()` no longer has a half-open probe for `failing` — manual re-enable is the only recovery path.
+- The `degraded` -> `healthy` auto-recovery uses 3 consecutive successes.
+

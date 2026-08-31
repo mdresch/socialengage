@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-31 | 22:11 | — | — | Documentation | — | Merge branch 'feat/story-13.1' into main (29b274c) |
 | 2026-08-31 | 22:09 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (046563b) |
 | 2026-08-31 | 22:08 | — | — | Documentation | Story 13.1 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) (0240f80) |
 | 2026-08-31 | 18:54 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (78c6e3e) |

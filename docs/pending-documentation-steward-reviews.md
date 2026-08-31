@@ -3193,3 +3193,9 @@
 - **Files touched:** docs/adr/0023-proportional-connector-failure-threshold.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.env.example, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/contracts/epic-13/story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts, social-listening-core/contracts/epic-2/story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.5.proportional-failure-threshold.contract.test.ts, social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts, social-listening-core/migrations/0064_add_health_check_trigger_type.sql, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/credentials/keyVaultProvider.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/serviceBusPublisher.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
 - **Status:** Pending review
 
+## 2026-08-31 — 29b274c — Merge branch 'feat/story-13.1' into main
+
+- **Full commit:** `29b274c4acac169cff210782d3ff692b308bf779`
+- **Files touched:** 
+- **Status:** Pending review
+
