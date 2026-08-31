@@ -26,6 +26,26 @@ For a healing pass (no story number, or fixing a cross-component regression per 
 
 ---
 
+## 2026-08-31 — Epic 8 Frontend UI Fine Tuning — social-listening-admin@d78c55c
+
+- **Full commit:** `d78c55c30cbcb4660d04f455f2061d8c2390c953`
+- **Repo:** social-listening-admin
+- **Story / ADR:** Epic 8 / ADR-0054, ADR-0061, ADR-0062, ADR-0064 (Stories 8.1, 8.2, 8.3, 8.6, 8.7, 8.9, 8.10)
+- **Contracts:**
+  - `contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.2.sentiment-tab.contract.test.ts` (19/19)
+  - `contracts/epic-8/story-8.3.conversations-tab.contract.test.ts` (18/18)
+  - `contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts` (9/9)
+  - `contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts` (32/32)
+  - `contracts/epic-8/story-8.9.watchlist-filter-and-coverage-widget.contract.test.ts` (20/20)
+  - `contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/analytics-dashboard/SKILL.md`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/SidebarNav.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/AnimatedChartTooltip.tsx, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/InteractiveWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/LocationTab.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/loading.tsx, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/ui/RelativeTime.tsx
+- **Epic-8 suite at merge:** PASS (117/117); suite result carried forward from the four detailed 2026-08-31 entries below, not independently re-verified during this catch-up
+- **Notes:** Consolidated catch-up log entry for the `Features on Frontend UI fine tuning` commit. The four detailed 2026-08-31 entries below (Story 8.2 & 8.7 UI Polish, Analytics Loading Optimization & Location Tab, Sources Tab Widget Upgrades, Interactive Leaflet Real World Map) were appended in this same commit but lack `Full commit` and `Files touched`; this entry supplies the missing hash and complete file list. Also includes minor project-progress-dashboard sync and pending-review tracking updates.
+
+---
+
 ## 2026-08-31 — Geo Backfill Utility — social-listening-core@6948420
 
 - **Full commit:** `694842045a9b3e4568b7fde3e68b28f7e9cf3b00`
