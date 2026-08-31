@@ -177,7 +177,7 @@ export function CountryWorldMap({
   }, [markers]);
 
   return (
-    <div className="an-location-globe-card relative w-full overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
+    <div className="an-location-globe-card relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
       {/* 3D WebGL Globe Canvas Container */}
       <div className="relative mx-auto flex items-center justify-center" style={{ width: '100%', maxWidth: '340px', aspectRatio: '1/1' }}>
         <canvas
@@ -219,10 +219,6 @@ export function CountryWorldMap({
           <span>3D Globe</span>
         </div>
 
-        {/* Drag Hint */}
-        <div className="pointer-events-none absolute bottom-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-          Drag to rotate · Auto-spinning
-        </div>
       </div>
 
       {/* Screen-reader accessible country breakdown list */}

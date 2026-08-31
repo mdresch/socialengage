@@ -3257,5 +3257,15 @@
 
 - **Full commit:** `2b3e8ccbf498b3f682e60e3d7b889f1ce8e896cc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+## 2026-08-31 — a5c926c — heal(story-11.5): use resolved identity and validate granularity in /v1/topics/evolution
+
+- **Full commit:** `a5c926c9cd44fb6f6343f125d913a8ef66ce9c2a`
+- **Files touched:** social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 04bfeb7 — docs(trace): story-11.5 healing pass log entry
+
+- **Full commit:** `04bfeb7bcc28fe4ee046002c712cf6114eb31386`
+- **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
