@@ -1,8 +1,8 @@
 # Self-Learning Synthesis: Epic 12 (Epic 12)
 
-**Compiled Date:** 2026-08-29
-**Source Capture:** `raw/synthesis-epic-12-2026-08-29/`
-**Git HEAD:** `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586`
+**Compiled Date:** 2026-08-31
+**Source Capture:** `raw/synthesis-epic-12-2026-08-31/`
+**Git HEAD:** `060267514e379e6977cb132e23d28817581502b1`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 958 |
+| Git commits scanned | 880 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 14 |
-| Contract test files | 200 |
+| Feature commits (this epic) | 16 |
+| Contract test files | 202 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,6 +28,8 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `060267514e379e6977cb132e23d28817581502b1` | 2026-08-31 07:28:08 +0200 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) |
+| `ee9ffe51710c818f364f8af199fceb4c48b1a7ae` | 2026-08-30 13:34:41 +0200 | feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend) |
 | `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586` | 2026-08-29 21:57:50 +0200 | feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend) |
 | `da86059e1db111b27c6d3a3e88531bb044e1614b` | 2026-08-29 21:35:46 +0200 | feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend) |
 | `95c8a973c3b2f9d2794767c89b28f84ea85f4920` | 2026-08-29 20:25:11 +0200 | feat(epic-12): implement Story 12.12 - webhook management UI (frontend) |
@@ -45,9 +47,9 @@
 
 ## 4. Contract Test Inventory
 
-Total: 200 contract test files.
+Total: 202 contract test files.
 
-### social-listening-admin/contracts (75 files)
+### social-listening-admin/contracts (76 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -65,13 +67,14 @@ Total: 200 contract test files.
 - `story-12.10.dashboard-widget-renderer.contract.test.ts` (modified 2026-08-29)
 - `story-12.12.webhook-management-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.14.workspace-settings-ui.contract.test.ts` (modified 2026-08-29)
+- `story-12.16.influencer-discovery-ui.contract.test.ts` (modified 2026-08-30)
 - `story-12.2.connector-capability-matrix-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.4.boolean-query-visual-builder.contract.test.ts` (modified 2026-08-29)
 - `story-12.6.ai-sentiment-aspect-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.8.topic-curation-selected-topic-ui.contract.test.ts` (modified 2026-08-29)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
-- `story-6.11.post-feed.contract.test.ts` (modified 2026-08-29)
+- `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
 - `story-6.12.tenant-owned-feed-connector-setup.contract.test.ts` (modified 2026-08-17)
 - `story-6.13.tenant-deletion-offboarding.contract.test.ts` (modified 2026-08-27)
 - `story-6.14.access-history-view.contract.test.ts` (modified 2026-08-17)
@@ -125,7 +128,7 @@ Total: 200 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (125 files)
+### social-listening-core/contracts (126 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -161,6 +164,7 @@ Total: 200 contract test files.
 - `story-12.1.connector-capability-matrix.contract.test.ts` (modified 2026-08-29)
 - `story-12.11.public-api-and-webhooks.contract.test.ts` (modified 2026-08-29)
 - `story-12.13.multi-user-workspaces-rbac.contract.test.ts` (modified 2026-08-29)
+- `story-12.15.influencer-discovery-and-scoring.contract.test.ts` (modified 2026-08-30)
 - `story-12.3.boolean-query-ast.contract.test.ts` (modified 2026-08-29)
 - `story-12.5.ai-sentiment-aspect-schema.contract.test.ts` (modified 2026-08-29)
 - `story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` (modified 2026-08-29)
@@ -287,7 +291,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 12.14, 12.13, 12.12, 12.11, 12.10, 12.9, 12.8, 12.7, 12.6, 12.5, 12.4, 12.3, 12.2, 12.1.
+Feature commits reference stories: 12.16, 12.15, 12.14, 12.13, 12.12, 12.11, 12.10, 12.9, 12.8, 12.7, 12.6, 12.5, 12.4, 12.3, 12.2, 12.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

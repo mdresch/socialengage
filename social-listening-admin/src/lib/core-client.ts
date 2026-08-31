@@ -3119,6 +3119,73 @@ export async function testWebhook(token: string, id: string): Promise<{ success:
   return res.json();
 }
 
+// ─── Story 12.16 (ADR-0108): Influencer Discovery API client ─────────────────
+
+export interface InfluencerItem {
+  authorId: string;
+  authorName: string;
+  platformId: string;
+  publicUrl?: string;
+  reachScore: number;
+  engagementScore: number;
+  authenticityScore: number;
+  influenceScore: number;
+  topTopics: Array<{ topicId: string; topicName: string; relevance: number }>;
+  recentPosts: number;
+}
+
+export interface InfluencerQueryParamsInput {
+  topicId?: string;
+  platformId?: string;
+  watchlistId?: string;
+  minScore?: number;
+  sort?: 'influence' | 'reach' | 'engagement' | 'authenticity' | 'recentPosts';
+  limit?: number;
+}
+
+export interface InfluencerScoreExplanation {
+  authorId: string;
+  influenceScore: number;
+  breakdown: {
+    reach: { score: number; weight: number; weighted: number };
+    engagement: { score: number; weight: number; weighted: number };
+    authenticity: { score: number; weight: number; weighted: number };
+    topicRelevance: { score: number; weight: number; weighted: number };
+  };
+}
+
+export async function fetchInfluencers(
+  token: string,
+  params: InfluencerQueryParamsInput = {}
+): Promise<{ influencers: InfluencerItem[] }> {
+  const q = new URLSearchParams();
+  if (params.topicId) q.set('topicId', params.topicId);
+  if (params.platformId) q.set('platformId', params.platformId);
+  if (params.watchlistId) q.set('watchlistId', params.watchlistId);
+  if (params.minScore !== undefined) q.set('minScore', params.minScore.toString());
+  if (params.sort) q.set('sort', params.sort);
+  if (params.limit) q.set('limit', params.limit.toString());
+
+  const url = `${getBaseUrl()}/v1/influencers${q.toString() ? `?${q.toString()}` : ''}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`fetchInfluencers failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchInfluencerExplanation(
+  token: string,
+  authorId: string
+): Promise<InfluencerScoreExplanation> {
+  const res = await fetch(`${getBaseUrl()}/v1/influencers/${authorId}/explain`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`fetchInfluencerExplanation failed: ${res.status}`);
+  return res.json();
+}
+
+
 
 
 

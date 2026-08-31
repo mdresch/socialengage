@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-31 | 07:29 | — | — | Documentation | Story 12.16 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) (0602675) |
+| 2026-08-31 | 07:28 | — | — | Documentation | Story 12.16 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) (6224435) |
+| 2026-08-30 | 13:57 | — | — | Documentation | Story 12.15 | feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend) (ee9ffe5) |
 | 2026-08-30 | 13:56 | — | — | Documentation | Story 12.15 | feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend) (3e5ff0a) |
 | 2026-08-30 | 13:34 | — | — | Documentation | Story 12.15 | feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend) (fa3a218) |
 | 2026-08-29 | 22:00 | — | — | Documentation | Story 12.14 | feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend) (0ac8cd4) |
