@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-31 | 22:08 | — | — | Documentation | Story 13.1 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) (0240f80) |
 | 2026-08-31 | 18:40 | — | — | Documentation | — | Features on Frontend UI fine tuning (d78c55c) |
 | 2026-08-31 | 17:57 | — | — | Infrastructure | — | feat(geo): add backfillGeoLocations.ts and geo:backfill npm script (no-story: backfill utility only, not a story impl) - Backfilled 2,644 posts; final coverage 4757/4757 (100%) - Contract story-2.20 PASS (12/12) (6948420) |
 | 2026-08-31 | 07:30 | — | — | Documentation | Story 12.16 | feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend) (bbfbb04) |
