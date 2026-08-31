@@ -4260,3 +4260,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - `shouldAttemptIngestion()` no longer has a half-open probe for `failing` — manual re-enable is the only recovery path.
 - The `degraded` -> `healthy` auto-recovery uses 3 consecutive successes.
 
+---
+
+## 2026-08-31 — Story 13.2 — social-listening-core@da31be9
+
+- **Full commit:** `da31be98a8c399cf13ccfcd36ef273a99381618e`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.2 / ADR-0110
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.2.per-connector-query-translation-and-validation.contract.test.ts` (29/29)
+- **SKILL.md:** `social-listening-core/.claude/skills/connector-query-translation/SKILL.md` (new)
+- **Files touched:**
+  - `social-listening-core/contracts/epic-13/story-13.2.per-connector-query-translation-and-validation.contract.test.ts` (new)
+  - `social-listening-core/src/connectors/queryTranslation.ts` (new)
+  - `social-listening-core/src/connectors/queryCapabilities.ts` (refactored to delegate to translators)
+  - `social-listening-core/src/http/versions/v1/connectorsRouter.ts` (existing query-capabilities route now uses translator)
+  - `social-listening-core/src/http/versions/v1/watchlistsRouter.ts` (existing save-time validation already wired)
+  - `docs/user-stories/epic-13-adr-0109-to-0117.md`
+- **Full suite at merge:** Epic-13 suite passes (47/47 tests). Typecheck passes. Targeted cross-epic run (epic-2/3/9/12/13) passed for non-environmental suites; the same environmental/foreign-contract failures observed in Story 13.1 remain (missing GNews/Facebook/YouTube credentials, Azure AI keys, long tenant-deletion timeout).
+
+**Notes:**
+- All 10 registered connectors now have a `ConnectorQueryTranslator` with `supportedClauses`, `supportedOperators`, `maxClauseCount`, `maxQueryLength`, `translate()`, and `validate()`.
+- `GET /v1/connectors/:platformId/query-capabilities` derives directly from the translator.
+- Save-time `POST /v1/watchlists` validation returns `422` with `UNSUPPORTED_QUERY_CLAUSE`, `TOO_MANY_CLAUSES`, or `QUERY_TOO_LONG`.
+- Native query generation covers keyword, phrase, hashtag, mention, author, source, date, and nested clauses with platform-specific render modes (e.g., YouTube `channelId`/`publishedAfter`, GNews `from`/`to`).
+- Fallback matching (`evaluateWatchlistAst`) remains the safety net and is proven consistent with native translation on the reference corpus.
+

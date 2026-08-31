@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-31 | 22:40 | — | — | Documentation | Story 13.2 | docs: sync post-commit tracking after Story 13.2 commit (2609da5) |
 | 2026-08-31 | 22:14 | — | — | Documentation | Story 13.1 | chore: sync post-commit management tracking for Story 13.1 implementation-log entry (31313ee) |
 | 2026-08-31 | 22:12 | — | — | Documentation | Story 13.1 | docs: append Story 13.1 implementation-log entry (merge 29b274c) (32a7969) |
 | 2026-08-31 | 22:11 | — | — | Documentation | — | Merge branch 'feat/story-13.1' into main (29b274c) |

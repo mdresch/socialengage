@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-08-31
 **Source Capture:** `raw/synthesis-epic-13-2026-08-31/`
-**Git HEAD:** `31313ee7895e9fcbde703f80ad2e3d36384f8f43`
+**Git HEAD:** `2609da540d3175d54daa2d08c1c9ac0d2eab6054`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,7 +12,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 577 |
+| Git commits scanned | 568 |
 | Healing / fix commits | 1 |
 | Feature commits (this epic) | 1 |
 | Contract test files | 203 |
