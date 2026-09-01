@@ -4394,6 +4394,45 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
+---
+
+## 2026-09-01 — Story 13.9 — social-listening-core@28340a3
+
+- **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.9 / ADR-0115 (BRD-0115, FDD-0115)
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts` (9/9)
+- **SKILL.md:** `social-listening-core/.claude/skills/media-assets/SKILL.md` (new); `social-listening-core/.claude/skills/outbound-publishing/SKILL.md` (updated)
+- **Files touched:**
+  - `social-listening-core/.claude/skills/media-assets/SKILL.md`
+  - `social-listening-core/.claude/skills/outbound-publishing/SKILL.md`
+  - `social-listening-core/contracts/epic-13/story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts`
+  - `social-listening-core/migrations/0070_create_media_assets.sql`
+  - `social-listening-core/package-lock.json`
+  - `social-listening-core/package.json`
+  - `social-listening-core/src/connectors/facebook/facebookConnector.ts`
+  - `social-listening-core/src/connectors/linkedin/linkedinConnector.ts`
+  - `social-listening-core/src/connectors/registry.ts`
+  - `social-listening-core/src/connectors/types.ts`
+  - `social-listening-core/src/http/routes/publishingRoutes.ts`
+  - `social-listening-core/src/ingestion/errorClassification.ts`
+  - `social-listening-core/src/media/mediaAssetStore.ts`
+  - `social-listening-core/src/media/mediaBlobClient.ts`
+  - `social-listening-core/src/publishing/outboundPublishingService.ts`
+- **Epic-13 suite at merge:** PASS (Story 13.9 contract 9/9; Story 11.7 regression PASS 7/7)
+- **Full suite at merge:** Story 13.9 contract PASS; full `npm test` showed 111/134 suites and 974/1003 tests passing, with 23 failures in pre-existing environmental/foreign-credential contracts (Service Bus `story-5.5`, partition/archival `story-3.8`, metrics `story-13.8`, export `story-13.4`) unrelated to this story. `npm run typecheck` (tsc --noEmit) zero errors.
+
+**Implemented Story 13.9 following the contract-first methodology per ADR-0115:**
+- `POST /v1/outbound/media` (Story 13.9 AC1): multipart upload, tenant-scoped Azure Blob path, 24-hour user-delegation presigned SAS URL.
+- `media_assets` table (Story 13.9 AC2): `id`, `tenant_id`, `owner_id`, `blob_path`, `mime_type`, `size_bytes`, `created_at` with RLS.
+- Upload validation (Story 13.9 AC5/AC6): JPEG/PNG/GIF/WebP up to 8MB; MP4/MOV up to 512MB; configurable via `MEDIA_MAX_IMAGE_BYTES`/`MEDIA_MAX_VIDEO_BYTES`.
+- Feature gating (Story 13.9 AC4): `media_upload` feature gate via `requireFeatureGate('media_upload')`.
+- Asset targeting (Story 13.9 AC7/AC8): `POST /v1/outbound/posts` accepts `assets` and `assetTargets`; `GET /v1/connectors/:platformId/targets` returns pages/accounts.
+- Connector translation (Story 13.9 AC8): resolved assets are passed in `OutboundPostPayload` with presigned URLs; connectors may reject with `ClassifiableError('platform_asset_rejected')`.
+- v1 Facebook and LinkedIn connectors now reject posts with assets, leaving native image/video upload for future stories.
+
+---
+
 ## 2026-09-01 — Story 13.8 — social-listening-core@e251dbf
 
 - **Full commit:** `e251dbfea80aad7c23a5b1b63eb423a692c6a33a`
