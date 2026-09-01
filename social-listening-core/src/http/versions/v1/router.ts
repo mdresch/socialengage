@@ -31,6 +31,7 @@ import { ragRouter } from './ragRouter';
 import { prospectingListsRouter } from './prospectingListsRouter';
 import { analyticsViewsRouter } from './analyticsViewsRouter';
 import { platformDashboardRouter } from './platformDashboardRouter';
+import { adminPlatformMetricsRouter } from './adminPlatformMetricsRouter';
 import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
 import { alertRulesRouter } from './alertRulesRouter';
 import { webhooksRouter } from './webhooksRouter';
@@ -151,6 +152,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 5.14 (ADR-0030 §5) — see .claude/skills/platform-admin-audit-log/SKILL.md. */
   v1Router.use('/admin/audit-log', authMiddleware, adminAuditLogRouter);
+
+  /** Story 13.8 (ADR-0114) — platform metrics query and admin endpoints. */
+  v1Router.use('/admin', authMiddleware, adminPlatformMetricsRouter);
 
   /** Story 10.6 (ADR-0089) — platform operations telemetry dashboard. */
   v1Router.use('/admin', authMiddleware, platformDashboardRouter);
