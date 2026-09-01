@@ -4351,3 +4351,31 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - `social-listening-core/src/posts/exportRateLimit.ts`
   - `social-listening-core/src/posts/postExportEngine.ts`
 - **Full suite at merge:** Story 13.4 contract passes (7/7). Epic-13 suite passes (54/54). Story 10.8 (posts CSV export) and Story 3.16 (tenant workspace/posts export) regression contracts pass. Typecheck passes. Full `npm run test:contracts` attempted; 15 failures all pre-existing environment/credential gaps (Facebook page token, Azure AI Language key, Service Bus subscription, GNews key, tenant-deletion timeout, server readiness) unrelated to Story 13.4.
+
+---
+
+## 2026-09-01 — Story 13.6 — social-listening-admin@<hash>
+
+- **Full commit:** `7947745`
+- **Repo:** social-listening-admin (with `social-listening-core` read surface)
+- **Story / ADR:** 13.6 / ADR-0112
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.6.plan-and-seat-management-ui.contract.test.ts` (27/27)
+- **SKILL.md:** `social-listening-admin/.claude/skills/plan-management/SKILL.md` (new); `social-listening-admin/.claude/skills/tenant-settings/SKILL.md` (updated); `social-listening-admin/.claude/skills/platform-admin-console/SKILL.md` (updated); `social-listening-core/.claude/skills/feature-gating/SKILL.md` (updated); `social-listening-core/.claude/skills/platform-admin-tenant-management/SKILL.md` (updated)
+- **Files touched:**
+  - `docs/user-stories/epic-13-adr-0109-to-0117.md`
+  - `social-listening-admin/contracts/epic-13/story-13.6.plan-and-seat-management-ui.contract.test.ts` (new)
+  - `social-listening-admin/src/lib/core-client.ts` (added `TenantPlanView`, `getMyPlan()`, `getAdminTenantPlan()`; extended `updateAdminTenant()` input)
+  - `social-listening-admin/src/app/api/admin/tenants/[tenantId]/route.ts` (forwards `plan` and `featureGates`, still rejects `activeSeatCount`)
+  - `social-listening-admin/src/app/api/admin/tenants/[tenantId]/plan/route.ts` (new GET proxy)
+  - `social-listening-admin/src/components/plan/PlanSelector.tsx` (new)
+  - `social-listening-admin/src/components/plan/FeatureToggleList.tsx` (new)
+  - `social-listening-admin/src/components/plan/SeatUsageCard.tsx` (new)
+  - `social-listening-admin/src/app/tenant/plan/page.tsx` (new)
+  - `social-listening-admin/src/app/platform-admin/tenants/[tenantId]/plan/page.tsx` (new)
+  - `social-listening-admin/src/app/platform-admin/tenants/[tenantId]/plan/TenantPlanForm.tsx` (new)
+  - `social-listening-admin/src/app/platform-admin/page.tsx` (added per-tenant "Manage plan" link)
+  - `social-listening-admin/src/components/shell/AppSidebar.tsx` (added `/tenant/plan` nav item)
+  - `social-listening-core/src/http/versions/v1/adminTenantsRouter.ts` (added `GET /v1/admin/tenants/:id/plan`)
+  - `social-listening-core/src/tenants/tenantStore.ts` (added `getAdminTenantPlan()`)
+  - `social-listening-core/contracts/epic-13/story-13.6.admin-tenant-plan-read.contract.test.ts` (new)
+- **Full suite at merge:** Story 13.6 contract passes (27/27). `social-listening-admin` epic-13 suite passes (37/37). `social-listening-core` epic-13 suite passes (67/67). Story 5.12 (admin tenant management) regression passes (11/11). Story 6.6 (platform-admin console) and Story 6.9 (tenant settings) regression contracts pass. Admin `tsc --noEmit` still has pre-existing type errors in unrelated epic-8 analytics and legacy `core-client.ts` `getBaseUrl` references; no new type errors were introduced by this story.

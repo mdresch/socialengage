@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requirePlatformAdmin } from '../../auth/requireTenantUser';
 import { RequestWithIdentity } from '../../auth/requestIdentity';
-import { createTenant, updateTenantAdmin, listTenants } from '../../../tenants/tenantStore';
+import { createTenant, updateTenantAdmin, listTenants, getAdminTenantPlan } from '../../../tenants/tenantStore';
 
 export const adminTenantsRouter = Router();
 
@@ -14,6 +14,23 @@ adminTenantsRouter.get('/', async (req, res) => {
 
   const tenants = await listTenants();
   res.json({ tenants });
+});
+
+/**
+ * GET /v1/admin/tenants/:id/plan (Story 13.6, ADR-0112) — read a single tenant's
+ * plan tier, effective max_seats, used seats, and effective feature gates.
+ */
+adminTenantsRouter.get('/:id/plan', async (req, res) => {
+  const identity = requirePlatformAdmin(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const plan = await getAdminTenantPlan(req.params.id);
+  if (!plan) {
+    res.status(404).json({ error: 'Tenant not found.' });
+    return;
+  }
+
+  res.json(plan);
 });
 
 /**

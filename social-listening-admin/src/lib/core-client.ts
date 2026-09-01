@@ -142,6 +142,40 @@ export async function getMyTenant(): Promise<AdminTenant> {
   return (await response.json()) as AdminTenant;
 }
 
+export interface TenantPlanView {
+  plan: string;
+  maxSeats: number;
+  usedSeats: number;
+  licenseSeatCount: number;
+  featureGates: Record<string, any>;
+}
+
+/**
+ * Story 13.6 (ADR-0112) — reads the caller's own tenant's plan, effective
+ * max_seats, used seats, and effective feature gates (GET /v1/tenants/plan).
+ * Throws on a non-2xx, the same convention getMyTenant() uses.
+ */
+export async function getMyPlan(): Promise<TenantPlanView> {
+  const response = await authenticatedCoreFetch('/v1/tenants/plan');
+  if (!response.ok) {
+    throw new Error(`Failed to load tenant plan: ${response.status}`);
+  }
+  return (await response.json()) as TenantPlanView;
+}
+
+/**
+ * Story 13.6 (ADR-0112) — Platform-Admin read of a specific tenant's plan,
+ * max_seats, used seats, and effective feature gates
+ * (GET /v1/admin/tenants/:tenantId/plan).
+ */
+export async function getAdminTenantPlan(tenantId: string): Promise<TenantPlanView> {
+  const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}/plan`);
+  if (!response.ok) {
+    throw new Error(`Failed to load tenant plan: ${response.status}`);
+  }
+  return (await response.json()) as TenantPlanView;
+}
+
 /**
  * Story 6.40 / ADR-0074 — proxies the full workspace JSON archive from
  * `GET /v1/tenants/me/export/workspace` (Story 3.16). Returns the raw
@@ -782,7 +816,14 @@ export async function createAdminTenant(input: {
  */
 export async function updateAdminTenant(
   tenantId: string,
-  input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null; name?: string }
+  input: {
+    status?: 'active' | 'suspended';
+    licenseSeatCount?: number;
+    domain?: string | null;
+    name?: string;
+    plan?: string;
+    featureGates?: Record<string, any>;
+  }
 ): Promise<AdminTenantActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}`, {
     method: 'PATCH',

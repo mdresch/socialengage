@@ -141,6 +141,7 @@ const TENANT_NAV_ITEMS: NavItem[] = [
   { label: 'Connector status', href: '/tenant/connectors/status', icon: <IconStatus /> },
   { label: 'Team & Access', href: '/tenant/users', icon: <IconUsers /> },
   { label: 'Invite assist', href: '/tenant/invite-assist', icon: <IconInvite /> },
+  { label: 'Plan & Seats', href: '/tenant/plan', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> },
   { label: 'Tenant settings', href: '/tenant/settings', icon: <IconSettings /> },
 ];
 

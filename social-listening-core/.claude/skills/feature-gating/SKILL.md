@@ -17,6 +17,7 @@ Story 13.5 (ADR-0112) adds a `plan` column and `feature_gates` JSONB to `tenants
 | ADR-0031 | `tenants` RLS, `license_seat_count`/`active_seat_count`, atomic `incrementActiveSeatCount` | 5.8 |
 | ADR-0032 | User invite/activation flow and `active_seat_count` semantics | 1.9, 5.9 |
 | ADR-0107 | Existing `feature_gates` column and `GET/PATCH /v1/tenants/me/features` | 12.13 |
+| ADR-0112 | Platform-Admin plan/seat read endpoint `GET /v1/admin/tenants/:id/plan` | 13.6 |
 
 ## Contracts that constrain this component
 
@@ -38,7 +39,7 @@ Story 13.5 (ADR-0112) adds a `plan` column and `feature_gates` JSONB to `tenants
 ## Known gaps / deferred work
 
 - Real billing integration and plan change hooks are out of scope; `PLANS` is a platform-level constant and the admin patch is the only plan-change mechanism.
-- Story 13.6 will add the Platform-Admin UI for plan and feature management.
+- Story 13.6's Platform-Admin UI for plan and feature management is in `social-listening-admin`. This skill's `GET /v1/admin/tenants/:id/plan` endpoint is the backend read surface that UI uses.
 - Distributed enforcement of `max_seats` across multiple concurrent instances relies on Postgres row-level atomicity, the same as `license_seat_count` in Story 5.8.
 
 ## Relations to other components

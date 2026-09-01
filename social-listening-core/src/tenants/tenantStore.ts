@@ -295,6 +295,24 @@ export async function getTenantPlan(tenantId: string): Promise<TenantPlanView | 
   });
 }
 
+/**
+ * Story 13.6 (ADR-0112): Platform-Admin plan and usage view for a specific tenant.
+ * Mirrors getTenantPlan but uses the platform_admin pool so it can read any tenant row.
+ */
+export async function getAdminTenantPlan(tenantId: string): Promise<TenantPlanView | null> {
+  const { rows } = await getPlatformAdminPool().query<TenantRow>(`SELECT * FROM tenants WHERE id = $1`, [tenantId]);
+  if (rows.length === 0) return null;
+  const row = rows[0];
+  const effectiveGates = getEffectiveFeatureGates(row.plan, row.feature_gates);
+  return {
+    plan: row.plan ?? 'starter',
+    maxSeats: getEffectiveMaxSeats(row.feature_gates, row.license_seat_count),
+    usedSeats: row.active_seat_count,
+    licenseSeatCount: row.license_seat_count,
+    featureGates: effectiveGates,
+  };
+}
+
 export interface SeatAndGateStatus {
   activeSeatCount: number;
   maxSeats: number;
