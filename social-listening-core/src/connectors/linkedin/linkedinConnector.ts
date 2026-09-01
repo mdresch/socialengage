@@ -660,6 +660,12 @@ export async function publishToLinkedIn(
     );
   }
 
+  // Story 13.9 (ADR-0115) — the v1 LinkedIn connector is text-only.
+  // Native image/video UGC posts will be added by a later story.
+  if (payload.assets && payload.assets.length > 0) {
+    throw new ClassifiableError('platform_asset_rejected', 'LinkedIn publishing does not support media attachments in v1.');
+  }
+
   const body = {
     author: authorUrn,
     lifecycleState: 'PUBLISHED',

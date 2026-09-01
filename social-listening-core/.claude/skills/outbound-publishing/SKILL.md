@@ -37,7 +37,18 @@ Governed by **ADR-0098**, **BRD-0098**, **FDD-0098**, and **Story 11.7**.
 
 4. **HTTP Routes**:
    - `POST /v1/outbound/posts` (202 Accepted)
+   - `POST /v1/outbound/media` (200 OK) — Story 13.9 media upload
    - `GET /v1/outbound/posts`
    - `PATCH /v1/outbound/activities/:id/cancel`
    - `PATCH /v1/outbound/activities/:id/reschedule`
    - `GET /v1/connectors/:platformId/targets`
+
+## Story 13.9 (ADR-0115) — Media Assets & Asset Targeting
+
+- `createOutboundPost()` accepts an `assets` array and `assetTargets` map.
+- Image/video assets reference `mediaId` values from the `media_assets` table.
+- `link-card` assets carry an external `url` and an optional preview `mediaId`.
+- Before persistence, `resolveMediaAssets()` converts `mediaId` references into 24-hour presigned Azure Blob URLs.
+- Resolved assets are stored in `outbound_activities.assets` and `outbound_activities.payload` and passed to `connector.publish()`.
+- Connectors may reject unsupported assets with `ClassifiableError('platform_asset_rejected')`, which becomes the activity `error_code`.
+- v1 Facebook and LinkedIn connectors are text-only; posts with assets to those platforms fail with `platform_asset_rejected`.

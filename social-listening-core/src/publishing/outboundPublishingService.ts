@@ -2,11 +2,17 @@ import { withTenant } from '../db/withTenant';
 import { getSocialConnector } from '../connectors/registry';
 import { getLatestCredentialId, readCredential } from '../credentials/credentialStore';
 import { invoke } from '../outbound/outboundPublishService';
+import {
+  OutboundAsset,
+  resolveMediaAssets,
+  MediaValidationError,
+} from '../media/mediaAssetStore';
 
 export interface CreateOutboundPostOptions {
   text: string;
   assets?: Array<{
     type: 'image' | 'video' | 'link-card';
+    mediaId?: string;
     url?: string;
     alt?: string;
     target?: string;
@@ -114,6 +120,18 @@ export async function createOutboundPost(
     scheduledFor = d.toISOString();
   }
 
+  // Story 13.9 (ADR-0115) — resolve any mediaId references into 24h presigned
+  // Blob URLs before persisting the post or handing it to a connector.
+  let resolvedAssets: OutboundAsset[] = [];
+  try {
+    resolvedAssets = await resolveMediaAssets(tenantId, options.assets || []);
+  } catch (err) {
+    if (err instanceof MediaValidationError) {
+      throw new PublishingError(err.message, err.code, err.status);
+    }
+    throw err;
+  }
+
   const activityIds: string[] = [];
 
   await withTenant(tenantId, async (client) => {
@@ -130,6 +148,12 @@ export async function createOutboundPost(
       }
 
       const initialStatus = scheduledFor ? 'scheduled' : 'publishing';
+      const payload = {
+        text,
+        assets: resolvedAssets,
+        assetTargets: assetTargetMap,
+        perPlatformOverrides: options.perPlatformOverrides,
+      };
 
       const insertRes = await client.query<{ id: string }>(
         `INSERT INTO outbound_activities (
@@ -148,12 +172,8 @@ export async function createOutboundPost(
           scheduledFor,
           targetAssetId,
           targetAssetType,
-          JSON.stringify(options.assets || []),
-          JSON.stringify({
-            text,
-            assets: options.assets || [],
-            perPlatformOverrides: options.perPlatformOverrides,
-          }),
+          JSON.stringify(resolvedAssets),
+          JSON.stringify(payload),
         ]
       );
 
@@ -181,6 +201,9 @@ export async function createOutboundPost(
                 text: platformBody,
                 targetAssetId: targetAssetId || '',
                 targetAssetType,
+                assets: resolvedAssets,
+                assetTargets: assetTargetMap,
+                perPlatformOverrides: options.perPlatformOverrides,
               },
               credential,
               connector,

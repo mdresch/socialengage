@@ -56,7 +56,7 @@ export function getConnectorCapabilities(providerId: string, tenantId?: string):
   if (connector?.publish) {
     capabilities.publish = {
       supportsScheduling: true,
-      supportedAssetTypes: ['text', 'image', 'video'],
+      supportedAssetTypes: ['text'],
     };
   }
 

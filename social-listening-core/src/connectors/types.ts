@@ -109,16 +109,31 @@ export interface NativeQueryTranslation {
 }
 
 /**
- * Story 2.28 (ADR-0075) — payload for a new outbound post. Carries the final
- * text, per-asset targeting, and optional per-platform overrides / link card /
- * media refs. Media upload itself is explicitly deferred (v1 is text/link-card
- * only); `media` here is a placeholder for future media references.
+ * Story 13.9 (ADR-0115) — a single asset attached to an outbound post.
+ * `mediaId` references the tenant's `media_assets` table; `url` is a 24-hour
+ * presigned Blob URL resolved by the publishing service before dispatch.
+ */
+export interface OutboundAsset {
+  type: 'image' | 'video' | 'link-card';
+  mediaId?: string;
+  url?: string;
+  imageUrl?: string;
+  alt?: string;
+  target?: string;
+}
+
+/**
+ * Story 2.28 (ADR-0075) / Story 13.9 (ADR-0115) — payload for a new outbound
+ * post. Carries the final text, per-asset targeting, optional per-platform
+ * overrides, and a resolved `assets` array with presigned media URLs.
  */
 export interface OutboundPostPayload {
   text: string;
   perPlatformOverrides?: Record<string, string>;
   media?: unknown[];
   linkPreview?: unknown;
+  assets?: OutboundAsset[];
+  assetTargets?: Record<string, string>;
   targetAssetId: string;
   targetAssetType: string;
 }
