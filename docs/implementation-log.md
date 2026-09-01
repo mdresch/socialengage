@@ -4394,13 +4394,13 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-01 — Story 13.8 — social-listening-core@<short-hash>
+## 2026-09-01 — Story 13.8 — social-listening-core@e251dbf
 
-- **Full commit:** `<full-hash>`
+- **Full commit:** `e251dbfea80aad7c23a5b1b63eb423a692c6a33a`
 - **Repo:** social-listening-core
 - **Story / ADR:** 13.8 / ADR-0114
 - **Contract:** `social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` (6/6)
 - **SKILL.md:** `social-listening-core/.claude/skills/platform-metrics/SKILL.md` (new)
-- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/migrations/0068_align_platform_metrics_granularity_and_indexes.sql, social-listening-core/migrations/0069_add_platform_metrics_unique_index.sql, social-listening-core/src/http/server.ts, social-listening-core/src/http/versions/v1/adminPlatformMetricsRouter.ts, social-listening-core/src/http/versions/v1/platformDashboardRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/platform/azureMetricsClient.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/platformMetricsWorker.ts
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/migrations/0068_align_platform_metrics_granularity_and_indexes.sql, social-listening-core/migrations/0069_add_platform_metrics_unique_index.sql, social-listening-core/src/http/server.ts, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/src/http/versions/v1/adminPlatformMetricsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/platform/azureMetricsClient.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/platformMetricsWorker.ts
 - **Epic-13 suite at merge:** PASS (92/92, run with `--runInBand` to avoid pre-existing rate-limit state leak from unrelated test concurrency); Story 13.8 contract PASS (6/6); Story 10.6 (platform dashboard) regression PASS (1/1)
 - **Notes:** Added migration 0069 to recreate the missing `idx_platform_metrics_unique` unique index so `recordPlatformMetric` ON CONFLICT upsert works. Cast `queryPlatformMetricsAggregated` `value` and `points` to `::float` / `::int` so `pg` returns JS numbers. Wired `startPlatformMetricsWorker()` in `server.ts`. Full `npx jest contracts` still shows unrelated, pre-existing environmental failures (Service Bus, Azure Key Vault, YouTube connector, deep-research timeout) not caused by this story.
