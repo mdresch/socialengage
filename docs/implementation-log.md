@@ -4442,3 +4442,16 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/src/tenants/tenantStore.ts
 - **Epic-12 suite:** PASS (71/71)
 - **Notes:** `POST /v1/watchlists` returned 500 instead of 422 for an unsupported AST clause. `requireFeatureGate('watchlists')` now calls `getTenantFeatureGates()` before the AST validation; `getTenantFeatureGates()` was throwing a Postgres `22P02` error because the contract uses the synthetic string tenant id `tenant-12.3` and `tenants.id` is `uuid`. Added defensive handling to treat `22P02` (and any unparseable/invalid tenant id) as a missing tenant, returning the default `{}` feature-gates set. This preserves the `403 FEATURE_NOT_AVAILABLE` path for real disabled tenants while stopping the 500 on test fixtures.
+
+---
+
+## 2026-09-01 — Story 10.8 warning — social-listening-core@4edf26f
+
+- **Full commit:** `4edf26fac3b84b3063200636f9e19f704c17c2e4`
+- **Repo:** social-listening-core
+- **Story / ADR:** 10.8 / ADR-0090
+- **Contract:** `social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts` (2/2)
+- **SKILL.md:** `social-listening-core/.claude/skills/posts-csv-export/SKILL.md`
+- **Files touched:** social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts, social-listening-core/src/posts/postExportEngine.ts
+- **Epic-10 suite:** PASS (21/21)
+- **Notes:** `POST /v1/posts/export` spawns a fire-and-forget `processExportJob()`; the contract's `afterAll` was closing the Postgres pools while the background job was still in flight. This produced `Jest did not exit` / `ReferenceError: You are trying to require a file after the Jest environment has been torn down` warnings from `pg` creating a new connection after teardown. Added an `activeExportJobs` Set in `postExportEngine.ts` to track each in-flight background promise, exposed `drainActiveExportJobs()`, and called it in the contract's `afterAll` before closing pools. Jest now exits cleanly.
