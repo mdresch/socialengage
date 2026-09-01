@@ -4404,3 +4404,28 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/migrations/0068_align_platform_metrics_granularity_and_indexes.sql, social-listening-core/migrations/0069_add_platform_metrics_unique_index.sql, social-listening-core/src/http/server.ts, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/src/http/versions/v1/adminPlatformMetricsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/platform/azureMetricsClient.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/platformMetricsWorker.ts
 - **Epic-13 suite at merge:** PASS (92/92, run with `--runInBand` to avoid pre-existing rate-limit state leak from unrelated test concurrency); Story 13.8 contract PASS (6/6); Story 10.6 (platform dashboard) regression PASS (1/1)
 - **Notes:** Added migration 0069 to recreate the missing `idx_platform_metrics_unique` unique index so `recordPlatformMetric` ON CONFLICT upsert works. Cast `queryPlatformMetricsAggregated` `value` and `points` to `::float` / `::int` so `pg` returns JS numbers. Wired `startPlatformMetricsWorker()` in `server.ts`. Full `npx jest contracts` still shows unrelated, pre-existing environmental failures (Service Bus, Azure Key Vault, YouTube connector, deep-research timeout) not caused by this story.
+
+---
+
+## 2026-09-01 — Story 6.27 regression — social-listening-core@be5702d
+
+- **Full commit:** `be5702dadae2e902c423241e339104f176e8d4ba`
+- **Repo:** social-listening-core
+- **Story / ADR:** 6.27 / ADR-0060 (superseded by ADR-0109 `disabled` status)
+- **Contract:** `social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts` (12/12)
+- **Files touched:** docs/adr/0060-facebook-connector-multiple-pages-per-user.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
+- **Epic-2 suite:** Story 6.27 passes in isolation. Full suite shows unrelated environmental failures.
+- **Notes:** ADR-0109 introduced `disabled` as the non-retryable terminal status for auto-disabled connectors. The Story 6.27 contract asserted the old `failing` value; updated it to expect `disabled` and added a superseding note to ADR-0060.
+
+---
+
+## 2026-09-01 — Story 3.8 regression — social-listening-core@e493fb4
+
+- **Full commit:** `e493fb479930cddf4d094e33759b1d1f2cd7732c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 3.8 / ADR-0043
+- **Contract:** `social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts` (13/13)
+- **SKILL.md:** `social-listening-core/.claude/skills/self-service-tenant-deletion/SKILL.md`
+- **Files touched:** social-listening-core/.claude/skills/self-service-tenant-deletion/SKILL.md, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/migrations/0068_grant_tenant_deletion_role_watchlist_shares.sql, social-listening-core/src/http/versions/v1/selfServiceTenantDeletionRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts
+- **Epic-3 suite:** PASS (18/18 excluding unrelated `story-3.15` afterAll Key Vault timeout; passes in isolation). Full accumulated suite: story-3.8 passes; unrelated pre-existing failures in story-1.10, story-3.15, story-10.8, story-12.3, story-13.8.
+- **Notes:** Root causes: (1) `watchlist_shares` was invisible to `tenant_deletion_role` through `watchlists` ownership RLS; added migration 0068 to grant the role and widened the `watchlists` RLS predicate. (2) `request` and `cancel` routes were sending the HTTP response inside the `withTenant()` callback, before `COMMIT`, causing a race where immediately-following `confirm`/`re-request` calls read uncommitted `deletion_requested_at` — restructured both routes to return a result and send `res.json(...)` only after `await withTenant(...)` resolves. Added `watchlist_shares` to the deletion sequence in `tenantDeletion.ts`.
