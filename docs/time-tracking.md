@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 06:43 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking and synthesis for Story 13.6 (fd66185) |
 | 2026-09-01 | 04:57 | — | — | Documentation | Story 13.5 | docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built (543eecf) |
 | 2026-08-31 | 01:40 | — | — | Documentation | Story 13.4 | docs(user-stories): mark Story 13.4 as built (3241ecc) |
 | 2026-08-31 | 01:33 | — | — | Documentation | Story 13.4 | feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend) (209b0d7) |

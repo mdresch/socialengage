@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-09-01
 **Source Capture:** `raw/synthesis-epic-13-2026-09-01/`
-**Git HEAD:** `543eecfc8abe0b004cf4a9f43d2ee612c2f41d16`
+**Git HEAD:** `fd661859a18825f4f084c7c2859273ec5f0b3cbc`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 419 |
+| Git commits scanned | 421 |
 | Healing / fix commits | 1 |
 | Feature commits (this epic) | 5 |
-| Contract test files | 207 |
+| Contract test files | 209 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -36,9 +36,9 @@
 
 ## 4. Contract Test Inventory
 
-Total: 207 contract test files.
+Total: 209 contract test files.
 
-### social-listening-admin/contracts (77 files)
+### social-listening-admin/contracts (78 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -62,6 +62,7 @@ Total: 207 contract test files.
 - `story-12.6.ai-sentiment-aspect-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.8.topic-curation-selected-topic-ui.contract.test.ts` (modified 2026-08-29)
 - `story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (modified 2026-08-31)
+- `story-13.6.plan-and-seat-management-ui.contract.test.ts` (modified 2026-09-01)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
 - `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
@@ -118,7 +119,7 @@ Total: 207 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (130 files)
+### social-listening-core/contracts (131 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -163,6 +164,7 @@ Total: 207 contract test files.
 - `story-13.2.per-connector-query-translation-and-validation.contract.test.ts` (modified 2026-08-31)
 - `story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts` (modified 2026-09-01)
 - `story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts` (modified 2026-09-01)
+- `story-13.6.admin-tenant-plan-read.contract.test.ts` (modified 2026-09-01)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
