@@ -4354,9 +4354,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-01 — Story 13.6 — social-listening-admin@<hash>
+## 2026-09-01 — Story 13.6 — social-listening-admin@6ede318
 
-- **Full commit:** `7947745`
+- **Full commit:** `6ede318`
 - **Repo:** social-listening-admin (with `social-listening-core` read surface)
 - **Story / ADR:** 13.6 / ADR-0112
 - **Contract:** `social-listening-admin/contracts/epic-13/story-13.6.plan-and-seat-management-ui.contract.test.ts` (27/27)
