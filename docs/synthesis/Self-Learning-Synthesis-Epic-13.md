@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-09-01
 **Source Capture:** `raw/synthesis-epic-13-2026-09-01/`
-**Git HEAD:** `fd661859a18825f4f084c7c2859273ec5f0b3cbc`
+**Git HEAD:** `181249f61d6efb940e9aed7fb09f15b2aec7748d`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
