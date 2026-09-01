@@ -3766,3 +3766,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md
 - **Status:** Pending review
 
+## 2026-09-01 — b4a32f2 — Merge branch 'feat/story-13.9'
+
+- **Full commit:** `b4a32f2b9016e21dfc34627b395153c7cc370865`
+- **Files touched:** 
+- **Status:** Pending review
+
