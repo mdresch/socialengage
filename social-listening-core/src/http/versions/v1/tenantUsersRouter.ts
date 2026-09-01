@@ -10,24 +10,17 @@ import {
 import {
   incrementActiveSeatCount,
   decrementActiveSeatCount,
+  getTenantSeatAndGateStatus,
+  getTenantFeatureGates,
 } from '../../../tenants/tenantStore';
+import { isFeatureEnabled } from '../../../tenants/featureGates';
 import { withTenant } from '../../../db/withTenant';
 
 export const tenantUsersRouter = Router();
 
 /**
  * GET /v1/tenants/users (Story 1.9, ADR-0032 §2) — list all users for the
- * caller's own tenant. Available to both tenant_admin and tenant_user
- * (read-only, no role gate on GET). RLS-scoped; includes 'invited' and
- * 'active' rows.
- *
- * Enhancement, 2026-08-17: also returns `seats: { licenseSeatCount,
- * activeSeatCount }` for the caller's own tenant — both fields already exist
- * and are already read/written by this same router's POST/PATCH handlers,
- * but were Platform-Admin-only via GET /v1/tenants (Story 5.12) until now.
- * No new query beyond what POST's own seat-ceiling check already does; RLS
- * (withTenant) makes cross-tenant leakage the same non-issue it is for
- * `users` above.
+ * caller's own tenant.
  */
 tenantUsersRouter.get('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
@@ -51,15 +44,11 @@ tenantUsersRouter.get('/', async (req, res) => {
 });
 
 /**
- * POST /v1/tenants/users (Story 1.9, ADR-0032 §6) — invite a new user into
- * the caller's tenant. Restricted to tenant_admin. Creates a users row in
- * 'invited' status; does NOT increment active_seat_count (a seat is occupied
- * only when the invited user activates at first sign-in, per ADR-0032 §6).
- *
- * Returns 409 if the tenant is at its license_seat_count ceiling —
- * incrementActiveSeatCount() returns null when at capacity; we check current
- * seated count directly rather than pre-incrementing, since the seat is not
- * consumed at invite time.
+ * POST /v1/tenants/users (Story 1.9, ADR-0032 §6; Story 13.5, ADR-0112) —
+ * invite a new user. Restricted to tenant_admin. The `multi_user` feature
+ * gate must be enabled and the tenant must be below its effective seat
+ * ceiling (`feature_gates.max_seats` when explicitly set, otherwise
+ * `license_seat_count`).
  */
 tenantUsersRouter.post('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
@@ -80,28 +69,34 @@ tenantUsersRouter.post('/', async (req, res) => {
     return;
   }
 
-  // AC2 — seat-ceiling check: POST /v1/tenants/users rejects with 409 once
-  // active_seat_count >= license_seat_count (AC per Story 1.9). The seat is
-  // not consumed at invite time; we check capacity via incrementActiveSeatCount
-  // which returns null when at ceiling. Because a seat is only consumed at
-  // activation, we must check current counts without side-effects here.
-  // We query the tenants row directly to avoid incrementing a seat for
-  // an invited (not yet active) user — the increment happens in
-  // resolveIdentity() case (3) at activation time.
-  //
-  // Implementation note: we read the tenant's own row through
-  // withTenant() / app_user. A seat is AT capacity when
-  // active_seat_count >= license_seat_count.
-  const seatCheck = await withTenant(identity.tenantId, async (client) => {
-    const { rows } = await client.query<{ active_seat_count: number; license_seat_count: number }>(
-      `SELECT active_seat_count, license_seat_count FROM tenants WHERE id = $1`,
-      [identity.tenantId]
-    );
-    return rows[0] ?? null;
-  });
+  // Story 13.5: feature-gate check. Missing key defaults to enabled.
+  const featureGates = await getTenantFeatureGates(identity.tenantId);
+  if (!isFeatureEnabled(featureGates, 'multi_user')) {
+    res.status(403).json({
+      error: "Feature 'multi_user' is not available on this tenant's plan.",
+      code: 'FEATURE_NOT_AVAILABLE',
+    });
+    return;
+  }
 
-  if (!seatCheck || seatCheck.active_seat_count >= seatCheck.license_seat_count) {
-    res.status(409).json({ error: 'Tenant is at its license seat ceiling.' });
+  // Story 13.5: seat-ceiling check. Prefer feature_gates.max_seats when
+  // explicitly set; otherwise fall back to license_seat_count and keep the
+  // legacy 409 response for existing contracts.
+  const status = await getTenantSeatAndGateStatus(identity.tenantId);
+  if (!status) {
+    res.status(404).json({ error: 'Tenant not found.' });
+    return;
+  }
+
+  if (status.activeSeatCount >= status.maxSeats) {
+    if (status.hasExplicitMaxSeats) {
+      res.status(403).json({
+        error: 'Tenant is at its seat ceiling.',
+        code: 'SEAT_LIMIT_EXCEEDED',
+      });
+    } else {
+      res.status(409).json({ error: 'Tenant is at its license seat ceiling.' });
+    }
     return;
   }
 
@@ -118,7 +113,6 @@ tenantUsersRouter.post('/', async (req, res) => {
  * active_seat_count when setting a now-or-past value (immediate offboarding);
  * does not decrement for a future-dated value. Clearing back to NULL
  * re-increments (reactivation), subject to the seat-ceiling check.
- * Every write is audited in user_access_audit_log.
  */
 tenantUsersRouter.patch('/:id', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
@@ -139,25 +133,32 @@ tenantUsersRouter.patch('/:id', async (req, res) => {
   const rawValue = body.accessEndsAt;
   const accessEndsAt = rawValue === null || rawValue === undefined ? null : rawValue;
 
-  // Seat-count adjustment per ADR-0032 §9:
-  // - Setting to now-or-past (immediate offboard): decrement
-  // - Setting to future (scheduled expiry): no change
-  // - Clearing to null (reactivation): increment, checking ceiling
   if (accessEndsAt === null) {
-    // Reactivation — must check seat ceiling first
+    // Story 13.5: reactivation must respect the effective seat ceiling.
+    const status = await getTenantSeatAndGateStatus(identity.tenantId);
+    if (status && status.activeSeatCount >= status.maxSeats) {
+      if (status.hasExplicitMaxSeats) {
+        res.status(403).json({
+          error: 'Tenant is at its seat ceiling; cannot reactivate.',
+          code: 'SEAT_LIMIT_EXCEEDED',
+        });
+      } else {
+        res.status(409).json({ error: 'Tenant is at its license seat ceiling; cannot reactivate.' });
+      }
+      return;
+    }
+
     const result = await incrementActiveSeatCount(identity.tenantId);
     if (result === null) {
+      // Defensive fallback; the explicit check above normally prevents this.
       res.status(409).json({ error: 'Tenant is at its license seat ceiling; cannot reactivate.' });
       return;
     }
   } else {
     const endsAt = new Date(accessEndsAt);
     if (endsAt <= new Date()) {
-      // Immediate offboard — decrement seat (safe even if already < 0 due to floor in store)
       await decrementActiveSeatCount(identity.tenantId);
     }
-    // Future-dated: no seat change now; the seat will be reclaimed when
-    // access_ends_at passes and the user's next login is rejected by resolveIdentity().
   }
 
   const updated = await setAccessEndsAt(identity.tenantId, userId, accessEndsAt, identity.userId);
@@ -170,11 +171,7 @@ tenantUsersRouter.patch('/:id', async (req, res) => {
 });
 
 /**
- * GET /v1/tenants/users/:id/access-history (Story 5.17, ADR-0032 §9) —
- * the audit trail for one user's own access_ends_at writes. tenant_admin
- * only, RLS-scoped via listAccessHistory()'s own withTenant() call — a
- * cross-tenant id returns an empty array (RLS-filtered), never another
- * tenant's rows.
+ * GET /v1/tenants/users/:id/access-history (Story 5.17, ADR-0032 §9)
  */
 tenantUsersRouter.get('/:id/access-history', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);

@@ -20,6 +20,7 @@ import { selfServiceSignupRouter } from './selfServiceSignupRouter';
 import { domainSignupAttemptsRouter } from './domainSignupAttemptsRouter';
 import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRouter';
 import { tenantSelfViewRouter } from './tenantSelfViewRouter';
+import { tenantPlanRouter } from './tenantPlanRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
@@ -168,6 +169,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 1.8 (ADR-0031) — see .claude/skills/tenants/SKILL.md. */
   v1Router.use('/tenants/me', authMiddleware, tenantSelfViewRouter);
+
+  /** Story 13.5 (ADR-0112) — see .claude/skills/feature-gating/SKILL.md. */
+  v1Router.use('/tenants/plan', authMiddleware, tenantPlanRouter);
 
   /** Story 1.9 (ADR-0032) — see .claude/skills/identity-resolution/SKILL.md. */
   v1Router.use('/tenants/users', authMiddleware, tenantUsersRouter);

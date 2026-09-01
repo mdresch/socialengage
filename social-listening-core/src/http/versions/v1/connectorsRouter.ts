@@ -25,6 +25,7 @@ import {
 import { deriveConnectorHealth, runConnectorHealthCheck, ConnectorHealthStatus } from '../../../connectors/connectorHealth';
 import { logPlatformAdminAction } from '../../../admin/platformAdminAuditLog';
 import { getResolvedIdentity } from '../../auth/requireTenantUser';
+import { requireFeatureGate } from '../../auth/featureGates';
 import { ResolvedIdentity } from '../../../identity/identityResolution';
 import { getPlatformTargets } from '../../../publishing/outboundPublishingService';
 import { getConnectorQueryCapabilities } from '../../../connectors/queryCapabilities';
@@ -138,7 +139,8 @@ connectorsRouter.post('/:platformId/connect', async (req, res) => {
     return;
   }
 
-  const platformId = req.params.platformId;
+  const rawPlatformId = req.params.platformId;
+  const platformId = Array.isArray(rawPlatformId) ? rawPlatformId[0] : rawPlatformId;
 
   // Story 2.15 (ADR-0059 Decision §4) — an authMode:'oauth' platform has
   // no valid client-supplied "credential" string this generic endpoint
@@ -209,7 +211,8 @@ connectorsRouter.delete('/:platformId/disconnect', async (req, res) => {
     return;
   }
 
-  const platformId = req.params.platformId;
+  const rawPlatformId = req.params.platformId;
+  const platformId = Array.isArray(rawPlatformId) ? rawPlatformId[0] : rawPlatformId;
 
   if (ownerType === 'tenant') {
     if (role !== 'tenant_admin') {
@@ -282,7 +285,7 @@ function forbidsUserScope(platformId: string): boolean {
  * blocked from pausing it. See
  * .claude/skills/connector-activation/SKILL.md.
  */
-connectorsRouter.post('/:platformId/activate', async (req, res) => {
+connectorsRouter.post('/:platformId/activate', requireFeatureGate('connectors'), async (req, res) => {
   const identity = requireTenantUserIdentity(req, res);
   if (!identity) return;
   const { tenantId, userId, role } = identity;
@@ -293,7 +296,8 @@ connectorsRouter.post('/:platformId/activate', async (req, res) => {
     return;
   }
 
-  const platformId = req.params.platformId;
+  const rawPlatformId = req.params.platformId;
+  const platformId = Array.isArray(rawPlatformId) ? rawPlatformId[0] : rawPlatformId;
 
   if (ownerType === 'user' && forbidsUserScope(platformId)) {
     res.status(400).json({
@@ -332,7 +336,8 @@ connectorsRouter.post('/:platformId/deactivate', async (req, res) => {
     return;
   }
 
-  const platformId = req.params.platformId;
+  const rawPlatformId = req.params.platformId;
+  const platformId = Array.isArray(rawPlatformId) ? rawPlatformId[0] : rawPlatformId;
 
   if (ownerType === 'user' && forbidsUserScope(platformId)) {
     res.status(400).json({

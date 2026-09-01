@@ -13,6 +13,7 @@ import {
   ExportFileTooLargeError,
 } from '../../../posts/postExportEngine';
 import { checkExportRateLimit } from '../../../posts/exportRateLimit';
+import { requireFeatureGate } from '../../auth/featureGates';
 
 export const postsExportRouter = Router();
 
@@ -65,7 +66,7 @@ postsExportRouter.get('/export.csv', async (req, res) => {
 });
 
 // POST /v1/posts/export (Story 13.4, ADR-0111) - Async large export job
-postsExportRouter.post('/export', async (req, res) => {
+postsExportRouter.post('/export', requireFeatureGate('exports'), async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 

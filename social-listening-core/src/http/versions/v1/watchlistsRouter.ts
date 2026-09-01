@@ -23,6 +23,7 @@ import {
   parseBooleanQueryToAst,
 } from '../../../watchlists/ast';
 import { validateAstForConnector } from '../../../connectors/queryCapabilities';
+import { requireFeatureGate } from '../../auth/featureGates';
 
 export const watchlistsRouter = Router();
 
@@ -46,7 +47,7 @@ function parseIfMatchVersion(headerValue: string): number | null {
  * a client-supplied header or body field. Returns 201 with the created
  * watchlist, including generated id, version 1, and timestamps.
  */
-watchlistsRouter.post('/', async (req, res) => {
+watchlistsRouter.post('/', requireFeatureGate('watchlists'), async (req, res) => {
   const identity = requireTenantUserIdentity(req, res);
   if (!identity) return;
 
