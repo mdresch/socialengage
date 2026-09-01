@@ -4391,3 +4391,16 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - `social-listening-core/src/tenants/tenantStore.ts` (added `getAdminTenantPlan()`)
   - `social-listening-core/contracts/epic-13/story-13.6.admin-tenant-plan-read.contract.test.ts` (new)
 - **Full suite at merge:** Story 13.6 contract passes (27/27). `social-listening-admin` epic-13 suite passes (37/37). `social-listening-core` epic-13 suite passes (67/67). Story 5.12 (admin tenant management) regression passes (11/11). Story 6.6 (platform-admin console) and Story 6.9 (tenant settings) regression contracts pass. Admin `tsc --noEmit` still has pre-existing type errors in unrelated epic-8 analytics and legacy `core-client.ts` `getBaseUrl` references; no new type errors were introduced by this story.
+
+---
+
+## 2026-09-01 — Story 13.8 — social-listening-core@e251dbf
+
+- **Full commit:** `e251dbfea80aad7c23a5b1b63eb423a692c6a33a`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.8 / ADR-0114
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` (6/6)
+- **SKILL.md:** `social-listening-core/.claude/skills/platform-metrics/SKILL.md` (new)
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/migrations/0068_align_platform_metrics_granularity_and_indexes.sql, social-listening-core/migrations/0069_add_platform_metrics_unique_index.sql, social-listening-core/src/http/server.ts, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/src/http/versions/v1/adminPlatformMetricsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/platform/azureMetricsClient.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/platformMetricsWorker.ts
+- **Epic-13 suite at merge:** PASS (92/92, run with `--runInBand` to avoid pre-existing rate-limit state leak from unrelated test concurrency); Story 13.8 contract PASS (6/6); Story 10.6 (platform dashboard) regression PASS (1/1)
+- **Notes:** Added migration 0069 to recreate the missing `idx_platform_metrics_unique` unique index so `recordPlatformMetric` ON CONFLICT upsert works. Cast `queryPlatformMetricsAggregated` `value` and `points` to `::float` / `::int` so `pg` returns JS numbers. Wired `startPlatformMetricsWorker()` in `server.ts`. Full `npx jest contracts` still shows unrelated, pre-existing environmental failures (Service Bus, Azure Key Vault, YouTube connector, deep-research timeout) not caused by this story.
