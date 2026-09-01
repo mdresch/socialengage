@@ -3321,3 +3321,21 @@
 - **Files touched:** social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts, social-listening-core/migrations/0067_create_metric_explanation_cache.sql, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/metricExplanationCache.ts, social-listening-core/src/ai/prompts/metricExplainPromptV1.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/explainRouter.ts
 - **Status:** Pending review
 
+## 2026-09-01 — be5702d — heal(contract): Story 6.27 multi-Page status assertion
+
+- **Full commit:** `be5702dadae2e902c423241e339104f176e8d4ba`
+- **Files touched:** docs/adr/0060-facebook-connector-multiple-pages-per-user.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
+- **Status:** Pending review
+
+## 2026-09-01 — e493fb4 — heal(contract): Story 3.8 self-service tenant deletion
+
+- **Full commit:** `e493fb479930cddf4d094e33759b1d1f2cd7732c`
+- **Files touched:** social-listening-core/.claude/skills/self-service-tenant-deletion/SKILL.md, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/migrations/0068_grant_tenant_deletion_role_watchlist_shares.sql, social-listening-core/src/http/versions/v1/selfServiceTenantDeletionRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts
+- **Status:** Pending review
+
+## 2026-09-01 — bae4082 — docs(implementation-log): append Story 6.27 and Story 3.8 healing entries
+
+- **Full commit:** `bae408227c8c38d23f20e2e0b8f337b4aa286efb`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+

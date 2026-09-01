@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 17:25 | — | — | Documentation | Story 6.27 | docs(implementation-log): append Story 6.27 and Story 3.8 healing entries (bae4082) |
+| 2026-09-01 | 17:17 | — | — | Documentation | Story 3.8 | heal(contract): Story 3.8 self-service tenant deletion (e493fb4) |
+| 2026-09-01 | 17:16 | — | — | Documentation | Story 6.27 | heal(contract): Story 6.27 multi-Page status assertion (be5702d) |
 | 2026-09-01 | 08:08 | — | — | Documentation | Story 13.7 | feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113) (05e1e43) |
 | 2026-09-01 | 06:53 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking for Story 13.6 (181249f) |
 | 2026-09-01 | 06:43 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking and synthesis for Story 13.6 (fd66185) |
