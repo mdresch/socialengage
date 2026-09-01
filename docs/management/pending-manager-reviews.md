@@ -3860,3 +3860,21 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
+## 2026-09-01 — 1093eff — chore(project-progress-dashboard): sync telemetry after Story 12.3 healing
+
+- **Full commit:** `1093efff9560c7eb771a3feaf10f0f513ab1740d`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-01 — 4edf26f — fix(posts-csv-export): drain background export jobs before Jest teardown
+
+- **Full commit:** `4edf26fac3b84b3063200636f9e19f704c17c2e4`
+- **Files touched:** social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts, social-listening-core/src/posts/postExportEngine.ts
+- **Status:** Pending review
+
+## 2026-09-01 — ca98f53 — docs(implementation-log): append Story 10.8 async handle warning fix
+
+- **Full commit:** `ca98f5319eeedb97036a8af2705d1d08695f16ad`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+

@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 17:52 | — | — | Documentation | Story 10.8 | docs(implementation-log): append Story 10.8 async handle warning fix (ca98f53) |
+| 2026-09-01 | 17:52 | — | — | Documentation | — | fix(posts-csv-export): drain background export jobs before Jest teardown (4edf26f) |
+| 2026-09-01 | 17:40 | — | — | Documentation | Story 12.3 | chore(project-progress-dashboard): sync telemetry after Story 12.3 healing (1093eff) |
 | 2026-09-01 | 17:38 | — | — | Documentation | Story 12.3 | docs(implementation-log): append Story 12.3 healing entry (6ea71da) |
 | 2026-09-01 | 17:38 | — | — | Documentation | — | fix(feature-gating): avoid 500 from requireFeatureGate on synthetic test tenant ids (7850f1d) |
 | 2026-09-01 | 17:27 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1648218) |
