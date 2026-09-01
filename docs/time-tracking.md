@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-08-31 | 01:40 | — | — | Documentation | Story 13.4 | docs(user-stories): mark Story 13.4 as built (3241ecc) |
+| 2026-08-31 | 01:33 | — | — | Documentation | Story 13.4 | feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend) (209b0d7) |
 | 2026-08-31 | 23:52 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' into main (7dac132) |
 | 2026-08-31 | 23:29 | — | — | Documentation | Story 13.3 | docs: sync post-commit tracking after Story 13.3 implementation (2b3e8cc) |
 | 2026-08-31 | 23:27 | — | — | Documentation | Story 13.3 | chore(dashboard): sync project progress dashboard data for Story 13.3 (3f5d2a5) |

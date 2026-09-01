@@ -3716,3 +3716,15 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-08-31 — 209b0d7 — feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend)
+
+- **Full commit:** `209b0d7b286564a3a4e7126ecaeb93b862cd4ab1`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-13/story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts, social-listening-core/migrations/0065_align_export_jobs_for_adr_0111.sql, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/posts/exportRateLimit.ts, social-listening-core/src/posts/postExportEngine.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 3241ecc — docs(user-stories): mark Story 13.4 as built
+
+- **Full commit:** `3241eccdc95c8fba36491cc6a14137f07885e44c`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+

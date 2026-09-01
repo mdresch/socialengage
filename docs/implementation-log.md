@@ -4317,3 +4317,24 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - `social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md` (updated)
   - `social-listening-admin/.claude/skills/watchlist-management/SKILL.md` (updated)
 - **Full suite at merge:** Epic-13 suite passes (10/10). Epic-12 suite passes (59/59). Story 6.4 watchlist-management suite passes (25/25). Admin typecheck passes for changed files; pre-existing type errors in unrelated epic-8/epic-6 analytics and composer files, and environmental/foreign-credential failures in full `npm run test:contracts`, are not Story 13.3 regressions.
+
+---
+
+## 2026-09-01 — Story 13.4 — social-listening-core@209b0d7
+
+- **Full commit:** `209b0d7b286564a3a4e7126ecaeb93b862cd4ab1`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.4 / ADR-0111
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts` (7/7)
+- **SKILL.md:** `social-listening-core/.claude/skills/export-jobs/SKILL.md` (new); `social-listening-core/.claude/skills/posts-csv-export/SKILL.md` (updated)
+- **Files touched:**
+  - `docs/user-stories/epic-13-adr-0109-to-0117.md`
+  - `social-listening-core/.claude/skills/export-jobs/SKILL.md`
+  - `social-listening-core/.claude/skills/posts-csv-export/SKILL.md`
+  - `social-listening-core/contracts/epic-13/story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts`
+  - `social-listening-core/migrations/0065_align_export_jobs_for_adr_0111.sql`
+  - `social-listening-core/src/archival/blobArchiveClient.ts`
+  - `social-listening-core/src/http/versions/v1/postsExportRouter.ts`
+  - `social-listening-core/src/posts/exportRateLimit.ts`
+  - `social-listening-core/src/posts/postExportEngine.ts`
+- **Full suite at merge:** Story 13.4 contract passes (7/7). Epic-13 suite passes (54/54). Story 10.8 (posts CSV export) and Story 3.16 (tenant workspace/posts export) regression contracts pass. Typecheck passes. Full `npm run test:contracts` attempted; 15 failures all pre-existing environment/credential gaps (Facebook page token, Azure AI Language key, Service Bus subscription, GNews key, tenant-deletion timeout, server readiness) unrelated to Story 13.4.
