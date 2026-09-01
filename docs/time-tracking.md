@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 06:58 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking for Story 13.6 (b58e656) |
 | 2026-09-01 | 06:53 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking for Story 13.6 (181249f) |
 | 2026-09-01 | 06:43 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking and synthesis for Story 13.6 (fd66185) |
 | 2026-09-01 | 04:57 | — | — | Documentation | Story 13.5 | docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built (543eecf) |
