@@ -1,5 +1,7 @@
 import { Router, RequestHandler } from 'express';
+import multer from 'multer';
 import { requireTenantUserIdentity } from '../auth/requireTenantUser';
+import { requireFeatureGate } from '../auth/featureGates';
 import {
   createOutboundPost,
   cancelOutboundActivity,
@@ -7,9 +9,58 @@ import {
   listOutboundActivities,
   PublishingError,
 } from '../../publishing/outboundPublishingService';
+import {
+  createMediaAsset,
+  MediaValidationError,
+} from '../../media/mediaAssetStore';
 
 export function createPublishingRoutes(authMiddleware: RequestHandler): Router {
   const router = Router();
+
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: Number(process.env.MEDIA_MAX_VIDEO_BYTES ?? 512 * 1024 * 1024),
+    },
+  });
+
+  /**
+   * Story 13.9 (ADR-0115) — POST /v1/outbound/media: upload a media file to
+   * tenant-scoped Blob Storage and return a 24h presigned URL.
+   */
+  router.post(
+    '/outbound/media',
+    authMiddleware,
+    requireFeatureGate('media_upload'),
+    upload.single('file'),
+    async (req, res) => {
+      const identity = requireTenantUserIdentity(req, res);
+      if (!identity) return;
+
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ error: 'No file uploaded.', code: 'MISSING_MEDIA_FILE' });
+        return;
+      }
+
+      try {
+        const result = await createMediaAsset({
+          tenantId: identity.tenantId,
+          ownerId: identity.userId,
+          buffer: file.buffer,
+          mimeType: file.mimetype,
+          sizeBytes: file.size,
+        });
+        res.status(200).json(result);
+      } catch (err) {
+        if (err instanceof MediaValidationError) {
+          res.status(err.status).json({ error: err.message, code: err.code });
+          return;
+        }
+        res.status(500).json({ error: (err as Error).message || 'Failed to upload media.' });
+      }
+    }
+  );
 
   /**
    * Story 11.7 (ADR-0098) — POST /v1/outbound/posts: creates immediate or scheduled outbound post.

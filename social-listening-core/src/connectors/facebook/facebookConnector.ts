@@ -233,6 +233,12 @@ export async function publishToFacebookPage(
     );
   }
 
+  // Story 13.9 (ADR-0115) — the v1 Facebook connector is text-only.
+  // Native image/video page uploads will be added by a later story.
+  if (payload.assets && payload.assets.length > 0) {
+    throw new ClassifiableError('platform_asset_rejected', 'Facebook Page publishing does not support media attachments in v1.');
+  }
+
   const url = `${GRAPH_API_BASE}/${encodeURIComponent(payload.targetAssetId)}/feed?access_token=${encodeURIComponent(pageAccessToken)}`;
   const result = await postToFacebookGraphApi(
     url,
@@ -355,7 +361,7 @@ export const facebookConnector: SocialConnector = {
   getCapabilities: () => ({
     sourceType: 'social',
     poll: { cadenceMs: 30 * 60 * 1000, supportsTimeWindow: true },
-    publish: { supportsScheduling: true, supportedAssetTypes: ['text', 'image', 'video'] },
+    publish: { supportsScheduling: true, supportedAssetTypes: ['text'] },
     reply: true,
     backfill: { supportsHistorical: true, maxLookbackDays: 90 },
   }),
