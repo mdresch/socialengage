@@ -4429,3 +4429,16 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-core/.claude/skills/self-service-tenant-deletion/SKILL.md, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/migrations/0068_grant_tenant_deletion_role_watchlist_shares.sql, social-listening-core/src/http/versions/v1/selfServiceTenantDeletionRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts
 - **Epic-3 suite:** PASS (18/18 excluding unrelated `story-3.15` afterAll Key Vault timeout; passes in isolation). Full accumulated suite: story-3.8 passes; unrelated pre-existing failures in story-1.10, story-3.15, story-10.8, story-12.3, story-13.8.
 - **Notes:** Root causes: (1) `watchlist_shares` was invisible to `tenant_deletion_role` through `watchlists` ownership RLS; added migration 0068 to grant the role and widened the `watchlists` RLS predicate. (2) `request` and `cancel` routes were sending the HTTP response inside the `withTenant()` callback, before `COMMIT`, causing a race where immediately-following `confirm`/`re-request` calls read uncommitted `deletion_requested_at` — restructured both routes to return a result and send `res.json(...)` only after `await withTenant(...)` resolves. Added `watchlist_shares` to the deletion sequence in `tenantDeletion.ts`.
+
+---
+
+## 2026-09-01 — Story 12.3 regression — social-listening-core@7850f1d
+
+- **Full commit:** `7850f1d9d27ba737ab32aae5387cef6ad475caf3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 12.3 / ADR-0102
+- **Contract:** `social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts` (8/8)
+- **SKILL.md:** `social-listening-core/.claude/skills/feature-gating/SKILL.md`
+- **Files touched:** social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/src/tenants/tenantStore.ts
+- **Epic-12 suite:** PASS (71/71)
+- **Notes:** `POST /v1/watchlists` returned 500 instead of 422 for an unsupported AST clause. `requireFeatureGate('watchlists')` now calls `getTenantFeatureGates()` before the AST validation; `getTenantFeatureGates()` was throwing a Postgres `22P02` error because the contract uses the synthetic string tenant id `tenant-12.3` and `tenants.id` is `uuid`. Added defensive handling to treat `22P02` (and any unparseable/invalid tenant id) as a missing tenant, returning the default `{}` feature-gates set. This preserves the `403 FEATURE_NOT_AVAILABLE` path for real disabled tenants while stopping the 500 on test fixtures.
