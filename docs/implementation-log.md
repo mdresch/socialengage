@@ -1,5 +1,18 @@
 # Implementation Log
 
+---
+
+## 2026-09-01 — Story 13.5 — social-listening-core@4dc7472
+
+- **Full commit:** `4dc74725f0458ec064a14aa5d0a18529520fc69c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.5 / ADR-0112
+- **Contract:** `contracts/epic-13/story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/feature-gating/SKILL.md`, `social-listening-core/.claude/skills/tenants/SKILL.md`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/.claude/skills/tenants/SKILL.md, social-listening-core/contracts/epic-13/story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts, social-listening-core/migrations/0066_add_tenant_plan_and_feature_gates_defaults.sql, social-listening-core/src/http/auth/featureGates.ts, social-listening-core/src/http/auth/tenantAuthMiddleware.ts, social-listening-core/src/http/versions/v1/adminTenantsRouter.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantPlanRouter.ts, social-listening-core/src/http/versions/v1/tenantUsersRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/identity/identityResolution.ts, social-listening-core/src/tenants/featureGates.ts, social-listening-core/src/tenants/selfServiceSignup.ts, social-listening-core/src/tenants/tenantStore.ts
+- **Epic-13 suite at merge:** PASS (67/67); affected regression suites (Story 1.5, 1.7, 1.8, 1.9, 1.11, 1.12, 5.8, 5.12, 5.15, 9.1, 10.8, 10.11, 12.11, 12.13, 2.13) PASS; isolated environmental afterAll timeouts on 1.7 and 1.11 (Azure Key Vault deletion) are pre-existing and unrelated to this change.
+
+
 **Append-only. Never edit or remove an existing entry — corrections get a new dated entry that references the one being corrected.** This is the same convention as every other "don't rewrite history" rule in this doc series (ADR Amendment Logs, Clarifications, Pending-supersession notes), applied to actual code delivery instead of decisions.
 
 This is the record that closes the loop `docs/adr/README.md`'s decisions and `docs/user-stories/README.md`'s stories don't close on their own: not just "this story is marked Done," but *which exact commit, in which repo, touching which exact files* did it — verifiable against git's own tamper-evident commit hash, not just trusted prose. See `docs/implementation-methodology.md`'s Conventions section and [`docs/templates/check-implementation-log.cjs`](templates/check-implementation-log.cjs), which independently recomputes each entry's file list from git and fails CI on a mismatch.
