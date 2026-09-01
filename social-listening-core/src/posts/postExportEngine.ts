@@ -14,6 +14,13 @@ import { PoolClient } from 'pg';
 import { uploadExportBlob, generatePresignedDownloadUrl } from '../archival/blobArchiveClient';
 import { checkExportRateLimit, ExportRateScope } from './exportRateLimit';
 
+const activeExportJobs = new Set<Promise<void>>();
+
+export async function drainActiveExportJobs(): Promise<void> {
+  if (activeExportJobs.size === 0) return;
+  await Promise.all([...activeExportJobs]);
+}
+
 export interface ExportFilters {
   watchlistId?: string;
   platformId?: string;
@@ -385,9 +392,12 @@ export async function createAsyncExportJob(
       const job = rows[0];
 
       // Process in the background so the HTTP 202 response is sent immediately.
-      processExportJob(tenantId, userId, job.id, format, input.filters ?? {}, limit).catch((err) => {
+      // Track the promise so contract tests can drain active jobs before closing pools.
+      const jobPromise = processExportJob(tenantId, userId, job.id, format, input.filters ?? {}, limit).catch((err) => {
         console.error(`Export job ${job.id} failed:`, err);
       });
+      activeExportJobs.add(jobPromise);
+      jobPromise.finally(() => activeExportJobs.delete(jobPromise));
 
       return job;
     },

@@ -9,10 +9,12 @@ import { closePlatformAdminPool, getPlatformAdminPool } from '../../src/db/platf
 import { closeAdminPool, getAdminPool } from '../../src/db/adminPool';
 import { closePool } from '../../src/db/pool';
 import { createInvitedUser } from '../../src/identity/identityResolution';
+import { drainActiveExportJobs } from '../../src/posts/postExportEngine';
 
 jest.setTimeout(30000);
 
 afterAll(async () => {
+  await drainActiveExportJobs();
   await closePlatformAdminPool();
   await closeAdminPool();
   await closePool();

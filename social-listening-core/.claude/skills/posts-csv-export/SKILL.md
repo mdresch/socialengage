@@ -32,6 +32,7 @@ tenant-scoped rate limits and a 7-day Azure Blob lifecycle.
    60 sync/hour, 20 async/hour, 120 status/hour, 10 downloads/hour.
 7. **Blob Lifecycle:** Async export blobs are uploaded with `expires_at` metadata
    set 7 days in the future; presigned download URLs are valid for 24 hours.
+8. **Background Job Tracking:** `createAsyncExportJob()` tracks every in-flight `processExportJob()` promise in an in-memory `Set`. Contracts (and any long-running test) that create async export jobs must `await drainActiveExportJobs()` in their `afterAll`/`afterEach` cleanup before closing the Postgres pools; otherwise the background work keeps running after Jest tears down the environment and produces `Jest did not exit` / `require after tests are done` warnings.
 
 ## Endpoints
 
