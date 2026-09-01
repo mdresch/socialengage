@@ -3842,3 +3842,21 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-3.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-09-01 — 1648218 — chore: sync post-commit pending reviews and time tracking
+
+- **Full commit:** `1648218c5c84317a14d835c0ec98fb466a7293de`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-01 — 7850f1d — fix(feature-gating): avoid 500 from requireFeatureGate on synthetic test tenant ids
+
+- **Full commit:** `7850f1d9d27ba737ab32aae5387cef6ad475caf3`
+- **Files touched:** social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/src/tenants/tenantStore.ts
+- **Status:** Pending review
+
+## 2026-09-01 — 6ea71da — docs(implementation-log): append Story 12.3 healing entry
+
+- **Full commit:** `6ea71da6406261fc675bb1f22a05f89f6de774b5`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+

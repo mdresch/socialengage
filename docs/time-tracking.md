@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 17:38 | — | — | Documentation | Story 12.3 | docs(implementation-log): append Story 12.3 healing entry (6ea71da) |
+| 2026-09-01 | 17:38 | — | — | Documentation | — | fix(feature-gating): avoid 500 from requireFeatureGate on synthetic test tenant ids (7850f1d) |
+| 2026-09-01 | 17:27 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1648218) |
 | 2026-09-01 | 17:27 | — | — | Documentation | Story 6.27 | chore(project-progress-dashboard): sync telemetry after Story 6.27 and 3.8 healing (8b99394) |
 | 2026-09-01 | 17:25 | — | — | Documentation | Story 6.27 | docs(implementation-log): append Story 6.27 and Story 3.8 healing entries (bae4082) |
 | 2026-09-01 | 17:17 | — | — | Documentation | Story 3.8 | heal(contract): Story 3.8 self-service tenant deletion (e493fb4) |

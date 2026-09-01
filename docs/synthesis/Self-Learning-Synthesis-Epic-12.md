@@ -1,8 +1,8 @@
 # Self-Learning Synthesis: Epic 12 (Epic 12)
 
-**Compiled Date:** 2026-08-31
-**Source Capture:** `raw/synthesis-epic-12-2026-08-31/`
-**Git HEAD:** `bbfbb043aaf91608f026b741c78f8a14d0e49542`
+**Compiled Date:** 2026-09-01
+**Source Capture:** `raw/synthesis-epic-12-2026-09-01/`
+**Git HEAD:** `6ea71da6406261fc675bb1f22a05f89f6de774b5`
 **Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 880 |
+| Git commits scanned | 298 |
 | Healing / fix commits | 1 |
 | Feature commits (this epic) | 16 |
-| Contract test files | 202 |
+| Contract test files | 211 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -47,9 +47,9 @@
 
 ## 4. Contract Test Inventory
 
-Total: 202 contract test files.
+Total: 211 contract test files.
 
-### social-listening-admin/contracts (76 files)
+### social-listening-admin/contracts (78 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -69,9 +69,11 @@ Total: 202 contract test files.
 - `story-12.14.workspace-settings-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.16.influencer-discovery-ui.contract.test.ts` (modified 2026-08-30)
 - `story-12.2.connector-capability-matrix-ui.contract.test.ts` (modified 2026-08-29)
-- `story-12.4.boolean-query-visual-builder.contract.test.ts` (modified 2026-08-29)
+- `story-12.4.boolean-query-visual-builder.contract.test.ts` (modified 2026-08-31)
 - `story-12.6.ai-sentiment-aspect-ui.contract.test.ts` (modified 2026-08-29)
 - `story-12.8.topic-curation-selected-topic-ui.contract.test.ts` (modified 2026-08-29)
+- `story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (modified 2026-08-31)
+- `story-13.6.plan-and-seat-management-ui.contract.test.ts` (modified 2026-09-01)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
 - `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
@@ -114,7 +116,7 @@ Total: 202 contract test files.
 - `story-6.7.self-service-signup.contract.test.ts` (modified 2026-08-24)
 - `story-6.8.user-invitation-management-screen.contract.test.ts` (modified 2026-08-17)
 - `story-6.9.tenant-settings-screen.contract.test.ts` (modified 2026-08-27)
-- `story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (modified 2026-08-20)
+- `story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` (modified 2026-08-31)
 - `story-8.10.location-and-geospatial-insights.contract.test.ts` (modified 2026-08-20)
 - `story-8.2.sentiment-tab.contract.test.ts` (modified 2026-08-21)
 - `story-8.3.conversations-tab.contract.test.ts` (modified 2026-08-20)
@@ -128,7 +130,7 @@ Total: 202 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (126 files)
+### social-listening-core/contracts (133 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -136,8 +138,8 @@ Total: 202 contract test files.
 - `story-1.12.connector-status-includes-activation.contract.test.ts` (modified 2026-08-20)
 - `story-1.13.live-ingestion-polling-scheduler.contract.test.ts` (modified 2026-08-29)
 - `story-1.14.poll-scheduler-skip-in-flight.contract.test.ts` (modified 2026-08-18)
-- `story-1.15.tier3-poll-scheduling.contract.test.ts` (modified 2026-08-18)
-- `story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts` (modified 2026-08-21)
+- `story-1.15.tier3-poll-scheduling.contract.test.ts` (modified 2026-08-31)
+- `story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts` (modified 2026-08-31)
 - `story-1.2.postgres-jsonb.contract.test.ts` (modified 2026-08-01)
 - `story-1.3.api-versioning.contract.test.ts` (modified 2026-08-01)
 - `story-1.4.persistent-local-dev-database.contract.test.ts` (modified 2026-08-12)
@@ -158,7 +160,7 @@ Total: 202 contract test files.
 - `story-11.1.crm-connector-and-case-handoff.contract.test.ts` (modified 2026-08-28)
 - `story-11.11.mention-suggestions.contract.test.ts` (modified 2026-08-28)
 - `story-11.3.daily-digest-email.contract.test.ts` (modified 2026-08-28)
-- `story-11.5.topic-evolution.contract.test.ts` (modified 2026-08-28)
+- `story-11.5.topic-evolution.contract.test.ts` (modified 2026-08-31)
 - `story-11.7.publishing-and-scheduling.contract.test.ts` (modified 2026-08-28)
 - `story-11.9.social-inbox-and-reply.contract.test.ts` (modified 2026-08-28)
 - `story-12.1.connector-capability-matrix.contract.test.ts` (modified 2026-08-29)
@@ -169,10 +171,17 @@ Total: 202 contract test files.
 - `story-12.5.ai-sentiment-aspect-schema.contract.test.ts` (modified 2026-08-29)
 - `story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` (modified 2026-08-29)
 - `story-12.9.dashboard-widget-contracts.contract.test.ts` (modified 2026-08-29)
+- `story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts` (modified 2026-08-31)
+- `story-13.2.per-connector-query-translation-and-validation.contract.test.ts` (modified 2026-08-31)
+- `story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts` (modified 2026-09-01)
+- `story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts` (modified 2026-09-01)
+- `story-13.6.admin-tenant-plan-read.contract.test.ts` (modified 2026-09-01)
+- `story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` (modified 2026-09-01)
+- `story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` (modified 2026-09-01)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
-- `story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts` (modified 2026-08-12)
+- `story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts` (modified 2026-08-31)
 - `story-2.13.wikipedia-connector.contract.test.ts` (modified 2026-08-17)
 - `story-2.14.wikipedia-watchlist-driven-discovery.contract.test.ts` (modified 2026-08-20)
 - `story-2.15.facebook-connector.contract.test.ts` (modified 2026-08-20)
@@ -191,18 +200,18 @@ Total: 202 contract test files.
 - `story-2.27.facebook-page-reply-implementation.contract.test.ts` (modified 2026-08-23)
 - `story-2.28.connector-publish-framework.contract.test.ts` (modified 2026-08-23)
 - `story-2.29.facebook-page-post-publishing.contract.test.ts` (modified 2026-08-23)
-- `story-2.3.error-handling-auto-disable.contract.test.ts` (modified 2026-08-25)
+- `story-2.3.error-handling-auto-disable.contract.test.ts` (modified 2026-08-31)
 - `story-2.30.linkedin-post-publishing.contract.test.ts` (modified 2026-08-23)
 - `story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` (modified 2026-08-23)
 - `story-2.32.azure-openai-research-capability.contract.test.ts` (modified 2026-08-23)
 - `story-2.4.bounded-queues-and-dead-lettering.contract.test.ts` (modified 2026-08-25)
-- `story-2.5.proportional-failure-threshold.contract.test.ts` (modified 2026-08-17)
+- `story-2.5.proportional-failure-threshold.contract.test.ts` (modified 2026-08-31)
 - `story-2.6.newswire-connector.contract.test.ts` (modified 2026-08-25)
 - `story-2.7.gnews-connector.contract.test.ts` (modified 2026-08-25)
 - `story-2.8.azure-ai-language-connector.contract.test.ts` (modified 2026-08-12)
 - `story-2.9.second-ai-provider-connector.contract.test.ts` (modified 2026-08-12)
 - `story-6.20.tenant-owned-feed-multi-feed-administration.contract.test.ts` (modified 2026-08-17)
-- `story-6.27.facebook-multi-page-support.contract.test.ts` (modified 2026-08-29)
+- `story-6.27.facebook-multi-page-support.contract.test.ts` (modified 2026-09-01)
 - `story-6.37.watchlist-raw-payload.contract.test.ts` (modified 2026-08-22)
 - `story-3.1.author-normalization.contract.test.ts` (modified 2026-08-01)
 - `story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` (modified 2026-08-20)
@@ -219,13 +228,13 @@ Total: 202 contract test files.
 - `story-3.4.cursor-pagination.contract.test.ts` (modified 2026-08-03)
 - `story-3.5.tiered-retention-and-archival.contract.test.ts` (modified 2026-08-01)
 - `story-3.6.watchlist-boolean-ast.contract.test.ts` (modified 2026-08-01)
-- `story-3.8.self-service-tenant-initiated-deletion.contract.test.ts` (modified 2026-08-12)
+- `story-3.8.self-service-tenant-initiated-deletion.contract.test.ts` (modified 2026-09-01)
 - `story-3.9.author-follower-count-at-publish.contract.test.ts` (modified 2026-08-12)
 - `story-6.16.post-manual-enrich-endpoint.contract.test.ts` (modified 2026-08-12)
 - `story-6.19.post-body-markdown-exposure.contract.test.ts` (modified 2026-08-17)
 - `story-4.1.author-topic-signals.contract.test.ts` (modified 2026-08-03)
 - `story-4.2.topic-time-series-deferred.contract.test.ts` (modified 2026-08-29)
-- `story-4.3.derived-connector-health.contract.test.ts` (modified 2026-08-01)
+- `story-4.3.derived-connector-health.contract.test.ts` (modified 2026-08-31)
 - `story-4.3.health-derivation-index.contract.test.ts` (modified 2026-08-01)
 - `story-4.4.derived-data-caching-and-refresh.contract.test.ts` (modified 2026-08-06)
 - `story-5.1.thin-events.contract.test.ts` (modified 2026-08-03)
