@@ -26,6 +26,12 @@ An active discovery `SocialConnector` (ADR-0065, Story 2.21) that iterates a ten
 - `contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` — one-off `searchForResearch()` helper, research RequestGate key, no persistence, and error classification.
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves `brave-search` literal appears in designated registration surfaces only and no core pipeline logic is hardcoded.
 
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26, per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention.)*
+
+- `searchForResearch()` is called by `src/composer/composerResearchService.ts`, reached at the real production call site `POST /v1/composer/research` (`composerRouter.ts`) — relationship asserted by `story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` (helper-level) and `story-3.17.composer-deep-research.contract.test.ts` (endpoint-level, in `composer-research/SKILL.md`).
+
 ## Registration transparency (ADR-0048)
 
 - **Registration location:** `src/connectors/braveSearch/braveSearchConnector.ts` (`BRAVE_SEARCH_PROVIDER_ID = 'brave-search'`) and `src/connectors/bootstrapConnectors.ts`.

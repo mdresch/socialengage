@@ -4,6 +4,8 @@ ADRs derived from [`2026-07-28-social-listening-ingestion-design.md`](../project
 
 Each ADR feeds a [user story](../user-stories/README.md); each story is built per [`docs/implementation-methodology.md`](../implementation-methodology.md) (contract-first, component `SKILL.md`s, permanent regression suite) — so an ADR's decision stays enforced in code, not just recorded in prose.
 
+**Documentation Steward note, 2026-08-26.** As of 2026-08-23 (`eb319d6`, `dc22ecc`, and several `docs(brd)`/`docs(fdd)` follow-up commits), every ADR 0001–0121 also has a companion Business Requirements Document and Functional Design Document, 1:1 by number: `docs/project docs/Business-Requirements/BRD-00NN-<slug>.md` and `docs/project docs/Functional-Design/FDD-00NN-<slug>.md` (each BRD/FDD's own Document Control section cites the ADR it was drafted from). Neither this master index nor either folder has its own README/index file, and this file did not mention their existence at all until this note — flagged and fixed to the extent this role's charter covers (a factual cross-reference, not a content decision): readers auditing an ADR's own paper trail here should also check for its matching BRD-00NN/FDD-00NN pair by the same number. A per-row link into the master table below, or a dedicated index file in each of those two folders, would be a real improvement but is a content/formatting decision for Menno, not made unilaterally here.
+
 ## Conventions for changing an existing ADR
 
 Four situations, four different responses — don't default to editing the original Decision/Consequences text in place:
