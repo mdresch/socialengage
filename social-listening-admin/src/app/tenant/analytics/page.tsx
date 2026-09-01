@@ -65,9 +65,16 @@ export default async function AnalyticsPage({
 
   const initialRange = defaultDateRange();
   const watchlists = await listWatchlists().catch(() => []);
-  const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined)
-    .catch(() => computeAnalyticsSummary([], initialRange));
-  const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists).catch(() => []);
+  const initialSummary = await fetchAnalyticsSummary(
+    initialRange,
+    initialOverviewFilters.activeWatchlistFilter || undefined,
+    initialOverviewFilters.activeSourceFilter || undefined
+  ).catch(() => computeAnalyticsSummary([], initialRange));
+  const initialWatchlistCoverage = await fetchWatchlistCoverage(
+    initialRange,
+    watchlists,
+    initialOverviewFilters.activeSourceFilter || undefined
+  ).catch(() => []);
 
   return (
     <main>

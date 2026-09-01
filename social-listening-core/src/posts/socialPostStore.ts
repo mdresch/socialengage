@@ -490,6 +490,8 @@ export interface ListSocialPostsOptions {
   limit?: number;
   /** Story 3.11 (ADR-0063) — filters to posts with a real post_watchlist_matches row for this watchlist. */
   watchlistId?: string;
+  /** Optional source filter — raw_payload->>'providerId' must equal this value. */
+  providerId?: string;
 }
 
 export interface SocialPostSummary {
@@ -524,8 +526,8 @@ export async function listSocialPosts(
 
   return withTenant(tenantId, async (client) => {
     const rows = options.cursor
-      ? await queryAfterCursor(client, options.cursor, limit, options.watchlistId)
-      : await queryFirstPage(client, limit, options.watchlistId);
+      ? await queryAfterCursor(client, options.cursor, limit, options.watchlistId, options.providerId)
+      : await queryFirstPage(client, limit, options.watchlistId, options.providerId);
 
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
@@ -567,17 +569,32 @@ interface PostRow {
 async function queryFirstPage(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
   limit: number,
-  watchlistId?: string
+  watchlistId?: string,
+  providerId?: string
 ): Promise<PostRow[]> {
-  const join = watchlistId
-    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $2`
-    : '';
-  const params = watchlistId ? [limit + 1, watchlistId] : [limit + 1];
+  const params: unknown[] = [limit + 1];
+  const joins: string[] = [];
+  const conditions: string[] = [];
+
+  if (watchlistId) {
+    joins.push(`JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $${params.length + 1}`);
+    params.push(watchlistId);
+  }
+
+  if (providerId) {
+    conditions.push(`raw_payload->>'providerId' = $${params.length + 1}`);
+    params.push(providerId);
+  }
+
+  const joinSql = joins.join(' ');
+  const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
   const { rows } = await client.query(
     `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
             social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
      FROM social_posts
-     ${join}
+     ${joinSql}
+     ${whereSql}
      ORDER BY seq ASC
      LIMIT $1`,
     params
@@ -589,19 +606,33 @@ async function queryAfterCursor(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
   cursorToken: string,
   limit: number,
-  watchlistId?: string
+  watchlistId?: string,
+  providerId?: string
 ): Promise<PostRow[]> {
   const { seq } = decodeCursor(cursorToken);
-  const join = watchlistId
-    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $3`
-    : '';
-  const params = watchlistId ? [seq, limit + 1, watchlistId] : [seq, limit + 1];
+  const params: unknown[] = [seq, limit + 1];
+  const joins: string[] = [];
+  const conditions: string[] = ['seq > $1'];
+
+  if (watchlistId) {
+    joins.push(`JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $${params.length + 1}`);
+    params.push(watchlistId);
+  }
+
+  if (providerId) {
+    conditions.push(`raw_payload->>'providerId' = $${params.length + 1}`);
+    params.push(providerId);
+  }
+
+  const joinSql = joins.join(' ');
+  const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
   const { rows } = await client.query(
     `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
             social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
      FROM social_posts
-     ${join}
-     WHERE seq > $1
+     ${joinSql}
+     ${whereSql}
      ORDER BY seq ASC
      LIMIT $2`,
     params

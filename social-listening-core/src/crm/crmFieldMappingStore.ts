@@ -4,7 +4,7 @@ export interface CRMFieldMappingRow {
   id: string;
   tenantId: string;
   crmConnectorId: string;
-  entityType: 'lead' | 'opportunity' | 'support';
+  entityType: string;
   sourceField: string;
   targetField: string;
   isRequired: boolean;
@@ -17,7 +17,7 @@ interface RawCRMFieldMappingRow {
   id: string;
   tenant_id: string;
   crm_connector_id: string;
-  entity_type: 'lead' | 'opportunity' | 'support';
+  entity_type: string;
   source_field: string;
   target_field: string;
   is_required: boolean;
@@ -74,7 +74,7 @@ export async function upsertFieldMapping(
   tenantId: string,
   input: {
     crmConnectorId: string;
-    entityType: 'lead' | 'opportunity' | 'support';
+    entityType: string;
     sourceField: string;
     targetField: string;
     isRequired?: boolean;

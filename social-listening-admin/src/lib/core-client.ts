@@ -1048,11 +1048,12 @@ export interface SocialPostFull extends SocialPostSummary {
  * `watchlistId` (Story 8.9, ADR-0063) is optional and forwarded as-is —
  * the real `GET /v1/posts?watchlistId=` server-side filter (Story 3.11).
  */
-export async function listPosts(cursor?: string, limit?: number, watchlistId?: string): Promise<SocialPostsPage> {
+export async function listPosts(cursor?: string, limit?: number, watchlistId?: string, providerId?: string): Promise<SocialPostsPage> {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', cursor);
   if (typeof limit === 'number') params.set('limit', String(limit));
   if (watchlistId) params.set('watchlistId', watchlistId);
+  if (providerId) params.set('providerId', providerId);
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
@@ -2452,6 +2453,66 @@ export async function deleteCRMFieldMapping(id: string): Promise<boolean> {
     method: 'DELETE',
   });
   return response.ok;
+}
+
+export type CRMCredentialConfig = Record<string, string>;
+
+export interface CRMCredentialSummary {
+  crmConnectorId: string;
+  configured: boolean;
+  config: CRMCredentialConfig | null;
+}
+
+export async function getCRMCredential(crmConnectorId: string): Promise<CRMCredentialSummary> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load CRM credential: ${response.status}`);
+  }
+  return (await response.json()) as CRMCredentialSummary;
+}
+
+export async function saveCRMCredential(crmConnectorId: string, config: CRMCredentialConfig): Promise<unknown> {
+  const response = await authenticatedCoreFetch('/v1/crm/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ crmConnectorId, ...config }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save CRM credential: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function deleteCRMCredential(crmConnectorId: string): Promise<boolean> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}`, {
+    method: 'DELETE',
+  });
+  return response.ok;
+}
+
+export interface CRMConnectorHealth {
+  crmConnectorId: string;
+  status: {
+    isActive: boolean;
+    provider: string;
+    lastValidatedAt?: string;
+    error?: string;
+  };
+}
+
+export async function getCRMConnectorHealth(
+  crmConnectorId: string,
+  config?: Record<string, string>
+): Promise<CRMConnectorHealth> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}/health`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ config: config ?? null }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to verify CRM connector: ${response.status}`);
+  }
+  return (await response.json()) as CRMConnectorHealth;
 }
 
 // ---------------------------------------------------------------------------

@@ -587,7 +587,7 @@ export function OverviewTab({
             {timelineData.length === 0 ? (
               <EmptyState heading="No volume data" />
             ) : (
-              <div className="an-chart-wrap" style={{ height: 420 }}>
+              <div className="an-chart-wrap" style={{ height: 560 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={timelineData}

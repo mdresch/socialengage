@@ -4,6 +4,32 @@ import { RequestWithIdentity } from '../auth/requestIdentity';
 import { pushCaseToCRM, CRMConflictError } from '../../crm/crmHandoffService';
 import { listCRMConnectors } from '../../connectors/crm/crmRegistry';
 import { listFieldMappings, upsertFieldMapping, deleteFieldMapping } from '../../crm/crmFieldMappingStore';
+import {
+  upsertCRMCredential,
+  readCRMCredential,
+  getCRMCredentialRow,
+  deleteCRMCredential,
+  CRMCredentialInput,
+} from '../../crm/crmCredentialStore';
+
+async function loadCredentialsForConnector(tenantId: string, crmConnectorId: string) {
+  try {
+    return await readCRMCredential(tenantId, crmConnectorId);
+  } catch {
+    return null;
+  }
+}
+
+function maskSensitiveCRMCredentialFields(config: CRMCredentialInput): CRMCredentialInput {
+  const masked = { ...config };
+  Object.keys(masked).forEach((key) => {
+    const lower = key.toLowerCase();
+    if (lower.includes('secret') || lower.includes('token') || lower.includes('password') || lower.includes('key')) {
+      masked[key] = '••••••••';
+    }
+  });
+  return masked;
+}
 
 export function createCRMRoutes(): Router {
   const router = Router();
@@ -59,7 +85,8 @@ export function createCRMRoutes(): Router {
     const connectors = listCRMConnectors();
     const result = await Promise.all(
       connectors.map(async (c) => {
-        const status = await c.status({ tenantId: identity.tenantId });
+        const credentials = await loadCredentialsForConnector(identity.tenantId, c.id);
+        const status = await c.status({ tenantId: identity.tenantId, credentials: credentials ?? undefined });
         return {
           id: c.id,
           provider: c.provider,
@@ -119,6 +146,76 @@ export function createCRMRoutes(): Router {
       res.status(404).json({ error: 'Field mapping not found' });
       return;
     }
+    res.status(204).end();
+  });
+
+  // GET /v1/crm/credentials/:crmConnectorId
+  router.get('/crm/credentials/:crmConnectorId', async (req: Request, res: Response) => {
+    const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+    if (!identity) return;
+
+    const crmConnectorIdParam = Array.isArray(req.params.crmConnectorId) ? req.params.crmConnectorId[0] : req.params.crmConnectorId;
+    const crmConnectorId = crmConnectorIdParam as string;
+    const row = await getCRMCredentialRow(identity.tenantId, crmConnectorId);
+    const config = row ? await readCRMCredential(identity.tenantId, crmConnectorId) : null;
+    res.status(200).json({
+      crmConnectorId,
+      configured: Boolean(row),
+      config: config ? maskSensitiveCRMCredentialFields(config) : null,
+    });
+  });
+
+  // POST /v1/crm/credentials
+  router.post('/crm/credentials', async (req: Request, res: Response) => {
+    const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+    if (!identity) return;
+
+    const { crmConnectorId, ...rest } = req.body || {};
+    if (!crmConnectorId) {
+      res.status(400).json({ error: 'crmConnectorId is required' });
+      return;
+    }
+
+    try {
+      const row = await upsertCRMCredential(identity.tenantId, crmConnectorId, rest as CRMCredentialInput);
+      res.status(201).json(row);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to save CRM credentials' });
+    }
+  });
+
+  // POST /v1/crm/credentials/:crmConnectorId/health
+  router.post('/crm/credentials/:crmConnectorId/health', async (req: Request, res: Response) => {
+    const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+    if (!identity) return;
+
+    const crmConnectorId = Array.isArray(req.params.crmConnectorId)
+      ? req.params.crmConnectorId[0]
+      : (req.params.crmConnectorId as string);
+
+    const connector = listCRMConnectors().find((c) => c.id === crmConnectorId);
+    if (!connector) {
+      res.status(404).json({ error: `Unknown CRM connector: ${crmConnectorId}` });
+      return;
+    }
+
+    const body = req.body || {};
+    const providedConfig = body.config ? (body.config as CRMCredentialInput) : null;
+    const credentials = providedConfig ?? (await loadCredentialsForConnector(identity.tenantId, crmConnectorId));
+    const status = await connector.status({ tenantId: identity.tenantId, credentials: credentials ?? undefined });
+
+    res.status(200).json({ crmConnectorId, status });
+  });
+
+  // DELETE /v1/crm/credentials/:crmConnectorId
+  router.delete('/crm/credentials/:crmConnectorId', async (req: Request, res: Response) => {
+    const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+    if (!identity) return;
+
+    const crmConnectorId = Array.isArray(req.params.crmConnectorId)
+      ? req.params.crmConnectorId[0]
+      : (req.params.crmConnectorId as string);
+    await deleteCRMCredential(identity.tenantId, crmConnectorId);
     res.status(204).end();
   });
 

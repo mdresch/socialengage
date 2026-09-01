@@ -128,6 +128,43 @@ export default async function TenantSettingsPage() {
         </div>
       </section>
 
+      {/* CRM Connector Settings Card */}
+      <section
+        aria-label="CRM Connectors"
+        style={{
+          border: '1px solid #e5e7eb',
+          borderRadius: 8,
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
+          background: '#fff',
+        }}
+      >
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>CRM Connectors</h2>
+        <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          Configure the credentials used when escalating social items to Dynamics 365, HubSpot, or Salesforce.
+        </p>
+        <a
+          href="/tenant/settings/crm"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '0.5rem 1rem',
+            border: '1px solid #d1d5db',
+            borderRadius: 6,
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            color: '#111827',
+            background: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          <span>⚙️</span>
+          <span>Manage CRM Connectors</span>
+        </a>
+      </section>
+
       {/* Notifications & Daily Digest Card */}
       <section
         aria-label="Notification Preferences"

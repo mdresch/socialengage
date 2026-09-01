@@ -19,3 +19,6 @@ node_modules/
 
 # Claude Code — personal, local permission overrides (not team-wide config)
 .claude/settings.local.json
+
+# Jest per-process test database context files
+.jest-test-db-*.json

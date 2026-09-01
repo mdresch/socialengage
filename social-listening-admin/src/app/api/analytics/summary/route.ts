@@ -26,6 +26,7 @@ export async function GET(request: Request) {
   const endDate = url.searchParams.get('endDate');
   const compare = url.searchParams.get('compare') === 'true';
   const watchlistId = url.searchParams.get('watchlistId') || url.searchParams.get('watchlist') || undefined;
+  const providerId = url.searchParams.get('providerId') || url.searchParams.get('source') || undefined;
   const includeCoverage = url.searchParams.get('coverage') === 'true';
 
   if (!startDate || !endDate) {
@@ -36,11 +37,11 @@ export async function GET(request: Request) {
   const previousRange = compare ? computePreviousRange(range) : null;
 
   try {
-    const comparison = await fetchAnalyticsComparison(range, previousRange, watchlistId);
+    const comparison = await fetchAnalyticsComparison(range, previousRange, watchlistId, providerId);
     let coverage = undefined;
     if (includeCoverage) {
       const watchlists = await listWatchlists().catch(() => []);
-      coverage = await fetchWatchlistCoverage(range, watchlists);
+      coverage = await fetchWatchlistCoverage(range, watchlists, providerId);
     }
     return NextResponse.json({ ...comparison, coverage }, { status: 200 });
   } catch {
