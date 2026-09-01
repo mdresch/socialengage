@@ -3818,3 +3818,15 @@
 - **Files touched:** social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts, social-listening-core/migrations/0067_create_metric_explanation_cache.sql, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/metricExplanationCache.ts, social-listening-core/src/ai/prompts/metricExplainPromptV1.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/explainRouter.ts
 - **Status:** Pending review
 
+## 2026-09-01 — 28340a3 — feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115)
+
+- **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
+- **Files touched:** social-listening-core/.claude/skills/media-assets/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/contracts/epic-13/story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts, social-listening-core/migrations/0070_create_media_assets.sql, social-listening-core/package-lock.json, social-listening-core/package.json, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/routes/publishingRoutes.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/media/mediaAssetStore.ts, social-listening-core/src/media/mediaBlobClient.ts, social-listening-core/src/publishing/outboundPublishingService.ts
+- **Status:** Pending review
+
+## 2026-09-01 — d84caf0 — docs: Story 13.9 traceability — mark Built and append Implementation Log
+
+- **Full commit:** `d84caf0526a3044ce0914863e8edde1069937a43`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+

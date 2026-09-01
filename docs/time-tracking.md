@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-01 | 17:51 | — | — | Documentation | Story 13.9 | docs: Story 13.9 traceability — mark Built and append Implementation Log (d84caf0) |
+| 2026-09-01 | 17:50 | — | — | Documentation | Story 13.9 | feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115) (28340a3) |
 | 2026-09-01 | 08:08 | — | — | Documentation | Story 13.7 | feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113) (05e1e43) |
 | 2026-09-01 | 06:53 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking for Story 13.6 (181249f) |
 | 2026-09-01 | 06:43 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking and synthesis for Story 13.6 (fd66185) |

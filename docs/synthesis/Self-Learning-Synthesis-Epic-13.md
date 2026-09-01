@@ -2,8 +2,8 @@
 
 **Compiled Date:** 2026-09-01
 **Source Capture:** `raw/synthesis-epic-13-2026-09-01/`
-**Git HEAD:** `05e1e43b1b08c4e90865d724c18d6012fdc47a46`
-**Branch:** `feat/story-13.7`
+**Git HEAD:** `d84caf0526a3044ce0914863e8edde1069937a43`
+**Branch:** `feat/story-13.9`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 422 |
+| Git commits scanned | 300 |
 | Healing / fix commits | 1 |
-| Feature commits (this epic) | 6 |
-| Contract test files | 210 |
+| Feature commits (this epic) | 7 |
+| Contract test files | 212 |
 | ADRs with Implementation Learnings | 5/139 |
 
 ## 2. Healing & Fix Passes
@@ -28,6 +28,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `28340a36021fa04da9d2e255d2c642ec004e2172` | 2026-09-01 17:50:47 +0200 | feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115) |
 | `05e1e43b1b08c4e90865d724c18d6012fdc47a46` | 2026-09-01 08:08:55 +0200 | feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113) |
 | `209b0d7b286564a3a4e7126ecaeb93b862cd4ab1` | 2026-09-01 01:33:30 +0200 | feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend) |
 | `9cef02affb9fe639b79174618dc72a36b5b7c1ba` | 2026-08-31 23:20:08 +0200 | feat(epic-13): merge Story 13.3 query capability warnings into main |
@@ -37,7 +38,7 @@
 
 ## 4. Contract Test Inventory
 
-Total: 210 contract test files.
+Total: 212 contract test files.
 
 ### social-listening-admin/contracts (78 files)
 
@@ -120,7 +121,7 @@ Total: 210 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-09-01)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-09-01)
 
-### social-listening-core/contracts (132 files)
+### social-listening-core/contracts (134 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-09-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-09-01)
@@ -167,6 +168,8 @@ Total: 210 contract test files.
 - `story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts` (modified 2026-09-01)
 - `story-13.6.admin-tenant-plan-read.contract.test.ts` (modified 2026-09-01)
 - `story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` (modified 2026-09-01)
+- `story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` (modified 2026-09-01)
+- `story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts` (modified 2026-09-01)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-09-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-09-01)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-09-01)
@@ -289,7 +292,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 13.7, 13.4, 13.3, 13.2, 13.1.
+Feature commits reference stories: 13.9, 13.7, 13.4, 13.3, 13.2, 13.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns
