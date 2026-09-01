@@ -1,4 +1,4 @@
-import { AIProviderConnector, AnalyzeResult, EnrichmentEntity, PostSentimentEnrichment, ResearchOptions, ResearchResult, SearchSnippet, SentimentAspect } from '../types';
+import { AIExplainResult, AIProviderConnector, AnalyzeResult, EnrichmentEntity, PostSentimentEnrichment, ResearchOptions, ResearchResult, SearchSnippet, SentimentAspect } from '../types';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 
 export const AZURE_OPENAI_PROVIDER_ID = 'azure-openai';
@@ -141,6 +141,21 @@ const RESEARCH_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+/**
+ * Story 13.7 (ADR-0113) — structured output for the metric-explainability
+ * endpoint. The model returns a one-to-two-sentence explanation and a
+ * high/medium/low confidence grade.
+ */
+const EXPLAIN_SCHEMA = {
+  type: 'object',
+  properties: {
+    explanation: { type: 'string' },
+    confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+  },
+  required: ['explanation', 'confidence'],
+  additionalProperties: false,
+} as const;
+
 interface ChatCompletionsResponse {
   model: string;
   choices: Array<{ message: { content: string } }>;
@@ -250,6 +265,58 @@ async function callResearchCompletions(
           type: 'json_schema',
           json_schema: { name: 'deep_research', strict: true, schema: RESEARCH_SCHEMA },
         },
+      }),
+    });
+  } catch (err) {
+    throw new ClassifiableError('network', `Failed to reach Azure OpenAI: ${(err as Error).message}`);
+  }
+
+  if (response.status === 401) throw new ClassifiableError('http_401', 'Azure OpenAI returned 401 (invalid key)');
+  if (response.status === 403) throw new ClassifiableError('http_403', 'Azure OpenAI returned 403');
+  if (response.status === 429) throw new ClassifiableError('rate_limit', 'Azure OpenAI returned 429 (rate limit exceeded)');
+  if (response.status >= 500) throw new ClassifiableError('http_5xx', `Azure OpenAI returned ${response.status}`);
+  if (!response.ok) {
+    throw new ClassifiableError('network', `Azure OpenAI returned ${response.status}`);
+  }
+
+  return (await response.json()) as ChatCompletionsResponse;
+}
+
+/**
+ * Story 13.7 (ADR-0113) — single chat/completions call for metric explainability.
+ * Uses the caller's fully rendered prompt, temperature=0, a fixed seed per
+ * prompt version, and a strict JSON-schema response format so output is
+ * deterministic and parseable.
+ */
+async function callExplainCompletions(
+  endpoint: string,
+  key: string,
+  deployment: string,
+  text: string,
+  seed: number
+): Promise<ChatCompletionsResponse> {
+  const url = `${endpoint.replace(/\/+$/, '')}/openai/deployments/${deployment}/chat/completions?api-version=${API_VERSION}`;
+
+  const systemPrompt =
+    'You are a concise data analyst explaining a dashboard metric to a non-technical user. ' +
+    'Return only a JSON object matching the provided schema. Do not include any other text.';
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'api-key': key },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text },
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: 'metric_explanation', strict: true, schema: EXPLAIN_SCHEMA },
+        },
+        temperature: 0,
+        seed,
       }),
     });
   } catch (err) {
@@ -392,6 +459,29 @@ export const azureOpenAiConnector: AIProviderConnector = {
     }
 
     const result = JSON.parse(content) as ResearchResult;
+    return result;
+  },
+
+  /**
+   * Story 13.7 (ADR-0113) — metric explainability. Accepts the fully
+   * rendered prompt, the tenant credential, and a deterministic seed that is
+   * fixed per prompt version. Returns a one-to-two-sentence explanation and a
+   * high/medium/low confidence grade.
+   */
+  explain: async (text, credential, options): Promise<AIExplainResult> => {
+    if (!credential) {
+      throw new ClassifiableError('http_401', 'No Azure OpenAI credential supplied.');
+    }
+    const { endpoint, key, deployment } = parseCredential(credential);
+    const seed = options?.seed ?? 1;
+
+    const response = await callExplainCompletions(endpoint, key, deployment, text, seed);
+    const content = response.choices[0]?.message.content;
+    if (!content) {
+      throw new ClassifiableError('network', 'Azure OpenAI returned no structured-output content.');
+    }
+
+    const result = JSON.parse(content) as AIExplainResult;
     return result;
   },
 
