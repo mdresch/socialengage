@@ -12,6 +12,18 @@
 - **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/.claude/skills/tenants/SKILL.md, social-listening-core/contracts/epic-13/story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts, social-listening-core/migrations/0066_add_tenant_plan_and_feature_gates_defaults.sql, social-listening-core/src/http/auth/featureGates.ts, social-listening-core/src/http/auth/tenantAuthMiddleware.ts, social-listening-core/src/http/versions/v1/adminTenantsRouter.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantPlanRouter.ts, social-listening-core/src/http/versions/v1/tenantUsersRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/identity/identityResolution.ts, social-listening-core/src/tenants/featureGates.ts, social-listening-core/src/tenants/selfServiceSignup.ts, social-listening-core/src/tenants/tenantStore.ts
 - **Epic-13 suite at merge:** PASS (67/67); affected regression suites (Story 1.5, 1.7, 1.8, 1.9, 1.11, 1.12, 5.8, 5.12, 5.15, 9.1, 10.8, 10.11, 12.11, 12.13, 2.13) PASS; isolated environmental afterAll timeouts on 1.7 and 1.11 (Azure Key Vault deletion) are pre-existing and unrelated to this change.
 
+---
+
+## 2026-09-01 — Story 13.7 — social-listening-core@05e1e43
+
+- **Full commit:** `05e1e43b1b08c4e90865d724c18d6012fdc47a46`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.7 / ADR-0113
+- **Contract:** `contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/metric-explainability/SKILL.md`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, docs/implementation-log.md, social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts, social-listening-core/migrations/0067_create_metric_explanation_cache.sql, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/metricExplanationCache.ts, social-listening-core/src/ai/prompts/metricExplainPromptV1.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/explainRouter.ts
+- **Epic-13 suite at merge:** PASS (86/86); affected regression suite (Epic 9) PASS (69/69); full accumulated suite has 16 unrelated environmental failures (Service Bus not available / Azure Key Vault deletion timeouts in Epic 3.8 and Epic 5 event tests) not caused by this change; typecheck PASS.
+
 
 **Append-only. Never edit or remove an existing entry — corrections get a new dated entry that references the one being corrected.** This is the same convention as every other "don't rewrite history" rule in this doc series (ADR Amendment Logs, Clarifications, Pending-supersession notes), applied to actual code delivery instead of decisions.
 
