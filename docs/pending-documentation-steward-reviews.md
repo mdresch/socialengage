@@ -3287,3 +3287,9 @@
 - **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md
 - **Status:** Pending review
 
+## 2026-09-01 — 543eecf — docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built
+
+- **Full commit:** `543eecfc8abe0b004cf4a9f43d2ee612c2f41d16`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
