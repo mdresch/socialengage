@@ -5,7 +5,7 @@ import { DefaultAzureCredential } from '@azure/identity';
 const WRAP_ALGORITHM = 'RSA-OAEP-256';
 
 function vaultUrl(): string {
-  return process.env.KEY_VAULT_URI ?? 'https://social-listening-dev-kv.vault.azure.net/';
+  return process.env.KEY_VAULT_URI ?? 'https://sociallistening-kv.vault.azure.net/';
 }
 
 /**
@@ -19,6 +19,15 @@ function credential(): DefaultAzureCredential {
 
 export function getKeyClient(): KeyClient {
   return new KeyClient(vaultUrl(), credential());
+}
+
+export function getKeyVaultKeyId(): string | undefined {
+  return (
+    process.env.KEY_VAULT_KEY_ID ||
+    (process.env.NODE_ENV !== 'test' && process.env.KEY_VAULT_URI
+      ? `${process.env.KEY_VAULT_URI.replace(/\/$/, '')}/keys/platform-credentials-dek-wrap`
+      : undefined)
+  );
 }
 
 /** Envelope-encrypts a data-encryption key (DEK) under a Key Vault key. */

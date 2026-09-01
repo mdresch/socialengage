@@ -12,6 +12,9 @@ import {
 } from './postDisplay';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostRepliesTab } from './PostRepliesTab';
+import { CRMHandoffModal } from '@/components/crm/CRMHandoffModal';
+import { SentimentBadge } from '@/components/sentiment/SentimentBadge';
+import { SentimentAspectsList } from '@/components/sentiment/SentimentAspectsList';
 import type { OutboundActivity } from '@/lib/core-client';
 
 // ---------------------------------------------------------------------------
@@ -58,6 +61,35 @@ function IconPencil() {
   );
 }
 
+function IconFileText() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function IconMessageSquare() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconReply() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 17 4 12 9 7" />
+      <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+    </svg>
+  );
+}
+
 export interface PostDetailPanelPost {
   id: string;
   createdAt: string;
@@ -65,6 +97,8 @@ export interface PostDetailPanelPost {
   bodyMarkdown: string | null;
   snippet: string | null;
   provider: string;
+  author?: string | null;
+  authorName?: string | null;
   pageName?: string | null;
   pageId?: string | null;
   watchlistId?: string | null;
@@ -91,6 +125,7 @@ export function PostDetailPanel({
 }) {
   const [showRawJson, setShowRawJson] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'replies'>('details');
+  const [isCrmOpen, setIsCrmOpen] = useState(false);
 
   const supportedReplyProviders = ['facebook'];
   const isReplySupported = supportedReplyProviders.includes(post.provider);
@@ -113,7 +148,8 @@ export function PostDetailPanel({
             className={`pf-detail-tab ${activeTab === 'details' ? 'active' : ''}`}
             onClick={() => setActiveTab('details')}
           >
-            Details
+            <IconFileText />
+            <span>Details</span>
           </button>
           <button
             type="button"
@@ -122,19 +158,49 @@ export function PostDetailPanel({
             className={`pf-detail-tab ${activeTab === 'replies' ? 'active' : ''}`}
             onClick={() => setActiveTab('replies')}
           >
-            Replies
+            <IconMessageSquare />
+            <span>Replies</span>
+            {optimisticReplies && optimisticReplies.length > 0 && (
+              <span className="pf-detail-tab-badge">{optimisticReplies.length}</span>
+            )}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => onReply?.()}
-          disabled={!canReply}
-          aria-label="Reply"
-          title={replyTooltip}
-          className="pf-reply-btn"
-        >
-          Reply
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => setIsCrmOpen(true)}
+            aria-label="Push to CRM"
+            title="Escalate post to CRM (Dynamics 365, Salesforce, HubSpot)"
+            className="pf-crm-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <span>💼</span>
+            <span>Push to CRM</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onReply?.()}
+            disabled={!canReply}
+            aria-label="Reply"
+            title={replyTooltip}
+            className="pf-reply-btn"
+          >
+            <IconReply />
+            <span>Reply</span>
+          </button>
+        </div>
       </div>
 
       {activeTab === 'details' && (
@@ -255,17 +321,35 @@ export function PostDetailPanel({
             )}
           </div>
 
-          {/* Sentiment scores */}
+          {/* Sentiment scores and aspect breakdown */}
           {post.enrichmentSummary.sentiment && (
             <div className="pf-sentiment-section">
-              <div className="pf-sentiment-header">
-                <span>Sentiment: <strong>{post.enrichmentSummary.sentiment}</strong></span>
+              <div className="pf-sentiment-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="pf-detail-field-label" style={{ margin: 0 }}>Overall Sentiment</span>
+                  <SentimentBadge
+                    sentiment={post.enrichmentSummary.sentiment}
+                    confidence={post.enrichmentSummary.sentimentConfidence}
+                    tier={post.enrichmentSummary.sentimentTier}
+                  />
+                </div>
                 {post.enrichmentSummary.sentimentScores && (
                   <span className="pf-sentiment-sub">Confidence Distribution</span>
                 )}
               </div>
+
+              {/* Aspect-level sentiment breakdown */}
+              {post.enrichmentSummary.sentimentAspects && post.enrichmentSummary.sentimentAspects.length > 0 && (
+                <div style={{ marginTop: '12px', marginBottom: '12px' }}>
+                  <span className="pf-detail-field-label" style={{ fontSize: '0.8rem', color: '#4b5563', marginBottom: '6px', display: 'block' }}>
+                    Aspect-Level Sentiment Breakdown
+                  </span>
+                  <SentimentAspectsList aspects={post.enrichmentSummary.sentimentAspects} />
+                </div>
+              )}
+
               {post.enrichmentSummary.sentimentScores && (
-                <div className="pf-sentiment-bars">
+                <div className="pf-sentiment-bars" style={{ marginTop: '8px' }}>
                   {(['positive', 'neutral', 'negative'] as const).map((key) => {
                     const score = post.enrichmentSummary!.sentimentScores![key];
                     const pct = (score * 100).toFixed(0);
@@ -548,6 +632,14 @@ export function PostDetailPanel({
         <PostRepliesTab postId={post.id} optimisticReplies={optimisticReplies} refreshToken={repliesRefresh} />
       </div>
     )}
+
+    <CRMHandoffModal
+      isOpen={isCrmOpen}
+      onClose={() => setIsCrmOpen(false)}
+      postId={post.id}
+      authorName={post.authorName || post.author || undefined}
+      postExcerpt={(post.snippet || post.bodyMarkdown) ?? undefined}
+    />
   </div>
   );
 }

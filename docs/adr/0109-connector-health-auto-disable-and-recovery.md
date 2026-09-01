@@ -1,6 +1,6 @@
-# ADR-0109: Connector health auto-disable and recovery
+﻿# ADR-0109: Connector health auto-disable and recovery
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the auto-disable and recovery rules for `SocialConnector` health, including the `failing`/`degraded` state transitions, the `retryable` flag, and the `Platform-Admin`/`Tenant-Admin` re-enable path.
 
@@ -90,6 +90,24 @@ healthy -> degraded -> failing -> disabled
 - Should `disabled` connectors still count toward `connector_activations` billing, or are they paused?
 
 ---
+
+## Amendment Log
+
+- 2026-08-28 — **Provenance note, no parameter or Decision change.** The `01-multi-source-ingestion-deep-research.md` competitive research brief (`c:/Users/menno/Documents/Second Brain/raw/01-multi-source-ingestion-deep-research.md`) was reviewed against this ADR. It contains no connector-health-specific or auto-disable-specific findings (its content is about source-type breadth and coverage, not failure/recovery mechanics). One general finding lends indirect support to this ADR's quota-protection rationale: Brandwatch markets that it ingests from "the forums that matter most" rather than crawling indiscriminately (https://www.brandwatch.com/datanetworks/forums/) — a targeted, cost-conscious ingestion posture consistent with this ADR's auto-disable-to-protect-quota design (Decision §2, Consequence 1). This does not change the 5-consecutive-failure threshold, the non-retryable-immediate-disable rule, or any other parameter — it is cited here only as external validation that quota-conscious connector operation is an industry-standard design goal, not a SocialEngage-specific invention. Status remains **Proposed**; the drafting persona does not hold ADR-acceptance authority.
+
+---
+
+## Acceptance / Implementation note
+
+**Accepted 2026-08-28; implemented 2026-08-31 (Story 13.1).** The implementation in `src/connectors/connectorHealth.ts`, `src/http/versions/v1/connectorsRouter.ts`, `src/ingestion/runIngestionAttempt.ts`, `src/ingestion/ingestionRunStore.ts`, and `src/events/connectorIngestionAlertEvent.ts`:
+- adds `disabled` to `ConnectorHealthStatus`;
+- lowers the absolute consecutive-failure ceiling to 5 failed `ingestion_runs`;
+- immediately derives `disabled` on any non-retryable failed run (`reconnect_required` remains the credential-class 401/403 variant, also a blocked state);
+- removes the half-open probe for `failing` and requires manual `POST /v1/connectors/:platformId/enable`;
+- makes `POST /v1/connectors/:platformId/enable` perform a single health-check `ingestion_runs` attempt that, on success, returns the connector to `healthy`, and on failure resets the failure streak to 1 and leaves it `failing`;
+- adds `connector_disabled` to `ConnectorIngestionAlertEvent` and emits it on `failing` → `disabled`/`reconnect_required` transitions.
+
+This supersedes ADR-0023's 20-consecutive-failure ceiling and the 2026-08-17 half-open probe for `failing`; see ADR-0023's own Supersession update (2026-08-31) and the affected contracts' dated notes.
 
 ## Footnotes
 

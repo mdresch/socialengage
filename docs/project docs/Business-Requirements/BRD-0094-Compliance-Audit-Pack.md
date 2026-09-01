@@ -1,14 +1,14 @@
-# Business Requirements Document (BRD) — Compliance Audit Pack
+﻿# Business Requirements Document (BRD) — Compliance Audit Pack
 
-> **Note:** This BRD is based on **ADR-0094** which is currently **Proposed** (2026-08-23). The content is therefore a draft for review and may change if the ADR is revised before acceptance.
+> **Note:** This BRD is based on **ADR-0094 (Accepted 2026-08-28)** which is currently **Proposed** (2026-08-23). The content is therefore a draft for review and may change if the ADR is revised before acceptance.
 
 ## 1. Document Control
 
 | Field | Value |
 |---|---|
 | Document Title | SocialEngage – Compliance Audit Pack Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno (Business Sponsor / Product Owner / Technical Lead) |
 | Status | Draft for Review |
@@ -17,7 +17,7 @@
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft derived from ADR-0094, feature design `16-compliance-audit-pack.md`, and Epic 10 stories |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft derived from ADR-0094 (Accepted 2026-08-28), feature design `16-compliance-audit-pack.md`, and Epic 10 stories |
 
 ---
 
@@ -264,14 +264,14 @@ After this initiative, an authorized admin will be able to:
 
 ### Reference documents
 
-- **ADR-0094** — `docs/adr/0094-compliance-audit-pack.md` (source, currently Proposed)
+- **ADR-0094 (Accepted 2026-08-28)** — `docs/adr/0094-compliance-audit-pack.md` (source, currently Proposed)
 - **Feature design** — `docs/product-research/feature-designs/16-compliance-audit-pack.md`
 - **Feature-to-ADR scoping** — `docs/product-research/feature-adr-scoping.md`
 - **Related ADRs** — ADR-0031 (audit log), ADR-0092 (takedown), ADR-0093 (DSR), ADR-0016 (Azure Blob Storage), ADR-0071 (enrichment overrides)
 
 ### Related user stories
 
-- **Story 10.13 — Compliance audit pack (backend)** (source: ADR-0094): `compliance_audit_packs` table and async tamper-evident export generator.
+- **Story 10.13 — Compliance audit pack (backend)** (source: ADR-0094 (Accepted 2026-08-28)): `compliance_audit_packs` table and async tamper-evident export generator.
 - **Story 10.14 — Trust and rights admin UI (frontend)** (sources: ADRs 0092, 0093, 0094): `TrustAndComplianceView` with tabs for `Takedowns`, `DSR Requests`, and `Audit Packs`.
 
 ### Missing sources

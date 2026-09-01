@@ -125,17 +125,22 @@ describe('Story 6.13 — Self-service tenant deletion/offboarding UI', () => {
       expect(source).toContain('<TenantDeletionPanel');
     });
 
-    // Deliberately does NOT require tenant/settings/page.tsx to link here.
-    // Story 6.9's own sealed contract asserts that screen adds no role gate
-    // at all ("visible to both tenant_admin and tenant_user — no additional
-    // role gate") — a tenant_admin-only link there would reintroduce
-    // exactly that. This screen's own redirect gate (above) already fully
-    // satisfies AC1's "tenant_user sessions never see an entry point"; the
-    // resulting lack of a discoverable link from settings is a real, named
-    // gap (see this component's own SKILL.md), not silently glossed over.
-    it('does not require or add a role-gated link on the shared tenant/settings screen', () => {
-      const source = readSrc(...settingsPagePath);
-      expect(source).not.toMatch(/role\s*===\s*['"]tenant_admin['"]/);
+    // ADR-0074 Amendment (Story 6.40): the settings page now legitimately
+    // links to this screen for tenant_admin sessions (a role-gated
+    // affordance, not a role gate on the page itself). The original
+    // assertion prohibited any `role === 'tenant_admin'` check on the
+    // settings page, citing Story 6.9's then-sealed contract. ADR-0074
+    // supersedes that: Story 6.40 adds a tenant_admin-only offboarding link
+    // on /tenant/settings, pointing here. This screen's own redirect gate
+    // (above) still fully satisfies AC1's "tenant_user sessions never see
+    // an entry point" — the link on settings is disabled/hidden for
+    // tenant_user, and even if a tenant_user navigates here directly, the
+    // redirect gate fires.
+    it('this screen still has its own tenant_admin redirect gate (independent of the settings page link)', () => {
+      const source = readSrc(...pagePath);
+      // The deletion page itself must still gate on tenant_admin — the
+      // settings page link is a convenience, not the authorization boundary.
+      expect(source).toMatch(/tenant_admin/);
     });
   });
 

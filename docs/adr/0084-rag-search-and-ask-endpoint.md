@@ -1,146 +1,159 @@
-# ADR-0084: RAG search and ask endpoint
+﻿# ADR-0084: RAG search and ask endpoint
 
-**Status:** Proposed (2026-08-23); revised 2026-08-25 to align with ADR-0081/0083 architectural-review revision — `RAGFilter` shape aligned to ADR-0081 canonical form, snippets/citations sourced from stored `RAGChunkMetadata.content` (no per-result `social_posts` lookup).
+**Status:** Accepted (2026-08-27)
 
-**Authorizes:** the `POST /v1/rag/search` semantic search endpoint and the `POST /v1/rag/ask` natural-language Q&A endpoint, including their contracts, filters, pagination, and citation format.
+**Drafted 2026-08-23 · Revised 2026-08-25 · Accepted 2026-08-27 per architectural review.** Authorizes the `POST /v1/rag/search` semantic/hybrid search endpoint, the `POST /v1/rag/ask` natural-language Q&A endpoint (with dual-mode Server-Sent Events streaming support), grounding/citation structures, normalized [0.00..1.00] scoring, prompt-injection defense, and indexing status contracts.
 
-**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md` and `docs/product-research/feature-adr-scoping.md`
+**Source:** `docs/product-research/feature-designs/28-semantic-search-rag.md`, `docs/product-research/feature-adr-scoping.md`, and ADR-0081/0082/0083.
 
 ---
 
 ## Context
 
-### 1. Semantic search needs a clean REST contract
-`docs/product-research/feature-designs/28-semantic-search-rag.md` requires a way for users to find conceptually related posts and ask natural-language questions over the tenant's corpus. The endpoint must translate a query into a vector, run `RAGConnector.search()`, and return ranked results with provenance.
+### 1. Unified REST contract for search and synthesis
+Users require two distinct consumption modes over indexed social data:
+1. **Discovery / Retrieval**: Fast, ranked, pre-filtered semantic and hybrid search over raw post chunks.
+2. **Synthesis / Q&A**: Natural-language answers grounded strictly in retrieved chunks with verifiable inline citations.
 
-### 2. Q&A needs grounding and citations
-A generated answer is only useful if the user can verify it against the original posts. `POST /v1/rag/ask` must return both the answer and the chunks that support it.
+### 2. Citations and Grounding
+Generated answers must be verifiable. Chunks passed to the LLM must be linked to citation identifiers (`[^1]`, `[^2]`), and the model must refuse to answer when the corpus lacks supporting evidence.
 
-### 3. The project already has `posts` and `watchlists` as filter dimensions
-`GET /v1/posts` supports watchlist and date filters. `POST /v1/rag/search` should support the same dimensions so users can search within a known scope.
+### 3. Consistency with Stored Chunk Architecture
+Per ADR-0081 and ADR-0083, vector chunk records store `content` (chunk text) directly in metadata. Search and Q&A endpoints source snippets directly from vector metadata without executing secondary SQL joins to `social_posts`.
 
 ---
 
 ## Decision
 
-### 1. `POST /v1/rag/search`
-**Request**
+### 1. `POST /v1/rag/search` (Semantic & Hybrid Search)
+Performs vector pre-filtered search over indexed chunks for the calling tenant.
+
+**Request (`application/json`)**
 ```ts
-{
-  query: string;                    // natural-language query
-  filter?: {                        // canonical RAGFilter per ADR-0081
-    platformId?: string | string[];
-    sentiment?: string | string[];
-    watchlistIds?: string[];
-    topics?: string[];
-    dateRange?: { from?: ISOString; to?: ISOString };
+export interface RAGSearchRequest {
+  query: string;                          // Natural-language query string
+  searchMode?: 'semantic' | 'hybrid';     // Default: 'semantic'
+  filter?: {                              // Canonical RAGFilter (ADR-0081/0083)
+    platformId?: PlatformId | PlatformId[];
+    sentiment?: 'positive' | 'negative' | 'neutral' | 'unassigned';
+    watchlistIds?: string[];              // Array membership match
+    topics?: string[];                    // Array membership match
+    dateRange?: { from?: string; to?: string }; // ISO 8601 range
   };
   pagination?: {
-    topK: number;                   // default 10, hard cap 50
+    topK?: number;                        // Default: 10, Hard Cap: 50
   };
 }
 ```
 
-**Response (HTTP 200)**
+**Response (HTTP 200 OK)**
 ```ts
-{
+export interface RAGSearchResponse {
   results: Array<{
     postId: string;
     chunkIndex: number;
-    score: number;
-    platformId: string;
-    publishedAt: string;
-    snippet: string;                // sourced from stored RAGChunkMetadata.content (per ADR-0081/0083)
+    score: number;                        // Normalized similarity [0.00 .. 1.00]
+    platformId: PlatformId;
+    publishedAt: string;                  // ISO 8601
+    snippet: string;                      // Derived copy from RAGChunkMetadata.content
+    internalUrl: string;                  // Deterministic app route: /app/posts/${postId}
   }>;
+  totalReturned: number;
 }
 ```
 
-- The query text is embedded using the same `AIProviderConnector.embed(tenantId, texts)` method and `text-embedding-3-small` deployment as the chunking pipeline (ADR-0082), so query and chunk vectors live in the same embedding space.
-- `RAGSearchService` calls `RAGConnector.search()` with the `tenant_id` (mandatory parameter) and any `RAGFilter`; the connector enforces the `tenant_id` filter internally and translates `RAGFilter` to vendor-native syntax.
-- Snippets are sourced from the stored `RAGChunkMetadata.content` (a derived copy of the chunk text, per ADR-0081/0083 revision) — no per-result `social_posts` lookup is required. `social_posts` remains the source of truth for rebuilds.
-- `topK` is capped to 50 to control cost.
+- **Query Embedding**: The query text is embedded using `AIProviderConnector.embed(tenantId, [query])` using `text-embedding-3-small` (ADR-0082).
+- **Mandatory Pre-Filtering**: The query enforces `tenant_id == caller.tenantId` in the vector store (ADR-0083).
+- **Normalized Scores**: `RAGSearchService` normalizes vendor-specific distance/similarity scores to a standard float range `[0.00, 1.00]` (where 1.00 is exact semantic match).
 
-### 2. `POST /v1/rag/ask`
-**Request**
+---
+
+### 2. `POST /v1/rag/ask` (Grounded Natural Language Q&A)
+Generates answers backed by vector search context. Supports both blocking JSON and Server-Sent Events (SSE).
+
+**Request (`application/json`)**
 ```ts
-{
+export interface RAGAskRequest {
   question: string;
-  filter?: RAGFilter;               // same as /v1/rag/search
-  maxChunks?: number;               // default 5, hard cap 10
+  filter?: RAGFilter;                     // Canonical RAGFilter
+  maxChunks?: number;                     // Default: 5, Hard Cap: 10 (~1,280 tokens context)
+  stream?: boolean;                       // Default: false (or via Accept: text/event-stream)
 }
 ```
 
-**Response (HTTP 200)**
+**Response (HTTP 200 OK - Standard JSON Mode)**
 ```ts
-{
-  answer: string;
+export interface RAGAskResponse {
+  answer: string;                         // Markdown formatted answer with citation markers [^1]
   citations: Array<{
+    citationIndex: number;                // 1-based index matching [^1]
     postId: string;
     chunkIndex: number;
-    url?: string;                   // link to the original post
     snippet: string;
+    platformId: PlatformId;
+    publishedAt: string;
+    internalUrl: string;
   }>;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: 'high' | 'medium' | 'low' | 'unsupported';
+  isGrounded: boolean;                    // False if question could not be answered from chunks
 }
 ```
 
-- The backend retrieves `maxChunks` chunks using `POST /v1/rag/search`.
-- It sends the question and chunks to `AIProviderConnector.research?()` or a dedicated generation method.
-- The model is instructed to answer only from the provided chunks and to cite them.
-- `citations` always match the chunks used, so the answer is verifiable.
+**Streaming Mode (`Accept: text/event-stream` or `stream: true`)**
+When streaming is requested:
+1. `event: citations` $\rightarrow$ Emits the resolved citations array immediately after vector retrieval.
+2. `event: delta` $\rightarrow$ Emits incremental token strings `{"text": "..."}` as the LLM generates the answer.
+3. `event: done` $\rightarrow$ Emits metadata including final `confidence` and `isGrounded` status.
+
+**Prompting & Grounding Rules:**
+- Input chunks are wrapped in strict XML context boundaries (`<context><chunk id="1">...</chunk></context>`) to mitigate prompt injection.
+- System prompt strictly enforces: *"Answer ONLY using the provided chunks. If the answer cannot be deduced from the context, state that the corpus lacks sufficient information and do not speculate."* Return `confidence: 'unsupported'` and `isGrounded: false`.
+
+---
 
 ### 3. `GET /v1/rag/status`
-Returns the indexing health for the tenant:
+Returns real-time vector indexing health for the caller's tenant:
+
 ```ts
-{
+export interface RAGStatusResponse {
   totalIndexedPosts: number;
   totalChunks: number;
-  lagBehindIngestion: number;       // posts in social_posts not yet in vector store
-  lastIndexedAt: ISOString;
+  lagBehindIngestion: number;             // Posts in social_posts not yet embedded
+  lastIndexedAt: string | null;           // ISO 8601
   storeStatus: 'healthy' | 'degraded' | 'unavailable';
 }
 ```
 
-### 4. Rate and cost limits
+---
+
+### 4. Rate Limiting and Quotas
 - `POST /v1/rag/search` and `POST /v1/rag/ask` are metered per tenant.
-- Default monthly caps are set per plan; `tenant_admin` can see usage.
-- A `429 RAG_QUOTA_EXCEEDED` is returned when the cap is hit.
+- Separate token and query quotas are enforced per subscription tier.
+- When quotas are exceeded, the API returns `429 Too Many Requests` with error code `RAG_QUOTA_EXCEEDED` and `Retry-After` header.
 
 ---
 
 ## Consequences
 
-1. **Two clear UX paths:** `search` for discovery, `ask` for synthesis.
-2. **Citations by design:** every answer is grounded in retrievable posts.
-3. **Cost exposure:** `ask` is more expensive than `search` because it includes a generation call.
-4. **No per-result `social_posts` round trip:** snippets/citations are sourced from stored `RAGChunkMetadata.content` (per ADR-0081/0083 revision), so the response does not fetch `social_posts` per result. `social_posts` remains the source of truth for rebuilds.
+### Positive
+- **Real-Time Responsiveness**: SSE streaming eliminates perceived frontend latency for generative Q&A.
+- **Strict Provenance & Injection Defense**: Structured XML context boundaries and 1-based citation markers allow UIs to cleanly highlight source snippets.
+- **Zero SQL Overhead**: Snippets are served directly from vector store metadata.
+- **Consistent Relevance**: Normalized [0.00, 1.00] scores provide consistent confidence presentation across vector backends.
+
+### Trade-offs & Mitigations
+- **LLM Token Cost on `/ask`**: Generative synthesis incurs LLM token usage. *Mitigated by default `maxChunks: 5` (~1,280 tokens context) and tenant subscription quotas.*
+- **SSE Connection Management**: Streaming requires persistent HTTP connections. *Mitigated by short timeouts (30s max) and standard HTTP chunked transport.*
 
 ---
 
-## Alternatives considered
+## Related Notes
+- `docs/product-research/feature-designs/28-semantic-search-rag.md`
+- `docs/adr/0081-rag-connector-provider-abstraction.md`
+- `docs/adr/0082-rag-post-chunking-and-embedding.md`
+- `docs/adr/0083-rag-vector-store-rls-and-metadata.md`
+- `docs/adr/0078-metric-explainability-and-confidence-scoring.md`
 
-1. **One combined `/v1/rag/query` endpoint with a `mode` flag.**
-   - *Rejected:* separate endpoints make the UI and rate-limiting clearer. `search` is cheap; `ask` is expensive.
+### Pending supersession note (2026-08-28)
 
-2. **Fetch `social_posts` per result to reconstruct snippet/citation text.**
-   - *Rejected (reversed 2026-08-25 per ADR-0081/0083 architectural review):* forcing a per-result SQL lookup adds latency and coupling that outweighs the benefit. Snippet/citation text is now sourced from stored `RAGChunkMetadata.content` (a derived copy of already-public post text); `social_posts` remains the source of truth and the index is rebuildable. PII safety is preserved by storing only public post content (no `author` or other PII) in vector-record metadata.
-
-3. **Allow unauthenticated `ask` for public posts.**
-   - *Rejected:* all tenant data is access-controlled. There is no public RAG surface.
-
----
-
-## Open questions
-
-- Should `/v1/rag/ask` stream the answer token by token, or return a full response?
-- How should the API behave when the question is outside the scope of the retrieved chunks — refuse to answer or note the limitation?
-- Should `search` support hybrid search (vector + keyword) in v1 or only vector? — ADR-0081's `RAGSearchOptions.textQuery` now optionally enables hybrid search at the connector level where the provider supports it; the remaining question is whether v1 endpoints expose a separate hybrid-search control to callers.
-- What is the right `maxChunks` for `ask`? 3, 5, or 10?
-
----
-
-## Footnotes
-
-- Related feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
-- Related scoping: `docs/product-research/feature-adr-scoping.md`
-- Related ADRs: `ADR-0081` (`RAGConnector`), `ADR-0082` (chunking and embedding), `ADR-0083` (RLS and metadata), `ADR-0078` (metric explainability, same AI contract pattern)
+If ADR-0139 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0139's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0139 is currently Proposed, not accepted.

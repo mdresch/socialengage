@@ -1,6 +1,8 @@
-# ADR-0089: Platform operations dashboard
+﻿# ADR-0089: Platform operations dashboard
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the real-time cached platform operations telemetry endpoint and platform admin dashboard. Story 10.6 and Story 10.7 are fully implemented and verified.
 
 **Authorizes:** a `Platform-Admin` and `Sole-Operator` console that surfaces cross-tenant platform health, connector status, cloud cost, and capacity metrics, while strictly avoiding exposure of tenant post content.
 
@@ -129,3 +131,7 @@ They must **not** return:
 - Related feature design: `docs/product-research/feature-designs/17-platform-operations-dashboard.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0030` (Platform Admin boundary), `ADR-0052` (live ingestion scheduler), `ADR-0010` (ingestion health), `ADR-0031` (audit log)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0128 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0128's own §1–§3 — specifically tenant quota consumption burn-rate forecasting and degraded connector auto-remediation playbooks. This is a pending note only: ADR-0128 is currently Proposed, not accepted.

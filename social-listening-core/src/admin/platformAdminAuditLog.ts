@@ -59,6 +59,7 @@ export interface PlatformAdminAuditLogEntry {
 export interface AuditLogQueryFilters {
   tenantId?: string;
   actorIdentity?: string;
+  operation?: string;
   from?: string;
   to?: string;
   cursor?: string;
@@ -114,6 +115,10 @@ export async function queryPlatformAdminAuditLog(filters: AuditLogQueryFilters =
   if (filters.actorIdentity) {
     params.push(filters.actorIdentity);
     conditions.push(`actor_identity = $${params.length}`);
+  }
+  if (filters.operation) {
+    params.push(filters.operation);
+    conditions.push(`operation = $${params.length}`);
   }
   if (filters.from) {
     params.push(filters.from);

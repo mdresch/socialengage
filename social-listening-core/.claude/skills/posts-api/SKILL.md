@@ -1,13 +1,13 @@
 ---
 name: posts-api
-description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) pagination for social-listening-core. Read this before adding a new /posts filter, before touching how social_posts is queried for a page of results, or before touching the single-post-fetch path.
+description: GET /v1/posts, GET /v1/posts/:id, POST /v1/posts/explain-spike, and cursor-based (keyset) pagination for social-listening-core. Read this before adding a new /posts filter, before touching how social_posts is queried for a page of results, before touching the single-post-fetch path, or before touching the spike storyteller endpoint.
 ---
 
 # Posts API and cursor pagination
 
 ## What this is
 
-`GET /v1/posts` (`src/http/versions/v1/postsRouter.ts`), the first real business endpoint in `social-listening-core`'s REST API (following `/v1/health`'s versioning-mechanism placeholder from Story 1.3). `listSocialPosts()` (`src/posts/socialPostStore.ts`) implements ADR-0011's cursor-based pagination: results are ordered by `social_posts.seq`, a monotonic identity column added specifically for this purpose (`migrations/0006_add_social_posts_pagination_index.sql`), and the cursor (`src/posts/cursor.ts`) is an opaque token encoding that `seq` value. `GET /v1/posts/:id`, backed by `getSocialPostById()`, is Story 5.1/ADR-0012's REST-fetch-on-demand endpoint — the paired half of keeping Service Bus events thin (see `.claude/skills/ingestion-events/SKILL.md`): a subscriber that only got an event's `postId` fetches full post data here. `POST /v1/posts/:id/enrich` (Story 6.16) manually (re-)runs the same real `enrichPost()` (Story 2.8/2.9) a connector's own ingest function calls inline — the only way to enrich a post that was ingested before any AI provider was connected, since nothing else ever re-processes an already-stored post.
+`GET /v1/posts` (`src/http/versions/v1/postsRouter.ts`), the first real business endpoint in `social-listening-core`'s REST API (following `/v1/health`'s versioning-mechanism placeholder from Story 1.3). `listSocialPosts()` (`src/posts/socialPostStore.ts`) implements ADR-0011's cursor-based pagination: results are ordered by `social_posts.seq`, a monotonic identity column added specifically for this purpose (`migrations/0006_add_social_posts_pagination_index.sql`), and the cursor (`src/posts/cursor.ts`) is an opaque token encoding that `seq` value. `GET /v1/posts/:id`, backed by `getSocialPostById()`, is Story 5.1/ADR-0012's REST-fetch-on-demand endpoint — the paired half of keeping Service Bus events thin (see `.claude/skills/ingestion-events/SKILL.md`): a subscriber that only got an event's `postId` fetches full post data here. `POST /v1/posts/:id/enrich` (Story 6.16) manually (re-)runs the same real `enrichPost()` (Story 2.8/2.9) a connector's own ingest function calls inline — the only way to enrich a post that was ingested before any AI provider was connected, since nothing else ever re-processes an already-stored post. `POST /v1/posts/explain-spike` (Story 8.8, ADR-0062 Decision §6) is the AI Spike Storyteller — an on-demand, stateless, user-triggered call that pages `listSocialPosts()` internally for a ±1 day window around a `spikeDate`, composes a prompt from the posts' title/body/keyPhrases, and calls `azureOpenAiConnector.research()` to generate a narrative explanation; returns `503 AI_UNAVAILABLE` when no Azure OpenAI credential is configured.
 
 ## Governing ADRs and Stories
 
@@ -20,6 +20,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 | ADR-0071 | Human-in-the-Loop Post Enrichment Overrides API (`PATCH /v1/posts/:id/enrichment`) and re-enrichment precedence guard on `POST /v1/posts/:id/enrich` | 3.13 |
 | ADR-0073 | Outbound reply audit table and `POST /v1/posts/:id/replies` / `GET /v1/posts/:id/replies` | 3.14 |
 | ADR-0074 | Matched-posts CSV export (`GET /v1/posts?format=csv`) and the canonical post fields it shares with the workspace JSON export | 3.16 |
+| ADR-0062 Decision §6 | AI Spike Storyteller — `POST /v1/posts/explain-spike` (on-demand, stateless, user-triggered AI narrative for a volume spike; narrow supersession of ADR-0054 Decision §3's "no new endpoint" clause) | 8.8 |
 
 ## Contracts that constrain this component
 
@@ -32,6 +33,7 @@ description: GET /v1/posts, GET /v1/posts/:id, and cursor-based (keyset) paginat
 - `contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts` — `POST /v1/posts/:id/replies` and `GET /v1/posts/:id/replies` are RLS-scoped, validate the post and caller's active Tier-3 credential, persist `outbound_activities` rows, and map connector failures to provider-appropriate HTTP statuses.
 - `contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts` — `POST /v1/outbound/posts`, `GET /v1/outbound/posts`, and `DELETE /v1/outbound/posts/:id` are mounted under `/v1/outbound`, use the same resolved-identity middleware, and reuse `outbound_activities` for `post` audit rows.
 - `contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts` — `GET /v1/posts?format=csv` returns the same filtered rows as the JSON endpoint, with UTF-8 BOM, RFC 4180-ish quoting, and the expected columns; `GET /v1/tenants/me/export/workspace` is `tenant_admin` only and excludes credential secrets.
+- `contracts/epic-8/story-8.8.posts-explain-spike.contract.test.ts` — `POST /v1/posts/explain-spike` returns 200 with `{ narrative, postsAnalysed, generatedAt }`; `customPrompt` is folded into the composed prompt sent to Azure OpenAI; no Azure OpenAI credential returns `503 AI_UNAVAILABLE`; `platform_admin` gets 403; the endpoint is stateless (no `social_posts` inserts); missing/empty `spikeDate` returns 400.
 
 ## How to extend this safely
 

@@ -1,4 +1,4 @@
-# Epic 6: Tenant Admin UI
+﻿# Epic 6: Tenant Admin UI
 
 Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js scaffold; only `src/lib/core-client.ts` and Story 1.1's own contract exist). Three sources feed this epic: **ADR-0036** (Story 6.1 — the authentication/session/role-gating mechanism), **ADR-0037** (Story 6.7 — self-service tenant sign-up, added same day), both reasoned architecturally significant enough for their own ADR per this series' own established bar, unlike Stories 1.5/1.6/1.7's ordinary CRUD precedent; and **Phase 1/Phase 3's own "also build, not storied" framing** (`docs/implementation-plan.md`) for Stories 6.2–6.14 (excluding 6.6, relocated — see below), following Story 1.5's own precedent for ordinary CRUD/UI surface that doesn't need an ADR.
 
@@ -38,6 +38,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.2 — Role-gated routing shell (Tenant-Admin/Tenant User vs. Platform Admin)
 
 **Source:** ADR-0035 (governing structural constraint, cited per that ADR's own recommendation) and ADR-0036 §4 · **Status:** Ready — both governing ADRs are now Accepted (ADR-0035; ADR-0036 as of 2026-08-04) — practically sequenced immediately after Story 6.1, which it cannot be built without.
+**Built:** 2026-08-05 — social-listening-admin@443819e
 
 **Built 2026-08-05** (`social-listening-admin@443819e`, `contracts/epic-6/story-6.2.role-gated-routing-shell.contract.test.ts`, full suite 28/28 — see `docs/implementation-log.md`). Traceability caught up after the fact — this Status line, the Implementation Log entry, and the commit itself landed separately rather than together per `implement-story`'s own Step 8/9, a real process gap worth naming, not silently smoothed over.
 
@@ -58,6 +59,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.3 — Connector connect/disconnect flow
 
 **Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 1.7's real REST surface (ADR-0034) and ADR-0027's disclosure requirement · **Status:** Ready — practically sequenced after Stories 6.1/6.2.
+**Built:** 2026-08-05 — social-listening-admin@67430b7
 
 **Built 2026-08-05** (`social-listening-admin@67430b7`, `contracts/epic-6/story-6.3.connector-connect-disconnect.contract.test.ts`, full suite 31/31 — see `docs/implementation-log.md`). Same traceability-caught-up-after-the-fact note as Story 6.2 above applies here too.
 
@@ -113,6 +115,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.5 — Connector status view, real rework (fixture data replaced with the real endpoint)
 
 **Source:** Phase 1 "also build, not storied" (`docs/implementation-plan.md`), against Story 4.3's derived `ConnectorHealth` · **Status:** Built (real rework, 2026-08-12), with a named, real backend gap (unchanged, see below) — previously marked "Built" in error on 2026-08-05; see the rework note below for the fix and this line for the real build.
+**Built:** 2026-08-12 — social-listening-admin@4046e75
 
 **Built 2026-08-12 (real rework, superseding the erroneous 2026-08-05 "Built" note above).** `social-listening-admin/src/app/tenant/connectors/status/page.tsx` is now a real async Server Component: a real `GET /v1/connectors/:platformId` call per connected platform (per Story 6.3's own connected-platform list — the "no list-all-connectors endpoint" gap named below is unchanged, unrelated to this fix), rendering the real `ConnectorHealth` shape (`status`, `lastSuccessfulFetchAt`, `lastAttemptAt`, `consecutiveFailures`), a `failing` connector visually distinguished from `degraded`/`healthy`, no tenant-content data anywhere. **AC2 (surfacing `resolveWatchlistAstDispatch()`'s `unsupportedNodeTypes`) is a real, confirmed gap this rework found and named rather than silently dropped or faked:** that function is core-internal only, with no REST endpoint exposing its result anywhere — its own doc comment (`social-listening-core/src/watchlists/dispatch.ts`) already says as much. Building one is real, non-trivial `social-listening-core` scope outside this story's own Source line (Story 4.3's `ConnectorHealth` only); the screen's own copy names the gap explicitly instead. New contract: `contracts/epic-6/story-6.5.connector-status-view.contract.test.ts` (10/10, real behavioral assertions — a real-session-plus-fetch-mocking page render plus structural source checks). **Proactively healed the identical known ripple this session's Story 6.4 build had already surfaced and fixed once**, before it could fail on its own run: `contracts/epic-6/story-6.2.resolved-identity-migration-ripple.contract.test.ts`'s own "Story 6.5" block still called the old synchronous fixture `ConnectorStatusPage()` directly — upgraded to the same real-session-plus-fetch-mocking pattern used for Story 6.4's own fix, per that file's own now-twice-used precedent. Full `social-listening-admin` contract suite after: 12/12 suites, 160/160 tests passing. See `docs/implementation-log.md` for the commit.
 
@@ -244,6 +247,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.11 — Post feed (browse ingested posts)
 
 **Source:** Phase 1/Phase 3 "also build, not storied" (`docs/implementation-plan.md`), against Story 3.4's real `GET /v1/posts` REST surface (ADR-0011 cursor pagination) and Story 5.1's `GET /v1/posts/:id` (ADR-0012) · **Status:** Built (2026-08-12) — see the dated note below.
+**Built:** 2026-08-12 — social-listening-admin@d8ba590
 
 **2026-08-12 — Story 6.11 built.** `social-listening-admin/src/app/tenant/posts/page.tsx` (list, real `GET /v1/posts`) and `src/app/tenant/posts/[id]/page.tsx` (detail, real `GET /v1/posts/:id`) are real, contract-verified Server Components — no fixture data anywhere. `postDisplay.ts` (new, pure, no JSX) derives title/snippet per-shape (looks only for a `title` field, optionally `description` — never branches on `providerId`, so it works unmodified for GNews, Newswire, and tenant-owned-feed alike, and falls back to raw JSON for anything else), the provider badge, and an enrichment summary (sentiment/entities/keyPhrases, shown only when present). Pagination is the real, opaque `nextCursor` via a `?cursor=` "next page" link — never a page-number control, never a client-constructed cursor. `authorId`/`acquisitionId` are shown as their raw values on the detail screen — no REST endpoint exists yet to resolve either into a friendlier name (confirmed directly: no `/v1/authors` route, `getIngestionRunForPost()` has no HTTP route mounted), named as a real, deferred gap in this component's own `SKILL.md`, not silently faked. A 404 renders a real "not found" state. **Also corrected `social-listening-core/.claude/skills/posts-api/SKILL.md`'s stale `X-Tenant-Id` load-bearing-constraint note** (stale since Story 5.10/ADR-0033, never fixed until now) — the real router already used `requireTenantUser()`, confirmed directly. New contract: `contracts/epic-6/story-6.11.post-feed.contract.test.ts` (24/24, real Server Component renders against a real encrypted session and mocked fetch, per this story's own AC5 and the Story 6.4/6.5 "string-containment checks are not sufficient" lesson — no source-string-only assertions). Full `social-listening-admin` suite after: 14/14 suites, 225/225 tests passing. See `docs/implementation-log.md` for the commit.
 
@@ -1123,7 +1127,7 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 ## Story 6.39 — Polypost Composer Real Publish Flow
 
 **Source:** ADR-0075 (Accepted 2026-08-23) · **Status:** Ready
-**Built:** not yet
+**Built:** 2026-08-26 — social-listening-admin@e0abfdd
 **Depends on:** Story 3.15 (`POST /v1/outbound/posts` endpoint), Story 2.29 (Facebook Page `publish()`)
 
 **As a** Tenant User or Tenant-Admin,
@@ -1145,8 +1149,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.40 — Tenant settings screen: styled workspace profile, export actions, and offboarding link
 
-**Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Ready — depends on Story 3.16 (backend endpoints)
-**Built:** not yet
+**Source:** ADR-0074 (Accepted 2026-08-23) · **Status:** Built — depends on Story 3.16 (backend endpoints)
+**Built:** 2026-08-26 — social-listening-admin@cf1f96c
 **Depends on:** Story 3.16 (`/v1/tenants/me/export/workspace` and posts CSV), existing `GET /v1/tenants/me` (Story 1.8), existing `/tenant/settings/delete` (Story 6.13)
 
 **As a** Tenant-Admin or tenant user,
@@ -1173,8 +1177,8 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.41 — Composer Deep Research panel UI
 
-**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Ready — depends on Story 3.17
-**Built:** not yet
+**Source:** ADR-0076 (Accepted 2026-08-23) · **Status:** Built 2026-08-26
+**Built:** 2026-08-26 (social-listening-admin, pending commit)
 **Depends on:** Story 6.36 (Polypost Composer), Story 3.17 (`POST /v1/composer/research`)
 
 **As a** tenant user,

@@ -1,6 +1,6 @@
-# ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
+﻿# ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Defines how ADR-0076's Composer Deep Research can cache results, allow users to re-run research, and justify the feature's cost through usage telemetry and tenant-level caps. v1 of ADR-0076 is intentionally cache-free; this ADR is the path to a cheaper, audit-ready v2.
 

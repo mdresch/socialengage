@@ -1,6 +1,8 @@
-# ADR-0090: Data export — posts CSV
+﻿# ADR-0090: Data export — posts CSV
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the synchronous and asynchronous streaming CSV post export engine. Story 10.8 is fully implemented and verified.
 
 **Authorizes:** a `GET /v1/posts/export.csv` endpoint that lets a `Tenant-Admin` or `Tenant-User` export their matched posts to CSV, bounded by watchlist, date range, and size, with strict RLS and no raw-secret leakage.
 
@@ -106,3 +108,15 @@ post_id, published_at, platform_id, author_name, author_url, body_markdown, sent
 - Related feature design: `docs/product-research/feature-designs/10-data-export.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0074` (workspace JSON export), `ADR-0015` (tenant RLS), `ADR-0018` (retention)
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-08-27 per ADR-0122)
+
+- **`$O(1)` Streaming Standard for Posts CSV**: Enforces direct chunked streaming from Postgres cursor queries through core and Next.js proxy route handlers to prevent server heap exhaustion.
+- **Operational Trade-offs**: Holds client-to-proxy connection handles for the duration of the download; single exports exceeding serverless timeouts must utilize asynchronous blob generation (ADR-0111).
+- **Reference Commits**: `cf1f96c` (Story 6.40 `/api/posts/export.csv` streaming proxy route).
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0124 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be extended by ADR-0124's own §1 and §2 — specifically an explicit 24-month maximum lookback bound and an opt-in sample=true representative sampling mode for large synchronous exports. This is a pending note only: ADR-0124 is currently Proposed, not accepted. Per ADR-0047 §2, don't assume already-shipped code changes automatically — it would only change once ADR-0124's own story is actually built following acceptance. This ADR's original Decision and Consequences text above is unchanged and remains the historical record.

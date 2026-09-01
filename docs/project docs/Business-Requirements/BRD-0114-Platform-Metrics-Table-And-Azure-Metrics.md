@@ -1,4 +1,4 @@
-# BRD-0114: Platform Metrics Table and Azure Metrics Integration
+﻿# BRD-0114: Platform Metrics Table and Azure Metrics Integration
 
 ## 1. Document Control
 

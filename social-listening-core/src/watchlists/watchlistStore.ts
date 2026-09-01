@@ -1,6 +1,13 @@
 import { withTenant } from '../db/withTenant';
 import { listUsers } from '../identity/identityResolution';
 
+import {
+  WatchlistAST,
+  validateWatchlistAst,
+  parseBooleanQueryToAst,
+  astToBooleanQuery,
+} from './ast';
+
 /**
  * Database row shape for the watchlists table — matches
  * migrations/0014_create_watchlists.sql + 0025_watchlists_ownership_and_versioning.sql.
@@ -33,6 +40,7 @@ export interface Watchlist {
   matchType: string;
   terms: string[] | null;
   booleanQuery?: string;
+  ast?: WatchlistAST;
   platformIds: string[];
   isActive: boolean;
   version: number;
@@ -51,6 +59,7 @@ export interface CreateWatchlistInput {
   matchType: 'keyword' | 'hashtag' | 'account' | 'boolean';
   terms?: string[] | null;
   booleanQuery?: string | null;
+  ast?: WatchlistAST | null;
   platformIds?: string[];
   isActive?: boolean;
 }
@@ -68,6 +77,7 @@ export interface WatchlistPatchInput {
   matchType?: 'keyword' | 'hashtag' | 'account' | 'boolean' | null;
   terms?: string[] | null;
   booleanQuery?: string | null;
+  ast?: WatchlistAST | null;
   platformIds?: string[] | null;
   isActive?: boolean | null;
 }
@@ -101,15 +111,22 @@ export type UpdateWatchlistResult =
 export function validateWatchlistShape(
   matchType: string | null | undefined,
   terms: string[] | null | undefined,
-  booleanQuery: string | null | undefined
+  booleanQuery: string | null | undefined,
+  ast?: WatchlistAST | null | undefined
 ): string[] {
   const details: string[] = [];
   if (matchType === 'boolean') {
-    if (!booleanQuery) {
-      details.push('booleanQuery is required when matchType is boolean.');
+    if (!booleanQuery && !ast) {
+      details.push('booleanQuery or ast is required when matchType is boolean.');
     }
     if (terms != null && terms.length > 0) {
       details.push('terms must be null when matchType is boolean.');
+    }
+    if (ast) {
+      const astVal = validateWatchlistAst(ast);
+      if (!astVal.valid) {
+        details.push(...(astVal.errors ?? ['Invalid AST format']));
+      }
     }
   } else if (matchType === 'keyword' || matchType === 'hashtag' || matchType === 'account') {
     if (!terms || terms.length === 0) {
@@ -127,12 +144,22 @@ export function validateWatchlistShape(
  * and Date objects to ISO 8601 strings.
  */
 function mapRowToWatchlist(row: WatchlistRow): Watchlist {
+  let derivedAst: WatchlistAST | undefined;
+  if (row.boolean_query) {
+    try {
+      derivedAst = parseBooleanQueryToAst(row.boolean_query);
+    } catch {
+      derivedAst = undefined;
+    }
+  }
+
   return {
     id: row.id,
     name: row.name,
     matchType: row.match_type,
     terms: row.terms,
     booleanQuery: row.boolean_query ?? undefined,
+    ast: derivedAst,
     platformIds: row.platform_ids,
     isActive: row.is_active,
     version: row.version,
@@ -152,6 +179,8 @@ export async function createWatchlist(
   userId: string,
   input: CreateWatchlistInput
 ): Promise<Watchlist> {
+  const resolvedBooleanQuery = input.booleanQuery ?? (input.ast ? astToBooleanQuery(input.ast) : null);
+
   return withTenant(
     tenantId,
     async (client) => {
@@ -166,7 +195,7 @@ export async function createWatchlist(
           input.name,
           input.matchType,
           input.terms ?? null,
-          input.booleanQuery ?? null,
+          resolvedBooleanQuery,
           input.platformIds ?? [],
           input.isActive ?? true,
         ]
@@ -257,7 +286,7 @@ export async function updateWatchlist(
   return withTenant(
     tenantId,
     async (client) => {
-      const touchesShape = 'matchType' in patch || 'terms' in patch || 'booleanQuery' in patch;
+      const touchesShape = 'matchType' in patch || 'terms' in patch || 'booleanQuery' in patch || 'ast' in patch;
       if (touchesShape) {
         const { rows: existingRows } = await client.query<WatchlistRow>(`SELECT * FROM watchlists WHERE id = $1`, [
           id,
@@ -268,8 +297,15 @@ export async function updateWatchlist(
         const existing = existingRows[0];
         const resultingMatchType = 'matchType' in patch ? patch.matchType : existing.match_type;
         const resultingTerms = 'terms' in patch ? patch.terms : existing.terms;
-        const resultingBooleanQuery = 'booleanQuery' in patch ? patch.booleanQuery : existing.boolean_query;
-        const details = validateWatchlistShape(resultingMatchType, resultingTerms, resultingBooleanQuery);
+        const resultingBooleanQuery =
+          'booleanQuery' in patch
+            ? patch.booleanQuery
+            : 'ast' in patch
+            ? patch.ast
+              ? astToBooleanQuery(patch.ast)
+              : null
+            : existing.boolean_query;
+        const details = validateWatchlistShape(resultingMatchType, resultingTerms, resultingBooleanQuery, patch.ast);
         if (details.length > 0) {
           return { outcome: 'validation_failed', details };
         }
@@ -286,7 +322,10 @@ export async function updateWatchlist(
       if ('name' in patch) setField('name', patch.name);
       if ('matchType' in patch) setField('match_type', patch.matchType);
       if ('terms' in patch) setField('terms', patch.terms);
-      if ('booleanQuery' in patch) setField('boolean_query', patch.booleanQuery);
+      if ('booleanQuery' in patch || 'ast' in patch) {
+        const bq = patch.booleanQuery ?? (patch.ast ? astToBooleanQuery(patch.ast) : null);
+        setField('boolean_query', bq);
+      }
       if ('platformIds' in patch) setField('platform_ids', patch.platformIds);
       if ('isActive' in patch) setField('is_active', patch.isActive);
       updates.push('version = version + 1');

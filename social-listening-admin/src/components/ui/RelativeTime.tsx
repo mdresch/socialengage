@@ -56,7 +56,11 @@ export function RelativeTime({
   className = '',
 }: RelativeTimeProps): ReactElement {
   if (!timestamp) {
-    return <time className={className}>{fallback}</time>;
+    return (
+      <time className={className} suppressHydrationWarning>
+        {fallback}
+      </time>
+    );
   }
 
   const formatted = formatRelativeTime(timestamp);
@@ -67,6 +71,7 @@ export function RelativeTime({
       title={timestamp}
       className={className}
       data-testid="relative-time"
+      suppressHydrationWarning
     >
       {formatted}
     </time>

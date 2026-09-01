@@ -1,4 +1,4 @@
-# BRD-0101: Multi-Source Connector Capability Matrix
+﻿# BRD-0101: Multi-Source Connector Capability Matrix
 
 ## 1. Document Control
 
@@ -281,3 +281,5 @@ No `docs/product-research/reports/01-multi-source-ingestion-deep-research.md` fi
 | Product Owner | Menno | | |
 | Technical Lead | Menno | | |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place with competitive findings from  1-multi-source-ingestion-deep-research.md. Clarified connector-level poll intervals, streaming WebSocket capability tiering, and platform-specific backoff policies.

@@ -5,12 +5,12 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0089 Platform Operations Dashboard — Functional Design Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer |
 | Reviewer(s) | Technical Lead (Menno) |
-| Status | Draft |
-| Related Documents | ADR-0089 (platform operations dashboard), ADR-0030 (Platform-Admin metadata-only boundary), ADR-0052 (live ingestion scheduler), ADR-0010 (ingestion health), ADR-0031 (platform admin audit log), BRD-0089, `docs/product-research/feature-designs/17-platform-operations-dashboard.md`, `docs/project docs/Stakeholder Management/Sole-Operator-Stakeholder-Profile.md`, Stories 10.6 and 10.7 |
+| Status | Approved |
+| Related Documents | ADR-0089 (Accepted 2026-08-28) (platform operations dashboard), ADR-0030 (Platform-Admin metadata-only boundary), ADR-0052 (live ingestion scheduler), ADR-0010 (ingestion health), ADR-0031 (platform admin audit log), BRD-0089, `docs/product-research/feature-designs/17-platform-operations-dashboard.md`, `docs/project docs/Stakeholder Management/Sole-Operator-Stakeholder-Profile.md`, Stories 10.6 and 10.7 |
 
 ---
 
@@ -18,9 +18,9 @@
 
 ### 2.1 Purpose
 
-This document translates ADR-0089's decision — a `GET /v1/admin/platform-dashboard` endpoint and its `PlatformOperationsDashboard` UI that aggregate cross-tenant platform health, connector status, cost, and capacity metrics while strictly excluding tenant content — into a functional design covering data aggregation, the metadata-only boundary, caching, and UI presentation.
+This document translates ADR-0089 (Accepted 2026-08-28)'s decision — a `GET /v1/admin/platform-dashboard` endpoint and its `PlatformOperationsDashboard` UI that aggregate cross-tenant platform health, connector status, cost, and capacity metrics while strictly excluding tenant content — into a functional design covering data aggregation, the metadata-only boundary, caching, and UI presentation.
 
-**Note:** ADR-0089's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
+**Note:** ADR-0089 (Accepted 2026-08-28)'s Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
 
 ### 2.2 Scope
 
@@ -35,9 +35,9 @@ Backend engineers implementing the metrics worker and endpoint, frontend enginee
 
 ## 3. Context and Background
 
-SocialEngage is run by a single `Sole-Operator`, supported by the `Platform-Admin` role. Today, understanding platform health, connector status, cost, and capacity requires opening multiple Azure portals and stitching together data manually — slow, error-prone, and unsuited to a solo-operated project. The underlying data already exists: `ADR-0009`/`ADR-0010` (ingestion health), `ADR-0051` (connector activation), and `ADR-0052` (live ingestion scheduler) already produce `ConnectorHealth`, `ingestion_runs`, and `connector_activations`; Azure Metrics/Cost Management supply cloud cost and queue data. ADR-0089 aggregates these into one console rather than creating new data sources, while making the existing `Platform-Admin` metadata-only boundary (ADR-0030 §2) explicit and enforced: the dashboard must never expose post bodies, watchlist queries, or personal data, even though `Platform-Admin` technically has `BYPASSRLS`.
+SocialEngage is run by a single `Sole-Operator`, supported by the `Platform-Admin` role. Today, understanding platform health, connector status, cost, and capacity requires opening multiple Azure portals and stitching together data manually — slow, error-prone, and unsuited to a solo-operated project. The underlying data already exists: `ADR-0009`/`ADR-0010` (ingestion health), `ADR-0051` (connector activation), and `ADR-0052` (live ingestion scheduler) already produce `ConnectorHealth`, `ingestion_runs`, and `connector_activations`; Azure Metrics/Cost Management supply cloud cost and queue data. ADR-0089 (Accepted 2026-08-28) aggregates these into one console rather than creating new data sources, while making the existing `Platform-Admin` metadata-only boundary (ADR-0030 §2) explicit and enforced: the dashboard must never expose post bodies, watchlist queries, or personal data, even though `Platform-Admin` technically has `BYPASSRLS`.
 
-Source requirements: ADR-0089, BRD-0089, Stories 10.6 (backend metrics infrastructure) and 10.7 (frontend dashboard) in `docs/user-stories/epic-10-adr-0086-to-0094.md`.
+Source requirements: ADR-0089 (Accepted 2026-08-28), BRD-0089, Stories 10.6 (backend metrics infrastructure) and 10.7 (frontend dashboard) in `docs/user-stories/epic-10-adr-0086-to-0094.md`.
 
 ---
 
@@ -279,4 +279,4 @@ The `GET /v1/admin/platform-dashboard` response payload; `platform_metrics` rows
   - *ConnectorHealth* — operational data indicating whether a connector is healthy or failing.
   - *Dead-letter queue* — a queue holding messages that could not be processed successfully.
   - *Tenant content* — post bodies, comments, watchlist queries, search terms, and user personal data; strictly excluded from this dashboard.
-- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0089/BRD-0089.
+- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0089 (Accepted 2026-08-28)/BRD-0089.

@@ -1,6 +1,6 @@
-# ADR-0111: Export bounding, streaming, and size caps
+﻿# ADR-0111: Export bounding, streaming, and size caps
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the resource guards for `GET /v1/posts/export.csv`, `GET /v1/exports/:id`, and export streaming, including synchronous size caps, async thresholds, Blob lifecycle, and rate-limiting.
 

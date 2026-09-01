@@ -1,4 +1,4 @@
-# ADR-0082: RAG post chunking and embedding pipeline
+﻿# ADR-0082: RAG post chunking and embedding pipeline
 
 **Status:** Accepted (2026-08-25). Originally Proposed 2026-08-23; revised 2026-08-25 per architectural review ("Accept with minor revisions") — aligned `RAGChunk.content` with ADR-0081's `RAGChunkMetadata.content`, added `tenant_id` to `RAGChunk` and `tenantId` to `embed()`, clarified `text-embedding-3-small` (1536-dim) as the dedicated embedding deployment, added orphan-chunk cleanup on re-index, added title-prepending and short-post guarantees, expanded `rag_chunks_sync` schema, and resolved all four open questions (Decisions §1–§5). Accepted the same day by the Business Sponsor / Product Owner / Technical Lead following the final review verdict "Approved / Accepted."
 
@@ -130,3 +130,7 @@ CREATE INDEX idx_rag_chunks_sync_status ON rag_chunks_sync(tenant_id, status);
 - Related feature design: `docs/product-research/feature-designs/28-semantic-search-rag.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0081` (`RAGConnector`, Accepted 2026-08-25), `ADR-0083` (RLS and metadata), `ADR-0002` (`AIProviderConnector`), `ADR-0018` (retention)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0137 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0137's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0137 is currently Proposed, not accepted.

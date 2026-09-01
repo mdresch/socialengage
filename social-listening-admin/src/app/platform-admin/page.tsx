@@ -73,12 +73,13 @@ export default async function PlatformAdminShellPage() {
               <th>Status</th>
               <th>Seats</th>
               <th>Update</th>
+              <th>Plan</th>
             </tr>
           </thead>
           <tbody>
             {tenants.length === 0 ? (
               <tr>
-                <td colSpan={5}>No tenants available.</td>
+                <td colSpan={6}>No tenants available.</td>
               </tr>
             ) : (
               tenants.map((tenant) => (
@@ -96,6 +97,9 @@ export default async function PlatformAdminShellPage() {
                       currentStatus={tenant.status}
                       currentLicenseSeatCount={tenant.licenseSeatCount}
                     />
+                  </td>
+                  <td>
+                    <a href={`/platform-admin/tenants/${tenant.id}/plan`}>Manage plan</a>
                   </td>
                 </tr>
               ))

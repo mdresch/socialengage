@@ -1,4 +1,4 @@
-# ADR-0078: Metric explainability endpoint
+﻿# ADR-0078: Metric explainability endpoint
 
 **Status:** Accepted (2026-08-23)
 
@@ -129,3 +129,7 @@ The following are product conventions for `social-listening-admin`, not API-leve
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0002` (`AIProviderConnector`), `ADR-0003`/`ADR-0020` (`RequestGate`), `ADR-0038` (Azure OpenAI enrichment), `ADR-0048` (connector/prompt regression testing)
 - Distinct from `ADR-0062` (`POST /v1/posts/explain-spike`): this endpoint explains dashboard metric values from aggregate data; `ADR-0062` explains post-volume spikes from raw post data. They may share the same `AIProviderConnector` but serve different consumers and consume different inputs.
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0133 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0133's own §1–§3 — specifically statistical significance gating (p < 0.05 anomaly gate) and multi-turn conversational drill-downs. This is a pending note only: ADR-0133 is currently Proposed, not accepted.

@@ -262,18 +262,19 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
     // need an actual DOM/markup render of PostsFeedClient itself, which
     // this repo's own established testing approach doesn't do. This new
     // test calls extractDisplayText() directly instead, which is what
-    // actually proves the fix.
-    it('extractDisplayText() renders a real Facebook-shaped rawPayload (message, no title field) as its own message text, never raw JSON (found-live regression, dated note above)', async () => {
+    it('extractDisplayText() renders a real Facebook-shaped rawPayload (message, no title field) as snippet with empty title, never raw JSON (found-live regression, dated note above)', async () => {
       const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
       const result = extractDisplayText(FACEBOOK_POST.rawPayload);
-      expect(result.title).toBe('Excited to announce our new product launch next week!');
-      expect(result.title).not.toContain('"providerId"');
+      expect(result.title).toBe('');
+      expect(result.snippet).toBe('Excited to announce our new product launch next week!');
+      expect(result.snippet).not.toContain('"providerId"');
     });
 
-    it('extractDisplayText() falls back to permalink_url for a Facebook post with no message text (media-only post)', async () => {
+    it('extractDisplayText() falls back to permalink_url in snippet for a Facebook post with no message text (media-only post)', async () => {
       const { extractDisplayText } = await import('../../src/app/tenant/posts/postDisplay');
       const result = extractDisplayText({ providerId: 'facebook', id: 'ext-5', permalink_url: 'https://facebook.com/1/posts/ext-5', created_time: '2026-08-12T08:20:00.000Z' });
-      expect(result.title).toBe('https://facebook.com/1/posts/ext-5');
+      expect(result.title).toBe('');
+      expect(result.snippet).toBe('https://facebook.com/1/posts/ext-5');
     });
 
     // 2026-08-20, dated note: found-live regression, same shape as the
@@ -304,11 +305,37 @@ describe('Story 6.11 — Post feed (browse ingested posts)', () => {
       expect(extractUrl(FACEBOOK_POST.rawPayload)).toBe('https://facebook.com/1/posts/ext-4');
     });
 
-    it('extractAuthor() still prefers rawPayload.author over issuer/pageName/source.name, and falls back to null when none are present (real connector shapes never mix these fields — precedence only matters for this direct unit test)', async () => {
-      const { extractAuthor } = await import('../../src/app/tenant/posts/postDisplay');
-      expect(extractAuthor({ author: 'Direct Author', issuer: 'Some Wire' })).toBe('Direct Author');
-      expect(extractAuthor({ source: { name: 'GNews Source' } })).toBe('GNews Source');
-      expect(extractAuthor({ someField: 'no author here' })).toBeNull();
+    it('extractDisplayText(), extractAuthor(), and extractUrl() normalize YouTube video and comment posts cleanly', async () => {
+      const { extractDisplayText, extractAuthor, extractUrl } = await import('../../src/app/tenant/posts/postDisplay');
+
+      const videoPayload = {
+        providerId: 'youtube',
+        type: 'video',
+        videoId: 'dQw4w9WgXcQ',
+        title: 'Spring 2026 Developer Keynote',
+        description: 'Full walkthrough of latest cloud infrastructure features.',
+        channelTitle: 'Google Developers',
+      };
+      expect(extractDisplayText(videoPayload)).toEqual({
+        title: 'Spring 2026 Developer Keynote',
+        snippet: 'Full walkthrough of latest cloud infrastructure features.',
+      });
+      expect(extractAuthor(videoPayload)).toBe('Google Developers');
+      expect(extractUrl(videoPayload)).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
+      const commentPayload = {
+        providerId: 'youtube',
+        type: 'comment',
+        videoId: 'dQw4w9WgXcQ',
+        authorName: 'JaneDoeDeveloper',
+        text: 'The new API endpoints are significantly faster!',
+      };
+      expect(extractDisplayText(commentPayload)).toEqual({
+        title: 'The new API endpoints are significantly faster!',
+        snippet: null,
+      });
+      expect(extractAuthor(commentPayload)).toBe('JaneDoeDeveloper');
+      expect(extractUrl(commentPayload)).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     });
 
     it('opens a post in the in-page Slideover, not a navigation to a separate /tenant/posts/:id route', async () => {

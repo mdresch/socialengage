@@ -5,12 +5,12 @@
 | Field | Value |
 |---|---|
 | Document Title | FDD-0088 Ad-Hoc Query Allowlist — Functional Design Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | FDD Writer |
 | Reviewer(s) | Technical Lead (Menno) |
-| Status | Draft |
-| Related Documents | ADR-0088 (ad-hoc query allowlist), ADR-0087 (preconfigured analytics views), ADR-0015 (tenant RLS), ADR-0044 (watchlist ownership), BRD-0088, `docs/product-research/feature-designs/21-ad-hoc-query-endpoint.md`, Stories 10.4 and 10.5 |
+| Status | Approved |
+| Related Documents | ADR-0088 (Accepted 2026-08-28) (ad-hoc query allowlist), ADR-0087 (preconfigured analytics views), ADR-0015 (tenant RLS), ADR-0044 (watchlist ownership), BRD-0088, `docs/product-research/feature-designs/21-ad-hoc-query-endpoint.md`, Stories 10.4 and 10.5 |
 
 ---
 
@@ -18,9 +18,9 @@
 
 ### 2.1 Purpose
 
-This document translates ADR-0088's decision — a structured, allowlist-validated `POST /v1/analytics/query` endpoint that safely translates a JSON query DSL into a parameterized, tenant-scoped aggregation, plus its consuming UI query builder — into a functional design covering validation, query building, resource guards, response shape, and UI behavior.
+This document translates ADR-0088 (Accepted 2026-08-28)'s decision — a structured, allowlist-validated `POST /v1/analytics/query` endpoint that safely translates a JSON query DSL into a parameterized, tenant-scoped aggregation, plus its consuming UI query builder — into a functional design covering validation, query building, resource guards, response shape, and UI behavior.
 
-**Note:** ADR-0088's Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
+**Note:** ADR-0088 (Accepted 2026-08-28)'s Status is **Proposed**, not Accepted. This FDD is a draft for review and may change if the parent ADR is revised or rejected before implementation.
 
 ### 2.2 Scope
 
@@ -35,9 +35,9 @@ Backend engineers implementing the query builder and endpoint, frontend engineer
 
 ## 3. Context and Background
 
-`Tenant-Business-Analyst` and `Tenant-Brand-Reputation-Manager` need flexible, server-side aggregation to answer questions the pre-built dashboard does not cover — but the platform must never accept arbitrary SQL, which would open SQL-injection and cross-tenant-exfiltration risk in a multi-tenant system built around RLS-first isolation (ADR-0015). ADR-0088 answers this with a narrow, structured JSON DSL that is validated against a hard-coded allowlist and translated into safe, parameterized SQL — never string concatenation of user input. It builds directly on ADR-0087's precomputed `*DailyCount` tables, preferring them when the requested grain/filters match and falling back to `social_posts` (with guards) only for drill-downs.
+`Tenant-Business-Analyst` and `Tenant-Brand-Reputation-Manager` need flexible, server-side aggregation to answer questions the pre-built dashboard does not cover — but the platform must never accept arbitrary SQL, which would open SQL-injection and cross-tenant-exfiltration risk in a multi-tenant system built around RLS-first isolation (ADR-0015). ADR-0088 (Accepted 2026-08-28) answers this with a narrow, structured JSON DSL that is validated against a hard-coded allowlist and translated into safe, parameterized SQL — never string concatenation of user input. It builds directly on ADR-0087's precomputed `*DailyCount` tables, preferring them when the requested grain/filters match and falling back to `social_posts` (with guards) only for drill-downs.
 
-Source requirements: ADR-0088, BRD-0088, Stories 10.4 (backend) and 10.5 (frontend) in `docs/user-stories/epic-10-adr-0086-to-0094.md`. Depends on ADR-0087 (Story 10.3) for the precomputed views it prefers.
+Source requirements: ADR-0088 (Accepted 2026-08-28), BRD-0088, Stories 10.4 (backend) and 10.5 (frontend) in `docs/user-stories/epic-10-adr-0086-to-0094.md`. Depends on ADR-0087 (Story 10.3) for the precomputed views it prefers.
 
 ---
 
@@ -265,7 +265,7 @@ Query result rows (`columns`/`rows`/`rowCount`/`truncated`/`queryTimeMs`/`source
 - Tenant isolation is already enforced via `withTenant()` (ADR-0015).
 - Callers have an authenticated tenant context.
 - The endpoint is read-only and will never be used for data modification.
-- Depends on ADR-0088 being accepted before Stories 10.4/10.5 are implemented; Story 10.5 depends on Story 10.4.
+- Depends on ADR-0088 (Accepted 2026-08-28) being accepted before Stories 10.4/10.5 are implemented; Story 10.5 depends on Story 10.4.
 
 ---
 
@@ -293,4 +293,4 @@ Query result rows (`columns`/`rows`/`rowCount`/`truncated`/`queryTimeMs`/`source
   - *Allowlist* — the explicit set of allowed `dimensions`, `metrics`, and `timeGrain` values.
   - *Time grain* — the level of date grouping (`hour`/`day`/`week`/`month`).
   - *Drill-down* — a query requiring raw post-level data rather than a precomputed aggregate.
-- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0088/BRD-0088.
+- **Revision history:** v0.1, 2026-08-23 — initial regenerated functional design from ADR-0088 (Accepted 2026-08-28)/BRD-0088.

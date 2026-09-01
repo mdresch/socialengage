@@ -102,6 +102,7 @@ beforeAll(async () => {
   testKeyName = `test-key-${randomUUID()}`;
   const key = await getKeyClient().createRsaKey(testKeyName, { keySize: 2048 });
   testKeyId = key.id as string;
+  process.env.KEY_VAULT_KEY_ID = testKeyId;
 });
 
 afterAll(async () => {

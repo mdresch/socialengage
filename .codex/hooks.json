@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'c:\\Users\\MennoDrescher\\source\\repos\\socialengage\\.codex\\hooks\\enforce-contract-first.cjs'",
+            "timeout": 10,
+            "statusMessage": "Checking contract-first policy..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'c:\\Users\\MennoDrescher\\source\\repos\\socialengage\\.codex\\hooks\\verify-git-hooks-installed.cjs'",
+            "timeout": 15,
+            "statusMessage": "Verifying git hooks are installed..."
+          }
+        ]
+      }
+    ]
+  }
+}

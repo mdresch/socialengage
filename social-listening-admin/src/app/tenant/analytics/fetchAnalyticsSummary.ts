@@ -29,7 +29,7 @@ const PAGE_LIMIT = 100;
  */
 const MAX_PAGES = 500;
 
-async function fetchAllPosts(watchlistId?: string): Promise<SocialPostSummary[]> {
+async function fetchAllPosts(watchlistId?: string, maxPages: number = MAX_PAGES): Promise<SocialPostSummary[]> {
   const posts: SocialPostSummary[] = [];
   let cursor: string | undefined;
   let pages = 0;
@@ -39,7 +39,7 @@ async function fetchAllPosts(watchlistId?: string): Promise<SocialPostSummary[]>
     posts.push(...page.posts);
     cursor = page.nextCursor ?? undefined;
     pages += 1;
-  } while (cursor && pages < MAX_PAGES);
+  } while (cursor && pages < maxPages);
 
   return posts;
 }
@@ -89,7 +89,7 @@ export async function fetchWatchlistCoverage(
   const coverage = await Promise.all(
     activeWatchlists.map(async (w) => {
       try {
-        const posts = await fetchAllPosts(w.id);
+        const posts = await fetchAllPosts(w.id, 10);
         const inRange = filterPostsByDateRange(posts, range);
         return {
           id: w.id,

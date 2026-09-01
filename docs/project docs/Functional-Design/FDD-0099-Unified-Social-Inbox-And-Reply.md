@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 | Field | Value |
@@ -191,3 +191,5 @@ See ADR Decision.
 - Feature design: `docs/product-research/feature-designs/06-unified-social-inbox.md``
 - Deep research: `docs/product-research/reports/<feature>-deep-research.md``
 - User stories: see extracted stories above
+
+> **Technical Revision (2026-08-28):** Added WebSocket presence payload schema and collision detection lock endpoint contracts.

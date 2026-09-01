@@ -1,4 +1,4 @@
-# Business Requirements Document — Editing and Deleting Published Outbound Posts
+﻿# Business Requirements Document — Editing and Deleting Published Outbound Posts
 
 ## 1. Document Control
 

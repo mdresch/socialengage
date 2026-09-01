@@ -1,4 +1,4 @@
-# Epic 1: Repository & API Foundation
+﻿# Epic 1: Repository & API Foundation
 
 ## Story 1.1 — Core REST API access for the admin UI
 
@@ -137,6 +137,7 @@
 ## Story 1.6 — Connector connect/disconnect REST surface (placeholder-auth shape)
 
 **Source:** Phase 1 "also build, not storied" work (see `docs/open-items-and-deferred-work.md` §A, `docs/implementation-plan.md` Phase 1) · **Status:** Ready — already built and contract-verified (see `docs/implementation-plan.md`'s 2026-08-01 update); this entry is added retroactively, 2026-08-03, to give the already-in-use "Story 1.6" label a home in this file, per this project's own "don't rewrite history" convention (no prior entry existed here for it).
+**Built:** 2026-08-01 — social-listening-core@58a9ebe (superseded by Story 1.7, 2026-08-04)
 
 **As a** tenant connecting a social or news platform,
 **I want** to store and remove a platform credential via REST endpoints,
@@ -177,7 +178,8 @@
 
 ## Story 1.8 — Tenant self-view REST endpoint
 
-**Source:** ADR-0031 (Accepted) · **Status:** Built 2026-08-09 (`social-listening-core@10fc934`, `contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts`, 8/8, full suite 44/44 suites / 272/272 tests — see `docs/implementation-log.md`). No new ADR needed. `tenants.md`'s own RLS policy (Story 5.8, built) already proves a tenant-scoped session sees exactly its own row at the database layer; this story only adds the HTTP route calling into it, the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
+**Source:** ADR-0031 (Accepted) · **Status:** Built
+**Built:** 2026-08-09 — social-listening-core@10fc934 (`contracts/epic-1/story-1.8.tenant-self-view.contract.test.ts`, 8/8, full suite 44/44 suites / 272/272 tests — see `docs/implementation-log.md`). No new ADR needed. `tenants.md`'s own RLS policy (Story 5.8, built) already proves a tenant-scoped session sees exactly its own row at the database layer; this story only adds the HTTP route calling into it, the same ordinary CRUD-shaped surface-exposure Story 1.5 already established as not needing its own ADR.
 
 **Drafted 2026-08-05, as part of a 16-item batch requested by Menno.** Closes a real, confirmed gap: Story 5.8's own stated purpose is "viewing my own tenant's settings needs no special-case authorization path," but its Acceptance Criteria only prove the RLS policy returns one row at the DB layer (`contracts/epic-5/story-5.8.tenants-table-rls.contract.test.ts`) — no route in any `versions/v1/*Router.ts` file exposes it over HTTP, confirmed directly against the current router files.
 
@@ -224,7 +226,8 @@
 
 ## Story 1.10 — Postgres boot-time readiness check and a real `/v1/health`
 
-**Source:** ADR-0016 (Postgres as the database engine, Accepted) · **Status:** Ready — built 2026-08-12. ADR-0016 already decided Postgres is this project's database engine; a boot-time connectivity check and a database-aware liveness route are operational implementation detail under that already-decided architecture, the same "ordinary surface work needs no new ADR" category Stories 1.5/1.8/1.9 already established.
+**Source:** ADR-0016 (Postgres as the database engine, Accepted) · **Status:** Built
+**Built:** 2026-08-12 — social-listening-core@63dcbce (`contracts/epic-1/story-1.10.postgres-readiness-and-health.contract.test.ts`, 8/8 — see `docs/implementation-log.md`). ADR-0016 already decided Postgres is this project's database engine; a boot-time connectivity check and a database-aware liveness route are operational implementation detail under that already-decided architecture, the same "ordinary surface work needs no new ADR" category Stories 1.5/1.8/1.9 already established.
 
 **Drafted 2026-08-11, from a direct question during a live session.** Closes a real, confirmed gap: verified directly against `social-listening-core/src/http/server.ts` and `src/db/pool.ts` that the server today calls `createApp().listen(port, ...)` with no database check of any kind beforehand, and that `getPool()` is a lazy singleton — the `pg.Pool` isn't even constructed until the first request that happens to need it. Postgres unavailability is therefore only discovered reactively, on whichever request hits the database first, never proactively at boot. Also verified that `GET /v1/health` (`versions/v1/router.ts`) already exists but is an unconditional `{ status: 'ok' }` placeholder from Story 1.3/ADR-0017, predating any auth mechanism and deliberately public — it does not touch the database at all today.
 

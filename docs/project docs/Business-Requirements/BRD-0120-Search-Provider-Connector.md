@@ -1,4 +1,4 @@
-# Business Requirements Document — ADR-0120: SearchProviderConnector
+﻿# Business Requirements Document — ADR-0120: SearchProviderConnector
 
 > **Note:** ADR-0120 is currently **Proposed** (2026-08-23). This BRD is a draft for review and will be updated when the ADR is accepted or revised.
 

@@ -1,4 +1,4 @@
-# Epic 2: Ingestion, Connectors & Rate Limits
+﻿# Epic 2: Ingestion, Connectors & Rate Limits
 
 ## Story 2.1 — Unified provider connector framework
 
@@ -158,6 +158,7 @@
 ## Story 2.9 — Second AIProviderConnector: Azure-hosted LLM swappability validation
 
 **Source:** Story 2.1 connector-abstraction contract, Story 2.8 follow-up note, and ADR-0038 §2/Open Questions · **Status:** Built 2026-08-10 (`social-listening-core`, real Azure OpenAI Service resource, `gpt-5-mini` — see ADR-0038's own Amendment Log for the Claude-in-Foundry-vs-Azure-OpenAI research and the `gpt-4o-mini`→`gpt-5-mini` deployment correction, and `docs/implementation-log.md` for the full build account).
+**Built:** 2026-08-10 — social-listening-core@69310ba
 
 **As a** platform maintainer,
 **I want** a second, distinct `AIProviderConnector` implementation targeting an Azure-hosted LLM for enrichment tasks,
@@ -230,6 +231,7 @@
 ## Story 2.12 — `deriveConnectorHealth()` excludes retryable failures from the `failing` derivation
 
 **Source:** ADR-0010 §Clarification (2026-08-12), ADR-0023 §Clarification (2026-08-12) · **Status:** Built 2026-08-12 — no new ADR needed. This corrects an implementation gap against ADR-0010's own already-Accepted Decision text ("retryable errors → automatic retry; non-retryable → immediate `failing` status"), per that ADR's own dated Clarification and ADR-0023's matching one — not a new decision, the same "implementation catches up to an already-stated policy" category ADR-0009/0010's own prior "Supersession update" notes already used for Story 2.5.
+**Built:** 2026-08-12 — social-listening-core@da102a9
 
 **Drafted 2026-08-12, from a real, confirmed gap found while drafting ADR-0051 (connector activation) and directly connected by Menno to a historical Microsoft Social Engagement failure mode** — a connector disconnected merely for exhausting its rate-limit quota. Direct code inspection confirmed the modern codebase reproduces the same anti-pattern by omission: `runIngestionAttempt.ts` already classifies and persists `retryable` on every `ingestion_runs` row it writes, but `connectorHealth.ts`'s `deriveConnectorHealth()` never selects that column — every failed run counts identically toward ADR-0023's rate-relative `failing` derivation and the 20-consecutive-failure ceiling, regardless of whether the failure was a rate-limit/network/5xx (retryable) or a revoked credential/malformed watchlist (non-retryable). `shouldAttemptIngestion()` then halts ingestion on that undifferentiated signal — a real behavioral effect, not a cosmetic label.
 

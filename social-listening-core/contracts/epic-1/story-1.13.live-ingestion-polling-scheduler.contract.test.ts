@@ -65,6 +65,7 @@ import { BRAVE_SEARCH_PROVIDER_ID } from '../../src/connectors/braveSearch/brave
 import { BING_SEARCH_PROVIDER_ID } from '../../src/connectors/bingSearch/bingSearchConnector';
 import { INSTAGRAM_PROVIDER_ID } from '../../src/connectors/instagram/instagramConnector';
 import { LINKEDIN_PROVIDER_ID } from '../../src/connectors/linkedin/linkedinConnector';
+import { YOUTUBE_PROVIDER_ID } from '../../src/connectors/youtube/youtubeConnector';
 import { bootstrapConnectors } from '../../src/connectors/bootstrapConnectors';
 import { SocialConnector } from '../../src/connectors/types';
 import {
@@ -164,6 +165,8 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
       // legitimately have only the latter — this is not a weakening of the
       // check, it is the same invariant restated to admit the new,
       // ADR-0061-sanctioned shape.
+      // 2026-08-27 (Story 10.13, ADR-0093): YouTube connector was registered
+      // with real poll() implementation — extended here the same way.
       expect(providerIds).toEqual(
         [
           GNEWS_PROVIDER_ID,
@@ -175,6 +178,7 @@ describe('Story 1.13 — live ingestion-polling scheduler', () => {
           BING_SEARCH_PROVIDER_ID,
           INSTAGRAM_PROVIDER_ID,
           LINKEDIN_PROVIDER_ID,
+          YOUTUBE_PROVIDER_ID,
         ].sort()
       );
       for (const connector of registered) {

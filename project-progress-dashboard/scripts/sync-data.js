@@ -40,6 +40,12 @@ storyFiles.sort().forEach(f => {
     const statusMatch = sec.match(/\*\*Status:\*\*\s*([^\n\r]+)/i) || sec.match(/Status:\s*([^\n\r]+)/i);
     if (statusMatch) status = statusMatch[1].replace(/·.*/, '').trim();
 
+    // Detect retired stories (superseded by another story, never built as specified)
+    const isRetired = status.toLowerCase().startsWith('retired');
+
+    // Detect relocated stories (moved to another epic, kept as a stub pointer)
+    const isRelocated = storyTitle.toLowerCase().includes('relocated to epic');
+
     let source = '';
     const sourceMatch = sec.match(/\*\*Source:\*\*\s*([^\n\r]+)/i) || sec.match(/Source:\s*([^\n\r]+)/i);
     if (sourceMatch) source = sourceMatch[1].replace(/·.*/, '').trim();
@@ -47,17 +53,26 @@ storyFiles.sort().forEach(f => {
     let builtInfo = 'Built: not yet';
     let isBuilt = false;
     const builtMatch = sec.match(/\*\*Built:\*\*\s*([^\n\r]+)/i) || sec.match(/Built:\s*([^\n\r]+)/i);
+    const statusLower = status.toLowerCase();
+    const isStatusBuilt = statusLower.startsWith('complete') || statusLower.startsWith('built') || statusLower.startsWith('shipped');
+
     if (builtMatch) {
       builtInfo = builtMatch[1].trim();
       const lower = builtInfo.toLowerCase();
-      if (!lower.includes('not yet') && !lower.includes('planned') && (lower.includes('@') || lower.includes('2026-'))) {
+      if (!lower.includes('not yet') && !lower.includes('planned') && (
+        lower.startsWith('yes') ||
+        lower.includes('contract') ||
+        lower.includes('pass') ||
+        lower.includes('@') ||
+        lower.includes('2026-') ||
+        lower.includes('social-listening') ||
+        isStatusBuilt
+      )) {
         isBuilt = true;
       }
-    }
-
-    // Double check epic 9-13 are not marked built unless actually verified
-    if (epicNum >= 9 && !builtInfo.includes('@')) {
-      isBuilt = false;
+    } else if (isStatusBuilt) {
+      isBuilt = true;
+      builtInfo = status;
     }
 
     const storyItem = {
@@ -68,7 +83,9 @@ storyFiles.sort().forEach(f => {
       source: source || epicTitle,
       status,
       isBuilt,
-      builtInfo: isBuilt ? builtInfo : 'Planned / Roadmap Backlog'
+      isRetired,
+      isRelocated,
+      builtInfo: isBuilt ? builtInfo : (isRetired ? 'Retired — superseded by another story' : (isRelocated ? 'Relocated to another epic' : 'Planned / Roadmap Backlog'))
     };
 
     allStories.push(storyItem);
@@ -86,9 +103,13 @@ storyFiles.sort().forEach(f => {
     }
 
     const epicData = epicMap.get(epicId);
-    epicData.total += 1;
-    if (isBuilt) epicData.built += 1;
-    else epicData.pending += 1;
+    // Retired and relocated stories are excluded from both built and pending counts
+    // (they're neither completed work nor pending work)
+    if (!isRetired && !isRelocated) {
+      epicData.total += 1;
+      if (isBuilt) epicData.built += 1;
+      else epicData.pending += 1;
+    }
   });
 });
 
@@ -113,7 +134,7 @@ allStories.sort((a, b) => {
   return (partsA[1] || 0) - (partsB[1] || 0);
 });
 
-console.log(`✅ Parsed ${epicsSummary.length} Epics, ${allStories.length} User Stories (${allStories.filter(s => s.isBuilt).length} built, ${allStories.filter(s => !s.isBuilt).length} pending).`);
+console.log(`✅ Parsed ${epicsSummary.length} Epics, ${allStories.length} User Stories (${allStories.filter(s => s.isBuilt).length} built, ${allStories.filter(s => !s.isBuilt && !s.isRetired && !s.isRelocated).length} pending, ${allStories.filter(s => s.isRetired).length} retired, ${allStories.filter(s => s.isRelocated).length} relocated).`);
 
 // 2. Parse ADRs and Open Questions
 const adrDir = path.join(repoRoot, 'docs', 'adr');

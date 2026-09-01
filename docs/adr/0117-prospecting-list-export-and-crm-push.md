@@ -1,6 +1,6 @@
-# ADR-0117: Prospecting list export and CRM push
+﻿# ADR-0117: Prospecting list export and CRM push
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** `GET /v1/prospecting-lists/:id/export` and `POST /v1/prospecting-lists/:id/crm-handoff` for exporting a prospecting list and pushing its entries to a CRM (reusing `CRMConnector`, ADR-0095).
 

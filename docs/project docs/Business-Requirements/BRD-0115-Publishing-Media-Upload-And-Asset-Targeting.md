@@ -1,4 +1,4 @@
-# Business Requirements Document — Publishing: Media Upload and Asset Targeting
+﻿# Business Requirements Document — Publishing: Media Upload and Asset Targeting
 
 ## 1. Document Control
 

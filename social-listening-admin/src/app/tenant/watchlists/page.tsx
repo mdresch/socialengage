@@ -29,6 +29,7 @@ const SOCIAL_PLATFORMS: { id: string; name: string; authMode: 'api_key' | 'none'
   { id: 'wikipedia', name: 'Wikipedia', authMode: 'none' },
   { id: 'brave-search', name: 'Brave Search', authMode: 'api_key' },
   { id: 'bing-search', name: 'Bing Search', authMode: 'api_key' },
+  { id: 'youtube', name: 'YouTube', authMode: 'api_key' },
 ];
 
 async function loadConnectedPlatforms(): Promise<{ id: string; name: string }[]> {

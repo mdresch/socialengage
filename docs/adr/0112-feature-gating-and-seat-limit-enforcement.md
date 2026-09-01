@@ -1,6 +1,6 @@
-# ADR-0112: Feature gating and seat-limit enforcement
+﻿# ADR-0112: Feature gating and seat-limit enforcement
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `tenant_settings.feature_gates` schema, the per-plan feature allowlist, and the seat-limit enforcement that keeps `active_seat_count` within the tenant's plan.
 

@@ -5,19 +5,19 @@
 | Field | Value |
 |---|---|
 | Document Title | Ad-hoc Query Allowlist – Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno (Business Sponsor / Product Owner / Technical Lead) |
 | Status | Draft for review |
 
-> **Note:** ADR-0088 is currently **Proposed**. This BRD is a draft for review and may change if the ADR is revised before acceptance.
+> **Note:** ADR-0088 (Accepted 2026-08-28) is currently **Proposed**. This BRD is a draft for review and may change if the ADR is revised before acceptance.
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0088 and feature design 21-ad-hoc-query-endpoint.md |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0088 (Accepted 2026-08-28) and feature design 21-ad-hoc-query-endpoint.md |
 
 ---
 
@@ -125,7 +125,7 @@
 
 | ID | Requirement | Priority | Acceptance Criteria | Owner |
 |---|---|---|---|---|
-| BR-001 | The system shall let a tenant user build a structured query with dimensions, metrics, filters, time grain, and output format | Must | API accepts the request shape defined in ADR-0088; UI story 10.5 covers builder controls | Product Owner |
+| BR-001 | The system shall let a tenant user build a structured query with dimensions, metrics, filters, time grain, and output format | Must | API accepts the request shape defined in ADR-0088 (Accepted 2026-08-28); UI story 10.5 covers builder controls | Product Owner |
 | BR-002 | The system shall validate `dimensions` and `metrics` against a hard-coded allowlist | Must | Unknown dimensions return `400 UNKNOWN_DIMENSION`; unknown metrics return `400 UNKNOWN_METRIC` | Product Owner |
 | BR-003 | The system shall execute each query as a parameterized, tenant-scoped, read-only aggregation | Must | Query uses `withTenant()` RLS; no user input is concatenated into SQL; no writes occur | Technical Lead |
 | BR-004 | The system shall return query results as JSON or streaming CSV | Must | `format:'json'` returns a columns/rows/metadata payload; `format:'csv'` returns a downloadable stream | Product Owner |
@@ -239,9 +239,9 @@
 
 ### 16.1 Source Documents
 
-- [ADR-0088: Ad-hoc query allowlist](../adr/0088-ad-hoc-query-allowlist.md)
+- [ADR-0088 (Accepted 2026-08-28): Ad-hoc query allowlist](../adr/0088-ad-hoc-query-allowlist.md)
 - [Feature design: 21-ad-hoc-query-endpoint.md](../product-research/feature-designs/21-ad-hoc-query-endpoint.md)
-- [Feature-ADR scoping document](../product-research/feature-adr-scoping.md) (referenced by ADR-0088, not read for this draft)
+- [Feature-ADR scoping document](../product-research/feature-adr-scoping.md) (referenced by ADR-0088 (Accepted 2026-08-28), not read for this draft)
 
 ### 16.2 Related ADRs
 

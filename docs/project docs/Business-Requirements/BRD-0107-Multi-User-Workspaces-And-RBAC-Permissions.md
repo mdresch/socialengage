@@ -1,4 +1,4 @@
-# Business Requirements Document — Multi-User Workspaces and RBAC Permissions
+﻿# Business Requirements Document — Multi-User Workspaces and RBAC Permissions
 
 > **Note:** This BRD is drafted against **ADR-0107**, which is currently **Proposed**. It is therefore a draft for review and may change if the ADR is revised or rejected.
 

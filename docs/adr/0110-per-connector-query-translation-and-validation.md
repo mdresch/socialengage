@@ -1,6 +1,6 @@
-# ADR-0110: Per-connector query translation and validation
+﻿# ADR-0110: Per-connector query translation and validation
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `WatchlistAST` to platform-specific query translation layer, the `ConnectorQueryCapability` allowlist, and the validation that rejects unsupported clauses before they reach a connector.
 

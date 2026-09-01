@@ -7,14 +7,17 @@ import {
   listWatchlists,
   getConnectorStatus,
   listPosts,
+  getOnboardingChecklist,
   type AdminTenant,
   type Watchlist,
   type ConnectorStatus,
   type SocialPostSummary,
+  type OnboardingChecklistResponse,
 } from '@/lib/core-client';
 import { RelativeTime } from '@/components/ui';
 import { StatusBadge } from '@/components/ui';
 import { extractDisplayText, extractProviderBadge, extractEnrichmentSummary } from './posts/postDisplay';
+import { OnboardingChecklist } from './OnboardingChecklist';
 
 const PLATFORMS = [
   { id: 'gnews', name: 'GNews' },
@@ -34,8 +37,8 @@ interface ConnectorSummary {
 }
 
 /**
- * Story 6.2 — Tenant workspace overview dashboard.
- * Fetches tenant, watchlists, connector statuses, and recent posts in parallel.
+ * Story 6.2 / Story 9.6 — Tenant workspace overview dashboard.
+ * Fetches tenant, watchlists, connector statuses, recent posts, and onboarding checklist in parallel.
  * Each data source degrades independently — a single failing call never blocks the page.
  */
 export default async function TenantShellPage() {
@@ -49,9 +52,10 @@ export default async function TenantShellPage() {
   }
 
   const isTenantAdmin = identity?.type === 'tenant_user' && identity.role === 'tenant_admin';
+  const tenantId = identity?.type === 'tenant_user' ? identity.tenantId : '';
 
   // Fetch all data in parallel — each source degrades independently on failure.
-  const [tenant, watchlists, connectors, allPosts] = await Promise.all([
+  const [tenant, watchlists, connectors, allPosts, onboardingChecklist] = await Promise.all([
     getMyTenant().catch((): AdminTenant | null => null),
     listWatchlists().catch((): Watchlist[] => []),
     Promise.all(
@@ -68,6 +72,16 @@ export default async function TenantShellPage() {
       } catch {
         return [];
       }
+    })(),
+    (async () => {
+      if (tenantId) {
+        try {
+          return await getOnboardingChecklist(tenantId);
+        } catch {
+          return null;
+        }
+      }
+      return null;
     })(),
   ]);
 
@@ -110,6 +124,15 @@ export default async function TenantShellPage() {
           )}
         </div>
       </div>
+
+      {/* Story 9.6: Onboarding Checklist */}
+      {tenantId && onboardingChecklist && (
+        <OnboardingChecklist
+          tenantId={tenantId}
+          initialChecklist={onboardingChecklist}
+          isTenantAdmin={isTenantAdmin}
+        />
+      )}
 
       {/* Degraded connector alert banner */}
       {degradedConnectors.length > 0 && (
@@ -283,9 +306,11 @@ export default async function TenantShellPage() {
                         {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
                       </div>
 
-                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)', lineHeight: 1.4 }}>
-                        {title ?? 'Untitled post'}
-                      </div>
+                      {title ? (
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)', lineHeight: 1.4 }}>
+                          {title}
+                        </div>
+                      ) : null}
 
                       {snippet && (
                         <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

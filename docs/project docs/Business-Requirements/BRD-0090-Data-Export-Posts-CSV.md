@@ -1,23 +1,23 @@
-# BRD-0090: Data Export — Posts CSV
+﻿# BRD-0090: Data Export — Posts CSV
 
 ## 1. Document Control
 
 | Field | Value |
 |---|---|
 | Document Title | Data Export — Posts CSV — Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent, Product Architecture |
 | Approver(s) | Menno — Business Sponsor / Product Owner / Technical Lead |
-| Status | Draft |
+| Status | Approved |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0090 and related feature design |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0090 (Accepted 2026-08-28) and related feature design |
 
-> **Note:** ADR-0090 is currently **Proposed**. This BRD is a draft for review and will change if the ADR is modified or rejected.
+> **Note:** ADR-0090 (Accepted 2026-08-28) is currently **Proposed**. This BRD is a draft for review and will change if the ADR is modified or rejected.
 
 ---
 
@@ -27,7 +27,7 @@ Tenants need a reliable, self-service way to download their matched social-liste
 
 The proposed capability is a bounded, on-demand CSV export of posts visible to the caller. Synchronous exports serve the common case (up to 10,000 rows by default, with a hard cap of 50,000). Requests exceeding the synchronous threshold are handed off to an asynchronous background job that writes the file to Azure Blob Storage and returns a presigned download URL. The export shape intentionally omits raw internal JSONB fields and credential material, producing an analysis-ready file rather than a debugging dump.
 
-> **Draft notice:** ADR-0090 has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
+> **Draft notice:** ADR-0090 (Accepted 2026-08-28) has not yet been accepted. The scope, limits, and column set in this BRD reflect the current Proposed ADR and may change during review.
 
 ---
 
@@ -209,10 +209,10 @@ A tenant user navigates to an Export experience, chooses CSV of matched posts, o
 
 | ID | Dependency | Type | Owner | Expected Resolution |
 |---|---|---|---|---|
-| D-001 | ADR-0090 acceptance | Internal | Product Owner / Menno | Upon ADR review |
+| D-001 | ADR-0090 (Accepted 2026-08-28) acceptance | Internal | Product Owner / Menno | Upon ADR review |
 | D-002 | `withTenant()` RLS helpers and `GET /v1/posts` filtering (existing) | Internal | Engineering | Already in place |
 | D-003 | Azure Blob Storage and presigned-SAS generation | External | Platform Operations | Already provisioned |
-| D-004 | `POST /v1/posts/export` async worker and `export_jobs` table design | Internal | Engineering | Defined by ADR-0090 / Story 10.8 |
+| D-004 | `POST /v1/posts/export` async worker and `export_jobs` table design | Internal | Engineering | Defined by ADR-0090 (Accepted 2026-08-28) / Story 10.8 |
 | D-005 | Future DSR self-service portal (`15-dsr-self-service-portal`) | Internal | Product Owner | Reuses this export shape; not a blocker for v1 |
 
 ---
@@ -248,7 +248,7 @@ A tenant user navigates to an Export experience, chooses CSV of matched posts, o
 
 ### A. Reference Documents
 
-- ADR-0090: `docs/adr/0090-data-export-posts-csv.md` (Proposed, 2026-08-23)
+- ADR-0090 (Accepted 2026-08-28): `docs/adr/0090-data-export-posts-csv.md` (Proposed, 2026-08-23)
 - Feature design: `docs/product-research/feature-designs/10-data-export.md`
 - ADR scoping plan: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: ADR-0074 (workspace JSON export), ADR-0015 (tenant RLS), ADR-0018 (retention)

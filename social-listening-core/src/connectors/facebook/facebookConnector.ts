@@ -351,4 +351,12 @@ export const facebookConnector: SocialConnector = {
   // matching falls back to whole-post-fetch matching, the same fallback
   // every connector to date uses for anything unsupported.
   supportedQueryFeatures: [],
+
+  getCapabilities: () => ({
+    sourceType: 'social',
+    poll: { cadenceMs: 30 * 60 * 1000, supportsTimeWindow: true },
+    publish: { supportsScheduling: true, supportedAssetTypes: ['text', 'image', 'video'] },
+    reply: true,
+    backfill: { supportsHistorical: true, maxLookbackDays: 90 },
+  }),
 };

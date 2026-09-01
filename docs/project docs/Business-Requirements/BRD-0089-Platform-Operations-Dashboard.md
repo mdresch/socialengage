@@ -5,17 +5,17 @@
 | Field | Value |
 |---|---|
 | Document Title | SocialEngage Platform Operations Dashboard – Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno, Product Owner / Technical Lead |
-| Status | Draft (ADR-0089 is Proposed; this BRD is for review and may change upon acceptance) |
+| Status | Draft (ADR-0089 (Accepted 2026-08-28) is Proposed; this BRD is for review and may change upon acceptance) |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft based on ADR-0089, feature design 17, and Epic 10 stories |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft based on ADR-0089 (Accepted 2026-08-28), feature design 17, and Epic 10 stories |
 
 ---
 
@@ -23,9 +23,9 @@
 
 The SocialEngage platform is operated by a single `Sole-Operator` and supported by a `Platform-Admin` role. Today, understanding the health, cost, and capacity of the platform requires opening multiple Azure portals and stitching together operational data from different sources. This is inefficient for a small, self-funded team and increases the risk that runaway ingestion, connector failures, or cost spikes go unnoticed.
 
-This BRD defines a **Platform Operations Dashboard** — a read-only console that aggregates cross-tenant platform health, connector status, cloud cost, and capacity metrics in a single pane. The dashboard is intentionally scoped to operational metadata: it will show counts, rates, statuses, and cost attribution, but will never expose tenant post content, watchlist queries, or personal data. It is the business-facing companion to the technical decisions captured in ADR-0089.
+This BRD defines a **Platform Operations Dashboard** — a read-only console that aggregates cross-tenant platform health, connector status, cloud cost, and capacity metrics in a single pane. The dashboard is intentionally scoped to operational metadata: it will show counts, rates, statuses, and cost attribution, but will never expose tenant post content, watchlist queries, or personal data. It is the business-facing companion to the technical decisions captured in ADR-0089 (Accepted 2026-08-28).
 
-**Draft status note:** ADR-0089 is currently *Proposed*. This BRD is therefore a draft for review and may be updated once the ADR is accepted.
+**Draft status note:** ADR-0089 (Accepted 2026-08-28) is currently *Proposed*. This BRD is therefore a draft for review and may be updated once the ADR is accepted.
 
 ---
 
@@ -253,7 +253,7 @@ The user can select a time range and refresh the data. All values are content-fr
 
 ### 16.1 Source Architecture Decision Record
 
-- `docs/adr/0089-platform-operations-dashboard.md` — ADR-0089 (Proposed)
+- `docs/adr/0089-platform-operations-dashboard.md` — ADR-0089 (Accepted 2026-08-28) (Proposed)
 
 ### 16.2 Feature Design
 

@@ -1,5 +1,6 @@
 import { withTenant } from '../db/withTenant';
 import { getIdentityResolverPool } from '../db/identityResolverPool';
+import { SeatLimitExceededError } from '../tenants/featureGates';
 
 /**
  * Database row shape for the users table — matches
@@ -247,13 +248,29 @@ export async function resolveIdentity(claims: AuthClaims): Promise<ResolvedIdent
   );
   if (invitedRows.length > 0) {
     const invited = invitedRows[0];
-    await withTenant(invited.tenant_id, (client) =>
-      client.query(
-        `UPDATE users SET external_subject = $1, status = 'active', activated_at = now() WHERE id = $2`,
+    return await withTenant(invited.tenant_id, async (client) => {
+      // Story 13.5 (ADR-0112): accept is the moment a seat is consumed.
+      // Increment atomically, preferring feature_gates.max_seats when set.
+      const { rows: tenantRows } = await client.query<{ active_seat_count: number }>(
+        `UPDATE tenants
+         SET active_seat_count = active_seat_count + 1
+         WHERE id = $1
+           AND active_seat_count < COALESCE((feature_gates->>'max_seats')::int, license_seat_count)
+         RETURNING active_seat_count`,
+        [invited.tenant_id]
+      );
+      if (tenantRows.length === 0) {
+        throw new SeatLimitExceededError(
+          `SEAT_LIMIT_EXCEEDED: tenant ${invited.tenant_id} is at its seat ceiling`
+        );
+      }
+
+      const { rows } = await client.query<UserRow>(
+        `UPDATE users SET external_subject = $1, status = 'active', activated_at = now() WHERE id = $2 RETURNING *`,
         [claims.sub, invited.id]
-      )
-    );
-    return { type: 'tenant_user', tenantId: invited.tenant_id, userId: invited.id, role: invited.role };
+      );
+      return { type: 'tenant_user', tenantId: rows[0].tenant_id, userId: rows[0].id, role: rows[0].role };
+    });
   }
 
   return null;

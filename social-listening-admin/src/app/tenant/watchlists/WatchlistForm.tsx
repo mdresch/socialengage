@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useCallback, type FormEvent } from 'react';
 import type { Watchlist } from '@/lib/core-client';
 import { TagInput } from '@/components/ui';
+import { BooleanQueryBuilder } from '@/components/watchlists/BooleanQueryBuilder';
+import {
+  WatchlistAST,
+  parseBooleanQueryToAst,
+  astToBooleanQuery,
+} from '@/lib/watchlist-ast';
 
 type MatchType = 'keyword' | 'hashtag' | 'account' | 'boolean';
 
@@ -30,17 +36,11 @@ function sameStringArray(a: string[] | null | undefined, b: string[] | null | un
 /**
  * Story 6.4 (reworked 2026-08-12, ADR-0044) — RFC 7396 merge-patch: only
  * fields that actually differ from `initial` are included, plus `terms`/
- * `booleanQuery` whenever `matchType` itself changes — ADR-0044 §5a's
- * invariant is checked against the *resulting merged row* on the backend,
- * so a matchType change must explicitly clear/set its companion field even
- * when that field's own displayed value happens not to have changed.
- * `isActive` is deliberately never part of this patch — WatchlistRow.tsx's
- * own dedicated toggle owns that field alone, per the revised AC's "toggling
- * isActive alone still sends only that field."
+ * `booleanQuery` whenever `matchType` itself changes. Story 12.4 includes `ast`.
  */
 function buildEditPatch(
   initial: Watchlist,
-  current: { name: string; matchType: MatchType; terms: string[]; booleanQuery: string; platformIds: string[] }
+  current: { name: string; matchType: MatchType; terms: string[]; booleanQuery: string; ast?: WatchlistAST; platformIds: string[] }
 ): Record<string, unknown> {
   const patch: Record<string, unknown> = {};
 
@@ -62,6 +62,9 @@ function buildEditPatch(
   if (matchTypeChanged || finalBooleanQuery !== (initial.booleanQuery ?? null)) {
     patch.booleanQuery = finalBooleanQuery;
   }
+  if (current.matchType === 'boolean' && current.ast) {
+    patch.ast = current.ast;
+  }
   if (!sameStringArray(current.platformIds, initial.platformIds)) {
     patch.platformIds = current.platformIds;
   }
@@ -70,14 +73,7 @@ function buildEditPatch(
 }
 
 /**
- * Story 6.4 (reworked 2026-08-12, ADR-0044) — handles both `mode="create"`
- * (a real POST /v1/watchlists via /api/watchlists) and `mode="edit"` (a
- * real, merge-patch-only PATCH /v1/watchlists/:id, If-Match set from the
- * row's own last-known version). Every response body from this backend is a
- * `{code, ...}` shape — there is no `error` string field anywhere on this
- * router, unlike several other Epic 6 backends — so every message here is
- * built from `code`/`details`/`current_version`, never a `body.error`
- * fallback.
+ * Story 6.4 / Story 12.4 (ADR-0044, ADR-0102) — handles both `mode="create"` and `mode="edit"`.
  */
 export function WatchlistForm({
   mode,
@@ -94,9 +90,19 @@ export function WatchlistForm({
   const [matchType, setMatchType] = useState<MatchType>((watchlist?.matchType as MatchType) ?? 'keyword');
   const [terms, setTerms] = useState<string[]>(watchlist?.terms ?? []);
   const [booleanQuery, setBooleanQuery] = useState(watchlist?.booleanQuery ?? '');
+  const [ast, setAst] = useState<WatchlistAST | undefined>(() => {
+    if (watchlist?.ast) return watchlist.ast;
+    if (watchlist?.booleanQuery) return parseBooleanQueryToAst(watchlist.booleanQuery);
+    return undefined;
+  });
   const [platformIds, setPlatformIds] = useState<string[]>(watchlist?.platformIds ?? []);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [hasErrors, setHasErrors] = useState(false);
+
+  const handleValidationChange = useCallback((state: { hasErrors: boolean }) => {
+    setHasErrors(state.hasErrors);
+  }, []);
 
   function togglePlatform(id: string) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]));
@@ -117,6 +123,7 @@ export function WatchlistForm({
             matchType,
             terms: matchType === 'boolean' ? null : terms,
             booleanQuery: matchType === 'boolean' ? booleanQuery.trim() || null : null,
+            ast: matchType === 'boolean' ? ast : null,
             platformIds,
           }),
         });
@@ -127,6 +134,13 @@ export function WatchlistForm({
           return;
         }
         if (response.status === 422) {
+          if (body.code === 'UNSUPPORTED_QUERY_CLAUSE') {
+            setMessage({
+              kind: 'error',
+              text: `Unsupported query clause: ${body.reason || 'One or more clauses are unsupported by the selected platforms.'}`,
+            });
+            return;
+          }
           setMessage({
             kind: 'error',
             text: Array.isArray(body.details) && body.details.length > 0 ? body.details.join(' ') : 'Validation failed.',
@@ -138,7 +152,7 @@ export function WatchlistForm({
       }
 
       const current = watchlist as Watchlist;
-      const patch = buildEditPatch(current, { name, matchType, terms, booleanQuery, platformIds });
+      const patch = buildEditPatch(current, { name, matchType, terms, booleanQuery, ast, platformIds });
 
       const response = await fetch(`/api/watchlists/${encodeURIComponent(current.id)}`, {
         method: 'PATCH',
@@ -163,6 +177,13 @@ export function WatchlistForm({
         return;
       }
       if (response.status === 422) {
+        if (body.code === 'UNSUPPORTED_QUERY_CLAUSE') {
+          setMessage({
+            kind: 'error',
+            text: `Unsupported query clause: ${body.reason || 'One or more clauses are unsupported by the selected platforms.'}`,
+          });
+          return;
+        }
         setMessage({
           kind: 'error',
           text: Array.isArray(body.details) && body.details.length > 0 ? body.details.join(' ') : 'Validation failed.',
@@ -218,19 +239,24 @@ export function WatchlistForm({
       {/* Query / Terms */}
       {matchType === 'boolean' ? (
         <div className="wl-form-section">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span className="wl-form-label">Boolean Query</span>
-            <span className="wl-form-hint">Supports AND, OR, NOT, (), &quot;&quot;</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+            <span className="wl-form-label">Visual Boolean Query Builder</span>
+            <span className="wl-form-hint">Supports AND, OR, NOT, Groups, & Platform Validation</span>
           </div>
-          <textarea
-            className="boolean-query-editor"
-            rows={4}
-            required
-            value={booleanQuery}
-            onChange={(e) => setBooleanQuery(e.target.value)}
-            placeholder={`("Acme Global" OR "Acme Cloud") AND (launch OR enterprise) NOT spam`}
+          <BooleanQueryBuilder
+            value={ast}
+            rawQuery={booleanQuery}
+            selectedPlatformIds={platformIds}
+            disabled={submitting}
+            onChange={(newAst, newQueryString) => {
+              setAst(newAst);
+              setBooleanQuery(newQueryString);
+            }}
+            onValidationChange={handleValidationChange}
           />
-          <p className="wl-form-hint">Evaluated against titles and bodies during stream ingestion.</p>
+          <p className="wl-form-hint" style={{ marginTop: 'var(--space-1)' }}>
+            Evaluated against titles and bodies during stream ingestion.
+          </p>
         </div>
       ) : (
         <div className="wl-form-section">
@@ -293,7 +319,7 @@ export function WatchlistForm({
           <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || hasErrors}>
             {submitting ? 'Saving…' : 'Save changes'}
           </button>
         </div>
@@ -301,7 +327,7 @@ export function WatchlistForm({
 
       {mode === 'create' && !onCancel && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || hasErrors}>
             {submitting ? 'Creating…' : 'Create watchlist'}
           </button>
         </div>

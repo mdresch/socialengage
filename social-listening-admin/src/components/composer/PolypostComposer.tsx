@@ -12,13 +12,15 @@ import { DraftHistoryDrawer } from './DraftHistoryDrawer';
 import { CardLinkPreview } from './CardLinkPreview';
 import { PublishTargetsDialog } from './PublishTargetsDialog';
 import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
-import type { FacebookConnectedPageRow } from '@/lib/core-client';
+import type { FacebookConnectedPageRow, PublishPostRow, ComposerResearchResult } from '@/lib/core-client';
+import { DeepResearchPanel, type DeepResearchPanelState } from './DeepResearchPanel';
 
 interface PolypostComposerProps {
   initialText?: string;
   initialPlatforms?: SupportedPlatform[];
   onPublishSuccess?: () => void;
   onCancel?: () => void;
+  isPlatformAdmin?: boolean;
 }
 
 export function PolypostComposer({
@@ -26,6 +28,7 @@ export function PolypostComposer({
   initialPlatforms = ['linkedin', 'instagram', 'facebook', 'twitter', 'threads', 'bluesky'],
   onPublishSuccess,
   onCancel,
+  isPlatformAdmin = false,
 }: PolypostComposerProps) {
   const [mainText, setMainText] = useState(initialText);
   const [selectedPlatforms, setSelectedPlatforms] = useState<SupportedPlatform[]>(initialPlatforms);
@@ -45,6 +48,11 @@ export function PolypostComposer({
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+
+  // Deep Research state (ephemeral — not saved to draft storage)
+  const [researchState, setResearchState] = useState<DeepResearchPanelState>('idle');
+  const [researchResult, setResearchResult] = useState<ComposerResearchResult | null>(null);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   // Drafts & Link Preview states
   const [isDraftsOpen, setIsDraftsOpen] = useState(false);
@@ -227,6 +235,39 @@ export function PolypostComposer({
     updateCurrentText(next);
   };
 
+  // Deep Research handler — calls same-origin proxy route
+  const handleDeepResearch = async () => {
+    if (mainText.replace(/\s/g, '').length < 10) return;
+    setResearchState('loading');
+    setResearchResult(null);
+    setResearchError(null);
+    try {
+      const res = await fetch('/api/composer/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: mainText }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        const errMsg = body?.error || body?.code || `HTTP ${res.status}`;
+        setResearchError(errMsg);
+        setResearchState('error');
+      } else {
+        setResearchResult(body as ComposerResearchResult);
+        setResearchState('success');
+      }
+    } catch {
+      setResearchError('Network error — unable to reach the research service.');
+      setResearchState('error');
+    }
+  };
+
+  const handleCloseResearch = () => {
+    setResearchState('idle');
+    setResearchResult(null);
+    setResearchError(null);
+  };
+
   // AI Assist API Call
   const handleAiTransform = async (mode: 'autofit' | 'professional' | 'punchy' | 'hashtags' | 'custom') => {
     if (!currentText.trim()) return;
@@ -377,41 +418,79 @@ export function PolypostComposer({
       setPublishStatus({ type: 'error', message: 'Please enter content or attach media.' });
       return;
     }
+    // Story 6.39: fail early if Facebook is the only selected platform and no active Facebook Pages are available.
+    // The actual page list is fetched inside PublishTargetsDialog, so we defer the empty-pages
+    // message to the dialog itself.
     setShowPublishDialog(true);
   };
 
-  // Simulated Publish
+  // Story 6.39 (ADR-0075) — real publish via POST /api/outbound/posts
   const handlePublish = async (selectedPages: FacebookConnectedPageRow[]) => {
     setIsPublishing(true);
     setPublishStatus(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // Build per-platform overrides for the API payload
+      const overrides: Record<string, { text?: string }> = {};
+      for (const platform of selectedPlatforms) {
+        const overrideText = platformOverrides[platform]?.text;
+        if (overrideText !== undefined) {
+          overrides[platform] = { text: overrideText };
+        }
+      }
 
-      const facebookPageNames = selectedPages.map((p) => p.pageName);
-      const targetNames = selectedPlatforms
-        .filter((p) => p !== 'facebook' || facebookPageNames.length > 0)
-        .map((p) =>
-          p === 'facebook' && facebookPageNames.length > 0
-            ? `${PLATFORM_CONFIGS[p].name} (${facebookPageNames.join(', ')})`
-            : PLATFORM_CONFIGS[p].name
-        );
+      // Only Facebook Pages are published in this story
+      const targets = selectedPages.map((p) => ({ pageId: p.pageId, pageName: p.pageName }));
 
-      if (targetNames.length === 0) {
+      if (targets.length === 0) {
         setPublishStatus({
           type: 'error',
-          message: 'Please select at least one active Facebook Page or a non-Facebook platform.',
+          message: 'Please select at least one active Facebook Page to publish.',
         });
         return;
       }
 
-      setPublishStatus({
-        type: 'success',
-        message: `Successfully dispatched post to ${targetNames.join(', ')}!`,
+      const response = await fetch('/api/outbound/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: mainText,
+          targets,
+          platformOverrides: overrides,
+          linkPreview,
+        }),
       });
 
-      if (onPublishSuccess) {
-        setTimeout(() => onPublishSuccess(), 1200);
+      const body = await response.json().catch(() => ({ rows: [] }));
+      const rows: PublishPostRow[] = Array.isArray(body.rows) ? body.rows : [];
+
+      if (response.status === 201 || response.status === 207) {
+        // Build per-Page status message with external_url or error_code
+        const parts: string[] = [];
+        for (const row of rows) {
+          if (row.status === 'sent' && row.externalUrl) {
+            parts.push(`${row.targetAssetName}: published — ${row.externalUrl}`);
+          } else if (row.status === 'failed' && row.errorCode) {
+            parts.push(`${row.targetAssetName}: failed — error_code: ${row.errorCode}`);
+          } else {
+            parts.push(`${row.targetAssetName}: ${row.status}`);
+          }
+        }
+        const allSent = rows.length > 0 && rows.every((r) => r.status === 'sent');
+        setPublishStatus({
+          type: allSent ? 'success' : 'error',
+          message: parts.join('  |  '),
+        });
+
+        if (allSent && onPublishSuccess) {
+          setTimeout(() => onPublishSuccess(), 1200);
+        }
+      } else if (response.status === 422) {
+        setPublishStatus({ type: 'error', message: 'Validation failed. Please check your content and try again.' });
+      } else if (response.status === 429) {
+        setPublishStatus({ type: 'error', message: 'Rate limit reached. Please wait and try again.' });
+      } else {
+        setPublishStatus({ type: 'error', message: `Publish failed (HTTP ${response.status}). Please retry.` });
       }
     } catch {
       setPublishStatus({ type: 'error', message: 'Failed to publish post. Please retry.' });
@@ -698,6 +777,17 @@ export function PolypostComposer({
               >
                 ✨ Prompt
               </button>
+              {/* Deep Research button — disabled for platform_admin sessions or short draft text */}
+              <button
+                type="button"
+                disabled={isPlatformAdmin || mainText.replace(/\s/g, '').length < 10}
+                onClick={handleDeepResearch}
+                title={isPlatformAdmin ? 'Deep Research is not available for platform_admin sessions' : 'Research public conversation around your draft (requires 10+ characters)'}
+                className="composer-tag-chip"
+                style={{ background: 'rgba(168, 85, 247, 0.1)', color: 'var(--color-text-secondary)', fontWeight: 600 }}
+              >
+                🔬 Deep Research
+              </button>
             </div>
           </div>
 
@@ -812,6 +902,14 @@ export function PolypostComposer({
               </div>
             )}
           </div>
+
+          {/* Deep Research Panel (ephemeral) */}
+          <DeepResearchPanel
+            state={researchState}
+            result={researchResult}
+            error={researchError}
+            onClose={handleCloseResearch}
+          />
 
           {/* Detected Link Preview Card */}
           {linkPreview && (

@@ -4,6 +4,7 @@ import { createTenantAuthMiddleware } from './auth/tenantAuthMiddleware';
 import { testAuthBypassMiddleware } from './auth/testAuthBypassMiddleware';
 import { createEntraAuthMiddleware } from './auth/entraAuthMiddleware';
 import { testClaimsBypassMiddleware } from './auth/testClaimsBypassMiddleware';
+import { rateLimitMiddleware } from './rateLimitMiddleware';
 
 /**
  * Story 5.10 (ADR-0033): resolves the real Entra tenant config from env
@@ -52,6 +53,10 @@ export function createApp(): Express {
   const claimsAuthMiddleware =
     process.env.NODE_ENV === 'test' ? testClaimsBypassMiddleware : createEntraAuthMiddleware(entraConfigFromEnv());
 
+  // Story 12.11 (ADR-0106): Public API rate limiting & X-RateLimit-* headers
+  app.use('/v1', rateLimitMiddleware);
+
   app.use('/v1', createV1Router(authMiddleware, claimsAuthMiddleware));
   return app;
 }
+

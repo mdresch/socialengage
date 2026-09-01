@@ -18,6 +18,8 @@ import { instagramConnector } from './instagram/instagramConnector';
 import { pollInstagram } from './instagram/pollInstagram';
 import { linkedinConnector } from './linkedin/linkedinConnector';
 import { pollLinkedIn } from './linkedin/pollLinkedIn';
+import { youtubeConnector } from './youtube/youtubeConnector';
+import { pollYouTube } from './youtube/pollYouTube';
 import { registerSocialConnector, registerAIProviderConnector } from './registry';
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
@@ -129,6 +131,13 @@ export function bootstrapConnectors(): void {
     ...linkedinConnector,
     pollUser: pollLinkedIn,
     pollCadenceMs: ONE_HOUR_MS,
+  });
+
+  // Story 10.13 (ADR-0093) — YouTube Data API v3 Ingestion Connector.
+  registerSocialConnector({
+    ...youtubeConnector,
+    poll: (tenantId: string) => pollYouTube(tenantId),
+    pollCadenceMs: FIFTEEN_MINUTES_MS,
   });
 
   registerAIProviderConnector(azureAiLanguageConnector);

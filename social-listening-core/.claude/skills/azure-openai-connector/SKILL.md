@@ -21,6 +21,8 @@ description: The second real AIProviderConnector (Azure OpenAI Service, gpt-5-mi
 
 || ADR-0076 | `AIProviderConnector` gains optional `research?()` for the composer deep-research agent; Azure OpenAI implements it as one structured-output call | 2.32 |
 
+|| ADR-0062 Decision §6 | `research?()` is reused as-is (no new public method) by `spikeStorytellerService.ts` (Story 8.8) — the AI Spike Storyteller composes a prompt from ±1 day context posts and maps `ResearchResult.contextSummary` → `narrative` | 8.8 |
+
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts` — a registered `AIProviderConnector` with a `providerId` distinct from `azure-ai-language`; `analyze()` rejects with no credential; a real call against the real Azure OpenAI resource returns all four enrichment fields plus `overallConfidence` (a real number in `[0,1]`) from one structured-output call; neither `pollGNewsSearch.ts` nor `pollNewswireFeeds.ts` references this connector directly (no core pipeline change); a tenant on either provider enriches successfully (provider swap); a tenant with neither provider connected, or with only the other provider connected, still resolves cleanly (skip); a tenant's broken credential for one provider never affects a different tenant on the other provider; two tenants on different providers gate independently; a malformed Azure OpenAI credential resolves to `undefined`, never throws.

@@ -60,8 +60,20 @@ export function computeSentimentSplit(posts: SocialPostSummary[]): SentimentSpli
 /** Known content-connector labels — falls back to the raw providerId for anything not yet named here. */
 const PROVIDER_LABELS: Record<string, string> = {
   gnews: 'GNews',
+  'google-news': 'Google News',
   newswire: 'Newswire',
   'tenant-owned-feed': 'Tenant-Owned Feed',
+  rss: 'RSS / Blog',
+  facebook: 'Facebook',
+  meta: 'Meta',
+  instagram: 'Instagram',
+  linkedin: 'LinkedIn',
+  x: 'X (Twitter)',
+  twitter: 'Twitter',
+  youtube: 'YouTube',
+  wikipedia: 'Wikipedia',
+  'brave-search': 'Brave Search',
+  'bing-search': 'Bing Search',
 };
 
 export interface SourceBreakdownEntry {
@@ -74,17 +86,28 @@ export interface SourceBreakdownEntry {
 }
 
 /**
- * Story 8.6 — a real, transparent 0-10 weighted sentiment score:
- * positive=10, neutral=5, negative=0, averaged over the enriched total.
- * Honestly null (never a fabricated default) when there's nothing enriched
- * to score — the same anti-fabrication rule this epic applies everywhere
- * else, closing the exact defect the Google AI Studio reference committed
- * with its own hardcoded 7.6/68% sentiment-gauge fallback.
+ * Unified net sentiment index on a −10…+10 scale.
+ *
+ * Formula: ((positive − negative) / total_enriched) × 10
+ *
+ * Design rationale:
+ *   - Neutral posts are deliberately excluded from the numerator so that a
+ *     positive-majority dataset reads clearly above 0 and a negative-majority
+ *     dataset reads clearly below 0 — they amplify rather than dampen.
+ *   - Neutral posts DO count in the denominator (total), so a corpus that is
+ *     90 % neutral with equal positives and negatives correctly converges toward 0.
+ *   - Scale extremes: +10 = 100 % positive, −10 = 100 % negative, 0 = balanced.
+ *   - Returns null honestly (never a fabricated default) when there are zero
+ *     sentiment-enriched posts — same anti-fabrication rule applied across every
+ *     analytics widget in Epic 8.
+ *
+ * All tabs (Overview, Sentiment, Conversations, Sources, Location) use this
+ * single function so the index number is identical everywhere.
  */
 export function computeSentimentIndex(split: SentimentSplit): number | null {
   const total = split.positive + split.neutral + split.negative;
   if (total === 0) return null;
-  return (split.positive * 10 + split.neutral * 5) / total;
+  return parseFloat((((split.positive - split.negative) / total) * 10).toFixed(1));
 }
 
 /**
@@ -131,6 +154,7 @@ export interface SentimentPost {
   sentiment: string | null;
   keyPhrases: string[];
   entities: string[];
+  namedEntities?: { text: string; category: string | null }[];
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
   language: string | null;
@@ -142,27 +166,144 @@ export interface SentimentPost {
   geoRegion: string | null;
   geoSource: 'post' | 'source' | 'inferred' | 'unknown' | null;
   geoConfidence: 'high' | 'medium' | 'low' | null;
+  /** Human-in-the-loop manual override indicator — Story 6.31 (ADR-0071). */
+  isOverridden?: boolean;
+}
+
+const COUNTRY_NAME_TO_CODE: Record<string, { code: string; name: string }> = {
+  usa: { code: 'US', name: 'United States' },
+  'united states': { code: 'US', name: 'United States' },
+  us: { code: 'US', name: 'United States' },
+  uk: { code: 'GB', name: 'United Kingdom' },
+  'united kingdom': { code: 'GB', name: 'United Kingdom' },
+  gb: { code: 'GB', name: 'United Kingdom' },
+  great_britain: { code: 'GB', name: 'United Kingdom' },
+  canada: { code: 'CA', name: 'Canada' },
+  ca: { code: 'CA', name: 'Canada' },
+  germany: { code: 'DE', name: 'Germany' },
+  de: { code: 'DE', name: 'Germany' },
+  france: { code: 'FR', name: 'France' },
+  fr: { code: 'FR', name: 'France' },
+  italy: { code: 'IT', name: 'Italy' },
+  it: { code: 'IT', name: 'Italy' },
+  spain: { code: 'ES', name: 'Spain' },
+  es: { code: 'ES', name: 'Spain' },
+  netherlands: { code: 'NL', name: 'Netherlands' },
+  nl: { code: 'NL', name: 'Netherlands' },
+  holland: { code: 'NL', name: 'Netherlands' },
+  australia: { code: 'AU', name: 'Australia' },
+  au: { code: 'AU', name: 'Australia' },
+  japan: { code: 'JP', name: 'Japan' },
+  jp: { code: 'JP', name: 'Japan' },
+  india: { code: 'IN', name: 'India' },
+  in: { code: 'IN', name: 'India' },
+  brazil: { code: 'BR', name: 'Brazil' },
+  br: { code: 'BR', name: 'Brazil' },
+  mexico: { code: 'MX', name: 'Mexico' },
+  mx: { code: 'MX', name: 'Mexico' },
+};
+
+function resolveCountryCodeAndName(input: unknown): { code: string; name: string } | null {
+  if (!input || typeof input !== 'string') return null;
+  const clean = input.trim().toLowerCase();
+  if (COUNTRY_NAME_TO_CODE[clean]) {
+    return COUNTRY_NAME_TO_CODE[clean];
+  }
+  if (clean.length === 2) {
+    const code = clean.toUpperCase();
+    return { code, name: code };
+  }
+  for (const [key, val] of Object.entries(COUNTRY_NAME_TO_CODE)) {
+    if (clean.endsWith(key) || clean.includes(key)) {
+      return val;
+    }
+  }
+  return null;
+}
+
+export function extractRawGeoInfo(rawPayload: unknown): {
+  geoCountry: string | null;
+  geoCountryName: string | null;
+  geoRegion: string | null;
+  geoSource: 'author_profile' | 'post' | 'source' | 'inferred' | 'unknown' | null;
+  geoConfidence: 'high' | 'medium' | 'low' | null;
+} {
+  if (!rawPayload || typeof rawPayload !== 'object') {
+    return { geoCountry: null, geoCountryName: null, geoRegion: null, geoSource: null, geoConfidence: null };
+  }
+  const p = rawPayload as Record<string, unknown>;
+
+  // 1. Author/Page profile location (Facebook Page location, Twitter user location, etc.)
+  const authorLocStr =
+    (typeof p.authorLocation === 'string' && p.authorLocation) ||
+    (typeof p.author_location === 'string' && p.author_location) ||
+    (p.user && typeof p.user === 'object' && typeof (p.user as any).location === 'string' && (p.user as any).location) ||
+    (p.from && typeof p.from === 'object' && typeof (p.from as any).location === 'object' && typeof (p.from as any).location?.name === 'string' && (p.from as any).location.name) ||
+    (p.page && typeof p.page === 'object' && typeof (p.page as any).location === 'object' && typeof (p.page as any).location?.country === 'string' && (p.page as any).location.country) ||
+    (p.pageLocation && typeof p.pageLocation === 'object' && typeof (p.pageLocation as any).country === 'string' && (p.pageLocation as any).country) ||
+    (p.location && typeof p.location === 'object' && typeof (p.location as any).country === 'string' && (p.location as any).country);
+
+  if (authorLocStr) {
+    const resolved = resolveCountryCodeAndName(authorLocStr);
+    if (resolved) {
+      return {
+        geoCountry: resolved.code,
+        geoCountryName: resolved.name,
+        geoRegion: typeof authorLocStr === 'string' ? authorLocStr : null,
+        geoSource: 'author_profile',
+        geoConfidence: 'high',
+      };
+    }
+  }
+
+  // 2. Direct post place or tagged location
+  const directCountry =
+    (typeof p.pageCountry === 'string' && p.pageCountry) ||
+    (typeof p.country === 'string' && p.country) ||
+    (typeof p.countryCode === 'string' && p.countryCode) ||
+    (typeof p.geoCountry === 'string' && p.geoCountry) ||
+    (p.place && typeof p.place === 'object' && typeof (p.place as any).location === 'object' && typeof (p.place as any).location?.country === 'string' && (p.place as any).location.country);
+
+  if (directCountry) {
+    const resolved = resolveCountryCodeAndName(directCountry);
+    if (resolved) {
+      return {
+        geoCountry: resolved.code,
+        geoCountryName: resolved.name,
+        geoRegion: typeof directCountry === 'string' ? directCountry : null,
+        geoSource: 'post',
+        geoConfidence: 'high',
+      };
+    }
+  }
+
+  return { geoCountry: null, geoCountryName: null, geoRegion: null, geoSource: null, geoConfidence: null };
 }
 
 export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[] {
   return posts.map((post) => {
     const enrichment = extractEnrichmentSummary(post.enrichment);
     const { title } = extractDisplayText(post.rawPayload);
+    const rawGeo = extractRawGeoInfo(post.rawPayload);
     return {
       id: post.id,
       publishedAt: post.publishedAt,
-      author: extractAuthor(post.rawPayload),
+      author: extractAuthor(post.rawPayload) ?? (typeof (post as any).author === 'string' && (post as any).author.trim().length > 0 ? (post as any).author.trim() : null),
       sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
       keyPhrases: enrichment?.keyPhrases ?? [],
       entities: enrichment?.entities ?? [],
+      ...(enrichment?.namedEntities && enrichment.namedEntities.length > 0
+        ? { namedEntities: enrichment.namedEntities }
+        : {}),
       title,
       language: enrichment?.language ?? null,
       providerId: extractProviderBadge(post.rawPayload),
-      geoCountry: enrichment?.geoCountry ?? null,
-      geoCountryName: enrichment?.geoCountryName ?? null,
-      geoRegion: enrichment?.geoRegion ?? null,
-      geoSource: enrichment?.geoSource ?? null,
-      geoConfidence: enrichment?.geoConfidence ?? null,
+      geoCountry: enrichment?.geoCountry ?? rawGeo.geoCountry ?? null,
+      geoCountryName: enrichment?.geoCountryName ?? rawGeo.geoCountryName ?? null,
+      geoRegion: enrichment?.geoRegion ?? rawGeo.geoRegion ?? null,
+      geoSource: (enrichment?.geoSource as any) ?? rawGeo.geoSource ?? null,
+      geoConfidence: enrichment?.geoConfidence ?? rawGeo.geoConfidence ?? null,
+      ...(enrichment?.override?.isOverridden ? { isOverridden: true } : {}),
     };
   });
 }
@@ -309,8 +450,17 @@ export function computePhrasesBySentiment(
  */
 export function computePhraseFrequency(posts: SentimentPost[], limit = 20): PhraseFrequency[] {
   const counts = new Map<string, number>();
+  const dateTimeTexts = new Set<string>();
+  for (const post of posts) {
+    for (const entity of post.namedEntities ?? []) {
+      if (entity.category && /date|time/i.test(entity.category)) {
+        dateTimeTexts.add(entity.text.toLowerCase());
+      }
+    }
+  }
   for (const post of posts) {
     for (const phrase of post.keyPhrases) {
+      if (dateTimeTexts.has(phrase.toLowerCase())) continue;
       counts.set(phrase, (counts.get(phrase) ?? 0) + 1);
     }
   }
@@ -422,24 +572,139 @@ export interface LanguageBreakdownEntry {
   count: number;
 }
 
-/** Known ISO 639-1 codes this project's real AI providers can plausibly return — falls back to the raw code for anything unmapped, never dropped (Story 8.5, ADR-0055). */
-const LANGUAGE_LABELS: Record<string, string> = {
+/** Known ISO 639-1 / 639-2 / BCP-47 language codes — falls back to Intl.DisplayNames or raw code for anything unmapped (Story 8.5, ADR-0055). */
+export const LANGUAGE_LABELS: Record<string, string> = {
   en: 'English',
+  'en-us': 'English (US)',
+  'en-gb': 'English (UK)',
+  'en-ca': 'English (Canada)',
+  'en-au': 'English (Australia)',
   es: 'Spanish',
+  'es-es': 'Spanish (Spain)',
+  'es-419': 'Spanish (Latin America)',
+  'es-mx': 'Spanish (Mexico)',
   fr: 'French',
+  'fr-fr': 'French (France)',
+  'fr-ca': 'French (Canada)',
   de: 'German',
+  'de-de': 'German (Germany)',
+  'de-at': 'German (Austria)',
+  'de-ch': 'German (Switzerland)',
   it: 'Italian',
   pt: 'Portuguese',
+  'pt-pt': 'Portuguese (Portugal)',
+  'pt-br': 'Portuguese (Brazil)',
   nl: 'Dutch',
+  'nl-nl': 'Dutch (Netherlands)',
+  'nl-be': 'Dutch (Belgium)',
   ja: 'Japanese',
   zh: 'Chinese',
+  'zh-cn': 'Chinese (Simplified)',
+  'zh-hans': 'Chinese (Simplified)',
+  'zh-tw': 'Chinese (Traditional)',
+  'zh-hant': 'Chinese (Traditional)',
+  'zh-hk': 'Chinese (Hong Kong)',
+  yue: 'Cantonese',
   ko: 'Korean',
   ru: 'Russian',
   ar: 'Arabic',
   hi: 'Hindi',
   pl: 'Polish',
   sv: 'Swedish',
+  da: 'Danish',
+  no: 'Norwegian',
+  nb: 'Norwegian Bokmål',
+  nn: 'Norwegian Nynorsk',
+  fi: 'Finnish',
+  cs: 'Czech',
+  sk: 'Slovak',
+  hu: 'Hungarian',
+  ro: 'Romanian',
+  bg: 'Bulgarian',
+  el: 'Greek',
+  tr: 'Turkish',
+  uk: 'Ukrainian',
+  hr: 'Croatian',
+  sr: 'Serbian',
+  sl: 'Slovenian',
+  lt: 'Lithuanian',
+  lv: 'Latvian',
+  et: 'Estonian',
+  is: 'Icelandic',
+  ga: 'Irish',
+  cy: 'Welsh',
+  ca: 'Catalan',
+  eu: 'Basque',
+  gl: 'Galician',
+  sq: 'Albanian',
+  mk: 'Macedonian',
+  bs: 'Bosnian',
+  mt: 'Maltese',
+  lb: 'Luxembourgish',
+  id: 'Indonesian',
+  ms: 'Malay',
+  vi: 'Vietnamese',
+  th: 'Thai',
+  tl: 'Tagalog',
+  fil: 'Filipino',
+  bn: 'Bengali',
+  ur: 'Urdu',
+  pa: 'Punjabi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  mr: 'Marathi',
+  gu: 'Gujarati',
+  kn: 'Kannada',
+  ml: 'Malayalam',
+  si: 'Sinhala',
+  ne: 'Nepali',
+  my: 'Burmese',
+  km: 'Khmer',
+  lo: 'Lao',
+  mn: 'Mongolian',
+  ka: 'Georgian',
+  hy: 'Armenian',
+  az: 'Azerbaijani',
+  kk: 'Kazakh',
+  uz: 'Uzbek',
+  he: 'Hebrew',
+  iw: 'Hebrew',
+  fa: 'Persian',
+  ps: 'Pashto',
+  ku: 'Kurdish',
+  sw: 'Swahili',
+  af: 'Afrikaans',
+  am: 'Amharic',
+  yo: 'Yoruba',
+  ig: 'Igbo',
+  ha: 'Hausa',
+  zu: 'Zulu',
+  xh: 'Xhosa',
+  so: 'Somali',
 };
+
+/** Resolves a language code to its human-readable display name. */
+export function resolveLanguageLabel(code: string): string {
+  if (!code) return code;
+  const norm = code.toLowerCase().trim();
+  if (LANGUAGE_LABELS[norm]) return LANGUAGE_LABELS[norm];
+  if (LANGUAGE_LABELS[code]) return LANGUAGE_LABELS[code];
+
+  const baseCode = norm.split(/[-_]/)[0];
+  if (baseCode && LANGUAGE_LABELS[baseCode]) return LANGUAGE_LABELS[baseCode];
+
+  try {
+    if (typeof Intl !== 'undefined' && typeof (Intl as any).DisplayNames === 'function') {
+      const displayNames = new (Intl as any).DisplayNames(['en'], { type: 'language' });
+      const name = displayNames.of(code) || displayNames.of(baseCode);
+      if (name && name !== code && name !== baseCode) return name;
+    }
+  } catch {
+    // Graceful fallback for non-standard codes
+  }
+
+  return code;
+}
 
 /**
  * Story 8.5 (ADR-0055) — real per-language post counts, ranked descending.
@@ -447,6 +712,25 @@ const LANGUAGE_LABELS: Record<string, string> = {
  * "unknown language" bucket, the same rule computeSentimentSplit() already
  * applies to un-enriched posts.
  */
+export interface EntityTypeBreakdownEntry {
+  type: string;
+  count: number;
+}
+
+/** Counts named-entity mentions by category (e.g. Person, Organization, Location). Null/unknown categories are grouped as 'Other'. */
+export function computeEntityTypeBreakdown(posts: SentimentPost[]): EntityTypeBreakdownEntry[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const entity of post.namedEntities ?? []) {
+      const type = entity.category?.trim() || 'Other';
+      counts.set(type, (counts.get(type) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakdownEntry[] {
   const counts = new Map<string, number>();
   for (const post of posts) {
@@ -454,7 +738,7 @@ export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakd
     counts.set(post.language, (counts.get(post.language) ?? 0) + 1);
   }
   return Array.from(counts.entries())
-    .map(([code, count]) => ({ code, label: LANGUAGE_LABELS[code] ?? code, count }))
+    .map(([code, count]) => ({ code, label: resolveLanguageLabel(code), count }))
     .sort((a, b) => b.count - a.count);
 }
 
@@ -739,7 +1023,7 @@ export function computeActiveChips(
   if (filters.activeSourceFilter) chips.push({ type: 'activeSourceFilter', label: 'Source', value: PROVIDER_LABELS[filters.activeSourceFilter] ?? filters.activeSourceFilter });
   if (filters.activeAuthorFilter) chips.push({ type: 'activeAuthorFilter', label: 'Author', value: filters.activeAuthorFilter });
   if (filters.activeKeywordFilter) chips.push({ type: 'activeKeywordFilter', label: 'Keyword', value: filters.activeKeywordFilter });
-  if (filters.activeLanguageFilter) chips.push({ type: 'activeLanguageFilter', label: 'Language', value: LANGUAGE_LABELS[filters.activeLanguageFilter] ?? filters.activeLanguageFilter });
+  if (filters.activeLanguageFilter) chips.push({ type: 'activeLanguageFilter', label: 'Language', value: resolveLanguageLabel(filters.activeLanguageFilter) });
   if (filters.activeSentimentFilter) chips.push({ type: 'activeSentimentFilter', label: 'Sentiment', value: filters.activeSentimentFilter });
   if (filters.activeWatchlistFilter) {
     const wl = watchlists.find((w) => w.id === filters.activeWatchlistFilter);
@@ -810,15 +1094,32 @@ export function computeWatchlistCoverage(
     }));
 }
 
-/** Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment(). */
+export interface AuthorRanking {
+  author: string;
+  count: number;
+  providerId?: string | null;
+}
+
+/**
+ * Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment().
+ * Also returns each author's dominant provider so the UI can show a platform icon behind the avatar.
+ */
 export function computeTopAuthorsByVolume(posts: SentimentPost[], limit = 5): AuthorRanking[] {
   const counts = new Map<string, number>();
+  const providerCounts = new Map<string, Map<string, number>>();
   for (const post of posts) {
     if (!post.author) continue;
     counts.set(post.author, (counts.get(post.author) ?? 0) + 1);
+    if (!providerCounts.has(post.author)) providerCounts.set(post.author, new Map());
+    const authorProviders = providerCounts.get(post.author)!;
+    authorProviders.set(post.providerId, (authorProviders.get(post.providerId) ?? 0) + 1);
   }
   return Array.from(counts.entries())
-    .map(([author, count]) => ({ author, count }))
+    .map(([author, count]) => {
+      const topProvider = Array.from(providerCounts.get(author)?.entries() ?? [])
+        .sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+      return { author, count, providerId: topProvider };
+    })
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
 }
@@ -839,15 +1140,30 @@ const REAL_CONNECTOR_PROVIDER_IDS = ['gnews', 'newswire', 'tenant-owned-feed'];
 
 /**
  * Authors by Source (ADR-0062 Decision §8) — real unique-author reach via
- * Set size, not raw post count; a source with zero matching posts renders a
- * real 0, never an omitted row.
+ * Set size, not raw post count; arranged high to low by unique author count.
+ * A source with zero matching posts renders a real 0, never an omitted row.
  */
 export function computeAuthorsBySource(posts: SentimentPost[]): AuthorsBySourceSummary {
   const totalUniqueAuthors = new Set(posts.filter((p) => p.author).map((p) => p.author)).size;
-  const bySource = REAL_CONNECTOR_PROVIDER_IDS.map((providerId) => {
-    const authors = new Set(posts.filter((p) => p.providerId === providerId && p.author).map((p) => p.author));
-    return { providerId, label: PROVIDER_LABELS[providerId] ?? providerId, uniqueAuthorCount: authors.size };
-  });
+  const presentProviders = new Set<string>(REAL_CONNECTOR_PROVIDER_IDS);
+  for (const post of posts) {
+    if (post.providerId) {
+      presentProviders.add(post.providerId);
+    }
+  }
+
+  const bySource = Array.from(presentProviders)
+    .map((providerId) => {
+      const authors = new Set(posts.filter((p) => p.providerId === providerId && p.author).map((p) => p.author));
+      return { providerId, label: PROVIDER_LABELS[providerId] ?? providerId, uniqueAuthorCount: authors.size };
+    })
+    .sort((a, b) => {
+      if (b.uniqueAuthorCount !== a.uniqueAuthorCount) {
+        return b.uniqueAuthorCount - a.uniqueAuthorCount;
+      }
+      return a.label.localeCompare(b.label);
+    });
+
   return { totalUniqueAuthors, bySource };
 }
 

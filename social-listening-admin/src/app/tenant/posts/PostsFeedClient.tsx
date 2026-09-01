@@ -4,9 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { SocialPostSummary, Watchlist } from '@/lib/core-client';
 import { flattenPost, type FlatPost } from './postDisplay';
-import { RelativeTime } from '@/components/ui';
-import { Slideover } from '@/components/ui';
-import { EmptyState } from '@/components/ui';
+import { RelativeTime, Slideover, EmptyState, PlatformIcon } from '@/components/ui';
 import { RunEnrichmentButton } from './RunEnrichmentButton';
 import { PostDetailPanel } from './PostDetailPanel';
 import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
@@ -83,6 +81,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   'bing-search': 'Bing Search',
   instagram: 'Instagram Business',
   linkedin: 'LinkedIn',
+  youtube: 'YouTube',
 };
 
 function providerLabel(providerId: string): string {
@@ -165,7 +164,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const inTitle = post.title.toLowerCase().includes(q);
+        const inTitle = post.title ? post.title.toLowerCase().includes(q) : false;
         const inSnippet = post.snippet ? post.snippet.toLowerCase().includes(q) : false;
         const inAuthor = post.author ? post.author.toLowerCase().includes(q) : false;
         const inPageName = post.pageName ? post.pageName.toLowerCase().includes(q) : false;
@@ -365,19 +364,24 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActivePost(post); }}
-              aria-label={`Inspect: ${post.title}`}
+              aria-label={`Inspect: ${post.title || post.snippet || post.id}`}
             >
               {/* Header row */}
               <div className="pf-post-card-meta">
                 <div className="pf-post-card-meta-left">
                   <span className={providerClass(post.provider)}>
-                    {post.provider === 'facebook'
-                      ? 'Facebook Page'
-                      : post.provider === 'instagram'
-                      ? 'Instagram Business'
-                      : post.provider === 'linkedin'
-                      ? 'LinkedIn'
-                      : post.provider.replace(/_/g, ' ')}
+                    <PlatformIcon platformId={post.provider} size={13} />
+                    <span>
+                      {post.provider === 'facebook'
+                        ? 'Facebook Page'
+                        : post.provider === 'instagram'
+                        ? 'Instagram Business'
+                        : post.provider === 'linkedin'
+                        ? 'LinkedIn'
+                        : post.provider === 'youtube'
+                        ? 'YouTube'
+                        : post.provider.replace(/_/g, ' ')}
+                    </span>
                   </span>
                   {post.provider === 'facebook' ? (
                     <>
@@ -422,12 +426,12 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
               </div>
 
               {/* Title & snippet */}
-              <h2 className="pf-post-card-title">{post.title}</h2>
+              {post.title ? <h2 className="pf-post-card-title">{post.title}</h2> : null}
               {(post.instagramContext?.thumbnailUrl || post.instagramContext?.mediaUrl) && (
                 <div className="pf-post-media-preview">
                   <img
                     src={post.instagramContext.thumbnailUrl || post.instagramContext.mediaUrl || ''}
-                    alt={post.title}
+                    alt={post.title || post.snippet || 'Post preview'}
                     className="pf-media-thumbnail"
                     loading="lazy"
                   />

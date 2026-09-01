@@ -1,6 +1,6 @@
-# ADR-0115: Publishing — media upload and asset targeting
+﻿# ADR-0115: Publishing — media upload and asset targeting
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the media upload flow, per-asset targeting, and multi-asset dispatch rules for `POST /v1/outbound/posts` (ADR-0098).
 

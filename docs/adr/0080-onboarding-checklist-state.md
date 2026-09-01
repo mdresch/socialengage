@@ -1,4 +1,4 @@
-# ADR-0080: Onboarding checklist state
+﻿# ADR-0080: Onboarding checklist state
 
 **Status:** Accepted (2026-08-24)
 
@@ -148,3 +148,7 @@ The admin dashboard displays the checklist at the top. Each step deep-links dire
 - Related feature design: `docs/product-research/feature-designs/19-self-service-onboarding-checklist.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0051` (connector activation), `ADR-0044` (watchlists), `ADR-0032` (users/invites)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0130 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0130's own §1–§2 — specifically role-tailored step branches (Admin vs Analyst vs Marketer) and automated step verification probes. This is a pending note only: ADR-0130 is currently Proposed, not accepted.

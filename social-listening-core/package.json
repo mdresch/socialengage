@@ -17,7 +17,9 @@
     "db:dev:up": "docker compose -f docker-compose.dev.yml up -d --wait",
     "db:dev:down": "docker compose -f docker-compose.dev.yml down",
     "db:dev:reset": "docker compose -f docker-compose.dev.yml down -v",
-    "db:dev:migrate": "node scripts/withDevEnv.js ts-node src/db/migrate.ts"
+    "db:dev:migrate": "node scripts/withDevEnv.js ts-node src/db/migrate.ts",
+    "rag:backfill": "node scripts/withDevEnv.js ts-node src/rag/backfill.ts",
+    "geo:backfill": "node scripts/withDevEnv.js ts-node src/connectors/geo/backfillGeoLocations.ts"
   },
   "devDependencies": {
     "@types/express": "5.0.6",

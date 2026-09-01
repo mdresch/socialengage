@@ -1,6 +1,6 @@
-# ADR-0108: Influencer discovery and scoring
+﻿# ADR-0108: Influencer discovery and scoring
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** an `Author` scoring model (`influence_score`, `reach_score`, `engagement_score`, `authenticity_score`) and a `GET /v1/influencers` endpoint that discovers, ranks, and filters authors by topic, platform, and impact.
 

@@ -1,4 +1,4 @@
-# ADR-0036: Admin UI's own authentication/session mechanism — server-side (BFF) session, no bearer token in browser JS, role-gating sourced from a new core identity endpoint
+﻿# ADR-0036: Admin UI's own authentication/session mechanism — server-side (BFF) session, no bearer token in browser JS, role-gating sourced from a new core identity endpoint
 
 **Status:** Accepted (2026-08-04) — drafted by the AI Business & Requirements Analyst persona (left Proposed, per its own charter boundary; this persona does not hold ADR-acceptance authority, the same rule ADR-0026/0027/0028/0029–0035 followed), revised in place four times the same day (Amendment Log below), then reviewed and accepted by Menno. Story 6.1 moves to **Ready**.
 **Acceptance note (2026-08-04):** Accepted by Menno, verbatim: *"ADR 0036 is approved."* Accepted as revised — all four review-round amendments (§5's Clarification, §6's 8-hour session ceiling, §3's exact-match redirect-URI control, §1's key-management minimums) are in effect, not just the original draft. The Open Questions below are **not** resolved by this acceptance: whether Auth.js/NextAuth.js's Entra External ID support is solid enough to adopt remains open for whoever builds Story 6.1 to verify directly, as does the exact session-cookie library and the idle-timeout/rotation-mechanism question within §6's now-decided 8-hour ceiling.
@@ -100,3 +100,12 @@ The session cookie (§1) carries a **hard, absolute maximum lifetime of 8 hours 
 ## Note on relation to ADR-0041 (2026-08-06)
 
 **ADR-0041** (Accepted 2026-08-06) formalizes, as a general, project-wide, cross-layer rule, something this ADR's own §4 already decided locally: UI role-gating is a layered UX convenience, never the real security boundary — the real boundary stays in `social-listening-core`'s own RLS and application-layer checks. This already fully satisfies ADR-0041's Decision §1 — this note confirms that, and requires no change to this ADR's own Decision or Consequences text. Worth naming honestly: this ADR's own §4 said *where* the real boundary lives, but said nothing about how identity-consuming UI *code itself* must be shaped to correctly implement even the UX-convenience layer — the exact gap ADR-0041's Decision §2 closes, and the exact gap the 2026-08-06 healing pass (`social-listening-admin@1f8960e`) found live under Story 6.1/6.2's own governing ADRs.
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-08-27 per ADR-0122)
+
+- **Same-Origin Route Proxy Standard**: In client-side components (`social-listening-admin`), direct calls to `social-listening-core` from browser JS are prohibited. All requests must route through `src/app/api/.../route.ts` same-origin handlers. The route handler retrieves the session via `getSession()`, attaches `Authorization: Bearer <token>`, and calls core via `core-client.ts`.
+- **Operational Trade-off**: Streaming or proxying via Next.js route handlers incurs double-hop network bandwidth and holds Node.js connection handles for the duration of the request. This is accepted to guarantee zero bearer token exposure in client-side memory or local storage.
+- **Node.js Runtime Migration**: In Next.js 16, server-side session middleware moved from `src/middleware.ts` (Edge runtime) to `src/proxy.ts` (Node.js runtime) to support in-memory `{ sid }` reference lookups.
+- **Reference Commits**: `c643553` (Story 6.1 Entra Authorization Code + PKCE & session store), `443819e` (Story 6.2 role-gated shell), `1f8960e` (Story 6.2 UI role-gating healing pass).

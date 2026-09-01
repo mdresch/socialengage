@@ -2878,6 +2878,306 @@
 ## 2026-08-25 — aa2488b — Merge origin/main
 
 - **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
+- **Files touched:**
+- **Status:** Pending review
+
+## 2026-08-25 — 4878510 — chore(infra): extend multi-agent isolation to social-listening-admin; add user-story skill
+
+- **Full commit:** `4878510b65999cf372d225809acc31a4ab1122d8`
+- **Files touched:** .devin/skills/user-story/SKILL.md, CLAUDE.md, docs/implementation-methodology.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.7.self-service-signup.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/testUtils/devServerLock.ts, social-listening-admin/src/testUtils/portCleanup.ts, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-25 — acb4ec9 — docs(trace): align FDD-0079 and Stories 9.3/9.4 with ADR-0079's 2026-08-25 amendment
+
+- **Full commit:** `acb4ec9e966ea8add3c2442f4c92deda9df011b4`
+- **Files touched:** docs/adr/0079-crisis-template-bundle-and-activation.md, docs/project docs/Business-Requirements/BRD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Functional-Design/FDD-0079-Crisis-Template-Bundle-And-Activation.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-08-25 — b12f5ec — docs(adr): reviewed ADR-0081–0084, BRD/FDD-0081–0085, and Epic 9 stories
+
+- **Full commit:** `b12f5ecf708c9690c17e4828306214f8359899d0`
+- **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0082-rag-post-chunking-and-embedding.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Business-Requirements/BRD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-08-25 — fbfe9ed — chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+
+- **Full commit:** `fbfe9edc86995bfa99d3194e618fa184b391be2d`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts
+- **Status:** Pending review
+
+## 2026-08-18 — be3807d — chore: SessionStart git-hook self-heal, plus queued review/time-tracking entries
+
+- **Full commit:** `be3807d9c575e530b20f6671e6b17454769b443f`
+- **Files touched:** .claude/hooks/verify-git-hooks-installed.cjs, .claude/settings.json, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/README.md
+- **Status:** Pending review
+
+## 2026-08-18 — d623dac — docs: add Social Ingest and Command Center Design brainstorm (Gemini/AI Studio)
+
+- **Full commit:** `d623dac7fb88aa2015e368501e084e999a666ea2`
+- **Files touched:** docs/design/Social Ingest and Command Center Design/.env.example, docs/design/Social Ingest and Command Center Design/.gitignore, docs/design/Social Ingest and Command Center Design/Data Engineering and backend specification.md, docs/design/Social Ingest and Command Center Design/README.md, docs/design/Social Ingest and Command Center Design/bun.lock, docs/design/Social Ingest and Command Center Design/index.html, docs/design/Social Ingest and Command Center Design/metadata.json, docs/design/Social Ingest and Command Center Design/package.json, docs/design/Social Ingest and Command Center Design/server.ts, docs/design/Social Ingest and Command Center Design/src/App.tsx, docs/design/Social Ingest and Command Center Design/src/components/AnimatedChartTooltip.tsx, docs/design/Social Ingest and Command Center Design/src/components/ContentIntelligencePanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/GeminiChatbotPanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/LocationDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SentimentDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SourcesDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/index.css, docs/design/Social Ingest and Command Center Design/src/main.tsx, docs/design/Social Ingest and Command Center Design/src/types.ts, docs/design/Social Ingest and Command Center Design/tsconfig.json, docs/design/Social Ingest and Command Center Design/vite.config.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 2de0b19 — docs: analytics dashboard tab frontend specs (Overview, Sentiment, Source, Conversations, Location)
+
+- **Full commit:** `2de0b1925e2582fece7ddf7fddb2c16f7f502e03`
+- **Files touched:** docs/design/Analytics Dashboard Tab Specs/Location-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Overview-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Sentiment-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Source-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/conversations-tab-frontend-spec.md
+- **Status:** Pending review
+
+## 2026-08-18 — 35e35c3 — feat(story-2.18): Facebook connector captures post-level engagement counts
+
+- **Full commit:** `35e35c301a054dd950a08eade0883e9da42e8bcb`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.18.facebook-engagement-counts.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 87c6792 — docs(story-2.18): implementation log entry and Built field
+
+- **Full commit:** `87c67923f0af12d79df77619635290b49a74f32e`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
+- **Status:** Pending review
+
+## 2026-08-18 — b270662 — feat(story-1.15): Tier-3 per-user poll scheduling (ADR-0061)
+
+- **Full commit:** `b2706626a1a5b0a1ef67d1bac084783b80754a7b`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-activation/SKILL.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/migrations/0033_add_ingestion_runs_user_id.sql, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/connectorActivationStore.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
+- **Status:** Pending review
+
+## 2026-08-18 — 42b1e59 — docs: implementation log entry for Story 1.15
+
+- **Full commit:** `42b1e5928308222f142f7141dfd135ab99323384`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
+- **Status:** Pending review
+
+## 2026-08-18 — b58b323 — feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060)
+
+- **Full commit:** `b58b323cd18e4eb81dcc5adf93613c9c54b1bf75`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.23.facebook-oauth-connect-flow.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.27.facebook-multi-page-picker.contract.test.ts, social-listening-admin/src/app/api/connectors/facebook/oauth/select-page/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/[id]/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/credential-envelope-encryption/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts, social-listening-core/migrations/0034_create_facebook_connected_pages.sql, social-listening-core/migrations/0035_add_ingestion_runs_page_id.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/facebookConnectedPagesStore.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/credentials/credentialStore.ts, social-listening-core/src/http/versions/v1/facebookOAuthRouter.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
+- **Status:** Pending review
+
+## 2026-08-18 — a02edb1 — docs: implementation log entry for Story 6.27
+
+- **Full commit:** `a02edb1b9c7e118f49f839cbb9eabe30a9db60d7`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-18 — fc011df — fix(post-feed): normalize Facebook post titles instead of raw JSON
+
+- **Full commit:** `fc011dff25330c55d8c3b930e443dba51cbda272`
+- **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
+## 2026-08-18 — afd846b — docs: implementation log entry for Story 6.11 Facebook title fix
+
+- **Full commit:** `afd846be090f1e7183f9c8e0c732f964e1c7ea74`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-19 — 5d76e44 — feat(story-6.24): connector status screen groups Connectors and AI Providers
+
+- **Full commit:** `5d76e443262992672b0c89e29143959f7b8c127a`
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx
+- **Status:** Pending review
+
+## 2026-08-19 — 8fe2960 — docs: implementation log entry for Story 6.24
+
+- **Full commit:** `8fe296034535020ea927febb99f7754706f08ab2`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-19 — 23e94fc — heal(story-6.1): fix broken local-dev login and Jest TLS-trust gap
+
+- **Full commit:** `23e94fc7c9ff52db4e2274d258b2afcbbd0dc8c4`
+- **Files touched:** social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/.gitignore, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json
+- **Status:** Pending review
+
+## 2026-08-19 — afe53ac — docs: implementation log entry for Story 6.1 healing pass
+
+- **Full commit:** `afe53ac0b85c9be14e97ea18d92ef0d3f3371b55`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-19 — 1974d1d — heal(story-6.27): give the fan-out test enough real-world margin
+
+- **Full commit:** `1974d1dd363242eae763e49c9db48c9a5cc2eb48`
+- **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
+- **Status:** Pending review
+
+## 2026-08-19 — 49a7e26 — docs: implementation log entry for Story 6.27 backend healing pass
+
+- **Full commit:** `49a7e26b6f61bc7a3a88f44a8c59a4987de1e352`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-20 — ca847c0 — docs: record review logs for 8bc60a1
+
+- **Full commit:** `ca847c0eb230193f930c15f49169321432bd0f35`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-22 — f459114 — feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer
+
+- **Full commit:** `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59`
+- **Files touched:** docs/adr/0072-cross-platform-polypost-composer-and-multi-network-preview-engine.md, docs/adr/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts, social-listening-admin/src/components/composer/previews/InstagramPreviewCard.tsx, social-listening-admin/src/components/composer/previews/LinkedInPreviewCard.tsx
+- **Status:** Pending review
+
+## 2026-08-22 — ef24e9d — docs: finalize Story 6.36 traceability and Implementation Log
+
+- **Full commit:** `ef24e9d1440a25f543f93737cf244e6dc452900d`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — 3d16bf1 — docs(adr): amend ADR-0067 with admin-side Facebook Page and matched watchlist attribution
+
+- **Full commit:** `3d16bf193ce4e33d7792f4e747ff4e977e665172`
+- **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
+- **Status:** Pending review
+
+## 2026-08-22 — 5f962e8 — docs(user-stories): add Story 6.37 for ADR-0067 admin-side Facebook Page and watchlist attribution
+
+- **Full commit:** `5f962e893fd003babf94885321b738ae23c7180f`
+- **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — b40041f — feat: Story 6.37 — admin post-feed Facebook Page and matched watchlist attribution (ADR-0067)
+
+- **Full commit:** `b40041fc87d2d6d2e8820e709375630a3918b325`
+- **Files touched:** docs/adr/README.md, docs/user-stories/README.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts
+- **Status:** Pending review
+
+## 2026-08-22 — 6f6990f — docs: Implementation Log and Built field for Story 6.37
+
+- **Full commit:** `6f6990ff1623e3d2c390cc9458a971e2b3d023d1`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-22 — f9273d5 — docs(adr): accept ADR-0073 and add user stories for outbound reply to ingested posts
+
+- **Full commit:** `f9273d560ee3807f3e177149ca641f8dfaa3deb4`
+- **Files touched:** docs/adr/0073-outbound-reply-to-ingested-posts.md, docs/adr/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
+- **Status:** Pending review
+
+## 2026-08-26 — 0ee011c — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `0ee011cefe422f4addb1e65cfc0cba4a616f303f`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 00066ec — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `00066ec85d20fc95ff54521e8633d0b25241c7ec`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 01064dd — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `01064dddc82c895b5f197531592c8f73416c9580`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 7920e48 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `7920e48933336a27f595bfa80fe49deefca4f8b4`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 01bce70 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
+
+- **Full commit:** `01bce70d1e9d74c31131a128eaaf6b98e1ab3629`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
+- **Status:** Pending review
+
+## 2026-08-26 — 0e4b787 — docs(trace): fix healing pass implementation log commit hash
+
+- **Full commit:** `0e4b78769144ef9db78f8592953ea67df1e36772`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-26 — 3cb453d — heal(story-6.2): add CSS module mapper to Jest config for page.module.css import
+
+- **Full commit:** `3cb453d5a0a0b08906108f0b6a81e6fe05766469`
+- **Files touched:** social-listening-admin/jest.config.js, social-listening-admin/package-lock.json, social-listening-admin/package.json
+- **Status:** Pending review
+
+## 2026-08-26 — fe8ef00 — docs(trace): add Story 6.2 healing pass implementation log entry
+
+- **Full commit:** `fe8ef0015a8cd0326da3d33ad021e421805c38b8`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-27 — 1eac41f — chore: sync tracking docs and dashboard telemetry after pull
+
+- **Full commit:** `1eac41fc0c5b90cea692e0ce2361796637839acc`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 4595a20 — docs(adr-0122): complete Story 14.5 self-learning synthesis remediation
+
+- **Full commit:** `4595a200866fdaa9a8576aa57b1fce05b12ad5f1`
+- **Files touched:** docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0076-composer-deep-research-agent.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Lessons-Learned-Register.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0121.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
+- **Status:** Pending review
+
+## 2026-08-27 — 6f4f25e — feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122
+
+- **Full commit:** `6f4f25eaf4cc158c643a5d53de064e7cbe44a078`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
+- **Status:** Pending review
+
+## 2026-08-27 — d1ab715 — feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5
+
+- **Full commit:** `d1ab715cc34ffede1dd5545fed688e3ea7e92a25`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
+## 2026-08-27 — 0a7def7 — fix(synthesis): run capture-compile sequentially in post-commit hook
+
+- **Full commit:** `0a7def75f57922f064ce0277641b40dfd543516a`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md, scripts/git-hooks/README.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
+## 2026-08-27 — f5d56ab — Accept ADR-0083, ADR-0084, ADR-0085 — RAG vector store, search/ask endpoints, and UI/UX patterns
+
+- **Full commit:** `f5d56ab5e60f3742ce883e2ea1a59c7e5daa10d4`
+- **Files touched:** docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/0085-rag-ui-ux-and-loading-patterns.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-08-27 — c490a99 — fix(dashboard): recognize Retired story status so Story 3.7 is not counted as pending
+
+- **Full commit:** `c490a9969df68a220df1403dc4accf1d9057b78e`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 2ccc739 — fix(dashboard): recognize Relocated story status so Story 6.6 stub is not counted as pending
+
+- **Full commit:** `2ccc739d97c475292e1fc1e233b1d886343bec49`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 1f581dd — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
+
+- **Full commit:** `1f581dd9cdf144015dbe7b24b78b4363264c907c`
+- **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+
+## 2026-08-27 — a15222e — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
+
+- **Full commit:** `a15222ea2d56a4c77f82998aa8ebd2095ecd6807`
+- **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+
+## 2026-08-27 — b3599e5 — chore(synthesis): commit self-learning synthesis outputs and tracking docs
+
+- **Full commit:** `b3599e52963e59bfab548deb2c61327a8e80e90e`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-3.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 8fd0aa4 — feat(story-9.6): Onboarding checklist UI (frontend)
+
+- **Full commit:** `8fd0aa4e816f7acb33240d3edd61623099e4ff79`
+- **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/README.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/components/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 3f21e11 — Merge branch 'main' of https://github.com/mdresch/socialengage
+
+- **Full commit:** `3f21e11c83eda7656a8e75bcd8003467736cc55a`
 - **Files touched:** 
 ~~**Status:** Pending review~~
 - **Resolved 2026-08-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — a merge commit reconciling this branch with `origin/main`; its constituent changes (the 2026-08-24 Manager/L&D/Steward passes, Story 2.26–3.17/9.1 backend work, and the dashboard/BRD/FDD batches) are each reviewed individually above and below in this queue, not re-reviewed again here.
@@ -2886,5 +3186,513 @@
 
 - **Full commit:** `48e8b5d94d5d0db4fa2b658bb20e75c216f7d9a0`
 - **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/.claude/skills/linkedin-connector/SKILL.md
+- **Status:** Pending review
+
+## 2026-08-27 — 6fe3b5d — Merge branch 'main' of https://github.com/mdresch/socialengage into main (Epic 9 completed)
+
+- **Full commit:** `6fe3b5dccfa824f1aa71f84b551a0f0f2b370e40`
+- **Files touched:** 
+- **Status:** Pending review
+
+## 2026-08-27 — 4ae7f92 — fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist
+
+- **Full commit:** `4ae7f926ee52e562673a8ca36e0573cefbf84ddb`
+- **Files touched:** social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-27 — a57a0d5 — fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync
+
+- **Full commit:** `a57a0d5f29ff0faee0c4fcb272060e6269fe238b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
+- **Status:** Pending review
+
+## 2026-08-27 — 57d4be3 — feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector
+
+- **Full commit:** `57d4be3df763b09f37aa28ea9d57b10ea28c361b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+
+## 2026-08-27 — e2ba717 — feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline
+
+- **Full commit:** `e2ba717685c574c3626804cbb58d22aa9186eb16`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 13a38b0 — chore: remove ephemeral test db json
+
+- **Full commit:** `13a38b0662f0ecf3547a512fff810964cbe634cb`
+- **Files touched:** social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+
+## 2026-08-27 — a4dbb66 — fix(rag): fetch live status on mount in RAGDiscoveryClient
+
+- **Full commit:** `a4dbb663a292007930d6d2632dfc3c67429a7832`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 7cccf96 — feat(dashboard): update Phase Milestone Story Velocity curve and synchronized telemetry
+
+- **Full commit:** `7cccf966de164fad8553bd9a4f0ac025529ecd0f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+
+## 2026-08-27 — 6cc1089 — feat(story-10.1): prospecting list model and sharing backend (ADR-0086)
+
+- **Full commit:** `6cc1089fb45986d9ccf42c2373135471e71bf33c`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.1.prospecting-list-model.contract.test.ts, social-listening-core/migrations/0048_create_prospecting_lists_and_entries.sql, social-listening-core/src/http/versions/v1/prospectingListsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/prospecting/prospectingListStore.ts
+- **Status:** Pending review
+
+## 2026-08-27 — ffe640d — feat(epic-10): complete Batch 1 & Batch 2 (Stories 10.1, 10.2, 10.3, 10.4, 10.5)
+
+- **Full commit:** `ffe640dbcc7191b53d4e0d4368e1ab997439966c`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.2.prospecting-list-ui.contract.test.ts, social-listening-admin/contracts/epic-10/story-10.5.ad-hoc-query-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/analytics/query/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/entries/[entryId]/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/entries/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/route.ts, social-listening-admin/src/app/api/prospecting-lists/route.ts, social-listening-admin/src/app/tenant/analytics/query/page.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListsView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/app/tenant/prospecting/page.tsx, social-listening-admin/src/components/analytics/AdHocQueryBuilder.tsx, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.jest-test-db-28340.json, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.3.preconfigured-analytics-views.contract.test.ts, social-listening-core/contracts/epic-10/story-10.4.ad-hoc-query-endpoint.contract.test.ts, social-listening-core/migrations/0049_create_daily_count_views_tables.sql, social-listening-core/src/analytics/adHocQueryEngine.ts, social-listening-core/src/analytics/dailyAggregatesWorker.ts, social-listening-core/src/http/versions/v1/analyticsQueryRouter.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 265dd5f — feat(epic-10): complete Batch 3 (Stories 10.6, 10.7, 10.8)
+
+- **Full commit:** `265dd5fd775678d015a732bd19d5d0ad99df0290`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.7.platform-operations-dashboard.contract.test.ts, social-listening-admin/src/app/admin/operations/page.tsx, social-listening-admin/src/app/api/admin/platform-dashboard/route.ts, social-listening-admin/src/components/operations/PlatformOperationsDashboard.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.jest-test-db-28340.json, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.6.platform-metrics.contract.test.ts, social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts, social-listening-core/migrations/0050_create_platform_metrics_and_export_jobs.sql, social-listening-core/src/http/versions/v1/platformDashboardRouter.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/posts/postExportEngine.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 1a17f89 — feat(epic-10): complete Batch 4 (Stories 10.9, 10.10)
+
+- **Full commit:** `1a17f89b91e4c7609f185672eeca6cd956e3973e`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.10.real-time-alert-ui.contract.test.ts, social-listening-admin/src/app/api/alerts/inbox/[id]/route.ts, social-listening-admin/src/app/api/alerts/inbox/route.ts, social-listening-admin/src/app/api/alerts/rules/[id]/route.ts, social-listening-admin/src/app/api/alerts/rules/route.ts, social-listening-admin/src/app/tenant/alerts/page.tsx, social-listening-admin/src/components/alerts/AlertRulesView.tsx, social-listening-admin/src/components/alerts/AlertsInboxView.tsx, social-listening-admin/src/components/shell/AppSidebar.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.9.real-time-alert-rules.contract.test.ts, social-listening-core/migrations/0051_create_alert_rules_and_tenant_alerts.sql, social-listening-core/src/alerts/alertRulesStore.ts, social-listening-core/src/http/versions/v1/alertRulesRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-27 — fdb9bb8 — feat(epic-10): complete Batch 5 (Stories 10.11, 10.12, 10.13, 10.14)
+
+- **Full commit:** `fdb9bb84158ef9be3a40280ab52a7be854ba3457`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/app/api/analytics/digest/route.ts, social-listening-admin/src/app/api/webhooks/subscriptions/[id]/route.ts, social-listening-admin/src/app/api/webhooks/subscriptions/[id]/test/route.ts, social-listening-admin/src/app/api/webhooks/subscriptions/route.ts, social-listening-admin/src/app/tenant/settings/webhooks/page.tsx, social-listening-admin/src/components/analytics/AiInsightsDigestCard.tsx, social-listening-admin/src/components/webhooks/WebhookSubscriptionsView.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.11.webhook-notifications.contract.test.ts, social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts, social-listening-core/contracts/epic-10/story-10.14.ai-insights-digest.contract.test.ts, social-listening-core/migrations/0052_create_webhooks_and_youtube_tables.sql, social-listening-core/src/analytics/aiDigestGenerator.ts, social-listening-core/src/connectors/youtube/youtubeConnector.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/http/versions/v1/youtubeConnectorRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
+- **Status:** Pending review
+
+## 2026-08-27 — 086fcce — docs(epic-10): mark Stories 10.1–10.14 as built and sync project progress dashboard (164/210 stories built)
+
+- **Full commit:** `086fcce8bf1f370582d49ce436786327076556b0`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+
+## 2026-08-27 — b24195a — feat(youtube): integrate full SocialConnector lifecycle, registration and UI activation for YouTube
+
+- **Full commit:** `b24195a02220ac15f6190426c42d4b8847965be7`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-10/story-10.13.youtube-admin-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/app/tenant/connectors/status/page.tsx, social-listening-admin/src/app/tenant/watchlists/page.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/youtube/pollYouTube.ts, social-listening-core/src/connectors/youtube/types.ts, social-listening-core/src/connectors/youtube/youtubeConnector.ts
+- **Status:** Pending review
+
+## 2026-08-27 — fb40e92 — docs(adr): approve ADR-0088 through ADR-0094 (93 total accepted ADRs) and sync dashboard
+
+- **Full commit:** `fb40e920a76b7ab50f8f92516c5613a8fba0b94b`
+- **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/0089-platform-operations-dashboard.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0091-real-time-alert-rules-and-delivery.md, docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+
+## 2026-08-27 — de86579 — docs: approve and sync FDDs, BRDs, and User Stories for ADR-0088 through ADR-0094
+
+- **Full commit:** `de8657998cc3b8b09446a4f1ee945ba998e4efd1`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Business-Requirements/BRD-0089-Platform-Operations-Dashboard.md, docs/project docs/Business-Requirements/BRD-0090-Data-Export-Posts-CSV.md, docs/project docs/Business-Requirements/BRD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Business-Requirements/BRD-0092-Author-Initiated-Takedown.md, docs/project docs/Business-Requirements/BRD-0093-DSR-Self-Service-Portal.md, docs/project docs/Business-Requirements/BRD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Functional-Design/FDD-0089-Platform-Operations-Dashboard.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-27 — f7a93b1 — style(posts): polish post details drawer header, tabs, and reply buttons
+
+- **Full commit:** `f7a93b151921f4b8403b6b035cbc2fc539362744`
+- **Files touched:** docs/adr/0101-multi-source-connector-capability-matrix.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx
+- **Status:** Pending review
+
+## 2026-08-28 — 4eac552 — docs(adr): update ADR-0095 with Dynamics 365, generalized CRM payload, and field mappings
+
+- **Full commit:** `4eac552f1286a75deba6ec09442fadb26c6ad1f3`
+- **Files touched:** docs/adr/0077-watchlist-connector-count-method.md, docs/adr/0078-metric-explainability-endpoint.md, docs/adr/0079-crisis-template-bundle-and-activation.md, docs/adr/0080-onboarding-checklist-state.md, docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0082-rag-post-chunking-and-embedding.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/0085-rag-ui-ux-and-loading-patterns.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/0089-platform-operations-dashboard.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0091-real-time-alert-rules-and-delivery.md, docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/adr/0095-case-handoff-to-crm.md, docs/adr/0102-boolean-query-ast-and-visual-builder.md, docs/adr/0103-ai-sentiment-analysis-aspect-schema.md, docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md, docs/adr/0124-data-export-posts-csv-sampling-and-bounded-lookback.md, docs/adr/0125-author-initiated-takedown-refinements.md, docs/adr/0126-dsr-self-service-portal-refinements.md, docs/adr/0127-compliance-audit-pack-refinements.md, docs/adr/0128-platform-operations-dashboard-refinements.md, docs/adr/0129-prospecting-list-model-and-sharing-refinements.md, docs/adr/0130-onboarding-checklist-state-refinements.md, docs/adr/0131-crisis-template-bundle-and-activation-refinements.md, docs/adr/0132-ad-hoc-query-allowlist-refinements.md, docs/adr/0133-metric-explainability-endpoint-refinements.md, docs/adr/0134-watchlist-connector-count-method-refinements.md, docs/adr/0135-preconfigured-analytics-views-refinements.md, docs/adr/0136-rag-connector-provider-abstraction-namespace-per-tenant.md, docs/adr/0137-rag-post-chunking-and-embedding-namespace-routing.md, docs/adr/0138-rag-vector-store-namespace-per-tenant-isolation.md, docs/adr/0139-rag-search-and-ask-endpoint-namespace-resolution.md, docs/adr/0140-rag-ui-ux-and-loading-patterns-refinements.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Business-Requirements/BRD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Business-Requirements/BRD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Business-Requirements/BRD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Business-Requirements/BRD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Business-Requirements/BRD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Business-Requirements/BRD-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md, docs/project docs/Business-Requirements/BRD-0124-Data-Export-Posts-CSV-Sampling-And-Bounded-Lookback.md, docs/project docs/Business-Requirements/BRD-0125-Author-Initiated-Takedown-Refinements.md, docs/project docs/Business-Requirements/BRD-0126-DSR-Self-Service-Portal-Refinements.md, docs/project docs/Business-Requirements/BRD-0127-Compliance-Audit-Pack-Refinements.md, docs/project docs/Business-Requirements/BRD-0128-Platform-Operations-Dashboard-Refinements.md, docs/project docs/Business-Requirements/BRD-0129-Prospecting-List-Model-And-Sharing-Refinements.md, docs/project docs/Business-Requirements/BRD-0130-Onboarding-Checklist-State-Refinements.md, docs/project docs/Business-Requirements/BRD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md, docs/project docs/Business-Requirements/BRD-0132-Ad-Hoc-Query-Allowlist-Refinements.md, docs/project docs/Business-Requirements/BRD-0133-Metric-Explainability-Endpoint-Refinements.md, docs/project docs/Business-Requirements/BRD-0134-Watchlist-Connector-Count-Method-Refinements.md, docs/project docs/Business-Requirements/BRD-0135-Preconfigured-Analytics-Views-Refinements.md, docs/project docs/Business-Requirements/BRD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Business-Requirements/BRD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Business-Requirements/BRD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Business-Requirements/BRD-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md, docs/project docs/Business-Requirements/BRD-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md, docs/project docs/Functional-Design/FDD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Functional-Design/FDD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Functional-Design/FDD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Functional-Design/FDD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Functional-Design/FDD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Functional-Design/FDD-0124-Data-Export-Posts-CSV-Sampling-And-Bounded-Lookback.md, docs/project docs/Functional-Design/FDD-0125-Author-Initiated-Takedown-Refinements.md, docs/project docs/Functional-Design/FDD-0126-DSR-Self-Service-Portal-Refinements.md, docs/project docs/Functional-Design/FDD-0127-Compliance-Audit-Pack-Refinements.md, docs/project docs/Functional-Design/FDD-0128-Platform-Operations-Dashboard-Refinements.md, docs/project docs/Functional-Design/FDD-0129-Prospecting-List-Model-And-Sharing-Refinements.md, docs/project docs/Functional-Design/FDD-0130-Onboarding-Checklist-State-Refinements.md, docs/project docs/Functional-Design/FDD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md, docs/project docs/Functional-Design/FDD-0132-Ad-Hoc-Query-Allowlist-Refinements.md, docs/project docs/Functional-Design/FDD-0133-Metric-Explainability-Endpoint-Refinements.md, docs/project docs/Functional-Design/FDD-0134-Watchlist-Connector-Count-Method-Refinements.md, docs/project docs/Functional-Design/FDD-0135-Preconfigured-Analytics-Views-Refinements.md, docs/project docs/Functional-Design/FDD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Functional-Design/FDD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Functional-Design/FDD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Functional-Design/FDD-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md, docs/project docs/Functional-Design/FDD-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md, docs/time-tracking.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-28 — 4dedbff — docs: approve FDD-0095, BRD-0095, and update Stories 11.1-11.2 per accepted ADR-0095
+
+- **Full commit:** `4dedbff69a51605ad95be7fe00e105616059ce90`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md, docs/project docs/Functional-Design/FDD-0095-Case-Handoff-To-CRM.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-28 — cff52e1 — docs(adr): update ADR-0096 with timezone-aware scheduling, precomputed views, and AI summary bounds
+
+- **Full commit:** `cff52e187e16443f2aa24e31807274126fc6f79d`
+- **Files touched:** docs/adr/0096-daily-digest-email.md, docs/adr/0097-topic-evolution-timeline.md, docs/adr/0098-publishing-and-scheduling.md, docs/adr/0099-unified-social-inbox-and-reply.md, docs/adr/0100-composed-post-author-mention-suggestions.md, docs/adr/0101-multi-source-connector-capability-matrix.md, docs/adr/0102-boolean-query-ast-and-visual-builder.md, docs/adr/0103-ai-sentiment-analysis-aspect-schema.md, docs/adr/0104-ai-topic-clustering-post-topics-schema.md, docs/adr/0105-dashboards-and-analytics-widget-contracts.md, docs/adr/0106-api-and-integrations-versioning-and-webhooks.md, docs/adr/0107-multi-user-workspaces-and-rbac-permissions.md, docs/adr/0108-influencer-discovery-and-scoring.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/adr/0110-per-connector-query-translation-and-validation.md, docs/adr/0111-export-bounding-streaming-and-size-caps.md, docs/adr/0112-feature-gating-and-seat-limit-enforcement.md, docs/adr/0113-metric-explainability-prompt-and-caching.md, docs/adr/0114-platform-metrics-table-and-azure-metrics.md, docs/adr/0115-publishing-media-upload-and-asset-targeting.md, docs/adr/0116-semantic-drift-detection.md, docs/adr/0117-prospecting-list-export-and-crm-push.md, docs/adr/0118-additional-social-platform-publishing.md, docs/adr/0119-editing-and-deleting-published-outbound-posts.md, docs/adr/0120-search-provider-connector.md, docs/adr/0121-composer-deep-research-caching-retrigger-cost.md, docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md, docs/adr/0124-data-export-posts-csv-sampling-and-bounded-lookback.md, docs/adr/0125-author-initiated-takedown-refinements.md, docs/adr/0126-dsr-self-service-portal-refinements.md, docs/adr/0127-compliance-audit-pack-refinements.md, docs/adr/0128-platform-operations-dashboard-refinements.md, docs/adr/0129-prospecting-list-model-and-sharing-refinements.md, docs/adr/0130-onboarding-checklist-state-refinements.md, docs/adr/0131-crisis-template-bundle-and-activation-refinements.md, docs/adr/0132-ad-hoc-query-allowlist-refinements.md, docs/adr/0133-metric-explainability-endpoint-refinements.md, docs/adr/0134-watchlist-connector-count-method-refinements.md, docs/adr/0135-preconfigured-analytics-views-refinements.md, docs/adr/0136-rag-connector-provider-abstraction-namespace-per-tenant.md, docs/adr/0137-rag-post-chunking-and-embedding-namespace-routing.md, docs/adr/0138-rag-vector-store-namespace-per-tenant-isolation.md, docs/adr/0139-rag-search-and-ask-endpoint-namespace-resolution.md, docs/adr/0140-rag-ui-ux-and-loading-patterns-refinements.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0090-Data-Export-Posts-CSV.md, docs/project docs/Business-Requirements/BRD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Business-Requirements/BRD-0092-Author-Initiated-Takedown.md, docs/project docs/Business-Requirements/BRD-0093-DSR-Self-Service-Portal.md, docs/project docs/Business-Requirements/BRD-0094-Compliance-Audit-Pack.md, docs/project docs/Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md, docs/project docs/Business-Requirements/BRD-0096-Daily-Digest-Email.md, docs/project docs/Business-Requirements/BRD-0097-Topic-Evolution-Timeline.md, docs/project docs/Business-Requirements/BRD-0098-Publishing-And-Scheduling.md, docs/project docs/Business-Requirements/BRD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Business-Requirements/BRD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Business-Requirements/BRD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Business-Requirements/BRD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Business-Requirements/BRD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Business-Requirements/BRD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Business-Requirements/BRD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Business-Requirements/BRD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Business-Requirements/BRD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Business-Requirements/BRD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Business-Requirements/BRD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Business-Requirements/BRD-0116-Semantic-Drift-Detection.md, docs/project docs/Business-Requirements/BRD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Business-Requirements/BRD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Business-Requirements/BRD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Business-Requirements/BRD-0120-Search-Provider-Connector.md, docs/project docs/Business-Requirements/BRD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md, docs/project docs/Business-Requirements/BRD-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md, docs/project docs/Business-Requirements/BRD-0125-Author-Initiated-Takedown-Refinements.md, docs/project docs/Business-Requirements/BRD-0126-DSR-Self-Service-Portal-Refinements.md, docs/project docs/Business-Requirements/BRD-0127-Compliance-Audit-Pack-Refinements.md, docs/project docs/Business-Requirements/BRD-0128-Platform-Operations-Dashboard-Refinements.md, docs/project docs/Business-Requirements/BRD-0129-Prospecting-List-Model-And-Sharing-Refinements.md, docs/project docs/Business-Requirements/BRD-0130-Onboarding-Checklist-State-Refinements.md, docs/project docs/Business-Requirements/BRD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md, docs/project docs/Business-Requirements/BRD-0132-Ad-Hoc-Query-Allowlist-Refinements.md, docs/project docs/Business-Requirements/BRD-0133-Metric-Explainability-Endpoint-Refinements.md, docs/project docs/Business-Requirements/BRD-0134-Watchlist-Connector-Count-Method-Refinements.md, docs/project docs/Business-Requirements/BRD-0135-Preconfigured-Analytics-Views-Refinements.md, docs/project docs/Business-Requirements/BRD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Business-Requirements/BRD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Business-Requirements/BRD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Business-Requirements/BRD-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md, docs/project docs/Business-Requirements/BRD-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0095-Case-Handoff-To-CRM.md, docs/project docs/Functional-Design/FDD-0096-Daily-Digest-Email.md, docs/project docs/Functional-Design/FDD-0097-Topic-Evolution-Timeline.md, docs/project docs/Functional-Design/FDD-0098-Publishing-And-Scheduling.md, docs/project docs/Functional-Design/FDD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Functional-Design/FDD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Functional-Design/FDD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Functional-Design/FDD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Functional-Design/FDD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Functional-Design/FDD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Functional-Design/FDD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Functional-Design/FDD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Functional-Design/FDD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Functional-Design/FDD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Functional-Design/FDD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Functional-Design/FDD-0116-Semantic-Drift-Detection.md, docs/project docs/Functional-Design/FDD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Functional-Design/FDD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Functional-Design/FDD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Functional-Design/FDD-0120-Search-Provider-Connector.md, docs/project docs/Functional-Design/FDD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md, docs/project docs/Functional-Design/FDD-0124-Data-Export-Posts-CSV-Sampling-And-Bounded-Lookback.md, docs/project docs/Functional-Design/FDD-0125-Author-Initiated-Takedown-Refinements.md, docs/project docs/Functional-Design/FDD-0126-DSR-Self-Service-Portal-Refinements.md, docs/project docs/Functional-Design/FDD-0127-Compliance-Audit-Pack-Refinements.md, docs/project docs/Functional-Design/FDD-0128-Platform-Operations-Dashboard-Refinements.md, docs/project docs/Functional-Design/FDD-0129-Prospecting-List-Model-And-Sharing-Refinements.md, docs/project docs/Functional-Design/FDD-0130-Onboarding-Checklist-State-Refinements.md, docs/project docs/Functional-Design/FDD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md, docs/project docs/Functional-Design/FDD-0132-Ad-Hoc-Query-Allowlist-Refinements.md, docs/project docs/Functional-Design/FDD-0133-Metric-Explainability-Endpoint-Refinements.md, docs/project docs/Functional-Design/FDD-0134-Watchlist-Connector-Count-Method-Refinements.md, docs/project docs/Functional-Design/FDD-0135-Preconfigured-Analytics-Views-Refinements.md, docs/project docs/Functional-Design/FDD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Functional-Design/FDD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Functional-Design/FDD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Functional-Design/FDD-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md, docs/project docs/Functional-Design/FDD-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md, docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-10-adr-0086-to-0094.md, docs/user-stories/epic-11-adr-0095-to-0100.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/epic-19-adr-0136-to-0140.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-4-derived-data-analytics-and-health.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-7-platform-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, docs/user-stories/epic-9-adr-0077-to-0085.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-28 — 264c4fd — feat(crm): implement Story 11.1 — CRM connector and case handoff (ADR-0095)
+
+- **Full commit:** `264c4fda6a0aa929c31a4d4392aed43ff2495e86`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/contracts/epic-11/story-11.1.crm-connector-and-case-handoff.contract.test.ts, social-listening-core/migrations/0053_create_crm_tables_and_outbound_crm_handoff.sql, social-listening-core/src/connectors/crm/crmRegistry.ts, social-listening-core/src/connectors/crm/dynamics365Connector.ts, social-listening-core/src/connectors/crm/hubspotConnector.ts, social-listening-core/src/connectors/crm/salesforceConnector.ts, social-listening-core/src/connectors/crm/types.ts, social-listening-core/src/crm/crmFieldMappingStore.ts, social-listening-core/src/crm/crmHandoffService.ts, social-listening-core/src/http/routes/crmRoutes.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-28 — a76b564 — feat(crm-ui): implement Story 11.2 — Case handoff to CRM UI (ADR-0095)
+
+- **Full commit:** `a76b564856667306f936c7aa56f3b8790d444d47`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.2.case-handoff-ui.contract.test.ts, social-listening-admin/src/app/api/crm/connectors/route.ts, social-listening-admin/src/app/api/crm/field-mappings/route.ts, social-listening-admin/src/app/api/crm/push/route.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/components/crm/CRMHandoffModal.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.jest-test-db-40920.json
+- **Status:** Pending review
+
+## 2026-08-28 — 0052a8f — feat(digest): implement Story 11.3 — Daily digest email (ADR-0096)
+
+- **Full commit:** `0052a8fa9e3e02243586480c8534cc6581c0f3cc`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.jest-test-db-30356.json, social-listening-core/contracts/epic-11/story-11.3.daily-digest-email.contract.test.ts, social-listening-core/migrations/0054_create_user_digest_preferences.sql, social-listening-core/migrations/0055_grant_user_digest_preferences_platform_admin.sql, social-listening-core/src/digest/dailyDigestBuilder.ts, social-listening-core/src/digest/dailyDigestRenderer.ts, social-listening-core/src/digest/dailyDigestScheduler.ts, social-listening-core/src/digest/digestPreferenceStore.ts, social-listening-core/src/http/routes/digestRoutes.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-28 — 754db11 — feat(digest-ui): implement Story 11.4 — Daily digest email UI (ADR-0096)
+
+- **Full commit:** `754db111bccc525414ac5f0f8e8a89cac75d8fe4`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.4.daily-digest-ui.contract.test.ts, social-listening-admin/src/app/api/digest/preferences/route.ts, social-listening-admin/src/app/api/digest/preview/route.ts, social-listening-admin/src/app/tenant/settings/digest/DigestPreferencesView.tsx, social-listening-admin/src/app/tenant/settings/digest/page.tsx, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.jest-test-db-30356.json
+- **Status:** Pending review
+
+## 2026-08-28 — f723f60 — feat(topics): implement Story 11.5 — Topic evolution timeline backend (ADR-0097)
+
+- **Full commit:** `f723f605002a292520c2a958425c5f68bfd8770b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.jest-test-db-30356.json, social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts, social-listening-core/migrations/0056_create_topic_daily_counts.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicEvolutionService.ts
+- **Status:** Pending review
+
+## 2026-08-28 — 0fd5ffd — feat(topics-ui): implement Story 11.6 — Topic evolution timeline UI (ADR-0097)
+
+- **Full commit:** `0fd5ffdbaa40872d58b4b72691879ac84f5a4efc`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.6.topic-evolution-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/topics/evolution/route.ts, social-listening-admin/src/app/tenant/analytics/TopicEvolutionTimeline.tsx, social-listening-admin/src/app/tenant/analytics/topics/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.jest-test-db-30356.json
+- **Status:** Pending review
+
+## 2026-08-28 — 7f0d9e1 — feat(epic-11): implement Story 11.7 (backend publishing and scheduling) and Story 11.8 (frontend publishing and scheduling UI)
+
+- **Full commit:** `7f0d9e13cf1380ce3e993e629f224b2a5a6e1705`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.8.publishing-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/targets/route.ts, social-listening-admin/src/app/api/outbound/activities/[id]/cancel/route.ts, social-listening-admin/src/app/api/outbound/activities/[id]/reschedule/route.ts, social-listening-admin/src/app/api/outbound/posts/route.ts, social-listening-admin/src/app/tenant/posts/outbound/OutboundPostsView.tsx, social-listening-admin/src/app/tenant/posts/outbound/page.tsx, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/contracts/epic-11/story-11.7.publishing-and-scheduling.contract.test.ts, social-listening-core/migrations/0057_widen_outbound_activities_for_publishing.sql, social-listening-core/migrations/0058_ensure_outbound_activities_nullable_credential.sql, social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/http/routes/publishingRoutes.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/publishing/outboundPublishScheduler.ts, social-listening-core/src/publishing/outboundPublishingService.ts
+- **Status:** Pending review
+
+## 2026-08-28 — b42315f — feat(epic-11): implement Story 11.9 (backend unified social inbox & reply) and Story 11.10 (frontend unified social inbox UI)
+
+- **Full commit:** `b42315f57a49febf10b5714db18ea6a2de274e1a`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.10.social-inbox-ui.contract.test.ts, social-listening-admin/src/app/api/inbox/[id]/assign/route.ts, social-listening-admin/src/app/api/inbox/[id]/reply/route.ts, social-listening-admin/src/app/api/inbox/[id]/resolve/route.ts, social-listening-admin/src/app/api/inbox/[id]/route.ts, social-listening-admin/src/app/api/inbox/[id]/snooze/route.ts, social-listening-admin/src/app/api/inbox/route.ts, social-listening-admin/src/app/tenant/inbox/InboxItemDetail.tsx, social-listening-admin/src/app/tenant/inbox/InboxView.tsx, social-listening-admin/src/app/tenant/inbox/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/contracts/epic-11/story-11.9.social-inbox-and-reply.contract.test.ts, social-listening-core/migrations/0059_create_inbox_items.sql, social-listening-core/src/http/versions/v1/inboxRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/inbox/inboxItemStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 8477fce — feat(epic-11): implement Story 11.11 (backend mention suggestions) and Story 11.12 (frontend mention suggestions UI)
+
+- **Full commit:** `8477fcee4ae15af5bf381c84532369634f45bfb7`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/contracts/epic-11/story-11.12.mention-suggestions-ui.contract.test.ts, social-listening-admin/src/app/api/composer/mention-suggestions/route.ts, social-listening-admin/src/components/composer/MentionSuggestionsDropdown.tsx, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/contracts/epic-11/story-11.11.mention-suggestions.contract.test.ts, social-listening-core/src/composer/mentionSuggestionsService.ts, social-listening-core/src/http/versions/v1/mentionSuggestionsRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 994b4b8 — fix(contracts): heal story-6.39 contract for story-11.8 outbound publishing
+
+- **Full commit:** `994b4b8fac6b382a44a7fbbfa3a0b88176e4e05e`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.39.polypost-composer-real-publish-flow.contract.test.ts, social-listening-admin/next-env.d.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 58895f0 — fix(contracts): heal story-1.13, story-3.15, story-4.2, and story-9.7/9.9/9.10 contracts
+
+- **Full commit:** `58895f01d8c24bba9061cc8a1b9f052c20bd2a29`
+- **Files touched:** social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts, social-listening-core/contracts/epic-4/story-4.2.topic-time-series-deferred.contract.test.ts, social-listening-core/src/rag/pgvectorConnector.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 6f20605 — feat(core): implement Story 12.1 connector capability matrix (ADR-0101)
+
+- **Full commit:** `6f20605e450ba778fe79be5a6218f0876c14bf7a`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/contracts/epic-12/story-12.1.connector-capability-matrix.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts
+- **Status:** Pending review
+
+## 2026-08-29 — bae500b — feat(admin): implement Story 12.2 connector capability matrix UI
+
+- **Full commit:** `bae500b2b5a0b449d6e97493ada8e863b55db4db`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts, social-listening-admin/src/app/api/connectors/capabilities/route.ts, social-listening-admin/src/components/composer/OutboundComposerModal.tsx, social-listening-admin/src/components/connectors/ConnectorCapabilityBadges.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 36ad068 — feat(core): Story 12.3 - Boolean query AST and visual builder backend (ADR-0102)
+
+- **Full commit:** `36ad068150ab7a2f29a9c29efb57173aa6ef85de`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/newswire/newswireConnector.ts, social-listening-core/src/connectors/queryCapabilities.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/tenantOwnedFeed/tenantOwnedFeedConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/connectors/wikipedia/wikipediaConnector.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/ast.ts, social-listening-core/src/watchlists/matcher.ts, social-listening-core/src/watchlists/watchlistStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 8210fed — feat(admin): implement Story 12.4 boolean query visual builder (ADR-0102)
+
+- **Full commit:** `8210feddc279366a8b1bf91c93f520981f51c990`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts, social-listening-admin/src/app/api/connectors/[platformId]/query-capabilities/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/BooleanQueryBuilder.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/watchlist-ast.ts
+- **Status:** Pending review
+
+## 2026-08-29 — c2cf37d — feat(core): implement AI sentiment aspect schema (Story 12.5, ADR-0103)
+
+- **Full commit:** `c2cf37d0613229a562731f97a58d3f69103cfa78`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.5.ai-sentiment-aspect-schema.contract.test.ts, social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/posts/socialPostStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 009bf95 — docs: update review documents and time tracking
+
+- **Full commit:** `009bf95325383947d4fa33c8d0b371371df36b5a`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-29 — 2a4ea31 — fix(connectors): add youtube, brave-search, and bing-search cadences to status view
+
+- **Full commit:** `2a4ea316d3c661e405a6d1f6099fa0b1e156764b`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx
+- **Status:** Pending review
+
+## 2026-08-29 — 8587070 — feat(posts): normalize YouTube video and comment display in post feed
+
+- **Full commit:** `85870700e897b208403ff4824799b9fdc59a2bcb`
+- **Files touched:** social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 9ed8291 — chore: sync doc tracking
+
+- **Full commit:** `9ed8291ef4a05256ea9f077193a5d4391a94d754`
+- **Files touched:** docs/implementation-log.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/sentiment/SentimentAspectsList.tsx, social-listening-admin/src/components/sentiment/SentimentBadge.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 67a915c — chore: sync doc tracking
+
+- **Full commit:** `67a915c72e9a5c96e0d886557729e7cf28c66c94`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/sentiment/SentimentAspectsList.tsx, social-listening-admin/src/components/sentiment/SentimentBadge.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 21820f4 — feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend)
+
+- **Full commit:** `21820f4106eacf3a47635bf2be3ee3883592b65a`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts, social-listening-core/migrations/0060_create_topics_and_post_topics.sql, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicClusteringService.ts, social-listening-core/src/topics/topicStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 5ce0794 — feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend)
+
+- **Full commit:** `5ce07949b2d502fcad60b89695eb33ff2a7a7eff`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/topics/TopicBadge.tsx, social-listening-admin/src/components/topics/TopicSelector.tsx, social-listening-admin/src/components/topics/TopicsView.tsx, social-listening-admin/src/components/topics/topicCurationUtils.ts, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — ee2b3e0 — feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend)
+
+- **Full commit:** `ee2b3e037ed95ec914c9cd87125d3d922c2e47ee`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts, social-listening-core/src/analytics/dashboard/dashboardService.ts, social-listening-core/src/analytics/dashboard/widgetRegistry.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
+- **Status:** Pending review
+
+## 2026-08-29 — d221cd6 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)
+
+- **Full commit:** `d221cd61a2694230fe5f31aa689229225bd573d6`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts, social-listening-admin/src/components/analytics/dashboard/DashboardView.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetGrid.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetRenderer.tsx, social-listening-admin/src/components/analytics/dashboard/dashboardTypes.ts, social-listening-admin/src/components/analytics/dashboard/widgets/BarChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/DataTable.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/MetricTile.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/PieChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/RankedList.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — ffc5294 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)
+
+- **Full commit:** `ffc5294f7f54658267439d4d39c9f8db8b202297`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts, social-listening-admin/src/components/analytics/dashboard/DashboardView.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetGrid.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetRenderer.tsx, social-listening-admin/src/components/analytics/dashboard/dashboardTypes.ts, social-listening-admin/src/components/analytics/dashboard/widgets/BarChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/DataTable.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/MetricTile.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/PieChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/RankedList.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 90fe8f5 — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)
+
+- **Full commit:** `90fe8f5e32c8fdca5d44758f3ddfa747c3ebbb10`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 563fbce — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)
+
+- **Full commit:** `563fbce6b6d581a54b1249f96ed6b8ebca3a7f63`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
+- **Status:** Pending review
+
+## 2026-08-29 — f1a2b93 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)
+
+- **Full commit:** `f1a2b9308264d73f782378284d2b87b6d0e39d00`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/components/webhooks/WebhookForm.tsx, social-listening-admin/src/components/webhooks/WebhooksView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — 95c8a97 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)
+
+- **Full commit:** `95c8a973c3b2f9d2794767c89b28f84ea85f4920`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/components/webhooks/WebhookForm.tsx, social-listening-admin/src/components/webhooks/WebhooksView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-29 — a81742a — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)
+
+- **Full commit:** `a81742aa4d0b99e0e69281127cab996ebd9d1fe6`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — da86059 — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)
+
+- **Full commit:** `da86059e1db111b27c6d3a3e88531bb044e1614b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
+- **Status:** Pending review
+
+## 2026-08-29 — f6df74c — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+
+- **Full commit:** `f6df74c811da6410acf70fd5ad68330a81d96d9b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
+- **Status:** Pending review
+
+## 2026-08-29 — 0ac8cd4 — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+
+- **Full commit:** `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
+- **Status:** Pending review
+
+## 2026-08-30 — fa3a218 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+
+- **Full commit:** `fa3a21882d542859c170196be3d9bc9a5e700d7b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-30 — 3e5ff0a — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+
+- **Full commit:** `3e5ff0abf9e48a233e4f8b0ba08bb26022403578`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-30 — ee9ffe5 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+
+- **Full commit:** `ee9ffe51710c818f364f8af199fceb4c48b1a7ae`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 6224435 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+
+- **Full commit:** `6224435a6e82fe15d932e8f70c6a3803c9570791`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 0602675 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+
+- **Full commit:** `060267514e379e6977cb132e23d28817581502b1`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-31 — bbfbb04 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+
+- **Full commit:** `bbfbb043aaf91608f026b741c78f8a14d0e49542`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 6948420 — feat(geo): add backfillGeoLocations.ts and geo:backfill npm script (no-story: backfill utility only, not a story impl) - Backfilled 2,644 posts; final coverage 4757/4757 (100%) - Contract story-2.20 PASS (12/12)
+
+- **Full commit:** `6948420d52db6f6676e295c908ebaa6e6f7f24f4`
+- **Files touched:** social-listening-core/package.json, social-listening-core/src/connectors/geo/backfillGeoLocations.ts
+- **Status:** Pending review
+
+## 2026-08-31 — d78c55c — Features on Frontend UI fine tuning
+
+- **Full commit:** `d78c55c30cbcb4660d04f455f2061d8c2390c953`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/SidebarNav.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/AnimatedChartTooltip.tsx, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/InteractiveWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/LocationTab.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/loading.tsx, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/ui/RelativeTime.tsx
+- **Status:** Pending review
+
+## 2026-08-31 — 78c6e3e — docs: close implementation-log loop for d78c55c
+
+- **Full commit:** `78c6e3ee0711a29487c286d7845351b3cd48129b`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-31 — 0240f80 — feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend)
+
+- **Full commit:** `0240f80b5863a103619840f06e1d8d601fe29b25`
+- **Files touched:** docs/adr/0023-proportional-connector-failure-threshold.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.env.example, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/contracts/epic-13/story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts, social-listening-core/contracts/epic-2/story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.5.proportional-failure-threshold.contract.test.ts, social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts, social-listening-core/migrations/0064_add_health_check_trigger_type.sql, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/credentials/keyVaultProvider.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/serviceBusPublisher.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 29b274c — Merge branch 'feat/story-13.1' into main
+
+- **Full commit:** `29b274c4acac169cff210782d3ff692b308bf779`
+- **Files touched:** 
+- **Status:** Pending review
+
+## 2026-08-31 — 32a7969 — docs: append Story 13.1 implementation-log entry (merge 29b274c)
+
+- **Full commit:** `32a7969a2f5f93040efc7964c501381fd5e9d809`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-31 — 31313ee — chore: sync post-commit management tracking for Story 13.1 implementation-log entry
+
+- **Full commit:** `31313ee7895e9fcbde703f80ad2e3d36384f8f43`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-31 — 2609da5 — docs: sync post-commit tracking after Story 13.2 commit
+
+- **Full commit:** `2609da540d3175d54daa2d08c1c9ac0d2eab6054`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-31 — 89db5a6 — docs: append Story 13.2 implementation-log entry (merge da31be9)
+
+- **Full commit:** `89db5a69928d6de074625546f05fab3214c5ace6`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-08-31 — 5b792fe — Merge remote-tracking branch 'origin/main' into main
+
+- **Full commit:** `5b792feaef83f130479958ae5274d56593acc8ce`
+- **Files touched:** 
+- **Status:** Pending review
+
+## 2026-08-31 — d7874da — chore: remove jest test db artifact from merge
+
+- **Full commit:** `d7874da5d06f33fc7cfe778e6c2e13009ff8392f`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-30012.json
+- **Status:** Pending review
+
+## 2026-08-31 — b831498 — docs(epic-13): update traceability and implementation log for Story 13.3
+
+- **Full commit:** `b83149802f71d7a50f767fa1253f4928170a4a42`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+
+## 2026-08-31 — 6214c44 — chore(dashboard): sync project progress dashboard data for Story 13.3
+
+- **Full commit:** `6214c44efcf3e834ced67526386dc9c59f378a88`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 3f5d2a5 — chore(dashboard): sync project progress dashboard data for Story 13.3
+
+- **Full commit:** `3f5d2a58f57d57492b8e374e6985594df9a57dd2`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 2b3e8cc — docs: sync post-commit tracking after Story 13.3 implementation
+
+- **Full commit:** `2b3e8ccbf498b3f682e60e3d7b889f1ce8e896cc`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+## 2026-08-31 — a5c926c — heal(story-11.5): use resolved identity and validate granularity in /v1/topics/evolution
+
+- **Full commit:** `a5c926c9cd44fb6f6343f125d913a8ef66ce9c2a`
+- **Files touched:** social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 04bfeb7 — docs(trace): story-11.5 healing pass log entry
+
+- **Full commit:** `04bfeb7bcc28fe4ee046002c712cf6114eb31386`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
+## 2026-08-31 — 7dac132 — Merge remote-tracking branch 'origin/main' into main
+
+- **Full commit:** `7dac1322b6f72938ad06e8d0ebf2eb86c20b17a2`
+- **Files touched:** 
+- **Status:** Pending review
+
+## 2026-08-31 — 209b0d7 — feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend)
+
+- **Full commit:** `209b0d7b286564a3a4e7126ecaeb93b862cd4ab1`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-13/story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts, social-listening-core/migrations/0065_align_export_jobs_for_adr_0111.sql, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/posts/exportRateLimit.ts, social-listening-core/src/posts/postExportEngine.ts
+- **Status:** Pending review
+
+## 2026-08-31 — 3241ecc — docs(user-stories): mark Story 13.4 as built
+
+- **Full commit:** `3241eccdc95c8fba36491cc6a14137f07885e44c`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+
+## 2026-09-01 — 543eecf — docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built
+
+- **Full commit:** `543eecfc8abe0b004cf4a9f43d2ee612c2f41d16`
+- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-01 — fd66185 — docs: sync post-commit tracking and synthesis for Story 13.6
+
+- **Full commit:** `fd661859a18825f4f084c7c2859273ec5f0b3cbc`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-01 — 181249f — docs: sync post-commit tracking for Story 13.6
+
+- **Full commit:** `181249f61d6efb940e9aed7fb09f15b2aec7748d`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-01 — 05e1e43 — feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113)
+
+- **Full commit:** `05e1e43b1b08c4e90865d724c18d6012fdc47a46`
+- **Files touched:** social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts, social-listening-core/migrations/0067_create_metric_explanation_cache.sql, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/metricExplanationCache.ts, social-listening-core/src/ai/prompts/metricExplainPromptV1.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/explainRouter.ts
 - **Status:** Pending review
 

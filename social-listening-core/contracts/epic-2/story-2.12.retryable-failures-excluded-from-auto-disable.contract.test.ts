@@ -1,44 +1,28 @@
 /**
- * Story 2.12 — deriveConnectorHealth() excludes retryable failures from the `failing` derivation
- * Source: ADR-0010 §Clarification (2026-08-12), ADR-0023 §Clarification (2026-08-12)
+ * Story 2.12 — failure classification and the `failing`/`disabled` boundary
+ * Source: ADR-0010, ADR-0023, ADR-0109/Story 13.1
  *
- * Intent: correct a confirmed implementation gap against ADR-0010's own
- * already-Accepted Decision text ("retryable errors → automatic retry;
- * non-retryable → immediate `failing` status"). `runIngestionAttempt.ts`
- * already classifies and persists `retryable` on every `ingestion_runs`
- * row it writes, but `deriveConnectorHealth()` never selected that column
- * — every failed run counted identically toward ADR-0023's rate-relative
- * `failing` derivation and the 20-consecutive-failure ceiling, regardless
- * of whether the failure was retryable (rate-limit/network/5xx) or
- * non-retryable (revoked credential/malformed watchlist). This directly
- * reproduced the historical Microsoft Social Engagement failure mode
- * Menno described: a connector disconnected merely for exhausting quota.
+ * Supersession update, 2026-08-28 (ADR-0109): this contract originally proved
+ * that retryable failures were *excluded* from `failing` derivation. That
+ * exclusion itself is now superseded: **every failed `ingestion_runs` row
+ * counts toward the 5-consecutive `failing` threshold** — a connector can no
+ * longer be disconnected merely for transient quota or network blips, because
+ * the threshold is only 5 (not 20) and the manual `POST .../enable` health
+ * check is the recovery path. What *does* still depend on retryability is the
+ * `disabled` state: the **latest** run being non-retryable (`retryable =
+ * false`) and non-credential immediately yields `disabled`, taking precedence
+ * over `failing`. A `NULL` `retryable` value is treated as unclassified and
+ * does *not* immediately disable; it still counts toward `failing`.
  *
- * `recentFailures` and `consecutiveFailures` now count only non-retryable
- * failed runs — a retryable-failed run is treated as fully invisible to
- * this derivation (neither counted as a failure nor as a successful
- * attempt), the same way `lastAttemptAt` still reflects it happened but
- * the failing/degraded/healthy status does not react to it in isolation.
- * A NULL `retryable` value (a fixture row created without classifying it,
- * e.g. Story 4.3's own contract) is treated as non-retryable — the
- * conservative default, since an unclassified failure should not be
- * silently excluded.
- *
- * Explicitly out of scope: ADR-0023's own accepted numeric defaults (50%
- * rate, 5-attempt floor, 20-consecutive ceiling) — unchanged; `deriveConnectorHealth()`'s
- * `credentialStatus`/`lastSuccessfulFetchAt`/`lastAttemptAt` fields —
- * unchanged; wiring `shouldAttemptIngestion()` into a real scheduler (none
- * exists yet).
- *
- * AC1: a run of purely retryable failures never crosses the rate-relative
- *      threshold or the consecutive ceiling on its own — status stays
- *      healthy/degraded, never failing.
- * AC2: a run of purely non-retryable failures still crosses both
- *      thresholds exactly as before.
- * AC3: a mixed run counts only the non-retryable failures toward
- *      recentFailures/consecutiveFailures.
- * AC4: a connector recovering from a purely-retryable blip (successes
- *      present, only retryable failures) reads healthy, not degraded.
+ * Contract to encode under ADR-0109:
+ * AC1: a run of purely retryable failures crosses `failing` after 5.
+ * AC2: the latest non-retryable failure immediately yields `disabled`, even
+ *      after a shorter streak.
+ * AC3: retryable and non-retryable failures both extend the consecutive
+ *      streak that leads to `failing`.
+ * AC4: a connector recovering from a blip (successes present) can become
+ *      `healthy` after 3 consecutive successes.
+ * AC5: a NULL `retryable` value counts as a failed run but does not disable.
  */
 
 import { randomUUID } from 'crypto';
@@ -73,57 +57,63 @@ async function recordRun(
   });
 }
 
-describe('Story 2.12 — retryable failures excluded from the failing derivation', () => {
-  it('AC1: a run of purely retryable failures never trips failing on its own, even past the consecutive ceiling', async () => {
-    const tenantId = randomUUID();
-    for (let i = 0; i < 25; i++) {
-      await recordRun(tenantId, 'failed', true);
-    }
-    const health = await deriveConnectorHealth(tenantId, platformId);
-    expect(health.status).not.toBe('failing');
-    expect(health.consecutiveFailures).toBe(0);
-  });
-
-  it('AC2: a run of purely non-retryable failures still trips failing exactly as before', async () => {
+describe('Story 2.12 — retryable and non-retryable failure states', () => {
+  it('AC1: a run of purely retryable failures trips failing after 5 consecutive', async () => {
     const tenantId = randomUUID();
     for (let i = 0; i < 5; i++) {
-      await recordRun(tenantId, 'failed', false);
+      await recordRun(tenantId, 'failed', true);
     }
     const health = await deriveConnectorHealth(tenantId, platformId);
     expect(health.status).toBe('failing');
     expect(health.consecutiveFailures).toBe(5);
   });
 
-  it('AC3: a mixed run counts only the non-retryable failures toward recentFailures/consecutiveFailures', async () => {
+  it('AC2: the latest non-retryable failure immediately disables the connector', async () => {
     const tenantId = randomUUID();
-    // 4 non-retryable failures interspersed with 3 retryable ones — the
-    // retryable ones must not count toward the 5-attempt-floor/50%-rate
-    // threshold ADR-0023 already accepts, nor toward consecutiveFailures.
-    await recordRun(tenantId, 'failed', false);
-    await recordRun(tenantId, 'failed', true);
-    await recordRun(tenantId, 'failed', false);
-    await recordRun(tenantId, 'failed', true);
-    await recordRun(tenantId, 'failed', false);
-    await recordRun(tenantId, 'failed', true);
-    await recordRun(tenantId, 'failed', false);
-
+    for (let i = 0; i < 5; i++) {
+      await recordRun(tenantId, 'failed', false);
+    }
     const health = await deriveConnectorHealth(tenantId, platformId);
-    expect(health.consecutiveFailures).toBe(4);
-    expect(health.status).not.toBe('failing'); // 4 non-retryable failures, no successes at all — under the 5-attempt floor
+    expect(health.status).toBe('disabled');
+    expect(health.consecutiveFailures).toBe(5);
   });
 
-  it('AC4: a connector recovering from a purely-retryable blip (successes present) reads healthy, not degraded', async () => {
+  it('AC3: a mixed run of retryable and non-retryable failures both count toward the consecutive failing streak', async () => {
+    const tenantId = randomUUID();
+    // 4 non-retryable + 1 retryable on the latest run -> the latest is
+    // retryable, so the 5-consecutive threshold yields `failing`, not
+    // `disabled`.
+    await recordRun(tenantId, 'failed', false);
+    await recordRun(tenantId, 'failed', true);
+    await recordRun(tenantId, 'failed', false);
+    await recordRun(tenantId, 'failed', true);
+    await recordRun(tenantId, 'failed', false);
+    await recordRun(tenantId, 'failed', true);
+    await recordRun(tenantId, 'failed', false);
+    await recordRun(tenantId, 'failed', true);
+    await recordRun(tenantId, 'failed', false);
+    await recordRun(tenantId, 'failed', true);
+
+    const health = await deriveConnectorHealth(tenantId, platformId);
+    expect(health.consecutiveFailures).toBe(10);
+    expect(health.status).toBe('failing');
+  });
+
+  it('AC4: a connector recovering from a blip becomes healthy after 3 consecutive successes', async () => {
     const tenantId = randomUUID();
     await recordRun(tenantId, 'succeeded');
     await recordRun(tenantId, 'failed', true);
     await recordRun(tenantId, 'failed', true);
+    await recordRun(tenantId, 'succeeded');
+    await recordRun(tenantId, 'succeeded');
     await recordRun(tenantId, 'succeeded');
 
     const health = await deriveConnectorHealth(tenantId, platformId);
     expect(health.status).toBe('healthy');
+    expect(health.consecutiveSuccesses).toBe(3);
   });
 
-  it('a NULL retryable value (an unclassified failure) is treated conservatively, as non-retryable', async () => {
+  it('AC5: a NULL retryable value counts as a failure but does not immediately disable', async () => {
     const tenantId = randomUUID();
     for (let i = 0; i < 5; i++) {
       await recordRun(tenantId, 'failed', undefined);

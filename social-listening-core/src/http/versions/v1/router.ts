@@ -20,10 +20,27 @@ import { selfServiceSignupRouter } from './selfServiceSignupRouter';
 import { domainSignupAttemptsRouter } from './domainSignupAttemptsRouter';
 import { selfServiceTenantDeletionRouter } from './selfServiceTenantDeletionRouter';
 import { tenantSelfViewRouter } from './tenantSelfViewRouter';
+import { tenantPlanRouter } from './tenantPlanRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
+import { crisisTemplatesRouter } from './crisisTemplatesRouter';
+import { explainRouter } from './explainRouter';
+import { ragRouter } from './ragRouter';
+import { prospectingListsRouter } from './prospectingListsRouter';
+import { analyticsViewsRouter } from './analyticsViewsRouter';
+import { platformDashboardRouter } from './platformDashboardRouter';
+import { postsExportRouter, exportsStatusRouter } from './postsExportRouter';
+import { alertRulesRouter } from './alertRulesRouter';
+import { webhooksRouter } from './webhooksRouter';
+import { youtubeConnectorRouter } from './youtubeConnectorRouter';
+import { inboxRouter } from './inboxRouter';
+import { mentionSuggestionsRouter } from './mentionSuggestionsRouter';
+import { createCRMRoutes } from '../../routes/crmRoutes';
+import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
+import { createPublishingRoutes } from '../../routes/publishingRoutes';
+import { influencersRouter } from './influencersRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -56,6 +73,12 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
       res.status(503).json({ status: 'unavailable' });
     }
   });
+
+  /** Story 11.3 (ADR-0096) — public one-click unsubscribe route. */
+  v1Router.use('/', createPublicDigestRoutes());
+
+  /** Story 10.8 (ADR-0090) — posts data export (streaming CSV & async jobs). Mounted BEFORE generic /posts. */
+  v1Router.use('/posts', authMiddleware, postsExportRouter);
 
   /** Story 3.4 (ADR-0011) — see .claude/skills/posts-api/SKILL.md. */
   v1Router.use('/posts', authMiddleware, postsRouter);
@@ -105,6 +128,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
    */
   v1Router.use('/connectors/linkedin/oauth', authMiddleware, linkedinOAuthRouter);
 
+  /** Story 10.13 (ADR-0093) — YouTube Data API v3 Ingestion Connector. */
+  v1Router.use('/connectors/youtube', authMiddleware, youtubeConnectorRouter);
+
   /** Story 4.4 (ADR-0022) — see .claude/skills/derived-data-caching-and-refresh/SKILL.md. */
   v1Router.use('/connectors', authMiddleware, connectorsRouter);
 
@@ -126,6 +152,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 5.14 (ADR-0030 §5) — see .claude/skills/platform-admin-audit-log/SKILL.md. */
   v1Router.use('/admin/audit-log', authMiddleware, adminAuditLogRouter);
 
+  /** Story 10.6 (ADR-0089) — platform operations telemetry dashboard. */
+  v1Router.use('/admin', authMiddleware, platformDashboardRouter);
+
   /**
    * Story 5.15 (ADR-0037 §5) — the one route in this project accepting a
    * caller resolveIdentity() cannot match. claimsAuthMiddleware verifies
@@ -141,6 +170,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 1.8 (ADR-0031) — see .claude/skills/tenants/SKILL.md. */
   v1Router.use('/tenants/me', authMiddleware, tenantSelfViewRouter);
 
+  /** Story 13.5 (ADR-0112) — see .claude/skills/feature-gating/SKILL.md. */
+  v1Router.use('/tenants/plan', authMiddleware, tenantPlanRouter);
+
   /** Story 1.9 (ADR-0032) — see .claude/skills/identity-resolution/SKILL.md. */
   v1Router.use('/tenants/users', authMiddleware, tenantUsersRouter);
 
@@ -150,7 +182,8 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 3.8 (ADR-0043) — see .claude/skills/self-service-tenant-deletion/SKILL.md. */
   v1Router.use('/tenants/self-service-deletion', authMiddleware, selfServiceTenantDeletionRouter);
 
-  /** Story 3.15 (ADR-0075) — outbound post publishing and scheduling. */
+  /** Story 3.15 (ADR-0075) / Story 11.7 (ADR-0098) — outbound post publishing, scheduling, and asset targeting. */
+  v1Router.use('/', authMiddleware, createPublishingRoutes(authMiddleware));
   v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
 
   /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */
@@ -159,5 +192,46 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 9.5 (ADR-0080) — tenant onboarding checklist state. */
   v1Router.use('/tenants', authMiddleware, onboardingChecklistRouter);
 
+  /** Story 9.3 (ADR-0079) — crisis template bundle & activation. */
+  v1Router.use('/crisis-templates', authMiddleware, crisisTemplatesRouter);
+
+  /** Story 9.2 (ADR-0078) — metric explainability endpoint. */
+  v1Router.use('/explain', authMiddleware, explainRouter);
+
+  /** Story 9.10 (ADR-0084) — RAG search, Q&A, and status endpoints. */
+  v1Router.use('/rag', authMiddleware, ragRouter);
+
+  /** Story 10.1 (ADR-0086) — prospecting lists & author entries. */
+  v1Router.use('/prospecting-lists', authMiddleware, prospectingListsRouter);
+
+  /** Story 10.3 (ADR-0087) — precomputed daily count analytics views. */
+  v1Router.use('/analytics', authMiddleware, analyticsViewsRouter);
+
+  /** Story 10.8 (ADR-0090) — posts data export status. */
+  v1Router.use('/exports', authMiddleware, exportsStatusRouter);
+
+  /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
+  v1Router.use('/alerts', authMiddleware, alertRulesRouter);
+
+  /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
+  v1Router.use('/webhooks', authMiddleware, webhooksRouter);
+
+  /** Story 11.1 (ADR-0095) — CRM connectors, field mappings, and case handoff. */
+  v1Router.use('/', authMiddleware, createCRMRoutes());
+
+  /** Story 11.3 (ADR-0096) — daily digest preferences, previews, and unsubscribe. */
+  v1Router.use('/', authMiddleware, createDigestRoutes());
+
+  /** Story 11.9 (ADR-0099) — unified social inbox and triage. */
+  v1Router.use('/inbox/items', authMiddleware, inboxRouter);
+  v1Router.use('/inbox', authMiddleware, inboxRouter);
+
+  /** Story 11.11 (ADR-0100) — composed post author mention suggestions. */
+  v1Router.use('/composer', authMiddleware, mentionSuggestionsRouter);
+
+  /** Story 12.15 (ADR-0108) — influencer discovery and multi-factor scoring. */
+  v1Router.use('/influencers', authMiddleware, influencersRouter);
+
   return v1Router;
 }
+

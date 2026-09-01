@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 
@@ -336,3 +336,5 @@ This design introduces `topics` and `post_topics` as first-class, tenant-RLS-pro
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
 | 0.2 | 2026-08-23 | FDD Writer Agent | Regenerated with a real per-capability Section 5 breakdown, data model, and workflow detail, replacing the prior defective BRD-table copy |
+
+> **Technical Revision (2026-08-28):** Added schema specifications for 	opic_clusters and post_topic_assignments tables with batch assignment worker contracts.

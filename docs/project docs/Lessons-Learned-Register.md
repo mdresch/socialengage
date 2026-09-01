@@ -1,4 +1,4 @@
-# Lessons Learned Register
+﻿# Lessons Learned Register
 ### Social Listening & Engagement Platform — Phase 1: Social Listening / Insights Subsystem
 
 **Author:** Menno
@@ -70,3 +70,37 @@ None of this project's existing enforcement layers would have caught it: `enforc
 ---
 
 *This document is maintained as part of the SocialEngage project's Project Management artifacts, alongside `Stakeholder-Register.md`. For questions or updates, contact Menno Drescher.*
+
+---
+
+## Reusable Architectural & System Patterns (ADR-0122 / FDD-0122)
+
+### 1. Same-Origin Route Proxy Pattern
+- **Architecture Pattern Name**: Same-Origin Next.js Route Proxy Pattern
+- **Applicable Domains**: `social-listening-admin` -> `social-listening-core` HTTP communication (`src/app/api/.../route.ts`).
+- **Governing Decision**: `ADR-0036` (Amended per `ADR-0122`).
+- **Anti-Patterns Prevented**:
+  - Exposing Entra CIAM bearer tokens or session encryption secrets to browser JavaScript / `localStorage` (XSS vulnerability).
+  - Ad-hoc CORS configuration on backend microservices.
+- **Mechanism & Trade-offs**: Client components fetch `/api/...` on the same origin; the server-side route handler reads `{ sid }` from encrypted session cookies, injects `Authorization: Bearer <token>`, and calls `core-client.ts`. Incurs double-hop proxy latency in exchange for strict zero-token client exposure.
+- **Evidence / Verified Commits**: `c643553` (Story 6.1), `443819e` (Story 6.2).
+
+### 2. $O(1)$ Memory-Bounded Chunked Streaming Pattern
+- **Architecture Pattern Name**: Proxy-Mediated Chunked Cursor Streaming
+- **Applicable Domains**: Bulk data exports, Workspace JSON archives (`ADR-0074`), Posts CSV downloads (`ADR-0090`), Compliance Audit Packs (`ADR-0094`).
+- **Governing Decision**: `ADR-0074`, `ADR-0090` (Amended per `ADR-0122`).
+- **Anti-Patterns Prevented**:
+  - Buffer allocation of entire multi-megabyte datasets into Node.js server heap memory ($O(N)$ memory exhaustion / Out-Of-Memory crashes).
+  - Holding large unpaginated SQL query result arrays in application memory.
+- **Mechanism & Trade-offs**: Postgres cursor queries stream chunks directly through `social-listening-core` into the Next.js `ReadableStream` pipe to the browser. Automatically propagates backpressure. Constrained by serverless timeout limits; multi-gigabyte exports delegate to asynchronous blob jobs (ADR-0111).
+- **Evidence / Verified Commits**: `cf1f96c` (Story 6.40 export routes).
+
+### 3. Ephemeral AI Analysis Lifecycle Pattern
+- **Architecture Pattern Name**: Ephemeral Frontend AI Context Isolation
+- **Applicable Domains**: Polypost Composer Deep Research (`ADR-0076`), Aspect Sentiment Explainability (`ADR-0113`), Topic Clustering Previews (`ADR-0104`).
+- **Governing Decision**: `ADR-0076` (Amended per `ADR-0122`).
+- **Anti-Patterns Prevented**:
+  - Corrupting persistent post draft state (`localStorage`) with stale, hallucinations, or multi-turn LLM reasoning summaries.
+  - Zombie background network requests on unmount.
+- **Mechanism & Trade-offs**: AI research output lives strictly in ephemeral React component state. Panel close immediately releases memory; in-flight requests abort their `AbortController`.
+- **Evidence / Verified Commits**: `64ac1f3` (Story 6.41 Deep Research panel UI).
