@@ -2644,346 +2644,412 @@
 
 - **Full commit:** `eb319d6b244357064fdb8c9524b3d8f64bd72ba3`
 - **Files touched:** .devin/skills/brd-writer/SKILL.md, docs/project docs/Business-Requirements/BRD-0001-Two-Repository-Split.md, docs/project docs/Business-Requirements/BRD-0002-Unified-Provider-Connector-Pattern.md, docs/project docs/Business-Requirements/BRD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md, docs/project docs/Business-Requirements/BRD-0004-Author-Normalized-Separately-From-Post.md, docs/project docs/Business-Requirements/BRD-0005-Ingestion-Run-As-Audit-Anchor.md, docs/project docs/Business-Requirements/BRD-0006-Watchlist-Matching-Connector-Side-With-Fallback.md, docs/project docs/Business-Requirements/BRD-0007-Author-Topic-Signal-Minimal-V1.md, docs/project docs/Business-Requirements/BRD-0008-Defer-Topic-Time-Series-And-Charting.md, docs/project docs/Business-Requirements/BRD-0009-Connector-Health-Derived-Not-Stored.md, docs/project docs/Business-Requirements/BRD-0010-Error-Handling-And-Auto-Disable-Policy.md, docs/project docs/Business-Requirements/BRD-0011-Cursor-Based-Pagination-For-Posts-API.md, docs/project docs/Business-Requirements/BRD-0012-Thin-Events-With-REST-Fetch-On-Demand.md, docs/project docs/Business-Requirements/BRD-0013-Per-Tenant-Event-Filtering-Via-Subscription-Rules.md, docs/project docs/Business-Requirements/BRD-0014-Credential-Storage-Envelope-Encryption-OAuth-First.md, docs/project docs/Business-Requirements/BRD-0015-Tenant-Isolation-Via-Postgres-Row-Level-Security.md, docs/project docs/Business-Requirements/BRD-0016-Postgres-As-Database-Engine.md, docs/project docs/Business-Requirements/BRD-0017-API-Versioning-And-Compatibility-Policy.md, docs/project docs/Business-Requirements/BRD-0018-Data-Retention-And-Archival-Policy.md, docs/project docs/Business-Requirements/BRD-0019-Event-Schema-Versioning-Policy.md, docs/project docs/Business-Requirements/BRD-0020-Rate-Limit-Queue-Bounds-And-Distributed-Gate-State.md, docs/project docs/Business-Requirements/BRD-0021-Watchlist-Boolean-Query-AST-And-Capability-Matrix.md, docs/project docs/Business-Requirements/BRD-0022-Derived-Data-Caching-And-Refresh-Strategy.md, docs/project docs/Business-Requirements/BRD-0023-Proportional-Connector-Failure-Threshold.md, docs/project docs/Business-Requirements/BRD-0024-Newswire-Connector-Direct-Wire-RSS-Issuer-As-Author.md, docs/project docs/Business-Requirements/BRD-0025-Persistent-Local-Dev-Database-Separate-From-Test-Database.md, docs/project docs/Business-Requirements/BRD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md, docs/project docs/Business-Requirements/BRD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md, docs/project docs/Business-Requirements/BRD-0028-Credential-Creation-Authority-Scoped-By-Ownership-Tier.md, docs/project docs/Business-Requirements/BRD-0029-Authentication-Mechanism-Entra-External-ID.md, docs/project docs/Business-Requirements/BRD-0030-Admin-Tier-Design-Platform-Admin-RLS-Exception.md, docs/project docs/Business-Requirements/BRD-0031-Tenants-Table-Shape.md, docs/project docs/Business-Requirements/BRD-0032-Users-Table-Shape-And-RLS.md, docs/project docs/Business-Requirements/BRD-0033-Retire-X-Tenant-Id-Header-Placeholder.md, docs/project docs/Business-Requirements/BRD-0034-Connector-Connect-Disconnect-CRUD-Ownership-Tier-Aware.md, docs/project docs/Business-Requirements/BRD-0035-Admin-UI-Shape-One-App-Role-Gated.md, docs/project docs/Business-Requirements/BRD-0036-Admin-UI-Authentication-Session-And-Role-Gating-Mechanism.md, docs/project docs/Business-Requirements/BRD-0037-Self-Service-Tenant-Signup-And-First-Tenant-Admin-Provisioning.md, docs/project docs/Business-Requirements/BRD-0038-AI-Enrichment-Provider-Selection.md, docs/project docs/Business-Requirements/BRD-0039-Tenant-Offboarding-Data-Lifecycle-Export-And-Deletion.md, docs/project docs/Business-Requirements/BRD-0040-Self-Service-Signup-Rate-Limiting-And-Abuse-Prevention-Mechanism.md, docs/project docs/Business-Requirements/BRD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md, docs/project docs/Business-Requirements/BRD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md, docs/project docs/Business-Requirements/BRD-0043-Self-Service-Tenant-Initiated-Deletion.md, docs/project docs/Business-Requirements/BRD-0044-Watchlist-API-Design-And-Database-Schema-Standardization.md, docs/project docs/Business-Requirements/BRD-0047-Standard-Pattern-For-Cross-Story-References-And-Supersession-Language.md, docs/project docs/Business-Requirements/BRD-0048-No-Core-Pipeline-Change-Verification-For-New-Connector-Registration.md, docs/project docs/Business-Requirements/BRD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md, docs/project docs/Business-Requirements/BRD-0050-Tenant-Owned-Domain-RSS-Content-Feed-Connector.md, docs/project docs/Business-Requirements/BRD-0051-Connector-Activation-Decoupled-From-Credential.md, docs/project docs/Business-Requirements/BRD-0052-Live-Ingestion-Polling-Scheduler.md, docs/project docs/Business-Requirements/BRD-0053-Canonical-Markdown-Post-Body-Normalization-At-Ingestion.md, docs/project docs/Business-Requirements/BRD-0054-Tenant-Facing-Analytics-Dashboard-Scope-And-Data-Source-Strategy.md, docs/project docs/Business-Requirements/BRD-0055-Analytics-Language-And-Location-Enrichment-Feasibility.md, docs/project docs/Business-Requirements/BRD-0056-AI-Inferred-Origin-Location-Newswire-Dateline-Extraction.md, docs/project docs/Business-Requirements/BRD-0057-Tenant-Owned-Feed-Multi-Feed-Administration.md, docs/project docs/Business-Requirements/BRD-0058-Wire-Ingestion-Events-Into-Real-Connector-Pipeline.md, docs/project docs/Business-Requirements/BRD-0059-Facebook-Connector-Tenant-Owned-Page-Scope-Organization-As-Author.md, docs/project docs/Business-Requirements/BRD-0060-Facebook-Connector-Multiple-Pages-Per-User.md, docs/project docs/Business-Requirements/BRD-0061-Tier-3-Poll-Scheduler-Per-User-Enumeration.md, docs/project docs/Business-Requirements/BRD-0062-Analytics-Dashboard-Overview-Tab-Enhancement.md, docs/project docs/Business-Requirements/BRD-0063-Post-Watchlist-Matches-Junction-Table-And-Server-Side-Watchlist-Filter.md, docs/project docs/Business-Requirements/BRD-0064-Location-And-Geospatial-Insights-From-Posts-And-Authors.md, docs/project docs/Business-Requirements/BRD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md, docs/project docs/Business-Requirements/BRD-0066-Active-Watchlist-Sourcing-Via-Bing-Search-API.md, docs/project docs/Business-Requirements/BRD-0067-Reconfirm-Facebook-Connector.md, docs/project docs/Business-Requirements/BRD-0068-Instagram-Connector.md, docs/project docs/Business-Requirements/BRD-0069-LinkedIn-Connector.md, docs/project docs/Business-Requirements/BRD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md, docs/project docs/Business-Requirements/BRD-0071-Human-In-The-Loop-Post-Enrichment-Overrides-And-Cascading-Drawer-UI.md, docs/project docs/Business-Requirements/BRD-0072-Cross-Platform-Polypost-Composer-And-Multi-Network-Preview-Engine.md, docs/project docs/Business-Requirements/BRD-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Business-Requirements/BRD-0074-Tenant-Facing-Workspace-and-Matched-Posts-Export.md, docs/project docs/Business-Requirements/BRD-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Business-Requirements/BRD-0076-Composer-Deep-Research-Agent.md, docs/project docs/Business-Requirements/BRD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Business-Requirements/BRD-0078-Metric-Explainability-Endpoint.md, docs/project docs/Business-Requirements/BRD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Business-Requirements/BRD-0080-Onboarding-Checklist-State.md, docs/project docs/Business-Requirements/BRD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Business-Requirements/BRD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Business-Requirements/BRD-0089-Platform-Operations-Dashboard.md, docs/project docs/Business-Requirements/BRD-0090-Data-Export-Posts-CSV.md, docs/project docs/Business-Requirements/BRD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Business-Requirements/BRD-0092-Author-Initiated-Takedown.md, docs/project docs/Business-Requirements/BRD-0093-DSR-Self-Service-Portal.md, docs/project docs/Business-Requirements/BRD-0094-Compliance-Audit-Pack.md, docs/project docs/Business-Requirements/BRD-0095-Case-Handoff-To-CRM.md, docs/project docs/Business-Requirements/BRD-0096-Daily-Digest-Email.md, docs/project docs/Business-Requirements/BRD-0097-Topic-Evolution-Timeline.md, docs/project docs/Business-Requirements/BRD-0098-Publishing-And-Scheduling.md, docs/project docs/Business-Requirements/BRD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Business-Requirements/BRD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Business-Requirements/BRD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Business-Requirements/BRD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Business-Requirements/BRD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Business-Requirements/BRD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Business-Requirements/BRD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Business-Requirements/BRD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Business-Requirements/BRD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Business-Requirements/BRD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Business-Requirements/BRD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Business-Requirements/BRD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Business-Requirements/BRD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Business-Requirements/BRD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Business-Requirements/BRD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Business-Requirements/BRD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Business-Requirements/BRD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Business-Requirements/BRD-0116-Semantic-Drift-Detection.md, docs/project docs/Business-Requirements/BRD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Business-Requirements/BRD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Business-Requirements/BRD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Business-Requirements/BRD-0120-Search-Provider-Connector.md, docs/project docs/Business-Requirements/BRD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md, docs/project docs/Business-Requirements/BRD-Template.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — e3df7d9 — feat(core): implement Story 2.26 connector reply framework and outbound rate gate (ADR-0073)
 
 - **Full commit:** `e3df7d9efc085605355668be047f5b78b8425d65`
 - **Files touched:** social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.26.connector-reply-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundEngagementService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 9231a67 — docs(trace): Story 2.26 implementation log and Built field
 
 - **Full commit:** `9231a676d02c7df4a258c226b530bc96ffc33549`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 4949200 — feat(core): Brave and Bing one-off research search helpers (Story 2.31)
 
 - **Full commit:** `494920053530aeb41f30ff023d9fa47291b675f3`
 - **Files touched:** social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 0364adb — docs(trace): Story 2.31 implementation log and Built field
 
 - **Full commit:** `0364adb687ba19171476b360627679a382dadb84`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — dc22ecc — docs: add FDD template and functional design documents for ADR/BRD 0001-0121
 
 - **Full commit:** `dc22ecc84dc0fcc0213e6a20a1901e7ff1e011b9`
 - **Files touched:** docs/project docs/FDD template.md, docs/project docs/Functional-Design/FDD-0001-Two-Repository-Split.md, docs/project docs/Functional-Design/FDD-0002-Unified-Provider-Connector-Pattern.md, docs/project docs/Functional-Design/FDD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md, docs/project docs/Functional-Design/FDD-0004-Author-Normalized-Separately-From-Post.md, docs/project docs/Functional-Design/FDD-0005-Ingestion-Run-As-Audit-Anchor.md, docs/project docs/Functional-Design/FDD-0006-Watchlist-Matching-Connector-Side-With-Fallback.md, docs/project docs/Functional-Design/FDD-0007-Author-Topic-Signal-Minimal-V1.md, docs/project docs/Functional-Design/FDD-0008-Defer-Topic-Time-Series-And-Charting.md, docs/project docs/Functional-Design/FDD-0009-Connector-Health-Derived-Not-Stored.md, docs/project docs/Functional-Design/FDD-0010-Error-Handling-And-Auto-Disable-Policy.md, docs/project docs/Functional-Design/FDD-0011-Cursor-Based-Pagination-For-Posts-API.md, docs/project docs/Functional-Design/FDD-0012-Thin-Events-With-REST-Fetch-On-Demand.md, docs/project docs/Functional-Design/FDD-0013-Per-Tenant-Event-Filtering-Via-Subscription-Rules.md, docs/project docs/Functional-Design/FDD-0014-Credential-Storage-Envelope-Encryption-OAuth-First.md, docs/project docs/Functional-Design/FDD-0015-Tenant-Isolation-Via-Postgres-Row-Level-Security.md, docs/project docs/Functional-Design/FDD-0016-Postgres-As-Database-Engine.md, docs/project docs/Functional-Design/FDD-0017-API-Versioning-And-Compatibility-Policy.md, docs/project docs/Functional-Design/FDD-0018-Data-Retention-And-Archival-Policy.md, docs/project docs/Functional-Design/FDD-0019-Event-Schema-Versioning-Policy.md, docs/project docs/Functional-Design/FDD-0020-Rate-Limit-Queue-Bounds-And-Distributed-Gate-State.md, docs/project docs/Functional-Design/FDD-0021-Watchlist-Boolean-Query-AST-And-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0022-Derived-Data-Caching-And-Refresh-Strategy.md, docs/project docs/Functional-Design/FDD-0023-Proportional-Connector-Failure-Threshold.md, docs/project docs/Functional-Design/FDD-0024-Newswire-Connector-Direct-Wire-RSS-Issuer-As-Author.md, docs/project docs/Functional-Design/FDD-0025-Persistent-Local-Dev-Database-Separate-From-Test-Database.md, docs/project docs/Functional-Design/FDD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md, docs/project docs/Functional-Design/FDD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md, docs/project docs/Functional-Design/FDD-0028-Credential-Creation-Authority-Scoped-By-Ownership-Tier.md, docs/project docs/Functional-Design/FDD-0029-Authentication-Mechanism-Entra-External-ID.md, docs/project docs/Functional-Design/FDD-0030-Admin-Tier-Design-Platform-Admin-RLS-Exception.md, docs/project docs/Functional-Design/FDD-0031-Tenants-Table-Shape.md, docs/project docs/Functional-Design/FDD-0032-Users-Table-Shape-And-RLS.md, docs/project docs/Functional-Design/FDD-0033-Retire-X-Tenant-Id-Header-Placeholder.md, docs/project docs/Functional-Design/FDD-0034-Connector-Connect-Disconnect-CRUD-Ownership-Tier-Aware.md, docs/project docs/Functional-Design/FDD-0035-Admin-UI-Shape-One-App-Role-Gated.md, docs/project docs/Functional-Design/FDD-0036-Admin-UI-Authentication-Session-And-Role-Gating-Mechanism.md, docs/project docs/Functional-Design/FDD-0037-Self-Service-Tenant-Signup-And-First-Tenant-Admin-Provisioning.md, docs/project docs/Functional-Design/FDD-0038-AI-Enrichment-Provider-Selection.md, docs/project docs/Functional-Design/FDD-0039-Tenant-Offboarding-Data-Lifecycle-Export-And-Deletion.md, docs/project docs/Functional-Design/FDD-0040-Self-Service-Signup-Rate-Limiting-And-Abuse-Prevention-Mechanism.md, docs/project docs/Functional-Design/FDD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md, docs/project docs/Functional-Design/FDD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md, docs/project docs/Functional-Design/FDD-0043-Self-Service-Tenant-Initiated-Deletion.md, docs/project docs/Functional-Design/FDD-0044-Watchlist-API-Design-And-Database-Schema-Standardization.md, docs/project docs/Functional-Design/FDD-0047-Standard-Pattern-For-Cross-Story-References-And-Supersession-Language.md, docs/project docs/Functional-Design/FDD-0048-No-Core-Pipeline-Change-Verification-For-New-Connector-Registration.md, docs/project docs/Functional-Design/FDD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md, docs/project docs/Functional-Design/FDD-0050-Tenant-Owned-Domain-RSS-Content-Feed-Connector.md, docs/project docs/Functional-Design/FDD-0051-Connector-Activation-Decoupled-From-Credential.md, docs/project docs/Functional-Design/FDD-0052-Live-Ingestion-Polling-Scheduler.md, docs/project docs/Functional-Design/FDD-0053-Canonical-Markdown-Post-Body-Normalization-At-Ingestion.md, docs/project docs/Functional-Design/FDD-0054-Tenant-Facing-Analytics-Dashboard-Scope-And-Data-Source-Strategy.md, docs/project docs/Functional-Design/FDD-0055-Analytics-Language-And-Location-Enrichment-Feasibility.md, docs/project docs/Functional-Design/FDD-0056-AI-Inferred-Origin-Location-Newswire-Dateline-Extraction.md, docs/project docs/Functional-Design/FDD-0057-Tenant-Owned-Feed-Multi-Feed-Administration.md, docs/project docs/Functional-Design/FDD-0058-Wire-Ingestion-Events-Into-Real-Connector-Pipeline.md, docs/project docs/Functional-Design/FDD-0059-Facebook-Connector-Tenant-Owned-Page-Scope-Organization-As-Author.md, docs/project docs/Functional-Design/FDD-0060-Facebook-Connector-Multiple-Pages-Per-User.md, docs/project docs/Functional-Design/FDD-0061-Tier-3-Poll-Scheduler-Per-User-Enumeration.md, docs/project docs/Functional-Design/FDD-0062-Analytics-Dashboard-Overview-Tab-Enhancement.md, docs/project docs/Functional-Design/FDD-0063-Post-Watchlist-Matches-Junction-Table-And-Server-Side-Watchlist-Filter.md, docs/project docs/Functional-Design/FDD-0064-Location-And-Geospatial-Insights-From-Posts-And-Authors.md, docs/project docs/Functional-Design/FDD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md, docs/project docs/Functional-Design/FDD-0066-Active-Watchlist-Sourcing-Via-Bing-Search-API.md, docs/project docs/Functional-Design/FDD-0067-Reconfirm-Facebook-Connector.md, docs/project docs/Functional-Design/FDD-0068-Instagram-Connector.md, docs/project docs/Functional-Design/FDD-0069-LinkedIn-Connector.md, docs/project docs/Functional-Design/FDD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md, docs/project docs/Functional-Design/FDD-0071-Human-In-The-Loop-Post-Enrichment-Overrides-And-Cascading-Drawer-UI.md, docs/project docs/Functional-Design/FDD-0072-Cross-Platform-Polypost-Composer-And-Multi-Network-Preview-Engine.md, docs/project docs/Functional-Design/FDD-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Functional-Design/FDD-0074-Tenant-Facing-Workspace-and-Matched-Posts-Export.md, docs/project docs/Functional-Design/FDD-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Functional-Design/FDD-0076-Composer-Deep-Research-Agent.md, docs/project docs/Functional-Design/FDD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Functional-Design/FDD-0078-Metric-Explainability-Endpoint.md, docs/project docs/Functional-Design/FDD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Functional-Design/FDD-0080-Onboarding-Checklist-State.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Functional-Design/FDD-0089-Platform-Operations-Dashboard.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0095-Case-Handoff-To-CRM.md, docs/project docs/Functional-Design/FDD-0096-Daily-Digest-Email.md, docs/project docs/Functional-Design/FDD-0097-Topic-Evolution-Timeline.md, docs/project docs/Functional-Design/FDD-0098-Publishing-And-Scheduling.md, docs/project docs/Functional-Design/FDD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Functional-Design/FDD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Functional-Design/FDD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Functional-Design/FDD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Functional-Design/FDD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Functional-Design/FDD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Functional-Design/FDD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Functional-Design/FDD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Functional-Design/FDD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Functional-Design/FDD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Functional-Design/FDD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Functional-Design/FDD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Functional-Design/FDD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Functional-Design/FDD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Functional-Design/FDD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Functional-Design/FDD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Functional-Design/FDD-0116-Semantic-Drift-Detection.md, docs/project docs/Functional-Design/FDD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Functional-Design/FDD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Functional-Design/FDD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Functional-Design/FDD-0120-Search-Provider-Connector.md, docs/project docs/Functional-Design/FDD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — 2da26eb — feat(core): Facebook Page reply implementation (Story 2.27, ADR-0073)
 
 - **Full commit:** `2da26ebee9508980771f1aca99641eceffce44d9`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/contracts/epic-2/story-2.27.facebook-page-reply-implementation.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 3bf8786 — docs(trace): Story 2.27 implementation log and Built field
 
 - **Full commit:** `3bf878626422e568a01d9436d6fc9d582534860f`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — c63752e — docs(skills): include BRD/FDD context in implement-story process
 
 - **Full commit:** `c63752e42759fd5b6caff4d1c8ec455bf0c06f66`
 - **Files touched:** .claude/skills/implement-story/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — 3df8ccf — docs(skills): include BRD/FDD context in heal-contract-failure
 
 - **Full commit:** `3df8ccfab8fef88f98724ce6c5ac011679f7ef43`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — f1e0f9b — feat(core): Connector publish framework and outbound post rate gate (Story 2.28, ADR-0075)
 
 - **Full commit:** `f1e0f9ba465d557483c7f52f696b6c746c6c6480`
 - **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.28.connector-publish-framework.contract.test.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/outbound/outboundPublishService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — e04854d — docs(trace): Story 2.28 implementation log and Built field
 
 - **Full commit:** `e04854d15bf4b4475150d5cc95e4ccd1b4c4dcbf`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 4234834 — feat(facebook): Facebook Page post publishing (Story 2.29, ADR-0075)
 
 - **Full commit:** `4234834a9af2e0c7411aaa34b376343249e34ec5`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.29.facebook-page-post-publishing.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — af0c048 — docs(trace): Story 2.29 implementation log and Built field
 
 - **Full commit:** `af0c0485b306ca9b43d8e2ab1151524018961495`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 3a65691 — feat(linkedin): LinkedIn post publishing (Story 2.30, ADR-0075)
 
 - **Full commit:** `3a656912c77195a2dda7201d403c82141e7a078c`
 - **Files touched:** social-listening-core/.claude/skills/linkedin-connector/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/contracts/epic-2/story-2.30.linkedin-post-publishing.contract.test.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 1a28fc5 — docs(trace): Story 2.30 implementation log and Built field
 
 - **Full commit:** `1a28fc504fd594fd955dc2e7f61ea6542d7c03e4`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 17a3405 — docs(skills): add fdd-writer and fdd-writer-batch skill modules
 
 - **Full commit:** `17a34055e2afab02d6f5c7161be67952fe90a319`
 - **Files touched:** .devin/skills/fdd-writer-batch/SKILL.md, .devin/skills/fdd-writer/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — b64bf07 — docs(user-stories): mark ADR-0079 stories Ready and refresh Epic 9 statuses
 
 - **Full commit:** `b64bf07cce291aa829297cf5e1732aa190067ff4`
 - **Files touched:** docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-10-adr-0086-to-0094.md, docs/user-stories/epic-11-adr-0095-to-0100.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-4-derived-data-analytics-and-health.md, docs/user-stories/epic-5-security-isolation-and-messaging.md, docs/user-stories/epic-6-tenant-admin-ui.md, docs/user-stories/epic-8-analytics-dashboard.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing b64bf07, 0c1d5b9, 7f2e1f9, a9f73c4, 0a7c450.
 
 ## 2026-08-23 — ce1c11a — docs(fdd): regenerate FDD-0079 and BRD-0079 for accepted ADR-0079
 
 - **Full commit:** `ce1c11a9dd5903d1d556bbf1dbbba539dcf966ac`
 - **Files touched:** docs/project docs/Business-Requirements/BRD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Functional-Design/FDD-0079-Crisis-Template-Bundle-And-Activation.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — 0c1d5b9 — docs(adr): accept ADR-0079 and add newly drafted ADRs 0118-0121
 
 - **Full commit:** `0c1d5b9875469e4ca28805f7b96418a8650ddb21`
 - **Files touched:** docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0075-outbound-social-post-publishing.md, docs/adr/0076-composer-deep-research-agent.md, docs/adr/0077-watchlist-connector-count-method.md, docs/adr/0078-metric-explainability-endpoint.md, docs/adr/0079-crisis-template-bundle-and-activation.md, docs/adr/0098-publishing-and-scheduling.md, docs/adr/0118-additional-social-platform-publishing.md, docs/adr/0119-editing-and-deleting-published-outbound-posts.md, docs/adr/0120-search-provider-connector.md, docs/adr/0121-composer-deep-research-caching-retrigger-cost.md, docs/adr/README.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing b64bf07, 0c1d5b9, 7f2e1f9, a9f73c4, 0a7c450.
 
 ## 2026-08-23 — 0bba070 — docs(brd): commit updated BRD drafts
 
 - **Full commit:** `0bba070cd13f3e62d5ee2be97629340d2e99a005`
 - **Files touched:** docs/project docs/Business-Requirements/BRD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Business-Requirements/BRD-0078-Metric-Explainability-Endpoint.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — dfa3673 — docs(fdd): commit updated FDD drafts
 
 - **Full commit:** `dfa3673f37c920ad72a5d326d5831ef3978d5045`
 - **Files touched:** docs/project docs/Functional-Design/FDD-0001-Two-Repository-Split.md, docs/project docs/Functional-Design/FDD-0002-Unified-Provider-Connector-Pattern.md, docs/project docs/Functional-Design/FDD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md, docs/project docs/Functional-Design/FDD-0004-Author-Normalized-Separately-From-Post.md, docs/project docs/Functional-Design/FDD-0005-Ingestion-Run-As-Audit-Anchor.md, docs/project docs/Functional-Design/FDD-0006-Watchlist-Matching-Connector-Side-With-Fallback.md, docs/project docs/Functional-Design/FDD-0007-Author-Topic-Signal-Minimal-V1.md, docs/project docs/Functional-Design/FDD-0008-Defer-Topic-Time-Series-And-Charting.md, docs/project docs/Functional-Design/FDD-0009-Connector-Health-Derived-Not-Stored.md, docs/project docs/Functional-Design/FDD-0010-Error-Handling-And-Auto-Disable-Policy.md, docs/project docs/Functional-Design/FDD-0011-Cursor-Based-Pagination-For-Posts-API.md, docs/project docs/Functional-Design/FDD-0012-Thin-Events-With-REST-Fetch-On-Demand.md, docs/project docs/Functional-Design/FDD-0013-Per-Tenant-Event-Filtering-Via-Subscription-Rules.md, docs/project docs/Functional-Design/FDD-0014-Credential-Storage-Envelope-Encryption-OAuth-First.md, docs/project docs/Functional-Design/FDD-0015-Tenant-Isolation-Via-Postgres-Row-Level-Security.md, docs/project docs/Functional-Design/FDD-0016-Postgres-As-Database-Engine.md, docs/project docs/Functional-Design/FDD-0017-API-Versioning-And-Compatibility-Policy.md, docs/project docs/Functional-Design/FDD-0018-Data-Retention-And-Archival-Policy.md, docs/project docs/Functional-Design/FDD-0019-Event-Schema-Versioning-Policy.md, docs/project docs/Functional-Design/FDD-0020-Rate-Limit-Queue-Bounds-And-Distributed-Gate-State.md, docs/project docs/Functional-Design/FDD-0021-Watchlist-Boolean-Query-AST-And-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0022-Derived-Data-Caching-And-Refresh-Strategy.md, docs/project docs/Functional-Design/FDD-0023-Proportional-Connector-Failure-Threshold.md, docs/project docs/Functional-Design/FDD-0024-Newswire-Connector-Direct-Wire-RSS-Issuer-As-Author.md, docs/project docs/Functional-Design/FDD-0025-Persistent-Local-Dev-Database-Separate-From-Test-Database.md, docs/project docs/Functional-Design/FDD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md, docs/project docs/Functional-Design/FDD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md, docs/project docs/Functional-Design/FDD-0028-Credential-Creation-Authority-Scoped-By-Ownership-Tier.md, docs/project docs/Functional-Design/FDD-0029-Authentication-Mechanism-Entra-External-ID.md, docs/project docs/Functional-Design/FDD-0030-Admin-Tier-Design-Platform-Admin-RLS-Exception.md, docs/project docs/Functional-Design/FDD-0031-Tenants-Table-Shape.md, docs/project docs/Functional-Design/FDD-0032-Users-Table-Shape-And-RLS.md, docs/project docs/Functional-Design/FDD-0033-Retire-X-Tenant-Id-Header-Placeholder.md, docs/project docs/Functional-Design/FDD-0034-Connector-Connect-Disconnect-CRUD-Ownership-Tier-Aware.md, docs/project docs/Functional-Design/FDD-0035-Admin-UI-Shape-One-App-Role-Gated.md, docs/project docs/Functional-Design/FDD-0036-Admin-UI-Authentication-Session-And-Role-Gating-Mechanism.md, docs/project docs/Functional-Design/FDD-0037-Self-Service-Tenant-Signup-And-First-Tenant-Admin-Provisioning.md, docs/project docs/Functional-Design/FDD-0038-AI-Enrichment-Provider-Selection.md, docs/project docs/Functional-Design/FDD-0039-Tenant-Offboarding-Data-Lifecycle-Export-And-Deletion.md, docs/project docs/Functional-Design/FDD-0040-Self-Service-Signup-Rate-Limiting-And-Abuse-Prevention-Mechanism.md, docs/project docs/Functional-Design/FDD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md, docs/project docs/Functional-Design/FDD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md, docs/project docs/Functional-Design/FDD-0043-Self-Service-Tenant-Initiated-Deletion.md, docs/project docs/Functional-Design/FDD-0044-Watchlist-API-Design-And-Database-Schema-Standardization.md, docs/project docs/Functional-Design/FDD-0047-Standard-Pattern-For-Cross-Story-References-And-Supersession-Language.md, docs/project docs/Functional-Design/FDD-0048-No-Core-Pipeline-Change-Verification-For-New-Connector-Registration.md, docs/project docs/Functional-Design/FDD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md, docs/project docs/Functional-Design/FDD-0050-Tenant-Owned-Domain-RSS-Content-Feed-Connector.md, docs/project docs/Functional-Design/FDD-0051-Connector-Activation-Decoupled-From-Credential.md, docs/project docs/Functional-Design/FDD-0052-Live-Ingestion-Polling-Scheduler.md, docs/project docs/Functional-Design/FDD-0053-Canonical-Markdown-Post-Body-Normalization-At-Ingestion.md, docs/project docs/Functional-Design/FDD-0054-Tenant-Facing-Analytics-Dashboard-Scope-And-Data-Source-Strategy.md, docs/project docs/Functional-Design/FDD-0055-Analytics-Language-And-Location-Enrichment-Feasibility.md, docs/project docs/Functional-Design/FDD-0056-AI-Inferred-Origin-Location-Newswire-Dateline-Extraction.md, docs/project docs/Functional-Design/FDD-0057-Tenant-Owned-Feed-Multi-Feed-Administration.md, docs/project docs/Functional-Design/FDD-0058-Wire-Ingestion-Events-Into-Real-Connector-Pipeline.md, docs/project docs/Functional-Design/FDD-0059-Facebook-Connector-Tenant-Owned-Page-Scope-Organization-As-Author.md, docs/project docs/Functional-Design/FDD-0060-Facebook-Connector-Multiple-Pages-Per-User.md, docs/project docs/Functional-Design/FDD-0061-Tier-3-Poll-Scheduler-Per-User-Enumeration.md, docs/project docs/Functional-Design/FDD-0062-Analytics-Dashboard-Overview-Tab-Enhancement.md, docs/project docs/Functional-Design/FDD-0063-Post-Watchlist-Matches-Junction-Table-And-Server-Side-Watchlist-Filter.md, docs/project docs/Functional-Design/FDD-0064-Location-And-Geospatial-Insights-From-Posts-And-Authors.md, docs/project docs/Functional-Design/FDD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md, docs/project docs/Functional-Design/FDD-0066-Active-Watchlist-Sourcing-Via-Bing-Search-API.md, docs/project docs/Functional-Design/FDD-0067-Reconfirm-Facebook-Connector.md, docs/project docs/Functional-Design/FDD-0068-Instagram-Connector.md, docs/project docs/Functional-Design/FDD-0069-LinkedIn-Connector.md, docs/project docs/Functional-Design/FDD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md, docs/project docs/Functional-Design/FDD-0071-Human-In-The-Loop-Post-Enrichment-Overrides-And-Cascading-Drawer-UI.md, docs/project docs/Functional-Design/FDD-0072-Cross-Platform-Polypost-Composer-And-Multi-Network-Preview-Engine.md, docs/project docs/Functional-Design/FDD-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Functional-Design/FDD-0074-Tenant-Facing-Workspace-and-Matched-Posts-Export.md, docs/project docs/Functional-Design/FDD-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Functional-Design/FDD-0076-Composer-Deep-Research-Agent.md, docs/project docs/Functional-Design/FDD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Functional-Design/FDD-0078-Metric-Explainability-Endpoint.md, docs/project docs/Functional-Design/FDD-0080-Onboarding-Checklist-State.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Functional-Design/FDD-0089-Platform-Operations-Dashboard.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0095-Case-Handoff-To-CRM.md, docs/project docs/Functional-Design/FDD-0096-Daily-Digest-Email.md, docs/project docs/Functional-Design/FDD-0097-Topic-Evolution-Timeline.md, docs/project docs/Functional-Design/FDD-0098-Publishing-And-Scheduling.md, docs/project docs/Functional-Design/FDD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Functional-Design/FDD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Functional-Design/FDD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Functional-Design/FDD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Functional-Design/FDD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Functional-Design/FDD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Functional-Design/FDD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Functional-Design/FDD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Functional-Design/FDD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Functional-Design/FDD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Functional-Design/FDD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Functional-Design/FDD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Functional-Design/FDD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Functional-Design/FDD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Functional-Design/FDD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Functional-Design/FDD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Functional-Design/FDD-0116-Semantic-Drift-Detection.md, docs/project docs/Functional-Design/FDD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Functional-Design/FDD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Functional-Design/FDD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Functional-Design/FDD-0120-Search-Provider-Connector.md, docs/project docs/Functional-Design/FDD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — a8551b4 — docs(fdd): commit updated FDD drafts
 
 - **Full commit:** `a8551b4324d3e8abd5ef8e444c2c523f476a51a3`
 - **Files touched:** docs/project docs/Functional-Design/FDD-0001-Two-Repository-Split.md, docs/project docs/Functional-Design/FDD-0002-Unified-Provider-Connector-Pattern.md, docs/project docs/Functional-Design/FDD-0003-Per-Tenant-Per-Provider-Rate-Limiting.md, docs/project docs/Functional-Design/FDD-0004-Author-Normalized-Separately-From-Post.md, docs/project docs/Functional-Design/FDD-0005-Ingestion-Run-As-Audit-Anchor.md, docs/project docs/Functional-Design/FDD-0006-Watchlist-Matching-Connector-Side-With-Fallback.md, docs/project docs/Functional-Design/FDD-0007-Author-Topic-Signal-Minimal-V1.md, docs/project docs/Functional-Design/FDD-0008-Defer-Topic-Time-Series-And-Charting.md, docs/project docs/Functional-Design/FDD-0009-Connector-Health-Derived-Not-Stored.md, docs/project docs/Functional-Design/FDD-0010-Error-Handling-And-Auto-Disable-Policy.md, docs/project docs/Functional-Design/FDD-0011-Cursor-Based-Pagination-For-Posts-API.md, docs/project docs/Functional-Design/FDD-0012-Thin-Events-With-REST-Fetch-On-Demand.md, docs/project docs/Functional-Design/FDD-0013-Per-Tenant-Event-Filtering-Via-Subscription-Rules.md, docs/project docs/Functional-Design/FDD-0014-Credential-Storage-Envelope-Encryption-OAuth-First.md, docs/project docs/Functional-Design/FDD-0015-Tenant-Isolation-Via-Postgres-Row-Level-Security.md, docs/project docs/Functional-Design/FDD-0016-Postgres-As-Database-Engine.md, docs/project docs/Functional-Design/FDD-0017-API-Versioning-And-Compatibility-Policy.md, docs/project docs/Functional-Design/FDD-0018-Data-Retention-And-Archival-Policy.md, docs/project docs/Functional-Design/FDD-0019-Event-Schema-Versioning-Policy.md, docs/project docs/Functional-Design/FDD-0020-Rate-Limit-Queue-Bounds-And-Distributed-Gate-State.md, docs/project docs/Functional-Design/FDD-0021-Watchlist-Boolean-Query-AST-And-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0022-Derived-Data-Caching-And-Refresh-Strategy.md, docs/project docs/Functional-Design/FDD-0023-Proportional-Connector-Failure-Threshold.md, docs/project docs/Functional-Design/FDD-0024-Newswire-Connector-Direct-Wire-RSS-Issuer-As-Author.md, docs/project docs/Functional-Design/FDD-0025-Persistent-Local-Dev-Database-Separate-From-Test-Database.md, docs/project docs/Functional-Design/FDD-0026-RSS-News-Connector-GNews-API-Publication-As-Author.md, docs/project docs/Functional-Design/FDD-0027-Connector-Is-Technical-Intermediary-Not-Contracting-Party.md, docs/project docs/Functional-Design/FDD-0028-Credential-Creation-Authority-Scoped-By-Ownership-Tier.md, docs/project docs/Functional-Design/FDD-0029-Authentication-Mechanism-Entra-External-ID.md, docs/project docs/Functional-Design/FDD-0030-Admin-Tier-Design-Platform-Admin-RLS-Exception.md, docs/project docs/Functional-Design/FDD-0031-Tenants-Table-Shape.md, docs/project docs/Functional-Design/FDD-0032-Users-Table-Shape-And-RLS.md, docs/project docs/Functional-Design/FDD-0033-Retire-X-Tenant-Id-Header-Placeholder.md, docs/project docs/Functional-Design/FDD-0034-Connector-Connect-Disconnect-CRUD-Ownership-Tier-Aware.md, docs/project docs/Functional-Design/FDD-0035-Admin-UI-Shape-One-App-Role-Gated.md, docs/project docs/Functional-Design/FDD-0036-Admin-UI-Authentication-Session-And-Role-Gating-Mechanism.md, docs/project docs/Functional-Design/FDD-0037-Self-Service-Tenant-Signup-And-First-Tenant-Admin-Provisioning.md, docs/project docs/Functional-Design/FDD-0038-AI-Enrichment-Provider-Selection.md, docs/project docs/Functional-Design/FDD-0039-Tenant-Offboarding-Data-Lifecycle-Export-And-Deletion.md, docs/project docs/Functional-Design/FDD-0040-Self-Service-Signup-Rate-Limiting-And-Abuse-Prevention-Mechanism.md, docs/project docs/Functional-Design/FDD-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md, docs/project docs/Functional-Design/FDD-0042-Wikipedia-Connector-MediaWiki-API-Article-As-Author.md, docs/project docs/Functional-Design/FDD-0043-Self-Service-Tenant-Initiated-Deletion.md, docs/project docs/Functional-Design/FDD-0044-Watchlist-API-Design-And-Database-Schema-Standardization.md, docs/project docs/Functional-Design/FDD-0047-Standard-Pattern-For-Cross-Story-References-And-Supersession-Language.md, docs/project docs/Functional-Design/FDD-0048-No-Core-Pipeline-Change-Verification-For-New-Connector-Registration.md, docs/project docs/Functional-Design/FDD-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md, docs/project docs/Functional-Design/FDD-0050-Tenant-Owned-Domain-RSS-Content-Feed-Connector.md, docs/project docs/Functional-Design/FDD-0051-Connector-Activation-Decoupled-From-Credential.md, docs/project docs/Functional-Design/FDD-0052-Live-Ingestion-Polling-Scheduler.md, docs/project docs/Functional-Design/FDD-0053-Canonical-Markdown-Post-Body-Normalization-At-Ingestion.md, docs/project docs/Functional-Design/FDD-0054-Tenant-Facing-Analytics-Dashboard-Scope-And-Data-Source-Strategy.md, docs/project docs/Functional-Design/FDD-0055-Analytics-Language-And-Location-Enrichment-Feasibility.md, docs/project docs/Functional-Design/FDD-0056-AI-Inferred-Origin-Location-Newswire-Dateline-Extraction.md, docs/project docs/Functional-Design/FDD-0057-Tenant-Owned-Feed-Multi-Feed-Administration.md, docs/project docs/Functional-Design/FDD-0058-Wire-Ingestion-Events-Into-Real-Connector-Pipeline.md, docs/project docs/Functional-Design/FDD-0059-Facebook-Connector-Tenant-Owned-Page-Scope-Organization-As-Author.md, docs/project docs/Functional-Design/FDD-0060-Facebook-Connector-Multiple-Pages-Per-User.md, docs/project docs/Functional-Design/FDD-0061-Tier-3-Poll-Scheduler-Per-User-Enumeration.md, docs/project docs/Functional-Design/FDD-0062-Analytics-Dashboard-Overview-Tab-Enhancement.md, docs/project docs/Functional-Design/FDD-0063-Post-Watchlist-Matches-Junction-Table-And-Server-Side-Watchlist-Filter.md, docs/project docs/Functional-Design/FDD-0064-Location-And-Geospatial-Insights-From-Posts-And-Authors.md, docs/project docs/Functional-Design/FDD-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md, docs/project docs/Functional-Design/FDD-0066-Active-Watchlist-Sourcing-Via-Bing-Search-API.md, docs/project docs/Functional-Design/FDD-0067-Reconfirm-Facebook-Connector.md, docs/project docs/Functional-Design/FDD-0068-Instagram-Connector.md, docs/project docs/Functional-Design/FDD-0069-LinkedIn-Connector.md, docs/project docs/Functional-Design/FDD-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md, docs/project docs/Functional-Design/FDD-0071-Human-In-The-Loop-Post-Enrichment-Overrides-And-Cascading-Drawer-UI.md, docs/project docs/Functional-Design/FDD-0072-Cross-Platform-Polypost-Composer-And-Multi-Network-Preview-Engine.md, docs/project docs/Functional-Design/FDD-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Functional-Design/FDD-0074-Tenant-Facing-Workspace-and-Matched-Posts-Export.md, docs/project docs/Functional-Design/FDD-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Functional-Design/FDD-0076-Composer-Deep-Research-Agent.md, docs/project docs/Functional-Design/FDD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Functional-Design/FDD-0078-Metric-Explainability-Endpoint.md, docs/project docs/Functional-Design/FDD-0080-Onboarding-Checklist-State.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Functional-Design/FDD-0089-Platform-Operations-Dashboard.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0095-Case-Handoff-To-CRM.md, docs/project docs/Functional-Design/FDD-0096-Daily-Digest-Email.md, docs/project docs/Functional-Design/FDD-0097-Topic-Evolution-Timeline.md, docs/project docs/Functional-Design/FDD-0098-Publishing-And-Scheduling.md, docs/project docs/Functional-Design/FDD-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Functional-Design/FDD-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Functional-Design/FDD-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Functional-Design/FDD-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Functional-Design/FDD-0103-AI-Sentiment-Analysis-Aspect-Schema.md, docs/project docs/Functional-Design/FDD-0104-AI-Topic-Clustering-Post-Topics-Schema.md, docs/project docs/Functional-Design/FDD-0105-Dashboards-And-Analytics-Widget-Contracts.md, docs/project docs/Functional-Design/FDD-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Functional-Design/FDD-0107-Multi-User-Workspaces-And-RBAC-Permissions.md, docs/project docs/Functional-Design/FDD-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Functional-Design/FDD-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Functional-Design/FDD-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Functional-Design/FDD-0111-Export-Bounding-Streaming-And-Size-Caps.md, docs/project docs/Functional-Design/FDD-0112-Feature-Gating-And-Seat-Limit-Enforcement.md, docs/project docs/Functional-Design/FDD-0113-Metric-Explainability-Prompt-And-Caching.md, docs/project docs/Functional-Design/FDD-0114-Platform-Metrics-Table-And-Azure-Metrics.md, docs/project docs/Functional-Design/FDD-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Functional-Design/FDD-0116-Semantic-Drift-Detection.md, docs/project docs/Functional-Design/FDD-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Functional-Design/FDD-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Functional-Design/FDD-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Functional-Design/FDD-0120-Search-Provider-Connector.md, docs/project docs/Functional-Design/FDD-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — bd9cb91 — docs(brd): commit updated BRD drafts
 
 - **Full commit:** `bd9cb913f21d4389ba44f0952f2284c61b8c50dd`
 - **Files touched:** docs/project docs/Business-Requirements/BRD-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Business-Requirements/BRD-0078-Metric-Explainability-Endpoint.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing eb319d6, dc22ecc, c63752e, 3df8ccf, 17a3405, ce1c11a, 0bba070, dfa3673, a8551b4, bd9cb91.
 
 ## 2026-08-23 — 7854300 — feat(azure-openai): optional research?() capability (Story 2.32, ADR-0076)
 
 - **Full commit:** `785430051b95c6c9f7fbc66a86123b4997883b62`
 - **Files touched:** social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 9d7b31b — docs(trace): Story 2.32 implementation log and Built field
 
 - **Full commit:** `9d7b31baa9ddf2b48797e4b1ee79b1d812f5351e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — e3e661b — feat(outbound-reply): Story 3.14 outbound_activities table and POST/GET /v1/posts/:id/replies
 
 - **Full commit:** `e3e661b2c0129fb8762f5eaf172a8ae3cc75fee8`
 - **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.14.outbound-reply-audit.contract.test.ts, social-listening-core/migrations/0041_create_outbound_activities.sql, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/outbound/outboundActivityStore.ts, social-listening-core/src/posts/socialPostStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-23 — 18d5e77 — docs(trace): Story 3.14 implementation log and Built field
 
 - **Full commit:** `18d5e773dc351cf23b4c454f56f258bb8a6e8901`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 8e7f312 — feat(outbound-post): Story 3.15 outbound post publishing audit table and POST/GET/DELETE /v1/outbound/posts
 
 - **Full commit:** `8e7f31246f3c296bba6974048ddc7fafe84a79e4`
 - **Files touched:** social-listening-core/.claude/skills/outbound-engagement/SKILL.md, social-listening-core/.claude/skills/outbound-post/SKILL.md, social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/contracts/epic-3/story-3.15.outbound-post-publishing-audit.contract.test.ts, social-listening-core/migrations/0042_add_outbound_post_columns.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/outboundPostsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/outbound/outboundActivityStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — fc48c3a — docs(trace): Story 3.15 implementation log and Built field
 
 - **Full commit:** `fc48c3ad2ab60d19f6661492807179f74d5b25b9`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 0d11e3f — feat(export): Story 3.16 tenant workspace and matched-posts exports (ADR-0074)
 
 - **Full commit:** `0d11e3f16b7387709476bfed8a9659df5aaf85bb`
 - **Files touched:** social-listening-core/.claude/skills/posts-api/SKILL.md, social-listening-core/.claude/skills/tenant-export/SKILL.md, social-listening-core/contracts/epic-3/story-3.16.tenant-workspace-and-posts-export.contract.test.ts, social-listening-core/src/http/versions/v1/postsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/tenantExportRouter.ts, social-listening-core/src/posts/csvExport.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/tenants/tenantExportStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 5b4ebd6 — docs(trace): Story 3.16 implementation log and Built field
 
 - **Full commit:** `5b4ebd6d726bbf2fd6c37ad2aa04c3eab322a439`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 8ac5a8a — feat(dashboard): add standalone Next.js project progress dashboard with interactive charts and gauges
 
 - **Full commit:** `8ac5a8af410813f022add02464d2fd8e3e4da86a`
 - **Files touched:** AGENTS.md, docs/project-development-dashboard.md, project-progress-dashboard/.gitignore, project-progress-dashboard/README.md, project-progress-dashboard/next.config.mjs, project-progress-dashboard/package-lock.json, project-progress-dashboard/package.json, project-progress-dashboard/src/app/globals.css, project-progress-dashboard/src/app/layout.tsx, project-progress-dashboard/src/app/page.tsx, project-progress-dashboard/src/components/charts/DonutChart.tsx, project-progress-dashboard/src/components/charts/RadialGauge.tsx, project-progress-dashboard/src/components/charts/StackedBarChart.tsx, project-progress-dashboard/src/components/charts/StatSparkline.tsx, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/AdrView.tsx, project-progress-dashboard/src/components/project-progress/BrdView.tsx, project-progress-dashboard/src/components/project-progress/FddView.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/components/ui/badge.tsx, project-progress-dashboard/src/components/ui/card.tsx, project-progress-dashboard/src/components/ui/input.tsx, project-progress-dashboard/src/components/ui/progress.tsx, project-progress-dashboard/src/components/ui/table.tsx, project-progress-dashboard/src/components/ui/tabs.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts, project-progress-dashboard/tsconfig.json
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8ac5a8a, 44b4962, 8e16327, 56aec12.
 
 ## 2026-08-24 — bdd9bcf — feat(composer): Story 3.17 POST /v1/composer/research Deep Research endpoint (ADR-0076)
 
 - **Full commit:** `bdd9bcf6939f90255f6c2cbad1c9ae89a02c7d47`
 - **Files touched:** social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/contracts/epic-3/story-3.17.composer-deep-research.contract.test.ts, social-listening-core/src/composer/composerResearchService.ts, social-listening-core/src/http/versions/v1/composerRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — f75da21 — docs(trace): Story 3.17 implementation log and Built field
 
 - **Full commit:** `f75da21523a0c9e25f3f27b38a9441e1f1716252`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-3-data-model-storage-and-archival.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 86b7b7e — docs(trace): backfill Story 6.31 Built field and Implementation Log entry
 
 - **Full commit:** `86b7b7eebc9a699dff47115ce957f08f62f40ac7`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — e7d69a1 — docs(trace): backfill Story 6.32 Built field and Implementation Log entry
 
 - **Full commit:** `e7d69a1c46fa15fc743b4b4804d10c5aa08c533e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — a920eee — docs(trace): backfill Story 6.33 Built field and Implementation Log entry
 
 - **Full commit:** `a920eee973b2bceaca7b109a4cef0e34e6271e4e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — ebf4144 — docs(trace): backfill Story 6.34 Built field and Implementation Log entry
 
 - **Full commit:** `ebf4144af00be0689cbfef279e69fceb298d5d31`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — 3c64c15 — docs(trace): backfill Story 6.35 Built field and Implementation Log entry
 
 - **Full commit:** `3c64c154a257a690c011e6289509a33e3917388e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — b62e2c0 — feat(admin): Story 6.38 contract
 
 - **Full commit:** `b62e2c0fa72298e57372e0b9ca92cdac9b83a1ff`
 - **Files touched:** social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — ae5d16a — feat(admin): Story 6.38 / ADR-0073 — post detail reply composer and replies tab
 
 - **Full commit:** `ae5d16a31e81b4627be3dd92dbb69fe2b3675c64`
 - **Files touched:** social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.38.post-detail-reply-action.contract.test.ts, social-listening-admin/src/app/api/posts/[id]/replies/route.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostRepliesTab.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/ReplyComposerDrawer.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — ef1e984 — docs(trace): finalize Story 6.38 Built field and Implementation Log entry
 
 - **Full commit:** `ef1e9842e71f2a8d69f83250fb0a90242850a7b9`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 9fb2086 — docs(trace): backfill Story 6.16 Built field
 
 - **Full commit:** `9fb20866569c2d721e1e59dcc716a23ae5b9e4d5`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — 68b70be — docs(trace): backfill Story 6.9 Built field
 
 - **Full commit:** `68b70be2c396380729f2c8a979b12ba73a467c95`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — c7ecbc3 — docs(trace): backfill Story 6.10 Built field
 
 - **Full commit:** `c7ecbc30303356417ddb4dedb09fb3138c228597`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — f49bba1 — docs(trace): backfill Story 1.9 Built field
 
 - **Full commit:** `f49bba16d8d90ab248dc5f838c813b11c7426c2b`
 - **Files touched:** docs/user-stories/epic-1-repository-and-api-foundation.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 86b7b7e, e7d69a1, a920eee, ebf4144, 3c64c15, 9fb2086, 68b70be, c7ecbc3, f49bba1.
 
 ## 2026-08-24 — 44b4962 — feat(dashboard): transform into enterprise telemetry portal with sidebar, test contracts, extended roadmap, and ADR open questions resolution center
 
 - **Full commit:** `44b49623c9e02af9a3800d29232c470e6b141839`
 - **Files touched:** project-progress-dashboard/package-lock.json, project-progress-dashboard/package.json, project-progress-dashboard/postcss.config.mjs, project-progress-dashboard/src/app/globals.css, project-progress-dashboard/src/app/page.tsx, project-progress-dashboard/src/components/charts/DonutChart.tsx, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/AdrOpenQuestionsView.tsx, project-progress-dashboard/src/components/project-progress/AdrView.tsx, project-progress-dashboard/src/components/project-progress/ArchitectureExplorerView.tsx, project-progress-dashboard/src/components/project-progress/BrdView.tsx, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/FddView.tsx, project-progress-dashboard/src/components/project-progress/GlobalSearchDialog.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/SidebarNav.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/components/project-progress/TestContractsView.tsx, project-progress-dashboard/src/components/project-progress/TraceabilityView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8ac5a8a, 44b4962, 8e16327, 56aec12.
 
 ## 2026-08-24 — 8e16327 — feat(dashboard): add automated repository sync script and predev/prebuild triggers
 
 - **Full commit:** `8e1632725425a9d02c84c35bf52507bdab3e7cdc`
 - **Files touched:** project-progress-dashboard/package.json, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8ac5a8a, 44b4962, 8e16327, 56aec12.
 
 ## 2026-08-24 — 7f2e1f9 — docs(adr): accept ADR-0080 with milestone locking, bundled query reconciliation, and TypeScript contracts
 
 - **Full commit:** `7f2e1f953b2cb3aead42a4cfa96f418daa53d485`
 - **Files touched:** docs/adr/0080-onboarding-checklist-state.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing b64bf07, 0c1d5b9, 7f2e1f9, a9f73c4, 0a7c450.
 
 ## 2026-08-24 — a9f73c4 — docs(onboarding): approve BRD-0080 and FDD-0080 and unblock Stories 9.5 and 9.6 following ADR-0080 acceptance
 
 - **Full commit:** `a9f73c41b689912189459de9ae7733bad76d1847`
 - **Files touched:** docs/project docs/Business-Requirements/BRD-0080-Onboarding-Checklist-State.md, docs/project docs/Functional-Design/FDD-0080-Onboarding-Checklist-State.md, docs/user-stories/epic-9-adr-0077-to-0085.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing b64bf07, 0c1d5b9, 7f2e1f9, a9f73c4, 0a7c450.
 
 ## 2026-08-24 — 56aec12 — chore(infra): update implement-story and heal-contract-failure skills and Postgres template DB test harness
 
 - **Full commit:** `56aec12e232732780e88a294afd9c152fb659f67`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, docs/implementation-methodology.md, social-listening-core/jest.config.js, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/migrations/0013_enable_pg_cron_and_refresh_author_topic_signals.sql, social-listening-core/src/db/adminPool.ts, social-listening-core/src/db/identityResolverPool.ts, social-listening-core/src/db/platformAdminPool.ts, social-listening-core/src/db/pool.ts, social-listening-core/src/db/tenantDeletionPool.ts, social-listening-core/src/db/tenantSignupPool.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 8ac5a8a, 44b4962, 8e16327, 56aec12.
 
 ## 2026-08-24 — a4bf276 — feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint
 
 - **Full commit:** `a4bf27620f07cf9019878790abc245c16145b852`
 - **Files touched:** social-listening-core/.claude/skills/provider-connector-framework/SKILL.md, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-9/story-9.1.watchlist-preview-volume.contract.test.ts, social-listening-core/src/connectors/gnews/gnewsConnector.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/watchlists/previewVolumeService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — f912b13 — docs(trace): finalize Story 9.1 Built field and Implementation Log entry
 
 - **Full commit:** `f912b139d8f92b16bf711652e6a27d5490c192ff`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing e3df7d9, 9231a67, 4949200, 0364adb, 2da26eb, 3bf8786, f1e0f9b, e04854d, 4234834, af0c048, 3a65691, 1a28fc5, 7854300, 9d7b31b, e3e661b, 18d5e77, 8e7f312, fc48c3a, 0d11e3f, 5b4ebd6, bdd9bcf, f75da21, b62e2c0, ae5d16a, ef1e984, a4bf276, f912b13.
 
 ## 2026-08-24 — 0a7c450 — docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list
 
 - **Full commit:** `0a7c4500cadcd5b4d0e481e2bf314365be321934`
 - **Files touched:** docs/adr/README.md, docs/user-stories/README.md, docs/user-stories/epic-14-adr-0118-to-0121.md
+- ~~**Status:** Pending review~~ *(note: this entry was queued without a Status line at all — a small, separate malformed-entry gap from the post-commit hook, caught and corrected during this 2026-08-26 pass rather than left silently unstruck)*
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing b64bf07, 0c1d5b9, 7f2e1f9, a9f73c4, 0a7c450.
+
 ## 2026-08-24 — 5ff1879 — Scheduled doc review: Ideal Manager and L&D Writer passes (2026-08-24)
 
 - **Full commit:** `5ff1879ee65e477e0e7861323f6a9820a0c1cbd0`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5ff1879, 3a8ff91, aa2488b.
 
 ## 2026-08-24 — 3a8ff91 — Scheduled doc review: Documentation Steward pass (2026-08-24)
 
 - **Full commit:** `3a8ff91ff8203e1e3ab059c89cce4893fcfddb7d`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5ff1879, 3a8ff91, aa2488b.
 
 ## 2026-08-25 — aa2488b — Merge origin/main
 
 - **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+**Resolved 2026-08-26:** see docs/management/manager-register.md's entry reviewing 5ff1879, 3a8ff91, aa2488b.
+
+## 2026-08-26 — 48e8b5d — Scheduled doc review: 2026-08-26 — clear ~58-entry backlog across all three review queues
+
+- **Full commit:** `48e8b5d94d5d0db4fa2b658bb20e75c216f7d9a0`
+- **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/.claude/skills/linkedin-connector/SKILL.md
 - **Status:** Pending review
 
 ## 2026-08-25 — 4878510 — chore(infra): extend multi-agent isolation to social-listening-admin; add user-story skill

@@ -39,6 +39,14 @@ context summary and a side-by-side comparison. It does not create or modify
 - `src/connectors/requestGate.ts` — `acquireForAiModel()` with the `research` model key.
 - `contracts/epic-3/story-3.17.composer-deep-research.contract.test.ts`.
 
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26, per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention — the underlying facts already existed above under "Files that make this work"; this section restates them under the standard, greppable heading.)*
+
+- Calls `azureOpenAiConnector.research?()` at the real production call site (this endpoint, `POST /v1/composer/research`) — relationship asserted by `story-3.17.composer-deep-research.contract.test.ts`.
+- Calls `braveSearchConnector`'s and `bingSearchConnector`'s `searchForResearch()` at the same real call site — relationship asserted by the same contract.
+- Calls `isConnectorActive()` (`connector-activation`) to discover which AI/search providers the tenant has connected, and `acquireForAiModel()` (`provider-connector-framework`'s `requestGate.ts`) under the `research` model key.
+
 ## Contracts that constrain this component
 
 - `contracts/epic-3/story-3.17.composer-deep-research.contract.test.ts` — valid request returns the `ComposerResearchResult` shape; missing/incapable AI provider returns `422 AI_PROVIDER_NOT_CAPABLE`; missing search provider returns `422 SEARCH_PROVIDER_UNAVAILABLE`; `platform_admin` gets `403`; `maxSearchResultsPerQuery` > 10 returns `422 RESEARCH_TOO_LARGE`; no `social_posts` or `post_watchlist_matches` are created.
