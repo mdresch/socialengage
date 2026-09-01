@@ -154,6 +154,7 @@ export interface SentimentPost {
   sentiment: string | null;
   keyPhrases: string[];
   entities: string[];
+  namedEntities?: { text: string; category: string | null }[];
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
   language: string | null;
@@ -291,6 +292,9 @@ export function flattenForSentiment(posts: SocialPostSummary[]): SentimentPost[]
       sentiment: enrichment?.sentiment?.toLowerCase() ?? null,
       keyPhrases: enrichment?.keyPhrases ?? [],
       entities: enrichment?.entities ?? [],
+      ...(enrichment?.namedEntities && enrichment.namedEntities.length > 0
+        ? { namedEntities: enrichment.namedEntities }
+        : {}),
       title,
       language: enrichment?.language ?? null,
       providerId: extractProviderBadge(post.rawPayload),
@@ -446,8 +450,17 @@ export function computePhrasesBySentiment(
  */
 export function computePhraseFrequency(posts: SentimentPost[], limit = 20): PhraseFrequency[] {
   const counts = new Map<string, number>();
+  const dateTimeTexts = new Set<string>();
+  for (const post of posts) {
+    for (const entity of post.namedEntities ?? []) {
+      if (entity.category && /date|time/i.test(entity.category)) {
+        dateTimeTexts.add(entity.text.toLowerCase());
+      }
+    }
+  }
   for (const post of posts) {
     for (const phrase of post.keyPhrases) {
+      if (dateTimeTexts.has(phrase.toLowerCase())) continue;
       counts.set(phrase, (counts.get(phrase) ?? 0) + 1);
     }
   }
@@ -699,6 +712,25 @@ export function resolveLanguageLabel(code: string): string {
  * "unknown language" bucket, the same rule computeSentimentSplit() already
  * applies to un-enriched posts.
  */
+export interface EntityTypeBreakdownEntry {
+  type: string;
+  count: number;
+}
+
+/** Counts named-entity mentions by category (e.g. Person, Organization, Location). Null/unknown categories are grouped as 'Other'. */
+export function computeEntityTypeBreakdown(posts: SentimentPost[]): EntityTypeBreakdownEntry[] {
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const entity of post.namedEntities ?? []) {
+      const type = entity.category?.trim() || 'Other';
+      counts.set(type, (counts.get(type) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export function computeLanguageBreakdown(posts: SentimentPost[]): LanguageBreakdownEntry[] {
   const counts = new Map<string, number>();
   for (const post of posts) {
@@ -1062,15 +1094,32 @@ export function computeWatchlistCoverage(
     }));
 }
 
-/** Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment(). */
+export interface AuthorRanking {
+  author: string;
+  count: number;
+  providerId?: string | null;
+}
+
+/**
+ * Real post-count ranking (Top Authors Feed) — not bucketed by sentiment, unlike computeTopAuthorsBySentiment().
+ * Also returns each author's dominant provider so the UI can show a platform icon behind the avatar.
+ */
 export function computeTopAuthorsByVolume(posts: SentimentPost[], limit = 5): AuthorRanking[] {
   const counts = new Map<string, number>();
+  const providerCounts = new Map<string, Map<string, number>>();
   for (const post of posts) {
     if (!post.author) continue;
     counts.set(post.author, (counts.get(post.author) ?? 0) + 1);
+    if (!providerCounts.has(post.author)) providerCounts.set(post.author, new Map());
+    const authorProviders = providerCounts.get(post.author)!;
+    authorProviders.set(post.providerId, (authorProviders.get(post.providerId) ?? 0) + 1);
   }
   return Array.from(counts.entries())
-    .map(([author, count]) => ({ author, count }))
+    .map(([author, count]) => {
+      const topProvider = Array.from(providerCounts.get(author)?.entries() ?? [])
+        .sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+      return { author, count, providerId: topProvider };
+    })
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
 }

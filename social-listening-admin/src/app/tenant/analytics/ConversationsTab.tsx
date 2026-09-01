@@ -11,6 +11,7 @@ import {
   computeSourceBreakdownFromFlat,
   computeSentimentSplitFromFlat,
   computeSentimentIndex,
+  computeEntityTypeBreakdown,
   type AnalyticsSummary,
   type DateRangeFilter,
 } from './analyticsData';
@@ -136,6 +137,7 @@ export function ConversationsTab({ summary, range }: ConversationsTabProps) {
   const topPhrases = useMemo(() => phraseFrequency.slice(0, 5).map((p) => p.phrase), [phraseFrequency]);
   const phraseHistory = activeFilter ? computePhraseHistory(filteredPosts, range, topPhrases) : summary.phraseHistory;
   const languages = activeFilter ? computeLanguageBreakdown(filteredPosts) : summary.languages;
+  const entityTypeBreakdown = useMemo(() => computeEntityTypeBreakdown(filteredPosts), [filteredPosts]);
   const sourceBreakdown = useMemo(() => computeSourceBreakdownFromFlat(filteredPosts), [filteredPosts]);
 
   const sentimentSplit = useMemo(() => computeSentimentSplitFromFlat(filteredPosts), [filteredPosts]);
@@ -351,6 +353,22 @@ export function ConversationsTab({ summary, range }: ConversationsTabProps) {
                 <span className="an-conversations-summary-lbl">Active languages</span>
                 <span className="an-conversations-summary-val">{languages.length}</span>
               </div>
+              {entityTypeBreakdown.length > 0 && (
+                <>
+                  <div className="an-conversations-summary-row">
+                    <span className="an-conversations-summary-lbl">Entity mentions</span>
+                    <span className="an-conversations-summary-val">
+                      {entityTypeBreakdown.reduce((sum, e) => sum + e.count, 0).toLocaleString()}
+                    </span>
+                  </div>
+                  {entityTypeBreakdown.slice(0, 5).map((entity) => (
+                    <div key={entity.type} className="an-conversations-summary-row an-conversations-entity-row">
+                      <span className="an-conversations-summary-lbl an-conversations-entity-type">{entity.type}</span>
+                      <span className="an-conversations-summary-val">{entity.count.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -134,32 +134,50 @@ function IconTag() {
   );
 }
 
-function PlatformSourceIcon({ providerId }: { providerId: string }) {
+const PROVIDER_BRAND_COLORS: Record<string, string> = {
+  facebook: '#1877f2',
+  meta: '#1877f2',
+  youtube: '#ff0000',
+  x: '#000000',
+  twitter: '#1da1f2',
+  linkedin: '#0a66c2',
+  instagram: '#e1306c',
+  gnews: '#4285f4',
+  'google-news': '#4285f4',
+  newswire: '#2563eb',
+  'tenant-owned-feed': '#f97316',
+  rss: '#f97316',
+  blog: '#f97316',
+  wikipedia: '#333333',
+};
+
+function PlatformSourceIcon({ providerId, colored }: { providerId: string; colored?: boolean }) {
   const norm = providerId.toLowerCase().replace(/_/g, '-');
+  const colorStyle = colored && PROVIDER_BRAND_COLORS[norm] ? { color: PROVIDER_BRAND_COLORS[norm] } : undefined;
   switch (norm) {
     case 'gnews':
     case 'google-news':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
         </svg>
       );
     case 'newswire':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
         </svg>
       );
     case 'wikipedia':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M14.685 4.5h2.518l5.297 14.5h-2.685l-1.378-4.048h-4.89l-1.31 4.048H9.72l4.965-14.5zm.968 8.163h3.585l-1.785-5.322-1.8 5.322zM5.385 4.5h2.518l5.297 14.5h-2.685l-1.378-4.048H4.247L2.937 19H.5l4.885-14.5zm.968 8.163h3.585l-1.785-5.322-1.8 5.322z" />
         </svg>
       );
     case 'facebook':
     case 'meta':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
       );
@@ -167,38 +185,38 @@ function PlatformSourceIcon({ providerId }: { providerId: string }) {
     case 'rss':
     case 'blog':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z" />
         </svg>
       );
     case 'x':
     case 'twitter':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
       );
     case 'linkedin':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76c-.97 0-1.75-.79-1.75-1.76s.78-1.75 1.75-1.75c.97 0 1.76.78 1.76 1.75s-.79 1.76-1.76 1.76m1.39 9.74v-8.37H5.07v8.37h2.78z" />
         </svg>
       );
     case 'youtube':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
         </svg>
       );
     case 'instagram':
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
         </svg>
       );
     default:
       return (
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style={colorStyle}>
           <circle cx="12" cy="12" r="10" />
           <path d="M12 6v6l4 2" stroke="#fff" strokeWidth="2" fill="none" />
         </svg>
@@ -545,18 +563,6 @@ export function OverviewTab({
             </div>
             <AuthorsBySourceWidget summary={authorsBySource} activeSource={filters.activeSourceFilter} onRowClick={toggleSourceFilter} />
           </div>
-
-          <div className="an-widget" id="widget-watchlist-coverage">
-            <div className="an-widget-header">
-              <span className="an-widget-title">Watchlist coverage</span>
-            </div>
-            <WatchlistCoverageWidget
-              coverage={watchlistCoverage}
-              watchlists={watchlists}
-              activeWatchlistId={filters.activeWatchlistFilter}
-              onWatchlistClick={handleWatchlistSelect}
-            />
-          </div>
         </div>
 
         {/* Centre column */}
@@ -705,7 +711,14 @@ export function OverviewTab({
                         className={`an-author-row${filters.activeAuthorFilter === a.author ? ' an-author-row-active' : ''}`}
                         onClick={() => toggleAuthorFilter(a.author)}
                       >
-                        <span className="an-author-initials">{initials(a.author)}</span>
+                        <span className="an-author-avatar">
+                          <span className="an-author-initials">{initials(a.author)}</span>
+                          {a.providerId && (
+                            <span className="an-author-platform-badge" aria-hidden="true">
+                              <PlatformSourceIcon providerId={a.providerId} colored />
+                            </span>
+                          )}
+                        </span>
                         <span>{a.author}</span>
                         <span className="an-author-count">{a.count}</span>
                       </button>
@@ -739,6 +752,18 @@ export function OverviewTab({
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="an-widget" id="widget-watchlist-coverage">
+            <div className="an-widget-header">
+              <span className="an-widget-title">Watchlist coverage</span>
+            </div>
+            <WatchlistCoverageWidget
+              coverage={watchlistCoverage}
+              watchlists={watchlists}
+              activeWatchlistId={filters.activeWatchlistFilter}
+              onWatchlistClick={handleWatchlistSelect}
+            />
           </div>
 
           <div className="an-widget" id="widget-languages">
