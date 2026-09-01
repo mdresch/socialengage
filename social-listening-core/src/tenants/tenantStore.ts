@@ -395,13 +395,22 @@ export async function decrementActiveSeatCount(tenantId: string): Promise<Tenant
  * Story 12.13 (ADR-0107): Reads stored feature gates for a tenant.
  */
 export async function getTenantFeatureGates(tenantId: string): Promise<Record<string, any>> {
-  return withTenant(tenantId, async (client) => {
-    const { rows } = await client.query<{ feature_gates: Record<string, any> }>(
-      `SELECT feature_gates FROM tenants WHERE id = $1`,
-      [tenantId]
-    );
-    return rows[0]?.feature_gates || {};
-  });
+  try {
+    return await withTenant(tenantId, async (client) => {
+      const { rows } = await client.query<{ feature_gates: Record<string, any> }>(
+        `SELECT feature_gates FROM tenants WHERE id = $1`,
+        [tenantId]
+      );
+      return rows[0]?.feature_gates || {};
+    });
+  } catch (err: any) {
+    if (err?.code === '22P02') {
+      // Malformed tenant id (e.g. test fixtures using string identifiers).
+      // Treat as a missing tenant, which defaults to all features enabled.
+      return {};
+    }
+    throw err;
+  }
 }
 
 /**

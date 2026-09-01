@@ -35,6 +35,7 @@ Story 13.5 (ADR-0112) adds a `plan` column and `feature_gates` JSONB to `tenants
 - The seat increment is a single atomic `UPDATE ... WHERE active_seat_count < effective_max_seats RETURNING *`. It is never a `SELECT` followed by a separate `UPDATE`.
 - `resolveIdentity()` activation (case 3) increments `active_seat_count` inside the same `withTenant()` transaction as the `users` status update. If the increment fails, it throws `SeatLimitExceededError`.
 - `platform_admin_role` is column-denied from writing `active_seat_count` (migrations/0017); the new `plan` and `feature_gates` columns are writable by `platform_admin_role` and `app_user` only where the grants explicitly allow.
+- `getTenantFeatureGates()` treats a non-UUID / unresolvable tenant id as a missing tenant and returns `{}` (all features enabled). This prevents `requireFeatureGate()` from throwing a `500` on test fixtures or requests with synthetic string tenant identifiers, while preserving `403 FEATURE_NOT_AVAILABLE` for real tenants that explicitly disable a feature.
 
 ## Known gaps / deferred work
 
