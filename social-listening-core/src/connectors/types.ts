@@ -334,6 +334,14 @@ export interface ResearchResult {
   comparison: string;
 }
 
+/**
+ * Story 13.7 (ADR-0113) — structured result of a metric-explainability call.
+ */
+export interface AIExplainResult {
+  explanation: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
 export interface ResearchOptions {
   maxKeyPhrases: number;
   maxRelatedTopics: number;
@@ -407,4 +415,16 @@ export interface AIProviderConnector extends ProviderConnector {
     options: ResearchOptions,
     credential?: string
   ): Promise<ResearchResult>;
+
+  /**
+   * Story 13.7 (ADR-0113) — optional metric-explainability call. Generative
+   * providers (Azure OpenAI in v1) return a one-to-two-sentence explanation
+   * and a high/medium/low confidence grade. The caller supplies the fully
+   * rendered prompt, the credential, and deterministic model parameters.
+   */
+  explain?(
+    text: string,
+    credential?: string,
+    options?: { seed?: number; promptVersion?: number }
+  ): Promise<AIExplainResult>;
 }

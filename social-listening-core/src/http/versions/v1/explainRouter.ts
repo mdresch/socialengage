@@ -19,13 +19,14 @@ explainRouter.post('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return; // 403 sent
 
-  const { metricKey, value, context, locale } = req.body || {};
+  const { metricKey, value, context, locale, noCache } = req.body || {};
 
   const explainReq: MetricExplainRequest = {
     metricKey,
     value,
     context,
     locale,
+    noCache,
   };
 
   try {
