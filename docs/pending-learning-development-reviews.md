@@ -3790,3 +3790,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-09-02 — 4ad35ee — chore(dashboard): sync project progress dashboard data for Story 13.11
+
+- **Full commit:** `4ad35eea94159ffa816c6376fb64a8ad76163d8c`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
