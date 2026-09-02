@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createHash } from 'node:crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,78 @@ if (!fs.existsSync(targetVaultPath)) {
 const wikiProjectRoot = path.join(targetVaultPath, 'wiki', 'Projects', 'SocialEngage');
 const rawFolder = path.join(targetVaultPath, 'raw');
 const mocsFolder = path.join(targetVaultPath, 'wiki', '_MOCs');
+
+let ONTOLOGY;
+try {
+  ONTOLOGY = JSON.parse(fs.readFileSync(path.join(targetVaultPath, 'ONTOLOGY.json'), 'utf8'));
+  console.log('✅ Loaded ONTOLOGY.json');
+  if (ONTOLOGY.projectManagementOntology) {
+    const pmoPath = path.join(targetVaultPath, ONTOLOGY.projectManagementOntology);
+    const pmo = JSON.parse(fs.readFileSync(pmoPath, 'utf8'));
+    ONTOLOGY.projectManagementOntology = pmo;
+    console.log('✅ Loaded PROJECT-MANAGEMENT-ONTOLOGY.json');
+  }
+} catch (e) {
+  console.warn('⚠️ Could not load ONTOLOGY.json:', e.message);
+}
+
+function getPmMapping(type) {
+  if (!ONTOLOGY || !ONTOLOGY.projectManagementOntology) return null;
+  return ONTOLOGY.projectManagementOntology.nodeTypeToPmClass[(type || '').toLowerCase()] || null;
+}
+
+function sha256(input) {
+  return createHash('sha256').update(String(input)).digest('hex');
+}
+
+function getEntityMetadata(node) {
+  const sourceDoc = node.relPath || '';
+  const fullPath = sourceDoc ? path.join(repoRoot, sourceDoc) : '';
+  let createdAt = '';
+  let modifiedAt = '';
+  if (fullPath && fs.existsSync(fullPath)) {
+    try {
+      const stats = fs.statSync(fullPath);
+      createdAt = (stats.birthtime || stats.ctime).toISOString();
+      modifiedAt = stats.mtime.toISOString();
+    } catch (e) {
+      // leave empty if stat fails
+    }
+  }
+  return {
+    entity_id: sha256(`${node.id}::${sourceDoc}`).slice(0, 32),
+    version: '1.0.0',
+    source_document: sourceDoc.replace(/\\/g, '/'),
+    created_at: createdAt,
+    modified_at: modifiedAt,
+    authority_level: 1,
+    confidence_score: 1.0
+  };
+}
+
+function validateNode(node) {
+  if (!ONTOLOGY) return;
+  const typeLower = (node.type || '').toLowerCase();
+  if (!ONTOLOGY.nodeTypes[typeLower]) {
+    console.warn(`  ⚠️ Node ${node.id} has unknown type "${node.type}" (expected one of ${Object.keys(ONTOLOGY.nodeTypes).join(', ')})`);
+  }
+  const dc = ONTOLOGY.taxonomies.domainClusters;
+  if (!dc.includes(node.domainCluster)) {
+    console.warn(`  ⚠️ Node ${node.id} has unknown domain_cluster "${node.domainCluster}"`);
+  }
+  const dm = ONTOLOGY.taxonomies.dmbokAreas;
+  if (!dm.includes(node.dmbokCategory)) {
+    console.warn(`  ⚠️ Node ${node.id} has unknown dmbok_category "${node.dmbokCategory}"`);
+  }
+  const pm = ONTOLOGY.taxonomies.pmbokAreas;
+  if (!pm.includes(node.pmbokCategory)) {
+    console.warn(`  ⚠️ Node ${node.id} has unknown pmbok_category "${node.pmbokCategory}"`);
+  }
+  const ba = ONTOLOGY.taxonomies.babokAreas;
+  if (!ba.includes(node.babokCategory)) {
+    console.warn(`  ⚠️ Node ${node.id} has unknown babok_category "${node.babokCategory}"`);
+  }
+}
 
 [
   rawFolder,
@@ -412,10 +485,38 @@ govFiles.forEach(relPath => {
   }
 });
 
+// PROMOTE STORIES: register each user story as a first-class node
+console.log('🚀 Promoting User Stories from Epics to first-class nodes...');
+storyMap.forEach((story, storyId) => {
+  const epicNum = story.storyId.split('.')[0];
+  registerNode({
+    id: `Story ${story.storyId}`,
+    type: 'Story',
+    title: story.title,
+    padId: story.sourceAdr ? (story.sourceAdr.match(/\d+/) || [''])[0].padStart(4, '0') : '',
+    idNum: 0,
+    fileName: `Story ${story.storyId}.md`,
+    relPath: path.join('docs', 'user-stories', story.file),
+    destFolder: path.join(wikiProjectRoot, '04 User Stories & Epics'),
+    domainCluster: 'Delivery & User Stories',
+    dmbokCategory: 'Data Governance',
+    pmbokCategory: 'Scope Management',
+    babokCategory: 'Requirements Life Cycle Management',
+    status: story.isBuilt ? 'Built' : 'Ready',
+    rawContent: `## ${story.storyId} — ${story.title}\n\n> Epic: [[Epic-${epicNum}]]\n> Source: ${story.sourceAdr ? `[[${story.sourceAdr}]]` : '—'}\n\n${story.rawText}`,
+    outgoingRefs: new Set(),
+    incomingRefs: new Set(),
+    upstreamDependencies: new Set(),
+    downstreamDependents: new Set(),
+    satisfyingStories: new Set(),
+  });
+});
+
 // PASS 3: INJECT 4-WAY TRACEABILITY CARDS & WRITE MARKDOWN
 console.log('🔗 PASS 3: Generating 4-Way Traceability Links (ADR ↔ BRD ↔ FDD ↔ Story)...');
 
 nodeMap.forEach(node => {
+  validateNode(node);
   const slugCluster = slugify(node.domainCluster);
   const slugDmbok = slugify(node.dmbokCategory);
   const slugPmbok = slugify(node.pmbokCategory);
@@ -434,10 +535,25 @@ nodeMap.forEach(node => {
   const typeTagUpper = node.type === 'Epic' ? 'Story' : node.type; // 'ADR', 'BRD', 'FDD', 'Story', 'Governance'
   const typeTagLower = node.type === 'Epic' ? 'story' : node.type.toLowerCase();
 
+  const pm = getPmMapping(node.type) || {};
+  const pmRelationshipsYaml = (pm.pmRelationships || []).map(r => `  - ${r}`).join('\n');
+  const gem = getEntityMetadata(node);
+
   const frontmatter = `---
 title: "${node.id}: ${node.title.replace(/"/g, '\\"')}"
 artifact_id: "${node.id}"
+entity_id: "${gem.entity_id}"
+version: "${gem.version}"
+source_document: "${gem.source_document.replace(/\\/g, '/').replace(/"/g, '\\"')}"
+created_at: "${gem.created_at}"
+modified_at: "${gem.modified_at}"
+authority_level: ${gem.authority_level}
+confidence_score: ${gem.confidence_score.toFixed(1)}
 type: "${node.type.toLowerCase()}"
+pm_class: "${pm.pmClass || ''}"
+pm_subclass: "${pm.pmSubClass || ''}"
+pm_relationships:
+${pmRelationshipsYaml}
 domain_cluster: "${node.domainCluster}"
 dmbok_category: "${node.dmbokCategory}"
 pmbok_category: "${node.pmbokCategory}"
