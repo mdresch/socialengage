@@ -7,6 +7,10 @@ description: Frontend UI components and BFF routes for unified social inbox tria
 
 Governed by **ADR-0099**, **BRD-0099**, **FDD-0099**, and **Story 11.10**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.10.social-inbox-ui.contract.test.ts` — Story 11.10 contract test.
+
 ## Architecture & Responsibilities
 
 1. **Client Methods (`core-client.ts`)**:

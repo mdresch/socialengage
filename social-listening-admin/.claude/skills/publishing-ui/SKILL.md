@@ -7,6 +7,10 @@ description: Frontend UI components and BFF routes for composing, scheduling, an
 
 Governed by **ADR-0098**, **BRD-0098**, **FDD-0098**, and **Story 11.8**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.8.publishing-ui.contract.test.ts` — Story 11.8 contract test.
+
 ## Architecture & Responsibilities
 
 1. **Client Methods (`core-client.ts`)**:

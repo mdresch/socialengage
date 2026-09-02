@@ -7,6 +7,10 @@ description: Frontend UI preferences and live interactive preview drawer for the
 
 Governed by **ADR-0096**, **BRD-0096**, **FDD-0096**, and **Story 11.4**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.4.daily-digest-ui.contract.test.ts` — Story 11.4 contract test.
+
 ## Key Responsibilities
 
 1. **`core-client.ts` Digest Integration**:

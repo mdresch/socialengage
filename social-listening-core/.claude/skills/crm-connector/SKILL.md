@@ -7,6 +7,10 @@ description: Manages CRMConnector provider abstraction (Dynamics 365, Salesforce
 
 Governed by **ADR-0095**, **BRD-0095**, **FDD-0095**, and **Story 11.1**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.1.crm-connector-and-case-handoff.contract.test.ts` — Story 11.1 contract test.
+
 ## Key Responsibilities
 
 1. **`CRMConnector` Provider Abstraction**:

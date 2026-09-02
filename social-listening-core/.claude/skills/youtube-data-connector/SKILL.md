@@ -5,6 +5,10 @@ description: YouTube Data API v3 Ingestion Connector, channel subscriptions, and
 
 # YouTube Data API v3 Ingestion Connector (ADR-0093)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts` — Story 10.13 contract test.
+
 ## Purpose
 Ingests YouTube video comments, community posts, and video descriptions matching tenant watchlists with quota monitoring (10,000 units/day limit).
 

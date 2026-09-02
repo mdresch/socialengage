@@ -5,6 +5,10 @@ description: Prospecting list management, author qualification, sharing model, s
 
 # Prospecting Lists (ADR-0086)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.1.prospecting-list-model.contract.test.ts` — Story 10.1 contract test.
+
 ## Purpose
 Enables `Social-Selling-Strategist` to create, annotate, qualify, and share lead lists derived from discovered authors without exposing private contact data or allowing unauthorized modifications.
 

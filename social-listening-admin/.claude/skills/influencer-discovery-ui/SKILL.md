@@ -5,6 +5,10 @@ description: Influencer discovery interface with InfluencerCard multi-score visu
 
 # Influencer Discovery UI Skill
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts` — Story 12.16 contract test.
+
 ## Overview
 Implements Story 12.16 (ADR-0108):
 - `InfluencerCard`: Card display with four visual score bars (`Influence`, `Reach`, `Engagement`, `Authenticity`), top topic tags, author profile link, `Add to Prospecting List` button, and `View Posts` deep link.

@@ -5,6 +5,10 @@ description: Backend implementation of GET /v1/analytics/dashboard, WidgetRegist
 
 # Dashboard Widget Contracts Skill
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts` — Story 12.9 contract test.
+
 ## Overview
 Implements ADR-0105:
 - `GET /v1/analytics/dashboard` returning typed dashboard widgets (`metric`, `time-series`, `bar`, `pie`, `list`, `table`) and filter metadata (`watchlists`, `topics`, `availableTimeRanges`).

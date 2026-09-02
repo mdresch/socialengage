@@ -7,6 +7,10 @@ description: Frontend UI components for the topic evolution timeline, trend anno
 
 Governed by **ADR-0097**, **BRD-0097**, **FDD-0097**, and **Story 11.6**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.6.topic-evolution-ui.contract.test.ts` — Story 11.6 contract test.
+
 ## Key Responsibilities
 
 1. **`core-client.ts` Integration**:

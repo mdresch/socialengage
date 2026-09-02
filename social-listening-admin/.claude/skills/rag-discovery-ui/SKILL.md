@@ -5,6 +5,10 @@ description: RAG semantic discovery and generative Q&A UI component (Story 9.11,
 
 # RAG Semantic Discovery & AI Assistant UI
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-9/story-9.11.rag-discovery-ui.contract.test.ts` — Story 9.11 contract test.
+
 ## What this is
 
 Frontend discovery interface at `/tenant/discovery` in `social-listening-admin` that provides semantic search over indexed social mentions and grounded generative Q&A with interactive citations.

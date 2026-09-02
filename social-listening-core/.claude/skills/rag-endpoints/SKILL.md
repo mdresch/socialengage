@@ -5,6 +5,10 @@ description: RAG search, Q&A, and status HTTP endpoints (Story 9.10, ADR-0084, B
 
 # RAG HTTP Endpoints (`src/http/versions/v1/ragRouter.ts`)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-9/story-9.10.rag-endpoints.contract.test.ts` — Story 9.10 contract test.
+
 ## What this is
 
 REST endpoints for semantic discovery and grounded natural-language Q&A synthesis over social post vector chunks.

@@ -5,6 +5,10 @@ description: Rate-limited public API access, webhook subscription CRUD, and HMAC
 
 # Public API and Webhooks Skill
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts` — Story 12.11 contract test.
+
 ## Overview
 Implements ADR-0106:
 - Versioned public API routes under `/v1/`.

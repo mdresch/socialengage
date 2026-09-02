@@ -5,6 +5,10 @@ description: Synchronous streaming CSV export and asynchronous blob export job r
 
 # Posts CSV Export (ADR-0090, ADR-0111)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts` — Story 10.8 contract test.
+
 ## Purpose
 
 Enables tenant users to export filtered social post datasets for offline analysis,

@@ -5,6 +5,10 @@ description: Boolean query visual builder component, AST schema, and platform qu
 
 # Boolean Query Visual Builder (ADR-0102)
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-12/story-12.4.boolean-query-visual-builder.contract.test.ts` — Story 12.4 contract test.
+
 ## Overview
 
 Story 12.4 (ADR-0102, BRD-0102, FDD-0102) introduces `BooleanQueryBuilder.tsx` in `social-listening-admin`. It provides a visual query builder for constructing `WatchlistAST` queries across social and news ingestion platforms, supporting guided clause assembly, editable advanced text mode, and per-connector capability checking.

@@ -5,6 +5,10 @@ description: Multi-user workspaces, RBAC permission matrix, watchlist sharing wi
 
 # Multi-User Workspaces and RBAC Permissions Skill
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts` — Story 12.13 contract test.
+
 ## Overview
 Implements Story 12.13 (ADR-0107):
 - RBAC permission matrix (`tenant_admin`, `tenant_user`) with `hasPermission(role, resource, action)` and `requirePermission(resource, action)` middleware.

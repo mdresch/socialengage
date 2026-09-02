@@ -7,6 +7,10 @@ description: Backend service and HTTP endpoint for longitudinal topic evolution 
 
 Governed by **ADR-0097**, **BRD-0097**, **FDD-0097**, and **Story 11.5**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts` — Story 11.5 contract test.
+
 ## Responsibilities
 
 1. **Longitudinal Aggregation (`topicEvolutionService.ts`)**:

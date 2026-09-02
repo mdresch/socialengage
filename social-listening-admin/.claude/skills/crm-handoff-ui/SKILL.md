@@ -7,6 +7,10 @@ description: UI modal and BFF integration for escalating posts and prospecting l
 
 Governed by **ADR-0095**, **BRD-0095**, **FDD-0095**, and **Story 11.2**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.2.case-handoff-ui.contract.test.ts` — Story 11.2 contract test.
+
 ## Key Responsibilities
 
 1. **`core-client.ts` CRM Integration**:

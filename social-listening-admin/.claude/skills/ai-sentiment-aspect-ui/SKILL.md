@@ -5,6 +5,10 @@ description: Aspect-based AI sentiment UI components, confidence tiering, and hu
 
 # AI Sentiment Aspect UI (ADR-0103)
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts` — Story 12.6 contract test.
+
 ## Overview
 
 Story 12.6 (ADR-0103, BRD-0103, FDD-0103) introduces rich frontend presentation for aspect-level sentiment analysis, confidence scoring, confidence tiering badges (`strong`, `moderate`, `needs-review`), multi-language badges, and human-in-the-loop override lineage in the social listening admin interface.

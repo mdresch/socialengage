@@ -5,6 +5,10 @@ description: Webhook subscription management UI components including WebhookForm
 
 # Webhook Management UI Skill
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-10/story-10.12.webhook-management-ui.contract.test.ts` — Story 10.12 contract test.
+
 ## Overview
 Implements Story 12.12 (ADR-0106):
 - `WebhookForm`: Captures endpoint URL, selectable event types (`post.ingested`, `alert.triggered`, `connector.health.changed`, `mention.threshold.crossed`), and HMAC signing secret.
