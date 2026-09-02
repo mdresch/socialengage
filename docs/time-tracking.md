@@ -18,6 +18,13 @@
 | 2026-09-02 | 08:59 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1daba9f) |
 | 2026-09-02 | 08:59 | — | — | Documentation | — | chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking (79b6ab9) |
 | 2026-09-01 | 18:05 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (5fcd0fd) |
+| 2026-09-02 | 08:53 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (97070a9) |
+| 2026-09-02 | 08:52 | — | — | Documentation | — | chore: sync post-commit tracking and Epic-13 synthesis (07f8aa4) |
+| 2026-09-02 | 08:52 | — | — | Documentation | Story 13.11 | chore(dashboard): sync project progress dashboard data for Story 13.11 (4ad35ee) |
+| 2026-09-02 | 08:47 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (25d54eb) |
+| 2026-09-02 | 08:47 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and Epic-13 synthesis (0df7c14) |
+| 2026-09-02 | 08:47 | — | — | Documentation | Story 13.11 | docs: Story 13.11 traceability — mark Built and append Implementation Log (cfbb0ad) |
+| 2026-09-02 | 08:43 | — | — | Documentation | Story 13.11 | feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116) (bb0545a) |
 | 2026-09-01 | 18:04 | — | — | Documentation | — | Merge branch 'feat/story-13.9' (b4a32f2) |
 | 2026-09-01 | 17:52 | — | — | Documentation | Story 10.8 | docs(implementation-log): append Story 10.8 async handle warning fix (ca98f53) |
 | 2026-09-01 | 17:52 | — | — | Documentation | — | fix(posts-csv-export): drain background export jobs before Jest teardown (4edf26f) |

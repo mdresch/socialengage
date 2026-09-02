@@ -3407,5 +3407,33 @@
 
 - **Full commit:** `79b6ab980ee886dda695c961ef75dbfda7ec9cf9`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/.claude/skills/crisis-threshold-wizard/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/.claude/skills/rag-endpoints/SKILL.md, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+## 2026-09-02 — bb0545a — feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116)
+
+- **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
+- **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
+- **Status:** Pending review
+
+## 2026-09-02 — cfbb0ad — docs: Story 13.11 traceability — mark Built and append Implementation Log
+
+- **Full commit:** `cfbb0ad72f2f2c94196134fa32ad9b9d838665ad`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+
+## 2026-09-02 — 0df7c14 — chore: sync post-commit pending reviews, time tracking, and Epic-13 synthesis
+
+- **Full commit:** `0df7c14c37f3ad2f7991b6d2a6de8987f52eb486`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-02 — 4ad35ee — chore(dashboard): sync project progress dashboard data for Story 13.11
+
+- **Full commit:** `4ad35eea94159ffa816c6376fb64a8ad76163d8c`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 07f8aa4 — chore: sync post-commit tracking and Epic-13 synthesis
+
+- **Full commit:** `07f8aa4df908fb7063e0ccf9164c2c4d17814fad`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
 - **Status:** Pending review
 
