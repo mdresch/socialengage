@@ -12,7 +12,8 @@ import { DraftHistoryDrawer } from './DraftHistoryDrawer';
 import { CardLinkPreview } from './CardLinkPreview';
 import { PublishTargetsDialog } from './PublishTargetsDialog';
 import type { LinkPreviewData } from '@/app/api/composer/link-preview/route';
-import type { FacebookConnectedPageRow, PublishPostRow, ComposerResearchResult } from '@/lib/core-client';
+import type { FacebookConnectedPageRow, PublishPostRow, ComposerResearchResult, ConnectorTargetItem, OutboundPostAsset } from '@/lib/core-client';
+import { validateMediaFile } from './lib/mediaValidation';
 import { DeepResearchPanel, type DeepResearchPanelState } from './DeepResearchPanel';
 
 interface PolypostComposerProps {
@@ -49,6 +50,14 @@ export function PolypostComposer({
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
 
+  // Story 13.10 — media upload / asset targeting state
+  const [assetTargets, setAssetTargets] = useState<Partial<Record<SupportedPlatform, string>>>({});
+  const [availableTargets, setAvailableTargets] = useState<Partial<Record<SupportedPlatform, ConnectorTargetItem[]>>>({});
+  const [loadingTargets, setLoadingTargets] = useState(false);
+  const [targetError, setTargetError] = useState<string | null>(null);
+  const [mediaUploadErrors, setMediaUploadErrors] = useState<string[]>([]);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
   // Deep Research state (ephemeral — not saved to draft storage)
   const [researchState, setResearchState] = useState<DeepResearchPanelState>('idle');
   const [researchResult, setResearchResult] = useState<ComposerResearchResult | null>(null);
@@ -63,6 +72,9 @@ export function PolypostComposer({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const imageFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Story 13.10 — platforms that require an explicit asset target (page / account / organization)
+  const PLATFORMS_REQUIRING_TARGET: Set<SupportedPlatform> = new Set(['facebook', 'instagram', 'linkedin']);
 
   // Autosave on changes
   useEffect(() => {
@@ -103,6 +115,48 @@ export function PolypostComposer({
       }
     }
   }, [mainText, lastScrapedUrl, linkPreview]);
+
+  // Story 13.10 — fetch available asset targets when selected platforms change
+  useEffect(() => {
+    const targetPlatforms = selectedPlatforms.filter((p) => PLATFORMS_REQUIRING_TARGET.has(p));
+    if (targetPlatforms.length === 0) {
+      setAvailableTargets({});
+      setTargetError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingTargets(true);
+    setTargetError(null);
+
+    Promise.all(
+      targetPlatforms.map(async (platform) => {
+        const res = await fetch(`/api/connectors/${platform}/targets`);
+        if (!res.ok) throw new Error(`Failed to load ${platform} targets`);
+        const data = await res.json();
+        return { platform, targets: (data.targets || []) as ConnectorTargetItem[] };
+      })
+    )
+      .then((results) => {
+        if (cancelled) return;
+        const byPlatform: Partial<Record<SupportedPlatform, ConnectorTargetItem[]>> = {};
+        for (const { platform, targets } of results) {
+          byPlatform[platform] = targets;
+        }
+        setAvailableTargets(byPlatform);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setTargetError(err.message || 'Could not load target assets.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTargets(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPlatforms]);
 
   // Toggle platform selection
   const togglePlatform = (p: SupportedPlatform) => {
@@ -303,29 +357,59 @@ export function PolypostComposer({
     }
   };
 
-  // Local Image File Upload
-  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  // Story 13.10 — shared media upload handler (file input + drag/drop)
+  const uploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          const newMedia: MediaAttachment = {
-            id: `media-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            url: result,
-            altText: file.name.replace(/\.[^/.]+$/, ''),
-            type: 'image',
-          };
-          setMedia((prev) => [...prev, newMedia]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    setMediaUploadErrors([]);
+    setIsUploadingMedia(true);
+    const accepted: MediaAttachment[] = [];
 
+    for (const file of Array.from(files)) {
+      const validation = validateMediaFile(file);
+      if (!validation.ok) {
+        setMediaUploadErrors((prev) => [...prev, validation.error || 'Invalid media file']);
+        continue;
+      }
+
+      const uploadForm = new FormData();
+      uploadForm.append('file', file);
+
+      try {
+        const res = await fetch('/api/outbound/media', {
+          method: 'POST',
+          body: uploadForm,
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          setMediaUploadErrors((prev) => [...prev, body.error || `Upload failed for ${file.name} (${res.status}).`]);
+          continue;
+        }
+
+        const payload = await res.json();
+        accepted.push({
+          id: payload.mediaId,
+          url: payload.url,
+          altText: file.name.replace(/\.[^/.]+$/, ''),
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          mediaId: payload.mediaId,
+          mimeType: payload.mimeType,
+          sizeBytes: payload.sizeBytes,
+        });
+      } catch (err: any) {
+        setMediaUploadErrors((prev) => [...prev, `Upload failed for ${file.name}: ${err.message || 'network error'}`]);
+      }
+    }
+
+    if (accepted.length > 0) {
+      setMedia((prev) => [...prev, ...accepted]);
+    }
+    setIsUploadingMedia(false);
+  };
+
+  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    uploadFiles(e.target.files);
     e.target.value = '';
   };
 
@@ -341,27 +425,7 @@ export function PolypostComposer({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const result = event.target?.result as string;
-          if (result) {
-            const newMedia: MediaAttachment = {
-              id: `media-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-              url: result,
-              altText: file.name.replace(/\.[^/.]+$/, ''),
-              type: 'image',
-            };
-            setMedia((prev) => [...prev, newMedia]);
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    uploadFiles(e.dataTransfer.files);
   };
 
   // Add media URL
@@ -418,77 +482,94 @@ export function PolypostComposer({
       setPublishStatus({ type: 'error', message: 'Please enter content or attach media.' });
       return;
     }
-    // Story 6.39: fail early if Facebook is the only selected platform and no active Facebook Pages are available.
-    // The actual page list is fetched inside PublishTargetsDialog, so we defer the empty-pages
-    // message to the dialog itself.
-    setShowPublishDialog(true);
+
+    const missing = selectedPlatforms.filter((p) => PLATFORMS_REQUIRING_TARGET.has(p) && !assetTargets[p]);
+    if (missing.includes('facebook')) {
+      // Open the Facebook Page picker if no active Facebook Page target is selected.
+      setShowPublishDialog(true);
+      return;
+    }
+    if (missing.length > 0) {
+      setPublishStatus({ type: 'error', message: `Please select a target for: ${missing.join(', ')}.` });
+      return;
+    }
+
+    handlePublish();
   };
 
-  // Story 6.39 (ADR-0075) — real publish via POST /api/outbound/posts
-  const handlePublish = async (selectedPages: FacebookConnectedPageRow[]) => {
+  // Story 13.10 (ADR-0115) — real publish via POST /api/outbound/posts with media and asset targeting
+  const handlePublish = async (extraAssetTargets?: Record<string, string>) => {
     setIsPublishing(true);
     setPublishStatus(null);
+    setMediaUploadErrors([]);
 
     try {
-      // Build per-platform overrides for the API payload
-      const overrides: Record<string, { text?: string }> = {};
+      const mergedTargets = { ...assetTargets, ...(extraAssetTargets || {}) } as Record<string, string>;
+      const missing = selectedPlatforms.filter((p) => PLATFORMS_REQUIRING_TARGET.has(p) && !mergedTargets[p]);
+      if (missing.length > 0) {
+        setPublishStatus({ type: 'error', message: `Please select a target for: ${missing.join(', ')}.` });
+        return;
+      }
+
+      const perPlatformOverrides: Record<string, string> = {};
       for (const platform of selectedPlatforms) {
         const overrideText = platformOverrides[platform]?.text;
-        if (overrideText !== undefined) {
-          overrides[platform] = { text: overrideText };
+        if (overrideText !== undefined && overrideText.trim() !== '') {
+          perPlatformOverrides[platform] = overrideText;
         }
       }
 
-      // Only Facebook Pages are published in this story
-      const targets = selectedPages.map((p) => ({ pageId: p.pageId, pageName: p.pageName }));
-
-      if (targets.length === 0) {
-        setPublishStatus({
-          type: 'error',
-          message: 'Please select at least one active Facebook Page to publish.',
-        });
-        return;
+      const assets: OutboundPostAsset[] = [];
+      for (const item of media) {
+        if (item.mediaId) {
+          assets.push({
+            type: item.type === 'video' ? 'video' : 'image',
+            mediaId: item.mediaId,
+            alt: item.altText,
+          });
+        }
       }
+      if (linkPreview) {
+        assets.push({ type: 'link-card', url: linkPreview.url, imageUrl: linkPreview.image });
+      }
+
+      const targetPlatforms = selectedPlatforms.map((p) => p as string);
+      const scheduledFor = scheduleDate ? new Date(scheduleDate).toISOString() : null;
 
       const response = await fetch('/api/outbound/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: mainText,
-          targets,
-          platformOverrides: overrides,
-          linkPreview,
+          targetPlatforms,
+          assets,
+          assetTargets: mergedTargets,
+          scheduledFor,
+          perPlatformOverrides,
         }),
       });
 
-      const body = await response.json().catch(() => ({ rows: [] }));
-      const rows: PublishPostRow[] = Array.isArray(body.rows) ? body.rows : [];
+      const body = await response.json().catch(() => ({}));
 
-      if (response.status === 201 || response.status === 207) {
-        // Build per-Page status message with external_url or error_code
-        const parts: string[] = [];
-        for (const row of rows) {
-          if (row.status === 'sent' && row.externalUrl) {
-            parts.push(`${row.targetAssetName}: published — ${row.externalUrl}`);
-          } else if (row.status === 'failed' && row.errorCode) {
-            parts.push(`${row.targetAssetName}: failed — error_code: ${row.errorCode}`);
-          } else {
-            parts.push(`${row.targetAssetName}: ${row.status}`);
-          }
-        }
-        const allSent = rows.length > 0 && rows.every((r) => r.status === 'sent');
-        setPublishStatus({
-          type: allSent ? 'success' : 'error',
-          message: parts.join('  |  '),
-        });
-
-        if (allSent && onPublishSuccess) {
+      if (response.status === 202 || response.status === 201 || response.status === 207) {
+        const activityIds = Array.isArray(body.activityIds) ? body.activityIds : [];
+        const scheduled = body.scheduledFor ? new Date(body.scheduledFor).toLocaleString() : null;
+        const externalUrl = body?.externalUrl;
+        const errorCode = body?.errorCode;
+        const message = scheduled
+          ? `Scheduled ${activityIds.length} post(s) for ${scheduled}.`
+          : `Publishing ${activityIds.length} post(s).`;
+        setPublishStatus({ type: 'success', message });
+        setShowPublishDialog(false);
+        if (activityIds.length > 0 && onPublishSuccess) {
           setTimeout(() => onPublishSuccess(), 1200);
         }
       } else if (response.status === 422) {
-        setPublishStatus({ type: 'error', message: 'Validation failed. Please check your content and try again.' });
+        setPublishStatus({ type: 'error', message: body.error || 'Validation failed. UNSUPPORTED_MEDIA_TYPE or MEDIA_TOO_LARGE.' });
       } else if (response.status === 429) {
         setPublishStatus({ type: 'error', message: 'Rate limit reached. Please wait and try again.' });
+      } else if (response.status >= 500) {
+        setPublishStatus({ type: 'error', message: `Publish failed (HTTP ${response.status}). error_code: ${body?.code || body?.errorCode || 'unknown'}` });
       } else {
         setPublishStatus({ type: 'error', message: `Publish failed (HTTP ${response.status}). Please retry.` });
       }
@@ -500,7 +581,13 @@ export function PolypostComposer({
   };
 
   const handleConfirmPublish = async (selectedPages: FacebookConnectedPageRow[]) => {
-    await handlePublish(selectedPages);
+    const pageId = selectedPages[0]?.pageId;
+    if (!pageId) {
+      setPublishStatus({ type: 'error', message: 'No active Facebook Pages available for publishing.' });
+      setShowPublishDialog(false);
+      return;
+    }
+    await handlePublish({ facebook: pageId });
     setShowPublishDialog(false);
   };
 
@@ -517,12 +604,12 @@ export function PolypostComposer({
         style={{ display: 'none' }}
       />
 
-      {/* Hidden File Input for Images */}
+      {/* Hidden File Input for Images and Videos */}
       <input
         type="file"
         ref={imageFileInputRef}
         onChange={handleLocalImageUpload}
-        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
+        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime"
         multiple
         style={{ display: 'none' }}
       />
@@ -593,6 +680,87 @@ export function PolypostComposer({
             })}
           </div>
         </div>
+
+        {/* Asset Targets Card */}
+        {selectedPlatforms.some((p) => PLATFORMS_REQUIRING_TARGET.has(p)) && (
+          <div className="composer-card">
+            <div className="composer-card-header">
+              <h4 className="composer-section-title">Target Assets</h4>
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                Select page or account for each platform
+              </span>
+            </div>
+
+            {loadingTargets && (
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
+                Loading targets…
+              </div>
+            )}
+            {targetError && (
+              <div
+                style={{
+                  padding: 'var(--space-2)',
+                  background: 'rgba(220, 38, 38, 0.1)',
+                  color: 'var(--color-danger)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.8125rem',
+                }}
+              >
+                {targetError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {selectedPlatforms
+                .filter((p) => PLATFORMS_REQUIRING_TARGET.has(p))
+                .map((platform) => {
+                  const targets = availableTargets[platform] || [];
+                  return (
+                    <div key={platform}>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: 'var(--color-text-secondary)',
+                          marginBottom: 'var(--space-1)',
+                        }}
+                      >
+                        {PLATFORM_CONFIGS[platform].name} target
+                      </label>
+                      <select
+                        value={assetTargets[platform] || ''}
+                        onChange={(e) =>
+                          setAssetTargets((prev) => ({ ...prev, [platform]: e.target.value }))
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.8125rem',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg)',
+                          color: 'var(--color-text)',
+                        }}
+                      >
+                        <option value="">— Select {PLATFORM_CONFIGS[platform].name} target —</option>
+                        {targets.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      {targets.length === 0 && !loadingTargets && (
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--color-warning)', marginTop: 'var(--space-1)' }}>
+                          No active {PLATFORM_CONFIGS[platform].name} targets available.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
 
         {/* Main Editor Card */}
         <div className="composer-card">
@@ -898,7 +1066,7 @@ export function PolypostComposer({
                   color: 'var(--color-accent)',
                 }}
               >
-                📸 Drop images to attach to post
+                📸 Drop images and videos to attach to post
               </div>
             )}
           </div>
@@ -943,10 +1111,11 @@ export function PolypostComposer({
                 onClick={() => imageFileInputRef.current?.click()}
                 className="composer-btn-secondary"
                 style={{ fontWeight: 600, color: 'var(--color-accent)' }}
-                title="Upload images from your computer"
+                title="Upload images and videos from your computer"
+                disabled={isUploadingMedia}
               >
-                <span>📷</span>
-                <span>Upload Images</span>
+                <span>{isUploadingMedia ? '⏳' : '📷'}</span>
+                <span>{isUploadingMedia ? 'Uploading…' : 'Upload Images'}</span>
               </button>
 
               <button
@@ -988,6 +1157,24 @@ export function PolypostComposer({
               >
                 Add Image
               </button>
+            </div>
+          )}
+
+          {/* Media Upload Feedback */}
+          {mediaUploadErrors.length > 0 && (
+            <div
+              style={{
+                padding: 'var(--space-2)',
+                background: 'rgba(220, 38, 38, 0.1)',
+                border: '1px solid rgba(220, 38, 38, 0.3)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--color-danger)',
+                fontSize: '0.8125rem',
+              }}
+            >
+              {mediaUploadErrors.map((err, i) => (
+                <div key={i}>{err}</div>
+              ))}
             </div>
           )}
 

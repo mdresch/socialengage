@@ -2682,7 +2682,9 @@ export async function getTopicEvolution(options: {
 
 export interface OutboundPostAsset {
   type: 'image' | 'video' | 'link-card';
+  mediaId?: string;
   url?: string;
+  imageUrl?: string;
   alt?: string;
   target?: string;
 }
@@ -2726,6 +2728,29 @@ export interface ConnectorTargetItem {
   id: string;
   name: string;
   type: string;
+}
+
+export interface MediaUploadResult {
+  mediaId: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+/**
+ * Story 13.10 (ADR-0115) — uploads a media file to tenant-scoped Blob Storage through
+ * social-listening-core's POST /v1/outbound/media endpoint, returning a 24-hour presigned URL.
+ */
+export async function uploadOutboundMedia(formData: FormData): Promise<MediaUploadResult> {
+  const response = await authenticatedCoreFetch('/v1/outbound/media', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to upload media: ${response.status}`);
+  }
+  return (await response.json()) as MediaUploadResult;
 }
 
 /**
