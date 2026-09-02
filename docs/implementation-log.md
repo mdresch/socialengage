@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-09-03 — Story 13.10 — social-listening-admin@61c9082
+
+- **Full commit:** `61c9082d07571d6184b680c1dedd9639c1afc082`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.10 / ADR-0115
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/polypost-composer/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/publishing-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/outbound/media/route.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/lib/draftStorage.ts, social-listening-admin/src/components/composer/lib/mediaValidation.ts, social-listening-admin/src/components/composer/previews/FacebookPreviewCard.tsx, social-listening-admin/src/components/composer/types.ts, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/adr/README.md
+- **Validation re-run:** new contract PASS (20/20); epic-13 suite PASS (57/57); related regression suites (Story 6.36, Story 6.39, Story 11.8) PASS; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has 7 pre-existing failures (missing foreign credentials ENTRA/FACEBOOK/LINKEDIN, and source-drift assertions in Story 6.9, 6.37, 8.6, 8.7) unrelated to this change.
+- **Notes:** Adds `POST /api/outbound/media` same-origin proxy, client-side media validation, drag/drop upload to `PolypostComposer`, `assetTargets` selectors, and scheduled publish payload with `assets`/`assetTargets`/`scheduledFor`.
+
+
+
+---
+
 ## 2026-09-02 — Story 13.13 — social-listening-core@92836a3
 
 - **Full commit:** `92836a3`

@@ -12,6 +12,7 @@ import { ReplyComposerDrawer } from './ReplyComposerDrawer';
 import { PostRepliesTab } from './PostRepliesTab';
 import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
 import type { OutboundActivity } from '@/lib/core-client';
+import { ComposePostModal } from '@/components/composer/ComposePostModal';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons (lucide-react is not installed)
@@ -150,6 +151,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
   const [optimisticReplies, setOptimisticReplies] = useState<OutboundActivity[]>([]);
   const [repliesRefresh, setRepliesRefresh] = useState(0);
   const [replyToast, setReplyToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const filteredPosts = useMemo(() => {
     return flat.filter((post) => {
@@ -242,6 +244,13 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsComposeOpen(true)}
+            className="btn btn-primary"
+          >
+            Compose Post
+          </button>
           <div className="pf-header-count">
             {(() => {
               const filtersActive = searchQuery.trim() || selectedProvider !== 'ALL' || selectedSentiment !== 'ALL' || selectedWatchlist !== 'ALL';
@@ -639,6 +648,7 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
         </>
       )}
 
+      <ComposePostModal isOpen={isComposeOpen} onClose={() => setIsComposeOpen(false)} />
     </div>
   );
 }
