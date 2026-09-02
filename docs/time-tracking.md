@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-02 | 08:59 | — | — | Documentation | — | chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking (79b6ab9) |
 | 2026-09-01 | 18:05 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (5fcd0fd) |
 | 2026-09-01 | 18:04 | — | — | Documentation | — | Merge branch 'feat/story-13.9' (b4a32f2) |
 | 2026-09-01 | 17:52 | — | — | Documentation | Story 10.8 | docs(implementation-log): append Story 10.8 async handle warning fix (ca98f53) |
