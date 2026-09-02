@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-09-05 — Story 13.12 — social-listening-admin@72e5067
+
+- **Full commit:** `72e5067c9889419c3760a2c21a4a5e60e3eeb426`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.12 / ADR-0116
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/topics/drift/route.ts, social-listening-admin/src/app/tenant/analytics/TopicEvolutionTimeline.tsx, social-listening-admin/src/app/tenant/analytics/DriftExplanationCard.tsx, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/adr/README.md
+- **Validation re-run:** new contract PASS (11/11); epic-13 suite PASS (68/68); directly related regression suites (Story 9.11 RAG discovery UI, Story 11.6 topic evolution UI) PASS; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has pre-existing environmental/foreign-credential and unrelated source-drift failures (Story 6.6, 6.9, 6.18, 8.6, etc.) not caused by this change.
+- **Notes:** Adds `getTopicDrift()` and `TopicDriftResult` to the core API client, a `/api/topics/drift` same-origin BFF proxy, a drift warning icon on `TopicEvolutionTimeline`, a `DriftExplanationCard` showing clusters/sample posts, `RAGAsk` plain-language drift summary, and a date-range selector for the two comparison windows.
+
+---
+
 ## 2026-09-03 — Story 13.10 — social-listening-admin@61c9082
 
 - **Full commit:** `61c9082d07571d6184b680c1dedd9639c1afc082`
