@@ -3397,3 +3397,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-02 — bb0545a — feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116)
+
+- **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
+- **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
+- **Status:** Pending review
+

@@ -2,6 +2,20 @@
 
 ---
 
+---
+
+## 2026-09-02 — Story 13.11 — social-listening-core@bb0545a
+
+- **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.11 / ADR-0116
+- **Contract:** `contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/semantic-drift/SKILL.md`, `social-listening-core/.claude/skills/topic-evolution/SKILL.md`
+- **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
+- **Epic-13 suite at merge:** PASS (112/112); full accumulated suite has 21 unrelated environmental/foreign-credential failures (GNews, Facebook, YouTube connectors, Service Bus, social_posts partition, platform metrics) not caused by this change; typecheck PASS.
+
+---
+
 ## 2026-09-01 — Story 13.5 — social-listening-core@4dc7472
 
 - **Full commit:** `4dc74725f0458ec064a14aa5d0a18529520fc69c`
