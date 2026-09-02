@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus } from './types';
+import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus, CRMProspectPushResult, ProspectingListEntryPayload } from './types';
+import { pushProspectsBatchWithPushEntity } from './prospectPayloadMapper';
 
 export class SalesforceConnector implements CRMConnector {
   public readonly id = 'salesforce';
@@ -11,7 +12,7 @@ export class SalesforceConnector implements CRMConnector {
   ): Promise<CRMPushResult> {
     const instanceUrl = ctx.credentials?.instanceUrl || 'https://login.salesforce.com';
     const cleanUrl = instanceUrl.replace(/\/+$/, '');
-    const id = randomUUID().replace(/-/g, '').substring(0, 15);
+    const id = payload.externalId || randomUUID().replace(/-/g, '').substring(0, 15);
 
     const sObjectMap: Record<string, string> = {
       lead: 'Lead',
@@ -32,7 +33,7 @@ export class SalesforceConnector implements CRMConnector {
         : payload.entityType === 'contact'
         ? 'C'
         : '6';
-    const crmRecordId = `00${prefix}${id}`;
+    const crmRecordId = id.startsWith('00') ? id : `00${prefix}${id}`;
     const crmRecordUrl = `${cleanUrl}/lightning/r/${sObject}/${crmRecordId}/view`;
 
     return {
@@ -45,6 +46,14 @@ export class SalesforceConnector implements CRMConnector {
         errors: [],
       },
     };
+  }
+
+  public async pushProspectsBatch(
+    ctx: CRMConnectorContext,
+    payloads: ProspectingListEntryPayload[],
+    options?: { rePushByExternalId?: Record<string, string> }
+  ): Promise<CRMProspectPushResult[]> {
+    return pushProspectsBatchWithPushEntity(this, ctx, payloads, options);
   }
 
   public async validateCredentials(ctx: CRMConnectorContext): Promise<boolean> {

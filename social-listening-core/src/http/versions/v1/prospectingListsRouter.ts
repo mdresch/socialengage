@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireTenantUserIdentity } from '../../auth/requireTenantUser';
+import { requireFeatureGate } from '../../auth/featureGates';
 import { RequestWithIdentity } from '../../auth/requestIdentity';
 import {
   createProspectingList,
@@ -12,6 +13,14 @@ import {
   updateEntry,
   deleteEntry,
 } from '../../../prospecting/prospectingListStore';
+import {
+  fetchProspectingListForSyncExport,
+  createProspectingListAsyncExportJob,
+  ExportValidationError,
+  ExportRateLimitError,
+  ExportTooLargeError,
+} from '../../../prospecting/prospectingListExportEngine';
+import { pushProspectsToCRM } from '../../../crm/prospectingCRMHandoffService';
 
 export const prospectingListsRouter = Router();
 
@@ -50,6 +59,134 @@ prospectingListsRouter.get('/', async (req, res) => {
     res.json({ lists });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to retrieve prospecting lists.' });
+  }
+});
+
+// GET /v1/prospecting-lists/:id/export.csv (Story 13.13, ADR-0117 / ADR-0111)
+prospectingListsRouter.get('/:id/export.csv', requireFeatureGate('exports'), async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const listId = String(req.params.id);
+
+  try {
+    const list = await getProspectingList(identity.tenantId, identity.userId, listId);
+    if (!list || list.owner_id !== identity.userId) {
+      res.status(404).json({ error: 'Prospecting list not found.' });
+      return;
+    }
+
+    const requestedLimit = req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+    const csvContent = await fetchProspectingListForSyncExport(
+      identity.tenantId,
+      identity.userId,
+      list.id,
+      requestedLimit
+    );
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="prospecting-list-${list.id}.csv"`);
+    res.send(csvContent);
+  } catch (err: any) {
+    if (err instanceof ExportValidationError) {
+      res.status(400).json({ code: err.code, error: err.message });
+      return;
+    }
+    if (err instanceof ExportRateLimitError) {
+      res.status(429).json({ code: 'EXPORT_RATE_LIMITED' });
+      return;
+    }
+    if (err instanceof ExportTooLargeError) {
+      res.status(422).json({ code: 'EXPORT_TOO_LARGE' });
+      return;
+    }
+    console.error('Error in GET /v1/prospecting-lists/:id/export.csv:', err);
+    res.status(500).json({ error: err?.message || 'Failed to export prospecting list CSV.' });
+  }
+});
+
+// POST /v1/prospecting-lists/:id/export (Story 13.13, ADR-0117 / ADR-0111) - Async export
+prospectingListsRouter.post('/:id/export', requireFeatureGate('exports'), async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const listId = String(req.params.id);
+
+  try {
+    const list = await getProspectingList(identity.tenantId, identity.userId, listId);
+    if (!list || list.owner_id !== identity.userId) {
+      res.status(404).json({ error: 'Prospecting list not found.' });
+      return;
+    }
+
+    const limit = req.body?.limit ? Number(req.body.limit) : undefined;
+    const job = await createProspectingListAsyncExportJob(identity.tenantId, identity.userId, {
+      listId: list.id,
+      limit,
+    });
+
+    res.status(202).json({
+      jobId: job.id,
+      status: job.status,
+      expiresAt: job.expires_at,
+      statusUrl: `/v1/posts/exports/${job.id}`,
+    });
+  } catch (err: any) {
+    if (err instanceof ExportValidationError) {
+      res.status(400).json({ code: err.code, error: err.message });
+      return;
+    }
+    if (err instanceof ExportRateLimitError) {
+      res.status(429).json({ code: 'EXPORT_RATE_LIMITED' });
+      return;
+    }
+    if (err instanceof ExportTooLargeError) {
+      res.status(422).json({ code: 'EXPORT_TOO_LARGE' });
+      return;
+    }
+    console.error('Error in POST /v1/prospecting-lists/:id/export:', err);
+    res.status(500).json({ error: err?.message || 'Failed to initiate prospecting list export job.' });
+  }
+});
+
+// POST /v1/prospecting-lists/:id/crm-handoff (Story 13.13, ADR-0117)
+prospectingListsRouter.post('/:id/crm-handoff', requireFeatureGate('prospecting_crm'), async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const { crmConnectorId, caseType, selectedEntryIds, customFields } = req.body || {};
+
+  if (!crmConnectorId || typeof crmConnectorId !== 'string') {
+    res.status(400).json({ error: 'crmConnectorId is required.' });
+    return;
+  }
+
+  if (caseType !== 'lead') {
+    res.status(400).json({ error: "caseType must be 'lead'." });
+    return;
+  }
+
+  const listId = String(req.params.id);
+
+  try {
+    const list = await getProspectingList(identity.tenantId, identity.userId, listId);
+    if (!list || list.owner_id !== identity.userId) {
+      res.status(404).json({ error: 'Prospecting list not found.' });
+      return;
+    }
+
+    const result = await pushProspectsToCRM({
+      tenantId: identity.tenantId,
+      userId: identity.userId,
+      listId: list.id,
+      crmConnectorId,
+      selectedEntryIds,
+      customFields,
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error in POST /v1/prospecting-lists/:id/crm-handoff:', err);
+    res.status(500).json({ error: err?.message || 'Failed to push prospects to CRM.' });
   }
 });
 
@@ -118,6 +255,8 @@ prospectingListsRouter.post('/:id/entries', async (req, res) => {
   const {
     author_id,
     platform_id,
+    author_name,
+    public_url,
     topic,
     engagement_score,
     authenticity_score,
@@ -143,6 +282,8 @@ prospectingListsRouter.post('/:id/entries', async (req, res) => {
     const entry = await addEntry(identity.tenantId, identity.userId, req.params.id, {
       author_id,
       platform_id,
+      author_name,
+      public_url,
       topic,
       engagement_score,
       authenticity_score,
