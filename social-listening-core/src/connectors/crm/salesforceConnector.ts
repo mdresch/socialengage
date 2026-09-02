@@ -13,14 +13,26 @@ export class SalesforceConnector implements CRMConnector {
     const cleanUrl = instanceUrl.replace(/\/+$/, '');
     const id = randomUUID().replace(/-/g, '').substring(0, 15);
 
-    let sObject = 'Lead';
-    if (payload.entityType === 'opportunity') {
-      sObject = 'Opportunity';
-    } else if (payload.entityType === 'support') {
-      sObject = 'Case';
-    }
+    const sObjectMap: Record<string, string> = {
+      lead: 'Lead',
+      opportunity: 'Opportunity',
+      support: 'Case',
+      account: 'Account',
+      contact: 'Contact',
+    };
+    const sObject = sObjectMap[payload.entityType] || 'Lead';
 
-    const crmRecordId = `00${payload.entityType === 'lead' ? 'Q' : payload.entityType === 'support' ? '5' : '6'}${id}`;
+    const prefix =
+      payload.entityType === 'lead'
+        ? 'Q'
+        : payload.entityType === 'support'
+        ? '5'
+        : payload.entityType === 'account'
+        ? 'A'
+        : payload.entityType === 'contact'
+        ? 'C'
+        : '6';
+    const crmRecordId = `00${prefix}${id}`;
     const crmRecordUrl = `${cleanUrl}/lightning/r/${sObject}/${crmRecordId}/view`;
 
     return {

@@ -10,7 +10,6 @@ import { PostDetailPanel } from './PostDetailPanel';
 import { EnrichmentEditDrawer } from './EnrichmentEditDrawer';
 import { ReplyComposerDrawer } from './ReplyComposerDrawer';
 import { PostRepliesTab } from './PostRepliesTab';
-import { ComposePostModal } from '@/components/composer';
 import type { PostEnrichmentUpdateInput } from '@/lib/core-client';
 import type { OutboundActivity } from '@/lib/core-client';
 
@@ -147,7 +146,6 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
     () => (initialActivePostId && flat.find((p) => p.id === initialActivePostId)) || null
   );
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH_SIZE);
-  const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [optimisticReplies, setOptimisticReplies] = useState<OutboundActivity[]>([]);
   const [repliesRefresh, setRepliesRefresh] = useState(0);
@@ -244,14 +242,6 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsComposeOpen(true)}
-            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
-          >
-            <span>✍️</span>
-            <span>Compose Post</span>
-          </button>
           <div className="pf-header-count">
             {(() => {
               const filtersActive = searchQuery.trim() || selectedProvider !== 'ALL' || selectedSentiment !== 'ALL' || selectedWatchlist !== 'ALL';
@@ -649,11 +639,6 @@ export function PostsFeedClient({ posts, watchlists, facebookPages, initialActiv
         </>
       )}
 
-      {/* Compose & Multi-Platform Publishing Modal */}
-      <ComposePostModal
-        isOpen={isComposeOpen}
-        onClose={() => setIsComposeOpen(false)}
-      />
     </div>
   );
 }

@@ -59,6 +59,8 @@
 | 2026-08-31 | 22:09 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (046563b) |
 | 2026-08-31 | 22:08 | — | — | Documentation | Story 13.1 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) (0240f80) |
 | 2026-08-31 | 18:54 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (78c6e3e) |
+| 2026-08-31 | 00:49 | — | — | Documentation | — | ui(analytics): non-story tweaks — center globe, move watchlist, add entity breakdown, DateTime phrase filter, author platform badges (02ddfd3) |
+| 2026-08-31 | 23:01 | — | — | Documentation | — | ui(admin): center location globe and remove drag hint (fb374ac) |
 | 2026-08-31 | 22:27 | — | — | Documentation | — | docs(trace): story-11.5 healing pass log entry (04bfeb7) |
 | 2026-08-31 | 22:23 | — | — | Documentation | — | heal(story-11.5): use resolved identity and validate granularity in /v1/topics/evolution (a5c926c) |
 | 2026-08-31 | 18:40 | — | — | Documentation | — | Features on Frontend UI fine tuning (d78c55c) |

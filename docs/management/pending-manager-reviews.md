@@ -3688,82 +3688,6 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/SidebarNav.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/contracts/epic-8/story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/AnalyticsClient.tsx, social-listening-admin/src/app/tenant/analytics/AnimatedChartTooltip.tsx, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/InteractiveWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/LocationTab.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/SentimentTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/analytics/fetchAnalyticsSummary.ts, social-listening-admin/src/app/tenant/analytics/loading.tsx, social-listening-admin/src/app/tenant/analytics/page.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/ui/RelativeTime.tsx
 - **Status:** Pending review
 
-## 2026-08-31 — 78c6e3e — docs: close implementation-log loop for d78c55c
-
-- **Full commit:** `78c6e3ee0711a29487c286d7845351b3cd48129b`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-31 — 0240f80 — feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend)
-
-- **Full commit:** `0240f80b5863a103619840f06e1d8d601fe29b25`
-- **Files touched:** docs/adr/0023-proportional-connector-failure-threshold.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.env.example, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/contracts/epic-1/story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts, social-listening-core/contracts/epic-13/story-13.1.connector-health-auto-disable-and-recovery.contract.test.ts, social-listening-core/contracts/epic-2/story-2.12.retryable-failures-excluded-from-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.3.error-handling-auto-disable.contract.test.ts, social-listening-core/contracts/epic-2/story-2.5.proportional-failure-threshold.contract.test.ts, social-listening-core/contracts/epic-4/story-4.3.derived-connector-health.contract.test.ts, social-listening-core/migrations/0064_add_health_check_trigger_type.sql, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/credentials/keyVaultProvider.ts, social-listening-core/src/events/connectorIngestionAlertEvent.ts, social-listening-core/src/events/serviceBusPublisher.ts, social-listening-core/src/http/versions/v1/connectorsRouter.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
-- **Status:** Pending review
-
-## 2026-08-31 — 29b274c — Merge branch 'feat/story-13.1' into main
-
-- **Full commit:** `29b274c4acac169cff210782d3ff692b308bf779`
-- **Files touched:** 
-- **Status:** Pending review
-
-## 2026-08-31 — 32a7969 — docs: append Story 13.1 implementation-log entry (merge 29b274c)
-
-- **Full commit:** `32a7969a2f5f93040efc7964c501381fd5e9d809`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-31 — 31313ee — chore: sync post-commit management tracking for Story 13.1 implementation-log entry
-
-- **Full commit:** `31313ee7895e9fcbde703f80ad2e3d36384f8f43`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-31 — 2609da5 — docs: sync post-commit tracking after Story 13.2 commit
-
-- **Full commit:** `2609da540d3175d54daa2d08c1c9ac0d2eab6054`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-31 — 89db5a6 — docs: append Story 13.2 implementation-log entry (merge da31be9)
-
-- **Full commit:** `89db5a69928d6de074625546f05fab3214c5ace6`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
-
-## 2026-08-31 — 5b792fe — Merge remote-tracking branch 'origin/main' into main
-
-- **Full commit:** `5b792feaef83f130479958ae5274d56593acc8ce`
-- **Files touched:** 
-- **Status:** Pending review
-
-## 2026-08-31 — d7874da — chore: remove jest test db artifact from merge
-
-- **Full commit:** `d7874da5d06f33fc7cfe778e6c2e13009ff8392f`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-30012.json
-- **Status:** Pending review
-
-## 2026-08-31 — b831498 — docs(epic-13): update traceability and implementation log for Story 13.3
-
-- **Full commit:** `b83149802f71d7a50f767fa1253f4928170a4a42`
-- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md
-- **Status:** Pending review
-
-## 2026-08-31 — 6214c44 — chore(dashboard): sync project progress dashboard data for Story 13.3
-
-- **Full commit:** `6214c44efcf3e834ced67526386dc9c59f378a88`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
-
-## 2026-08-31 — 3f5d2a5 — chore(dashboard): sync project progress dashboard data for Story 13.3
-
-- **Full commit:** `3f5d2a58f57d57492b8e374e6985594df9a57dd2`
-- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
-
-## 2026-08-31 — 2b3e8cc — docs: sync post-commit tracking after Story 13.3 implementation
-
-- **Full commit:** `2b3e8ccbf498b3f682e60e3d7b889f1ce8e896cc`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
 ## 2026-08-31 — a5c926c — heal(story-11.5): use resolved identity and validate granularity in /v1/topics/evolution
 
 - **Full commit:** `a5c926c9cd44fb6f6343f125d913a8ef66ce9c2a`
@@ -3776,22 +3700,16 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
-## 2026-08-31 — 7dac132 — Merge remote-tracking branch 'origin/main' into main
+## 2026-08-31 — fb374ac — ui(admin): center location globe and remove drag hint
 
-- **Full commit:** `7dac1322b6f72938ad06e8d0ebf2eb86c20b17a2`
-- **Files touched:** 
+- **Full commit:** `fb374acfa2ad12f4c7dfc12a9bb70b38fe258a90`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx
 - **Status:** Pending review
 
-## 2026-08-31 — 209b0d7 — feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend)
+## 2026-08-31 — 02ddfd3 — ui(analytics): non-story tweaks — center globe, move watchlist, add entity breakdown, DateTime phrase filter, author platform badges
 
-- **Full commit:** `209b0d7b286564a3a4e7126ecaeb93b862cd4ab1`
-- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-13/story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts, social-listening-core/migrations/0065_align_export_jobs_for_adr_0111.sql, social-listening-core/src/archival/blobArchiveClient.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/posts/exportRateLimit.ts, social-listening-core/src/posts/postExportEngine.ts
-- **Status:** Pending review
-
-## 2026-08-31 — 3241ecc — docs(user-stories): mark Story 13.4 as built
-
-- **Full commit:** `3241eccdc95c8fba36491cc6a14137f07885e44c`
-- **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Full commit:** `02ddfd3876a7274536b1ece006f29016c8db31cb`
+- **Files touched:** social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/analytics/ConversationsTab.tsx, social-listening-admin/src/app/tenant/analytics/CountryWorldMap.tsx, social-listening-admin/src/app/tenant/analytics/OverviewTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts
 - **Status:** Pending review
 
 ## 2026-09-01 — 543eecf — docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built

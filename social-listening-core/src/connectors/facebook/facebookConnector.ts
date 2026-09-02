@@ -35,6 +35,26 @@ export interface FacebookPagePost {
   reactions?: { summary: { total_count: number } };
   comments?: { summary: { total_count: number } };
   shares?: { count: number };
+  /**
+   * Image URL for the post's attached media (photo or link preview).
+   */
+  full_picture?: string;
+  /**
+   * Link / media attachments (share preview, photo, video, album).
+   */
+  attachments?: {
+    data?: Array<{
+      type?: string;
+      title?: string;
+      url?: string;
+      unshimmed_url?: string;
+      description?: string;
+      media?: {
+        image?: { src?: string; height?: number; width?: number };
+      };
+      target?: { url?: string };
+    }>;
+  };
 }
 
 interface FacebookCredential {
@@ -268,7 +288,7 @@ export async function publishToFacebookPage(
  * pull in individual identifiable people.
  */
 export async function fetchFacebookPagePosts(pageId: string, pageAccessToken: string, limit = 25): Promise<FacebookPagePost[]> {
-  const fields = 'id,message,created_time,permalink_url,from{id,name},reactions.summary(total_count),comments.summary(total_count),shares';
+  const fields = 'id,message,created_time,permalink_url,from{id,name},full_picture,attachments{url,unshimmed_url,title,description,type,media{image{src,height,width}},target{url}},reactions.summary(total_count),comments.summary(total_count),shares';
   const url = `${GRAPH_API_BASE}/${encodeURIComponent(pageId)}/feed?fields=${fields}&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
   const body = await graphApiFetch(url, 'feed');
   const data = (body as { data?: FacebookPagePost[] }).data;

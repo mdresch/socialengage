@@ -10,7 +10,7 @@ export interface CRMHandoffModalProps {
   authorName?: string;
   postExcerpt?: string;
   defaultConnectorId?: string;
-  defaultEntityType?: 'lead' | 'opportunity' | 'support';
+  defaultEntityType?: string;
 }
 
 export function CRMHandoffModal({
@@ -24,7 +24,7 @@ export function CRMHandoffModal({
   defaultEntityType = 'support',
 }: CRMHandoffModalProps) {
   const [crmConnectorId, setCrmConnectorId] = useState<string>(defaultConnectorId);
-  const [entityType, setEntityType] = useState<'lead' | 'opportunity' | 'support'>(defaultEntityType);
+  const [entityType, setEntityType] = useState<string>(defaultEntityType);
   const [assignedTo, setAssignedTo] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [allowDuplicate, setAllowDuplicate] = useState<boolean>(false);
@@ -223,6 +223,8 @@ export function CRMHandoffModal({
                   { value: 'support', label: 'Support Case / Incident' },
                   { value: 'lead', label: 'Lead / Prospect' },
                   { value: 'opportunity', label: 'Opportunity / Deal' },
+                  { value: 'account', label: 'Account' },
+                  { value: 'contact', label: 'Contact' },
                 ].map((type) => (
                   <button
                     key={type.value}

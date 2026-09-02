@@ -1,5 +1,5 @@
 export type CRMProviderType = 'dynamics365' | 'salesforce' | 'hubspot';
-export type CRMEntityType = 'lead' | 'opportunity' | 'support';
+export type CRMEntityType = string;
 
 export interface CRMConnectorContext {
   tenantId: string;
@@ -14,11 +14,14 @@ export interface CRMCasePayload {
   authorPublicUrl?: string;
   postId?: string;                   // Optional for author-only prospecting pushes
   postExcerpt?: string;
+  postUrl?: string;                  // Best-effort link to the original social post
+  postMediaUrls?: string[];          // Best-effort media or attachment links for the post
   platformId: string;
   publishedAt?: string;
   sentiment?: string;
   watchlistId?: string;
-  entityType: CRMEntityType;          // 'lead' | 'opportunity' | 'support'
+  entityType: CRMEntityType;          // 'lead' | 'opportunity' | 'support' or a custom table logical name
+  entitySet?: string;                 // Optional Dataverse collection/plural name; falls back to entityType + 's'
   assignedTo?: string;               // External CRM User / Queue ID
   notes?: string;
   customFields?: Record<string, any>;

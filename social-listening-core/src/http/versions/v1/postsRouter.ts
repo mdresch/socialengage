@@ -42,6 +42,7 @@ postsRouter.get('/', async (req, res) => {
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const watchlistId = typeof req.query.watchlistId === 'string' ? req.query.watchlistId : undefined;
+  const providerId = typeof req.query.providerId === 'string' ? req.query.providerId : undefined;
   const format = typeof req.query.format === 'string' ? req.query.format : undefined;
 
   if (watchlistId !== undefined) {
@@ -73,7 +74,7 @@ postsRouter.get('/', async (req, res) => {
   }
 
   try {
-    const page = await listSocialPosts(tenantId, { cursor, limit, watchlistId });
+    const page = await listSocialPosts(tenantId, { cursor, limit, watchlistId, providerId });
     res.json(page);
   } catch {
     res.status(400).json({ error: 'Invalid cursor.' });
