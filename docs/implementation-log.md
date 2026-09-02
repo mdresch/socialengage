@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-09-05 — Story 13.14 — social-listening-admin@39a2375
+
+- **Full commit:** `39a23753cc48a3beccf80af016961937f6ef8831`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.14 / ADR-0117
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Validation re-run:** new contract PASS (15/15); epic-13 suite PASS (83/83); directly related regressions (Story 10.2 prospecting list detail, Story 11.2 CRM handoff) are structurally preserved; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has 7 pre-existing failures (missing foreign credentials ENTRA/FACEBOOK/LINKEDIN, and source-drift assertions in Story 6.9, 6.37, 8.6, 8.7) not caused by this change.
+- **Notes:** Adds `exportProspectingListCsv()` and `pushProspectingListToCrm()` to the core API client, same-origin BFF proxies for CSV export and batch CRM handoff, owner-only "Export CSV" and "Push to CRM" buttons on `ProspectingListDetailView` gated by `exports` and `prospecting_crm` feature flags, and a `ProspectingListCrmPushModal` for connector/entry selection and success feedback including a CRM record link.
+
+---
+
 ## 2026-09-05 — Story 13.12 — social-listening-admin@72e5067
 
 - **Full commit:** `72e5067c9889419c3760a2c21a4a5e60e3eeb426`
