@@ -18,12 +18,14 @@ description: The sole sanctioned path from social-listening-admin to social-list
 | ADR-0036 §2, §5 | This module is also the sole choke point that attaches `Authorization: Bearer <token>` to authenticated calls, sourced from the admin UI's own server-side session | 6.1 |
 | ADR-0075 | Outbound Social Post Publishing via Platform APIs (`publishOutboundPost` → `POST /v1/outbound/posts`) | 11.7/11.8 |
 | ADR-0115 | Media upload, asset targeting, and link-card support (`uploadOutboundMedia` → `POST /v1/outbound/media`) | 13.10 |
+| ADR-0116 | Semantic drift detection (`getTopicDrift` → `GET /v1/topics/:id/drift?start=...&end=...`) | 13.12 |
 
 ## Contracts that constrain this component
 
 - `contracts/epic-1/story-1.1.rest-only-boundary.contract.test.ts` — asserts (a) no Postgres/DB driver in `package.json`, (b) no committed DB connection string, (c) no local/file dependency on `social-listening-core`, (d) no admin source file imports `social-listening-core` directly, (e) `src/lib/core-client.ts` exists and reaches core via `fetch`, not a DB driver, (f) admin is an independently versioned package with no shared workspace root tying it to core.
 - `contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` — asserts (a) no second ad hoc `fetch`-with-`Authorization`-header call exists anywhere else in `src/`, (b) `authenticatedCoreFetch()` actually attaches `Bearer <accessToken>` sourced from the session, (c) `fetchResolvedIdentity()` degrades to `null` rather than throwing while `GET /v1/me` doesn't exist in core yet.
 - `contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts` — asserts (a) `uploadOutboundMedia()` calls `POST /v1/outbound/media` with a `FormData` body and returns `{ mediaId, url, mimeType, sizeBytes }`, (b) `PublishOutboundPostInput` carries `assets`, `assetTargets` and `scheduledFor`, (c) `getConnectorTargets()` calls `GET /v1/connectors/:platformId/targets`.
+- `contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts` — asserts `getTopicDrift()` calls `GET /v1/topics/:id/drift?start=...&end=...` and returns a `TopicDriftResult` with `driftScore`, `warning`, `topClustersNow/Then`, and `samplePostsNow/Then`.
 
 ## How to extend this safely
 

@@ -2680,6 +2680,38 @@ export async function getTopicEvolution(options: {
   return (await response.json()) as TopicEvolutionResponse;
 }
 
+export interface TopicDriftResult {
+  topicId: string;
+  start: string;
+  end: string;
+  driftScore: number;
+  topClustersNow: string[];
+  topClustersThen: string[];
+  samplePostsNow: string[];
+  samplePostsThen: string[];
+  warning: 'none' | 'mild' | 'significant';
+  cacheHit?: boolean;
+}
+
+/**
+ * Story 13.12 (ADR-0116) — fetches a semantic-drift result for a topic between two time windows.
+ */
+export async function getTopicDrift(
+  topicId: string,
+  start: string,
+  end: string
+): Promise<TopicDriftResult> {
+  const params = new URLSearchParams();
+  params.set('start', start);
+  params.set('end', end);
+
+  const response = await authenticatedCoreFetch(`/v1/topics/${encodeURIComponent(topicId)}/drift?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch topic drift: ${response.status}`);
+  }
+  return (await response.json()) as TopicDriftResult;
+}
+
 export interface OutboundPostAsset {
   type: 'image' | 'video' | 'link-card';
   mediaId?: string;

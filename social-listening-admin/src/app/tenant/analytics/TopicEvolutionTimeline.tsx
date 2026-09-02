@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { TopicEvolutionResponse, TopicEvolutionPoint } from '@/lib/core-client';
+import type { TopicEvolutionResponse, TopicEvolutionPoint, TopicDriftResult } from '@/lib/core-client';
+import { DriftExplanationCard } from './DriftExplanationCard';
 
 interface TopicEvolutionTimelineProps {
   initialData: TopicEvolutionResponse;
@@ -51,6 +52,18 @@ export function TopicEvolutionTimeline({
   const [loading, setLoading] = useState(false);
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
 
+  // Drift analysis state (Story 13.12)
+  const [driftStart, setDriftStart] = useState(data.startDate?.slice(0, 10) || '');
+  const [driftEnd, setDriftEnd] = useState(data.endDate?.slice(0, 10) || '');
+  const [drift, setDrift] = useState<TopicDriftResult | null>(null);
+  const [driftLoading, setDriftLoading] = useState(false);
+
+  // Keep drift date range in sync when the underlying evolution range changes
+  useEffect(() => {
+    if (data.startDate) setDriftStart(data.startDate.slice(0, 10));
+    if (data.endDate) setDriftEnd(data.endDate.slice(0, 10));
+  }, [data.startDate, data.endDate]);
+
   // Sync state when topic / granularity / comparison changes
   const fetchEvolution = async (topic: string, gran: 'day' | 'week' | 'month', compare: boolean) => {
     setLoading(true);
@@ -88,6 +101,26 @@ export function TopicEvolutionTimeline({
     fetchEvolution(selectedTopic, granularity, compare);
   };
 
+  const fetchDrift = async () => {
+    const topicId = data.topicId || selectedTopic.toLowerCase().replace(/\s+/g, '-');
+    if (!driftStart || !driftEnd) return;
+
+    setDriftLoading(true);
+    try {
+      const startIso = `${driftStart}T00:00:00.000Z`;
+      const endIso = `${driftEnd}T00:00:00.000Z`;
+      const res = await fetch(`/api/topics/drift?id=${encodeURIComponent(topicId)}&start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
+      if (res.ok) {
+        const json = await res.json();
+        setDrift(json as TopicDriftResult);
+      }
+    } catch (err) {
+      console.error('Failed to fetch drift', err);
+    } finally {
+      setDriftLoading(false);
+    }
+  };
+
   const points = data.points || [];
   const maxVolume = Math.max(1, ...points.map((p) => p.mentionCount));
   const latestTrend = points.length > 0 ? points[points.length - 1].trend : 'stable';
@@ -103,6 +136,14 @@ export function TopicEvolutionTimeline({
               Topic Evolution Timeline
             </h1>
             <TrendAnnotation trend={latestTrend} />
+            {drift?.warning === 'significant' && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-950/50 dark:text-amber-300"
+                title={`Significant drift detected (score: ${drift.driftScore.toFixed(2)})`}
+              >
+                {'⚠️'} Drift
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Longitudinal analysis of volume trajectories, sentiment transitions, and driver key terms.
@@ -151,6 +192,44 @@ export function TopicEvolutionTimeline({
             />
             <span>Compare Previous</span>
           </label>
+        </div>
+      </div>
+
+      {/* Drift Date Range Selector (Story 13.12) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col md:flex-row md:items-end gap-4">
+          <div className="flex-1">
+            <label htmlFor="drift-start-date" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Start (then window)
+            </label>
+            <input
+              id="drift-start-date"
+              type="date"
+              value={driftStart}
+              onChange={(e) => setDriftStart(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="drift-end-date" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              End (now window)
+            </label>
+            <input
+              id="drift-end-date"
+              type="date"
+              value={driftEnd}
+              onChange={(e) => setDriftEnd(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={fetchDrift}
+            disabled={driftLoading || !driftStart || !driftEnd}
+            className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {driftLoading ? 'Analyzing...' : 'Analyze Drift'}
+          </button>
         </div>
       </div>
 
@@ -227,6 +306,9 @@ export function TopicEvolutionTimeline({
           })}
         </div>
       </div>
+
+      {/* Drift Explanation Card (Story 13.12) */}
+      <DriftExplanationCard drift={drift ?? undefined} topicName={data.topicName} />
 
       {/* Detail Breakdown for Active / Selected Point */}
       {activePoint && (
