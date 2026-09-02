@@ -5,6 +5,10 @@ description: Schema, store, curation lifecycle, and 7-day rolling refresh worker
 
 # AI Topic Clustering Post-Topics Schema (ADR-0104)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` — Story 12.7 contract test.
+
 ## Overview
 
 Story 12.7 (ADR-0104, BRD-0104, FDD-0104) introduces relational topic persistence for AI clustering, replacing pure JSONB containment with a normalized `topics` catalog and `post_topics` junction table with tenant-isolated Row-Level Security (RLS).

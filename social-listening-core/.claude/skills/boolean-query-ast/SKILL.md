@@ -1,5 +1,9 @@
 # Boolean Query AST & Query Capabilities (Backend)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.3.boolean-query-ast.contract.test.ts` — Story 12.3 contract test.
+
 ## Purpose
 Defines the canonical `WatchlistAST` JSON schema, connector query capability discovery (`GET /v1/connectors/:platformId/query-capabilities`), save-time AST validation (`422 UNSUPPORTED_QUERY_CLAUSE`), and fallback evaluation engine for multi-platform watchlists per ADR-0102.
 

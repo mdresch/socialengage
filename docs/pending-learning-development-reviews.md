@@ -3690,3 +3690,91 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-01 — 5fcd0fd — chore: sync post-commit pending reviews, time tracking, and synthesis docs
+
+- **Full commit:** `5fcd0fde5c3892cf30e584e154d3d78e0f2012da`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/synthesis/Self-Learning-Synthesis-Epic-10.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md
+- **Status:** Pending review
+
+## 2026-09-02 — 79b6ab9 — chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking
+
+- **Full commit:** `79b6ab980ee886dda695c961ef75dbfda7ec9cf9`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/.claude/skills/crisis-threshold-wizard/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/.claude/skills/rag-endpoints/SKILL.md, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+## 2026-09-02 — bb0545a — feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116)
+
+- **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
+- **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
+- **Status:** Pending review
+
+## 2026-09-02 — cfbb0ad — docs: Story 13.11 traceability — mark Built and append Implementation Log
+
+- **Full commit:** `cfbb0ad72f2f2c94196134fa32ad9b9d838665ad`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Status:** Pending review
+
+## 2026-09-02 — 0df7c14 — chore: sync post-commit pending reviews, time tracking, and Epic-13 synthesis
+
+- **Full commit:** `0df7c14c37f3ad2f7991b6d2a6de8987f52eb486`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-02 — 4ad35ee — chore(dashboard): sync project progress dashboard data for Story 13.11
+
+- **Full commit:** `4ad35eea94159ffa816c6376fb64a8ad76163d8c`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 07f8aa4 — chore: sync post-commit tracking and Epic-13 synthesis
+
+- **Full commit:** `07f8aa4df908fb7063e0ccf9164c2c4d17814fad`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-02 — 1094f02 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `1094f0212e8948fb5ef58096cc738fa055a99528`
+- **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 7f62800 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `7f62800943f69169d9202f5fc42e16f525745630`
+- **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 11c8d8b — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `11c8d8b93237fdd9ef812524fc1af01d833f14e8`
+- **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 0b6f9e7 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `0b6f9e77e4cfafdf1e3cc7f945146a841c1f8a58`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 4ed1f66 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `4ed1f66c3b1216d3bcf57e4500a34fda1e45c476`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — d7bd36c — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `d7bd36c3dfabf7a8c042bbe2fe9636be01fb3636`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 39a2375 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
+
+- **Full commit:** `39a23753cc48a3beccf80af016961937f6ef8831`
+- **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+
+## 2026-09-02 — 7683f31 — docs: append Story 13.14 to implementation log
+
+- **Full commit:** `7683f3119e09ab121916023dca2b1eba5007f6c1`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+

@@ -5,6 +5,10 @@ description: Author scoring model (reach, engagement, authenticity, influence) a
 
 # Influencer Discovery and Scoring Skill
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts` — Story 12.15 contract test.
+
 ## Overview
 Implements Story 12.15 (ADR-0108):
 - Author scoring columns (`reach_score`, `engagement_score`, `authenticity_score`, `influence_score`).

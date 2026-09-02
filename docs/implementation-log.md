@@ -2,6 +2,83 @@
 
 ---
 
+## 2026-09-05 — Story 13.14 — social-listening-admin@39a2375
+
+- **Full commit:** `39a23753cc48a3beccf80af016961937f6ef8831`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.14 / ADR-0117
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md
+- **Validation re-run:** new contract PASS (15/15); epic-13 suite PASS (83/83); directly related regressions (Story 10.2 prospecting list detail, Story 11.2 CRM handoff) are structurally preserved; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has 7 pre-existing failures (missing foreign credentials ENTRA/FACEBOOK/LINKEDIN, and source-drift assertions in Story 6.9, 6.37, 8.6, 8.7) not caused by this change.
+- **Notes:** Adds `exportProspectingListCsv()` and `pushProspectingListToCrm()` to the core API client, same-origin BFF proxies for CSV export and batch CRM handoff, owner-only "Export CSV" and "Push to CRM" buttons on `ProspectingListDetailView` gated by `exports` and `prospecting_crm` feature flags, and a `ProspectingListCrmPushModal` for connector/entry selection and success feedback including a CRM record link.
+
+---
+
+## 2026-09-05 — Story 13.12 — social-listening-admin@72e5067
+
+- **Full commit:** `72e5067c9889419c3760a2c21a4a5e60e3eeb426`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.12 / ADR-0116
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/topics/drift/route.ts, social-listening-admin/src/app/tenant/analytics/TopicEvolutionTimeline.tsx, social-listening-admin/src/app/tenant/analytics/DriftExplanationCard.tsx, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/adr/README.md
+- **Validation re-run:** new contract PASS (11/11); epic-13 suite PASS (68/68); directly related regression suites (Story 9.11 RAG discovery UI, Story 11.6 topic evolution UI) PASS; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has pre-existing environmental/foreign-credential and unrelated source-drift failures (Story 6.6, 6.9, 6.18, 8.6, etc.) not caused by this change.
+- **Notes:** Adds `getTopicDrift()` and `TopicDriftResult` to the core API client, a `/api/topics/drift` same-origin BFF proxy, a drift warning icon on `TopicEvolutionTimeline`, a `DriftExplanationCard` showing clusters/sample posts, `RAGAsk` plain-language drift summary, and a date-range selector for the two comparison windows.
+
+---
+
+## 2026-09-03 — Story 13.10 — social-listening-admin@61c9082
+
+- **Full commit:** `61c9082d07571d6184b680c1dedd9639c1afc082`
+- **Repo:** social-listening-admin
+- **Story / ADR:** 13.10 / ADR-0115
+- **Contract:** `social-listening-admin/contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-admin/.claude/skills/polypost-composer/SKILL.md`, `social-listening-admin/.claude/skills/core-api-client/SKILL.md`, `social-listening-admin/.claude/skills/publishing-ui/SKILL.md`
+- **Files touched:** social-listening-admin/contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/outbound/media/route.ts, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/components/composer/PolypostComposer.tsx, social-listening-admin/src/components/composer/lib/draftStorage.ts, social-listening-admin/src/components/composer/lib/mediaValidation.ts, social-listening-admin/src/components/composer/previews/FacebookPreviewCard.tsx, social-listening-admin/src/components/composer/types.ts, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/adr/README.md
+- **Validation re-run:** new contract PASS (20/20); epic-13 suite PASS (57/57); related regression suites (Story 6.36, Story 6.39, Story 11.8) PASS; `npm run typecheck` has no new errors in touched files; full accumulated admin `jest contracts` has 7 pre-existing failures (missing foreign credentials ENTRA/FACEBOOK/LINKEDIN, and source-drift assertions in Story 6.9, 6.37, 8.6, 8.7) unrelated to this change.
+- **Notes:** Adds `POST /api/outbound/media` same-origin proxy, client-side media validation, drag/drop upload to `PolypostComposer`, `assetTargets` selectors, and scheduled publish payload with `assets`/`assetTargets`/`scheduledFor`.
+
+
+
+---
+
+## 2026-09-02 — Story 13.13 — social-listening-core@92836a3
+
+- **Full commit:** `92836a3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.13 / ADR-0117
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.13.prospecting-list-export-and-crm-push.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/prospecting-lists/SKILL.md`, `social-listening-core/.claude/skills/crm-connector/SKILL.md`
+- **Files touched:** social-listening-core/contracts/epic-13/story-13.13.prospecting-list-export-and-crm-push.contract.test.ts, social-listening-core/migrations/0072_add_crm_prospect_activity_type.sql, social-listening-core/migrations/0073_add_prospecting_list_entry_author_name_and_public_url.sql, social-listening-core/src/connectors/crm/types.ts, social-listening-core/src/connectors/crm/prospectPayloadMapper.ts, social-listening-core/src/connectors/crm/hubspotConnector.ts, social-listening-core/src/connectors/crm/salesforceConnector.ts, social-listening-core/src/connectors/crm/dynamics365Connector.ts, social-listening-core/src/crm/prospectingCRMHandoffService.ts, social-listening-core/src/prospecting/prospectingListStore.ts, social-listening-core/src/prospecting/prospectingListExportEngine.ts, social-listening-core/src/http/versions/v1/prospectingListsRouter.ts, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, docs/adr/0117-prospecting-list-export-and-crm-push.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/implementation-log.md
+- **Validation re-run:** new contract PASS (9/9); `npm run typecheck` PASS; related regression suites (Story 10.1, Story 13.4, Story 13.5) PASS; full accumulated suite has 20 failures, the majority in Service Bus / Azure Key Vault / cross-test state (Epic 5 event tests, Epic 3 afterAll Key Vault deletions, Epic 8.8 afterAll timeout) and are unrelated to this change.
+- **Notes:** Owner-only export/push for v1 due to ADR-0086 RLS and missing edit-share table; edit-share and tenant-admin override remain deferred to ADR-0129.
+
+---
+
+## 2026-09-02 — Story 13.11 traceability and dashboard sync — social-listening-core@17fdccc
+
+- **Full commit:** `17fdccc1ccd4229ae0e5259027bb4c6ddb983d78`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.11 / ADR-0116
+- **Contract:** `contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/semantic-drift/SKILL.md`
+- **Files touched:** docs/adr/README.md
+- **Validation re-run:** new contract PASS (11/11); epic-13 suite PASS (112/112); `npm run typecheck` PASS; full accumulated suite has 2 failures in `Story 13.8` (platform_metrics shared-state/parallelism) and afterAll timeouts on `Story 3.14` and `Story 4.3` (Azure Key Vault deletion) — environmental and unrelated to Story 13.11.
+- **Notes:** `npm run sync` executed in `project-progress-dashboard/`; generated `data.ts` updated but left uncommitted per generated-docs guidance.
+
+## 2026-09-02 — Story 13.11 — social-listening-core@bb0545a
+
+- **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.11 / ADR-0116
+- **Contract:** `contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/semantic-drift/SKILL.md`, `social-listening-core/.claude/skills/topic-evolution/SKILL.md`
+- **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
+- **Epic-13 suite at merge:** PASS (112/112); full accumulated suite has 21 unrelated environmental/foreign-credential failures (GNews, Facebook, YouTube connectors, Service Bus, social_posts partition, platform metrics) not caused by this change; typecheck PASS.
+
+---
+
 ## 2026-09-01 — Story 13.5 — social-listening-core@4dc7472
 
 - **Full commit:** `4dc74725f0458ec064a14aa5d0a18529520fc69c`

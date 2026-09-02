@@ -7,6 +7,10 @@ description: Frontend UI components and BFF routes for intelligent author mentio
 
 Governed by **ADR-0100**, **BRD-0100**, **FDD-0100**, and **Story 11.12**.
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-11/story-11.12.mention-suggestions-ui.contract.test.ts` — Story 11.12 contract test.
+
 ## Architecture & Responsibilities
 
 1. **Client & BFF**:

@@ -23,7 +23,7 @@ export function getSavedDrafts(): SavedDraft[] {
   }
 }
 
-export function saveDraft(draft: Omit<SavedDraft, 'id' | 'updatedAt'>, existingId?: string): SavedDraft {
+export function saveDraft(draft: Omit<SavedDraft, 'id' | 'updatedAt' | 'title'>, existingId?: string): SavedDraft {
   const drafts = getSavedDrafts();
   const id = existingId || `draft_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const title = draft.mainText.trim().split('\n')[0].substring(0, 40) || 'Untitled Draft';

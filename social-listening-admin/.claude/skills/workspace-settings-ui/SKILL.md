@@ -5,6 +5,10 @@ description: Multi-user workspace settings UI supporting user management, seat l
 
 # Workspace Settings UI Skill
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts` — Story 12.14 contract test.
+
 ## Overview
 Implements Story 12.14 (ADR-0107):
 - `WorkspaceSettingsView`: Tabbed interface managing:

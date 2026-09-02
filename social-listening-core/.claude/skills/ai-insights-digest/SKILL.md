@@ -5,6 +5,10 @@ description: AI-generated executive summaries, sentiment breakdowns, theme analy
 
 # AI Insights Digest (ADR-0094)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.14.ai-insights-digest.contract.test.ts` — Story 10.14 contract test.
+
 ## Purpose
 Synthesizes high-level brand intelligence, sentiment trends, top emerging themes, and actionable strategic recommendations over daily and weekly periods.
 

@@ -1841,7 +1841,9 @@ export interface ProspectingListEntry {
   prospecting_list_id: string;
   tenant_id: string;
   author_id: string;
+  author_name: string | null;
   platform_id: string;
+  public_url: string | null;
   topic: string | null;
   engagement_score: string | null;
   authenticity_score: string | null;
@@ -2019,6 +2021,52 @@ export async function deleteProspectingEntry(listId: string, entryId: string): P
   if (!response.ok && response.status !== 204) {
     throw new Error(`Failed to delete entry: ${response.status}`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Story 13.14 (ADR-0117) — Prospecting list export and CRM push UI
+// ---------------------------------------------------------------------------
+
+export interface PushProspectsToCrmInput {
+  crmConnectorId: string;
+  caseType: 'lead';
+  selectedEntryIds?: string[];
+  customFields?: Record<string, string>;
+}
+
+export interface PushProspectsToCrmResponse {
+  outboundActivityIds: string[];
+  pushedCount: number;
+  skippedCount: number;
+  crmUrl?: string;
+}
+
+/**
+ * Story 13.14 (ADR-0117) — downloads a metadata-only, bounded CSV export of a
+ * prospecting list. Returns the raw `Response` so the BFF proxy can stream the
+ * body through with the original `Content-Type` and `Content-Disposition`.
+ */
+export async function exportProspectingListCsv(listId: string, limit = 5000): Promise<Response> {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', String(limit));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/export.csv${qs}`);
+}
+
+/**
+ * Story 13.14 (ADR-0117) — pushes all or selected entries of a prospecting list
+ * to a configured CRM connector as leads. Returns the raw `Response` so the BFF
+ * proxy can pass through the status and body unchanged.
+ */
+export async function pushProspectingListToCrm(
+  listId: string,
+  input: PushProspectsToCrmInput
+): Promise<Response> {
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/crm-handoff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -2680,9 +2728,43 @@ export async function getTopicEvolution(options: {
   return (await response.json()) as TopicEvolutionResponse;
 }
 
+export interface TopicDriftResult {
+  topicId: string;
+  start: string;
+  end: string;
+  driftScore: number;
+  topClustersNow: string[];
+  topClustersThen: string[];
+  samplePostsNow: string[];
+  samplePostsThen: string[];
+  warning: 'none' | 'mild' | 'significant';
+  cacheHit?: boolean;
+}
+
+/**
+ * Story 13.12 (ADR-0116) — fetches a semantic-drift result for a topic between two time windows.
+ */
+export async function getTopicDrift(
+  topicId: string,
+  start: string,
+  end: string
+): Promise<TopicDriftResult> {
+  const params = new URLSearchParams();
+  params.set('start', start);
+  params.set('end', end);
+
+  const response = await authenticatedCoreFetch(`/v1/topics/${encodeURIComponent(topicId)}/drift?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch topic drift: ${response.status}`);
+  }
+  return (await response.json()) as TopicDriftResult;
+}
+
 export interface OutboundPostAsset {
   type: 'image' | 'video' | 'link-card';
+  mediaId?: string;
   url?: string;
+  imageUrl?: string;
   alt?: string;
   target?: string;
 }
@@ -2726,6 +2808,29 @@ export interface ConnectorTargetItem {
   id: string;
   name: string;
   type: string;
+}
+
+export interface MediaUploadResult {
+  mediaId: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+/**
+ * Story 13.10 (ADR-0115) — uploads a media file to tenant-scoped Blob Storage through
+ * social-listening-core's POST /v1/outbound/media endpoint, returning a 24-hour presigned URL.
+ */
+export async function uploadOutboundMedia(formData: FormData): Promise<MediaUploadResult> {
+  const response = await authenticatedCoreFetch('/v1/outbound/media', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to upload media: ${response.status}`);
+  }
+  return (await response.json()) as MediaUploadResult;
 }
 
 /**

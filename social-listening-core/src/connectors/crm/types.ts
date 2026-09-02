@@ -25,6 +25,16 @@ export interface CRMCasePayload {
   assignedTo?: string;               // External CRM User / Queue ID
   notes?: string;
   customFields?: Record<string, any>;
+
+  // Prospecting-list fields carried through to lead/contact mapping (ADR-0117)
+  externalId?: string;                // Existing CRM record id when re-pushing
+  topic?: string;
+  engagementScore?: number;
+  authenticityScore?: number;
+  influenceScore?: number;
+  relationshipStage?: string;
+  tags?: string[];
+  entryId?: string;                   // Correlation id for batch results
 }
 
 export interface CRMPushResult {
@@ -34,11 +44,31 @@ export interface CRMPushResult {
   rawResponse?: Record<string, any>;
 }
 
+export interface CRMProspectPushResult extends CRMPushResult {
+  entryId: string;
+}
+
 export interface CRMConnectorStatus {
   isActive: boolean;
   provider: CRMProviderType;
   lastValidatedAt?: string;
   error?: string;
+}
+
+export interface ProspectingListEntryPayload {
+  entryId: string;
+  authorId: string;
+  authorName: string;
+  platformId: string;
+  publicUrl?: string;
+  topic: string;
+  engagementScore: number;
+  authenticityScore: number;
+  influenceScore: number;
+  relationshipStage: string;
+  notes: string;
+  tags: string[];
+  customFields?: Record<string, any>;
 }
 
 export interface CRMConnector {
@@ -49,6 +79,12 @@ export interface CRMConnector {
     ctx: CRMConnectorContext,
     payload: CRMCasePayload
   ): Promise<CRMPushResult>;
+
+  pushProspectsBatch?(
+    ctx: CRMConnectorContext,
+    payloads: ProspectingListEntryPayload[],
+    options?: { rePushByExternalId?: Record<string, string> }
+  ): Promise<CRMProspectPushResult[]>;
 
   validateCredentials(ctx: CRMConnectorContext): Promise<boolean>;
   status(ctx: CRMConnectorContext): Promise<CRMConnectorStatus>;

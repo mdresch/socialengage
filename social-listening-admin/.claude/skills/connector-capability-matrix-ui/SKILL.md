@@ -5,6 +5,10 @@ description: Explains the frontend Connector capability matrix badges, BFF endpo
 
 # Connector Capability Matrix UI Skill
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-12/story-12.2.connector-capability-matrix-ui.contract.test.ts` — Story 12.2 contract test.
+
 ## Background & ADR-0101 Context
 In `social-listening-admin`, connectors display their dynamic capabilities (`poll`, `publish`, `reply`, `count`, `backfill`) and coverage category (`sourceType`) so users know which actions are supported per platform. The composer uses this to only offer platforms with `publish` capability.
 

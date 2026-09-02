@@ -15,6 +15,58 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-02 | 19:54 | — | — | Documentation | Story 13.14 | docs: append Story 13.14 to implementation log (7683f31) |
+| 2026-09-02 | 19:53 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (39a2375) |
+| 2026-09-02 | 19:53 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (d7bd36c) |
+| 2026-09-02 | 19:52 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (4ed1f66) |
+| 2026-09-02 | 19:52 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (0b6f9e7) |
+| 2026-09-02 | 19:51 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (11c8d8b) |
+| 2026-09-02 | 19:50 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (7f62800) |
+| 2026-09-02 | 19:50 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (1094f02) |
+| 2026-09-02 | 08:59 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1daba9f) |
+| 2026-09-02 | 08:59 | — | — | Documentation | — | chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking (79b6ab9) |
+| 2026-09-01 | 18:05 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (5fcd0fd) |
+| 2026-09-02 | 08:53 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (97070a9) |
+| 2026-09-02 | 08:52 | — | — | Documentation | — | chore: sync post-commit tracking and Epic-13 synthesis (07f8aa4) |
+| 2026-09-02 | 08:52 | — | — | Documentation | Story 13.11 | chore(dashboard): sync project progress dashboard data for Story 13.11 (4ad35ee) |
+| 2026-09-02 | 08:47 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (25d54eb) |
+| 2026-09-02 | 08:47 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and Epic-13 synthesis (0df7c14) |
+| 2026-09-02 | 08:47 | — | — | Documentation | Story 13.11 | docs: Story 13.11 traceability — mark Built and append Implementation Log (cfbb0ad) |
+| 2026-09-02 | 08:43 | — | — | Documentation | Story 13.11 | feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116) (bb0545a) |
+| 2026-09-01 | 18:04 | — | — | Documentation | — | Merge branch 'feat/story-13.9' (b4a32f2) |
+| 2026-09-01 | 17:52 | — | — | Documentation | Story 10.8 | docs(implementation-log): append Story 10.8 async handle warning fix (ca98f53) |
+| 2026-09-01 | 17:52 | — | — | Documentation | — | fix(posts-csv-export): drain background export jobs before Jest teardown (4edf26f) |
+| 2026-09-01 | 17:40 | — | — | Documentation | Story 12.3 | chore(project-progress-dashboard): sync telemetry after Story 12.3 healing (1093eff) |
+| 2026-09-01 | 17:38 | — | — | Documentation | Story 12.3 | docs(implementation-log): append Story 12.3 healing entry (6ea71da) |
+| 2026-09-01 | 17:38 | — | — | Documentation | — | fix(feature-gating): avoid 500 from requireFeatureGate on synthetic test tenant ids (7850f1d) |
+| 2026-09-01 | 17:27 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1648218) |
+| 2026-09-01 | 17:27 | — | — | Documentation | Story 6.27 | chore(project-progress-dashboard): sync telemetry after Story 6.27 and 3.8 healing (8b99394) |
+| 2026-09-01 | 17:25 | — | — | Documentation | Story 6.27 | docs(implementation-log): append Story 6.27 and Story 3.8 healing entries (bae4082) |
+| 2026-09-01 | 17:17 | — | — | Documentation | Story 3.8 | heal(contract): Story 3.8 self-service tenant deletion (e493fb4) |
+| 2026-09-01 | 17:16 | — | — | Documentation | Story 6.27 | heal(contract): Story 6.27 multi-Page status assertion (be5702d) |
+| 2026-09-01 | 17:51 | — | — | Documentation | Story 13.9 | docs: Story 13.9 traceability — mark Built and append Implementation Log (d84caf0) |
+| 2026-09-01 | 17:50 | — | — | Documentation | Story 13.9 | feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115) (28340a3) |
+| 2026-09-01 | 08:08 | — | — | Documentation | Story 13.7 | feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113) (05e1e43) |
+| 2026-09-01 | 06:53 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking for Story 13.6 (181249f) |
+| 2026-09-01 | 06:43 | — | — | Documentation | Story 13.6 | docs: sync post-commit tracking and synthesis for Story 13.6 (fd66185) |
+| 2026-09-01 | 04:57 | — | — | Documentation | Story 13.5 | docs(trace): sync Story 13.5 Built field and dashboard telemetry; add short hashes to 13.1, 13.2, 13.5; mark 13.2 Built (543eecf) |
+| 2026-08-31 | 01:40 | — | — | Documentation | Story 13.4 | docs(user-stories): mark Story 13.4 as built (3241ecc) |
+| 2026-08-31 | 01:33 | — | — | Documentation | Story 13.4 | feat(epic-13): implement Story 13.4 — export bounding, streaming, and size caps (backend) (209b0d7) |
+| 2026-08-31 | 23:52 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' into main (7dac132) |
+| 2026-08-31 | 23:29 | — | — | Documentation | Story 13.3 | docs: sync post-commit tracking after Story 13.3 implementation (2b3e8cc) |
+| 2026-08-31 | 23:27 | — | — | Documentation | Story 13.3 | chore(dashboard): sync project progress dashboard data for Story 13.3 (3f5d2a5) |
+| 2026-08-31 | 23:27 | — | — | Documentation | Story 13.3 | chore(dashboard): sync project progress dashboard data for Story 13.3 (6214c44) |
+| 2026-08-31 | 23:23 | — | — | Documentation | Story 13.3 | docs(epic-13): update traceability and implementation log for Story 13.3 (b831498) |
+| 2026-08-31 | 22:50 | — | — | Documentation | — | chore: remove jest test db artifact from merge (d7874da) |
+| 2026-08-31 | 22:48 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' into main (5b792fe) |
+| 2026-08-31 | 22:43 | — | — | Documentation | Story 13.2 | docs: append Story 13.2 implementation-log entry (merge da31be9) (89db5a6) |
+| 2026-08-31 | 22:40 | — | — | Documentation | Story 13.2 | docs: sync post-commit tracking after Story 13.2 commit (2609da5) |
+| 2026-08-31 | 22:14 | — | — | Documentation | Story 13.1 | chore: sync post-commit management tracking for Story 13.1 implementation-log entry (31313ee) |
+| 2026-08-31 | 22:12 | — | — | Documentation | Story 13.1 | docs: append Story 13.1 implementation-log entry (merge 29b274c) (32a7969) |
+| 2026-08-31 | 22:11 | — | — | Documentation | — | Merge branch 'feat/story-13.1' into main (29b274c) |
+| 2026-08-31 | 22:09 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (046563b) |
+| 2026-08-31 | 22:08 | — | — | Documentation | Story 13.1 | feat(epic-13): implement Story 13.1 — connector health auto-disable and recovery (backend) (0240f80) |
+| 2026-08-31 | 18:54 | — | — | Documentation | — | docs: close implementation-log loop for d78c55c (78c6e3e) |
 | 2026-08-31 | 00:49 | — | — | Documentation | — | ui(analytics): non-story tweaks — center globe, move watchlist, add entity breakdown, DateTime phrase filter, author platform badges (02ddfd3) |
 | 2026-08-31 | 23:01 | — | — | Documentation | — | ui(admin): center location globe and remove drag hint (fb374ac) |
 | 2026-08-31 | 22:27 | — | — | Documentation | — | docs(trace): story-11.5 healing pass log entry (04bfeb7) |

@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus } from './types';
+import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus, CRMProspectPushResult, ProspectingListEntryPayload } from './types';
+import { pushProspectsBatchWithPushEntity } from './prospectPayloadMapper';
 
 interface HubSpotCredential {
   portalId: string;
@@ -273,6 +274,14 @@ export class HubSpotConnector implements CRMConnector {
     };
   }
 
+  public async pushProspectsBatch(
+    ctx: CRMConnectorContext,
+    payloads: ProspectingListEntryPayload[],
+    options?: { rePushByExternalId?: Record<string, string> }
+  ): Promise<CRMProspectPushResult[]> {
+    return pushProspectsBatchWithPushEntity(this, ctx, payloads, options);
+  }
+
   public async validateCredentials(ctx: CRMConnectorContext): Promise<boolean> {
     const cred = ctx.credentials as HubSpotCredential | undefined;
     if (!cred?.portalId || !cred?.accessToken) {
@@ -304,11 +313,16 @@ export class HubSpotConnector implements CRMConnector {
 
   private stubResult(portalId: string, payload: CRMCasePayload): CRMPushResult {
     const { objectType } = hsObjectType(payload.entityType);
-    const recordId = randomUUID();
+    const prefix = `hs-${objectType}-`;
+    const existingExternalId = payload.externalId || '';
+    const existingRecordId = existingExternalId.startsWith(prefix)
+      ? existingExternalId.slice(prefix.length)
+      : existingExternalId || undefined;
+    const recordId = existingRecordId || randomUUID();
     const objectTypeId = hsRecordObjectTypeId(objectType);
     const crmRecordUrl = `https://app.hubspot.com/contacts/${portalId}/record/${objectTypeId}/${recordId}`;
     return {
-      crmRecordId: `hs-${objectType}-${recordId}`,
+      crmRecordId: `${prefix}${recordId}`,
       crmRecordUrl,
       entityType: payload.entityType,
       rawResponse: {

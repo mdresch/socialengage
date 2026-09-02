@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus } from './types';
+import { CRMConnector, CRMConnectorContext, CRMCasePayload, CRMPushResult, CRMConnectorStatus, CRMProspectPushResult, ProspectingListEntryPayload } from './types';
+import { pushProspectsBatchWithPushEntity } from './prospectPayloadMapper';
 
 interface DynamicsTokenResponse {
   access_token: string;
@@ -168,7 +169,7 @@ export class Dynamics365Connector implements CRMConnector {
     // and real dev runs require full credentials.
     if (process.env.NODE_ENV === 'test') {
       const orgUrl = normalizeOrgUrl(cred?.organizationUrl || 'https://default.crm.dynamics.com');
-      const guid = randomUUID();
+      const guid = payload.externalId || randomUUID();
       const { entityLogicalName } = entitySetAndName(payload.entityType);
       const crmRecordUrl = `${orgUrl}/main.aspx?etn=${entityLogicalName}&id={${guid}}&pagetype=entityrecord`;
       return {
@@ -220,6 +221,14 @@ export class Dynamics365Connector implements CRMConnector {
         odataEntityId,
       },
     };
+  }
+
+  public async pushProspectsBatch(
+    ctx: CRMConnectorContext,
+    payloads: ProspectingListEntryPayload[],
+    options?: { rePushByExternalId?: Record<string, string> }
+  ): Promise<CRMProspectPushResult[]> {
+    return pushProspectsBatchWithPushEntity(this, ctx, payloads, options);
   }
 
   public async validateCredentials(ctx: CRMConnectorContext): Promise<boolean> {

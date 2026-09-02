@@ -5,6 +5,10 @@ description: Parameterized ad-hoc multi-dimensional analytics query builder and 
 
 # Ad-Hoc Analytics Query Engine (ADR-0088)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.4.ad-hoc-query-endpoint.contract.test.ts` — Story 10.4 contract test.
+
 ## Purpose
 Enables analysts to run ad-hoc multi-dimensional aggregations over social posts across dimensions (platform, sentiment, watchlist, author, date, hour) and metrics (post_count, positive_count, neutral_count, negative_count, engagement_total) with strict SQL injection prevention and timeout protection.
 

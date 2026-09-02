@@ -5,6 +5,10 @@ description: Explains the SocialConnector capability matrix, sourceType taxonomy
 
 # Connector Capability Matrix Skill
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.1.connector-capability-matrix.contract.test.ts` — Story 12.1 contract test.
+
 ## Background & ADR-0101 Context
 Different connectors provide different ingestion, verification, count, publish, reply, and backfill capabilities. ADR-0101 establishes a canonical `SocialConnectorCapabilities` interface with a mandatory `sourceType` taxonomy, allowing the frontend admin UI, composers, and downstream consumers to dynamically discover which operations are supported on each data platform.
 

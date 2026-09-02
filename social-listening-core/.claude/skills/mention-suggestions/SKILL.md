@@ -7,6 +7,10 @@ description: Backend service and endpoint for suggesting relevant author mention
 
 Governed by **ADR-0100**, **BRD-0100**, **FDD-0100**, and **Story 11.11**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.11.mention-suggestions.contract.test.ts` — Story 11.11 contract test.
+
 ## Key Architecture & Responsibilities
 
 1. **Algorithm & Ranking**:

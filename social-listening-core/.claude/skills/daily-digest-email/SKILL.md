@@ -7,6 +7,10 @@ description: Backend service and worker for timezone-aware daily digest email ge
 
 Governed by **ADR-0096**, **BRD-0096**, **FDD-0096**, and **Story 11.3**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.3.daily-digest-email.contract.test.ts` — Story 11.3 contract test.
+
 ## Key Architecture & Components
 
 1. **Database Schema (`user_digest_preferences`)**:

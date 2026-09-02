@@ -7,6 +7,11 @@ description: Backend service and HTTP routes for publishing and scheduling outbo
 
 Governed by **ADR-0098**, **BRD-0098**, **FDD-0098**, and **Story 11.7**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.7.publishing-and-scheduling.contract.test.ts` — Story 11.7 contract test.
+- `social-listening-core/contracts/epic-13/story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts` — Story 13.9 contract test.
+
 ## Key Architecture & Responsibilities
 
 1. **`outbound_activities` Audit Table**:

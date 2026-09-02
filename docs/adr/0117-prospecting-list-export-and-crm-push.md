@@ -122,6 +122,14 @@ POST /v1/prospecting-lists/:id/crm-handoff
 - Should the export include `influence_score` and `authenticity_score` as raw numbers or labels?
 - Can the user schedule a recurring CRM push as entries are added?
 
+## Implementation notes
+
+Story 13.13 implemented this ADR on 2026-09-02:
+- `author_name` and `public_url` were added to `prospecting_list_entries` as add-time snapshots, so export/push can be built from the entry row without leaking connector secrets.
+- Authorization is owner-only for v1. ADR-0086's RLS model does not expose a per-list "edit share" table, and ADR-0086 §2 explicitly rejects `tenant_admin` override. Edit-share and tenant-admin override for export/push remain deferred to ADR-0129 (Proposed).
+- Scores in the CSV and payload are the entry's add-time snapshots (ADR-0086), not live `authors` scores, to keep the export deterministic.
+- Re-push deduplication is keyed on `(author_id, provider_id)` against `outbound_activities` with `activity_type='crm_prospect'`.
+
 ---
 
 ## Footnotes

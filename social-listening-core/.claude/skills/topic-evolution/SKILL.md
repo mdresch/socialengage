@@ -7,6 +7,10 @@ description: Backend service and HTTP endpoint for longitudinal topic evolution 
 
 Governed by **ADR-0097**, **BRD-0097**, **FDD-0097**, and **Story 11.5**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.5.topic-evolution.contract.test.ts` — Story 11.5 contract test.
+
 ## Responsibilities
 
 1. **Longitudinal Aggregation (`topicEvolutionService.ts`)**:
@@ -20,4 +24,5 @@ Governed by **ADR-0097**, **BRD-0097**, **FDD-0097**, and **Story 11.5**.
 
 3. **HTTP API**:
    - `GET /v1/topics/evolution?topic=...&start=...&end=...&granularity=day|week|month&compareToPrevious=true|false`
-   - Authenticated with `requireTenantUser()`.
+   - `GET /v1/topics/:id/drift?start=...&end=...` — semantic drift detection (Story 13.11, ADR-0116), backed by `SemanticDriftService`. See `.claude/skills/semantic-drift/SKILL.md`.
+   - Both routes are authenticated with `requireTenantUser()` and mounted on the same `topicsRouter`.

@@ -5,6 +5,10 @@ description: Aspect-based AI sentiment enrichment schema, confidence tiering, an
 
 # AI Sentiment Aspect Schema (ADR-0103)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-12/story-12.5.ai-sentiment-aspect-schema.contract.test.ts` — Story 12.5 contract test.
+
 ## Overview
 
 Story 12.5 (ADR-0103, BRD-0103, FDD-0103) enhances `enrichment.sentiment` in `social_posts` from a flat string into a rich, structured object with aspect-level sentiment breakdown, confidence scores, detected language, and human override lineage.

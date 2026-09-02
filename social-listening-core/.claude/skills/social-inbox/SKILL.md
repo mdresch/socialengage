@@ -7,6 +7,10 @@ description: Backend service and HTTP routes for unified social inbox, triage, s
 
 Governed by **ADR-0099**, **BRD-0099**, **FDD-0099**, and **Story 11.9**.
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-11/story-11.9.social-inbox-and-reply.contract.test.ts` — Story 11.9 contract test.
+
 ## Key Architecture & Responsibilities
 
 1. **`inbox_items` Table**:
