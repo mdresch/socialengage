@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-09-02 — Story 13.11 traceability and dashboard sync — social-listening-core@17fdccc
+
+- **Full commit:** `17fdccc1ccd4229ae0e5259027bb4c6ddb983d78`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.11 / ADR-0116
+- **Contract:** `contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/semantic-drift/SKILL.md`
+- **Files touched:** docs/adr/README.md
+- **Validation re-run:** new contract PASS (11/11); epic-13 suite PASS (112/112); `npm run typecheck` PASS; full accumulated suite has 2 failures in `Story 13.8` (platform_metrics shared-state/parallelism) and afterAll timeouts on `Story 3.14` and `Story 4.3` (Azure Key Vault deletion) — environmental and unrelated to Story 13.11.
+- **Notes:** `npm run sync` executed in `project-progress-dashboard/`; generated `data.ts` updated but left uncommitted per generated-docs guidance.
+
 ## 2026-09-02 — Story 13.11 — social-listening-core@bb0545a
 
 - **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
