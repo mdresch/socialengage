@@ -15,6 +15,14 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-02 | 19:54 | — | — | Documentation | Story 13.14 | docs: append Story 13.14 to implementation log (7683f31) |
+| 2026-09-02 | 19:53 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (39a2375) |
+| 2026-09-02 | 19:53 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (d7bd36c) |
+| 2026-09-02 | 19:52 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (4ed1f66) |
+| 2026-09-02 | 19:52 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (0b6f9e7) |
+| 2026-09-02 | 19:51 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (11c8d8b) |
+| 2026-09-02 | 19:50 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (7f62800) |
+| 2026-09-02 | 19:50 | — | — | Documentation | Story 13.14 | Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend) (1094f02) |
 | 2026-09-02 | 08:59 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (1daba9f) |
 | 2026-09-02 | 08:59 | — | — | Documentation | — | chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking (79b6ab9) |
 | 2026-09-01 | 18:05 | — | — | Review | — | chore: sync post-commit pending reviews, time tracking, and synthesis docs (5fcd0fd) |
