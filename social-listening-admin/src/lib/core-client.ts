@@ -1841,7 +1841,9 @@ export interface ProspectingListEntry {
   prospecting_list_id: string;
   tenant_id: string;
   author_id: string;
+  author_name: string | null;
   platform_id: string;
+  public_url: string | null;
   topic: string | null;
   engagement_score: string | null;
   authenticity_score: string | null;
@@ -2019,6 +2021,52 @@ export async function deleteProspectingEntry(listId: string, entryId: string): P
   if (!response.ok && response.status !== 204) {
     throw new Error(`Failed to delete entry: ${response.status}`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Story 13.14 (ADR-0117) — Prospecting list export and CRM push UI
+// ---------------------------------------------------------------------------
+
+export interface PushProspectsToCrmInput {
+  crmConnectorId: string;
+  caseType: 'lead';
+  selectedEntryIds?: string[];
+  customFields?: Record<string, string>;
+}
+
+export interface PushProspectsToCrmResponse {
+  outboundActivityIds: string[];
+  pushedCount: number;
+  skippedCount: number;
+  crmUrl?: string;
+}
+
+/**
+ * Story 13.14 (ADR-0117) — downloads a metadata-only, bounded CSV export of a
+ * prospecting list. Returns the raw `Response` so the BFF proxy can stream the
+ * body through with the original `Content-Type` and `Content-Disposition`.
+ */
+export async function exportProspectingListCsv(listId: string, limit = 5000): Promise<Response> {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', String(limit));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/export.csv${qs}`);
+}
+
+/**
+ * Story 13.14 (ADR-0117) — pushes all or selected entries of a prospecting list
+ * to a configured CRM connector as leads. Returns the raw `Response` so the BFF
+ * proxy can pass through the status and body unchanged.
+ */
+export async function pushProspectingListToCrm(
+  listId: string,
+  input: PushProspectsToCrmInput
+): Promise<Response> {
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/crm-handoff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -13,6 +13,7 @@ export const FEATURE_KEYS = [
   'connectors',
   'watchlists',
   'exports',
+  'prospecting_crm',
 ] as const;
 
 export interface FeatureToggleListProps {

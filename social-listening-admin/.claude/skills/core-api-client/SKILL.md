@@ -19,6 +19,7 @@ description: The sole sanctioned path from social-listening-admin to social-list
 | ADR-0075 | Outbound Social Post Publishing via Platform APIs (`publishOutboundPost` → `POST /v1/outbound/posts`) | 11.7/11.8 |
 | ADR-0115 | Media upload, asset targeting, and link-card support (`uploadOutboundMedia` → `POST /v1/outbound/media`) | 13.10 |
 | ADR-0116 | Semantic drift detection (`getTopicDrift` → `GET /v1/topics/:id/drift?start=...&end=...`) | 13.12 |
+| ADR-0117 | Prospecting list export and CRM push (`exportProspectingListCsv` → `GET /v1/prospecting-lists/:id/export.csv`, `pushProspectingListToCrm` → `POST /v1/prospecting-lists/:id/crm-handoff`) | 13.13 / 13.14 |
 
 ## Contracts that constrain this component
 
@@ -26,6 +27,7 @@ description: The sole sanctioned path from social-listening-admin to social-list
 - `contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` — asserts (a) no second ad hoc `fetch`-with-`Authorization`-header call exists anywhere else in `src/`, (b) `authenticatedCoreFetch()` actually attaches `Bearer <accessToken>` sourced from the session, (c) `fetchResolvedIdentity()` degrades to `null` rather than throwing while `GET /v1/me` doesn't exist in core yet.
 - `contracts/epic-13/story-13.10.media-upload-and-asset-targeting-ui.contract.test.ts` — asserts (a) `uploadOutboundMedia()` calls `POST /v1/outbound/media` with a `FormData` body and returns `{ mediaId, url, mimeType, sizeBytes }`, (b) `PublishOutboundPostInput` carries `assets`, `assetTargets` and `scheduledFor`, (c) `getConnectorTargets()` calls `GET /v1/connectors/:platformId/targets`.
 - `contracts/epic-13/story-13.12.semantic-drift-ui.contract.test.ts` — asserts `getTopicDrift()` calls `GET /v1/topics/:id/drift?start=...&end=...` and returns a `TopicDriftResult` with `driftScore`, `warning`, `topClustersNow/Then`, and `samplePostsNow/Then`.
+- `contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts` — asserts (a) `exportProspectingListCsv()` calls `GET /v1/prospecting-lists/:id/export.csv?limit=...`, (b) `pushProspectingListToCrm()` calls `POST /v1/prospecting-lists/:id/crm-handoff` with `crmConnectorId`, `caseType='lead'`, and optional `selectedEntryIds`, (c) both are proxied by BFF routes under `/api/prospecting-lists/:id/`.
 
 ## How to extend this safely
 
