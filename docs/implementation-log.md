@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-09-02 — Story 13.13 — social-listening-core@92836a3
+
+- **Full commit:** `92836a3`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.13 / ADR-0117
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.13.prospecting-list-export-and-crm-push.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/prospecting-lists/SKILL.md`, `social-listening-core/.claude/skills/crm-connector/SKILL.md`
+- **Files touched:** social-listening-core/contracts/epic-13/story-13.13.prospecting-list-export-and-crm-push.contract.test.ts, social-listening-core/migrations/0072_add_crm_prospect_activity_type.sql, social-listening-core/migrations/0073_add_prospecting_list_entry_author_name_and_public_url.sql, social-listening-core/src/connectors/crm/types.ts, social-listening-core/src/connectors/crm/prospectPayloadMapper.ts, social-listening-core/src/connectors/crm/hubspotConnector.ts, social-listening-core/src/connectors/crm/salesforceConnector.ts, social-listening-core/src/connectors/crm/dynamics365Connector.ts, social-listening-core/src/crm/prospectingCRMHandoffService.ts, social-listening-core/src/prospecting/prospectingListStore.ts, social-listening-core/src/prospecting/prospectingListExportEngine.ts, social-listening-core/src/http/versions/v1/prospectingListsRouter.ts, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, docs/adr/0117-prospecting-list-export-and-crm-push.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/implementation-log.md
+- **Validation re-run:** new contract PASS (9/9); `npm run typecheck` PASS; related regression suites (Story 10.1, Story 13.4, Story 13.5) PASS; full accumulated suite has 20 failures, the majority in Service Bus / Azure Key Vault / cross-test state (Epic 5 event tests, Epic 3 afterAll Key Vault deletions, Epic 8.8 afterAll timeout) and are unrelated to this change.
+- **Notes:** Owner-only export/push for v1 due to ADR-0086 RLS and missing edit-share table; edit-share and tenant-admin override remain deferred to ADR-0129.
+
 ---
 
 ## 2026-09-02 — Story 13.11 traceability and dashboard sync — social-listening-core@17fdccc
