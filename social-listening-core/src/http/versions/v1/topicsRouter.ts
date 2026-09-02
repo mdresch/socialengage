@@ -10,6 +10,7 @@ import {
 } from '../../../topics/topicStore';
 import { getAuthorTopicSignals, type AuthorTopicSortBy } from '../../../topics/authorTopicSignalStore';
 import { getTopicEvolution } from '../../../topics/topicEvolutionService';
+import { computeDrift, SemanticDriftError } from '../../../rag/semanticDriftService';
 
 export const topicsRouter = Router();
 
@@ -165,5 +166,30 @@ topicsRouter.post('/:id/hide', async (req: RequestWithIdentity, res: Response) =
   } catch (err: any) {
     const status = err.message?.includes('not found') ? 404 : 400;
     res.status(status).json({ error: err.message });
+  }
+});
+
+/**
+ * Story 13.11 (ADR-0116) — GET /v1/topics/:id/drift
+ * Compares the semantic meaning of a topic between two time windows.
+ */
+topicsRouter.get('/:id/drift', async (req: RequestWithIdentity, res: Response) => {
+  try {
+    const tenantId = requireTenantUser(req, res);
+    if (!tenantId) return;
+    const id = req.params.id as string;
+    const { start, end } = req.query;
+
+    if (!start || typeof start !== 'string' || !end || typeof end !== 'string') {
+      return res.status(400).json({ error: 'start and end query parameters are required' });
+    }
+
+    const result = await computeDrift(tenantId, id, start, end);
+    res.status(200).json(result);
+  } catch (err: any) {
+    if (err instanceof SemanticDriftError) {
+      return res.status(err.status).json({ code: err.code, error: err.message });
+    }
+    res.status(500).json({ error: err.message });
   }
 });
