@@ -23,7 +23,7 @@ export default async function TenantSettingsPage() {
   }
 
   const tenant = await getMyTenant();
-  const isAdmin = identity?.role === 'tenant_admin';
+  const isAdmin = identity && 'role' in identity && identity.role === 'tenant_admin';
   const createdAt = new Date(tenant.createdAt);
 
   return (

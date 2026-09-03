@@ -145,7 +145,8 @@ function ProviderIcon({ type }: { type: string }) {
 function TrendArrow({ delta }: { delta: number }) {
   if (delta > 0.05) {
     return (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" title={`+${delta.toFixed(1)}`}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <title>{`+${delta.toFixed(1)}`}</title>
         <polyline points="7 17 17 7" />
         <polyline points="7 7 17 7 17 17" />
       </svg>
@@ -153,14 +154,16 @@ function TrendArrow({ delta }: { delta: number }) {
   }
   if (delta < -0.05) {
     return (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" title={`${delta.toFixed(1)}`}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <title>{`${delta.toFixed(1)}`}</title>
         <polyline points="7 7 17 17" />
         <polyline points="17 7 17 17 7 17" />
       </svg>
     );
   }
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" title="No change">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <title>No change</title>
       <line x1="5" y1="12" x2="19" y2="12" />
       <polyline points="12 5 19 12 12 19" />
     </svg>
@@ -216,7 +219,7 @@ export function SourcesTab({ summary, previousSummary, range, onViewPost }: Sour
     let repliesCount = 0;
 
     for (const p of posts) {
-      const raw = p.rawPayload as Record<string, unknown> | undefined;
+      const raw = (p as any).rawPayload as Record<string, unknown> | undefined;
       const isRetweet = Boolean(raw?.retweeted_status || raw?.referenced_tweets);
       const isReply = Boolean(raw?.in_reply_to_status_id || raw?.parent_id);
 
@@ -422,7 +425,7 @@ export function SourcesTab({ summary, previousSummary, range, onViewPost }: Sour
                     className={`an-topic-item ${isSelected ? 'an-topic-item-active' : ''}`}
                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', background: isSelected ? 'var(--color-surface-selected)' : 'transparent', border: 'none', borderRadius: 2, cursor: 'pointer', textAlign: 'left' }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, shrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, flexShrink: 0 }}>
                       <div style={{ width: 18, height: 18, background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2, flexShrink: 0 }}>
                         <ProviderIcon type={item.iconType} />
                       </div>
@@ -799,7 +802,7 @@ export function SourcesTab({ summary, previousSummary, range, onViewPost }: Sour
                   className={`an-topic-item ${isSelected ? 'an-topic-item-active' : ''}`}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 6px', background: isSelected ? 'var(--color-surface-selected)' : 'transparent', border: 'none', borderRadius: 2, cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, shrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, flexShrink: 0 }}>
                     <div style={{ width: 14, height: 14, background: src.color, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
                       <ProviderIcon type={src.iconType} />
                     </div>
@@ -838,7 +841,7 @@ export function SourcesTab({ summary, previousSummary, range, onViewPost }: Sour
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1-5)', marginTop: 'var(--space-1)' }}>
             {volumeChangeData.map((src) => (
               <div key={src.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, shrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 75, flexShrink: 0 }}>
                   <div style={{ width: 14, height: 14, background: src.color, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
                     <ProviderIcon type={src.iconType} />
                   </div>
@@ -941,15 +944,22 @@ export function SourcesTab({ summary, previousSummary, range, onViewPost }: Sour
                       onClick={() => {
                         const flat: FlatPost = {
                           id: post.id,
-                          author: post.author,
-                          content: post.title || 'Untitled Post',
+                          createdAt: post.publishedAt || new Date().toISOString(),
                           publishedAt: post.publishedAt || new Date().toISOString(),
-                          sentiment: post.sentiment || 'neutral',
-                          language: post.language || 'en',
-                          providerId: post.providerId || 'social',
-                          keyPhrases: post.keyPhrases || [],
-                          entities: post.entities || [],
                           rawPayload: {},
+                          enrichment: null,
+                          bodyMarkdown: null,
+                          title: post.title || 'Untitled Post',
+                          snippet: null,
+                          provider: post.providerId || 'social',
+                          url: null,
+                          author: post.author,
+                          pageName: null,
+                          pageId: null,
+                          watchlistId: null,
+                          instagramContext: null,
+                          linkedinContext: null,
+                          enrichmentSummary: null,
                         };
                         if (onViewPost) {
                           onViewPost(flat);

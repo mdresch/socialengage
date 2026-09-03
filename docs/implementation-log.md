@@ -4580,3 +4580,25 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Story / ADR:** Stories 6.9, 8.6, 8.7 / ADR-0141
 - **Files touched:** docs/adr/0141-analytics-and-ui-contract-refinements.md, docs/adr/README.md, social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/lib/linkedinOAuth.ts
 - **Notes:** Drafted ADR-0141 to supersede overly brittle UI contracts related to secret leakage ('credential' string matching), sentiment scale (-10 to +10 instead of 0 to 10), and top authors ranking schema (allowing providerId). Restored the superior implementation code for all three cases and updated the contracts to honor ADR-0141. Also committed earlier fixes for Facebook attribution (6.37) and LinkedIn OAuth scopes (6.35). All tests passing.
+
+---
+
+## 2026-09-04 — Contract and Typecheck Healing (Story 6.33, Story 8.6, Story 8.10, Story 6.41)
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** Stories 6.33, 6.41, 8.6, 8.10 / ADR-0067, ADR-0141
+- **Contracts:**
+  - \social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts\ (5/5)
+  - \social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts\ (7/7)
+  - \social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts\ (9/9)
+  - \social-listening-admin/contracts/epic-8/story-8.10.location-and-geospatial-insights.contract.test.ts\ (14/14)
+- **Full suite:** PASS (83/83 suites, 1021/1021 tests green). \	sc --noEmit\ clean (0 errors).
+- **Files touched:**
+  - \social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts  - \social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts  - \social-listening-admin/src/app/tenant/analytics/LocationTab.tsx  - \social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx  - \social-listening-admin/src/app/tenant/analytics/analyticsData.ts  - \social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx  - \social-listening-admin/src/app/tenant/posts/page.tsx  - \social-listening-admin/src/app/tenant/posts/postDisplay.ts  - \social-listening-admin/src/app/tenant/settings/page.tsx  - \social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx  - \social-listening-admin/src/lib/core-client.ts- **Notes:**
+  - Re-walked Intent for Story 6.33 under ADR-0067: Facebook Page attribution author normalization correctly distinguishes explicit Page author names matching \pageName\ (\uthor === pageName\, \isPageAuthor: true\) from placeholder synthetic strings ('Facebook Page'\, 'Facebook Page (id)'\).
+  - Restored missing \computeSentimentIndex\ import, test block closing, and \AC4\ describe wrapper in \story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts\.
+  - Added optional \onClose\ to \PostDetailPanel\ component interface.
+  - Made \entities?: string[]\ optional on \SentimentPost\ to maintain backward compatibility with earlier Epic 8 test fixtures.
+  - Resolved \LocationTab.tsx\ and \SourcesTab.tsx\ type errors (proper \FlatPost\ construction, SVG child \<title>\ tags, \lexShrink: 0\, and safe null handling for sentiment index gauge).
+  - Resolved \getBaseUrl\ reference in \core-client.ts\ and \identity.role\ union check in \settings/page.tsx\.
+  - Validated full test suite (83 suites, 1021 tests passing) and 0 TypeScript compilation errors (\	sc --noEmit\).

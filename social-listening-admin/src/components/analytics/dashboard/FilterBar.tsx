@@ -52,7 +52,7 @@ export function FilterBar({
         {
           id: 'filter-watchlist',
           value: filterState.watchlistId ?? '',
-          onChange: (e) => onChange({ watchlistId: e.target.value || null }),
+          onChange: (e: any) => onChange({ watchlistId: (e.target as HTMLSelectElement).value || null }),
           style: selectStyle,
           'aria-label': 'Select Watchlist',
         },
@@ -73,7 +73,7 @@ export function FilterBar({
         {
           id: 'filter-topic',
           value: filterState.selectedTopic ?? '',
-          onChange: (e) => onChange({ selectedTopic: e.target.value || null }),
+          onChange: (e: any) => onChange({ selectedTopic: (e.target as HTMLSelectElement).value || null }),
           style: selectStyle,
           'aria-label': 'Select Topic',
         },
@@ -94,7 +94,7 @@ export function FilterBar({
         {
           id: 'filter-time-range',
           value: filterState.timeRange ?? '7d',
-          onChange: (e) => onChange({ timeRange: e.target.value }),
+          onChange: (e: any) => onChange({ timeRange: (e.target as HTMLSelectElement).value }),
           style: selectStyle,
           'aria-label': 'Select Time Range',
         },
@@ -114,7 +114,7 @@ export function FilterBar({
         {
           id: 'filter-granularity',
           value: filterState.granularity ?? 'day',
-          onChange: (e) => onChange({ granularity: e.target.value as any }),
+          onChange: (e: any) => onChange({ granularity: (e.target as HTMLSelectElement).value as any }),
           style: selectStyle,
           'aria-label': 'Select Granularity',
         },

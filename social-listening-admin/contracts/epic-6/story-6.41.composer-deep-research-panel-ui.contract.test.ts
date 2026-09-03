@@ -121,7 +121,7 @@ describe('Story 6.41 — Composer Deep Research panel UI', () => {
         return;
       }
 
-      const DeepResearchPanel = PanelModule.DeepResearchPanel || PanelModule.default;
+      const DeepResearchPanel = PanelModule.DeepResearchPanel || (PanelModule as any).default;
       const html = renderToStaticMarkup(
         React.createElement(DeepResearchPanel, {
           state: 'success',

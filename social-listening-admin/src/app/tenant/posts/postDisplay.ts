@@ -414,14 +414,19 @@ export function extractFacebookPageContext(
         (isFacebook && author && author !== 'Facebook Page' ? author : null) ||
         (pageId ? `Facebook Page (${pageId})` : 'Facebook Page');
 
-      const isSyntheticAuthor = author === 'Facebook Page' || (pageId && author === `Facebook Page (${pageId})`) || (typeof p.page_id === 'string' && author === `Facebook Page (${p.page_id})`);
-      const finalAuthor = author === resolvedPageName || isSyntheticAuthor ? null : author;
+      const isSyntheticAuthor =
+        !author ||
+        author === 'Facebook Page' ||
+        (pageId && author === `Facebook Page (${pageId})`) ||
+        (typeof p.page_id === 'string' && author === `Facebook Page (${p.page_id})`);
+      const finalAuthor = isSyntheticAuthor ? null : author;
+      const isPageAuthor = isSyntheticAuthor || author === resolvedPageName;
 
       return {
         pageId: pageId || matchedFbPage?.pageId || singleFbPage?.pageId || null,
         pageName: resolvedPageName,
         author: finalAuthor,
-        isPageAuthor: !finalAuthor,
+        isPageAuthor,
       };
     }
   }

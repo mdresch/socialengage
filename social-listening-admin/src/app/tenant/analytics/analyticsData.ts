@@ -153,7 +153,7 @@ export interface SentimentPost {
   author: string | null;
   sentiment: string | null;
   keyPhrases: string[];
-  entities: string[];
+  entities?: string[];
   namedEntities?: { text: string; category: string | null }[];
   title: string;
   /** ISO 639-1 code, e.g. "en" — Story 8.5 (ADR-0055). null when the post has no enrichment yet. */
