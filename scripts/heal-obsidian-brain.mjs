@@ -703,6 +703,21 @@ function auditAndHeal() {
       error(`${rel}: unknown type "${data.type}"`);
     }
 
+    
+    // Lifecycle transition checking
+    if (data.type && ONTOLOGY.nodeTypes[data.type] && ONTOLOGY.nodeTypes[data.type].validTransitions) {
+      if (data.status) {
+        const validStatuses = new Set([ONTOLOGY.nodeTypes[data.type].defaultStatus]);
+        for (const t of ONTOLOGY.nodeTypes[data.type].validTransitions) {
+          validStatuses.add(t.split(' -> ')[0]);
+          validStatuses.add(t.split(' -> ')[1]);
+        }
+        if (!validStatuses.has(data.status)) {
+          warn(`${rel}: status "${data.status}" is not a valid lifecycle state for type "${data.type}"`);
+        }
+      }
+    }
+
     // PM class validity
     if (data.pm_class && !validPmClasses.has(data.pm_class)) {
       error(`${rel}: unknown pm_class "${data.pm_class}"`);
@@ -867,6 +882,7 @@ console.log('🧠 Obsidian Brain Heal Starting');
 console.log(`Vault: ${vaultRoot}`);
 console.log(`Repo:  ${repoRoot}`);
 
+const okIngest = runScript('scripts/ingest-raw.mjs');
 const ok1 = runScript('scripts/export-to-obsidian.mjs');
 const ok2 = runScript('project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs');
 const ok3 = runScript('scripts/backfill-obsidian-frontmatter.mjs');
