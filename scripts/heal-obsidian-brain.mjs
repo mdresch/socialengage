@@ -1055,6 +1055,56 @@ tags:
 `;
     fs.writeFileSync(adaptPath, adaptContent, 'utf8');
     info(`Behavioral adaptation verified: ${adaptId} (0 drifts, ${secretPatternAdoptionCount} adoptions)`);
+
+    // 5. Graduate verified Adaptation into an institutionalized Capability node!
+    const capId = 'CAP-0141';
+    const govPlansDir = path.join(wikiRoot, 'Projects', 'SocialEngage', '05 Project Governance & Plans');
+    if (!fs.existsSync(govPlansDir)) fs.mkdirSync(govPlansDir, { recursive: true });
+    const capPath = path.join(govPlansDir, `${capId}.md`);
+    const capContent = `---
+title: "Capability: AST-Resilient Contract Verification & Secret Pattern Matching"
+artifact_id: "${capId}"
+entity_id: "${crypto.createHash('md5').update(capId).digest('hex')}"
+type: "capability"
+status: "Operational"
+pm_class: "Capability"
+pm_subclass: "TechnicalCapability"
+pm_relationships:
+  - capabilityCrystallizedFrom
+  - enablesOutcome
+domain_cluster: "Strategic Intent & Cognitive Learning"
+dmbok_category: "Data Quality Management"
+pmbok_category: "Quality Management"
+babok_category: "Solution Evaluation"
+tags:
+  - capability
+  - competency
+  - institutional_asset
+  - project/socialengage
+---
+
+# ${capId}: AST-Resilient Contract Verification & Secret Pattern Matching
+
+> Emergent Organizational Capability crystallized from [[${adaptId}]] during \`heal-obsidian-brain.mjs\` on ${now}.
+
+## Institutional Competency Summary
+- **Originating Adaptation:** [[${adaptId}]]
+- **Governing Architecture Decision:** [[ADR-0141]]
+- **Maturity Level:** Operational (Automated & Enforced by Drift Scanner)
+
+## Capability Definition
+The organization possesses the institutionalized engineering competency to author contract test suites that:
+1. Verify credential and secret isolation via targeted regex pattern matching and structured DTO assertions, preventing false-positive test failures when UI copy evolves.
+2. Formally evaluate sentiment indexes using the verified -10 to +10 scale without mathematical divergence.
+3. Support extensible DTO schemas (e.g. \`AuthorRanking.providerId\`) without brittle deep-equality failures.
+
+## Verified Value Chain
+\`\`\`
+[ADR-0141] ──(enables)──> [${adaptId}] ──(crystallizesCapability)──> [${capId}] ──(enablesOutcome)──> [Zero False Positives in Contract CI]
+\`\`\`
+`;
+    fs.writeFileSync(capPath, capContent, 'utf8');
+    info(`Emergent capability crystallized: ${capId} from ${adaptId}`);
   }
 
   console.log(`🧭 Process Drift Scan complete: ${driftFindings.length} drifts detected, ${secretPatternAdoptionCount} adaptations verified.`);
