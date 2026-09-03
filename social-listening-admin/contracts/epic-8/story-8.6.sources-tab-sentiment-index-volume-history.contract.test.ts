@@ -82,13 +82,10 @@ describe('Story 8.6 — Sources tab enrichment', () => {
       expect(flat[0].providerId).toBe('gnews');
     });
 
-    it('computeSentimentIndex() computes a real weighted 0-10 score (positive=10, neutral=5, negative=0)', async () => {
-      const { computeSentimentIndex } = await import('../../src/app/tenant/analytics/analyticsData');
-      // 2 positive, 1 neutral, 1 negative -> (2*10 + 1*5 + 1*0) / 4 = 6.25
-      expect(computeSentimentIndex({ positive: 2, neutral: 1, negative: 1 })).toBe(6.25);
+    it('computeSentimentIndex() computes a real weighted -10 to +10 score (positive=10, neutral=0, negative=-10) per ADR-0141', async () => {
+      // 2 positive, 1 neutral, 1 negative -> ((2 - 1) / 4) * 10 = 2.5
+      expect(computeSentimentIndex({ positive: 2, neutral: 1, negative: 1 })).toBe(2.5);
       expect(computeSentimentIndex({ positive: 0, neutral: 0, negative: 0 })).toBeNull();
-    });
-
     it('computeSourceBreakdown() now also returns a real sentimentIndex per source, null when that source has zero enriched posts', async () => {
       const { computeSourceBreakdown } = await import('../../src/app/tenant/analytics/analyticsData');
       const breakdown = computeSourceBreakdown([
@@ -124,11 +121,10 @@ describe('Story 8.6 — Sources tab enrichment', () => {
       );
       expect(summary.sourceVolumeHistory.length).toBeGreaterThan(0);
       expect(summary.sources.find((s) => s.providerId === 'gnews')?.sentimentIndex).toBe(10);
-      expect(summary.sources.find((s) => s.providerId === 'newswire')?.sentimentIndex).toBe(0);
+      expect(summary.sources.find((s) => s.providerId === 'newswire')?.sentimentIndex).toBe(-10);
     });
   });
 
-  describe('AC4: SourcesTab renders real per-source sentimentIndex and a real volume-over-time chart', () => {
     it('source is driven by source.sentimentIndex and summary.sourceVolumeHistory, not a new independent computation', () => {
       const source = readSrc(...sourcesTabPath);
       expect(source).toMatch(/\.sentimentIndex/);

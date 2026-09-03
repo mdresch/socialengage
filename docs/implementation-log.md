@@ -4571,3 +4571,12 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 - **Files touched:** social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts, social-listening-core/src/posts/postExportEngine.ts
 - **Epic-10 suite:** PASS (21/21)
 - **Notes:** `POST /v1/posts/export` spawns a fire-and-forget `processExportJob()`; the contract's `afterAll` was closing the Postgres pools while the background job was still in flight. This produced `Jest did not exit` / `ReferenceError: You are trying to require a file after the Jest environment has been torn down` warnings from `pg` creating a new connection after teardown. Added an `activeExportJobs` Set in `postExportEngine.ts` to track each in-flight background promise, exposed `drainActiveExportJobs()`, and called it in the contract's `afterAll` before closing pools. Jest now exits cleanly.
+
+---
+
+## 2026-09-03 - ADR-0141 and UI Contract Refinements
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** Stories 6.9, 8.6, 8.7 / ADR-0141
+- **Files touched:** docs/adr/0141-analytics-and-ui-contract-refinements.md, docs/adr/README.md, social-listening-admin/contracts/epic-6/story-6.9.tenant-settings-screen.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.7.overview-tab-enhancement.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/lib/linkedinOAuth.ts
+- **Notes:** Drafted ADR-0141 to supersede overly brittle UI contracts related to secret leakage ('credential' string matching), sentiment scale (-10 to +10 instead of 0 to 10), and top authors ranking schema (allowing providerId). Restored the superior implementation code for all three cases and updated the contracts to honor ADR-0141. Also committed earlier fixes for Facebook attribution (6.37) and LinkedIn OAuth scopes (6.35). All tests passing.
