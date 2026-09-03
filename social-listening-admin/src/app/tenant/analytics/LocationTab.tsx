@@ -7,6 +7,7 @@ import { AnimatedChartTooltip } from './AnimatedChartTooltip';
 import type { AnalyticsSummary, DateRangeFilter, SentimentPost } from './analyticsData';
 import { computeSentimentIndex } from './analyticsData';
 import { PostDetailPanel } from '../posts/PostDetailPanel';
+import type { FlatPost } from '../posts/postDisplay';
 import { InteractiveWorldMap } from './InteractiveWorldMap';
 
 // Centroid geographic coordinates for country projection
@@ -201,7 +202,8 @@ function TrendArrow({ delta }: { delta: number }) {
     );
   }
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" title="No change">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <title>No change</title>
       <line x1="5" y1="12" x2="19" y2="12" />
       <polyline points="12 5 19 12 12 19" />
     </svg>
@@ -234,23 +236,23 @@ export function LocationTab({ summary, previousSummary, range, onViewPost }: Loc
   const facebookAuthorCount = useMemo(() => {
     return posts.filter((p) => {
       const isFb = (p.providerId || '').toLowerCase().includes('facebook') || (p.providerId || '').toLowerCase() === 'fb';
-      return isFb && (p.geoSource === 'author_profile' || p.geoSource === 'author' || Boolean(p.geoCountry));
+      return isFb && ((p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author' || Boolean(p.geoCountry));
     }).length;
   }, [posts]);
 
   const twitterAuthorCount = useMemo(() => {
     return posts.filter((p) => {
       const isTw = (p.providerId || '').toLowerCase().includes('twitter') || (p.providerId || '').toLowerCase() === 'x';
-      return isTw && (p.geoSource === 'author_profile' || p.geoSource === 'author' || Boolean(p.geoCountry));
+      return isTw && ((p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author' || Boolean(p.geoCountry));
     }).length;
   }, [posts]);
 
   const authorProfileCount = useMemo(() => {
-    return posts.filter((p) => p.geoSource === 'author_profile' || p.geoSource === 'author').length;
+    return posts.filter((p) => (p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author').length;
   }, [posts]);
 
   const postLocationCount = useMemo(() => {
-    return posts.filter((p) => p.geoSource === 'post_content' || p.geoSource === 'explicit_location' || (p.geoCountry && p.geoSource !== 'author_profile' && p.geoSource !== 'author')).length;
+    return posts.filter((p) => (p.geoSource as string) === 'post_content' || (p.geoSource as string) === 'explicit_location' || (p.geoCountry && (p.geoSource as string) !== 'author_profile' && (p.geoSource as string) !== 'author')).length;
   }, [posts]);
 
   // Target posts subset based on location source filter
@@ -258,21 +260,21 @@ export function LocationTab({ summary, previousSummary, range, onViewPost }: Loc
     if (locationSourceFilter === 'facebook_author') {
       const fbPosts = posts.filter((p) => {
         const isFb = (p.providerId || '').toLowerCase().includes('facebook') || (p.providerId || '').toLowerCase() === 'fb';
-        return isFb && (p.geoSource === 'author_profile' || p.geoSource === 'author' || Boolean(p.geoCountry));
+        return isFb && ((p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author' || Boolean(p.geoCountry));
       });
       return fbPosts.length > 0 ? fbPosts : posts.filter((p) => (p.providerId || '').toLowerCase().includes('facebook'));
     }
     if (locationSourceFilter === 'twitter_author') {
       return posts.filter((p) => {
         const isTw = (p.providerId || '').toLowerCase().includes('twitter') || (p.providerId || '').toLowerCase() === 'x';
-        return isTw && (p.geoSource === 'author_profile' || p.geoSource === 'author' || Boolean(p.geoCountry));
+        return isTw && ((p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author' || Boolean(p.geoCountry));
       });
     }
     if (locationSourceFilter === 'author_profile') {
-      return posts.filter((p) => p.geoSource === 'author_profile' || p.geoSource === 'author');
+      return posts.filter((p) => (p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author');
     }
     if (locationSourceFilter === 'post_location') {
-      return posts.filter((p) => p.geoSource === 'post_content' || p.geoSource === 'explicit_location' || (p.geoCountry && p.geoSource !== 'author_profile' && p.geoSource !== 'author'));
+      return posts.filter((p) => (p.geoSource as string) === 'post_content' || (p.geoSource as string) === 'explicit_location' || (p.geoCountry && (p.geoSource as string) !== 'author_profile' && (p.geoSource as string) !== 'author'));
     }
     return posts;
   }, [posts, locationSourceFilter]);
@@ -421,9 +423,9 @@ export function LocationTab({ summary, previousSummary, range, onViewPost }: Loc
     let postLoc = 0;
     let unknownLoc = 0;
     for (const p of targetPosts) {
-      if (p.geoSource === 'author_profile' || p.geoSource === 'author') {
+      if ((p.geoSource as string) === 'author_profile' || (p.geoSource as string) === 'author') {
         authorLoc += 1;
-      } else if (p.geoSource === 'post_content' || p.geoSource === 'explicit_location' || p.geoCountry) {
+      } else if ((p.geoSource as string) === 'post_content' || (p.geoSource as string) === 'explicit_location' || p.geoCountry) {
         postLoc += 1;
       } else {
         unknownLoc += 1;
@@ -672,59 +674,66 @@ export function LocationTab({ summary, previousSummary, range, onViewPost }: Loc
               </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-2) 0' }}>
-              {/* Index score on left */}
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '1.875rem', fontWeight: 200, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
-                  {sentimentStats.netIndex >= 0 ? `+${sentimentStats.netIndex.toFixed(1)}` : sentimentStats.netIndex.toFixed(1)}
-                </div>
-                <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>index</div>
-              </div>
+            {(() => {
+              const currentNetIndex = sentimentStats.netIndex;
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-2) 0' }}>
+                    {/* Index score on left */}
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: '1.875rem', fontWeight: 200, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                        {currentNetIndex !== null ? (currentNetIndex >= 0 ? `+${currentNetIndex.toFixed(1)}` : currentNetIndex.toFixed(1)) : '—'}
+                      </div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>index</div>
+                    </div>
 
-              {/* Semicircular smiley gauge in center */}
-              <div style={{ position: 'relative', width: 84, height: 84, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 84 84" width="84" height="84" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx="42" cy="42" r="32" stroke="var(--color-border)" strokeWidth="6" fill="transparent" />
-                  <circle
-                    cx="42"
-                    cy="42"
-                    r="32"
-                    stroke={sentimentStats.netIndex >= 0 ? '#15803d' : '#dc2626'}
-                    strokeWidth="6"
-                    strokeDasharray="201"
-                    strokeDashoffset={201 - (Math.abs(sentimentStats.netIndex) / 10) * 201}
-                    fill="transparent"
-                  />
-                </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-primary)' }}>
-                  {sentimentStats.netIndex > 0 ? <IconSmile /> : sentimentStats.netIndex < 0 ? <IconFrown /> : <IconNeutral />}
-                </div>
-              </div>
+                    {/* Semicircular smiley gauge in center */}
+                    <div style={{ position: 'relative', width: 84, height: 84, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg viewBox="0 0 84 84" width="84" height="84" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="42" cy="42" r="32" stroke="var(--color-border)" strokeWidth="6" fill="transparent" />
+                        <circle
+                          cx="42"
+                          cy="42"
+                          r="32"
+                          stroke={currentNetIndex !== null ? (currentNetIndex >= 0 ? '#15803d' : '#dc2626') : 'var(--color-border)'}
+                          strokeWidth="6"
+                          strokeDasharray="201"
+                          strokeDashoffset={currentNetIndex !== null ? 201 - (Math.abs(currentNetIndex) / 10) * 201 : 201}
+                          fill="transparent"
+                        />
+                      </svg>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-primary)' }}>
+                        {currentNetIndex !== null ? (currentNetIndex > 0 ? <IconSmile /> : currentNetIndex < 0 ? <IconFrown /> : <IconNeutral />) : <IconNeutral />}
+                      </div>
+                    </div>
 
-              {/* Change delta on right */}
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 200, color: 'var(--color-text-primary)', lineHeight: 1 }}>
-                  {sentimentStats.delta >= 0 ? `+${sentimentStats.delta.toFixed(1)}` : sentimentStats.delta.toFixed(1)}
-                </div>
-                <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-                  <span>change</span>
-                  <TrendArrow delta={sentimentStats.delta} />
-                </div>
-              </div>
-            </div>
+                    {/* Change delta on right */}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 200, color: 'var(--color-text-primary)', lineHeight: 1 }}>
+                        {sentimentStats.delta >= 0 ? `+${sentimentStats.delta.toFixed(1)}` : sentimentStats.delta.toFixed(1)}
+                      </div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                        <span>change</span>
+                        <TrendArrow delta={sentimentStats.delta} />
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Slider bar from -10 to +10 */}
-            <div style={{ marginTop: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
-                <span>-10</span>
-                <span>0</span>
-                <span>+10</span>
-              </div>
-              <div style={{ position: 'relative', height: 8, width: '100%', background: 'var(--color-surface-page)', border: '1px solid var(--color-border)', borderRadius: 2, overflow: 'hidden', display: 'flex', marginTop: 3 }}>
-                <div style={{ width: '50%', background: sentimentStats.netIndex < 0 ? '#dc2626' : 'transparent', height: '100%', marginLeft: sentimentStats.netIndex < 0 ? `${(1 + sentimentStats.netIndex / 10) * 50}%` : 'auto' }} />
-                <div style={{ width: sentimentStats.netIndex >= 0 ? `${(sentimentStats.netIndex / 10) * 50}%` : 0, background: '#15803d', height: '100%' }} />
-              </div>
-            </div>
+                  {/* Slider bar from -10 to +10 */}
+                  <div style={{ marginTop: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                      <span>-10</span>
+                      <span>0</span>
+                      <span>+10</span>
+                    </div>
+                    <div style={{ position: 'relative', height: 8, width: '100%', background: 'var(--color-surface-page)', border: '1px solid var(--color-border)', borderRadius: 2, overflow: 'hidden', display: 'flex', marginTop: 3 }}>
+                      <div style={{ width: '50%', background: currentNetIndex !== null && currentNetIndex < 0 ? '#dc2626' : 'transparent', height: '100%', marginLeft: currentNetIndex !== null && currentNetIndex < 0 ? `${(1 + currentNetIndex / 10) * 50}%` : 'auto' }} />
+                      <div style={{ width: currentNetIndex !== null && currentNetIndex >= 0 ? `${(currentNetIndex / 10) * 50}%` : 0, background: '#15803d', height: '100%' }} />
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
           {/* 1.2 SENTIMENT BY COUNTRY/REGION */}
@@ -1168,15 +1177,22 @@ export function LocationTab({ summary, previousSummary, range, onViewPost }: Loc
                       onClick={() => {
                         const flat: FlatPost = {
                           id: post.id,
-                          author: post.author,
-                          content: post.title || 'Untitled Post',
+                          createdAt: post.publishedAt || new Date().toISOString(),
                           publishedAt: post.publishedAt || new Date().toISOString(),
-                          sentiment: post.sentiment || 'neutral',
-                          language: post.language || 'en',
-                          providerId: post.providerId || 'social',
-                          keyPhrases: post.keyPhrases || [],
-                          entities: post.entities || [],
                           rawPayload: {},
+                          enrichment: null,
+                          bodyMarkdown: null,
+                          title: post.title || 'Untitled Post',
+                          snippet: null,
+                          provider: post.providerId || 'social',
+                          url: null,
+                          author: post.author,
+                          pageName: null,
+                          pageId: null,
+                          watchlistId: null,
+                          instagramContext: null,
+                          linkedinContext: null,
+                          enrichmentSummary: null,
                         };
                         if (onViewPost) {
                           onViewPost(flat);

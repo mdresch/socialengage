@@ -65,7 +65,7 @@ export default async function PostFeedPage() {
     listFacebookPages().catch(() => ({ status: 500, body: {} })),
   ]);
 
-  const facebookPages = (fbPagesRes.body?.pages as { pageId: string; pageName: string }[]) || [];
+  const facebookPages = (fbPagesRes.body && 'pages' in fbPagesRes.body ? (fbPagesRes.body.pages as { pageId: string; pageName: string }[]) : []) || [];
 
   return (
     <main>

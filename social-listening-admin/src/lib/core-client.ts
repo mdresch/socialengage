@@ -45,6 +45,8 @@ function coreBaseUrl(): string {
   return baseUrl;
 }
 
+const getBaseUrl = coreBaseUrl;
+
 /**
  * Placeholder call proving the REST-only mechanism works end to end. Real endpoint
  * calls (connect/disconnect a platform, manage watchlists, connector status, ...)

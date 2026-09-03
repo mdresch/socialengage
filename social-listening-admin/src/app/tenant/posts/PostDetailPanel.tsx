@@ -108,6 +108,7 @@ export interface PostDetailPanelPost {
 
 export function PostDetailPanel({
   post,
+  onClose,
   onEdit,
   onReply,
   watchlists,
@@ -116,6 +117,7 @@ export function PostDetailPanel({
   repliesRefresh,
 }: {
   post: PostDetailPanelPost;
+  onClose?: () => void;
   onEdit?: () => void;
   onReply?: () => void;
   watchlists?: { id: string; name?: string }[];
