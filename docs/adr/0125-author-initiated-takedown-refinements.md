@@ -93,11 +93,11 @@ On grant, in addition to ADR-0092 Decision §3's existing steps (soft-redact `so
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `sla_due_at` breach ever trigger an automated reminder/escalation notification (not an automated decision) to the `Tenant-Admin`? Left open, consistent with ADR-0092's own unresolved auto-escalation question.
-- Should the risk-flag be visible to the requester, or only to the internal reviewer? Left open; default assumption is internal-only until decided.
-- Does a `restriction`-of-processing analog (see ADR-0126 §1 for the DSR portal's own restriction-type scoping decision) ever apply to a takedown request specifically, or does it always resolve to grant/deny/escalate? Deferred to ADR-0126, which owns the restriction-type question for the DSR surface; not re-decided here.
+- [ ] **[Q-0125-1]** Should `sla_due_at` breach ever trigger an automated reminder/escalation notification (not an automated decision) to the `Tenant-Admin`? Left open, consistent with ADR-0092's own unresolved auto-escalation question.
+- [ ] **[Q-0125-2]** Should the risk-flag be visible to the requester, or only to the internal reviewer? Left open; default assumption is internal-only until decided.
+- [ ] **[Q-0125-3]** Does a `restriction`-of-processing analog (see ADR-0126 §1 for the DSR portal's own restriction-type scoping decision) ever apply to a takedown request specifically, or does it always resolve to grant/deny/escalate? Deferred to ADR-0126, which owns the restriction-type question for the DSR surface; not re-decided here.
 
 ---
 

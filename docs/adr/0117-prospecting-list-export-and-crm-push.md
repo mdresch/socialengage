@@ -115,12 +115,12 @@ POST /v1/prospecting-lists/:id/crm-handoff
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the push create a CRM campaign or list, or just individual contacts?
-- How are duplicate leads handled? Key on `authorId` or on `authorName + platformId`?
-- Should the export include `influence_score` and `authenticity_score` as raw numbers or labels?
-- Can the user schedule a recurring CRM push as entries are added?
+- [ ] **[Q-0117-1]** Should the push create a CRM campaign or list, or just individual contacts?
+- [ ] **[Q-0117-2]** How are duplicate leads handled? Key on `authorId` or on `authorName + platformId`?
+- [ ] **[Q-0117-3]** Should the export include `influence_score` and `authenticity_score` as raw numbers or labels?
+- [ ] **[Q-0117-4]** Can the user schedule a recurring CRM push as entries are added?
 
 ## Implementation notes
 

@@ -61,12 +61,12 @@ For this connector, `Author` represents the **issuing organization**, not an ind
 - **Edit ADR-0004 directly to accommodate organization-as-author generally** — rejected in favor of a scoped exception on this ADR plus a forward-pointer note on ADR-0004, consistent with the series' own convention of not rewriting an Accepted ADR's original Decision text (see ADR series README governance table).
 - **Defer Newswire to a later phase entirely** — not architecturally wrong, but Phase 4 is explicitly the multi-connector scale-out phase and Newswire is next in the undecided §10 roster; no reason found to push it out further than the rest of Phase 4's connector work.
 
-## Open questions for decision
+## Open Questions
 
-- **AccessWire's and Business Wire's actual public RSS access terms** — confirm directly before considering adding either to this connector's coverage; don't assume they match GlobeNewswire/PR Newswire's openness.
-- **Cross-wire de-duplication strategy** — not resolved here (see Implementation defaults); needs a decision at implementation time.
-- **Exact feed subset to poll** — an implementation-time choice tied to watchlist/tenant demand, not fixed by this ADR.
-- **Scope of the Author-as-organization pattern** — is it genuinely one-off to Newswire, or should ADR-0004 carry a permanent forward-pointer note anticipating other organization-shaped providers later? Recommend deciding this at acceptance time, not deferring it further.
+- [ ] **[Q-0024-1]** **AccessWire's and Business Wire's actual public RSS access terms** — confirm directly before considering adding either to this connector's coverage; don't assume they match GlobeNewswire/PR Newswire's openness.
+- [ ] **[Q-0024-2]** **Cross-wire de-duplication strategy** — not resolved here (see Implementation defaults); needs a decision at implementation time.
+- [ ] **[Q-0024-3]** **Exact feed subset to poll** — an implementation-time choice tied to watchlist/tenant demand, not fixed by this ADR.
+- [ ] **[Q-0024-4]** **Scope of the Author-as-organization pattern** — is it genuinely one-off to Newswire, or should ADR-0004 carry a permanent forward-pointer note anticipating other organization-shaped providers later? Recommend deciding this at acceptance time, not deferring it further.
 
 ## Amendment Log
 

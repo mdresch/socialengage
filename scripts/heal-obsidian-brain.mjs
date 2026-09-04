@@ -7,7 +7,7 @@ import { execSync, spawnSync } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const vaultRoot = process.argv[2] || 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const vaultRoot = process.argv[2] || process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
 const wikiRoot = path.join(vaultRoot, 'wiki');
 const rawRoot = path.join(vaultRoot, 'raw');
 const reportDir = path.join(wikiRoot, 'Projects', 'SocialEngage', '08 Project Telemetry Dashboard');
@@ -32,10 +32,15 @@ function warn(msg) { findings.warnings.push(msg); console.warn('  ⚠️', msg);
 function info(msg) { findings.info.push(msg); console.log('  ℹ️', msg); }
 
 function runScript(scriptPath) {
-  const full = path.resolve(repoRoot, scriptPath);
+  const parts = scriptPath.split(' ');
+  const scriptFile = path.resolve(repoRoot, parts[0]);
+  const extraArgs = parts.slice(1).join(' ');
   console.log(`\n🔄 Running ${scriptPath}...`);
   try {
-    execSync(`node "${full}"`, { stdio: 'inherit', cwd: repoRoot, timeout: 300000 });
+    const cmd = extraArgs
+      ? `node "${scriptFile}" ${extraArgs} "${vaultRoot}"`
+      : `node "${scriptFile}" "${vaultRoot}"`;
+    execSync(cmd, { stdio: 'inherit', cwd: repoRoot, timeout: 300000 });
     info(`${scriptPath} completed`);
     return true;
   } catch (e) {
@@ -1116,6 +1121,7 @@ console.log('🧠 Obsidian Brain Heal Starting');
 console.log(`Vault: ${vaultRoot}`);
 console.log(`Repo:  ${repoRoot}`);
 
+const ok0 = runScript('scripts/sync-open-questions.mjs --sync');
 const okIngest = runScript('scripts/ingest-raw.mjs');
 const ok1 = runScript('scripts/export-to-obsidian.mjs');
 const ok2 = runScript('project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs');

@@ -76,10 +76,10 @@ Story 10.3 was already built (`social-listening-core@fdb9bb8`, 2026-08-28) befor
 
 ---
 
-## Open questions
+## Open Questions
 
-- Verifying Story 10.3's actual shipped DDL against Decision §2 is **deferred to the implementing follow-up story for this ADR** (Epic 18), per ADR-0047 §3's "deferred to a named future story" form — not decided here.
-- ADR-0087's own still-open retention-policy question (relationship to ADR-0018) is unaffected by this ADR and remains open there.
+- [ ] **[Q-0135-1]** Verifying Story 10.3's actual shipped DDL against Decision §2 is **deferred to the implementing follow-up story for this ADR** (Epic 18), per ADR-0047 §3's "deferred to a named future story" form — not decided here.
+- [ ] **[Q-0135-2]** ADR-0087's own still-open retention-policy question (relationship to ADR-0018) is unaffected by this ADR and remains open there.
 
 ---
 

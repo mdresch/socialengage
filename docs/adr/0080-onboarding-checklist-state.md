@@ -134,12 +134,12 @@ The admin dashboard displays the checklist at the top. Each step deep-links dire
 
 ---
 
-## Open questions
+## Open Questions
 
-- ~~Should completion be computed on every `GET` or refreshed by a trigger/hook when the underlying tables change?~~ **Resolved at acceptance:** Computed on `GET` using a single bundled `SELECT EXISTS` query with one-way JSONB milestone caching.
-- ~~Should `Platform-Admin` see onboarding completion metrics across tenants?~~ **Resolved at acceptance:** Yes, `tenants.onboarding_checklist` enables standard SQL aggregation for platform activation funnels and drop-off analysis.
-- ~~Should the checklist order or step names be configurable per tenant?~~ **Resolved at acceptance:** No, kept fixed in v1 to preserve standard SaaS self-service simplicity.
-- ~~How does the checklist behave for tenants created before this ADR is implemented?~~ **Resolved at acceptance:** Auto-reconciled on first `GET` — existing active tenants have their steps marked `completed: true` and are automatically set to `dismissed: true`.
+- [x] **[Q-0080-1]** ~~Should completion be computed on every `GET` or refreshed by a trigger/hook when the underlying tables change?~~ **Resolved at acceptance:** Computed on `GET` using a single bundled `SELECT EXISTS` query with one-way JSONB milestone caching.
+- [x] **[Q-0080-2]** ~~Should `Platform-Admin` see onboarding completion metrics across tenants?~~ **Resolved at acceptance:** Yes, `tenants.onboarding_checklist` enables standard SQL aggregation for platform activation funnels and drop-off analysis.
+- [x] **[Q-0080-3]** ~~Should the checklist order or step names be configurable per tenant?~~ **Resolved at acceptance:** No, kept fixed in v1 to preserve standard SaaS self-service simplicity.
+- [x] **[Q-0080-4]** ~~How does the checklist behave for tenants created before this ADR is implemented?~~ **Resolved at acceptance:** Auto-reconciled on first `GET` — existing active tenants have their steps marked `completed: true` and are automatically set to `dismissed: true`.
 
 ---
 

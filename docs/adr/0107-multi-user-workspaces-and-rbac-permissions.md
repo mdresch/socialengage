@@ -118,12 +118,12 @@ watchlist_shares (
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `tenant_user` be able to invite other `tenant_user`s, or only `tenant_admin`?
-- How are default permissions for new `tenant_user`s configured? Tenant-wide default?
-- Should `watchlist_shares` support sharing to a group or only individual users?
-- How does feature gating interact with `Platform-Admin` billing tier changes?
+- [ ] **[Q-0107-1]** Should `tenant_user` be able to invite other `tenant_user`s, or only `tenant_admin`?
+- [ ] **[Q-0107-2]** How are default permissions for new `tenant_user`s configured? Tenant-wide default?
+- [ ] **[Q-0107-3]** Should `watchlist_shares` support sharing to a group or only individual users?
+- [ ] **[Q-0107-4]** How does feature gating interact with `Platform-Admin` billing tier changes?
 
 ---
 

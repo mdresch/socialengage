@@ -77,11 +77,11 @@ This ADR is a roadmap, not a per-platform specification. Before building any of 
 
 ## Open Questions
 
-1. Which of these platforms, if any, should also support `SocialConnector.reply?()` or `SocialConnector.poll()?` (i.e., should the same per-platform ADR cover ingestion and engagement as well as publishing?)
-2. Should Mastodon support per-toot threading natively or map the Polypost Composer's thread model to multiple Mastodon posts?
-3. What is the exact Bluesky authentication model (OAuth, App Passwords, or DID-based) and its rate/cost model?
-4. Does Instagram support any text/link-only post type through the Content Publishing API, or is media always required?
-5. Is X/Twitter's paid API still economically viable for a self-funded project at the time of implementation?
+- [ ] **[Q-0118-1]** Which of these platforms, if any, should also support `SocialConnector.reply?()` or `SocialConnector.poll()?` (i.e., should the same per-platform ADR cover ingestion and engagement as well as publishing?)
+- [ ] **[Q-0118-2]** Should Mastodon support per-toot threading natively or map the Polypost Composer's thread model to multiple Mastodon posts?
+- [ ] **[Q-0118-3]** What is the exact Bluesky authentication model (OAuth, App Passwords, or DID-based) and its rate/cost model?
+- [ ] **[Q-0118-4]** Does Instagram support any text/link-only post type through the Content Publishing API, or is media always required?
+- [ ] **[Q-0118-5]** Is X/Twitter's paid API still economically viable for a self-funded project at the time of implementation?
 
 ---
 

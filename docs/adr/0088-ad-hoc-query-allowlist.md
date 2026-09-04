@@ -1,4 +1,4 @@
-﻿# ADR-0088: Ad-hoc query allowlist
+# ADR-0088: Ad-hoc query allowlist
 
 **Status:** Accepted (2026-08-28)
 
@@ -126,13 +126,13 @@ The endpoint is `POST` by convention (because it accepts a body) but is strictly
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `date` dimension support `hour` grain in v1, or only `day/week/month`?
-- How should the endpoint handle a query that mixes dimensions that do not share a precomputed view?
-- Should users be able to save and share ad-hoc queries as named views?
-- What is the right rate-limit and row-cap for free vs. paid tiers?
-- ~~Does `dimensions: ['watchlist']` (or `filters.watchlist`) inherit `post_watchlist_matches`' tenant-only RLS, letting any tenant member enumerate every watchlist_id in the tenant and its match volume — including watchlists privately owned by other users?~~ **Resolved (2026-08-27), confirmed by Menno verbatim: *"no other users private watchlist widening."*** Owner-scoped only — see Decision §3 and Context §5. No caller can see or enumerate another user's private watchlist through this endpoint.
+- [x] ~~**[Q-0088-1]** Should `date` dimension support `hour` grain in v1, or only `day/week/month`?~~ — **Resolved by ADR-0132:** Allowed date dimensions, truncation grains (`day/week/month`), and metric aggregations locked.
+- [ ] **[Q-0088-2]** How should the endpoint handle a query that mixes dimensions that do not share a precomputed view?
+- [ ] **[Q-0088-3]** Should users be able to save and share ad-hoc queries as named views?
+- [ ] **[Q-0088-4]** What is the right rate-limit and row-cap for free vs. paid tiers?
+- [x] ~~**[Q-0088-5]** Does `dimensions: ['watchlist']` (or `filters.watchlist`) inherit `post_watchlist_matches`' tenant-only RLS, letting any tenant member enumerate every watchlist_id in the tenant and its match volume — including watchlists privately owned by other users?~~ — **Resolved by Sponsor decision (Menno, 2026-08-27):** Owner-scoped only per ADR-0088 Decision §3 and Context §5; no private watchlist widening.
 
 ---
 

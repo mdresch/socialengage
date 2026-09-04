@@ -105,12 +105,12 @@ alert_rules (
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should alert evaluation be real-time (per-event) or batched (every N minutes)?
-- How are duplicate alert emails suppressed across a tenant?
-- Should `Platform-Admin` have platform-wide alert rules (e.g., a connector failing across any tenant)?
-- What is the maximum number of active alert rules per tenant?
+- [ ] **[Q-0091-1]** Should alert evaluation be real-time (per-event) or batched (every N minutes)?
+- [ ] **[Q-0091-2]** How are duplicate alert emails suppressed across a tenant?
+- [ ] **[Q-0091-3]** Should `Platform-Admin` have platform-wide alert rules (e.g., a connector failing across any tenant)?
+- [ ] **[Q-0091-4]** What is the maximum number of active alert rules per tenant?
 
 ---
 

@@ -119,13 +119,13 @@ Each existing connector is classified once at implementation time: GNews/Brave/B
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `count` capability vary by connector or by platform? A single platform may have multiple connector implementations.
-- How are capability differences per API tier exposed? A `tier` field or `capabilities.tier`?
-- Should `backfill` require a separate `tenant_admin` permission?
-- How is `getCapabilities()` tested in contract tests?
-- **Added 2026-08-28:** Should `sourceType` (Decision §6) support more than one value per connector (e.g., a connector that is both `social` and covers `review` content)? Deferred to Story 12.1 implementation — v1 assumes one `sourceType` per connector, consistent with every competitor product reviewed treating source type as a single coverage category per data source.
+- [ ] **[Q-0101-1]** Should `count` capability vary by connector or by platform? A single platform may have multiple connector implementations.
+- [ ] **[Q-0101-2]** How are capability differences per API tier exposed? A `tier` field or `capabilities.tier`?
+- [ ] **[Q-0101-3]** Should `backfill` require a separate `tenant_admin` permission?
+- [ ] **[Q-0101-4]** How is `getCapabilities()` tested in contract tests?
+- [ ] **[Q-0101-5]** **Added 2026-08-28:** Should `sourceType` (Decision §6) support more than one value per connector (e.g., a connector that is both `social` and covers `review` content)? Deferred to Story 12.1 implementation — v1 assumes one `sourceType` per connector, consistent with every competitor product reviewed treating source type as a single coverage category per data source.
 
 ---
 

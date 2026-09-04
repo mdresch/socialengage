@@ -140,11 +140,11 @@ These replace the previously-deferred "Location Insights" widget with a realisti
 
 ## Open Questions
 
-1. **Geocoding free-text location (future)** — If a future connector exposes author profile location (free-text), should the system geocode it to ISO country? If yes, which provider (e.g. Azure Maps, OpenStreetMap Nominatim) and what confidence threshold is required to populate `geoCountry`? Also need to consider cost, rate limits, and tenant data residency. Deferred for v1.
-2. **Sub-national mapping** — Is there a demonstrated tenant need for region/state/city-level aggregates? For v1 country is sufficient. If revisited, likely limited to connectors that explicitly provide it (rare) rather than inference.
-3. **Domain→country mapping list** — Should we maintain a small, curated allowlist of source domains → country (e.g. major wire services with known primary country)? This could improve Newswire coverage without aggressive guessing. Trade-off: maintenance burden vs. coverage gain.
-4. **Handling "Unknown" in visualisations** — The ADR states "Unknown" is always shown. For the choropleth map, should "Unknown" be shown in a separate legend/card (not on the map) or as a count in the Top Countries list only? Implementation detail left to story follow-up, but principle is established.
-5. **Coverage threshold for country insights** — Should country-level sentiment/aggregates be hidden when a country has < N posts in the filtered range (to avoid misleading small samples)? The ADR suggests this for sentiment (Decision §4) — worth confirming the threshold (e.g. N=5) in implementation.
+- [ ] **[Q-0064-1]** **Geocoding free-text location (future)** — If a future connector exposes author profile location (free-text), should the system geocode it to ISO country? If yes, which provider (e.g. Azure Maps, OpenStreetMap Nominatim) and what confidence threshold is required to populate `geoCountry`? Also need to consider cost, rate limits, and tenant data residency. Deferred for v1.
+- [ ] **[Q-0064-2]** **Sub-national mapping** — Is there a demonstrated tenant need for region/state/city-level aggregates? For v1 country is sufficient. If revisited, likely limited to connectors that explicitly provide it (rare) rather than inference.
+- [ ] **[Q-0064-3]** **Domain→country mapping list** — Should we maintain a small, curated allowlist of source domains → country (e.g. major wire services with known primary country)? This could improve Newswire coverage without aggressive guessing. Trade-off: maintenance burden vs. coverage gain.
+- [ ] **[Q-0064-4]** **Handling "Unknown" in visualisations** — The ADR states "Unknown" is always shown. For the choropleth map, should "Unknown" be shown in a separate legend/card (not on the map) or as a count in the Top Countries list only? Implementation detail left to story follow-up, but principle is established.
+- [ ] **[Q-0064-5]** **Coverage threshold for country insights** — Should country-level sentiment/aggregates be hidden when a country has < N posts in the filtered range (to avoid misleading small samples)? The ADR suggests this for sentiment (Decision §4) — worth confirming the threshold (e.g. N=5) in implementation.
 
 ---
 

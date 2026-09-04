@@ -52,11 +52,11 @@ Adopt an explicit, enforceable verification policy for every new connector regis
 - Story 2.8 and Story 2.9 follow-up swappability validation direction
 - All downstream connector stories that rely on no-core-path registration changes
 
-## Open questions for decision
+## Open Questions
 
-- Whether to enforce this with a dedicated CI script in the repository or as a test-level contract gate inside `social-listening-core`.
-- Whether to define a strict allowlist of files/directories as extension points, and where that allowlist is maintained.
-- Whether this policy should also apply to connector deprecation/removal PRs with the same strictness.
+- [ ] **[Q-0048-1]** Whether to enforce this with a dedicated CI script in the repository or as a test-level contract gate inside `social-listening-core`.
+- [ ] **[Q-0048-2]** Whether to define a strict allowlist of files/directories as extension points, and where that allowlist is maintained.
+- [ ] **[Q-0048-3]** Whether this policy should also apply to connector deprecation/removal PRs with the same strictness.
 
 ## Amendment Log
 

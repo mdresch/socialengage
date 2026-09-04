@@ -93,12 +93,12 @@ data_subject_requests (
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the takedown form support anonymous requests, or is email verification mandatory?
-- How is the requester’s identity matched against the post author? Is the platform URL enough?
-- Should tenants be able to set an auto-grant policy for verified requests from their own domain/author?
-- How long does a tenant have to respond before the request is auto-escalated or auto-granted?
+- [-] **[Q-0092-1]** ~~Should the takedown form support anonymous requests, or is email verification mandatory?~~ **Superseded by ADR-0125:** Mandatory verified email handshake replaces anonymous takedown requests.
+- [-] **[Q-0092-2]** ~~How is the requester’s identity matched against the post author? Is the platform URL enough?~~ **Superseded by ADR-0125:** Author platform handle/URL verified against original post author metadata.
+- [-] **[Q-0092-3]** ~~Should tenants be able to set an auto-grant policy for verified requests from their own domain/author?~~ **Superseded by ADR-0125:** Auto-grant policy options defined for verified self-authored domains.
+- [-] **[Q-0092-4]** ~~How long does a tenant have to respond before the request is auto-escalated or auto-granted?~~ **Superseded by ADR-0125:** SLA response timeframes and escalation workflows locked.
 
 ---
 

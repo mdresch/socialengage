@@ -89,12 +89,12 @@ interface NativeQuery {
 
 ---
 
-## Open questions
+## Open Questions
 
-- How are boolean `NOT` groups translated for platforms that do not support `NOT`?
-- Should the connector use native `OR` or split into multiple queries?
-- How is query length measured — characters, bytes, or encoded length?
-- Should `date` clauses be validated against the connector's lookback window?
+- [ ] **[Q-0110-1]** How are boolean `NOT` groups translated for platforms that do not support `NOT`?
+- [ ] **[Q-0110-2]** Should the connector use native `OR` or split into multiple queries?
+- [ ] **[Q-0110-3]** How is query length measured — characters, bytes, or encoded length?
+- [ ] **[Q-0110-4]** Should `date` clauses be validated against the connector's lookback window?
 
 ---
 

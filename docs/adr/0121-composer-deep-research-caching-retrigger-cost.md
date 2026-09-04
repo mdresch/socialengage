@@ -107,10 +107,10 @@ Caching is justified when the same or nearly identical draft is researched more 
 
 ## Open Questions
 
-1. Should `research_cache` be pruned by background job or by `expires_at` filtering at query time?
-2. How should the `text_hash` treat minor edits (punctuation, case, emoji) to maximize useful cache hits without over-matching?
-3. Which Azure OpenAI cost fields (prompt tokens, completion tokens, reasoning tokens) are actually exposed by the SDK and should be stored?
-4. Should cost caps be per-user or per-tenant? v1 proposes per-tenant; per-user is a future option.
+- [ ] **[Q-0121-1]** Should `research_cache` be pruned by background job or by `expires_at` filtering at query time?
+- [ ] **[Q-0121-2]** How should the `text_hash` treat minor edits (punctuation, case, emoji) to maximize useful cache hits without over-matching?
+- [ ] **[Q-0121-3]** Which Azure OpenAI cost fields (prompt tokens, completion tokens, reasoning tokens) are actually exposed by the SDK and should be stored?
+- [ ] **[Q-0121-4]** Should cost caps be per-user or per-tenant? v1 proposes per-tenant; per-user is a future option.
 
 ---
 

@@ -90,10 +90,10 @@ interface SearchResponse {
 
 ## Open Questions
 
-1. Should `SearchProviderConnector` be a top-level `SearchConnector` under `SocialConnector.search?()` instead of a separate interface?
-2. What is the exact Bing `freshness` parameter mapping and does it support a `market` hint in the free/news tiers?
-3. Should Brave and Bing share a common query-normalization step or keep it per-connector?
-4. Does this abstraction also cover internal `tenant-owned-feed` search? Probably not — that is content already owned by the tenant, not public web search.
+- [ ] **[Q-0120-1]** Should `SearchProviderConnector` be a top-level `SearchConnector` under `SocialConnector.search?()` instead of a separate interface?
+- [ ] **[Q-0120-2]** What is the exact Bing `freshness` parameter mapping and does it support a `market` hint in the free/news tiers?
+- [ ] **[Q-0120-3]** Should Brave and Bing share a common query-normalization step or keep it per-connector?
+- [ ] **[Q-0120-4]** Does this abstraction also cover internal `tenant-owned-feed` search? Probably not — that is content already owned by the tenant, not public web search.
 
 ---
 

@@ -123,9 +123,9 @@ This ADR is a **new, superseding ADR**, not an in-place revision, per the projec
 - **Does the vector ID scheme change?** No — `${tenantId}:${postId}:${chunkIndex}` is unchanged. (Decision §4.)
 - **Is metadata filtering removed?** No — retained everywhere as mandatory defense-in-depth, and remains the sole mechanism for providers without physical isolation. (Decision §2.)
 
-## Open questions for a future ADR
+## Open Questions
 
-- **Azure AI Search per-tenant physical isolation:** not researched here; a future ADR should investigate whether Azure AI Search offers an equivalent to namespace-per-tenant (e.g. one index per tenant) before Azure AI Search is promoted from "documented alternative" to an actively-deployed provider.
+- [ ] **[Q-0136-1]** **Azure AI Search per-tenant physical isolation:** not researched here; a future ADR should investigate whether Azure AI Search offers an equivalent to namespace-per-tenant (e.g. one index per tenant) before Azure AI Search is promoted from "documented alternative" to an actively-deployed provider.
 
 ---
 

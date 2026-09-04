@@ -96,12 +96,12 @@ Exports are expensive. A per-tenant rate limit prevents abuse and runaway costs.
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the synchronous cap be configurable per plan (free vs. paid)?
-- How is the matched-row count estimated before the export begins?
-- Should failed exports be retried automatically, or only on manual re-queue?
-- How are CSV and JSON exports signed for integrity?
+- [ ] **[Q-0111-1]** Should the synchronous cap be configurable per plan (free vs. paid)?
+- [ ] **[Q-0111-2]** How is the matched-row count estimated before the export begins?
+- [ ] **[Q-0111-3]** Should failed exports be retried automatically, or only on manual re-queue?
+- [ ] **[Q-0111-4]** How are CSV and JSON exports signed for integrity?
 
 ---
 

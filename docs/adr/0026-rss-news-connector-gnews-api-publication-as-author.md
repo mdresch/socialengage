@@ -67,13 +67,13 @@ For this connector, `Author` represents the **source publication**, not an indiv
 - **A direct, keyless, no-account public news RSS feed (mirroring Newswire's own approach exactly)** — considered and not selected, for the same reason as GDELT: it would deviate from the already-resolved "API-key auth" characterization a second time in the same phase, without the same forcing reason ADR-0024 had (no such source exists for press-release wires); GNews satisfies the category as already drawn.
 - **Editing ADR-0004 directly to generalize organization-as-Author** — rejected in favor of a second scoped exception plus a forward-pointer note, consistent with the series' own convention of not rewriting an Accepted ADR's original Decision text (see ADR series README governance table) and with ADR-0024's own choice not to generalize the pattern itself.
 
-## Open questions for decision
+## Open Questions
 
-- ~~**Menno's acceptance of this ADR itself**~~ — resolved 2026-07-31: accepted as drafted, see Acceptance note above.
-- **NewsData.io's actual formal terms** — worth a follow-up verification pass (e.g., a browser-rendered check, not a bare `WebFetch`) before ruling it in or out more permanently; it may turn out to be a better fit than GNews once actually confirmed.
-- **Cross-publication de-duplication strategy** — not resolved here; an implementation-time decision, same as Newswire's.
-- **Exact AST-to-GNews-query-syntax translation** (ADR-0021) — an implementation-time task; this ADR only establishes that GNews's native capability is real and non-trivial, not the exact mapping.
-- ~~**Whether ADR-0004 should eventually carry a permanent, generalized "organization-as-Author" clause**~~ — resolved at acceptance, 2026-07-31: not yet, per the "rule of three" — see ADR-0004's own Supersession update dated the same day. Revisit when a third connector needs the identical departure.
+- [x] ~~**[Q-0026-1]** Menno's acceptance of this ADR itself~~ — **Resolved by Sponsor acceptance (Menno, 2026-07-31):** Accepted as drafted (see Acceptance note).
+- [ ] **[Q-0026-2]** NewsData.io's actual formal terms — worth a follow-up verification pass (e.g., a browser-rendered check, not a bare `WebFetch`) before ruling it in or out more permanently; it may turn out to be a better fit than GNews once actually confirmed.
+- [ ] **[Q-0026-3]** Cross-publication de-duplication strategy — not resolved here; an implementation-time decision, same as Newswire's.
+- [ ] **[Q-0026-4]** Exact AST-to-GNews-query-syntax translation (ADR-0021) — an implementation-time task; this ADR only establishes that GNews's native capability is real and non-trivial, not the exact mapping.
+- [x] ~~**[Q-0026-5]** Whether ADR-0004 should eventually carry a permanent, generalized "organization-as-Author" clause~~ — **Resolved by Sponsor decision (Menno, 2026-07-31):** Not yet, per rule of three (see ADR-0004 Supersession update; subsequently generalized in ADR-0050).
 
 ## Amendment Log
 

@@ -83,12 +83,12 @@ This ADR is a refinement of ADR-0090 (Accepted 2026-08-28), not a reversal of it
 
 ---
 
-## Open questions
+## Open Questions
 
-- What is the exact deterministic sampling algorithm (fixed-stride vs. reservoir vs. hash-based) for `sample=true`? Deferred to the implementing story.
-- Should the maximum lookback (24 months default) be plan-configurable, mirroring ADR-0112's feature-gating model? Deferred; noted as a natural follow-up once ADR-0112 is accepted.
-- What is the exact in-file marker convention communicating "this is a sample" to a CSV consumer with no access to response headers? Deferred to the implementing story.
-- Does the DSR self-service portal (`15-dsr-self-service-portal`, named in ADR-0090's own Consequences) ever want `sample=true`? Presumed no (a DSR access response must be complete, not sampled) but not formally decided here.
+- [ ] **[Q-0124-1]** What is the exact deterministic sampling algorithm (fixed-stride vs. reservoir vs. hash-based) for `sample=true`? Deferred to the implementing story.
+- [ ] **[Q-0124-2]** Should the maximum lookback (24 months default) be plan-configurable, mirroring ADR-0112's feature-gating model? Deferred; noted as a natural follow-up once ADR-0112 is accepted.
+- [ ] **[Q-0124-3]** What is the exact in-file marker convention communicating "this is a sample" to a CSV consumer with no access to response headers? Deferred to the implementing story.
+- [ ] **[Q-0124-4]** Does the DSR self-service portal (`15-dsr-self-service-portal`, named in ADR-0090's own Consequences) ever want `sample=true`? Presumed no (a DSR access response must be complete, not sampled) but not formally decided here.
 
 ---
 

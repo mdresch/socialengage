@@ -105,12 +105,12 @@ POST   /v1/inbox/:id/resolve     // mark resolved
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should one post generate one `inbox_item` per watchlist or one item per post?
-- Should snooze create a scheduled event to wake the item up, or is it a filter on `snoozed_until`?
-- How does `inbox_items` handle multi-tenant, multi-agent concurrent edits? Optimistic locking or `updated_at` checks?
-- Should resolution notes be appended to `inbox_item.notes` or a separate `inbox_item_history` table?
+- [ ] **[Q-0099-1]** Should one post generate one `inbox_item` per watchlist or one item per post?
+- [ ] **[Q-0099-2]** Should snooze create a scheduled event to wake the item up, or is it a filter on `snoozed_until`?
+- [ ] **[Q-0099-3]** How does `inbox_items` handle multi-tenant, multi-agent concurrent edits? Optimistic locking or `updated_at` checks?
+- [ ] **[Q-0099-4]** Should resolution notes be appended to `inbox_item.notes` or a separate `inbox_item_history` table?
 
 ---
 

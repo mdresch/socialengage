@@ -116,13 +116,13 @@ See "Note on relation to ADR-0052" below.
 
 ---
 
-## Open questions for decision
+## Open Questions
 
-- **The build-order coordination point named in Decision §2** — whichever of Story 1.15 or Story 6.27 lands second must add its own parameter to `deriveConnectorHealth()` in the position already reserved by the other. Not a design flaw; a real sequencing fact named so it isn't rediscovered as a merge surprise.
-- **`RequestGate`'s tenant-wide (not per-user) key for Facebook** — unaffected by this ADR, named as a real, sharper-now-that-Tier-3-scheduling-actually-runs risk, but the decision belongs to ADR-0060/`pollFacebook()`'s own scope, not this one. See Note on relation to ADR-0052.
-- **Cost/quota budget ceiling for continuous Tier-3 polling** — inherits, does not resolve, ADR-0052 Open Question 4. Flagged for Menno directly, same as ADR-0052 itself already did.
-- **`ingestion_runs` accumulating connector-specific nullable columns** — a real, minor housekeeping observation (Consequences), not a decision this ADR makes.
-- **No user story is added by this ADR** — per this project's own "no story until acceptance" precedent, Story 1.15 (below) is drafted **Blocked — pending this ADR's acceptance**, not Ready, matching the pattern Story 8.1/8.2/8.3 originally used pending ADR-0054.
+- [ ] **[Q-0061-1]** **The build-order coordination point named in Decision §2** — whichever of Story 1.15 or Story 6.27 lands second must add its own parameter to `deriveConnectorHealth()` in the position already reserved by the other. Not a design flaw; a real sequencing fact named so it isn't rediscovered as a merge surprise.
+- [ ] **[Q-0061-2]** **`RequestGate`'s tenant-wide (not per-user) key for Facebook** — unaffected by this ADR, named as a real, sharper-now-that-Tier-3-scheduling-actually-runs risk, but the decision belongs to ADR-0060/`pollFacebook()`'s own scope, not this one. See Note on relation to ADR-0052.
+- [ ] **[Q-0061-3]** **Cost/quota budget ceiling for continuous Tier-3 polling** — inherits, does not resolve, ADR-0052 Open Question 4. Flagged for Menno directly, same as ADR-0052 itself already did.
+- [ ] **[Q-0061-4]** **`ingestion_runs` accumulating connector-specific nullable columns** — a real, minor housekeeping observation (Consequences), not a decision this ADR makes.
+- [ ] **[Q-0061-5]** **No user story is added by this ADR** — per this project's own "no story until acceptance" precedent, Story 1.15 (below) is drafted **Blocked — pending this ADR's acceptance**, not Ready, matching the pattern Story 8.1/8.2/8.3 originally used pending ADR-0054.
 
 ---
 

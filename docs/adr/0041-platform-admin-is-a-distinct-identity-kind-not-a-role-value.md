@@ -78,9 +78,9 @@ Any code — in `social-listening-core` or `social-listening-admin`, present or 
 
 ## Open Questions
 
-- **Whether a mechanical enforcement mechanism (lint rule, type-level exhaustiveness check, or a contract-test convention) should be built to catch a future violation of Decision §2 automatically, rather than relying on review alone** — not designed or mandated here; a concrete, real candidate follow-up story for the AI Delivery Agent or Menno, not built by this ADR.
-- **Whether `social-listening-admin/src/lib/role-routing.ts`'s own unused `AdminRole` type (Context, above) should simply be removed** — named as a live counter-example this ADR does not fix; a small, concrete code-cleanup follow-up, not a design question, left to whoever next touches that file.
-- **Whether this same rule should be stated at the code level itself** (e.g., a doc comment on `ResolvedIdentity`'s own definition in `social-listening-core/src/identity/identityResolution.ts` pointing back to this ADR, mirroring what `role-routing.ts`'s own comment already does informally) — a reasonable, low-cost addition; not made here since it is a code/comment change, out of this drafting persona's scope boundary (documentation, not implementation).
+- [ ] **[Q-0041-1]** **Whether a mechanical enforcement mechanism (lint rule, type-level exhaustiveness check, or a contract-test convention) should be built to catch a future violation of Decision §2 automatically, rather than relying on review alone** — not designed or mandated here; a concrete, real candidate follow-up story for the AI Delivery Agent or Menno, not built by this ADR.
+- [ ] **[Q-0041-2]** **Whether `social-listening-admin/src/lib/role-routing.ts`'s own unused `AdminRole` type (Context, above) should simply be removed** — named as a live counter-example this ADR does not fix; a small, concrete code-cleanup follow-up, not a design question, left to whoever next touches that file.
+- [ ] **[Q-0041-3]** **Whether this same rule should be stated at the code level itself** (e.g., a doc comment on `ResolvedIdentity`'s own definition in `social-listening-core/src/identity/identityResolution.ts` pointing back to this ADR, mirroring what `role-routing.ts`'s own comment already does informally) — a reasonable, low-cost addition; not made here since it is a code/comment change, out of this drafting persona's scope boundary (documentation, not implementation).
 
 ## A note on this ADR's own place in the series' conventions
 

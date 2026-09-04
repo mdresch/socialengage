@@ -102,12 +102,12 @@ POST /v1/compliance/audit-packs
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the pack include `platform_admin_audit_log` entries for `Platform-Admin` actions on the tenant?
-- How are corrections to records handled after a pack has been generated? A new pack supersedes the old one with an `supersedes_id` field?
-- What is the HMAC key source? Azure Key Vault or a platform-wide managed identity secret?
-- Should the public DSR/takedown requesters receive a copy of the audit pack for their own request?
+- [ ] **[Q-0094-1]** Should the pack include `platform_admin_audit_log` entries for `Platform-Admin` actions on the tenant?
+- [ ] **[Q-0094-2]** How are corrections to records handled after a pack has been generated? A new pack supersedes the old one with an `supersedes_id` field?
+- [ ] **[Q-0094-3]** What is the HMAC key source? Azure Key Vault or a platform-wide managed identity secret?
+- [ ] **[Q-0094-4]** Should the public DSR/takedown requesters receive a copy of the audit pack for their own request?
 
 ---
 

@@ -40,10 +40,10 @@ Auto-disable is triggered by failure *rate* relative to actual attempt volume fo
 - **Pure percentage, no attempt-count floor** — closer to "true" rate-based judgment, but rejected because a connector with very few attempts (e.g., 1 attempt, 1 failure = 100%) would look indistinguishable from a genuinely broken high-volume connector and trigger too eagerly.
 - **Percentage only, no absolute ceiling** — rejected because a connector that fails every single time but only attempts a handful of times per hour could take a long time to accumulate the attempt-count floor, delaying detection of an outright-broken connector well beyond what the original flat-count rule would have caught.
 
-## Open questions for decision
+## Open Questions
 
-- ~~Are 50% / 5-attempt floor / 20-consecutive the right numbers? These need real traffic data to validate, more than any other threshold in this series.~~ **Resolved at acceptance:** accepted as the launch defaults — structurally better-reasoned than the flat placeholder they replace even without real data yet; tune later once real connector traffic exists.
-- ~~Should the rate threshold vary further by connector `deliveryMode` (ADR-0002) — e.g., should push-mode connectors, which don't "attempt" in the same sense as poll-mode ones, use a different rule entirely?~~ **Deferred at acceptance (not resolved):** both connectors currently on the roadmap (RSS/News, Reddit) are poll-mode; push-mode isn't scheduled until later platforms. Noted as a known gap, revisit when a push-mode connector is actually being built.
+- [x] ~~**[Q-0023-1]** Are 50% / 5-attempt floor / 20-consecutive the right numbers? These need real traffic data to validate, more than any other threshold in this series.~~ — **Resolved by Sponsor decision (Menno, 2026-07-29):** Accepted as the launch defaults; tune later once real connector traffic exists.
+- [x] ~~**[Q-0023-2]** Should the rate threshold vary further by connector `deliveryMode` (ADR-0002) — e.g., should push-mode connectors, which don't "attempt" in the same sense as poll-mode ones, use a different rule entirely?~~ — **Resolved by Sponsor decision (Menno, 2026-07-29):** Deferred as a known gap for v1 (poll-mode only on roadmap); revisit when a push-mode connector is built.
 
 ## Amendment Log
 
