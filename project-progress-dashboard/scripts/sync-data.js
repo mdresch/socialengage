@@ -144,7 +144,7 @@ const allAdrs = [];
 const allOpenQuestions = [];
 
 adrFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(adrDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(adrDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^(\d+)/);
   const id = idMatch ? idMatch[1] : '';
   const num = parseInt(id, 10) || 0;
@@ -201,7 +201,7 @@ adrFiles.sort().forEach(f => {
 
         if (isStruck || rawText.includes('**Resolved')) {
           qStatus = 'RESOLVED';
-          const resMatch = rawText.match(/\*\*Resolved(?: at acceptance)?:\*\*\s*(.*)/i);
+          const resMatch = rawText.match(/\*\*Resolved[^*]*:\*\*\s*(.*)/i);
           if (resMatch) resolution = resMatch[1].replace(/~~/g, '').trim();
         } else if (isSuperseded) {
           qStatus = 'SUPERSEDED';
@@ -248,7 +248,7 @@ const brdFiles = fs.readdirSync(brdDir).filter(f => f.endsWith('.md'));
 const allBrds = [];
 
 brdFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(brdDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(brdDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^BRD-(\d+)/i);
   const id = idMatch ? idMatch[1].padStart(4, '0') : '';
   const num = parseInt(id, 10) || 0;
@@ -278,7 +278,7 @@ const fddFiles = fs.existsSync(fddDir) ? fs.readdirSync(fddDir).filter(f => f.en
 const allFdds = [];
 
 fddFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(fddDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(fddDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^FDD-(\d+)/i);
   const id = idMatch ? idMatch[1].padStart(4, '0') : '';
   const num = parseInt(id, 10) || 0;

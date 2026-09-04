@@ -47,9 +47,12 @@ export interface CreateInvitedUserInput {
 
 /**
  * Result of resolving an authenticated request's token claims — the
- * request-time bootstrap ADR-0032 §5 describes. `null` means reject
+ * request-time bootstrap ADR-0032 §5 and ADR-0041 describe. `null` means reject
  * (401/403) — a `sub` matching no `users` row and no Platform Admin row, or
  * matching a `users` row that isn't currently active (ADR-0032 §9).
+ *
+ * Per ADR-0041: Platform Admin is a distinct identity *kind*, never a value
+ * within a role enum. The platform_admin variant carries no `role` field.
  */
 export type ResolvedIdentity =
   | { type: 'tenant_user'; tenantId: string; userId: string; role: string }
