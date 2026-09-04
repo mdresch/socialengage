@@ -15,8 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-09-04 | 16:18 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (5c2ecbd) |
 | 2026-09-04 | 16:18 | — | — | Documentation | Story 14.1 | docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1) (c68c1a1) |
+| 2026-09-04 | 13:16 | — | — | Documentation | — | chore(brain): normalize vaultRoot in ingest-raw.mjs and sync graph telemetry (890d6f7) |
 | 2026-09-04 | 13:12 | — | — | Documentation | — | Merge branch 'origin/main' into main (f05336e) |
 | 2026-09-04 | 13:07 | — | — | Documentation | — | chore(adr): resolve 14 open questions across 5 ADRs conforming to canonical Q-XXXX-N governance syntax (non-story code cleanup and doc comments) (1d15ea8) |
 | 2026-09-04 | 12:53 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (565606d) |
