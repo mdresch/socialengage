@@ -4602,3 +4602,20 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Resolved \LocationTab.tsx\ and \SourcesTab.tsx\ type errors (proper \FlatPost\ construction, SVG child \<title>\ tags, \lexShrink: 0\, and safe null handling for sentiment index gauge).
   - Resolved \getBaseUrl\ reference in \core-client.ts\ and \identity.role\ union check in \settings/page.tsx\.
   - Validated full test suite (83 suites, 1021 tests passing) and 0 TypeScript compilation errors (\	sc --noEmit\).
+
+---
+
+## 2026-09-04 — Environmental & Contract Healing: Story 6.1 (Docker Daemon & Template DB Clones)
+
+- **Repo:** social-listening-admin
+- **Story / ADR:** Story 6.1 / ADR-0036
+- **Contract:** `social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (19/19 passing)
+- **Files touched:**
+  - `docs/environment-gotchas.md`
+  - `docs/implementation-log.md`
+- **Notes:**
+  - Walked `heal-contract-failure` protocol for Story 6.1.
+  - Step 0 Environmental Diagnosis: Initial run failed across all 19 tests with `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`. `testDbClone.ts` creates isolated Postgres template clones on port 5434 via `docker compose -f docker-compose.test.yml up -d --wait`.
+  - Started Docker Desktop daemon (`C:\Users\MennoDrescher\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`).
+  - Documented Docker Desktop daemon prerequisite under `Test database template (jest.global-setup.js / testDbClone.ts)` in `docs/environment-gotchas.md`.
+  - Re-ran Story 6.1 contract test: 19 of 19 tests pass cleanly (190s run time), validating real Next.js dev server, live Playwright headless browser interaction, real Entra External ID sign-in exchange, session encryption, and server-side sign-out.
