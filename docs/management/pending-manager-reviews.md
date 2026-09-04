@@ -7750,3 +7750,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-04 — c68c1a1 — docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1)
+
+- **Full commit:** `c68c1a13814e47e19627dd8ad8c6ee2540261673`
+- **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/platform-library/01-mastodon-publishing-connector.md, docs/platform-library/02-bluesky-publishing-connector.md, docs/platform-library/03-instagram-publishing-connector.md, docs/platform-library/04-threads-publishing-connector.md, docs/platform-library/05-x-twitter-publishing-connector.md, docs/platform-library/README.md, docs/user-stories/epic-14-adr-0118-to-0122.md
+- **Status:** Pending review
+
