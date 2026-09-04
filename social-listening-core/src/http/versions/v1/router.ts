@@ -12,6 +12,7 @@ import { instagramAccountsRouter } from './instagramAccountsRouter';
 import { linkedinOAuthRouter } from './linkedinOAuthRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { outboundPostsRouter } from './outboundPostsRouter';
+import { outboundActivitiesRouter } from './outboundActivitiesRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
 import { adminBreakGlassRouter } from './adminBreakGlassRouter';
@@ -189,6 +190,8 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 3.15 (ADR-0075) / Story 11.7 (ADR-0098) — outbound post publishing, scheduling, and asset targeting. */
   v1Router.use('/', authMiddleware, createPublishingRoutes(authMiddleware));
   v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
+  /** Story 14.2 (ADR-0119) — editing and deleting published outbound posts and revisions. */
+  v1Router.use('/outbound/activities', authMiddleware, outboundActivitiesRouter);
 
   /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */
   v1Router.use('/composer', authMiddleware, composerRouter);

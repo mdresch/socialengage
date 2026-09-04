@@ -138,6 +138,20 @@ export interface OutboundPostPayload {
   targetAssetType: string;
 }
 
+export interface OutboundActivitySummary {
+  id: string;
+  tenantId: string;
+  userId: string;
+  providerId: string;
+  activityType: 'post' | 'reply' | string;
+  targetAssetId: string | null;
+  targetAssetType?: string | null;
+  externalId: string | null;
+  externalUrl?: string | null;
+  body?: string;
+  payload?: Record<string, unknown> | null;
+}
+
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
   readonly sourceType?: SocialConnectorCapabilities['sourceType'];
@@ -199,6 +213,24 @@ export interface SocialConnector extends ProviderConnector {
     payload: OutboundPostPayload,
     credential: string
   ): Promise<{ externalId: string; externalUrl: string }>;
+  /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity edit capability.
+   * Connectors that do not implement it fail with `edit_not_supported` (422).
+   */
+  edit?(
+    activity: OutboundActivitySummary,
+    body: string,
+    payload?: OutboundPostPayload,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
+  /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity delete capability.
+   * Connectors that do not implement it fail with `delete_not_supported` (422).
+   */
+  delete?(
+    activity: OutboundActivitySummary,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
   /**
    * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
    * deliveryMode: 'poll'. The scheduler's one generic invocation surface —
