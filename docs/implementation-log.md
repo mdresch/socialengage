@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-09-04 — Story 14.1 — social-listening-core@1d03403
+
+- **Full commit:** `1d03403524f6855863156ef054fe1cc50f4dff2c`
+- **Repo:** social-listening-core
+- **Story / ADR:** 14.1 / ADR-0118
+- **Contract:** `social-listening-core/contracts/epic-14/story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/additional-publishing-roadmap/SKILL.md`
+- **Files touched:** social-listening-core/contracts/epic-14/story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts, social-listening-core/src/publishing/additionalPublishingRoadmap.ts, social-listening-core/.claude/skills/additional-publishing-roadmap/SKILL.md, docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/epic-14-adr-0118-to-0122.md
+- **Validation re-run:** new contract PASS (20/20); epic-14 suite PASS (20/20); related regression suites (Story 2.28 connector publish framework, Story 2.29 Facebook post publish, Story 2.30 LinkedIn post publish, Story 11.7 publishing & scheduling, Story 13.9 media upload & asset targeting) PASS (42/42); `npm run typecheck` PASS with 0 errors.
+- **Notes:** Defines the build order (Mastodon → Bluesky → Instagram → Threads → X/Twitter) after Wave 1 (Facebook and LinkedIn), establishes shared constraints across Wave 2 connectors (reusing `outbound_activities` and `SocialConnector.publish?()`), separates `RequestGate` rate limit keys to `(tenantId, providerId, 'outbound_post')`, requires Tier-3 user-bound credentials (`owner_type='user'`), scopes v1 to text/link-card while deferring media upload to ADR-0115, enforces per-platform accepted ADR prerequisites (ADR-0048/0027), and institutes an explicit economic re-evaluation barrier for X/Twitter.
+
+---
+
 ## 2026-09-05 — Story 13.14 — social-listening-admin@39a2375
 
 - **Full commit:** `39a23753cc48a3beccf80af016961937f6ef8831`

@@ -7512,3 +7512,15 @@
 - **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/ingest-raw.mjs
 - **Status:** Pending review
 
+## 2026-09-04 — 1d03403 — feat(publishing): implement Story 14.1 — Additional social platform publishing roadmap (ADR-0118)
+
+- **Full commit:** `1d03403524f6855863156ef054fe1cc50f4dff2c`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, social-listening-core/.claude/skills/additional-publishing-roadmap/SKILL.md, social-listening-core/contracts/epic-14/story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts, social-listening-core/src/publishing/additionalPublishingRoadmap.ts
+- **Status:** Pending review
+
+## 2026-09-04 — d81a3f4 — chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1
+
+- **Full commit:** `d81a3f44850a3d971af8fd710ae8c96a29cafade`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
