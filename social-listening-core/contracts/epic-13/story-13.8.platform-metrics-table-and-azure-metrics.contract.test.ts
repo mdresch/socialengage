@@ -124,6 +124,10 @@ async function seedDayMetric(sample: Partial<MetricSample> & { metric_name: stri
 describe('Story 13.8 — Platform metrics table and Azure Metrics', () => {
   const app = createApp();
 
+  beforeEach(async () => {
+    await getAdminPool().query('DELETE FROM platform_metrics');
+  });
+
   it('AC1: platform_metrics table supports ADR-0114 columns and hour/day granularity and never stores tenant content', async () => {
     const tenant = await createTenantFixture(`T-13.8-schema-${randomUUID()}`);
     const pool = getAdminPool();
@@ -192,6 +196,14 @@ describe('Story 13.8 — Platform metrics table and Azure Metrics', () => {
     const previousHour = new Date(now);
     previousHour.setMinutes(0, 0, 0);
     previousHour.setHours(previousHour.getHours() - 1);
+    const nextHour = new Date(previousHour.getTime() + 60 * 60 * 1000);
+
+    // Ensure the evaluation window in ingestion_runs is clean of cross-test residual runs
+    await getAdminPool().query(
+      'DELETE FROM ingestion_runs WHERE started_at >= $1 AND started_at < $2',
+      [previousHour.toISOString(), nextHour.toISOString()]
+    );
+
     const runAt = new Date(previousHour.getTime() + 5 * 60 * 1000);
     await seedIngestionRuns(tenant.id, runAt);
 

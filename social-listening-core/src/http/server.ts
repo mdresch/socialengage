@@ -4,7 +4,7 @@ import { getPool } from '../db/pool';
 import { waitForPostgresReady } from '../db/postgresReadiness';
 import { bootstrapConnectors } from '../connectors/bootstrapConnectors';
 import { startPollScheduler, isSchedulerEnabled } from '../scheduler/pollScheduler';
-import { startPlatformMetricsWorker } from '../platform/platformMetricsWorker';
+import { startPlatformMetricsWorker, isPlatformMetricsWorkerEnabled } from '../platform/platformMetricsWorker';
 
 const port = Number(process.env.PORT ?? 3000);
 
@@ -33,7 +33,9 @@ async function main(): Promise<void> {
   }
 
   // Story 13.8 (ADR-0114): start the hourly platform metrics worker.
-  startPlatformMetricsWorker();
+  if (isPlatformMetricsWorkerEnabled()) {
+    startPlatformMetricsWorker();
+  }
 
   createApp().listen(port, () => {
     console.log(`social-listening-core listening on :${port}`);

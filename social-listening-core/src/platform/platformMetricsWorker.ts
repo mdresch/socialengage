@@ -115,6 +115,12 @@ export async function runPlatformMetricsWorker(): Promise<void> {
   }
 }
 
+export function isPlatformMetricsWorkerEnabled(): boolean {
+  const raw = process.env.PLATFORM_METRICS_WORKER_ENABLED;
+  if (raw === undefined) return process.env.NODE_ENV !== 'test';
+  return raw === 'true' || raw === '1';
+}
+
 export function startPlatformMetricsWorker(): void {
   if (workerTimer !== null) return;
 
@@ -130,6 +136,7 @@ export function startPlatformMetricsWorker(): void {
       console.error('[platformMetricsWorker] Scheduled run failed:', err);
     });
   }, 60 * 60 * 1000);
+  workerTimer.unref();
 }
 
 export function stopPlatformMetricsWorker(): void {
@@ -138,3 +145,4 @@ export function stopPlatformMetricsWorker(): void {
     workerTimer = null;
   }
 }
+

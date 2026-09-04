@@ -25,12 +25,12 @@ Story 13.8 adds a global, tenant-content-free `platform_metrics` table that stor
 - `migrations/0068_align_platform_metrics_granularity_and_indexes.sql` — adds `hour`/`day` to the granularity check and supporting indexes.
 - `migrations/0069_add_platform_metrics_unique_index.sql` — ensures `idx_platform_metrics_unique` exists so `recordPlatformMetric` can upsert on `(metric_name, granularity, timestamp, source, dimensions)`.
 - `src/platform/azureMetricsClient.ts` — `AzureMetricsProvider` interface, `setAzureMetricsProvider`, `fetchAzureMetrics`. Live implementation is intentionally a stub; real Azure wiring requires env vars.
-- `src/platform/platformMetricsWorker.ts` — `runPlatformMetricsWorker()` computes previous-hour ingestion counters and persists Azure-sourced samples, then `prunePlatformMetrics()`. `startPlatformMetricsWorker()` is called from `src/http/server.ts`.
+- `src/platform/platformMetricsWorker.ts` — `runPlatformMetricsWorker()` computes previous-hour ingestion counters and persists Azure-sourced samples, then `prunePlatformMetrics()`. `startPlatformMetricsWorker()` is called from `src/http/server.ts` guarded by `isPlatformMetricsWorkerEnabled()`.
 - `src/platform/platformMetricsStore.ts` — `recordPlatformMetric` (ON CONFLICT upsert), `recordMetricSamples`, `prunePlatformMetrics`, `queryPlatformMetricsAggregated`, `getPlatformDashboardData`, `resetPlatformDashboardCache`.
 - `src/http/versions/v1/adminPlatformMetricsRouter.ts` — `GET /v1/admin/platform-metrics` (platform-admin only).
 - `src/http/versions/v1/platformDashboardRouter.ts` — `GET /v1/admin/platform-dashboard`.
 - `src/http/versions/v1/router.ts` — mounts the admin and dashboard routers.
-- `src/http/server.ts` — starts the worker alongside the poll scheduler.
+- `src/http/server.ts` — starts the worker alongside the poll scheduler, gated by `isPlatformMetricsWorkerEnabled()`.
 
 ## How to extend this safely
 
@@ -46,7 +46,8 @@ Story 13.8 adds a global, tenant-content-free `platform_metrics` table that stor
 - `queryPlatformMetricsAggregated` returns `value` and `points` as JS numbers. The SQL uses `::float` for `value` and `::int` for `count(*)` because `pg` returns `numeric` and `bigint` as strings by default.
 - `getPlatformDashboardData` has a 60-second in-memory cache. Call `resetPlatformDashboardCache()` in tests that need fresh reads.
 - `GET /v1/admin/platform-metrics` is gated to `platform_admin` via `requirePlatformAdmin` and returns `{ metrics: AggregatedMetricRow[] }`.
-- The worker is started in `server.ts`, not in `createApp()`, so contract tests do not trigger the interval.
+- The worker is started in `server.ts`, guarded by `isPlatformMetricsWorkerEnabled()` (disabled when `NODE_ENV === 'test'` unless `PLATFORM_METRICS_WORKER_ENABLED` is explicitly set). This ensures contract tests that boot `server.ts` (such as Story 1.10) do not trigger the background worker or write unexpected rows into `platform_metrics`.
+
 
 ## Known gaps / deferred work
 

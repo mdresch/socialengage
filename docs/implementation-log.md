@@ -4619,3 +4619,31 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Started Docker Desktop daemon (`C:\Users\MennoDrescher\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`).
   - Documented Docker Desktop daemon prerequisite under `Test database template (jest.global-setup.js / testDbClone.ts)` in `docs/environment-gotchas.md`.
   - Re-ran Story 6.1 contract test: 19 of 19 tests pass cleanly (190s run time), validating real Next.js dev server, live Playwright headless browser interaction, real Entra External ID sign-in exchange, session encryption, and server-side sign-out.
+
+---
+
+## 2026-09-04 — Healing: Story 13.8 test isolation and platform metrics worker gating — social-listening-core@5652d27
+
+- **Full commit:** `5652d270b378046fd92ab4a960c95a8478cd1292`
+- **Repo:** social-listening-core
+- **Story / ADR:** 13.8 / ADR-0114
+- **Contract:** `social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/platform-metrics/SKILL.md`
+- **Full suite:** PASS (136/136 suites, 1120/1120 tests green). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/environment-gotchas.md
+  - docs/implementation-log.md
+  - social-listening-core/.claude/skills/platform-metrics/SKILL.md
+  - social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts
+  - social-listening-core/src/http/server.ts
+  - social-listening-core/src/platform/platformMetricsWorker.ts
+- **Notes:**
+  - Root cause analysis: under full-suite runs sharing a single cloned test database, two cross-test interactions caused Story 13.8 to fail:
+    1. AC1 found 2 rows instead of 1 because `server.ts` unconditionally started `startPlatformMetricsWorker()` on boot (which ran during Story 1.10) and wrote rows into `platform_metrics`.
+    2. AC2 found 475 ingested posts instead of 5 because `runPlatformMetricsWorker()` aggregates internal ingestion counters across all tenants within the previous completed hour, which captured 470 residual runs from earlier test suites.
+  - Solution:
+    1. Gated `startPlatformMetricsWorker()` in `src/http/server.ts` with `isPlatformMetricsWorkerEnabled()` which defaults to disabled when `NODE_ENV === 'test'` (matching `isSchedulerEnabled()` from ADR-0052).
+    2. Added `workerTimer.unref()` in `startPlatformMetricsWorker()` to ensure background timers do not keep Node processes alive.
+    3. Added `beforeEach` in `story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` to clean the global `platform_metrics` table.
+    4. Cleared cross-test residual runs in `ingestion_runs` for the target `previousHour` window before seeding AC2 test fixtures.
+    5. Documented in `platform-metrics/SKILL.md` and indexed in `docs/environment-gotchas.md`.
