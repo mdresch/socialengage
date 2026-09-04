@@ -6774,3 +6774,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-09-04 — c1ab9b2 — feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119)
+
+- **Full commit:** `c1ab9b297a5a7a279da99825432d27319e3ab69a`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/outbound-post-edit-and-delete/SKILL.md, social-listening-core/contracts/epic-14/story-14.2.editing-and-deleting-published-outbound-posts.contract.test.ts, social-listening-core/migrations/0074_create_outbound_activity_revisions_and_add_activity_audit_columns.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/outboundActivitiesRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/outbound/outboundActivityRevisionService.ts, social-listening-core/src/outbound/outboundActivityRevisionStore.ts, social-listening-core/src/outbound/outboundActivityStore.ts
+- **Status:** Pending review
+

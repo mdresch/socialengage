@@ -2,6 +2,31 @@
 
 ---
 
+## 2026-09-04 — Story 14.2 — social-listening-core@c1ab9b2
+
+- **Full commit:** `c1ab9b297a5a7a279da99825432d27319e3ab69a`
+- **Repo:** social-listening-core
+- **Story / ADR:** 14.2 / ADR-0119
+- **Contract:** `social-listening-core/contracts/epic-14/story-14.2.editing-and-deleting-published-outbound-posts.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/outbound-post-edit-and-delete/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/migrations/0074_create_outbound_activity_revisions_and_add_activity_audit_columns.sql`
+  - `social-listening-core/src/connectors/types.ts`
+  - `social-listening-core/src/outbound/outboundActivityStore.ts`
+  - `social-listening-core/src/outbound/outboundActivityRevisionStore.ts`
+  - `social-listening-core/src/outbound/outboundActivityRevisionService.ts`
+  - `social-listening-core/src/http/versions/v1/outboundActivitiesRouter.ts`
+  - `social-listening-core/src/http/versions/v1/router.ts`
+  - `social-listening-core/.claude/skills/outbound-post-edit-and-delete/SKILL.md`
+  - `social-listening-core/contracts/epic-14/story-14.2.editing-and-deleting-published-outbound-posts.contract.test.ts`
+  - `docs/adr/README.md`
+  - `docs/implementation-plan.md`
+  - `docs/user-stories/README.md`
+- **Validation re-run:** new contract PASS (14/14); epic-14 suite PASS (34/34); related regression suite Story 3.15 PASS (11/11); `npm run typecheck` PASS with 0 errors.
+- **Notes:** Introduces the `outbound_activity_revisions` child table with RLS tenant isolation, adds `edited_at` and `deleted_at` audit columns to `outbound_activities` without storing `current_body` (latest applied edit revision serves as source of truth), implements `PATCH /v1/outbound/activities/:id` (in-place update for pending activities, connector `edit?()` invocation for sent activities), `DELETE /v1/outbound/activities/:id` (cancellation for pending activities without revision, connector `delete?()` for sent activities), and `GET /v1/outbound/activities/:id/revisions` (ordered by `created_at DESC`), with normalized `422 edit_not_supported` and `422 delete_not_supported` errors when connectors omit support, and authorization gating caller to original author or `tenant_admin` (`platform_admin` rejected 403).
+
+---
+
 ## 2026-09-04 — Story 14.1 — social-listening-core@1d03403
 
 - **Full commit:** `1d03403524f6855863156ef054fe1cc50f4dff2c`

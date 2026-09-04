@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-04 | 17:06 | — | — | Documentation | Story 14.2 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) (c1ab9b2) |
 | 2026-09-04 | 16:18 | — | — | Documentation | Story 14.1 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1 (d81a3f4) |
 | 2026-09-04 | 16:17 | — | — | Documentation | Story 14.1 | feat(publishing): implement Story 14.1 — Additional social platform publishing roadmap (ADR-0118) (1d03403) |
 | 2026-09-04 | 13:16 | — | — | Documentation | — | chore(brain): normalize vaultRoot in ingest-raw.mjs and sync graph telemetry (890d6f7) |
