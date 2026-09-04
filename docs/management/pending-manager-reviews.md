@@ -7750,3 +7750,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-04 — 890d6f7 — chore(brain): normalize vaultRoot in ingest-raw.mjs and sync graph telemetry
+
+- **Full commit:** `890d6f788a07cc5af54b217e4dfe44afe42b388d`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/ingest-raw.mjs
+- **Status:** Pending review
+
