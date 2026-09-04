@@ -7762,3 +7762,9 @@
 - **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/platform-library/01-mastodon-publishing-connector.md, docs/platform-library/02-bluesky-publishing-connector.md, docs/platform-library/03-instagram-publishing-connector.md, docs/platform-library/04-threads-publishing-connector.md, docs/platform-library/05-x-twitter-publishing-connector.md, docs/platform-library/README.md, docs/user-stories/epic-14-adr-0118-to-0122.md
 - **Status:** Pending review
 
+## 2026-09-04 — 33c186f — Merge remote-tracking branch 'origin/main'
+
+- **Full commit:** `33c186f120ff2ea154320bc39184084ee3290718`
+- **Files touched:** 
+- **Status:** Pending review
+
