@@ -51,6 +51,11 @@ for (const f of adrFiles) {
   const titleMatch = content.match(/^#\s*ADR-\d+:\s*(.*)/m) || content.match(/^#\s*(.*)/m);
   const adrTitle = titleMatch ? titleMatch[1].trim() : f;
 
+  // Match domain cluster from ADR frontmatter/table
+  let cluster = 'Platform Architecture';
+  const clusterMatch = content.match(/\|\s*Domain Cluster\s*\|\s*([^|]+)\|/i) || content.match(/\|\s*Cluster\s*\|\s*([^|]+)\|/i);
+  if (clusterMatch) cluster = clusterMatch[1].trim();
+
   // Find Open Questions section
   const sectionMatch = content.match(/##\s*Open Questions?[^\n]*\n([\s\S]*?)(?=\n##\s+|$)/i);
   if (!sectionMatch) continue;
@@ -120,16 +125,23 @@ for (const f of adrFiles) {
         }
       }
 
+      const category = rest.toLowerCase().includes('schema') || rest.toLowerCase().includes('column') || rest.toLowerCase().includes('table') ? 'Data & Schema'
+        : rest.toLowerCase().includes('auth') || rest.toLowerCase().includes('token') || rest.toLowerCase().includes('security') || rest.toLowerCase().includes('tenant') ? 'Security & Multi-Tenancy'
+        : rest.toLowerCase().includes('rate') || rest.toLowerCase().includes('limit') || rest.toLowerCase().includes('queue') || rest.toLowerCase().includes('poll') ? 'Ingestion & Rate Limits'
+        : rest.toLowerCase().includes('ai') || rest.toLowerCase().includes('rag') || rest.toLowerCase().includes('vector') || rest.toLowerCase().includes('sentiment') ? 'AI & Semantic Processing'
+        : rest.toLowerCase().includes('ui') || rest.toLowerCase().includes('screen') || rest.toLowerCase().includes('admin') ? 'Admin UI & User Experience'
+        : 'Operational & Governance';
+
       currentQuestion = {
         id: canonicalId,
         adrId,
         adrTitle,
         adrFile: f,
-        cluster: 'Platform Architecture',
+        cluster,
         question: rest,
         status,
         resolutionNote: resolutionNote.slice(0, 300),
-        category: 'Architecture & Governance'
+        category
       };
     } else if (currentQuestion && rawLine) {
       // Continuation line
@@ -172,7 +184,7 @@ if (mode === 'sync' && fs.existsSync(dataPath)) {
   let dataContent = fs.readFileSync(dataPath, 'utf8');
   const listMatch = dataContent.match(/export const OPEN_QUESTIONS_LIST[^\=]*\=\s*\[[\s\S]*?\n\];/);
   if (listMatch) {
-    const formatted = 'export const OPEN_QUESTIONS_LIST: OpenQuestion[] = ' + JSON.stringify(parsedQuestions, null, 2) + ';';
+    const formatted = 'export const OPEN_QUESTIONS_LIST: AdrOpenQuestionItem[] = ' + JSON.stringify(parsedQuestions, null, 2) + ';';
     dataContent = dataContent.replace(listMatch[0], formatted);
     fs.writeFileSync(dataPath, dataContent, 'utf8');
     console.log('✅ Synchronized OPEN_QUESTIONS_LIST in data.ts.');
