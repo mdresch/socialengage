@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-04 | 13:12 | — | — | Documentation | — | Merge branch 'origin/main' into main (f05336e) |
 | 2026-09-04 | 13:07 | — | — | Documentation | — | chore(adr): resolve 14 open questions across 5 ADRs conforming to canonical Q-XXXX-N governance syntax (non-story code cleanup and doc comments) (1d15ea8) |
 | 2026-09-04 | 12:53 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (565606d) |
 | 2026-09-04 | 12:52 | — | — | Documentation | — | fix(core): heal story-13.8 contract test isolation and gate platform metrics worker (421a4c1) |

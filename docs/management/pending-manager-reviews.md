@@ -7744,3 +7744,9 @@
 - **Files touched:** docs/adr/0025-persistent-local-dev-database-separate-from-test-database.md, docs/adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md, docs/adr/0043-self-service-tenant-initiated-deletion.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/0110-per-connector-query-translation-and-validation.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/src/lib/role-routing.ts, social-listening-core/src/identity/identityResolution.ts
 - **Status:** Pending review
 
+## 2026-09-04 — f05336e — Merge branch 'origin/main' into main
+
+- **Full commit:** `f05336e4fd7abbedef65fe2c084177b3e2a08d74`
+- **Files touched:** 
+- **Status:** Pending review
+
