@@ -1,4 +1,4 @@
-# Self-Learning Synthesis: Epic 13 (Epic 13)
+# Self-Learning Synthesis: Epic 13 (Sub-Decisions, v2 Features, and Closing Loops)
 
 **Compiled Date:** 2026-09-02
 **Source Capture:** `raw/synthesis-epic-13-2026-09-02/`

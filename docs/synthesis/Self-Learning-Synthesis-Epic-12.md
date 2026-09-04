@@ -1,4 +1,4 @@
-# Self-Learning Synthesis: Epic 12 (Epic 12)
+# Self-Learning Synthesis: Epic 12 (Foundation Depth and AI Refinements)
 
 **Compiled Date:** 2026-09-01
 **Source Capture:** `raw/synthesis-epic-12-2026-09-01/`

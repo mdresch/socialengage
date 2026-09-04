@@ -1,15 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const vaultRoot = process.argv[2] || 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const vaultRoot = process.argv[2] || 'C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain';
 const rawRoot = path.join(vaultRoot, 'raw');
 const destRoot = path.join(vaultRoot, 'wiki', 'Projects', 'SocialEngage', '06 Synthesis & Lessons Learned');
 
-console.log('?? AI Agent Raw Ingestion Pipeline');
+console.log('🤖 AI Agent Raw Ingestion Pipeline');
 
 if (!fs.existsSync(rawRoot)) {
   fs.mkdirSync(rawRoot, { recursive: true });
@@ -18,11 +19,52 @@ if (!fs.existsSync(destRoot)) {
   fs.mkdirSync(destRoot, { recursive: true });
 }
 
-// Looks for .md, .txt, .markdown files in raw/, processes them into structured 'lesson_learned' nodes.
-const files = fs.readdirSync(rawRoot).filter(f => /\.(md|txt|markdown)$/i.test(f));
+// 1. Process telemetry capture directories in raw/ (e.g. synthesis-epic-3-2026-09-01)
+const rawEntries = fs.readdirSync(rawRoot, { withFileTypes: true });
+const synthesisDirs = rawEntries
+  .filter(e => e.isDirectory() && e.name.startsWith('synthesis-epic-'))
+  .map(e => e.name);
 
-if (files.length === 0) {
-  console.log('  ℹ️ No raw files to ingest.');
+if (synthesisDirs.length > 0) {
+  console.log(`\n🔍 Found ${synthesisDirs.length} raw synthesis telemetry capture directory(ies) in raw/`);
+  
+  // Group unique epics
+  const epicsToCompile = new Set();
+  for (const dir of synthesisDirs) {
+    const match = dir.match(/synthesis-epic-(\d+)-/);
+    if (match) {
+      epicsToCompile.add(match[1]);
+    }
+  }
+
+  for (const epic of epicsToCompile) {
+    console.log(`  ⚙️ Compiling telemetry for Epic ${epic}...`);
+    try {
+      execSync(`node "${path.join(__dirname, 'synthesize-telemetry.mjs')}" --compile --epic ${epic} --vault "${vaultRoot}"`, {
+        stdio: 'inherit',
+        cwd: repoRoot
+      });
+    } catch (err) {
+      console.error(`  ❌ Failed to compile telemetry for Epic ${epic}:`, err.message);
+    }
+  }
+
+  // Clean processed capture directories
+  for (const dir of synthesisDirs) {
+    const fullPath = path.join(rawRoot, dir);
+    fs.rmSync(fullPath, { recursive: true, force: true });
+    console.log(`  🗑️ Ingested & cleaned raw capture directory: ${dir}`);
+  }
+}
+
+// 2. Process standalone files in raw/ (.md, .txt, .markdown)
+const files = fs.readdirSync(rawRoot).filter(f => {
+  const p = path.join(rawRoot, f);
+  return fs.statSync(p).isFile() && /\.(md|txt|markdown)$/i.test(f);
+});
+
+if (files.length === 0 && synthesisDirs.length === 0) {
+  console.log('  ℹ️ No raw files or directories to ingest.');
   process.exit(0);
 }
 
