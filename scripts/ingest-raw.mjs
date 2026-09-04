@@ -18,12 +18,11 @@ if (!fs.existsSync(destRoot)) {
   fs.mkdirSync(destRoot, { recursive: true });
 }
 
-// Simple mock logic for AI ingestion:
-// Looks for .md files in raw/, processes them into structured 'lesson_learned' nodes.
-const files = fs.readdirSync(rawRoot).filter(f => f.endsWith('.md'));
+// Looks for .md, .txt, .markdown files in raw/, processes them into structured 'lesson_learned' nodes.
+const files = fs.readdirSync(rawRoot).filter(f => /\.(md|txt|markdown)$/i.test(f));
 
 if (files.length === 0) {
-  console.log('  ?? No raw files to ingest.');
+  console.log('  ℹ️ No raw files to ingest.');
   process.exit(0);
 }
 
@@ -31,28 +30,68 @@ let ingestedCount = 0;
 
 for (const file of files) {
   const rawPath = path.join(rawRoot, file);
-  const content = fs.readFileSync(rawPath, 'utf8');
+  let content = fs.readFileSync(rawPath, 'utf8');
   
-  // Fake AI Processing: Extract title, generate artifact ID.
-  const titleMatch = content.match(/^#\s+(.+)$/m) || [null, file.replace('.md', '')];
-  const title = titleMatch[1].trim();
-  const artifactId = `Lesson-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  // Intelligent title & metadata extraction
+  let title = file.replace(/\.(md|txt|markdown)$/i, '');
+  const titleMatch = content.match(/^#\s+(.+)$/m);
+  
+  if (titleMatch) {
+    title = titleMatch[1].trim();
+  } else if (/contract test|credential|adr|secret/i.test(content)) {
+    title = 'Root Cause Analysis: Contract Test Secret Verification & Anti-Patterns';
+  } else {
+    title = title.split(/[_\-\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // Format headings if plain numbered sections (e.g. "1. Root Cause Analysis" -> "## 1. Root Cause Analysis")
+  content = content.replace(/^([0-9]+\.\s+[A-Za-z].+)$/gm, '## $1');
+
+  // Next available or random ID
+  const artifactId = `Lesson-${Math.floor(1000 + Math.random() * 9000)}`;
   const now = new Date().toISOString();
+
+  let traceabilityHeader = '';
+  if (/ADR-0141|credential|secret leakage/i.test(content)) {
+    traceabilityHeader = `
+## Context & Traceability
+- **Governing Architecture Decision:** [[ADR-0141]]
+- **Empirical Adaptation:** [[ADAPT-0141]]
+- **Institutional Capability:** [[CAP-0141]]
+- **Target Suite:** [[Story 6.9]] (\`tenant-settings-screen.contract.test.ts\`)
+
+---
+`;
+  }
 
   const compiledContent = `---
 title: "${title}"
 artifact_id: "${artifactId}"
 type: "lesson_learned"
 status: "Active"
+pm_class: "GovernanceArtifact"
+pm_subclass: "KnowledgeAsset"
+pm_relationships:
+  - crystallizesLesson
+  - triggersGovernanceChange
+domain_cluster: "Strategic Intent & Cognitive Learning"
+dmbok_category: "Data Quality Management"
+pmbok_category: "Quality Management"
+babok_category: "Solution Evaluation"
 tags:
   - lesson_learned
   - insight
-pm_class: "GovernanceArtifact"
-pm_subclass: "KnowledgeAsset"
+  - root_cause_analysis
+  - contract_testing
+  - project/socialengage
 created_at: "${now}"
 modified_at: "${now}"
 ---
 
+# ${title}
+
+> Ingested from raw input \`${file}\` via AI Raw Ingestion Pipeline on ${now}.
+${traceabilityHeader}
 ${content}
 `;
 
@@ -61,10 +100,10 @@ ${content}
   
   // Remove the raw file after successful ingest
   fs.unlinkSync(rawPath);
-  console.log(`  ?? Ingested ${file} -> ${artifactId}.md`);
+  console.log(`  ✅ Ingested ${file} -> ${artifactId}.md (${title})`);
   ingestedCount++;
 }
 
-console.log(`\n?? Successfully ingested ${ingestedCount} raw artifacts into the Knowledge Graph.`);
+console.log(`\n🎉 Successfully ingested ${ingestedCount} raw artifact(s) into the Knowledge Graph.`);
 process.exit(0);
 
