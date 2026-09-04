@@ -6,9 +6,11 @@ import { execSync } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const vaultRoot = process.argv[2] || 'C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain';
+const vaultRoot = process.argv[2] || process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
+
 const rawRoot = path.join(vaultRoot, 'raw');
 const destRoot = path.join(vaultRoot, 'wiki', 'Projects', 'SocialEngage', '06 Synthesis & Lessons Learned');
+
 
 console.log('🤖 AI Agent Raw Ingestion Pipeline');
 
