@@ -22,6 +22,22 @@ Four situations, four different responses — don't default to editing the origi
 
 The common thread: the original Decision and Consequences text is a historical record and stays put. Everything learned later is appended, dated, and labeled by which of the five categories it is.
 
+### Conventions for Open Questions
+
+Every ADR may include an `## Open Questions` section identifying genuine unresolved design questions, adjustable parameters, or external dependency risks. Open Questions are governed by these immutability and lifecycle rules:
+
+1. **Canonical ID & Syntax:** Each question SHOULD carry a unique identifier scoped to the ADR:
+   - `- [ ] **[Q-XXXX-N]** <Question text>` for currently open questions.
+   - `- [x] ~~**[Q-XXXX-N]** <Question text>~~ — **Resolved (YYYY-MM-DD):** <Anchored resolution note>` for resolved questions.
+   - `- [-] ~~**[Q-XXXX-N]** <Question text>~~ — **Superseded by ADR-YYYY:** <Supersession rationale>` for superseded questions.
+2. **Historical Text Preservation:** Never delete an open question once an ADR is proposed or accepted. When answered or superseded, wrap the original question text in strikethrough (`~~...~~`) and append the dated resolution or supersession note.
+3. **Anchored Resolution Requirement:** Every resolution MUST cite one of three concrete anchors:
+   - **An Implementing Story & Contract Test:** (e.g. `Resolved in Story 5.18 via contracts/epic-5/story-5.18.signup-rate-limiting.contract.test.ts`).
+   - **A Subsequent or Refinement ADR:** (e.g. `Superseded by ADR-0134 §2 (Watchlist Connector Count Method Refinements)`).
+   - **An Explicit Sponsor Acceptance Decision:** (e.g. `Resolved at Acceptance by Menno (2026-08-18): Scoped strictly to tenant-owned Pages`).
+4. **Single Source of Truth & Telemetry Sync:** `docs/adr/*.md` is the authoritative source of truth. The telemetry compiler (`project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs`) and brain healer (`scripts/heal-obsidian-brain.mjs`) dynamically extract open questions directly from ADR files into the Project Progress Dashboard and Second Brain.
+5. **Template:** Use [`docs/templates/adr-template.md`](../templates/adr-template.md) when drafting new ADRs.
+
 | # | Title | Spec Section |
 |---|-------|--------------|
 | [0001](0001-two-repository-split.md) | Split into `social-listening-core` and `social-listening-admin` repositories | §2 |

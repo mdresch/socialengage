@@ -117,12 +117,12 @@ This preserves the correction as a durable, queryable signal (`enrichment.sentim
 
 ---
 
-## Open questions
+## Open Questions
 
-- How many aspect categories should the provider return in v1? A fixed set or free-form?
-- Should the AI provider be asked to return aspects in the post language or a canonical set?
-- How is `confidence` thresholded for `overall` label assignment? 0.6? 0.7?
-- Should `SentimentDailyCount` include aspect-level rollups now or in v2?
+- [ ] **[Q-0103-1]** How many aspect categories should the provider return in v1? A fixed set or free-form?
+- [ ] **[Q-0103-2]** Should the AI provider be asked to return aspects in the post language or a canonical set?
+- [ ] **[Q-0103-3]** How is `confidence` thresholded for `overall` label assignment? 0.6? 0.7?
+- [ ] **[Q-0103-4]** Should `SentimentDailyCount` include aspect-level rollups now or in v2?
 
 ---
 

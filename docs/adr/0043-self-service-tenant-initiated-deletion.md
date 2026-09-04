@@ -85,12 +85,12 @@ Every step (request, each export, cancellation, confirmation) is logged via the 
 - **Widen `platform_admin_role`'s own grant to cover the two new columns, instead of granting `app_user`** — rejected: this would require every ordinary tenant-scoped request in this flow to route through `platform_admin_role`'s connection, which ADR-0030 §2's own "locked-in, not left floating a second time" framing treats as reserved for genuinely cross-tenant operations; granting `app_user` a narrow, column-scoped write on its own row is the same technique this table already uses for `active_seat_count` and keeps this flow's ordinary steps inside the ordinary tenant-scoped RLS path.
 - **A separate `tenant_deletion_requests` table instead of two columns on `tenants`** — considered; two nullable columns on `tenants` itself were chosen instead because the state being tracked (is deletion requested, is it confirmed) is a property of the tenant itself, not a repeated/multi-row event log the way `domain_signup_attempts` genuinely is (a tenant can have many sign-up attempts, but at most one live deletion request at a time) — a separate table would add machinery this ADR's own scope doesn't need. Revisit if a future requirement (e.g., a full request-history view beyond what the audit log already gives) makes a dedicated table genuinely necessary.
 
-## Open Questions for decision
+## Open Questions
 
-- **The exact wording and channel of any user-facing warning/reminder as the grace period nears its end** (e.g., "your data will become permanently unrecoverable in N days") — not designed here; a real UX question for whoever builds the `social-listening-admin` surface for this flow (out of this ADR's own backend scope).
-- **Whether a `requireTenantAdmin()` middleware helper is added** (Decision §8) — left to implementation.
-- **Whether this flow needs its own rate-limiting/abuse-prevention consideration** (e.g., a Tenant-Admin repeatedly requesting and cancelling) — not designed here; no evidence of a real problem exists yet to design against, consistent with this project's own "don't build ahead of a demonstrated need" discipline (ADR-0020's precedent).
-- **The `social-listening-admin` UI surface for this flow** (a settings screen, confirmation modals, the export download UX) — not designed here; Epic 6 CRUD/UI-surface territory, not this ADR's backend-authorization scope.
+- [ ] **[Q-0043-1]** **The exact wording and channel of any user-facing warning/reminder as the grace period nears its end** (e.g., "your data will become permanently unrecoverable in N days") — not designed here; a real UX question for whoever builds the `social-listening-admin` surface for this flow (out of this ADR's own backend scope).
+- [ ] **[Q-0043-2]** **Whether a `requireTenantAdmin()` middleware helper is added** (Decision §8) — left to implementation.
+- [ ] **[Q-0043-3]** **Whether this flow needs its own rate-limiting/abuse-prevention consideration** (e.g., a Tenant-Admin repeatedly requesting and cancelling) — not designed here; no evidence of a real problem exists yet to design against, consistent with this project's own "don't build ahead of a demonstrated need" discipline (ADR-0020's precedent).
+- [ ] **[Q-0043-4]** **The `social-listening-admin` UI surface for this flow** (a settings screen, confirmation modals, the export download UX) — not designed here; Epic 6 CRUD/UI-surface territory, not this ADR's backend-authorization scope.
 
 ## Note on relation to ADR-0039
 

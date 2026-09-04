@@ -153,4 +153,4 @@ When `count?()` is absent or the connector cannot count the supplied AST:
 
 ### Pending supersession note (2026-08-28)
 
-If ADR-0134 (Proposed, 2026-08-28) is accepted, this ADR's Decision §4 would be extended by ADR-0134's own §2–§4 — specifically an explicit confidence-display contract for the UI and an additive estimatedCost projection block on WatchlistVolumePreview. This is a pending note only: ADR-0134 is currently Proposed, not accepted.
+If ADR-0134 (Proposed, 2026-08-28) is accepted, this ADR's Decision §4 would be extended by ADR-0134's own §2–§4 — specifically an explicit confidence-display contract for the UI and an additive estimatedCost projection block on WatchlistVolumePreview. **Supersession update (2026-08-28):** ADR-0134 was accepted on 2026-08-28. ADR-0077 Decision §4 is now extended with an explicit confidence-display contract for the UI and an additive estimatedCost projection block.

@@ -114,12 +114,12 @@ The following are product conventions for `social-listening-admin`, not API-leve
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the endpoint support multi-sentence, "analyst-depth" explanations behind a `depth: 'brief' | 'detailed'` flag? **Deferred to v2; v1 is brief only.**
-- Should explanations be included in `GET /v1/analytics/dashboard` by default, or fetched lazily by the UI? **Strictly lazy UI fetch (hover/click/view-triggered) by default; eager loading is rejected for v1 because a 10–15 widget dashboard would spawn 10–15 parallel LLM calls on every page load.**
-- How are explanation prompts versioned and regression-tested? **Versioned prompt files under `src/ai/prompts/metric-explain-v{N}.*`, owned by the component `SKILL.md`, with a permanent contract test that checks length, groundedness, and safety against mock metric inputs.**
-- Should `Tenant-Admin` be able to disable metric explainability tenant-wide to control cost? **Yes, mandatory in v1 via the `explanations_enabled` tenant flag.**
+- [x] **[Q-0078-1]** ~~Should the endpoint support multi-sentence, "analyst-depth" explanations behind a `depth: 'brief' | 'detailed'` flag?~~ **Resolved by ADR-0133:** Brief vs detailed explanation tiers and response contracts locked; v1 is brief only.
+- [ ] **[Q-0078-2]** Should explanations be included in `GET /v1/analytics/dashboard` by default, or fetched lazily by the UI? **Strictly lazy UI fetch (hover/click/view-triggered) by default; eager loading is rejected for v1 because a 10–15 widget dashboard would spawn 10–15 parallel LLM calls on every page load.**
+- [ ] **[Q-0078-3]** How are explanation prompts versioned and regression-tested? **Versioned prompt files under `src/ai/prompts/metric-explain-v{N}.*`, owned by the component `SKILL.md`, with a permanent contract test that checks length, groundedness, and safety against mock metric inputs.**
+- [ ] **[Q-0078-4]** Should `Tenant-Admin` be able to disable metric explainability tenant-wide to control cost? **Yes, mandatory in v1 via the `explanations_enabled` tenant flag.**
 
 ---
 

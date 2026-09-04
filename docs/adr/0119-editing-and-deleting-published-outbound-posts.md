@@ -122,11 +122,11 @@ async delete?(
 
 ## Open Questions
 
-1. **Which platforms support `edit?()` and `delete?()`?** Primary-source verification is required for each connector before implementation.
-2. **Should replies (ADR-0073) use the same `outbound_activity_revisions` table?** Mechanically yes; the child table references any `outbound_activities` row, but the per-platform semantics of editing a reply may differ from a top-level post.
-3. **Should deletes be soft-deleted in `outbound_activities` or hard-removed from lists?** The parent row remains for audit; a `deleted_at` column filters it from default UI lists.
-4. **Is there a time window after which a platform disallows edit/delete?** This is platform-specific and must be recorded in each per-platform ADR.
-5. **Should `target_asset_id` be editable?** v1 does not allow retargeting an edit to a different Page/profile.
+- [ ] **[Q-0119-1]** **Which platforms support `edit?()` and `delete?()`?** Primary-source verification is required for each connector before implementation.
+- [ ] **[Q-0119-2]** **Should replies (ADR-0073) use the same `outbound_activity_revisions` table?** Mechanically yes; the child table references any `outbound_activities` row, but the per-platform semantics of editing a reply may differ from a top-level post.
+- [ ] **[Q-0119-3]** **Should deletes be soft-deleted in `outbound_activities` or hard-removed from lists?** The parent row remains for audit; a `deleted_at` column filters it from default UI lists.
+- [ ] **[Q-0119-4]** **Is there a time window after which a platform disallows edit/delete?** This is platform-specific and must be recorded in each per-platform ADR.
+- [ ] **[Q-0119-5]** **Should `target_asset_id` be editable?** v1 does not allow retargeting an edit to a different Page/profile.
 
 ---
 

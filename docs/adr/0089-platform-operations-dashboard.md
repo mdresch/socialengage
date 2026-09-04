@@ -117,12 +117,12 @@ They must **not** return:
 
 ---
 
-## Open questions
+## Open Questions
 
-- Which Azure cost API is the v1 source — Cost Management API, resource tags, or both?
-- Should the dashboard also show projected monthly spend based on current daily run rate?
-- How are multi-region deployments visualized — separate dashboards or region filters?
-- Should tenants see a read-only version of this dashboard for their own tenant?
+- [x] **[Q-0089-1]** ~~Which Azure cost API is the v1 source — Cost Management API, resource tags, or both?~~ **Resolved by ADR-0128:** Cost Management API with resource tag filtering locked.
+- [ ] **[Q-0089-2]** Should the dashboard also show projected monthly spend based on current daily run rate?
+- [ ] **[Q-0089-3]** How are multi-region deployments visualized — separate dashboards or region filters?
+- [ ] **[Q-0089-4]** Should tenants see a read-only version of this dashboard for their own tenant?
 
 ---
 

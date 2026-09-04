@@ -7720,3 +7720,9 @@
 - **Files touched:** project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs
 - **Status:** Pending review
 
+## 2026-09-03 — cf425dd — fix(admin): heal contract failures and typecheck errors across admin and analytics
+
+- **Full commit:** `cf425ddc7bd4abd8265e5f07679d4c06eb0ecc7b`
+- **Files touched:** docs/implementation-log.md, social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/analytics/LocationTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** Pending review
+

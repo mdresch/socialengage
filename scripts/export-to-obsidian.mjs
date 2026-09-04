@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 // Target path defaults to user's local Obsidian Brain folder
-const targetVaultPath = process.argv[2] || 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const targetVaultPath = process.argv[2] || process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
 
 console.log('🧠 Obsidian Second Brain 4-Way Traceability Linker (ADR ↔ BRD ↔ FDD ↔ Story)');
 console.log('Repo Root:    ', repoRoot);

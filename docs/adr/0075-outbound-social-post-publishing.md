@@ -132,9 +132,9 @@ async publish?(
 
 ## Open Questions
 
-1. **Which platforms ship `publish()` first?** Likely Facebook and LinkedIn first, because the tenant already has asset enumeration and OAuth credential machinery for them.
-2. **Does `outbound_activities` need an `edited_at` / `deleted_at` in the future?** v1 excludes editing/deleting; leave for a later ADR.
-3. **How are failed scheduled posts surfaced?** UI/notification story to be designed alongside the scheduler.
+- [x] ~~**[Q-0075-1]** Which platforms ship `publish()` first?~~ — **Resolved in ADR-0075 Decision §1:** Facebook Pages and LinkedIn prioritized as initial targets.
+- [-] ~~**[Q-0075-2]** Does `outbound_activities` need an `edited_at` / `deleted_at` in the future?~~ — **Superseded by ADR-0119:** Editing and deleting published outbound posts architecture.
+- [-] ~~**[Q-0075-3]** How are failed scheduled posts surfaced?~~ — **Superseded by ADR-0098:** Publishing and scheduling failure surfacing via Outbound Activity Log.
 
 ## Resolved Questions
 

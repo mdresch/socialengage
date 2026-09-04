@@ -100,10 +100,10 @@ This ADR does not change ADR-0054's Decision or Consequences text. Location (§4
 
 ## Open Questions
 
-1. **Exact placement (Sources tab vs. Conversations tab) and styling of the Languages widget** — left to Story 8.5's own implementation-time judgment, not fixed here.
-2. **Whether a GNews-only "Source Country" widget is worth building, honestly labeled and scoped to GNews alone** — named, not decided. A future, separate, smaller decision if Menno wants it pursued.
-3. **ISO 639-1 code → display-name mapping** — a small, real UI detail (a static lookup table, or a library), left to implementation.
-4. **Whether the widened `PostEnrichmentSummary.language` field should also be surfaced on the existing post feed/detail view (Story 6.11/6.16), not just the Analytics Dashboard** — a reasonable, low-cost follow-up, not decided or required by this ADR.
+- [ ] **[Q-0055-1]** **Exact placement (Sources tab vs. Conversations tab) and styling of the Languages widget** — left to Story 8.5's own implementation-time judgment, not fixed here.
+- [ ] **[Q-0055-2]** **Whether a GNews-only "Source Country" widget is worth building, honestly labeled and scoped to GNews alone** — named, not decided. A future, separate, smaller decision if Menno wants it pursued.
+- [ ] **[Q-0055-3]** **ISO 639-1 code → display-name mapping** — a small, real UI detail (a static lookup table, or a library), left to implementation.
+- [ ] **[Q-0055-4]** **Whether the widened `PostEnrichmentSummary.language` field should also be surfaced on the existing post feed/detail view (Story 6.11/6.16), not just the Analytics Dashboard** — a reasonable, low-cost follow-up, not decided or required by this ADR.
 
 ---
 

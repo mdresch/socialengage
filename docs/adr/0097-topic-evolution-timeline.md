@@ -100,12 +100,12 @@ GET /v1/topics/evolution?topicId=...&start=...&end=...&granularity=day
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the endpoint accept a `watchlistId` instead of a `topicId` and derive topics from the watchlist's matched posts?
-- How are topic merges and renames reflected in historical `TopicDailyCount` rows? Do we backfill or mark as `rebased_at`?
-- Should `topKeywords` come from precomputed topic keywords or be computed on the fly?
-- What is the right trend threshold? 5% per day, or a 7-day rolling average?
+- [ ] **[Q-0097-1]** Should the endpoint accept a `watchlistId` instead of a `topicId` and derive topics from the watchlist's matched posts?
+- [ ] **[Q-0097-2]** How are topic merges and renames reflected in historical `TopicDailyCount` rows? Do we backfill or mark as `rebased_at`?
+- [ ] **[Q-0097-3]** Should `topKeywords` come from precomputed topic keywords or be computed on the fly?
+- [ ] **[Q-0097-4]** What is the right trend threshold? 5% per day, or a 7-day rolling average?
 
 ---
 

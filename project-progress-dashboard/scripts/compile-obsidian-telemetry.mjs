@@ -1,9 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'url';
 
-const repoRoot = 'C:\\Users\\MennoDrescher\\source\\repos\\socialengage';
-const vaultRoot = 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const repoRoot = path.resolve(__dirname, '..', '..');
+const vaultRoot = process.argv[2] || process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
 const dataPath = path.join(repoRoot, 'project-progress-dashboard', 'src', 'lib', 'project-dashboard', 'data.ts');
 const wikiProjectRoot = path.join(vaultRoot, 'wiki', 'Projects', 'SocialEngage');
 const mocsRoot = path.join(vaultRoot, 'wiki', '_MOCs');

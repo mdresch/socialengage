@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const defaultVaultPath = 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const defaultVaultPath = process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
 const args = process.argv.slice(2);
 const command = args[0] || '--help';
 let param = args[1] || '';

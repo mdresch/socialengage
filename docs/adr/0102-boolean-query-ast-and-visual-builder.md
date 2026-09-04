@@ -114,14 +114,14 @@ Meltwater's live Boolean Editor color-codes `AND`/`OR`/`NOT`/phrase elements as 
 
 ---
 
-## Open questions
+## Open Questions
 
-- How are nested `NOT` and `OR` groups represented in the visual builder? Tree or flat with parentheses?
-- Should the AST support fuzzy keyword matching or wildcards in v1?
-- How is the `date` clause translated for connectors that do not support date filtering?
-- What is the migration path for existing `boolean_query` strings? Parse on read or run a migration job?
-- **Added 2026-08-28:** Should a `field` sub-scope (title vs. body/"ingress") be added to news-type clauses once RSS/news connectors mature? Meltwater's Boolean Editor scopes queries to an article's title vs. its opening text specifically for news sources (https://community.meltwater.com/explore-44/getting-started-with-boolean-search-7996). Deferred to v2 — flagged here as a candidate `source`-clause refinement, not decided by this ADR.
-- **Added 2026-08-28:** Should a natural-language-to-AST generator be prioritized for v1 rather than a later AI enhancement? Hootsuite ships a public natural-language-to-Boolean tool today (https://www.hootsuite.com/social-media-tools/boolean-generator), which is evidence this is a low-risk, proven pattern rather than a speculative one — but it remains out of scope for this ADR per BRD-0102 §4.2 ("Natural-language-to-AST generation... future AI enhancements"). Flagged here for prioritization consideration in a future ADR, not decided by this one.
+- [ ] **[Q-0102-1]** How are nested `NOT` and `OR` groups represented in the visual builder? Tree or flat with parentheses?
+- [ ] **[Q-0102-2]** Should the AST support fuzzy keyword matching or wildcards in v1?
+- [ ] **[Q-0102-3]** How is the `date` clause translated for connectors that do not support date filtering?
+- [ ] **[Q-0102-4]** What is the migration path for existing `boolean_query` strings? Parse on read or run a migration job?
+- [ ] **[Q-0102-5]** **Added 2026-08-28:** Should a `field` sub-scope (title vs. body/"ingress") be added to news-type clauses once RSS/news connectors mature? Meltwater's Boolean Editor scopes queries to an article's title vs. its opening text specifically for news sources (https://community.meltwater.com/explore-44/getting-started-with-boolean-search-7996). Deferred to v2 — flagged here as a candidate `source`-clause refinement, not decided by this ADR.
+- [ ] **[Q-0102-6]** **Added 2026-08-28:** Should a natural-language-to-AST generator be prioritized for v1 rather than a later AI enhancement? Hootsuite ships a public natural-language-to-Boolean tool today (https://www.hootsuite.com/social-media-tools/boolean-generator), which is evidence this is a low-risk, proven pattern rather than a speculative one — but it remains out of scope for this ADR per BRD-0102 §4.2 ("Natural-language-to-AST generation... future AI enhancements"). Flagged here for prioritization consideration in a future ADR, not decided by this one.
 
 ---
 

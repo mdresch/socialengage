@@ -117,11 +117,11 @@ Only if both gates pass does `ingestNewswireItems()` re-resolve the tenant's Azu
 
 ## Open Questions
 
-1. **Whether `ParsedRssItem.issuer` (`<dc:contributor>`) reliably differs between GlobeNewswire and PR Newswire items** — not verified this session. If it does, it could serve as a cheaper, non-AI, per-item wire signal alongside (not instead of) the structural pre-check. Left for whoever eventually implements this.
-2. **Whether any GlobeNewswire feed category other than the one energy-category feed this connector currently polls carries dateline-shaped body content** — named by the orchestrating session's own original investigation as worth checking, still not checked, either by that session or this one (this session's own re-verification attempt timed out three times).
-3. **The exact dateline structural-pattern definition (Decision §1)** — left to implementation-time judgment, not fixed here, per this project's own durable-decision-vs-adjustable-default convention.
-4. **Whether this design should eventually generalize beyond Newswire, if a future connector is added whose content also carries a structured, extractable origin signal** — not evaluated here; Decision §1's Newswire-only call-site gate is deliberately narrow to today's real, verified roster.
-5. **Relationship to a future Location tab's own eventual data-source decision** — if and when that ADR/decision is made, it should decide explicitly whether this AI-inferred signal, the GNews-only `source.country` signal ADR-0055 already named and declined, both, or neither, feed it — not pre-decided here.
+- [ ] **[Q-0056-1]** **Whether `ParsedRssItem.issuer` (`<dc:contributor>`) reliably differs between GlobeNewswire and PR Newswire items** — not verified this session. If it does, it could serve as a cheaper, non-AI, per-item wire signal alongside (not instead of) the structural pre-check. Left for whoever eventually implements this.
+- [ ] **[Q-0056-2]** **Whether any GlobeNewswire feed category other than the one energy-category feed this connector currently polls carries dateline-shaped body content** — named by the orchestrating session's own original investigation as worth checking, still not checked, either by that session or this one (this session's own re-verification attempt timed out three times).
+- [ ] **[Q-0056-3]** **The exact dateline structural-pattern definition (Decision §1)** — left to implementation-time judgment, not fixed here, per this project's own durable-decision-vs-adjustable-default convention.
+- [ ] **[Q-0056-4]** **Whether this design should eventually generalize beyond Newswire, if a future connector is added whose content also carries a structured, extractable origin signal** — not evaluated here; Decision §1's Newswire-only call-site gate is deliberately narrow to today's real, verified roster.
+- [ ] **[Q-0056-5]** **Relationship to a future Location tab's own eventual data-source decision** — if and when that ADR/decision is made, it should decide explicitly whether this AI-inferred signal, the GNews-only `source.country` signal ADR-0055 already named and declined, both, or neither, feed it — not pre-decided here.
 
 ---
 

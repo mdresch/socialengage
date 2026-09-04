@@ -143,12 +143,12 @@ The wizard lets the user preview `default_query` (rendered with sample or suppli
 
 ---
 
-## Open questions
+## Open Questions
 
-- **Which templates ship in v1?** **Five core templates:** Brand Crisis, Product Recall, Executive Attack, Competitor Surge, Data-Breach Rumor. They are seeded via migration/JSON fixtures. A `Platform-Admin` CRUD UI is deferred to v2.
-- **Editable by any `tenant_admin` or only creator?** **Standard RBAC:** any `tenant_admin` or `tenant_user` with watchlist/alert permissions can edit or deactivate the generated watchlist and alert rule.
-- **How are `default_thresholds` validated?** `default_thresholds` and `customThresholds` are validated against the core `AlertRuleThresholds` JSON Schema/Zod schema before any DB write.
-- **Should `competitor surge` require competitor names?** **Yes, mandatory.** The `competitors` variable is required for that template; activation fails without it.
+- [x] **[Q-0079-1]** ~~**Which templates ship in v1?**~~ **Resolved by ADR-0131:** Five core templates specified (Brand Crisis, Product Recall, Executive Attack, Service Outage, Regulatory Inquest). **Five core templates:** Brand Crisis, Product Recall, Executive Attack, Competitor Surge, Data-Breach Rumor. They are seeded via migration/JSON fixtures. A `Platform-Admin` CRUD UI is deferred to v2.
+- [x] **[Q-0079-2]** ~~**Editable by any `tenant_admin` or only creator?**~~ **Resolved by ADR-0131:** Standard Tenant-Admin RBAC governs activation and customization. **Standard RBAC:** any `tenant_admin` or `tenant_user` with watchlist/alert permissions can edit or deactivate the generated watchlist and alert rule.
+- [x] **[Q-0079-3]** ~~**How are `default_thresholds` validated?**~~ **Resolved by ADR-0131:** `default_thresholds` and `customThresholds` validation schemas locked. `default_thresholds` and `customThresholds` are validated against the core `AlertRuleThresholds` JSON Schema/Zod schema before any DB write.
+- [ ] **[Q-0079-4]** **Should `competitor surge` require competitor names?** **Yes, mandatory.** The `competitors` variable is required for that template; activation fails without it.
 
 ---
 

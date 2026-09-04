@@ -269,19 +269,19 @@ Recharts remains the sole charting library, consistent with ADR-0054 Decision §
 
 ## Open Questions
 
-1. **~~ADR-0063 acceptance~~  — resolved 2026-08-19.** ADR-0063 was **accepted by Menno 2026-08-19** (verbatim: *"ADR-0063 cleanly solves the architectural prerequisite for watchlist filtering, bridges the gaps left in ADR-0062, and provides a clear path forward for both backend (Story 3.11) and frontend (Story 8.9) execution."*). **Story 3.11** (`social-listening-core` backend) is now **Ready**. **Story 8.9** (admin UI: `selectedTopic` filter + Watchlist Coverage widget) remains **Blocked — pending Story 3.11 implementation and Story 8.7 build**, but is no longer blocked at the ADR level. The `selectedTopic` filter and Watchlist Coverage widget unblock once Stories 3.11 and 8.7 are built.
+- [x] ~~**[Q-0062-1]** ADR-0063 acceptance~~ — **Resolved by ADR-0063 acceptance (2026-08-19 by Menno):** Prerequisite solved; Story 3.11 Ready, Story 8.9 unblocked at ADR level.
 
-2. **`POST /api/predictive-forecast` (AI-backed)** — named, not built. Revisit if a tenant demonstrates a real need for accuracy beyond the statistical fallback, or if the `explain-spike` endpoint is later extended to return forecast data as part of its already-authorized response.
+- [ ] **[Q-0062-2]** **`POST /api/predictive-forecast` (AI-backed)** — named, not built. Revisit if a tenant demonstrates a real need for accuracy beyond the statistical fallback, or if the `explain-spike` endpoint is later extended to return forecast data as part of its already-authorized response.
 
-3. **Crisis Alert Radar thresholds** (`WARNING` / `CRITICAL` trigger ratios) — left to Story 8.7's implementation-time judgment rather than fixed as a durable architectural decision here. Revisit only if a tenant-facing alert threshold becomes a product commitment needing contractual stability.
+- [ ] **[Q-0062-3]** **Crisis Alert Radar thresholds** (`WARNING` / `CRITICAL` trigger ratios) — left to Story 8.7's implementation-time judgment rather than fixed as a durable architectural decision here. Revisit only if a tenant-facing alert threshold becomes a product commitment needing contractual stability.
 
-4. **`+Add filters` modal scope** — the specification (§6.3) describes a modal surfacing additional dimensions "not exposed in the main header (e.g. region, language, intention, content tag)." For v1, since region/intention/tag are not built and language/sentiment are already in the main filter chips, the modal's non-redundant contribution is limited. Whether to build it as a full filter panel or defer it until more dimensions are real is left to Story 8.7's implementation-time judgment.
+- [ ] **[Q-0062-4]** **`+Add filters` modal scope** — the specification (§6.3) describes a modal surfacing additional dimensions "not exposed in the main header (e.g. region, language, intention, content tag)." For v1, since region/intention/tag are not built and language/sentiment are already in the main filter chips, the modal's non-redundant contribution is limited. Whether to build it as a full filter panel or defer it until more dimensions are real is left to Story 8.7's implementation-time judgment.
 
-5. **Left-column layout with Location Insights absent** — the specification's left column has three widgets; with Location absent, the column has two. Whether to stretch the remaining two, introduce a different third real-data widget, or accept the two-widget layout is left to Story 8.7's implementation-time judgment.
+- [ ] **[Q-0062-5]** **Left-column layout with Location Insights absent** — the specification's left column has three widgets; with Location absent, the column has two. Whether to stretch the remaining two, introduce a different third real-data widget, or accept the two-widget layout is left to Story 8.7's implementation-time judgment.
 
-6. **Per-widget CSV/JSON export (`onExportWidgetData`)** — ADR-0054 Open Question 3, still undecided, inherited unchanged by this ADR. The specification includes export buttons on several widgets; this ADR does not authorize them.
+- [ ] **[Q-0062-6]** **Per-widget CSV/JSON export (`onExportWidgetData`)** — ADR-0054 Open Question 3, still undecided, inherited unchanged by this ADR. The specification includes export buttons on several widgets; this ADR does not authorize them.
 
-7. **Sentiment Trajectory confidence interval** — the specification describes a "confidence percentage" derived from `forecastResponse.sentimentTrajectory`. Without a real probabilistic model, a synthetic confidence value would be fabricated. Decision §5 omits it; named here so the implementation does not substitute a made-up number.
+- [ ] **[Q-0062-7]** **Sentiment Trajectory confidence interval** — the specification describes a "confidence percentage" derived from `forecastResponse.sentimentTrajectory`. Without a real probabilistic model, a synthetic confidence value would be fabricated. Decision §5 omits it; named here so the implementation does not substitute a made-up number.
 
 ---
 

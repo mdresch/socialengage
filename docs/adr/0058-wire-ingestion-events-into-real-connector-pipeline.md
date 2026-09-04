@@ -94,10 +94,10 @@ Three concrete safeguards, required at Story time, not left as generalized Open 
 
 ## Open Questions
 
-1. **Real-scale performance of per-post, per-poll-cycle watchlist evaluation** — not measured. Revisit if a tenant's real active-watchlist count or ingestion volume makes this a measured bottleneck, not speculatively.
-2. **Whether a post matching many watchlists should be throttled/deduped/batched into fewer Service Bus messages** — named, not designed (Alternatives Considered).
-3. **`ConnectorHealthChangedEvent`'s own tenant-wide vs. per-tenant-per-platform granularity at scale** — `runIngestionAttempt()` already runs per-`(tenantId, platformId)` pair, so this falls out naturally, but hasn't been stress-tested against many tenants polling many connectors concurrently.
-4. **Real subscriber existence** — this ADR closes the publish-side gap only; no real consumer of either event type is designed or built here (ADR-0019's own already-named gap, unchanged by this ADR).
+- [ ] **[Q-0058-1]** **Real-scale performance of per-post, per-poll-cycle watchlist evaluation** — not measured. Revisit if a tenant's real active-watchlist count or ingestion volume makes this a measured bottleneck, not speculatively.
+- [ ] **[Q-0058-2]** **Whether a post matching many watchlists should be throttled/deduped/batched into fewer Service Bus messages** — named, not designed (Alternatives Considered).
+- [ ] **[Q-0058-3]** **`ConnectorHealthChangedEvent`'s own tenant-wide vs. per-tenant-per-platform granularity at scale** — `runIngestionAttempt()` already runs per-`(tenantId, platformId)` pair, so this falls out naturally, but hasn't been stress-tested against many tenants polling many connectors concurrently.
+- [ ] **[Q-0058-4]** **Real subscriber existence** — this ADR closes the publish-side gap only; no real consumer of either event type is designed or built here (ADR-0019's own already-named gap, unchanged by this ADR).
 
 ---
 

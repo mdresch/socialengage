@@ -97,12 +97,12 @@ Menno's own direction, verbatim: *"Replace status active/suspended with a nullab
 - **Splitting Tenant Reader/Tenant Business Analyst into separate `role` values now**, pre-emptively — rejected (§4); no current feature or ADR requires the distinction at the authorization layer.
 - **Modeling Platform Admin as a `users` row with `tenant_id` nullable** — rejected (§3); complicates every RLS predicate on this table for a role that structurally doesn't belong to any tenant.
 
-## Open Questions for decision
+## Open Questions
 
-- **Whether Tenant Reader and Tenant Business Analyst ever need a real authorization-level distinction**, not just a usage-pattern description — deliberately not decided now (§4); revisit once a concrete feature actually requires different treatment by role. **Confirmed at review, 2026-08-03:** Menno reviewed this directly and confirmed the underlying reason it's deferred — verbatim, *"roles are unknown at this time"* — the exact shape any future distinction should take isn't yet known, not merely undecided, reinforcing (not just permitting) §4's single-`tenant_user`-value choice for v1.
-- **The seat-count race condition** inherited from ADR-0031 §3 — not resolved here.
-- **Whether `external_subject` should also capture which token/claims version issued it**, in case a future Entra configuration change alters claim shape — not decided, a minor implementation detail for whoever builds this table's story.
-- **Added at review, 2026-08-03 — the exact audit mechanism for `access_ends_at` writes (§9)** — inherits, rather than duplicates, the same unresolved "exact audit-log schema" question already open from ADR-0030 §5/ADR-0031; not designed here.
+- [ ] **[Q-0032-1]** **Whether Tenant Reader and Tenant Business Analyst ever need a real authorization-level distinction**, not just a usage-pattern description — deliberately not decided now (§4); revisit once a concrete feature actually requires different treatment by role. **Confirmed at review, 2026-08-03:** Menno reviewed this directly and confirmed the underlying reason it's deferred — verbatim, *"roles are unknown at this time"* — the exact shape any future distinction should take isn't yet known, not merely undecided, reinforcing (not just permitting) §4's single-`tenant_user`-value choice for v1.
+- [ ] **[Q-0032-2]** **The seat-count race condition** inherited from ADR-0031 §3 — not resolved here.
+- [ ] **[Q-0032-3]** **Whether `external_subject` should also capture which token/claims version issued it**, in case a future Entra configuration change alters claim shape — not decided, a minor implementation detail for whoever builds this table's story.
+- [ ] **[Q-0032-4]** **Added at review, 2026-08-03 — the exact audit mechanism for `access_ends_at` writes (§9)** — inherits, rather than duplicates, the same unresolved "exact audit-log schema" question already open from ADR-0030 §5/ADR-0031; not designed here.
 
 ## Amendment Log
 

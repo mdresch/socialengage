@@ -82,12 +82,12 @@ healthy -> degraded -> failing -> disabled
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the consecutive-failure threshold be configurable per connector or per tenant?
-- Should `Platform-Admin` be able to re-enable any tenant's connector, or only tenant-wide connectors?
-- How is the health-check attempt different from a normal poll? Does it have a smaller result set?
-- Should `disabled` connectors still count toward `connector_activations` billing, or are they paused?
+- [ ] **[Q-0109-1]** Should the consecutive-failure threshold be configurable per connector or per tenant?
+- [ ] **[Q-0109-2]** Should `Platform-Admin` be able to re-enable any tenant's connector, or only tenant-wide connectors?
+- [ ] **[Q-0109-3]** How is the health-check attempt different from a normal poll? Does it have a smaller result set?
+- [ ] **[Q-0109-4]** Should `disabled` connectors still count toward `connector_activations` billing, or are they paused?
 
 ---
 

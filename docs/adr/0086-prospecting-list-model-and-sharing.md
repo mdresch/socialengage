@@ -138,13 +138,13 @@ POST   /v1/prospecting-lists/:id/crm-handoff
 
 ---
 
-## Open questions
+## Open Questions
 
-- ~~Should `engagement_score`/`authenticity_score` be recomputed on demand or denormalized at add time?~~ **Resolved:** all four ADR-0108 scores (`engagement_score`, `authenticity_score`, `influence_score`, `reach_score`) are denormalized as an add-time snapshot, never recomputed in place.
-- ~~Should `prospecting_list_entries` support custom fields per tenant?~~ **Resolved:** `custom_attributes jsonb`.
-- ~~Should `relationship_stage` transitions be logged?~~ **Resolved:** deferred. v1 only touches `updated_at`; an audit trail arrives with the future workflow-engine ADR, not `platform_admin_audit_log` (that log is scoped to platform-admin actions elsewhere in this codebase — the analogous pattern for tenant-level outward actions is `outbound_activities`, per ADR-0073/ADR-0075/ADR-0095/ADR-0117).
-- **Is a maximum entries-per-list ceiling needed?** No fixed number is adopted here — inventing one without usage data would repeat the precedent ADR-0044 and ADR-0020 already declined for the analogous per-user watchlist-count question. `GET .../entries` is cursor-paginated (default 50, max 200) regardless; revisit with a real cap only once usage data justifies one.
-- ~~Who may set `shared = true`, and what can non-owners do with a shared list?~~ **Resolved (2026-08-27):** owner-only, no `tenant_admin` override — true parity with ADR-0044 §5c. Sharing grants read-only visibility to teammates; only `owner_id` can mutate the list or its entries. See §2.
+- [x] **[Q-0086-1]** ~~Should `engagement_score`/`authenticity_score` be recomputed on demand or denormalized at add time?~~ **Resolved:** all four ADR-0108 scores (`engagement_score`, `authenticity_score`, `influence_score`, `reach_score`) are denormalized as an add-time snapshot, never recomputed in place.
+- [x] **[Q-0086-2]** ~~~~Should `prospecting_list_entries` support custom fields per tenant?~~ **Resolved by ADR-0129:** `custom_attributes jsonb` and tenant-wide sharing rules locked.~~ **Resolved:** `custom_attributes jsonb`.
+- [x] **[Q-0086-3]** ~~Should `relationship_stage` transitions be logged?~~ **Resolved:** deferred. v1 only touches `updated_at`; an audit trail arrives with the future workflow-engine ADR, not `platform_admin_audit_log` (that log is scoped to platform-admin actions elsewhere in this codebase — the analogous pattern for tenant-level outward actions is `outbound_activities`, per ADR-0073/ADR-0075/ADR-0095/ADR-0117).
+- [ ] **[Q-0086-4]** **Is a maximum entries-per-list ceiling needed?** No fixed number is adopted here — inventing one without usage data would repeat the precedent ADR-0044 and ADR-0020 already declined for the analogous per-user watchlist-count question. `GET .../entries` is cursor-paginated (default 50, max 200) regardless; revisit with a real cap only once usage data justifies one.
+- [x] **[Q-0086-5]** ~~Who may set `shared = true`, and what can non-owners do with a shared list?~~ **Resolved (2026-08-27):** owner-only, no `tenant_admin` override — true parity with ADR-0044 §5c. Sharing grants read-only visibility to teammates; only `owner_id` can mutate the list or its entries. See §2.
 
 ---
 

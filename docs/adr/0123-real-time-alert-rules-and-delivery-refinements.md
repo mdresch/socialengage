@@ -103,12 +103,12 @@ This ADR is a refinement of ADR-0091 (Accepted 2026-08-28), not a reversal of it
 
 ---
 
-## Open questions
+## Open Questions
 
-- What are the concrete per-rule-type sensitivity multipliers (`fewer`/`balanced`/`more`) for each of the five rule types? Deferred to the implementing story.
-- What platform-level ceiling should bound a tenant-configurable `max_alerts_per_day`? Deferred to the implementing story.
-- Should the preview endpoint's `lookbackDays` be user-adjustable, or fixed at 7 as a v1 default? Deferred to the implementing story.
-- Should `Platform-Admin` have its own exclusion/cap defaults for platform-wide connector-health rules? Carried forward unresolved from ADR-0091's own Open Questions — still not decided here.
+- [ ] **[Q-0123-1]** What are the concrete per-rule-type sensitivity multipliers (`fewer`/`balanced`/`more`) for each of the five rule types? Deferred to the implementing story.
+- [ ] **[Q-0123-2]** What platform-level ceiling should bound a tenant-configurable `max_alerts_per_day`? Deferred to the implementing story.
+- [ ] **[Q-0123-3]** Should the preview endpoint's `lookbackDays` be user-adjustable, or fixed at 7 as a v1 default? Deferred to the implementing story.
+- [ ] **[Q-0123-4]** Should `Platform-Admin` have its own exclusion/cap defaults for platform-wide connector-health rules? Carried forward unresolved from ADR-0091's own Open Questions — still not decided here.
 
 ---
 

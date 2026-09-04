@@ -94,12 +94,12 @@ post_id, published_at, platform_id, author_name, author_url, body_markdown, sent
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the export include media URLs or only text post bodies?
-- What is the right hard `limit` for synchronous exports — 1,000, 5,000, or 10,000?
-- Should `Tenant-Admin` see exports initiated by all tenant users?
-- How should the DSR `access` request reuse this export shape? Should the same endpoint accept a `dsr=true` flag?
+- [ ] **[Q-0090-1]** Should the export include media URLs or only text post bodies?
+- [ ] **[Q-0090-2]** What is the right hard `limit` for synchronous exports — 1,000, 5,000, or 10,000?
+- [ ] **[Q-0090-3]** Should `Tenant-Admin` see exports initiated by all tenant users?
+- [ ] **[Q-0090-4]** How should the DSR `access` request reuse this export shape? Should the same endpoint accept a `dsr=true` flag?
 
 ---
 

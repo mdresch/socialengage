@@ -119,12 +119,12 @@ ALTER TABLE outbound_activities ADD COLUMN published_at timestamptz;
 
 ---
 
-## Open questions
+## Open Questions
 
-- Which platforms support `publish?()` in v1? Facebook, LinkedIn, X, Bluesky, Instagram?
-- How are image/video uploads handled — pre-uploaded media URLs or platform-native multipart upload?
-- Should the scheduler run in-process (like the ingestion scheduler) or as a separate worker/function?
-- What is the maximum scheduling window (e.g. 30 days)?
+- [ ] **[Q-0098-1]** Which platforms support `publish?()` in v1? Facebook, LinkedIn, X, Bluesky, Instagram?
+- [ ] **[Q-0098-2]** How are image/video uploads handled — pre-uploaded media URLs or platform-native multipart upload?
+- [ ] **[Q-0098-3]** Should the scheduler run in-process (like the ingestion scheduler) or as a separate worker/function?
+- [ ] **[Q-0098-4]** What is the maximum scheduling window (e.g. 30 days)?
 
 ## Resolved questions
 

@@ -93,12 +93,12 @@ GET  /public/v1/dsr/requests/:id/download               // download access packa
 
 ---
 
-## Open questions
+## Open Questions
 
-- How is the user's identity proven for an `access` or `erasure` request? Email verification only, or additional identity proof?
-- Should the platform offer a data-processor addendum that clarifies tenant vs. platform responsibilities?
-- How are cross-tenant erasure requests handled if the same user interacts with multiple tenants?
-- Should `correction` support bulk corrections, or one at a time?
+- [ ] **[Q-0093-1]** How is the user's identity proven for an `access` or `erasure` request? Email verification only, or additional identity proof?
+- [ ] **[Q-0093-2]** Should the platform offer a data-processor addendum that clarifies tenant vs. platform responsibilities?
+- [ ] **[Q-0093-3]** How are cross-tenant erasure requests handled if the same user interacts with multiple tenants?
+- [ ] **[Q-0093-4]** Should `correction` support bulk corrections, or one at a time?
 
 ---
 

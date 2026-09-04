@@ -102,17 +102,17 @@ Meta Platform Terms, verified directly (`developers.facebook.com/terms`):
 - **Model `Author` as the individual admin who published the post, rather than the Page** — rejected. Graph API's own Page-post data model attributes posts to the Page (the `from` field returns the Page), not to whichever admin clicked "post" — organization-as-Author is the natural fit Facebook's own API already provides, not an interpretation this ADR imposes.
 - **Pursue Meta's Marketing API Partner program directly, to unlock genuine public-content monitoring** — not pursued in this pass; named in Open questions as a real, unexplored option, distinct from and more involved than ordinary App Review.
 
-## Open questions for decision
+## Open Questions
 
-- **Whether Menno wants this narrowed connector built at all**, given it does not deliver the "Facebook social listening" the original roster implied — a real go/no-go, not a rubber stamp; the negative consequences above are real trade-offs, not formalities.
-- **Whether this project has, or can readily obtain, whatever business documentation Meta's Business Verification process requires** — a genuine precondition to confirm before committing engineering time, per Decision §3.
-- **Whether Meta's App Review team would actually approve `pages_read_engagement`/`pages_show_list` for a solo-developer project with no existing production track record** — a distinct, discretionary-approval risk beyond documentation alone, raised at review (Decision §3); not something this ADR can resolve short of actually attempting the submission.
-- **Comment/mention ingestion's third-party personal-data/author-rights question** — needs a dedicated `docs/legal/legal-compliance-register.md` pass before any v2 design; not decided here.
-- **Exact `getRateLimitConfig()` shape** for the Engaged-Users-relative ceiling — an implementation-time task.
-- **Whether a future, direct approach to Meta's Marketing API Partner program is ever worth pursuing** to unlock genuine public-content listening — named, not pursued.
-- **OAuth token re-consent/rotation UX** — an implementation-time task, first-of-its-kind for this project.
-- **Whether `docs/open-decisions.md`'s parked "build-and-activate-on-demand connector" idea (2026-08-06)** — a tenant requesting a specific platform be built against their own stated preferences, rather than a fixed pre-built roster entry — is a better fit for a platform this administratively gated than adding it to the standard roster now. Named, not decided.
-- **No user story is added by this ADR** — per this project's established pattern (ADR-0024/0026/0042), a story is only drafted once this ADR is Accepted by Menno.
+- [x] **[Q-0059-1]** ~~**Whether Menno wants this narrowed connector built at all**~~ **Resolved at acceptance (2026-08-18):** Accepted by Menno; broad public listening confirmed non-viable; connector narrowed to tenant-owned Pages., given it does not deliver the "Facebook social listening" the original roster implied — a real go/no-go, not a rubber stamp; the negative consequences above are real trade-offs, not formalities.
+- [ ] **[Q-0059-2]** **Whether this project has, or can readily obtain, whatever business documentation Meta's Business Verification process requires** — a genuine precondition to confirm before committing engineering time, per Decision §3.
+- [ ] **[Q-0059-3]** **Whether Meta's App Review team would actually approve `pages_read_engagement`/`pages_show_list` for a solo-developer project with no existing production track record** — a distinct, discretionary-approval risk beyond documentation alone, raised at review (Decision §3); not something this ADR can resolve short of actually attempting the submission.
+- [ ] **[Q-0059-4]** **Comment/mention ingestion's third-party personal-data/author-rights question** — needs a dedicated `docs/legal/legal-compliance-register.md` pass before any v2 design; not decided here.
+- [ ] **[Q-0059-5]** **Exact `getRateLimitConfig()` shape** for the Engaged-Users-relative ceiling — an implementation-time task.
+- [x] **[Q-0059-6]** ~~**Whether a future, direct approach to Meta's Marketing API Partner program is ever worth pursuing**~~ **Resolved (2026-08-18):** Confirmed not viable for v1; scope locked to tenant-owned Pages. to unlock genuine public-content listening — named, not pursued.
+- [ ] **[Q-0059-7]** **OAuth token re-consent/rotation UX** — an implementation-time task, first-of-its-kind for this project.
+- [ ] **[Q-0059-8]** **Whether `docs/open-decisions.md`'s parked "build-and-activate-on-demand connector" idea (2026-08-06)** — a tenant requesting a specific platform be built against their own stated preferences, rather than a fixed pre-built roster entry — is a better fit for a platform this administratively gated than adding it to the standard roster now. Named, not decided.
+- [ ] **[Q-0059-9]** **No user story is added by this ADR** — per this project's established pattern (ADR-0024/0026/0042), a story is only drafted once this ADR is Accepted by Menno.
 
 ## Amendment Log
 

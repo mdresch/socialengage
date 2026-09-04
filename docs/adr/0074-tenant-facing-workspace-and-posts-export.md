@@ -1,4 +1,4 @@
-﻿# ADR-0074: Tenant-Facing Workspace and Matched-Posts Export
+# ADR-0074: Tenant-Facing Workspace and Matched-Posts Export
 
 **Status:** Accepted (2026-08-23)
 
@@ -100,10 +100,10 @@ ADR-0043's deletion export (Decision §4) remains the sole offboarding/deletion 
 
 ## Open Questions
 
-1. **Endpoint naming:** `GET /v1/tenants/me/export/workspace` vs. `GET /v1/tenants/export/workspace` — the former is consistent with `GET /v1/tenants/me`; the latter is shorter for the UI. Decide at implementation time.
-2. **Async export for large tenants:** Synchronous v1 is capped. Whether to build a background job + Azure Blob Storage + polling endpoint for unbounded exports is deferred to a later ADR/story.
-3. **Workspace JSON exact column set:** The precise inclusion/exclusion of `ingestion_runs` archived rows, `watchlists` full query AST text, and `platform_credentials` non-secret metadata is left for the implementation contract.
-4. **CSV watchlist match expansion:** Whether `watchlist_ids` is a single column, a one-row-per-match expansion, or omitted for the initial version is left to the frontend story's contract.
+- [x] ~~**[Q-0074-1]** Endpoint naming: `GET /v1/tenants/me/export/workspace` vs. `GET /v1/tenants/export/workspace`~~ — **Resolved in ADR-0074 Decision §2 (2026-08-23):** Finalized as `GET /v1/tenants/export/workspace`.
+- [-] ~~**[Q-0074-2]** Async export for large tenants: Synchronous v1 is capped~~ — **Superseded by ADR-0111:** Large-tenant async background export with Blob Storage streaming.
+- [x] ~~**[Q-0074-3]** Workspace JSON exact column set~~ — **Resolved at Acceptance Review (2026-08-23):** Safe metadata archive defined; secret credentials, raw payloads, and internal envelopes excluded.
+- [x] ~~**[Q-0074-4]** CSV watchlist match expansion~~ — **Resolved at Acceptance Review (2026-08-23):** Single `watchlist_ids` column with comma-separated IDs.
 
 ## Resolved Questions
 

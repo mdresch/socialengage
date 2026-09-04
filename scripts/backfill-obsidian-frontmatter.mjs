@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { createHash } from 'node:crypto';
 
-const vaultRoot = 'C:\\Users\\MennoDrescher\\source\\repos\\Obsidian Brain';
+const vaultRoot = process.argv[2] || process.env.OBSIDIAN_VAULT || 'C:\\Users\\menno\\Documents\\Second Brain';
 const wikiRoot = path.join(vaultRoot, 'wiki');
 
 const ONTOLOGY = JSON.parse(fs.readFileSync(path.join(vaultRoot, 'ONTOLOGY.json'), 'utf8'));

@@ -41,10 +41,10 @@ Add a second, deliberately independent Postgres setup for local development, nev
 - **An in-memory or SQLite dev database** — rejected outright, not seriously considered: this project's whole testing philosophy (ADR-0015, ADR-0016, `docs/implementation-methodology.md`) rests on RLS and JSONB behavior only being faithfully provable against real Postgres; a dev database that can't run the same migrations and RLS policies would be worse than none.
 - **The `cross-env` npm package**, for cross-platform env vars in npm scripts — rejected in favor of a small, dependency-free Node wrapper (`scripts/withDevEnv.js`), consistent with this project's existing bias toward minimal dependencies (see `CLAUDE.md`'s "no migration/query-builder/ORM" reasoning, applied the same way here) and its own precedent (`jest.global-setup.js` already sets env vars in plain JS).
 
-## Open questions for decision
+## Open Questions
 
-- **Schema-drift protection between the two compose files** — currently manual (a person has to remember to edit both). Worth a lightweight check (e.g., a script diffing the two `Dockerfile`/`command:` configs) if this repo ever gains a second contributor; not built now, per this project's own "build for the problem you have" discipline.
-- **Whether `docker-compose.dev.yml` is worth documenting as a required local-setup step** (vs. optional, developer-initiated tooling) once `social-listening-admin` has real pages to develop against `social-listening-core`'s live API — revisit then, not decided here.
+- [ ] **[Q-0025-1]** **Schema-drift protection between the two compose files** — currently manual (a person has to remember to edit both). Worth a lightweight check (e.g., a script diffing the two `Dockerfile`/`command:` configs) if this repo ever gains a second contributor; not built now, per this project's own "build for the problem you have" discipline.
+- [ ] **[Q-0025-2]** **Whether `docker-compose.dev.yml` is worth documenting as a required local-setup step** (vs. optional, developer-initiated tooling) once `social-listening-admin` has real pages to develop against `social-listening-core`'s live API — revisit then, not decided here.
 
 ## Amendment Log
 
