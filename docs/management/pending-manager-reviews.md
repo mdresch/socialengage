@@ -7738,3 +7738,9 @@
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/src/http/server.ts, social-listening-core/src/platform/platformMetricsWorker.ts
 - **Status:** Pending review
 
+## 2026-09-04 — 421a4c1 — fix(core): heal story-13.8 contract test isolation and gate platform metrics worker
+
+- **Full commit:** `421a4c12e1525d431a2098b397f0478a214014fb`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/src/http/server.ts, social-listening-core/src/platform/platformMetricsWorker.ts
+- **Status:** Pending review
+
