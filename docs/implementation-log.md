@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-09-05 — Story 14.4 — social-listening-core@d2bd779
+
+- **Full commit:** `d2bd77979b88017746bf7f799d324687efc507f2`
+- **Repo:** social-listening-core
+- **Story / ADR:** 14.4 / ADR-0121
+- **Contract:** `social-listening-core/contracts/epic-14/story-14.4.composer-deep-research-caching.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/composer-research/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/migrations/0075_create_research_cache_and_runs.sql`
+  - `social-listening-core/src/composer/composerResearchStore.ts`
+  - `social-listening-core/src/composer/composerResearchService.ts`
+  - `social-listening-core/src/http/versions/v1/composerRouter.ts`
+  - `social-listening-core/.claude/skills/composer-research/SKILL.md`
+  - `social-listening-core/contracts/epic-14/story-14.4.composer-deep-research-caching.contract.test.ts`
+  - `docs/adr/README.md`
+  - `docs/implementation-plan.md`
+  - `docs/user-stories/epic-14-adr-0118-to-0122.md`
+- **Validation re-run:** new contract PASS (5/5); epic-14 suite PASS (50/50); related regression suite Story 3.17 PASS (6/6); `npm run typecheck` PASS with 0 errors.
+- **Notes:** Implements caching, user-initiated re-trigger (`?refresh=true`), cost telemetry, and tenant-level caps for Composer Deep Research (ADR-0121). Adds `tenant_settings`, `research_cache`, and `research_runs` tables (migration `0075`) with strict Postgres RLS isolation; SHA-256 normalized `text_hash` generation covering normalized draft text and active provider IDs; cache hit returns with 0 LLM/search token cost; user-initiated re-trigger via `?refresh=true` overwriting cached entries; usage and estimated cost tracking in `research_runs`; daily request cap enforcement (default 50, returns 429 `RESEARCH_DAILY_CAP_EXCEEDED`); and optional monthly spend cap enforcement (returns 422 `RESEARCH_MONTHLY_COST_CAP_EXCEEDED`).
+
+---
+
 ## 2026-09-05 — Story 14.3 — social-listening-core@c903723
 
 - **Full commit:** `c9037238ac90eaae565594f81b045e5a3123c578`
