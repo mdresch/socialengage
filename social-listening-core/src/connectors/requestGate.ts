@@ -181,6 +181,33 @@ export async function acquireForOutboundPost(tenantId: string, connector: Social
   return acquire(key, config);
 }
 
+export function searchKey(tenantId: string, connector: { providerId: string }): string {
+  return `${tenantId}:${connector.providerId}:search`;
+}
+
+/**
+ * Story 14.3 (ADR-0120 §4) — Gates per (tenantId, providerId, 'search'),
+ * separate from ingestion, outbound, and research gates.
+ */
+export async function acquireForSearch(
+  tenantId: string,
+  connector: {
+    providerId: string;
+    getSearchRateLimitConfig?(): RateLimitConfig;
+    getRateLimitConfig?(): RateLimitConfig;
+  }
+): Promise<void> {
+  const key = searchKey(tenantId, connector);
+  const config =
+    connector.getSearchRateLimitConfig?.() ??
+    connector.getRateLimitConfig?.() ?? {
+      requestsPerWindow: 2000,
+      windowSeconds: 30 * 86400,
+    };
+  return acquire(key, config);
+}
+
+
 /** Test-only: isolates contract tests that would otherwise share gate state by key collision. */
 export function __resetGateForTests(): void {
   state.clear();

@@ -1,7 +1,8 @@
-import { SocialConnector, NormalizedPost } from '../types';
+import { SocialConnector, NormalizedPost, SearchProviderConnector, SearchRequest, SearchResponse, ConnectorContext } from '../types';
+import { isConnectorActive } from '../connectorActivationStore';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
-import { acquire, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
+import { acquire, acquireForSearch, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
 import { htmlToMarkdown } from '../../content/htmlToMarkdown';
 
 export const BING_SEARCH_PROVIDER_ID = 'bing-search';
@@ -232,6 +233,69 @@ export async function fetchBingSearch(
   return data.value ?? [];
 }
 
+function mapFreshnessToBing(freshness?: 'any' | 'day' | 'week' | 'month'): 'Day' | 'Week' | 'Month' | undefined {
+  if (!freshness || freshness === 'any') return undefined;
+  if (freshness === 'day') return 'Day';
+  if (freshness === 'week') return 'Week';
+  if (freshness === 'month') return 'Month';
+  return undefined;
+}
+
+/**
+ * Story 14.3 (ADR-0120) — SearchProviderConnector implementation for Bing Search.
+ */
+export const bingSearchProviderConnector: SearchProviderConnector = {
+  providerId: BING_SEARCH_PROVIDER_ID,
+
+  getRateLimitConfig: () => bingSearchConnector.getRateLimitConfig(),
+
+  search: async (ctx: ConnectorContext, request: SearchRequest): Promise<SearchResponse> => {
+    const { tenantId } = ctx;
+    const active = await isConnectorActive(tenantId, BING_SEARCH_PROVIDER_ID, 'tenant');
+    if (!active) {
+      throw new Error(`Bing Search connector is not active for tenant ${tenantId}`);
+    }
+
+
+    const credentialId = await getLatestCredentialId(tenantId, BING_SEARCH_PROVIDER_ID, 'tenant');
+    if (!credentialId) {
+      throw new ClassifiableError('http_401', `No Bing Search credential registered for tenant ${tenantId}`);
+    }
+    const apiKey = await readCredential(tenantId, credentialId);
+
+    try {
+      await acquireForSearch(tenantId, bingSearchProviderConnector);
+    } catch (err) {
+      if (err instanceof QueueTtlExceededError) {
+        throw new ClassifiableError('queue_ttl_exceeded', err.message);
+      }
+      if (err instanceof QueueDepthExceededError) {
+        throw new ClassifiableError('queue_depth_exceeded', err.message);
+      }
+      throw err;
+    }
+
+    const limit = Math.min(Math.max(request.limit ?? 5, 1), 10);
+    const freshness = mapFreshnessToBing(request.freshness);
+
+    const rawResults = await fetchBingSearch(request.q, apiKey, {
+      endpoint: 'web',
+      count: limit,
+      freshness,
+      mkt: request.market ?? 'en-US',
+    });
+
+    const results = rawResults.slice(0, limit).map((item) => ({
+      title: item.name,
+      url: canonicalizeUrl(item.url),
+      snippet: htmlToMarkdown(item.snippet ?? item.description ?? item.name),
+      ...(item.datePublished || item.dateLastCrawled ? { publishedAt: parsePublicationDate(item) } : {}),
+    }));
+
+    return { results };
+  },
+};
+
 export interface ResearchSearchResult {
   title: string;
   url: string;
@@ -241,7 +305,7 @@ export interface ResearchSearchResult {
 
 /**
  * Story 2.31 (ADR-0076) — one-off web search helper for composer Deep Research.
- * Reuses the tenant credential and the existing fetch; does not persist posts.
+ * Preserves the (tenantId:providerId:research) gate and ClassifiableError contract.
  */
 export async function searchForResearch(
   tenantId: string,
@@ -274,3 +338,5 @@ export async function searchForResearch(
     provider: BING_SEARCH_PROVIDER_ID,
   }));
 }
+
+
