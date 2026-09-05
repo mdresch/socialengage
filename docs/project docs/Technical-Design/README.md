@@ -57,7 +57,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | **Batch 2** | **Ingestion Pipeline & Connector Architecture** | ADRs 0005, 0006, 0009, 0010, 0020, 0023, 0024, 0026, 0034, 0042, 0048, 0050–0052, 0057–0061, 0067–0070 | Epic 1, Epic 2, Epic 5, Epic 6 | **Complete (23/23 TDS)** |
 | **Batch 3** | **Data Architecture, Storage, Retention & Exports** | ADRs 0004, 0011, 0017–0019, 0039, 0044, 0049, 0053, 0063, 0074, 0090, 0111, 0124 | Epic 3, Epic 10 | **Complete (14/14 TDS)** |
 | **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 10, Epic 11, Epic 12, Epic 13, Epic 16, Epic 17, Epic 18 | **Complete (20/20 TDS)** |
-| **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10 | Pending |
+| **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10, Epic 12, Epic 13, Epic 15, Epic 16 | **Complete (16/16 TDS)** |
 | **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 9, Epic 14 | Pending |
 | **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 11, Epic 12, Epic 13, Epic 14 | Pending |
 | **Batch 8** | **Advanced Telemetry & Continuous Self-Learning** | ADRs 0078–0080, 0089, 0096, 0101, 0102, 0106, 0122, 0130, 0134 | Epic 14, Epic 15+ | Pending |
@@ -160,3 +160,27 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0133`](TDS-0133-Metric-Explainability-Endpoint-Refinements.md) | Metric Explainability Endpoint Refinements | ADR-0133 | Story 17.3 / 13.7 | `story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` |
 | [`TDS-0135`](TDS-0135-Preconfigured-Analytics-Views-Refinements.md) | Preconfigured Analytics Views Refinements | ADR-0135 | Story 18.2 / 10.3 | `story-10.3.preconfigured-analytics-views.contract.test.ts` |
 | [`TDS-0141`](TDS-0141-Analytics-And-UI-Contract-Refinements.md) | Analytics and UI Contract Refinements | ADR-0141 | Story 6.9/8.6/8.7 | `story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts` |
+
+---
+
+## Batch 5: Identity, Security, Admin Console & Compliance (Completed Specifications)
+
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0035`](TDS-0035-Admin-UI-Shape-One-App-Role-Gated.md) | Admin UI Shape: Unified Single-App Architecture & Role-Gated Views | ADR-0035 | Story 6.2 / 6.6 | `story-6.2.admin-role-gated-views.contract.test.ts` |
+| [`TDS-0036`](TDS-0036-Admin-UI-Authentication-Session-And-Role-Gating-Mechanism.md) | Admin UI Authentication, Session Lifecycle & Role-Gating Guards | ADR-0036 | Story 5.11 / 6.1 / 6.2 | `story-5.11.session-management.contract.test.ts` |
+| [`TDS-0037`](TDS-0037-Self-Service-Tenant-Signup-And-First-Tenant-Admin-Provisioning.md) | Self-Service Tenant Signup & Initial Tenant-Admin Provisioning | ADR-0037 | Story 5.15 / 6.7 | `story-5.15.self-service-tenant-signup.contract.test.ts` |
+| [`TDS-0040`](TDS-0040-Self-Service-Signup-Rate-Limiting-And-Abuse-Prevention-Mechanism.md) | Self-Service Signup Rate Limiting, IP Throttling & Abuse Prevention | ADR-0040 | Story 5.18 | `story-5.18.signup-abuse-prevention.contract.test.ts` |
+| [`TDS-0041`](TDS-0041-Platform-Admin-Is-A-Distinct-Identity-Kind-Not-A-Role-Value.md) | Platform-Admin as Distinct Identity Kind & Break-Glass Boundary | ADR-0041 | Story 5.7 / 5.11 / 6.6 | `story-5.7.platform-admin-identity-kind.contract.test.ts` |
+| [`TDS-0043`](TDS-0043-Self-Service-Tenant-Initiated-Deletion.md) | Self-Service Tenant-Initiated Deletion & Grace Period Lifecycle | ADR-0043 | Story 3.8 / 6.13 | `story-3.8.tenant-self-deletion.contract.test.ts` |
+| [`TDS-0091`](TDS-0091-Real-Time-Alert-Rules-And-Delivery.md) | Real-Time Alert Rule Engine, Cooldown Suppression & Alert Inbox | ADR-0091 | Story 10.9 / 10.10 | `story-10.9.real-time-alert-rules.contract.test.ts` |
+| [`TDS-0092`](TDS-0092-Author-Initiated-Takedown.md) | Author-Initiated Takedown Public Portal & Soft-Redaction Engine | ADR-0092 | Story 10.11 / 10.12 | `story-10.11.author-takedown-redaction.contract.test.ts` |
+| [`TDS-0093`](TDS-0093-DSR-Self-Service-Portal.md) | Data Subject Rights (DSR) Self-Service Portal & Review Engine | ADR-0093 | Story 10.13 | `story-10.13.dsr-portal-lifecycle.contract.test.ts` |
+| [`TDS-0094`](TDS-0094-Compliance-Audit-Pack.md) | Compliance Audit Pack Generation & Evidence Bundle Engine | ADR-0094 | Story 10.14 | `story-10.14.compliance-audit-pack.contract.test.ts` |
+| [`TDS-0107`](TDS-0107-Multi-User-Workspaces-And-RBAC-Permissions.md) | Multi-User Workspaces & Fine-Grained RBAC Resource Sharing | ADR-0107 | Story 12.13 / 12.14 | `story-12.13.multi-user-workspaces-rbac.contract.test.ts` |
+| [`TDS-0112`](TDS-0112-Feature-Gating-And-Seat-Limit-Enforcement.md) | Feature Gating, Plan Tiers & Active Seat-Limit Enforcement Engine | ADR-0112 | Story 13.5 / 13.6 | `story-13.5.feature-gating-and-seat-limit-enforcement.contract.test.ts` |
+| [`TDS-0123`](TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md) | Real-Time Alert Rule Refinements: Noise Exclusion, Daily Caps & Preview | ADR-0123 | Story 15.1 | `story-15.1.alert-rules-refinements.contract.test.ts` |
+| [`TDS-0125`](TDS-0125-Author-Initiated-Takedown-Refinements.md) | Author-Initiated Takedown Refinements: 45-Day SLA, CAPTCHA & AI Redaction | ADR-0125 | Story 16.1 | `story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts` |
+| [`TDS-0126`](TDS-0126-DSR-Self-Service-Portal-Refinements.md) | DSR Portal Refinements: Article 18 Restriction & Cryptographic Receipts | ADR-0126 | Story 16.2 | `story-16.2.dsr-article-18-restriction.contract.test.ts` |
+| [`TDS-0127`](TDS-0127-Compliance-Audit-Pack-Refinements.md) | Compliance Audit Pack Refinements: Merkle Hash Chaining & Manifests | ADR-0127 | Story 16.3 | `story-16.3.audit-hash-chaining-manifest.contract.test.ts` |
+
