@@ -59,7 +59,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 10, Epic 11, Epic 12, Epic 13, Epic 16, Epic 17, Epic 18 | **Complete (20/20 TDS)** |
 | **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10, Epic 12, Epic 13, Epic 15, Epic 16 | **Complete (16/16 TDS)** |
 | **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 3, Epic 6, Epic 9, Epic 12, Epic 14, Epic 19 | **Complete (18/18 TDS)** |
-| **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 11, Epic 12, Epic 13, Epic 14 | Pending |
+| **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 2, Epic 3, Epic 6, Epic 10, Epic 11, Epic 12, Epic 13, Epic 14, Epic 17 | **Complete (17/17 TDS)** |
 | **Batch 8** | **Advanced Telemetry & Continuous Self-Learning** | ADRs 0078–0080, 0089, 0096, 0101, 0102, 0106, 0122, 0130, 0134 | Epic 14, Epic 15+ | Pending |
 
 ---
@@ -208,5 +208,30 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0138`](TDS-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md) | RAG Vector Store: Namespace-Per-Tenant Isolation & pgvector RLS | ADR-0138 | Story 19.3 | `story-19.3.rag-vector-store-namespace.contract.test.ts` |
 | [`TDS-0139`](TDS-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md) | RAG Search and Ask Endpoint: Namespace Resolution | ADR-0139 | Story 19.4 | `story-19.4.rag-search-ask-namespace.contract.test.ts` |
 | [`TDS-0140`](TDS-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md) | RAG UI/UX & Loading Patterns Refinements: RAF Stream Draining | ADR-0140 | Story 19.5 | `story-19.5.rag-ui-refinements.contract.test.ts` |
+
+---
+
+## Batch 7: Outbound Publishing, Polypost Composer & Social Care (Completed Specifications)
+
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0071`](TDS-0071-Human-In-The-Loop-Post-Enrichment-Overrides.md) | Human-in-the-Loop Post Enrichment Overrides and Cascading Drawer UI | ADR-0071 | Story 3.13 / 6.31 | `story-3.13.post-enrichment-overrides.contract.test.ts` |
+| [`TDS-0072`](TDS-0072-Cross-Platform-Polypost-Composer-And-Preview-Engine.md) | Cross-Platform Polypost Composer and Multi-Network Preview Engine | ADR-0072 | Story 6.36 | `story-6.36.polypost-composer.contract.test.ts` |
+| [`TDS-0073`](TDS-0073-Outbound-Reply-To-Ingested-Posts.md) | Outbound Reply to Ingested Posts via Platform APIs | ADR-0073 | Story 2.26 / 2.27 / 3.14 / 6.38 | `story-2.26.connector-reply-framework.contract.test.ts` |
+| [`TDS-0075`](TDS-0075-Outbound-Social-Post-Publishing.md) | Outbound Social Post Publishing via Platform APIs | ADR-0075 | Story 2.28 / 2.29 / 2.30 / 3.15 / 6.39 | `story-2.28.connector-publish-framework.contract.test.ts` |
+| [`TDS-0086`](TDS-0086-Prospecting-List-Model-And-Sharing.md) | Prospecting List Model and Sharing | ADR-0086 | Story 10.1 / 10.2 | `story-10.1.prospecting-list-model.contract.test.ts` |
+| [`TDS-0095`](TDS-0095-Case-And-Lead-Handoff-To-CRM.md) | Case and Lead Handoff to CRM (Dynamics 365, Salesforce, HubSpot) | ADR-0095 | Story 11.1 / 11.2 | `story-11.1.crm-connector-handoff.contract.test.ts` |
+| [`TDS-0098`](TDS-0098-Publishing-And-Scheduling.md) | Publishing and Scheduling | ADR-0098 | Story 11.7 / 11.8 | `story-11.7.publishing-and-scheduling.contract.test.ts` |
+| [`TDS-0099`](TDS-0099-Unified-Social-Inbox-And-Reply.md) | Unified Social Inbox and Reply | ADR-0099 | Story 11.9 / 11.10 | `story-11.9.unified-social-inbox.contract.test.ts` |
+| [`TDS-0100`](TDS-0100-Composed-Post-Author-Mention-Suggestions.md) | Composed Post Author Mention Suggestions | ADR-0100 | Story 11.11 / 11.12 | `story-11.11.mention-suggestions.contract.test.ts` |
+| [`TDS-0108`](TDS-0108-Influencer-Discovery-And-Scoring.md) | Influencer Discovery and Scoring | ADR-0108 | Story 12.15 / 12.16 | `story-12.15.influencer-discovery-scoring.contract.test.ts` |
+| [`TDS-0110`](TDS-0110-Per-Connector-Query-Translation-And-Validation.md) | Per-Connector Query Translation and Validation | ADR-0110 | Story 13.2 / 13.3 | `story-13.2.query-translation.contract.test.ts` |
+| [`TDS-0115`](TDS-0115-Publishing-Media-Upload-And-Asset-Targeting.md) | Publishing — Media Upload and Asset Targeting | ADR-0115 | Story 13.9 / 13.10 | `story-13.9.media-upload-asset-targeting.contract.test.ts` |
+| [`TDS-0117`](TDS-0117-Prospecting-List-Export-And-CRM-Push.md) | Prospecting List Export and CRM Push | ADR-0117 | Story 13.13 / 13.14 | `story-13.13.prospecting-export-crm-push.contract.test.ts` |
+| [`TDS-0118`](TDS-0118-Additional-Social-Platform-Publishing.md) | Additional Social Platform Publishing Roadmap | ADR-0118 | Story 14.1 | `story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts` |
+| [`TDS-0119`](TDS-0119-Editing-And-Deleting-Published-Outbound-Posts.md) | Editing and Deleting Published Outbound Posts | ADR-0119 | Story 14.2 | `story-14.2.editing-and-deleting-published-outbound-posts.contract.test.ts` |
+| [`TDS-0129`](TDS-0129-Prospecting-List-Model-Refinements-Deduplicated-CRM-Sync.md) | Prospecting List Model Refinements — Deduplicated CRM Sync and Scoped Team Sharing | ADR-0129 | Story 17.1 | `story-17.1.prospecting-list-refinements.contract.test.ts` |
+| [`TDS-0131`](TDS-0131-Crisis-Template-Bundle-Refinements-Baseline-Escalation.md) | Crisis Template Bundle Refinements — Automated Baseline Calibration and Escalation Trees | ADR-0131 | Story 17.3 | `story-17.3.crisis-baseline-escalation.contract.test.ts` |
+
 
 
