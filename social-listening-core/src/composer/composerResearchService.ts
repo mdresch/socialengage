@@ -3,9 +3,10 @@ import { isConnectorActive } from '../connectors/connectorActivationStore';
 import { acquireForAiModel, QueueTtlExceededError, QueueDepthExceededError } from '../connectors/requestGate';
 import { ClassifiableError } from '../ingestion/errorClassification';
 import { azureOpenAiConnector } from '../connectors/azureOpenAi/azureOpenAiConnector';
-import { searchForResearch as searchBrave, BRAVE_SEARCH_PROVIDER_ID } from '../connectors/braveSearch/braveSearchConnector';
-import { searchForResearch as searchBing, BING_SEARCH_PROVIDER_ID } from '../connectors/bingSearch/bingSearchConnector';
-import { ResearchSearchResult } from '../connectors/braveSearch/braveSearchConnector';
+import { BRAVE_SEARCH_PROVIDER_ID, braveSearchProviderConnector } from '../connectors/braveSearch/braveSearchConnector';
+import { BING_SEARCH_PROVIDER_ID, bingSearchProviderConnector } from '../connectors/bingSearch/bingSearchConnector';
+import { getSearchProviderConnector } from '../connectors/registry';
+import { SearchProviderConnector } from '../connectors/types';
 
 const DEFAULT_MAX_SEARCH_RESULTS = 5;
 const HARD_MAX_SEARCH_RESULTS = 10;
@@ -19,11 +20,18 @@ export interface ComposerResearchRequest {
   maxSearchResultsPerQuery?: number;
 }
 
+export interface ComposerResearchSource {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+}
+
 export interface ComposerResearchResult {
   keyPhrases: string[];
   relatedTopics: string[];
   searchQueries: string[];
-  sources: ResearchSearchResult[];
+  sources: ComposerResearchSource[];
   contextSummary: string;
   comparison: string;
 }
@@ -76,18 +84,28 @@ async function loadAiCredential(tenantId: string): Promise<string> {
   return readCredential(tenantId, credentialId);
 }
 
-async function discoverActiveSearchProviders(tenantId: string): Promise<Array<{ providerId: string; search: typeof searchBrave }>> {
-  const providers: Array<{ providerId: string; search: typeof searchBrave }> = [];
-  for (const { id, search } of [
-    { id: BRAVE_SEARCH_PROVIDER_ID, search: searchBrave },
-    { id: BING_SEARCH_PROVIDER_ID, search: searchBing },
-  ]) {
+const fallbackSearchProviders: Record<string, SearchProviderConnector> = {
+  [BRAVE_SEARCH_PROVIDER_ID]: braveSearchProviderConnector,
+  [BING_SEARCH_PROVIDER_ID]: bingSearchProviderConnector,
+};
+
+async function discoverActiveSearchProviders(tenantId: string): Promise<SearchProviderConnector[]> {
+  const candidateIds = [BRAVE_SEARCH_PROVIDER_ID, BING_SEARCH_PROVIDER_ID];
+  const providers: SearchProviderConnector[] = [];
+
+  for (const id of candidateIds) {
     if (await isConnectorActive(tenantId, id, 'tenant')) {
-      providers.push({ providerId: id, search });
+      const connector = getSearchProviderConnector(id) ?? fallbackSearchProviders[id];
+      if (connector?.search) {
+        providers.push(connector);
+      }
     }
   }
+
   return providers;
 }
+
+
 
 /**
  * Story 3.17 (ADR-0076) — pure orchestration for the composer Deep Research
@@ -122,19 +140,26 @@ export async function performResearch(
   let searchQueries = (extraction.searchQueries ?? []).slice(0, MAX_SEARCH_QUERIES);
 
   // Search stage
-  const collectedSources: ResearchSearchResult[] = [];
+  const collectedSources: ComposerResearchSource[] = [];
   let lastSearchError: Error | undefined;
 
   for (const query of searchQueries) {
     for (const provider of activeSearchProviders) {
       try {
-        const results = await provider.search(tenantId, query, maxSearchResultsPerQuery);
-        collectedSources.push(...results.slice(0, maxSearchResultsPerQuery));
+        const response = await provider.search!({ tenantId }, { q: query, limit: maxSearchResultsPerQuery });
+        const mapped = response.results.slice(0, maxSearchResultsPerQuery).map((r) => ({
+          title: r.title,
+          url: r.url,
+          snippet: r.snippet,
+          provider: provider.providerId,
+        }));
+        collectedSources.push(...mapped);
       } catch (err) {
         lastSearchError = err instanceof Error ? err : new Error(String(err));
       }
     }
   }
+
 
   if (collectedSources.length === 0) {
     if (lastSearchError instanceof ClassifiableError) {

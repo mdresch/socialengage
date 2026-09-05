@@ -2,6 +2,32 @@
 
 ---
 
+## 2026-09-05 — Story 14.3 — social-listening-core@c903723
+
+- **Full commit:** `c9037238ac90eaae565594f81b045e5a3123c578`
+- **Repo:** social-listening-core
+- **Story / ADR:** 14.3 / ADR-0120
+- **Contract:** `social-listening-core/contracts/epic-14/story-14.3.search-provider-connector-abstraction.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/search-provider-connector/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/src/connectors/types.ts`
+  - `social-listening-core/src/connectors/registry.ts`
+  - `social-listening-core/src/connectors/requestGate.ts`
+  - `social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts`
+  - `social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts`
+  - `social-listening-core/src/connectors/bootstrapConnectors.ts`
+  - `social-listening-core/src/composer/composerResearchService.ts`
+  - `social-listening-core/src/ingestion/errorClassification.ts`
+  - `social-listening-core/.claude/skills/search-provider-connector/SKILL.md`
+  - `social-listening-core/contracts/epic-14/story-14.3.search-provider-connector-abstraction.contract.test.ts`
+  - `docs/adr/README.md`
+  - `docs/implementation-plan.md`
+  - `docs/user-stories/README.md`
+- **Validation re-run:** new contract PASS (11/11); epic-14 suite PASS (45/45); related regression suites Story 2.31 PASS (13/13) and Story 3.17 PASS (6/6); `npm run typecheck` PASS with 0 errors.
+- **Notes:** Implements the shared `SearchProviderConnector` abstraction for on-demand public web search (ADR-0120). Defines `SearchProviderConnector`, `SearchRequest`, `SearchResponse`, and `SearchItem` in `types.ts`, adds registry registration/lookup in `registry.ts`, auto-registers Brave Search and Bing Search search providers in `bootstrapConnectors.ts`, isolates rate-limiting under a dedicated `RequestGate` key `(tenantId, providerId, 'search')` via `acquireForSearch()`, gates on tenant connector activation and credential availability, enforces search query limit bounds ([1, 10], default 5) and freshness mapping, refactors `POST /v1/composer/research` to consume registered search providers, and preserves backward compatibility of existing `searchForResearch()` helpers.
+
+---
+
 ## 2026-09-04 — Story 14.2 — social-listening-core@c1ab9b2
 
 - **Full commit:** `c1ab9b297a5a7a279da99825432d27319e3ab69a`

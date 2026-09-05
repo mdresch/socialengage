@@ -475,3 +475,41 @@ export interface AIProviderConnector extends ProviderConnector {
     options?: { seed?: number; promptVersion?: number }
   ): Promise<AIExplainResult>;
 }
+
+/**
+ * Story 14.3 (ADR-0120) — standardized request shape for one-off search.
+ */
+export interface SearchRequest {
+  q: string;
+  limit?: number; // default 5, hard cap 10
+  freshness?: 'any' | 'day' | 'week' | 'month';
+  market?: string; // optional ISO country/language hint (e.g. 'en-US')
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized individual search result item.
+ */
+export interface SearchItem {
+  title: string;
+  url: string;
+  snippet: string;
+  publishedAt?: string;
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized response shape for one-off search.
+ */
+export interface SearchResponse {
+  results: SearchItem[];
+}
+
+/**
+ * Story 14.3 (ADR-0120) — shared interface for on-demand one-off search providers.
+ */
+export interface SearchProviderConnector {
+  readonly providerId: string;
+  search?(ctx: ConnectorContext, request: SearchRequest): Promise<SearchResponse>;
+  getRateLimitConfig?(): RateLimitConfig;
+  getSearchRateLimitConfig?(): RateLimitConfig;
+}
+

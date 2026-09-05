@@ -1,7 +1,8 @@
-import { AIProviderConnector, SocialConnector, SocialConnectorCapabilities } from './types';
+import { AIProviderConnector, SearchProviderConnector, SocialConnector, SocialConnectorCapabilities } from './types';
 
 const socialConnectors = new Map<string, SocialConnector>();
 const aiProviderConnectors = new Map<string, AIProviderConnector>();
+const searchProviderConnectors = new Map<string, SearchProviderConnector>();
 
 export function registerSocialConnector(connector: SocialConnector): void {
   socialConnectors.set(connector.providerId, connector);
@@ -9,6 +10,10 @@ export function registerSocialConnector(connector: SocialConnector): void {
 
 export function registerAIProviderConnector(connector: AIProviderConnector): void {
   aiProviderConnectors.set(connector.providerId, connector);
+}
+
+export function registerSearchProviderConnector(connector: SearchProviderConnector): void {
+  searchProviderConnectors.set(connector.providerId, connector);
 }
 
 export function getSocialConnector(providerId: string): SocialConnector | undefined {
@@ -19,12 +24,20 @@ export function getAIProviderConnector(providerId: string): AIProviderConnector 
   return aiProviderConnectors.get(providerId);
 }
 
+export function getSearchProviderConnector(providerId: string): SearchProviderConnector | undefined {
+  return searchProviderConnectors.get(providerId);
+}
+
 export function listSocialConnectors(): SocialConnector[] {
   return [...socialConnectors.values()];
 }
 
 export function listAIProviderConnectors(): AIProviderConnector[] {
   return [...aiProviderConnectors.values()];
+}
+
+export function listSearchProviderConnectors(): SearchProviderConnector[] {
+  return [...searchProviderConnectors.values()];
 }
 
 /**
@@ -90,4 +103,6 @@ export function listConnectorCapabilities(tenantId?: string): ConnectorCapabilit
 export function __resetRegistryForTests(): void {
   socialConnectors.clear();
   aiProviderConnectors.clear();
+  searchProviderConnectors.clear();
 }
+

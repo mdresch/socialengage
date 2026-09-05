@@ -1,7 +1,8 @@
-import { SocialConnector, NormalizedPost } from '../types';
+import { SocialConnector, NormalizedPost, SearchProviderConnector, SearchRequest, SearchResponse, ConnectorContext } from '../types';
+import { isConnectorActive } from '../connectorActivationStore';
 import { ClassifiableError } from '../../ingestion/errorClassification';
 import { getLatestCredentialId, readCredential } from '../../credentials/credentialStore';
-import { acquire, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
+import { acquire, acquireForSearch, QueueTtlExceededError, QueueDepthExceededError } from '../requestGate';
 import { htmlToMarkdown } from '../../content/htmlToMarkdown';
 
 export const BRAVE_SEARCH_PROVIDER_ID = 'brave-search';
@@ -157,6 +158,55 @@ export async function fetchBraveSearch(
   return data.results ?? [];
 }
 
+/**
+ * Story 14.3 (ADR-0120) — SearchProviderConnector implementation for Brave Search.
+ */
+export const braveSearchProviderConnector: SearchProviderConnector = {
+  providerId: BRAVE_SEARCH_PROVIDER_ID,
+
+  getRateLimitConfig: () => braveSearchConnector.getRateLimitConfig(),
+
+  search: async (ctx: ConnectorContext, request: SearchRequest): Promise<SearchResponse> => {
+    const { tenantId } = ctx;
+    const active = await isConnectorActive(tenantId, BRAVE_SEARCH_PROVIDER_ID, 'tenant');
+    if (!active) {
+      throw new Error(`Brave Search connector is not active for tenant ${tenantId}`);
+    }
+
+
+    const credentialId = await getLatestCredentialId(tenantId, BRAVE_SEARCH_PROVIDER_ID, 'tenant');
+    if (!credentialId) {
+      throw new ClassifiableError('http_401', `No Brave Search credential registered for tenant ${tenantId}`);
+    }
+    const apiKey = await readCredential(tenantId, credentialId);
+
+    try {
+      await acquireForSearch(tenantId, braveSearchProviderConnector);
+    } catch (err) {
+      if (err instanceof QueueTtlExceededError) {
+        throw new ClassifiableError('queue_ttl_exceeded', err.message);
+      }
+      if (err instanceof QueueDepthExceededError) {
+        throw new ClassifiableError('queue_depth_exceeded', err.message);
+      }
+      throw err;
+    }
+
+    const limit = Math.min(Math.max(request.limit ?? 5, 1), 10);
+    const freshness = request.freshness && request.freshness !== 'any' ? request.freshness : undefined;
+
+    const rawResults = await fetchBraveSearch(request.q, apiKey, 'web', freshness, limit);
+    const results = rawResults.slice(0, limit).map((item) => ({
+      title: item.title,
+      url: canonicalizeUrl(item.url),
+      snippet: htmlToMarkdown(item.description ?? item.title),
+      ...(item.published || item.page_age || item.age ? { publishedAt: parsePublicationDate(item) } : {}),
+    }));
+
+    return { results };
+  },
+};
+
 export interface ResearchSearchResult {
   title: string;
   url: string;
@@ -166,7 +216,7 @@ export interface ResearchSearchResult {
 
 /**
  * Story 2.31 (ADR-0076) — one-off web search helper for composer Deep Research.
- * Reuses the tenant credential and the existing fetch; does not persist posts.
+ * Preserves the (tenantId:providerId:research) gate and ClassifiableError contract.
  */
 export async function searchForResearch(
   tenantId: string,
@@ -199,3 +249,5 @@ export async function searchForResearch(
     provider: BRAVE_SEARCH_PROVIDER_ID,
   }));
 }
+
+
