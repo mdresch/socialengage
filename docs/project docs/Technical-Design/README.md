@@ -56,7 +56,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | **Batch 1** | **Core Foundation & Tenant Isolation** | ADRs 0001–0003, 0014–0016, 0025, 0027–0033 | Epic 1, Epic 5 | **Complete (14/14 TDS)** |
 | **Batch 2** | **Ingestion Pipeline & Connector Architecture** | ADRs 0005, 0006, 0009, 0010, 0020, 0023, 0024, 0026, 0034, 0042, 0048, 0050–0052, 0057–0061, 0067–0070 | Epic 1, Epic 2, Epic 5, Epic 6 | **Complete (23/23 TDS)** |
 | **Batch 3** | **Data Architecture, Storage, Retention & Exports** | ADRs 0004, 0011, 0017–0019, 0039, 0044, 0049, 0053, 0063, 0074, 0090, 0111, 0124 | Epic 3, Epic 10 | **Complete (14/14 TDS)** |
-| **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 13 | Pending |
+| **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 10, Epic 11, Epic 12, Epic 13, Epic 16, Epic 17, Epic 18 | **Complete (20/20 TDS)** |
 | **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10 | Pending |
 | **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 9, Epic 14 | Pending |
 | **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 11, Epic 12, Epic 13, Epic 14 | Pending |
@@ -133,3 +133,30 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0090`](TDS-0090-Data-Export-Posts-CSV.md) | Posts CSV Data Export & Background Export Worker Engine | ADR-0090 | Story 10.8 | `story-10.8.data-export-posts-csv.contract.test.ts` |
 | [`TDS-0111`](TDS-0111-Export-Bounding-Streaming-And-Size-Caps.md) | Export Resource Guards, Sync/Async Thresholds & Blob Lifecycle | ADR-0111 | Story 13.4 | `story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts` |
 | [`TDS-0124`](TDS-0124-Data-Export-Posts-CSV-Sampling-And-Bounded-Lookback.md) | Export Lookback Validation & Representative Systematic Sampling | ADR-0124 | Story 15.2 | `story-10.8.data-export-posts-csv.contract.test.ts` |
+
+---
+
+## Batch 4: Analytics, Metric Explainability & Dashboards (Completed Specifications)
+
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0007`](TDS-0007-Author-Topic-Signal-Minimal-V1.md) | Author Topic Signal Minimal V1 | ADR-0007 | Story 4.1 | `story-4.1.author-topic-signal-minimal-v1.contract.test.ts` |
+| [`TDS-0008`](TDS-0008-Defer-Topic-Time-Series-And-Charting.md) | Defer Topic Time Series and Charting | ADR-0008 | Story 4.2 | `story-4.2.topic-time-series-deferred.contract.test.ts` |
+| [`TDS-0022`](TDS-0022-Derived-Data-Caching-And-Refresh-Strategy.md) | Derived Data Caching and Refresh Strategy | ADR-0022 | Story 4.4 | `story-4.4.derived-data-caching-and-refresh.contract.test.ts` |
+| [`TDS-0054`](TDS-0054-Tenant-Facing-Analytics-Dashboard-Scope-And-Data-Source-Strategy.md) | Tenant-Facing Analytics Dashboard Scope & Data-Source Strategy | ADR-0054 | Story 8.1 | `story-8.1.analytics-dashboard-shell-overview-sources.contract.test.ts` |
+| [`TDS-0055`](TDS-0055-Analytics-Language-And-Location-Enrichment-Feasibility.md) | Analytics Language & Location Enrichment Feasibility | ADR-0055 | Story 8.5 | `story-8.5.languages-breakdown-widget.contract.test.ts` |
+| [`TDS-0056`](TDS-0056-AI-Inferred-Origin-Location-Newswire-Dateline-Extraction.md) | AI-Inferred Origin Location from Newswire Dateline Extraction | ADR-0056 | Story 4.2 (Res.) | `story-2.9.ai-provider-connector.contract.test.ts` |
+| [`TDS-0062`](TDS-0062-Analytics-Dashboard-Overview-Tab-Enhancement.md) | Analytics Dashboard Overview Tab Enhancement | ADR-0062 | Story 8.7 / 8.8 | `story-8.7.overview-tab-enhancement.contract.test.ts` |
+| [`TDS-0064`](TDS-0064-Location-And-Geospatial-Insights-From-Posts-And-Authors.md) | Location and Geospatial Insights from Posts and Authors | ADR-0064 | Story 2.20 / 8.10 | `story-8.10.location-and-geospatial-insights.contract.test.ts` |
+| [`TDS-0087`](TDS-0087-Preconfigured-Analytics-Views.md) | Preconfigured Analytics Views | ADR-0087 | Story 10.3 / 8.4 | `story-10.3.preconfigured-analytics-views.contract.test.ts` |
+| [`TDS-0088`](TDS-0088-Ad-Hoc-Query-Allowlist.md) | Ad-Hoc Query Allowlist | ADR-0088 | Story 10.4 / 10.5 | `story-10.4.ad-hoc-query-endpoint.contract.test.ts` |
+| [`TDS-0097`](TDS-0097-Topic-Evolution-Timeline.md) | Topic Evolution Timeline | ADR-0097 | Story 11.5 / 11.6 | `story-11.5.topic-evolution.contract.test.ts` |
+| [`TDS-0105`](TDS-0105-Dashboards-And-Analytics-Widget-Contracts.md) | Dashboards and Analytics Widget Contracts | ADR-0105 | Story 12.9 / 12.10 | `story-12.9.dashboard-widget-contracts.contract.test.ts` |
+| [`TDS-0113`](TDS-0113-Metric-Explainability-Prompt-And-Caching.md) | Metric Explainability Prompt and Caching | ADR-0113 | Story 13.7 / 9.2 | `story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` |
+| [`TDS-0114`](TDS-0114-Platform-Metrics-Table-And-Azure-Metrics.md) | Platform Metrics Table and Azure Metrics Integration | ADR-0114 | Story 10.6 / 13.8 | `story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` |
+| [`TDS-0116`](TDS-0116-Semantic-Drift-Detection.md) | Semantic Drift Detection | ADR-0116 | Story 13.11 / 13.12 | `story-13.11.semantic-drift-detection.contract.test.ts` |
+| [`TDS-0128`](TDS-0128-Platform-Operations-Dashboard-Refinements.md) | Platform Operations Dashboard Refinements | ADR-0128 | Story 16.4 / 10.7 | `story-10.7.platform-operations-dashboard.contract.test.ts` |
+| [`TDS-0132`](TDS-0132-Ad-Hoc-Query-Allowlist-Refinements.md) | Ad-Hoc Query Allowlist Refinements | ADR-0132 | Story 17.2 / 10.4 | `story-10.4.ad-hoc-query-endpoint.contract.test.ts` |
+| [`TDS-0133`](TDS-0133-Metric-Explainability-Endpoint-Refinements.md) | Metric Explainability Endpoint Refinements | ADR-0133 | Story 17.3 / 13.7 | `story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` |
+| [`TDS-0135`](TDS-0135-Preconfigured-Analytics-Views-Refinements.md) | Preconfigured Analytics Views Refinements | ADR-0135 | Story 18.2 / 10.3 | `story-10.3.preconfigured-analytics-views.contract.test.ts` |
+| [`TDS-0141`](TDS-0141-Analytics-And-UI-Contract-Refinements.md) | Analytics and UI Contract Refinements | ADR-0141 | Story 6.9/8.6/8.7 | `story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts` |
