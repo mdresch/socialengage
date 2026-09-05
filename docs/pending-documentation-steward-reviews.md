@@ -6792,3 +6792,15 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/search-provider-connector/SKILL.md, social-listening-core/contracts/epic-14/story-14.3.search-provider-connector-abstraction.contract.test.ts, social-listening-core/src/composer/composerResearchService.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts
 - **Status:** Pending review
 
+## 2026-09-05 — d2bd779 — feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry
+
+- **Full commit:** `d2bd77979b88017746bf7f799d324687efc507f2`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/epic-14-adr-0118-to-0122.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/contracts/epic-14/story-14.4.composer-deep-research-caching.contract.test.ts, social-listening-core/migrations/0075_create_research_cache_and_runs.sql, social-listening-core/src/composer/composerResearchService.ts, social-listening-core/src/composer/composerResearchStore.ts, social-listening-core/src/http/versions/v1/composerRouter.ts
+- **Status:** Pending review
+
+## 2026-09-05 — 82b276e — docs(epic-14): record Story 14.4 build in implementation log and user stories
+
+- **Full commit:** `82b276e8347850ebf485c2b30b3ec8cef8c3b685`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-14-adr-0118-to-0122.md
+- **Status:** Pending review
+
