@@ -55,7 +55,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 |---|---|---|---|---|
 | **Batch 1** | **Core Foundation & Tenant Isolation** | ADRs 0001–0003, 0014–0016, 0025, 0027–0033 | Epic 1, Epic 5 | **Complete (14/14 TDS)** |
 | **Batch 2** | **Ingestion Pipeline & Connector Architecture** | ADRs 0005, 0006, 0009, 0010, 0020, 0023, 0024, 0026, 0034, 0042, 0048, 0050–0052, 0057–0061, 0067–0070 | Epic 1, Epic 2, Epic 5, Epic 6 | **Complete (23/23 TDS)** |
-| **Batch 3** | **Data Architecture, Storage, Retention & Exports** | ADRs 0004, 0011, 0017–0019, 0039, 0044, 0049, 0053, 0063, 0074, 0090, 0111, 0124 | Epic 3, Epic 10 | Pending |
+| **Batch 3** | **Data Architecture, Storage, Retention & Exports** | ADRs 0004, 0011, 0017–0019, 0039, 0044, 0049, 0053, 0063, 0074, 0090, 0111, 0124 | Epic 3, Epic 10 | **Complete (14/14 TDS)** |
 | **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 13 | Pending |
 | **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10 | Pending |
 | **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 9, Epic 14 | Pending |
@@ -113,5 +113,23 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0069`](TDS-0069-LinkedIn-Connector.md) | LinkedIn Connector: OAuth 2.0 & Ingestion Architecture | ADR-0069 | Story 2.25 | `story-2.25.linkedin-connector.contract.test.ts` |
 | [`TDS-0070`](TDS-0070-Connector-Ingestion-Status-Hanging-Run-Reconciliation-And-Alerts.md) | Ingestion Watchdog Reconciliation & Inactivity Alerting | ADR-0070 | Story 1.16 | `story-1.16.ingestion-watchdog-and-stalled-alerts.contract.test.ts` |
 
+---
 
+## Batch 3: Data Architecture, Storage, Retention & Exports (Completed Specifications)
 
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0004`](TDS-0004-Author-Normalized-Separately-From-Post.md) | Author Entity Normalization & Profile Lifecycle | ADR-0004 | Story 3.1 | `story-3.1.author-normalization.contract.test.ts` |
+| [`TDS-0011`](TDS-0011-Cursor-Based-Pagination-For-Posts-API.md) | Cursor-Based Pagination for Posts API (`seq`) | ADR-0011 | Story 3.4 | `story-3.4.cursor-pagination.contract.test.ts` |
+| [`TDS-0017`](TDS-0017-API-Versioning-And-Compatibility-Policy.md) | HTTP API Versioning & Backward Compatibility Policy | ADR-0017 | Story 1.3 (v1) | `story-1.3.http-api-versioning.contract.test.ts` |
+| [`TDS-0018`](TDS-0018-Data-Retention-And-Archival-Policy.md) | Data Retention, Archival & Partition Lifecycle | ADR-0018 | Story 3.5 | `story-3.5.data-retention-and-archival.contract.test.ts` |
+| [`TDS-0019`](TDS-0019-Event-Schema-Versioning-Policy.md) | Domain Event Schema Versioning & Forward Compatibility | ADR-0019 | Story 5.5 | `story-5.5.event-schema-versioning.contract.test.ts` |
+| [`TDS-0039`](TDS-0039-Tenant-Offboarding-Data-Lifecycle-Export-And-Deletion.md) | Tenant Offboarding, Data Lifecycle Export & Deletion | ADR-0039 | Story 3.7 / 3.8 | `story-3.8.tenant-deletion-offboarding.contract.test.ts` |
+| [`TDS-0044`](TDS-0044-Watchlist-API-Design-And-Database-Schema-Standardization.md) | Watchlist CRUD Contract, RFC 7396 PATCH & Optimistic Locking | ADR-0044 | Story 1.5 | `story-1.5.watchlist-crud.contract.test.ts` |
+| [`TDS-0049`](TDS-0049-Point-In-Time-Author-Follower-Count-On-Social-Post.md) | Point-in-Time Author Follower Count Snapshot on SocialPost | ADR-0049 | Story 3.9 | `story-3.9.author-follower-count-at-publish.contract.test.ts` |
+| [`TDS-0053`](TDS-0053-Canonical-Markdown-Post-Body-Normalization-At-Ingestion.md) | Canonical Markdown Normalization Computed Once at Ingestion | ADR-0053 | Story 3.10 | `story-3.10.canonical-markdown-post-body-normalization.contract.test.ts` |
+| [`TDS-0063`](TDS-0063-Post-Watchlist-Matches-Junction-Table-And-Server-Side-Watchlist-Filter.md) | Post-Watchlist Matches Junction Table & Server-Side Filter | ADR-0063 | Story 3.11 / 3.12 | `story-3.11.post-watchlist-match-persistence.contract.test.ts` |
+| [`TDS-0074`](TDS-0074-Tenant-Facing-Workspace-And-Posts-Export.md) | Tenant-Facing Workspace JSON & Matched-Posts CSV Export | ADR-0074 | Story 3.16 / 6.40 | `story-3.16.tenant-workspace-and-posts-export.contract.test.ts` |
+| [`TDS-0090`](TDS-0090-Data-Export-Posts-CSV.md) | Posts CSV Data Export & Background Export Worker Engine | ADR-0090 | Story 10.8 | `story-10.8.data-export-posts-csv.contract.test.ts` |
+| [`TDS-0111`](TDS-0111-Export-Bounding-Streaming-And-Size-Caps.md) | Export Resource Guards, Sync/Async Thresholds & Blob Lifecycle | ADR-0111 | Story 13.4 | `story-13.4.export-bounding-streaming-and-size-caps.contract.test.ts` |
+| [`TDS-0124`](TDS-0124-Data-Export-Posts-CSV-Sampling-And-Bounded-Lookback.md) | Export Lookback Validation & Representative Systematic Sampling | ADR-0124 | Story 15.2 | `story-10.8.data-export-posts-csv.contract.test.ts` |
