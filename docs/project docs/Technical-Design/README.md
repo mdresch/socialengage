@@ -58,7 +58,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | **Batch 3** | **Data Architecture, Storage, Retention & Exports** | ADRs 0004, 0011, 0017–0019, 0039, 0044, 0049, 0053, 0063, 0074, 0090, 0111, 0124 | Epic 3, Epic 10 | **Complete (14/14 TDS)** |
 | **Batch 4** | **Analytics, Metric Explainability & Dashboards** | ADRs 0007, 0008, 0022, 0054–0056, 0062, 0064, 0087, 0088, 0097, 0105, 0113, 0114, 0116, 0128, 0132, 0133, 0135, 0141 | Epic 4, Epic 8, Epic 10, Epic 11, Epic 12, Epic 13, Epic 16, Epic 17, Epic 18 | **Complete (20/20 TDS)** |
 | **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10, Epic 12, Epic 13, Epic 15, Epic 16 | **Complete (16/16 TDS)** |
-| **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 9, Epic 14 | Pending |
+| **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 3, Epic 6, Epic 9, Epic 12, Epic 14, Epic 19 | **Complete (18/18 TDS)** |
 | **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 11, Epic 12, Epic 13, Epic 14 | Pending |
 | **Batch 8** | **Advanced Telemetry & Continuous Self-Learning** | ADRs 0078–0080, 0089, 0096, 0101, 0102, 0106, 0122, 0130, 0134 | Epic 14, Epic 15+ | Pending |
 
@@ -183,4 +183,30 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0125`](TDS-0125-Author-Initiated-Takedown-Refinements.md) | Author-Initiated Takedown Refinements: 45-Day SLA, CAPTCHA & AI Redaction | ADR-0125 | Story 16.1 | `story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts` |
 | [`TDS-0126`](TDS-0126-DSR-Self-Service-Portal-Refinements.md) | DSR Portal Refinements: Article 18 Restriction & Cryptographic Receipts | ADR-0126 | Story 16.2 | `story-16.2.dsr-article-18-restriction.contract.test.ts` |
 | [`TDS-0127`](TDS-0127-Compliance-Audit-Pack-Refinements.md) | Compliance Audit Pack Refinements: Merkle Hash Chaining & Manifests | ADR-0127 | Story 16.3 | `story-16.3.audit-hash-chaining-manifest.contract.test.ts` |
+
+---
+
+## Batch 6: AI Enrichment, Search Sourcing & RAG Architecture (Completed Specifications)
+
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0038`](TDS-0038-AI-Enrichment-Provider-Selection.md) | AI Enrichment Provider Selection: Azure AI Language & Azure OpenAI | ADR-0038 | Story 2.8 / 2.9 | `story-2.8.azure-ai-language-connector.contract.test.ts` |
+| [`TDS-0065`](TDS-0065-Active-Watchlist-Sourcing-Via-Brave-Search-API.md) | Active Watchlist Sourcing via Brave Search API | ADR-0065 | Story 2.21 | `story-2.21.brave-search-connector.contract.test.ts` |
+| [`TDS-0066`](TDS-0066-Active-Watchlist-Sourcing-Via-Bing-Search-API.md) | Active Watchlist Sourcing via Bing Search API (Azure) | ADR-0066 | Story 2.22 | `story-2.22.bing-search-connector.contract.test.ts` |
+| [`TDS-0076`](TDS-0076-Composer-Deep-Research-Agent.md) | Composer Deep Research Agent: Context Summary & Comparison | ADR-0076 | Story 3.17 / 6.41 | `story-3.17.composer-deep-research.contract.test.ts` |
+| [`TDS-0081`](TDS-0081-RAG-Connector-Provider-Abstraction.md) | RAGConnector Provider Abstraction & Vector Store Interface | ADR-0081 | Story 9.7 | `story-9.7.rag-connector.contract.test.ts` |
+| [`TDS-0082`](TDS-0082-RAG-Post-Chunking-And-Embedding.md) | RAG Post Chunking and Embedding Pipeline | ADR-0082 | Story 9.8 | `story-9.8.rag-chunking-pipeline.contract.test.ts` |
+| [`TDS-0083`](TDS-0083-RAG-Vector-Store-RLS-And-Metadata.md) | RAG Vector-Store RLS, Pre-Filtering & Metadata Schema | ADR-0083 | Story 9.9 | `story-9.9.rag-vector-rls.contract.test.ts` |
+| [`TDS-0084`](TDS-0084-RAG-Search-And-Ask-Endpoint.md) | RAG Search & Ask Endpoints: Vector Retrieval & SSE Streaming | ADR-0084 | Story 9.10 | `story-9.10.rag-endpoints.contract.test.ts` |
+| [`TDS-0085`](TDS-0085-RAG-UI-UX-And-Loading-Patterns.md) | RAG UI/UX, Streaming Patterns & Citation Mechanics | ADR-0085 | Story 9.11 | `story-9.11.rag-discovery-ui.contract.test.ts` |
+| [`TDS-0103`](TDS-0103-AI-Sentiment-Analysis-Aspect-Schema.md) | AI Sentiment Analysis Aspect Schema & Confidence Tiering | ADR-0103 | Story 12.5 / 12.6 | `story-12.5.ai-sentiment-aspect-schema.contract.test.ts` |
+| [`TDS-0104`](TDS-0104-AI-Topic-Clustering-Post-Topics-Schema.md) | AI Topic Clustering Post Topics Schema & Topic Catalog | ADR-0104 | Story 12.7 / 12.8 | `story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts` |
+| [`TDS-0120`](TDS-0120-Search-Provider-Connector.md) | SearchProviderConnector: Shared One-Off Search Abstraction | ADR-0120 | Story 14.3 | `story-14.3.search-provider-connector.contract.test.ts` |
+| [`TDS-0121`](TDS-0121-Composer-Deep-Research-Caching-Retrigger-Cost.md) | Composer Deep Research Caching, Re-Trigger & Cost Telemetry | ADR-0121 | Story 14.4 | `story-14.4.composer-research-caching.contract.test.ts` |
+| [`TDS-0136`](TDS-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md) | RAGConnector Provider Abstraction: Namespace-Per-Tenant Isolation | ADR-0136 | Story 19.1 | `story-19.1.rag-connector-namespace.contract.test.ts` |
+| [`TDS-0137`](TDS-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md) | RAG Post Chunking and Embedding: Namespace Routing | ADR-0137 | Story 19.2 | `story-19.2.rag-chunking-namespace-routing.contract.test.ts` |
+| [`TDS-0138`](TDS-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md) | RAG Vector Store: Namespace-Per-Tenant Isolation & pgvector RLS | ADR-0138 | Story 19.3 | `story-19.3.rag-vector-store-namespace.contract.test.ts` |
+| [`TDS-0139`](TDS-0139-RAG-Search-And-Ask-Endpoint-Namespace-Resolution.md) | RAG Search and Ask Endpoint: Namespace Resolution | ADR-0139 | Story 19.4 | `story-19.4.rag-search-ask-namespace.contract.test.ts` |
+| [`TDS-0140`](TDS-0140-RAG-UI-UX-And-Loading-Patterns-Refinements.md) | RAG UI/UX & Loading Patterns Refinements: RAF Stream Draining | ADR-0140 | Story 19.5 | `story-19.5.rag-ui-refinements.contract.test.ts` |
+
 
