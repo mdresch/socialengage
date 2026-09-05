@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-05 | 22:04 | — | — | Documentation | Story 14.3 | feat(epic-14): implement Story 14.3 SearchProviderConnector abstraction (c903723) |
 | 2026-09-04 | 17:45 | — | — | Documentation | — | docs(tds): author Batch 1 and Batch 2 technical design specifications (37 TDS) (fdcf5d2) |
 | 2026-09-04 | 17:06 | — | — | Documentation | Story 14.2 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) (c1ab9b2) |
 | 2026-09-04 | 16:18 | — | — | Documentation | Story 14.1 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1 (d81a3f4) |
