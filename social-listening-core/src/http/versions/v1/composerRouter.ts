@@ -17,11 +17,19 @@ composerRouter.post('/research', async (req, res) => {
   const { tenantId } = identity;
 
   try {
-    const result = await performResearch(tenantId, {
-      text: req.body?.text,
-      targetPlatforms: Array.isArray(req.body?.targetPlatforms) ? req.body.targetPlatforms : undefined,
-      maxSearchResultsPerQuery: req.body?.maxSearchResultsPerQuery,
-    });
+    const refresh = req.query?.refresh === 'true';
+    const result = await performResearch(
+      tenantId,
+      {
+        text: req.body?.text,
+        targetPlatforms: Array.isArray(req.body?.targetPlatforms) ? req.body.targetPlatforms : undefined,
+        maxSearchResultsPerQuery: req.body?.maxSearchResultsPerQuery,
+      },
+      {
+        userId: identity.userId,
+        refresh,
+      }
+    );
     res.status(200).json(result);
   } catch (err) {
     if (err instanceof ComposerResearchError) {
