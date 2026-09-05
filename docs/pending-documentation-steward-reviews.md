@@ -6804,3 +6804,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-14-adr-0118-to-0122.md
 - **Status:** Pending review
 
+## 2026-09-05 — 4b8bea8 — chore(telemetry): sync dashboard telemetry for Story 14.4
+
+- **Full commit:** `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
