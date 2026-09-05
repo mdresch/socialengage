@@ -169,4 +169,25 @@ if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/synthesize-telemetry.m
   fi
 fi
 
+# ─── Automatic Second Brain & Knowledge Graph Synchronization ───────────────
+# Non-blocking: updates the Second Brain Obsidian vault so the Knowledge Graph
+# view, Dataview tables, and MOCs stay continuously in sync on every commit.
+# Exports updated ADRs, BRDs, FDDs, TDSs, User Stories, and dashboard telemetry.
+if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ]; then
+  (
+    if [ -f "scripts/export-to-obsidian.mjs" ]; then
+      node scripts/export-to-obsidian.mjs >/dev/null 2>&1
+    fi
+    if [ -f "project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs" ]; then
+      node project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs >/dev/null 2>&1
+    fi
+    if [ -f "scripts/ingest-raw.mjs" ]; then
+      node scripts/ingest-raw.mjs >/dev/null 2>&1
+    fi
+    if [ -f "C:/Users/menno/Documents/Second Brain/scripts/compile-ontology-graph.mjs" ]; then
+      node "C:/Users/menno/Documents/Second Brain/scripts/compile-ontology-graph.mjs" >/dev/null 2>&1
+    fi
+  ) >/dev/null 2>&1 &
+fi
+
 exit 0

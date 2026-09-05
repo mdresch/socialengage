@@ -60,7 +60,7 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | **Batch 5** | **Identity, Security, Admin Console & Compliance** | ADRs 0030, 0035–0037, 0040, 0041, 0043, 0091–0094, 0107, 0112, 0123, 0125–0127 | Epic 5, Epic 6, Epic 7, Epic 10, Epic 12, Epic 13, Epic 15, Epic 16 | **Complete (16/16 TDS)** |
 | **Batch 6** | **AI Enrichment, Search Sourcing & RAG Architecture** | ADRs 0038, 0065, 0066, 0076, 0081–0085, 0103, 0104, 0120, 0121, 0136–0140 | Epic 2, Epic 3, Epic 6, Epic 9, Epic 12, Epic 14, Epic 19 | **Complete (18/18 TDS)** |
 | **Batch 7** | **Outbound Publishing, Polypost Composer & Social Care** | ADRs 0071–0073, 0075, 0086, 0095, 0098–0100, 0108, 0110, 0115, 0117–0119, 0129, 0131 | Epic 2, Epic 3, Epic 6, Epic 10, Epic 11, Epic 12, Epic 13, Epic 14, Epic 17 | **Complete (17/17 TDS)** |
-| **Batch 8** | **Advanced Telemetry & Continuous Self-Learning** | ADRs 0078–0080, 0089, 0096, 0101, 0102, 0106, 0122, 0130, 0134 | Epic 14, Epic 15+ | Pending |
+| **Batch 8** | **Advanced Telemetry & Continuous Self-Learning** | ADRs 0077–0080, 0089, 0096, 0101, 0102, 0106, 0122, 0130, 0134 | Epic 9, Epic 10, Epic 11, Epic 12, Epic 14, Epic 17, Epic 18 | **Complete (12/12 TDS)** |
 
 ---
 
@@ -233,5 +233,21 @@ To catch up on the ~140 ADRs systematically without dropping architectural rigor
 | [`TDS-0129`](TDS-0129-Prospecting-List-Model-Refinements-Deduplicated-CRM-Sync.md) | Prospecting List Model Refinements — Deduplicated CRM Sync and Scoped Team Sharing | ADR-0129 | Story 17.1 | `story-17.1.prospecting-list-refinements.contract.test.ts` |
 | [`TDS-0131`](TDS-0131-Crisis-Template-Bundle-Refinements-Baseline-Escalation.md) | Crisis Template Bundle Refinements — Automated Baseline Calibration and Escalation Trees | ADR-0131 | Story 17.3 | `story-17.3.crisis-baseline-escalation.contract.test.ts` |
 
+---
 
+## Batch 8: Advanced Telemetry & Continuous Self-Learning (Completed Specifications)
 
+| TDS ID | Feature / Title | Governing ADR | User Story | Contract Test |
+|---|---|---|---|---|
+| [`TDS-0077`](TDS-0077-Watchlist-Connector-Count-Method.md) | Watchlist Connector Count and Preview Volume Endpoint | ADR-0077 | Story 9.1 | `story-9.1.watchlist-preview-volume.contract.test.ts` |
+| [`TDS-0078`](TDS-0078-Metric-Explainability-Endpoint.md) | Metric Explainability Endpoint | ADR-0078 | Story 9.2 | `story-9.2.metric-explainability.contract.test.ts` |
+| [`TDS-0079`](TDS-0079-Crisis-Template-Bundle-And-Activation.md) | Crisis Template Bundle and Activation | ADR-0079 | Story 9.3 / 9.4 | `story-9.3.crisis-template-bundle.contract.test.ts` |
+| [`TDS-0080`](TDS-0080-Onboarding-Checklist-State.md) | Onboarding Checklist State | ADR-0080 | Story 9.5 / 9.6 | `story-9.5.onboarding-checklist.contract.test.ts` |
+| [`TDS-0089`](TDS-0089-Platform-Operations-Dashboard.md) | Platform Operations Dashboard | ADR-0089 | Story 10.6 / 10.7 | `story-10.7.platform-operations-dashboard.contract.test.ts` |
+| [`TDS-0096`](TDS-0096-Daily-Digest-Email.md) | Daily Digest Email (Timezone-Aware, Precomputed Views & AI Summary) | ADR-0096 | Story 11.3 / 11.4 | `story-11.3.daily-digest-email.contract.test.ts` |
+| [`TDS-0101`](TDS-0101-Multi-Source-Connector-Capability-Matrix.md) | Multi-Source Connector Capability Matrix | ADR-0101 | Story 12.1 / 12.2 | `story-12.1.connector-capability-matrix.contract.test.ts` |
+| [`TDS-0102`](TDS-0102-Boolean-Query-AST-And-Visual-Builder.md) | Boolean Query AST and Visual Builder | ADR-0102 | Story 12.3 / 12.4 | `story-12.3.boolean-query-ast.contract.test.ts` |
+| [`TDS-0106`](TDS-0106-API-And-Integrations-Versioning-And-Webhooks.md) | API and Integrations — Versioning and Webhooks | ADR-0106 | Story 12.11 / 12.12 | `story-12.11.public-api-and-webhooks.contract.test.ts` |
+| [`TDS-0122`](TDS-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Loop.md) | Continuous Self-Learning Synthesis and Telemetry Feedback Architecture | ADR-0122 | Story 14.5 | `story-14.5.self-learning-telemetry.contract.test.ts` |
+| [`TDS-0130`](TDS-0130-Onboarding-Checklist-State-Refinements-Role-Tailored-Trees.md) | Onboarding Checklist State Refinements — Role-Tailored Step Trees and Automated Verification Probes | ADR-0130 | Story 17.2 | `story-17.2.onboarding-probes.contract.test.ts` |
+| [`TDS-0134`](TDS-0134-Watchlist-Connector-Count-Method-Refinements.md) | Watchlist Connector Count Method Refinements — UI Confidence Contract & Cost Projections | ADR-0134 | Story 18.1 | `story-18.1.watchlist-volume-confidence-and-cost.contract.test.ts` |

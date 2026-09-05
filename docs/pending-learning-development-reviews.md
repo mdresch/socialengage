@@ -7558,5 +7558,15 @@
 
 - **Full commit:** `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+## 2026-09-05 — 2cfae17 — chore: sync dashboard on main for story 14.3
+
+- **Full commit:** `2cfae17e6381bfa9b5489855e97af4f6312a4177`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-05 — d9e5a6a — docs(tds): complete Batch 7 technical design specifications (17 TDS)
+
+- **Full commit:** `d9e5a6a29803e130e5892be5f0f98761cf92e2a1`
+- **Files touched:** docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0071-Human-In-The-Loop-Post-Enrichment-Overrides.md, docs/project docs/Technical-Design/TDS-0072-Cross-Platform-Polypost-Composer-And-Preview-Engine.md, docs/project docs/Technical-Design/TDS-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Technical-Design/TDS-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Technical-Design/TDS-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Technical-Design/TDS-0095-Case-And-Lead-Handoff-To-CRM.md, docs/project docs/Technical-Design/TDS-0098-Publishing-And-Scheduling.md, docs/project docs/Technical-Design/TDS-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Technical-Design/TDS-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Technical-Design/TDS-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Technical-Design/TDS-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Technical-Design/TDS-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Technical-Design/TDS-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Technical-Design/TDS-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Technical-Design/TDS-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Technical-Design/TDS-0129-Prospecting-List-Model-Refinements-Deduplicated-CRM-Sync.md, docs/project docs/Technical-Design/TDS-0131-Crisis-Template-Bundle-Refinements-Baseline-Escalation.md
 - **Status:** Pending review
 

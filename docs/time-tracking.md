@@ -18,6 +18,8 @@
 | 2026-09-05 | 00:18 | — | — | Documentation | Story 14.4 | chore(telemetry): sync dashboard telemetry for Story 14.4 (4b8bea8) |
 | 2026-09-05 | 00:18 | — | — | Documentation | Story 14.4 | docs(epic-14): record Story 14.4 build in implementation log and user stories (82b276e) |
 | 2026-09-05 | 00:17 | — | — | Documentation | Story 14.4 | feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry (d2bd779) |
+| 2026-09-05 | 22:27 | — | — | Documentation | — | docs(tds): complete Batch 7 technical design specifications (17 TDS) (d9e5a6a) |
+| 2026-09-05 | 22:10 | — | — | Documentation | — | chore: sync dashboard on main for story 14.3 (2cfae17) |
 | 2026-09-05 | 22:04 | — | — | Documentation | Story 14.3 | feat(epic-14): implement Story 14.3 SearchProviderConnector abstraction (c903723) |
 | 2026-09-04 | 17:45 | — | — | Documentation | — | docs(tds): author Batch 1 and Batch 2 technical design specifications (37 TDS) (fdcf5d2) |
 | 2026-09-04 | 17:06 | — | — | Documentation | Story 14.2 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) (c1ab9b2) |
