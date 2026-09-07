@@ -1,3 +1,50 @@
+---
+title: "TDS-0123: ## 1. Document Control & Traceability Linkage"
+artifact_id: "TDS-0123"
+entity_id: "9cb46af2a4d24717c3575f56ceb75ff6"
+version: "1.0.0"
+source_document: "docs/project docs/Technical-Design/TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md"
+created_at: "2026-09-05T14:24:50.937Z"
+modified_at: "2026-09-05T14:24:50.943Z"
+authority_level: 1
+confidence_score: 1.0
+type: "tds"
+pm_class: "TechnicalDesign"
+pm_subclass: "SolutionArchitecture"
+pm_relationships:
+  - specifiesContract
+  - elaboratesFDD
+  - satisfiesBusinessNeed
+domain_cluster: "Platform Architecture & Foundations"
+dmbok_category: "Document & Content Management"
+pmbok_category: "Integration Management"
+babok_category: "Requirements Life Cycle Management"
+status: "Approved"
+aliases:
+  - "TDS-0123"
+  - "TDS 0123"
+  - "## 1. Document Control & Traceability Linkage"
+tags:
+  - TDS
+  - tds
+  - domain/platform-architecture-foundations
+  - dmbok/document-content-management
+  - pmbok/integration-management
+  - babok/requirements-life-cycle-management
+  - traceability/4-way-linked
+  - project/socialengage
+---
+
+
+> [!NOTE] 🔗 **7-Way Heptagonal Traceability Mesh (ADR ↔ BRD ↔ FDD ↔ TDS ↔ Story ↔ Plan ↔ Walkthrough)**
+> - 🏛️ **Architecture Decision:** [[ADR-0123|ADR-0123: Real-Time Alert Rules and Delivery — Refinements]]
+> - 📋 **Business Requirements:** [[BRD-0123|BRD-0123: Real-Time Alert Rules And Delivery Refinements]]
+> - 📐 **Functional Design:** [[FDD-0123|FDD-0123: Real-Time Alert Rules And Delivery Refinements]]
+> - 🛠️ **Technical Design (TDS):** [[TDS-0123|TDS-0123: Real-Time Alert Rules & Delivery Refinements]]
+> - 🎯 **User Stories & Delivery:** [[Story 15.1]] (✅ Built)
+> - 📋 **Pre-Execution Blueprint:** [[Plan-Story-15.1-Alert-Rules-Refinements|Plan: Story 15.1]] (✅ Approved)
+> - 📜 **Proof of Execution:** [[Walkthrough-Story-15.1-Alert-Rules-Refinements|Walkthrough: Story 15.1]] (🟢 100% Passing Gate)
+
 # Technical Design Specification (TDS) — Real-Time Alert Rules & Delivery Refinements
 
 ## 1. Document Control & Traceability Linkage
@@ -12,7 +59,7 @@
 | **Status** | Approved |
 | **Author(s)** | Core Architecture Team |
 | **Created Date** | 2026-09-05 |
-| **Last Updated** | 2026-09-05 |
+| **Last Updated** | 2026-09-07 |
 | **Governing Skill** | `social-listening-core/.claude/skills/real-time-alerts/SKILL.md` |
 
 ### 1.2 Upstream & Downstream Traceability Matrix
@@ -24,7 +71,7 @@
 | **Governing User Story** | `Story 15.1` | [Epic 15: ADRs 0123–0124](../../user-stories/epic-15-adr-0123-to-0124.md#story-151--real-time-alert-rule-exclusions-caps-and-pre-save-volume-preview-backend) | Acceptance Target |
 | **Related User Stories** | `Story 10.9`, `Story 10.10` | Base Alert Rule Engine, Alert UI & Inbox | Upstream Foundations |
 | **Related Architecture Decisions** | `ADR-0091`, `ADR-0044`, `ADR-0087`, `ADR-0092` | Base Alert Rules, Watchlists, Precomputed Daily Views, Webhook Signing | Architectural Lineage |
-| **Executable Contract Tests** | `Story 15.1 Contract` | `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts` | Ready for Suite Execution |
+| **Executable Contract Tests** | `Story 15.1 Contract` | `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts` | 100% Passing Gate |
 
 ---
 
@@ -282,3 +329,22 @@ sequenceDiagram
 - [ ] **[Q-0123-2]** **Platform Alert Cap Ceiling:** Setting a hard global ceiling (e.g., 200 alerts/day) for high-frequency tenant tiers.
 - [ ] **[Q-0123-3]** **Configurable Preview Lookback:** Deciding whether tenants on Enterprise tier should be allowed to run 30-day simulations instead of the default 7-day window.
 - [ ] **[Q-0123-4]** **Platform-Admin Connector Outage Defaults:** Authorizing specific daily cap exemptions for platform-wide connector health alert rules.
+
+
+---
+
+## 🔗 Enterprise Knowledge Graph & Multi-Framework Mappings
+
+### 🧭 Multi-Framework Alignments
+- **Domain Cluster:** [[MOC - Platform Architecture & Foundations|📁 Platform Architecture & Foundations]]
+- **DAMA-DMBOK:** [[MOC - DMBOK - Document & Content Management|☸️ Document & Content Management]]
+- **PMI-PMBOK:** [[MOC - PMBOK - Integration Management|📊 Integration Management]]
+- **IIBA-BABOK:** [[MOC - BABOK - Requirements Life Cycle Management|📐 Requirements Life Cycle Management]]
+- **Complete Traceability Matrix:** [[MOC - Complete Traceability Matrix (ADR - BRD - FDD - Story)|🎯 Master 4-Way Traceability Hub]]
+
+### 🔍 Live Obsidian Dataview Backlinks
+```dataview
+TABLE file.name as "Referencing Document", type as "Artifact Type", status as "Status"
+FROM [[]] AND !outgoing([[]])
+SORT file.name ASC
+```

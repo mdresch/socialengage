@@ -220,6 +220,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
   v1Router.use('/alerts', authMiddleware, alertRulesRouter);
 
+  /** Story 15.1 (ADR-0123) � alert rules refinements and volume preview. */
+  v1Router.use('/alert-rules', authMiddleware, alertRulesRouter);
+
   /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
   v1Router.use('/webhooks', authMiddleware, webhooksRouter);
 
