@@ -33,7 +33,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const DEFAULT_VAULT = 'C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain';
+const DEFAULT_VAULT = fs.existsSync('C:\\Users\\menno\\Documents\\Second Brain')
+  ? 'C:\\Users\\menno\\Documents\\Second Brain'
+  : (fs.existsSync('C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain')
+      ? 'C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain'
+      : path.resolve(rootDir, '..', 'Second Brain'));
 
 // ─── CLI parsing ───────────────────────────────────────────────────────────
 
@@ -99,12 +103,12 @@ function capture(args) {
 
   // 2. Filtered healing/fix commits with full messages
   console.log('   🩹 Extracting healing & fix commits...');
-  const healLog = git('log -n 100 --format="%H%n%s%n%b%n---" --grep="heal(" --grep="fix(" --all-match');
+  const healLog = git('log -n 100 --format="%H%n%s%n%b%n---" --grep="heal(" --grep="fix("');
   write(path.join(repoDir, 'healing-commits.txt'), healLog || '(none found)');
 
   // 3. Feature commits for this epic
   console.log('   ✨ Extracting feature commits...');
-  const featLog = git(`log -n 100 --format="%H|%ai|%s" --grep="Story ${epic}." --grep="feat(" --all-match`);
+  const featLog = git(`log -n 150 --format="%H|%ai|%s" --grep="Story ${epic}." --grep="epic-${epic}"`);
   write(path.join(repoDir, 'feature-commits.txt'), featLog || '(none found)');
 
   // 4. Implementation log excerpt (last 200 lines — covers recent stories)

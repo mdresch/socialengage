@@ -5873,11 +5873,11 @@ export const STORIES_LIST: StoryItem[] = [
     "epicTitle": "Epic 14: Publishing extensions, research refinements, and self-learning telemetry (ADRs 0118–0122)",
     "title": "Continuous Self-Learning Synthesis and Telemetry Feedback Architecture",
     "source": "ADR-0122",
-    "status": "Ready (ADR-0122 is Accepted 2026-08-27)",
+    "status": "Built",
     "isBuilt": true,
     "isRetired": false,
     "isRelocated": false,
-    "builtInfo": "2026-08-27 — verified via `scripts/synthesize-telemetry.mjs` and `docs/synthesis/Self-Learning-Synthesis-Epic-6.md`"
+    "builtInfo": "2026-09-07 (`social-listening-core`, `contracts/epic-14/story-14.5.self-learning-telemetry.contract.test.ts`, 5/5 passing)"
   },
   {
     "storyId": "15.1",
