@@ -4764,3 +4764,27 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added real-world Epic 14 runtime gotchas to `docs/environment-gotchas.md` (port 5434 test template isolation, deterministic SHA-256 research caching).
   - Added Reusable Architectural Pattern 4 (*Normalized Deterministic Request-Hash Caching & Provider-Agnostic Fallback*) to `Lessons-Learned-Register.md`.
   - Executed `--capture` and `--compile` for Epic 14 generating `docs/synthesis/Self-Learning-Synthesis-Epic-14.md`.
+
+---
+
+## 2026-09-07 — Story 15.2: Data export lookback bounding and representative sampling (backend) — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 15.2 / ADR-0124 (governed by BRD-0124, FDD-0124, TDS-0124)
+- **Contract:** `social-listening-core/contracts/epic-15/story-15.2.data-export-sampling.contract.test.ts`
+- **Suite:** PASS (8/8 tests green, 100% pass across upstream 10.8, 13.4, and 15.1 suites). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/implementation-plans/Plan-Story-15.2-Data-Export-Sampling.md
+  - docs/user-stories/epic-15-adr-0123-to-0124.md
+  - docs/walkthroughs/walkthrough-story-15.2.md
+  - scripts/git-hooks/post-commit
+  - scripts/sync-committed-to-secondbrain.mjs
+  - social-listening-admin/src/app/api/posts/export.csv/route.ts
+  - social-listening-core/contracts/epic-15/story-15.2.data-export-sampling.contract.test.ts
+  - social-listening-core/src/http/versions/v1/postsExportRouter.ts
+  - social-listening-core/src/posts/postExportEngine.ts
+- **Notes:**
+  - Enforced 24-month maximum lookback temporal bounds on synchronous CSV (`GET /v1/posts/export.csv`) and asynchronous jobs (`POST /v1/posts/export`) returning `400 EXPORT_RANGE_TOO_LARGE`.
+  - Added opt-in systematic stride sampling (`sample=true`) calculating deterministic stride integer $k = \lfloor N / S \rfloor$ and streaming sampled rows via SQL window ranking with zero in-memory buffering overhead.
+  - Injected transparent response headers `X-SocialEngage-Sampled: true`, `X-SocialEngage-Sample-Fraction`, `X-SocialEngage-Total-Matched`, and leading metadata comment `# socialengage_export:` in CSV output.
+  - Added automated Second Brain post-commit synchronization hook in `scripts/sync-committed-to-secondbrain.mjs` mirroring committed walkthroughs/plans and running the 4-way traceability and telemetry compilers.

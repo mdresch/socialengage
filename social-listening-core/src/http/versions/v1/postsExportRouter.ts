@@ -11,26 +11,50 @@ import {
   ExportRateLimitError,
   ExportTooLargeError,
   ExportFileTooLargeError,
+  validateLookbackWindow,
+  MAX_EXPORT_LOOKBACK_MONTHS,
 } from '../../../posts/postExportEngine';
 import { checkExportRateLimit } from '../../../posts/exportRateLimit';
 import { requireFeatureGate } from '../../auth/featureGates';
 
 export const postsExportRouter = Router();
 
-// GET /v1/posts/export.csv (Story 10.8 / 13.4, ADR-0090 / ADR-0111) - Sync streaming export
+// GET /v1/posts/export.csv (Story 10.8 / 13.4 / 15.2, ADR-0090 / ADR-0111 / ADR-0124) - Sync streaming export & sampling
 postsExportRouter.get('/export.csv', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 
+  const startParam = (req.query.start || req.query.start_date) ? String(req.query.start || req.query.start_date) : undefined;
+  const endParam = (req.query.end || req.query.end_date) ? String(req.query.end || req.query.end_date) : undefined;
+
+  const lookback = validateLookbackWindow(startParam, endParam);
+  if (!lookback.valid) {
+    if (lookback.code === 'EXPORT_RANGE_TOO_LARGE') {
+      res.status(400).json({
+        code: 'EXPORT_RANGE_TOO_LARGE',
+        message: lookback.error,
+        maxLookbackMonths: MAX_EXPORT_LOOKBACK_MONTHS,
+      });
+      return;
+    }
+    res.status(400).json({
+      code: lookback.code || 'INVALID_LOOKBACK_WINDOW',
+      error: lookback.error,
+    });
+    return;
+  }
+
   const filters: ExportFilters = {
-    watchlistId: req.query.watchlist_id ? String(req.query.watchlist_id) : undefined,
-    platformId: req.query.platform_id ? String(req.query.platform_id) : undefined,
-    startDate: req.query.start_date ? String(req.query.start_date) : undefined,
-    endDate: req.query.end_date ? String(req.query.end_date) : undefined,
+    watchlistId: (req.query.watchlist_id || req.query.watchlistId) ? String(req.query.watchlist_id || req.query.watchlistId) : undefined,
+    platformId: (req.query.platform_id || req.query.platformId) ? String(req.query.platform_id || req.query.platformId) : undefined,
+    startDate: startParam,
+    endDate: endParam,
     sentiment: req.query.sentiment ? String(req.query.sentiment) : undefined,
+    sample: req.query.sample === 'true',
   };
 
   const requestedLimit = req.query.limit ? Number(req.query.limit) : 1000;
+  const isSample = req.query.sample === 'true';
 
   const rate = checkExportRateLimit(identity.tenantId, 'sync');
   if (!rate.allowed) {
@@ -39,10 +63,24 @@ postsExportRouter.get('/export.csv', async (req, res) => {
   }
 
   try {
-    const csvContent = await fetchPostsForSyncExport(identity.tenantId, identity.userId, filters, requestedLimit);
+    const result = await fetchPostsForSyncExport(identity.tenantId, identity.userId, filters, requestedLimit, isSample);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="posts-export-${Date.now()}.csv"`);
-    res.send(csvContent);
+    const filename = result.isSampled
+      ? `posts-export-sample-${Date.now()}.csv`
+      : `posts-export-${Date.now()}.csv`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    if (result.isSampled) {
+      res.setHeader('X-SocialEngage-Sampled', 'true');
+      if (result.sampleFraction !== undefined) {
+        res.setHeader('X-SocialEngage-Sample-Fraction', String(result.sampleFraction));
+      }
+      if (result.totalMatched !== undefined) {
+        res.setHeader('X-SocialEngage-Total-Matched', String(result.totalMatched));
+      }
+    }
+
+    res.send(result.csv);
   } catch (err: any) {
     if (err instanceof ExportValidationError) {
       res.status(400).json({ code: err.code, error: err.message });
@@ -65,7 +103,7 @@ postsExportRouter.get('/export.csv', async (req, res) => {
   }
 });
 
-// POST /v1/posts/export (Story 13.4, ADR-0111) - Async large export job
+// POST /v1/posts/export (Story 13.4 / 15.2, ADR-0111 / ADR-0124) - Async large export job
 postsExportRouter.post('/export', requireFeatureGate('exports'), async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
@@ -73,6 +111,25 @@ postsExportRouter.post('/export', requireFeatureGate('exports'), async (req, res
   const format = (req.body?.format as 'csv' | 'json') ?? 'csv';
   const limit = req.body?.limit ? Number(req.body.limit) : 1000;
   const filters: ExportFilters = req.body?.filters || {};
+
+  const startParam = filters.startDate || (filters as any).start;
+  const endParam = filters.endDate || (filters as any).end;
+  const lookback = validateLookbackWindow(startParam, endParam);
+  if (!lookback.valid) {
+    if (lookback.code === 'EXPORT_RANGE_TOO_LARGE') {
+      res.status(400).json({
+        code: 'EXPORT_RANGE_TOO_LARGE',
+        message: lookback.error,
+        maxLookbackMonths: MAX_EXPORT_LOOKBACK_MONTHS,
+      });
+      return;
+    }
+    res.status(400).json({
+      code: lookback.code || 'INVALID_LOOKBACK_WINDOW',
+      error: lookback.error,
+    });
+    return;
+  } 
 
   try {
     const job = await createAsyncExportJob(identity.tenantId, identity.userId, {
