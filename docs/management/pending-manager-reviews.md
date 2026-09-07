@@ -7826,3 +7826,27 @@
 - **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/adr/0119-editing-and-deleting-published-outbound-posts.md, docs/adr/0120-search-provider-connector.md, docs/adr/0121-composer-deep-research-caching-retrigger-cost.md, docs/environment-gotchas.md, docs/implementation-log.md, docs/project docs/Lessons-Learned-Register.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/synthesize-telemetry.mjs, social-listening-core/contracts/epic-14/story-14.5.self-learning-telemetry.contract.test.ts
 - **Status:** Pending review
 
+## 2026-09-07 — ca0383e — chore(synthesis): refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry
+
+- **Full commit:** `ca0383ea93028abd3eae38b4a47a5cda484e6ae0`
+- **Files touched:** docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-07 — 84a92eb — docs(walkthrough): archive Story 14.5 empirical verification walkthrough
+
+- **Full commit:** `84a92eb3c2441e2facf4f18ee27f77482dea5cc9`
+- **Files touched:** docs/walkthroughs/walkthrough-story-14.5.md
+- **Status:** Pending review
+
+## 2026-09-07 — 9dd1747 — docs(plan): archive Story 14.5 pre-execution implementation plan
+
+- **Full commit:** `9dd1747464b9538ccee14b25cfbefd5f7fb398ce`
+- **Files touched:** docs/implementation-plans/Plan-Story-14.5.md
+- **Status:** Pending review
+
+## 2026-09-07 — f058536 — docs(rfc): add RFC for Antigravity team proposing persistent artifact knowledge integration
+
+- **Full commit:** `f05853647c4e28656275d196da1239c71c1ce1a7`
+- **Files touched:** docs/architecture/RFC-Antigravity-Cognitive-Artifact-Persistence-Architecture.md
+- **Status:** Pending review
+
