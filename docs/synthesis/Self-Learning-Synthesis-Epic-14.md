@@ -2,8 +2,8 @@
 
 **Compiled Date:** 2026-09-07
 **Source Capture:** `raw/synthesis-epic-14-2026-09-07/`
-**Git HEAD:** `b44d46a7e1553614187a872b5f1cb31c2036fb1f`
-**Branch:** `feat/story-14.5`
+**Git HEAD:** `e2df874705ea5bc3cdcc560b820b19899ed34309`
+**Branch:** `main`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,9 +12,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 549 |
+| Git commits scanned | 542 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 13 |
+| Feature commits (this epic) | 15 |
 | Contract test files | 222 |
 | ADRs with Implementation Learnings | 9/140 |
 
@@ -74,6 +74,8 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `c951ecbd857f60b9b832b4985d863eaa02ff09d0` | 2026-09-07 11:09:25 +0200 | chore: record post-commit hook metadata for Story 14.5 |
+| `02e27bb1b1c01a210305f454a9da556d9c367e1f` | 2026-09-07 11:09:02 +0200 | feat(epic-14): implement Story 14.5 Continuous Self-Learning Synthesis and Telemetry Feedback Architecture |
 | `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b` | 2026-09-06 00:18:53 +0200 | chore(telemetry): sync dashboard telemetry for Story 14.4 |
 | `82b276e8347850ebf485c2b30b3ec8cef8c3b685` | 2026-09-06 00:18:42 +0200 | docs(epic-14): record Story 14.4 build in implementation log and user stories |
 | `d2bd77979b88017746bf7f799d324687efc507f2` | 2026-09-06 00:17:33 +0200 | feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry |
@@ -405,7 +407,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 14.4, 14.3, 14.2, 14.1, 14.5.
+Feature commits reference stories: 14.5, 14.4, 14.3, 14.2, 14.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns
