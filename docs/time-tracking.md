@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-07 | 23:44 | — | — | Documentation | Story 15.2 | docs: sync time-tracking table for Story 15.2 (0f1b97e) |
 | 2026-09-07 | 23:12 | — | — | Documentation | Story 15.2 | feat(epic-15): implement Story 15.2 data export lookback bounding and representative sampling (2f905ff) |
 | 2026-09-07 | 19:27 | — | — | Review | — | chore: record post-commit review queue for merge commit (6f15e86) |
 | 2026-09-07 | 19:27 | — | — | Review | Story 15.1 | feat(epic-15): implement Story 15.1 real-time alert rule exclusions, caps, and pre-save volume preview (2035448) |
