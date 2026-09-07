@@ -1,3 +1,51 @@
+---
+title: "ADR-0123: # Context"
+artifact_id: "ADR-0123"
+entity_id: "14a81d7ee6b22ceb6f97141aa347d9a8"
+version: "1.0.0"
+source_document: "docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md"
+created_at: "2026-08-27T23:34:32.976Z"
+modified_at: "2026-09-04T05:37:26.988Z"
+authority_level: 1
+confidence_score: 1.0
+type: "adr"
+pm_class: "GovernanceArtifact"
+pm_subclass: "ArchitectureDecision"
+pm_relationships:
+  - governedBy
+  - constrainedBy
+  - compliesWith
+  - influences
+domain_cluster: "Platform Architecture & Foundations"
+dmbok_category: "Data Integration & Interoperability"
+pmbok_category: "Integration Management"
+babok_category: "Business Analysis Planning & Monitoring"
+status: "Accepted"
+aliases:
+  - "ADR-0123"
+  - "ADR 0123"
+  - "# Context"
+tags:
+  - ADR
+  - adr
+  - domain/platform-architecture-foundations
+  - dmbok/data-integration-interoperability
+  - pmbok/integration-management
+  - babok/business-analysis-planning-monitoring
+  - traceability/4-way-linked
+  - project/socialengage
+---
+
+
+> [!NOTE] 🔗 **7-Way Heptagonal Traceability Mesh (ADR ↔ BRD ↔ FDD ↔ TDS ↔ Story ↔ Plan ↔ Walkthrough)**
+> - 🏛️ **Architecture Decision:** [[ADR-0123|ADR-0123: Real-Time Alert Rules and Delivery — Refinements]]
+> - 📋 **Business Requirements:** [[BRD-0123|BRD-0123: Real-Time Alert Rules And Delivery Refinements]]
+> - 📐 **Functional Design:** [[FDD-0123|FDD-0123: Real-Time Alert Rules And Delivery Refinements]]
+> - 🛠️ **Technical Design (TDS):** [[TDS-0123|TDS-0123: Real-Time Alert Rules & Delivery Refinements]]
+> - 🎯 **User Stories & Delivery:** [[Story 15.1]] (✅ Built)
+> - 📋 **Pre-Execution Blueprint:** [[Plan-Story-15.1-Alert-Rules-Refinements|Plan: Story 15.1]] (✅ Approved)
+> - 📜 **Proof of Execution:** [[Walkthrough-Story-15.1-Alert-Rules-Refinements|Walkthrough: Story 15.1]] (🟢 100% Passing Gate)
+
 ﻿# ADR-0123: Real-time alert rules and delivery — refinements
 
 **Status:** Accepted (2026-08-28)
@@ -118,3 +166,33 @@ This ADR is a refinement of ADR-0091 (Accepted 2026-08-28), not a reversal of it
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Deep research brief: `docs/product-research/reports/09-real-time-alerts-deep-research.md` (generated 2026-08-28)
 - Related ADRs: `ADR-0091` (Accepted 2026-08-28, the ADR this refines), `ADR-0012`/`ADR-0013` (events), `ADR-0044` (watchlists), `ADR-0087` (precomputed views, for preview-endpoint performance), `ADR-0092` (webhook signing convention)
+- Implementation Plan: [[Plan-Story-15.1-Alert-Rules-Refinements]]
+- Verification Walkthrough: [[Walkthrough-Story-15.1-Alert-Rules-Refinements]]
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+During the construction and empirical contract verification of Story 15.1 (`social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts`), the following technical invariants were established and verified:
+
+1. **Independent Disjunctive Noise Filtering**: Post exclusion evaluation must treat `excluded_watchlist_ids` and `excluded_topic_ids` as completely independent, short-circuiting disjunctive filters (`postMatchesExcludedWatchlist || postMatchesExcludedTopic`). A post matching either criterion is suppressed immediately prior to threshold evaluation, generating zero rows in `tenant_alerts`.
+2. **Dual Throttling Model**: Cooldown spacing (`cooldown_minutes`) bounds burst intervals, while `max_alerts_per_day` limits cumulative volume over a rolling 24-hour window. Indexing `tenant_alerts (tenant_id, alert_rule_id, created_at)` keeps cap evaluation queries $< 3\text{ms}$.
+3. **Pre-Save Simulation Invariant**: `POST /v1/alert-rules/preview` operates strictly read-only against precomputed daily view aggregates (`watchlist_daily_counts`), maintaining sub-50ms latency with hard bounded lookback ($[1, 30]$ days) and tenant isolation.
+
+---
+
+## 🔗 Enterprise Knowledge Graph & Multi-Framework Mappings
+
+### 🧭 Multi-Framework Alignments
+- **Domain Cluster:** [[MOC - Platform Architecture & Foundations|📁 Platform Architecture & Foundations]]
+- **DAMA-DMBOK:** [[MOC - DMBOK - Data Integration & Interoperability|☸️ Data Integration & Interoperability]]
+- **PMI-PMBOK:** [[MOC - PMBOK - Integration Management|📊 Integration Management]]
+- **IIBA-BABOK:** [[MOC - BABOK - Business Analysis Planning & Monitoring|📐 Business Analysis Planning & Monitoring]]
+- **Complete Traceability Matrix:** [[MOC - Complete Traceability Matrix (ADR - BRD - FDD - Story)|🎯 Master 4-Way Traceability Hub]]
+
+### 🔍 Live Obsidian Dataview Backlinks
+```dataview
+TABLE file.name as "Referencing Document", type as "Artifact Type", status as "Status"
+FROM [[]] AND !outgoing([[]])
+SORT file.name ASC
+```
