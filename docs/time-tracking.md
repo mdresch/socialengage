@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-07 | 19:27 | — | — | Review | Story 15.1 | feat(epic-15): implement Story 15.1 real-time alert rule exclusions, caps, and pre-save volume preview (2035448) |
 | 2026-09-07 | 13:36 | — | — | Review | — | chore: record review queue metadata for RFC commit (2d58960) |
 | 2026-09-07 | 13:35 | — | — | Documentation | — | docs(rfc): add RFC for Antigravity team proposing persistent artifact knowledge integration (f058536) |
 | 2026-09-07 | 13:10 | — | — | Documentation | Story 14.5 | docs(plan): archive Story 14.5 pre-execution implementation plan (9dd1747) |

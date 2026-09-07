@@ -7850,3 +7850,9 @@
 - **Files touched:** docs/architecture/RFC-Antigravity-Cognitive-Artifact-Persistence-Architecture.md
 - **Status:** Pending review
 
+## 2026-09-07 — 2035448 — feat(epic-15): implement Story 15.1 real-time alert rule exclusions, caps, and pre-save volume preview
+
+- **Full commit:** `2035448b25bd9ddfbe5717d74f331b71eb766114`
+- **Files touched:** docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md, docs/implementation-plans/Plan-Story-15.1-Alert-Rules-Refinements.md, docs/project docs/Technical-Design/TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/walkthroughs/walkthrough-story-15.1.md, social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts, social-listening-core/migrations/0076_add_alert_rules_refinements.sql, social-listening-core/src/alerts/alertEvaluationWorker.ts, social-listening-core/src/alerts/alertRulesStore.ts, social-listening-core/src/http/versions/v1/alertRulesRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+
