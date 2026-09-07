@@ -43,6 +43,8 @@ import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 import { createPublishingRoutes } from '../../routes/publishingRoutes';
 import { influencersRouter } from './influencersRouter';
+import { takedownsRouter } from './takedownsRouter';
+import { takedownsPublicRouter } from './takedownsPublicRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -220,7 +222,7 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
   v1Router.use('/alerts', authMiddleware, alertRulesRouter);
 
-  /** Story 15.1 (ADR-0123) � alert rules refinements and volume preview. */
+  /** Story 15.1 (ADR-0123) � alert rules refinements and volume preview. */
   v1Router.use('/alert-rules', authMiddleware, alertRulesRouter);
 
   /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
@@ -241,6 +243,10 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 12.15 (ADR-0108) — influencer discovery and multi-factor scoring. */
   v1Router.use('/influencers', authMiddleware, influencersRouter);
+
+  /** Story 16.1 (ADR-0125) — author takedowns review queue, grant cascade, and public endpoints. */
+  v1Router.use('/takedowns', authMiddleware, takedownsRouter);
+  v1Router.use('/public/takedowns', takedownsPublicRouter);
 
   return v1Router;
 }

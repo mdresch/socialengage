@@ -38,6 +38,8 @@ function entraConfigFromEnv() {
  * SKILL.md's "Load-bearing constraints" for why this is the entire safety
  * boundary between the two.
  */
+import { takedownsPublicRouter } from './versions/v1/takedownsPublicRouter';
+
 export function createApp(): Express {
   const app = express();
   app.use(express.json());
@@ -52,6 +54,9 @@ export function createApp(): Express {
   // .claude/skills/self-service-tenant-signup/SKILL.md.
   const claimsAuthMiddleware =
     process.env.NODE_ENV === 'test' ? testClaimsBypassMiddleware : createEntraAuthMiddleware(entraConfigFromEnv());
+
+  // Story 16.1 (ADR-0125): Public author-initiated takedown submission and magic-link verification
+  app.use('/public/v1/takedowns', takedownsPublicRouter);
 
   // Story 12.11 (ADR-0106): Public API rate limiting & X-RateLimit-* headers
   app.use('/v1', rateLimitMiddleware);
