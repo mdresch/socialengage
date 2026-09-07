@@ -4733,3 +4733,34 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
     3. Added `beforeEach` in `story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts` to clean the global `platform_metrics` table.
     4. Cleared cross-test residual runs in `ingestion_runs` for the target `previousHour` window before seeding AC2 test fixtures.
     5. Documented in `platform-metrics/SKILL.md` and indexed in `docs/environment-gotchas.md`.
+
+---
+
+## 2026-09-07 — Story 14.5: Continuous Self-Learning Synthesis and Telemetry Feedback Architecture — social-listening-core
+
+- **Repo:** social-listening-core
+- **Story / ADR:** 14.5 / ADR-0122 (governed by BRD-0122, FDD-0122, TDS-0122)
+- **Contract:** `social-listening-core/contracts/epic-14/story-14.5.self-learning-telemetry.contract.test.ts`
+- **Suite:** PASS (5/5 tests green, 100% pass across contracts/epic-14 55/55 tests). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/adr/0118-additional-social-platform-publishing.md
+  - docs/adr/0119-editing-and-deleting-published-outbound-posts.md
+  - docs/adr/0120-search-provider-connector.md
+  - docs/adr/0121-composer-deep-research-caching-retrigger-cost.md
+  - docs/environment-gotchas.md
+  - docs/project docs/Lessons-Learned-Register.md
+  - docs/synthesis/Self-Learning-Synthesis-Epic-14.md
+  - docs/user-stories/epic-14-adr-0118-to-0122.md
+  - project-progress-dashboard/src/lib/project-dashboard/data.ts
+  - scripts/synthesize-telemetry.mjs
+  - social-listening-core/contracts/epic-14/story-14.5.self-learning-telemetry.contract.test.ts
+- **Notes:**
+  - Implemented Story 14.5 contract test suite asserting:
+    1. Automated telemetry extraction of failure/healing commit logs.
+    2. ADR append-only invariant preservation with standard in-place annotations (`## Implementation Learnings & Real-World Constraints`).
+    3. Verifiable codebase file path integrity across all indexed gotchas.
+    4. Full CLI `--capture` and `--compile` execution across repo and Second Brain vault.
+    5. Synthesis idempotence and single-instance architectural pattern registration in `Lessons-Learned-Register.md`.
+  - Added real-world Epic 14 runtime gotchas to `docs/environment-gotchas.md` (port 5434 test template isolation, deterministic SHA-256 research caching).
+  - Added Reusable Architectural Pattern 4 (*Normalized Deterministic Request-Hash Caching & Provider-Agnostic Fallback*) to `Lessons-Learned-Register.md`.
+  - Executed `--capture` and `--compile` for Epic 14 generating `docs/synthesis/Self-Learning-Synthesis-Epic-14.md`.
