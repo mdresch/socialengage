@@ -7618,3 +7618,9 @@
 - **Files touched:** docs/implementation-log.md, docs/implementation-plans/Plan-Story-15.2-Data-Export-Sampling.md, docs/time-tracking.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/walkthroughs/walkthrough-story-15.2.md, scripts/git-hooks/post-commit, scripts/sync-committed-to-secondbrain.mjs, social-listening-core/contracts/epic-15/story-15.2.data-export-sampling.contract.test.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/posts/postExportEngine.ts
 - **Status:** Pending review
 
+## 2026-09-07 — 689357c — feat(epic-16): implement Story 16.1 — author-initiated takedown SLA tracking and enrichment cascade (ADR-0125)
+
+- **Full commit:** `689357c9fb3fecf536accf47375787a0767cd222`
+- **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.1-Takedown-SLA-Enrichment-Cascade.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/walkthroughs/walkthrough-story-16.1.md, social-listening-core/.claude/skills/data-governance/SKILL.md, social-listening-core/contracts/epic-16/story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts, social-listening-core/migrations/0077_create_data_subject_requests_and_refinements.sql, social-listening-core/src/governance/captchaValidator.ts, social-listening-core/src/governance/takedownStore.ts, social-listening-core/src/governance/types.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/takedownsPublicRouter.ts, social-listening-core/src/http/versions/v1/takedownsRouter.ts
+- **Status:** Pending review
+

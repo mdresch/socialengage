@@ -4788,3 +4788,35 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Added opt-in systematic stride sampling (`sample=true`) calculating deterministic stride integer $k = \lfloor N / S \rfloor$ and streaming sampled rows via SQL window ranking with zero in-memory buffering overhead.
   - Injected transparent response headers `X-SocialEngage-Sampled: true`, `X-SocialEngage-Sample-Fraction`, `X-SocialEngage-Total-Matched`, and leading metadata comment `# socialengage_export:` in CSV output.
   - Added automated Second Brain post-commit synchronization hook in `scripts/sync-committed-to-secondbrain.mjs` mirroring committed walkthroughs/plans and running the 4-way traceability and telemetry compilers.
+
+---
+
+## 2026-09-08 — Story 16.1: Author-initiated takedown SLA tracking and enrichment cascade (backend) — social-listening-core@689357c
+
+- **Full commit:** `689357c9fb3fecf536accf47375787a0767cd222`
+- **Repo:** social-listening-core
+- **Story / ADR:** 16.1 / ADR-0125 (governed by BRD-0125, FDD-0125, TDS-0125)
+- **Contract:** `social-listening-core/contracts/epic-16/story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/data-governance/SKILL.md`
+- **Suite:** PASS (9/9 tests green). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/implementation-plans/Plan-Story-16.1-Takedown-SLA-Enrichment-Cascade.md
+  - docs/user-stories/epic-16-adr-0125-to-0128.md
+  - docs/walkthroughs/walkthrough-story-16.1.md
+  - social-listening-core/.claude/skills/data-governance/SKILL.md
+  - social-listening-core/contracts/epic-16/story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts
+  - social-listening-core/migrations/0077_create_data_subject_requests_and_refinements.sql
+  - social-listening-core/src/governance/captchaValidator.ts
+  - social-listening-core/src/governance/takedownStore.ts
+  - social-listening-core/src/governance/types.ts
+  - social-listening-core/src/http/app.ts
+  - social-listening-core/src/http/versions/v1/router.ts
+  - social-listening-core/src/http/versions/v1/takedownsPublicRouter.ts
+  - social-listening-core/src/http/versions/v1/takedownsRouter.ts
+- **Notes:**
+  - Mandatory bot challenge (`captchaToken`) validated on public takedown submission (`POST /public/v1/takedowns`), returning `400 CAPTCHA_VERIFICATION_FAILED` when missing or invalid, returning `202 Accepted` with `pending_verification` on success.
+  - Statutory 45-day response SLA clock initialized (`sla_due_at = created_at + 45 days`) upon magic-link verification (`POST /public/v1/takedowns/verify`), setting status to `open`.
+  - Surfaced advisory `risk_flag` and `risk_reason` on `GET /v1/takedowns` and `GET /v1/takedowns/:id` without auto-denying; enforced strict human-in-the-loop decision rule with `403 AUTO_DECISION_FORBIDDEN` on automated resolution attempts. Supported human review actions for deny (with reason) and escalate.
+  - Deep redaction cascade implemented on grant (`POST /v1/takedowns/:id/grant`): soft-redacting post text (`[Redacted per Data Subject Request]`) and raw payload (`{ redacted: true }`), clearing AI enrichment (`sentiment: 'neutral'`, `sentimentConfidence: 0`, `keyPhrases: []`, `topicClusters: []`), deleting watchlist matches from `post_watchlist_matches`, and synchronously purging vector chunks from Pinecone/RAG vector store via `RAGConnector.deletePost()`.
+
