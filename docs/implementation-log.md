@@ -2,6 +2,49 @@
 
 ---
 
+## 2026-09-08 — Story 17.2 healing pass — social-listening-core@26d210f, social-listening-admin@26d210f
+
+- **Full commit:** `26d210fcb26f2a02040593fd2338f89058eef8d7` (pre-split single workspace repo — covers both `social-listening-core/` and `social-listening-admin/`)
+- **Repos:** social-listening-core, social-listening-admin
+- **Story / ADR:** 17.2 / ADR-0130
+- **Contracts:**
+  - `social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts` (7/7 passing)
+  - `social-listening-admin/contracts/epic-17/story-17.2.onboarding-journeys-ui.contract.test.ts` (6/6 passing)
+- **SKILL.md:**
+  - `social-listening-core/.claude/skills/onboarding-checklist/SKILL.md`
+  - `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/migrations/0081_create_tenant_onboarding_state.sql`
+  - `social-listening-core/src/onboarding/automatedVerificationProbeRunner.ts`
+  - `social-listening-core/src/onboarding/roleOnboardingService.ts`
+  - `social-listening-core/src/http/versions/v1/onboardingRouter.ts`
+  - `social-listening-core/src/http/versions/v1/router.ts`
+  - `social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts`
+  - `social-listening-core/.claude/skills/onboarding-checklist/SKILL.md`
+  - `social-listening-admin/src/lib/core-client.ts`
+  - `social-listening-admin/src/app/api/onboarding-checklist/route.ts`
+  - `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx`
+  - `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md`
+  - `social-listening-admin/contracts/epic-17/story-17.2.onboarding-journeys-ui.contract.test.ts`
+  - `docs/environment-gotchas.md`
+- **Validation re-run:** both new contracts PASS individually; core epic-17 suite PASS (13/13); admin full suite PASS except one confirmed pre-existing flake (below); core full suite: 38 failures across 11 suites, confirmed via clean-baseline `git stash` re-run to be pre-existing and unrelated to this story (see Notes). `npm run typecheck` not re-run separately — no TypeScript surface changed beyond what the passing contracts already exercise.
+- **Notes:** Picked up as a **resumed, previously-uncommitted session** (per this file's own methodology note on sessions ending mid-story before the commit step) — implementation (migration 0081, `roleOnboardingService.ts`, `automatedVerificationProbeRunner.ts`, `onboardingRouter.ts`, the admin UI files) was already on disk and functionally complete; `heal-contract-failure`'s Steps 1–5 re-validated it against ADR-0130/the Story's own Acceptance Criteria (BRD-0130/FDD-0130 are terse stubs — the Story's AC list is the real spec source, noted in the core SKILL.md) rather than assuming prior-session state was correct.
+  - **Two real Step 3 findings, fixed, not just noted:** (1) `social-listening-core`'s `onboarding-checklist` SKILL.md was stale — its extension/load-bearing/relations sections only covered Story 9.5's original feature, with zero mention of Story 17.2's new files despite the frontmatter table already citing ADR-0130; expanded all four sections. (2) `social-listening-admin`'s `onboarding-checklist-ui` SKILL.md had **unresolved `<<<<<<< HEAD`/`=======`/`>>>>>>> origin/main` conflict markers committed to `main`** since an old merge (`6fe3b5d`, "Epic 9 completed") — not something this session introduced, but broken (unparseable frontmatter) and entirely silent on Story 17.2. Rewritten from scratch after verifying the real file layout on disk (`grep` confirmed `src/app/tenant/OnboardingChecklist.tsx` is the live, imported component; `src/components/OnboardingChecklist.tsx` is dead code from the same bad merge, not deleted — flagged in the new SKILL.md instead, out of this story's scope).
+  - **Cross-Component Regression Protocol invoked twice, both resolved as non-regressions, not waved away:**
+    1. Admin full suite: Story 6.1's real-Entra Playwright sign-out test (`AC12`) timed out under the full run, then passed 19/19 in isolation — matches an already-documented pattern (`docs/implementation-log.md`'s own prior Story 6.1 entry re: orphaned `node.exe` processes on ports 3000/3001). Added to `docs/environment-gotchas.md` (previously diagnosed but never indexed there).
+    2. Core full suite: 38 failures across 11 suites (`story-13.1`, `story-3.8`, `story-10.3`, others) — none touch anything this story changed. Attributed directly, not assumed: `git stash`-ed all of this story's changes and re-ran the same failing suites against the clean `9ad8286` baseline — identical 11 failures reproduced with zero Story 17.2 code present, proving non-attribution. Also matches this project's own repeated prior classification of `story-13.1`/`story-3.8` as environmental (missing local GNews/Facebook/YouTube/Azure AI credentials), cited independently across at least three earlier healing passes. Added as a new, distinct entry to `docs/environment-gotchas.md` alongside the existing generic full-suite-contention entry, since this is a different root cause (missing credentials, deterministic even in isolation) from that one (resource contention, non-deterministic).
+  - **Not fixed, explicitly out of this story's scope:** the pre-existing 11-suite/38-test core failure itself. Story 17.2's own two contracts and the epic-17 suite are fully green; the foreign failures predate this session and are unrelated per the Cross-Component Regression Protocol's own "narrow the new change, not the foreign component" default — narrowing further wasn't applicable since no narrowing was needed.
+
+---
+
+## 2026-09-08 — Documentation Steward correction — Story 15.2 entry's Files touched list
+
+*Correction, not a healing pass or new story work — no code changed by this entry. Per this file's own append-only convention, the original entry below ("2026-09-07 — Story 15.2: Data export lookback bounding and representative sampling (backend) — social-listening-core") is left exactly as written; this entry is the correction of record.*
+
+Re-derived that entry's claimed file list directly from `git diff-tree --no-commit-id --name-only -r 2f905ff68b41cf776f3e66a34d5609b5b8ac0cb4` (the real commit, confirmed against `docs/pending-documentation-steward-reviews.md`'s own matching queue entry for this commit) while reconciling `docs/user-stories/epic-15-adr-0123-to-0124.md`'s own non-conforming `**Built:**` field. The original entry's "Files touched" list includes `social-listening-admin/src/app/api/posts/export.csv/route.ts` — **that file was not touched by commit `2f905ff`.** `git diff-tree` for that commit lists only: `docs/implementation-log.md`, `docs/implementation-plans/Plan-Story-15.2-Data-Export-Sampling.md`, `docs/time-tracking.md`, `docs/user-stories/epic-15-adr-0123-to-0124.md`, `docs/walkthroughs/walkthrough-story-15.2.md`, `scripts/git-hooks/post-commit`, `scripts/sync-committed-to-secondbrain.mjs`, `social-listening-core/contracts/epic-15/story-15.2.data-export-sampling.contract.test.ts`, `social-listening-core/src/http/versions/v1/postsExportRouter.ts`, `social-listening-core/src/posts/postExportEngine.ts`. The `social-listening-admin` export route file genuinely exists on disk but was last touched by a different, earlier commit (`cf1f96c`, Story 6.40 / ADR-0074), confirmed via `git log -- social-listening-admin/src/app/api/posts/export.csv/route.ts`. **Corrected, for the record: Story 15.2 is a `social-listening-core`-only change; the original entry's file list overstates it by one unrelated file.** `docs/user-stories/epic-15-adr-0123-to-0124.md`'s own `**Built:**` field for Story 15.2 is corrected in place (its own dated note there) to `2026-09-07 — social-listening-core@2f905ff`, matching this commit and this file's own "Built convention" format.
+
+---
+
 ## 2026-09-05 — Story 14.4 — social-listening-core@d2bd779
 
 - **Full commit:** `d2bd77979b88017746bf7f799d324687efc507f2`
