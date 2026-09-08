@@ -47,6 +47,7 @@ import { takedownsRouter } from './takedownsRouter';
 import { takedownsPublicRouter } from './takedownsPublicRouter';
 import { dsrRouter } from './dsrRouter';
 import { dsrPublicRouter } from './dsrPublicRouter';
+import { complianceRouter } from './complianceRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -253,6 +254,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 16.2 (ADR-0126) — DSR Article 18 restriction quarantining and receipts. */
   v1Router.use('/dsr', authMiddleware, dsrRouter);
   v1Router.use('/public/dsr', dsrPublicRouter);
+
+  /** Story 16.3 (ADR-0127) — compliance audit log hash chaining and audit pack exports. */
+  v1Router.use('/compliance', authMiddleware, complianceRouter);
 
   return v1Router;
 }
