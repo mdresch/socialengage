@@ -1,6 +1,10 @@
 import { getAdminPool } from '../db/adminPool';
 import { getPool } from '../db/pool';
 import { MetricSample } from './azureMetricsClient';
+import {
+  TenantQuotaBurnProjection,
+  getTenantQuotaBurnProjections,
+} from './quotaBurnRatePredictor';
 
 export interface PlatformDashboardSummary {
   throughputPostsSec: number;
@@ -19,6 +23,7 @@ export interface PlatformDashboardSummary {
     ingestionVolume: number;
     errorCount: number;
   }>;
+  tenantQuotaBurnProjections: TenantQuotaBurnProjection[];
 }
 
 export interface PlatformMetricInsertInput {
@@ -260,6 +265,8 @@ export async function getPlatformDashboardData(): Promise<PlatformDashboardSumma
     const estimatedCostFromTokens = parseFloat(((totalTokensLast30d / 1000) * 0.0015).toFixed(2));
     const estimatedCostLast30dUsd = costFromMetrics ?? estimatedCostFromTokens;
 
+    const tenantQuotaBurnProjections = await getTenantQuotaBurnProjections();
+
     const summary: PlatformDashboardSummary = {
       throughputPostsSec,
       avgIngestionLagSec: 4.2,
@@ -268,6 +275,7 @@ export async function getPlatformDashboardData(): Promise<PlatformDashboardSumma
       estimatedCostLast30dUsd,
       connectors,
       timeSeries,
+      tenantQuotaBurnProjections,
     };
 
     cachedDashboard = { data: summary, timestamp: now };
