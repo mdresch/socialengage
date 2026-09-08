@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-09-08
 **Source Capture:** `raw/synthesis-epic-17-2026-09-08/`
-**Git HEAD:** `53e63ba0ce01745ff429f24ca798ec4c823c2d3e`
+**Git HEAD:** `4faf6ee2afe41bef75ef8cdac742446587239d2c`
 **Branch:** `feat/story-17.1`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,9 +12,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 449 |
+| Git commits scanned | 442 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 1 |
+| Feature commits (this epic) | 2 |
 | Contract test files | 230 |
 | ADRs with Implementation Learnings | 10/140 |
 
@@ -74,6 +74,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `4faf6ee2afe41bef75ef8cdac742446587239d2c` | 2026-09-08 13:11:28 +0200 | chore(telemetry): update user stories, implementation log, and sync dashboard for Story 17.1 |
 | `53e63ba0ce01745ff429f24ca798ec4c823c2d3e` | 2026-09-08 13:06:04 +0200 | feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129) |
 
 ## 4. Contract Test Inventory
