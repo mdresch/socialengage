@@ -4934,5 +4934,34 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Implemented interactive `ConnectorRemediationDrawer.tsx` slide-out drawer providing operator playbooks with live loading states and feedback banners.
   - Integrated both components into `PlatformOperationsDashboard.tsx` (`/admin/operations`), adding "🛠 Remediate" trigger controls to the live connector health table and wiring automatic dashboard telemetry refreshes on playbook completion.
 
+---
 
+## 2026-09-08 — Story 17.1: Deduplicated prospecting list export and sharing ACLs (backend) — commit 53e63ba
 
+- **Full commit:** `53e63ba`
+- **Repo:** social-listening-core
+- **Story / ADR:** 17.1 / ADR-0129 (governed by BRD-0129, FDD-0129, TDS-0129)
+- **Contract:**
+  - `social-listening-core/contracts/epic-17/story-17.1.prospecting-list-refinements.contract.test.ts`
+- **SKILL.md:**
+  - `social-listening-core/.claude/skills/prospecting-lists/SKILL.md`
+- **Suite:** PASS (6/6 tests in core Epic 17). Predecessor regressions verified: Story 10.1 (4/4 PASS), Story 13.13 (9/9 PASS). `npm run typecheck` clean in core (0 errors).
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/user-stories/epic-17-adr-0129-to-0133.md
+  - docs/walkthroughs/walkthrough-story-17.1.md
+  - social-listening-core/.claude/skills/prospecting-lists/SKILL.md
+  - social-listening-core/contracts/epic-17/story-17.1.prospecting-list-refinements.contract.test.ts
+  - social-listening-core/migrations/0080_refine_prospecting_list_sharing_and_dedup.sql
+  - social-listening-core/src/connectors/crm/types.ts
+  - social-listening-core/src/crm/prospectingCRMHandoffService.ts
+  - social-listening-core/src/http/versions/v1/prospectingListsRouter.ts
+  - social-listening-core/src/prospecting/prospectingDeduplicationEngine.ts
+  - social-listening-core/src/prospecting/prospectingListStore.ts
+- **Notes:**
+  - Applied DDL schema migration `0080_refine_prospecting_list_sharing_and_dedup.sql` adding `sharing_scope TEXT NOT NULL DEFAULT 'private' CHECK (sharing_scope IN ('private', 'workspace_read', 'workspace_write'))`, backfilling existing lists where `shared = TRUE` to `'workspace_read'`.
+  - Refined PostgreSQL Row Level Security (RLS) policies: teammates within the tenant can select lists when `sharing_scope IN ('workspace_read', 'workspace_write')`; teammates can insert, update, and delete entries (`prospecting_list_entries`) when the parent list has `sharing_scope = 'workspace_write'`.
+  - Preserved strict owner isolation for list-level metadata modifications and deletion: `PATCH /v1/prospecting-lists/:id` returns 404 via RLS isolation when attempted by non-owners; non-owner attempts to update sharing permissions via `PATCH /v1/prospecting-lists/:id/sharing` return 403 `FORBIDDEN_NOT_LIST_OWNER`.
+  - Handled PostgreSQL RLS constraint error `42501` when unauthorized teammates attempt entry insertions on `workspace_read` lists, translating to a clean 404 response.
+  - Implemented cross-network deduplication engine (`prospectingDeduplicationEngine.ts`) with canonical handle normalization (`normalizeHandle`), social URL extraction (`extractHandleFromPublicUrl`), and contact clustering (`clusterDeduplicatedContacts`) merging author records across Twitter, LinkedIn, Instagram, etc.
+  - Extended CRM handoff service (`prospectingCRMHandoffService.ts`) with `deduplicate` flag (`POST /v1/prospecting-lists/:id/crm-handoff?deduplicate=true`), assembling unified `DeduplicatedAuthorContact` CRM payloads with merged notes, highest engagement/influence scores, combined platform handles, and audit logs.

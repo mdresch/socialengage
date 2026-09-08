@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-08 | 13:06 | — | — | Documentation | Story 17.1 | feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129) (53e63ba) |
 | 2026-09-08 | 12:25 | — | — | Documentation | — | docs: expand Epic 17 user stories to full explainable specification (c4d9bdd) |
 | 2026-09-08 | 12:20 | — | — | Documentation | — | docs: align status to Built for completed stories 16.1-16.3 (91bb7b1) |
 | 2026-09-08 | 07:19 | — | — | Documentation | Story 16.4 | feat(ops): platform ops quota burn-rate forecasting and guided connector remediation (Story 16.4, ADR-0128) (48d2f8f) |
