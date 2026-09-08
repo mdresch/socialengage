@@ -7910,3 +7910,9 @@
 - **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.4-Platform-Ops-Quota-Burn-Rate.md, docs/walkthroughs/walkthrough-story-16.4.md, social-listening-admin/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-admin/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts, social-listening-admin/src/app/api/admin/connectors/[id]/remediate/route.ts, social-listening-admin/src/app/api/admin/connectors/remediate/route.ts, social-listening-admin/src/components/operations/ConnectorRemediationDrawer.tsx, social-listening-admin/src/components/operations/PlatformOperationsDashboard.tsx, social-listening-admin/src/components/operations/QuotaBurnRateForecast.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate.contract.test.ts, social-listening-core/src/http/versions/v1/platformDashboardRouter.ts, social-listening-core/src/platform/connectorRemediationService.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/quotaBurnRatePredictor.ts
 - **Status:** Pending review
 
+## 2026-09-08 — 91bb7b1 — docs: align status to Built for completed stories 16.1-16.3
+
+- **Full commit:** `91bb7b1f91d70d61a118f7cbfee464adbd2bef91`
+- **Files touched:** docs/user-stories/epic-16-adr-0125-to-0128.md
+- **Status:** Pending review
+
