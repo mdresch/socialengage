@@ -25,6 +25,7 @@ import { tenantPlanRouter } from './tenantPlanRouter';
 import { tenantUsersRouter } from './tenantUsersRouter';
 import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
+import { onboardingRouter } from './onboardingRouter';
 import { composerRouter } from './composerRouter';
 import { crisisTemplatesRouter } from './crisisTemplatesRouter';
 import { explainRouter } from './explainRouter';
@@ -203,6 +204,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.5 (ADR-0080) — tenant onboarding checklist state. */
   v1Router.use('/tenants', authMiddleware, onboardingChecklistRouter);
+
+  /** Story 17.2 (ADR-0130) — role-tailored onboarding journeys with automated probe verification. */
+  v1Router.use('/onboarding', authMiddleware, onboardingRouter);
 
   /** Story 9.3 (ADR-0079) — crisis template bundle & activation. */
   v1Router.use('/crisis-templates', authMiddleware, crisisTemplatesRouter);

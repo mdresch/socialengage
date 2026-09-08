@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE_NAME, decryptSession } from '@/lib/session';
 import { isResolvedIdentity } from '@/lib/role-routing';
-import { getOnboardingChecklist, patchOnboardingChecklist } from '@/lib/core-client';
+import { getOnboardingChecklist, patchOnboardingChecklist, getRoleOnboardingChecklist } from '@/lib/core-client';
 
 async function resolveCallerTenantUser() {
   const jar = await cookies();
@@ -24,13 +24,20 @@ async function resolveCallerTenantUser() {
   return identity;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const identity = await resolveCallerTenantUser();
   if (!identity) {
     return NextResponse.json({ error: 'Unauthorized or not a tenant member.' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const role = searchParams.get('role');
+
   try {
+    if (role) {
+      const roleChecklist = await getRoleOnboardingChecklist(role);
+      return NextResponse.json(roleChecklist, { status: 200 });
+    }
     const checklist = await getOnboardingChecklist(identity.tenantId);
     return NextResponse.json(checklist, { status: 200 });
   } catch (err: any) {
