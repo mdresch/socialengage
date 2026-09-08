@@ -2,8 +2,8 @@
 
 **Compiled Date:** 2026-09-08
 **Source Capture:** `raw/synthesis-epic-16-2026-09-08/`
-**Git HEAD:** `aa24542f5e7d81a215508589d8324eccae5d333d`
-**Branch:** `feat/story-16.2`
+**Git HEAD:** `492bbd166e4788f9037f758fae73b4e38465a2bd`
+**Branch:** `feat/story-16.3`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,10 +12,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 459 |
+| Git commits scanned | 474 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 6 |
-| Contract test files | 226 |
+| Feature commits (this epic) | 8 |
+| Contract test files | 227 |
 | ADRs with Implementation Learnings | 10/140 |
 
 ## 2. Healing & Fix Passes
@@ -74,6 +74,8 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `492bbd166e4788f9037f758fae73b4e38465a2bd` | 2026-09-08 05:49:55 +0200 | feat(epic-16): implement Story 16.3 — cryptographic audit log hash chaining and manifest export (ADR-0127) |
+| `35ae5612e99f3560c8b03ae5b21580f84e4cbb93` | 2026-09-08 04:24:25 +0200 | chore(tracking): record post-commit review entries and Epic 16 synthesis for Story 16.2 |
 | `aa24542f5e7d81a215508589d8324eccae5d333d` | 2026-09-08 04:23:45 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.2 |
 | `7336ec53dbf32f82aebfe46d4245e1529c1465e0` | 2026-09-08 04:21:12 +0200 | feat(epic-16): implement Story 16.2 — DSR Article 18 restriction quarantining and verified receipts (ADR-0126) |
 | `784bbf514e5ce6dafbc6f8d40f37c322115e3c7f` | 2026-09-08 01:42:22 +0200 | chore(epic-16): align user stories for Stories 16.1 through 16.4 |
@@ -83,7 +85,7 @@
 
 ## 4. Contract Test Inventory
 
-Total: 226 contract test files.
+Total: 227 contract test files.
 
 ### social-listening-admin/contracts (81 files)
 
@@ -169,7 +171,7 @@ Total: 226 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (145 files)
+### social-listening-core/contracts (146 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -229,6 +231,7 @@ Total: 226 contract test files.
 - `story-15.2.data-export-sampling.contract.test.ts` (modified 2026-09-07)
 - `story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts` (modified 2026-09-07)
 - `story-16.2.dsr-article-18-restriction.contract.test.ts` (modified 2026-09-08)
+- `story-16.3.audit-hash-chaining-manifest.contract.test.ts` (modified 2026-09-08)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
@@ -403,7 +406,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 16.2, 16.1.
+Feature commits reference stories: 16.3, 16.2, 16.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

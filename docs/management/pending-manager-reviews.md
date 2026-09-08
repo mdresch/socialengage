@@ -7892,3 +7892,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/time-tracking.md, docs/user-stories/epic-16-adr-0125-to-0128.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-09-08 — 492bbd1 — feat(epic-16): implement Story 16.3 — cryptographic audit log hash chaining and manifest export (ADR-0127)
+
+- **Full commit:** `492bbd166e4788f9037f758fae73b4e38465a2bd`
+- **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.3-Audit-Hash-Chaining-Manifest.md, docs/walkthroughs/walkthrough-story-16.3.md, social-listening-core/.claude/skills/compliance/SKILL.md, social-listening-core/contracts/epic-16/story-16.3.audit-hash-chaining-manifest.contract.test.ts, social-listening-core/migrations/0079_add_audit_log_hash_chaining_and_compliance_packs.sql, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/compliance/auditHashChaining.ts, social-listening-core/src/compliance/auditPackService.ts, social-listening-core/src/compliance/types.ts, social-listening-core/src/compliance/zipArchive.ts, social-listening-core/src/http/versions/v1/complianceRouter.ts, social-listening-core/src/http/versions/v1/router.ts
+- **Status:** Pending review
+

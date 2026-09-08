@@ -4857,4 +4857,37 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Role-gated quarantine and remediation endpoints (`POST /v1/dsr/requests/:id/quarantine` and `POST /v1/dsr/requests/:id/unquarantine`) restrict access to `Tenant-Admin` and `Legal-Advisor` (rejecting unauthorized roles with 403), toggling `social_posts.processing_restricted` and managing case review states.
   - Query interception and exclusion guarantees: `GET /v1/analytics/overview` dynamically excludes restricted posts from volume counts and sentiment averages; CSV exports (`GET /v1/posts/export.csv`) and async export jobs omit restricted rows; RAG vector search (`pgvectorConnector.ts`) filters out chunk candidates whose parent post has `processing_restricted = TRUE`; and underlying database post text and raw payloads are preserved intact pending final legal resolution.
 
+---
+
+## 2026-09-08 — Story 16.3: Cryptographic audit log hash chaining and manifest export (backend) — social-listening-core@492bbd1
+
+- **Full commit:** `492bbd166e4788f9037f758fae73b4e38465a2bd`
+- **Repo:** social-listening-core
+- **Story / ADR:** 16.3 / ADR-0127 (governed by BRD-0127, FDD-0127, TDS-0127, and ADR-0094)
+- **Contract:** `social-listening-core/contracts/epic-16/story-16.3.audit-hash-chaining-manifest.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/compliance/SKILL.md`
+- **Suite:** PASS (8/8 tests green, 26/26 across Epic 16). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/implementation-plans/Plan-Story-16.3-Audit-Hash-Chaining-Manifest.md
+  - docs/user-stories/epic-16-adr-0125-to-0128.md
+  - docs/walkthroughs/walkthrough-story-16.3.md
+  - social-listening-core/.claude/skills/compliance/SKILL.md
+  - social-listening-core/contracts/epic-16/story-16.3.audit-hash-chaining-manifest.contract.test.ts
+  - social-listening-core/migrations/0079_add_audit_log_hash_chaining_and_compliance_packs.sql
+  - social-listening-core/src/admin/platformAdminAuditLog.ts
+  - social-listening-core/src/compliance/auditHashChaining.ts
+  - social-listening-core/src/compliance/auditPackService.ts
+  - social-listening-core/src/compliance/types.ts
+  - social-listening-core/src/compliance/zipArchive.ts
+  - social-listening-core/src/http/versions/v1/complianceRouter.ts
+  - social-listening-core/src/http/versions/v1/router.ts
+- **Notes:**
+  - Applied DDL schema migration `0079_add_audit_log_hash_chaining_and_compliance_packs.sql` adding `previous_record_hash TEXT NOT NULL` and `record_hash TEXT NOT NULL` to `platform_admin_audit_log`, creating `tenant_audit_log` with monotonic sequence (`seq BIGSERIAL`) and RLS tenant isolation, and creating `compliance_audit_packs` table with 90-day retention.
+  - Implemented cryptographic ledger chaining utility (`auditHashChaining.ts`): deterministic SHA-256 computation over `{ id, tenant_id, actor_id, action, timestamp, canonical_payload, previous_record_hash }` with key-sorted JSON canonicalization and fixed 64-character zero string genesis block anchor (`0000...0000`).
+  - Row-level database locking (`FOR UPDATE` on tenant record and latest sequence row) guarantees serial execution and eliminates fork races during concurrent chained appends.
+  - Continuous verification endpoint (`GET /v1/compliance/audit-log/verify`) validates chain integrity across tenant partitions or date bounds, returning `isValid: true` or pinpointing exact compromised row IDs, sequence positions, and mismatched digests.
+  - Standard compliance evidence bundle generator (`auditPackService.ts`, `zipArchive.ts`) creates structured ZIP archives with `audit_logs.csv` and `dsr_proof_logs.csv`, computing SHA-256 digests and row counts, balanced binary Merkle tree root hash across enclosed records, and platform HMAC-SHA256 verification signature in root `manifest.json` (`manifestVersion: "1.0.0"`).
+  - Presigned download endpoint (`GET /v1/compliance/audit-packs/:id/download`) provides direct streaming or download metadata with 24-hour token expiration, and strictly enforces 90-day retention lifecycle (returning 410 `EXPIRED_AUDIT_PACK`).
+
 
