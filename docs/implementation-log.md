@@ -4820,3 +4820,41 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Surfaced advisory `risk_flag` and `risk_reason` on `GET /v1/takedowns` and `GET /v1/takedowns/:id` without auto-denying; enforced strict human-in-the-loop decision rule with `403 AUTO_DECISION_FORBIDDEN` on automated resolution attempts. Supported human review actions for deny (with reason) and escalate.
   - Deep redaction cascade implemented on grant (`POST /v1/takedowns/:id/grant`): soft-redacting post text (`[Redacted per Data Subject Request]`) and raw payload (`{ redacted: true }`), clearing AI enrichment (`sentiment: 'neutral'`, `sentimentConfidence: 0`, `keyPhrases: []`, `topicClusters: []`), deleting watchlist matches from `post_watchlist_matches`, and synchronously purging vector chunks from Pinecone/RAG vector store via `RAGConnector.deletePost()`.
 
+---
+
+## 2026-09-08 — Story 16.2: DSR Article 18 restriction quarantining and verified receipts (backend) — social-listening-core@7336ec5
+
+- **Full commit:** `7336ec53dbf32f82aebfe46d4245e1529c1465e0`
+- **Repo:** social-listening-core
+- **Story / ADR:** 16.2 / ADR-0126 (governed by BRD-0126, FDD-0126, TDS-0126)
+- **Contract:** `social-listening-core/contracts/epic-16/story-16.2.dsr-article-18-restriction.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/data-governance/SKILL.md`
+- **Suite:** PASS (9/9 tests green, 18/18 across Epic 16). `npm run typecheck` clean (0 errors).
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/implementation-plans/Plan-Story-16.2-DSR-Article-18-Quarantining.md
+  - docs/user-stories/epic-16-adr-0125-to-0128.md
+  - docs/walkthroughs/walkthrough-story-16.2.md
+  - social-listening-core/.claude/skills/data-governance/SKILL.md
+  - social-listening-core/contracts/epic-16/story-16.2.dsr-article-18-restriction.contract.test.ts
+  - social-listening-core/migrations/0078_add_dsr_article_18_and_receipts.sql
+  - social-listening-core/src/governance/captchaValidator.ts
+  - social-listening-core/src/governance/dsrQuarantineStore.ts
+  - social-listening-core/src/governance/dsrReceipt.ts
+  - social-listening-core/src/http/app.ts
+  - social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
+  - social-listening-core/src/http/versions/v1/dsrPublicRouter.ts
+  - social-listening-core/src/http/versions/v1/dsrRouter.ts
+  - social-listening-core/src/http/versions/v1/router.ts
+  - social-listening-core/src/posts/postExportEngine.ts
+  - social-listening-core/src/posts/socialPostStore.ts
+  - social-listening-core/src/rag/pgvectorConnector.ts
+- **Notes:**
+  - Applied DDL schema migration `0078_add_dsr_article_18_and_receipts.sql` adding `processing_restricted BOOLEAN NOT NULL DEFAULT FALSE` column and partial index `idx_social_posts_active_processing` on `social_posts (tenant_id, created_at) WHERE processing_restricted = FALSE`, adding `request_type` check constraint to `data_subject_requests`, and creating `dsr_receipts` table with RLS tenant isolation.
+  - Implemented cryptographic confirmation receipt utility (`dsrReceipt.ts`): normalized SHA-256 one-way hashing (`subjectHash`) shielding raw author email addresses in receipts, canonical key-ordered HMAC-SHA256 digital signature generation, and constant-time equality check via `crypto.timingSafeEqual` preventing timing attacks on public receipt verification.
+  - Public submission endpoint (`POST /public/v1/dsr/requests`) enforces bot validation challenge (`captchaToken`), hashes author email, creates DSR record, generates and stores HMAC receipt, and returns `201 Created` with signed digital receipt token.
+  - Public verification endpoint (`GET /public/v1/dsr/verify-receipt`) accepts receipt parameters and verifies authentic digital signature against payload, returning 200 `{ verified: true }` or 400 `INVALID_RECEIPT_SIGNATURE` for tampered payloads or forged signatures.
+  - Role-gated quarantine and remediation endpoints (`POST /v1/dsr/requests/:id/quarantine` and `POST /v1/dsr/requests/:id/unquarantine`) restrict access to `Tenant-Admin` and `Legal-Advisor` (rejecting unauthorized roles with 403), toggling `social_posts.processing_restricted` and managing case review states.
+  - Query interception and exclusion guarantees: `GET /v1/analytics/overview` dynamically excludes restricted posts from volume counts and sentiment averages; CSV exports (`GET /v1/posts/export.csv`) and async export jobs omit restricted rows; RAG vector search (`pgvectorConnector.ts`) filters out chunk candidates whose parent post has `processing_restricted = TRUE`; and underlying database post text and raw payloads are preserved intact pending final legal resolution.
+
+
