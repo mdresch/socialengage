@@ -7,6 +7,7 @@ import {
   listProspectingLists,
   getProspectingList,
   updateProspectingList,
+  updateProspectingListScope,
   deleteProspectingList,
   addEntry,
   listEntries,
@@ -31,7 +32,7 @@ prospectingListsRouter.post('/', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 
-  const { name, description, shared } = req.body || {};
+  const { name, description, shared, sharingScope } = req.body || {};
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
     res.status(400).json({ error: 'Name is required.' });
     return;
@@ -42,6 +43,7 @@ prospectingListsRouter.post('/', async (req, res) => {
       name,
       description,
       shared,
+      sharingScope,
     });
     res.status(201).json(list);
   } catch (err: any) {
@@ -174,6 +176,8 @@ prospectingListsRouter.post('/:id/crm-handoff', requireFeatureGate('prospecting_
       return;
     }
 
+    const deduplicate = req.query.deduplicate === 'true' || req.body?.deduplicate === true;
+
     const result = await pushProspectsToCRM({
       tenantId: identity.tenantId,
       userId: identity.userId,
@@ -181,6 +185,7 @@ prospectingListsRouter.post('/:id/crm-handoff', requireFeatureGate('prospecting_
       crmConnectorId,
       selectedEntryIds,
       customFields,
+      deduplicate,
     });
 
     res.json(result);
@@ -212,13 +217,14 @@ prospectingListsRouter.patch('/:id', async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 
-  const { name, description, shared } = req.body || {};
+  const { name, description, shared, sharingScope } = req.body || {};
 
   try {
     const list = await updateProspectingList(identity.tenantId, identity.userId, req.params.id, {
       name,
       description,
       shared,
+      sharingScope,
     });
     if (!list) {
       res.status(404).json({ error: 'Prospecting list not found or not authorized.' });
@@ -227,6 +233,42 @@ prospectingListsRouter.patch('/:id', async (req, res) => {
     res.json(list);
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to update prospecting list.' });
+  }
+});
+
+// PATCH /v1/prospecting-lists/:id/sharing
+prospectingListsRouter.patch('/:id/sharing', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  const { sharingScope } = req.body || {};
+  const VALID_SCOPES = ['private', 'workspace_read', 'workspace_write'];
+  if (!sharingScope || !VALID_SCOPES.includes(sharingScope)) {
+    res.status(400).json({ error: `Invalid sharingScope. Must be one of: ${VALID_SCOPES.join(', ')}` });
+    return;
+  }
+
+  try {
+    const list = await getProspectingList(identity.tenantId, identity.userId, req.params.id);
+    if (!list) {
+      res.status(404).json({ error: 'Prospecting list not found.' });
+      return;
+    }
+
+    if (list.owner_id !== identity.userId) {
+      res.status(403).json({ error: 'Only the list owner can modify list sharing scope.' });
+      return;
+    }
+
+    const updated = await updateProspectingListScope(
+      identity.tenantId,
+      identity.userId,
+      req.params.id,
+      sharingScope
+    );
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to update sharing scope.' });
   }
 });
 
@@ -300,7 +342,11 @@ prospectingListsRouter.post('/:id/entries', async (req, res) => {
       res.status(409).json({ error: 'Author is already in this prospecting list.' });
       return;
     }
-    if (err.code === '23503') {
+    if (
+      err.code === '23503' ||
+      err.code === '42501' ||
+      err.message?.includes('violates row-level security policy')
+    ) {
       res.status(404).json({ error: 'Prospecting list or author not found.' });
       return;
     }
