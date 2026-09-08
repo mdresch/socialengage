@@ -1,4 +1,4 @@
-﻿# ADR-0118: Additional Social Platform Publishing
+# ADR-0118: Additional Social Platform Publishing
 
 **Status:** Accepted (2026-08-28)
 
@@ -87,6 +87,7 @@ This ADR is a roadmap, not a per-platform specification. Before building any of 
 
 ## Related Documents
 
+- [Platform Build Library](../platform-library/README.md)
 - ADR-0075: Outbound Social Post Publishing
 - ADR-0072: Cross-Platform Polypost Composer and Multi-Network Preview Engine
 - ADR-0068: Instagram Connector

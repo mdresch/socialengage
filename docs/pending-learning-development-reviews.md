@@ -7518,10 +7518,16 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, social-listening-core/.claude/skills/additional-publishing-roadmap/SKILL.md, social-listening-core/contracts/epic-14/story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts, social-listening-core/src/publishing/additionalPublishingRoadmap.ts
 - **Status:** Pending review
 
-## 2026-09-04 — d81a3f4 — chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1
+## 2026-09-04 — c68c1a1 — docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1)
 
-- **Full commit:** `d81a3f44850a3d971af8fd710ae8c96a29cafade`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Full commit:** `c68c1a13814e47e19627dd8ad8c6ee2540261673`
+- **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/platform-library/01-mastodon-publishing-connector.md, docs/platform-library/02-bluesky-publishing-connector.md, docs/platform-library/03-instagram-publishing-connector.md, docs/platform-library/04-threads-publishing-connector.md, docs/platform-library/05-x-twitter-publishing-connector.md, docs/platform-library/README.md, docs/user-stories/epic-14-adr-0118-to-0122.md
+- **Status:** Pending review
+
+## 2026-09-04 — f53a870 — Merge remote-tracking branch 'origin/main'
+
+- **Full commit:** `f53a870143c97aa723711eba3cf20dd2eec3a53e`
+- **Files touched:** 
 - **Status:** Pending review
 
 ## 2026-09-04 — c1ab9b2 — feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119)
