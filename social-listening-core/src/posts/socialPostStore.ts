@@ -678,8 +678,8 @@ export async function exportSocialPostsCsv(
       ? `SELECT COUNT(*)::int as count
          FROM social_posts sp
          JOIN post_watchlist_matches pwm ON pwm.post_id = sp.id AND pwm.watchlist_id = $2 AND pwm.tenant_id = sp.tenant_id
-         WHERE sp.tenant_id = $1`
-      : `SELECT COUNT(*)::int as count FROM social_posts WHERE tenant_id = $1`;
+         WHERE sp.tenant_id = $1 AND sp.processing_restricted = FALSE`
+      : `SELECT COUNT(*)::int as count FROM social_posts WHERE tenant_id = $1 AND processing_restricted = FALSE`;
     const countParams = options.watchlistId ? [tenantId, options.watchlistId] : [tenantId];
     const { rows: countRows } = await client.query<{ count: number }>(countSql, countParams);
     if (countRows[0].count > maxRows) {
@@ -701,7 +701,7 @@ export async function exportSocialPostsCsv(
        FROM social_posts sp
        LEFT JOIN authors a ON a.id = sp.author_id
        ${join}
-       WHERE sp.tenant_id = $1
+       WHERE sp.tenant_id = $1 AND sp.processing_restricted = FALSE
        ORDER BY sp.seq ASC
        LIMIT $2`,
       params

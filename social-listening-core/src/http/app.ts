@@ -39,6 +39,7 @@ function entraConfigFromEnv() {
  * boundary between the two.
  */
 import { takedownsPublicRouter } from './versions/v1/takedownsPublicRouter';
+import { dsrPublicRouter } from './versions/v1/dsrPublicRouter';
 
 export function createApp(): Express {
   const app = express();
@@ -57,6 +58,9 @@ export function createApp(): Express {
 
   // Story 16.1 (ADR-0125): Public author-initiated takedown submission and magic-link verification
   app.use('/public/v1/takedowns', takedownsPublicRouter);
+
+  // Story 16.2 (ADR-0126): Public DSR request submission and cryptographic receipt verification
+  app.use('/public/v1/dsr', dsrPublicRouter);
 
   // Story 12.11 (ADR-0106): Public API rate limiting & X-RateLimit-* headers
   app.use('/v1', rateLimitMiddleware);

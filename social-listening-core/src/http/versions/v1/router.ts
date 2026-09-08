@@ -45,6 +45,8 @@ import { createPublishingRoutes } from '../../routes/publishingRoutes';
 import { influencersRouter } from './influencersRouter';
 import { takedownsRouter } from './takedownsRouter';
 import { takedownsPublicRouter } from './takedownsPublicRouter';
+import { dsrRouter } from './dsrRouter';
+import { dsrPublicRouter } from './dsrPublicRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -247,6 +249,10 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 16.1 (ADR-0125) — author takedowns review queue, grant cascade, and public endpoints. */
   v1Router.use('/takedowns', authMiddleware, takedownsRouter);
   v1Router.use('/public/takedowns', takedownsPublicRouter);
+
+  /** Story 16.2 (ADR-0126) — DSR Article 18 restriction quarantining and receipts. */
+  v1Router.use('/dsr', authMiddleware, dsrRouter);
+  v1Router.use('/public/dsr', dsrPublicRouter);
 
   return v1Router;
 }

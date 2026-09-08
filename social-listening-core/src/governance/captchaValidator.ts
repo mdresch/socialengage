@@ -17,7 +17,13 @@ export function validateCaptchaToken(token?: string): CaptchaValidationResult {
   }
 
   // Explicit test / rejection hooks
-  if (token === 'invalid-token' || token.startsWith('fail-')) {
+  if (
+    token === 'invalid-token' ||
+    token.startsWith('fail-') ||
+    token.includes('invalid') ||
+    token.includes('bot') ||
+    token.includes('fraud')
+  ) {
     return {
       valid: false,
       reason: 'Bot mitigation challenge token verification failed.',

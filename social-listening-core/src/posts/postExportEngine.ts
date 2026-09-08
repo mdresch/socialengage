@@ -175,7 +175,7 @@ export class ExportFileTooLargeError extends Error {
 }
 
 function buildWhereClauses(filters: ExportFilters, params: any[]): { whereClauses: string[]; join: string } {
-  const whereClauses: string[] = ['sp.tenant_id = $1'];
+  const whereClauses: string[] = ['sp.tenant_id = $1', 'sp.processing_restricted = FALSE'];
   let paramIdx = params.length + 1;
 
   if (filters.startDate) {
