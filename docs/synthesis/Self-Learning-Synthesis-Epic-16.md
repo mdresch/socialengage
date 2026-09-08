@@ -2,7 +2,7 @@
 
 **Compiled Date:** 2026-09-08
 **Source Capture:** `raw/synthesis-epic-16-2026-09-08/`
-**Git HEAD:** `492bbd166e4788f9037f758fae73b4e38465a2bd`
+**Git HEAD:** `6eb57b145b01d3c431ec69961e8e78c2f7e0c3b9`
 **Branch:** `feat/story-16.3`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
@@ -12,9 +12,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 474 |
+| Git commits scanned | 478 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 8 |
+| Feature commits (this epic) | 9 |
 | Contract test files | 227 |
 | ADRs with Implementation Learnings | 10/140 |
 
@@ -74,6 +74,7 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `6eb57b145b01d3c431ec69961e8e78c2f7e0c3b9` | 2026-09-08 05:50:55 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.3 |
 | `492bbd166e4788f9037f758fae73b4e38465a2bd` | 2026-09-08 05:49:55 +0200 | feat(epic-16): implement Story 16.3 — cryptographic audit log hash chaining and manifest export (ADR-0127) |
 | `35ae5612e99f3560c8b03ae5b21580f84e4cbb93` | 2026-09-08 04:24:25 +0200 | chore(tracking): record post-commit review entries and Epic 16 synthesis for Story 16.2 |
 | `aa24542f5e7d81a215508589d8324eccae5d333d` | 2026-09-08 04:23:45 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.2 |
