@@ -4890,4 +4890,49 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Standard compliance evidence bundle generator (`auditPackService.ts`, `zipArchive.ts`) creates structured ZIP archives with `audit_logs.csv` and `dsr_proof_logs.csv`, computing SHA-256 digests and row counts, balanced binary Merkle tree root hash across enclosed records, and platform HMAC-SHA256 verification signature in root `manifest.json` (`manifestVersion: "1.0.0"`).
   - Presigned download endpoint (`GET /v1/compliance/audit-packs/:id/download`) provides direct streaming or download metadata with 24-hour token expiration, and strictly enforces 90-day retention lifecycle (returning 410 `EXPIRED_AUDIT_PACK`).
 
+---
+
+## 2026-09-08 — Story 16.4: Platform ops quota burn-rate forecasting & guided connector remediation controls (frontend/backend) — commit 48d2f8f
+
+- **Full commit:** `48d2f8f`
+- **Repo:** social-listening-core & social-listening-admin
+- **Story / ADR:** 16.4 / ADR-0128 (governed by BRD-0128, FDD-0128, TDS-0128)
+- **Contract:**
+  - `social-listening-core/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate.contract.test.ts`
+  - `social-listening-admin/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts`
+- **SKILL.md:**
+  - `social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md`
+  - `social-listening-admin/.claude/skills/platform-operations-dashboard/SKILL.md`
+- **Suite:** PASS (5/5 tests in core, 6/6 tests in admin, 31/31 across Epic 16 in core). `npm run typecheck` clean in both repos (0 errors).
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/implementation-plans/Plan-Story-16.4-Platform-Ops-Quota-Burn-Rate.md
+  - docs/user-stories/epic-16-adr-0125-to-0128.md
+  - docs/walkthroughs/walkthrough-story-16.4.md
+  - social-listening-admin/.claude/skills/platform-operations-dashboard/SKILL.md
+  - social-listening-admin/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts
+  - social-listening-admin/src/app/api/admin/connectors/[id]/remediate/route.ts
+  - social-listening-admin/src/app/api/admin/connectors/remediate/route.ts
+  - social-listening-admin/src/components/operations/ConnectorRemediationDrawer.tsx
+  - social-listening-admin/src/components/operations/PlatformOperationsDashboard.tsx
+  - social-listening-admin/src/components/operations/QuotaBurnRateForecast.tsx
+  - social-listening-admin/src/lib/core-client.ts
+  - social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md
+  - social-listening-core/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate.contract.test.ts
+  - social-listening-core/src/http/versions/v1/platformDashboardRouter.ts
+  - social-listening-core/src/platform/connectorRemediationService.ts
+  - social-listening-core/src/platform/platformMetricsStore.ts
+  - social-listening-core/src/platform/quotaBurnRatePredictor.ts
+- **Notes:**
+  - Implemented quota velocity and burn-rate predictor engine (`quotaBurnRatePredictor.ts`) in `social-listening-core` calculating trailing 7-day token ingestion velocity and linear exhaustion projections, classifying risk status into `healthy` (>30d), `warning_30d` (8–30d), and `critical_7d` (≤7d or exhausted).
+  - Updated `PlatformDashboardSummary` and `getPlatformDashboardData()` in `platformMetricsStore.ts` to compute and return `tenantQuotaBurnProjections` across all active tenants.
+  - Implemented guided connector remediation service (`connectorRemediationService.ts`) providing role-gated playbooks (`retry_now`, `override_backoff` with configurable minutes, `clear_error_state`, `reprompt_credentials`) and automatically logging all actions to `platform_admin_audit_log` via `logPlatformAdminAction()`.
+  - Exposed `POST /v1/admin/connectors/:id/remediate` in `platformDashboardRouter.ts` gated strictly to `platform_admin` identities (rejecting non-admin users with 403).
+  - Updated `core-client.ts` in `social-listening-admin` with `TenantQuotaBurnProjection` interface and `remediateConnector` API client function.
+  - Implemented Next.js proxy route handlers at `app/api/admin/connectors/[id]/remediate/route.ts` and `app/api/admin/connectors/remediate/route.ts`.
+  - Implemented interactive `QuotaBurnRateForecast.tsx` component with visual risk counters and detailed tabular projections.
+  - Implemented interactive `ConnectorRemediationDrawer.tsx` slide-out drawer providing operator playbooks with live loading states and feedback banners.
+  - Integrated both components into `PlatformOperationsDashboard.tsx` (`/admin/operations`), adding "🛠 Remediate" trigger controls to the live connector health table and wiring automatic dashboard telemetry refreshes on playbook completion.
+
+
 
