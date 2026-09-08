@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-08 | 12:25 | — | — | Documentation | — | docs: expand Epic 17 user stories to full explainable specification (c4d9bdd) |
 | 2026-09-08 | 12:20 | — | — | Documentation | — | docs: align status to Built for completed stories 16.1-16.3 (91bb7b1) |
 | 2026-09-08 | 07:19 | — | — | Documentation | Story 16.4 | feat(ops): platform ops quota burn-rate forecasting and guided connector remediation (Story 16.4, ADR-0128) (48d2f8f) |
 | 2026-09-08 | 05:50 | — | — | Documentation | Story 16.3 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.3 (6eb57b1) |

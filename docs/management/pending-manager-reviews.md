@@ -7916,3 +7916,9 @@
 - **Files touched:** docs/user-stories/epic-16-adr-0125-to-0128.md
 - **Status:** Pending review
 
+## 2026-09-08 — c4d9bdd — docs: expand Epic 17 user stories to full explainable specification
+
+- **Full commit:** `c4d9bddae931da6532de166818b261051585dfe3`
+- **Files touched:** docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
