@@ -8082,3 +8082,9 @@
 - **Files touched:** CLAUDE.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-09 — e4f4826 — docs(epic-9): standardize Story 9.5's Built field to the em-dash convention
+
+- **Full commit:** `e4f4826685f3d9d3fb533a26672be1bf1d909f7a`
+- **Files touched:** docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+

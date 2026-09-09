@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 05:28 | — | — | Documentation | Story 9.5 | docs(epic-9): standardize Story 9.5's Built field to the em-dash convention (e4f4826) |
 | 2026-09-09 | 05:24 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for 614e6e5 checkpoint (202dddf) |
 | 2026-09-09 | 05:23 | — | — | Review | — | docs(review): checkpoint — Documentation Steward pass complete (614e6e5) |
 | 2026-09-09 | 05:15 | — | — | Review | — | docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work (f15d9f1) |
