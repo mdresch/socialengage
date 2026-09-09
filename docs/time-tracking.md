@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 06:21 | — | — | Review | — | chore: sync review-queue tracking for the wording-fix commit (898eedd) |
+| 2026-09-09 | 06:20 | — | — | Documentation | — | fix(docs): correct Facebook reply gating wording in user-manual.md (e00da58) |
 | 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for eeacc20 checkpoint (38f0867) |
 | 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for e4f4826 nit fix (eeacc20) |
 | 2026-09-09 | 05:28 | — | — | Documentation | Story 9.5 | docs(epic-9): standardize Story 9.5's Built field to the em-dash convention (e4f4826) |
