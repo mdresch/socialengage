@@ -575,8 +575,10 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.24 — Connector status screen groups Connectors and AI Providers into separate sections, with honest AI-provider metrics
 
-**Source:** No new ADR needed — resolves `connector-status-view/SKILL.md`'s own already-named "Known gaps" entry from 2026-08-12 ("a real UX mismatch, deliberately left unaddressed for now... options considered, not decided: reword the copy for AI providers specifically, or give them real success/failure tracking"), the same "resolve an already-named, deliberately-deferred gap directly" category Story 2.14/6.22 already established for ADR-level open items, applied here to a SKILL.md-documented one instead. **Status:** Ready.
+**Source:** No new ADR needed — resolves `connector-status-view/SKILL.md`'s own already-named "Known gaps" entry from 2026-08-12 ("a real UX mismatch, deliberately left unaddressed for now... options considered, not decided: reword the copy for AI providers specifically, or give them real success/failure tracking"), the same "resolve an already-named, deliberately-deferred gap directly" category Story 2.14/6.22 already established for ADR-level open items, applied here to a SKILL.md-documented one instead. **Status:** Built 2026-08-19.
 **Built:** 2026-08-19 — social-listening-admin@5d76e44
+
+**Documentation Steward correction, 2026-09-09.** Status line read "Ready" directly beside its own already-populated `**Built:**` field — confirmed against `docs/implementation-log.md`'s matching entry (`## 2026-08-19 — Story 6.24 — social-listening-admin@5d76e44`, hash matches exactly). Corrected directly. This same mismatch had also propagated to `CLAUDE.md`'s own top-level status paragraph and Map section, both still calling this story "Ready but not yet built" three weeks after it shipped — corrected there too, see `CLAUDE.md`'s own history for this same date.
 
 **Built 2026-08-19.** `ConnectorStatusClient.tsx` now partitions `rows` into two visually separate, headed sections — "Connectors" (`category === 'Ingestion'`) and "AI Providers" (`category === 'Enrichment'`) — via a single pass over the real, unfiltered `rows` prop that buckets each row's card into one of two arrays (never two separately-filtered `.map()` calls — see the regression note below for why). AI Provider cards render a plain `active`/`inactive` `StatusBadge` off real `isActive` with an explicit `'Active'`/`'Inactive'` label override (never the health-derived variant, since an `AIProviderConnector`'s `health.status` is permanently `'disconnected'`), and no metrics grid — a one-line `cs-ai-note` explains it's invoked on demand instead. Connector cards keep the real metrics grid, now showing each platform's own real poll interval (`POLL_INTERVAL_MINUTES`, mirroring `bootstrapConnectors.ts`'s real `pollCadenceMs` constants) instead of a universal wrong "2 minutes," and the real global retry ceiling ("Threshold: 20 retries before alert," mirroring `CONSECUTIVE_FAILURE_CEILING`) instead of a wrong "5." The KPI strip's "Total Feeds" now counts the Connectors section only. New contract: `contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts` (9/9).
 
@@ -652,9 +654,11 @@ Covers `social-listening-admin` — confirmed empty as of 2026-08-04 (no Next.js
 
 ## Story 6.27 — Facebook: support connecting more than one Page per user
 
-**Source:** ADR-0060 (Accepted 2026-08-18) · **Status:** Ready.
+**Source:** ADR-0060 (Accepted 2026-08-18) · **Status:** Built 2026-08-18.
 
 **Built:** 2026-08-18 — social-listening-admin@b58b323 (core half: social-listening-core@b58b323)
+
+**Documentation Steward correction, 2026-09-09.** Status line read "Ready" directly beside its own already-populated `**Built:**` field — confirmed against `docs/implementation-log.md`'s matching entry (`## 2026-08-18, later the same day — Story 6.27 — social-listening-admin@b58b323 (spans both repos)`, hash matches exactly). Corrected directly.
 
 **Named directly by Menno, 2026-08-18**, while live-testing Story 6.23's real Page picker: he administers many real Facebook Pages, but the tenant's own license seat count (max 5) makes "have a different team member connect each Page" — the only path Story 6.23 currently supports — impractical at his actual scale, verbatim: *"I truly have many many pages i just dont have the seat count max 5 to load all the pages by a different user. Leave it for now and a new story to follow."* ADR-0060 was then drafted at his direct request ("could you please draft the ADR for multiple Facebook Pages"), revised in place once against a four-point external-review pass, and accepted the same day, verbatim: *"yes and i can now Approve the ADR 00060"*. This story expands ADR-0060's own Decision §1–§6 into real, buildable Acceptance Criteria — it does not decide anything ADR-0060 itself left undecided (see "Explicitly out of scope" below).
 
