@@ -8070,3 +8070,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-09 — f15d9f1 — docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work
+
+- **Full commit:** `f15d9f1446b01a2995c1f0edad2fa685f19441ca`
+- **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
