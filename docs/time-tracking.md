@@ -15,6 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 06:31 | — | — | Review | — | Queue commit f845ac9 for Manager, Documentation Steward, and Learning & Development review (d44e6b2) |
+| 2026-09-09 | 06:31 | — | — | Review | — | Address Copilot review: fix stale reply-support claim, blank queue metadata (f845ac9) |
+| 2026-09-09 | 06:27 | — | — | Review | — | Queue commit b704784 for Manager, Documentation Steward, and Learning & Development review (c642d02) |
+| 2026-09-09 | 06:27 | — | — | Review | — | Merge origin/main into docs-review/2026-08-28, resolve conflicts (b704784) |
 | 2026-09-09 | 06:21 | — | — | Review | — | chore: sync review-queue tracking for the wording-fix commit (898eedd) |
 | 2026-09-09 | 06:20 | — | — | Documentation | — | fix(docs): correct Facebook reply gating wording in user-manual.md (e00da58) |
 | 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for eeacc20 checkpoint (38f0867) |
@@ -205,6 +209,14 @@
 | 2026-08-27 | 12:36 | — | — | Documentation | ADR-0122 | feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122 (6f4f25e) |
 | 2026-08-27 | 12:10 | — | — | Documentation | Story 14.5 | docs(adr-0122): complete Story 14.5 self-learning synthesis remediation (4595a20) |
 | 2026-08-27 | 08:29 | — | — | Documentation | — | chore: sync tracking docs and dashboard telemetry after pull (1eac41f) |
+| 2026-08-27 | 07:30 | — | — | Review | — | chore: sync review-queue tracking for the merge commit (26b10c0) |
+| 2026-08-27 | 07:29 | — | — | Review | — | Merge remote-tracking branch 'origin/main' into docs-review/2026-08-27 (c905fd0) |
+| 2026-08-27 | 05:20 | — | — | Review | — | chore: sync review-queue tracking for the 2026-08-27 doc review commit (a7e2c5f) |
+| 2026-08-27 | 05:19 | — | — | Review | — | Scheduled doc review: Documentation Steward, L&D Writer, Ideal Manager passes (2026-08-27) (fa6ce2d) |
+| 2026-08-26 | 14:27 | — | — | Documentation | Story 6.39 | chore(dashboard): sync telemetry data for Story 6.39 (16043b0) |
+| 2026-08-26 | 14:25 | — | — | Documentation | Story 6.39 | docs: append implementation log for Story 6.39 (c68c14e) |
+| 2026-08-26 | 14:24 | — | — | Documentation | Story 6.39 | docs: update Story 6.39 Built status and log implementation (8b25501) |
+| 2026-08-26 | 14:23 | — | — | Documentation | Story 6.39 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) (e0abfdd) |
 | 2026-08-26 | 14:14 | — | — | Documentation | Story 6.2 | docs(trace): add Story 6.2 healing pass implementation log entry (fe8ef00) |
 | 2026-08-26 | 14:14 | — | — | Documentation | — | heal(story-6.2): add CSS module mapper to Jest config for page.module.css import (3cb453d) |
 | 2026-08-26 | 09:57 | — | — | Documentation | — | docs(trace): fix healing pass implementation log commit hash (0e4b787) |
@@ -767,6 +779,8 @@ A manually-entered row with real Start/End times is the only way this file will 
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 06:21 | — | — | Review | — | chore: sync review-queue tracking for the wording-fix commit (898eedd) |
+| 2026-09-09 | 06:20 | — | — | Documentation | — | fix(docs): correct Facebook reply gating wording in user-manual.md (e00da58) |
 | 2026-09-02 | 21:31 | — | — | Documentation | — | chore(obsidian-brain): add brain heal orchestrator and enrich export (95c62c9) |
 | 2026-08-31 | 00:49 | — | — | Documentation | — | ui(analytics): non-story tweaks — center globe, move watchlist, add entity breakdown, DateTime phrase filter, author platform badges (02ddfd3) |
 | 2026-08-31 | 23:01 | — | — | Documentation | — | ui(admin): center location globe and remove drag hint (fb374ac) |
@@ -852,12 +866,6 @@ A manually-entered row with real Start/End times is the only way this file will 
 | 2026-08-27 | 12:36 | — | — | Documentation | ADR-0122 | feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122 (6f4f25e) |
 | 2026-08-27 | 12:10 | — | — | Documentation | Story 14.5 | docs(adr-0122): complete Story 14.5 self-learning synthesis remediation (4595a20) |
 | 2026-08-27 | 08:29 | — | — | Documentation | — | chore: sync tracking docs and dashboard telemetry after pull (1eac41f) |
-| 2026-08-26 | 14:14 | — | — | Documentation | Story 6.2 | docs(trace): add Story 6.2 healing pass implementation log entry (fe8ef00) |
-| 2026-08-26 | 14:14 | — | — | Documentation | — | heal(story-6.2): add CSS module mapper to Jest config for page.module.css import (3cb453d) |
-| 2026-08-26 | 09:57 | — | — | Documentation | — | docs(trace): fix healing pass implementation log commit hash (0e4b787) |
-| 2026-08-26 | 09:56 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (01bce70) |
-| 2026-08-26 | 09:55 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (7920e48) |
-| 2026-08-26 | 09:55 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (01064dd) |
 | 2026-08-27 | 07:30 | — | — | Review | — | chore: sync review-queue tracking for the merge commit (26b10c0) |
 | 2026-08-27 | 07:29 | — | — | Review | — | Merge remote-tracking branch 'origin/main' into docs-review/2026-08-27 (c905fd0) |
 | 2026-08-27 | 05:20 | — | — | Review | — | chore: sync review-queue tracking for the 2026-08-27 doc review commit (a7e2c5f) |
@@ -866,6 +874,12 @@ A manually-entered row with real Start/End times is the only way this file will 
 | 2026-08-26 | 14:25 | — | — | Documentation | Story 6.39 | docs: append implementation log for Story 6.39 (c68c14e) |
 | 2026-08-26 | 14:24 | — | — | Documentation | Story 6.39 | docs: update Story 6.39 Built status and log implementation (8b25501) |
 | 2026-08-26 | 14:23 | — | — | Documentation | Story 6.39 | feat(admin): implement Story 6.39 — Polypost Composer Real Publish Flow (ADR-0075) (e0abfdd) |
+| 2026-08-26 | 14:14 | — | — | Documentation | Story 6.2 | docs(trace): add Story 6.2 healing pass implementation log entry (fe8ef00) |
+| 2026-08-26 | 14:14 | — | — | Documentation | — | heal(story-6.2): add CSS module mapper to Jest config for page.module.css import (3cb453d) |
+| 2026-08-26 | 09:57 | — | — | Documentation | — | docs(trace): fix healing pass implementation log commit hash (0e4b787) |
+| 2026-08-26 | 09:56 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (01bce70) |
+| 2026-08-26 | 09:55 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (7920e48) |
+| 2026-08-26 | 09:55 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (01064dd) |
 | 2026-08-26 | 09:54 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (00066ec) |
 | 2026-08-26 | 09:53 | — | — | Documentation | — | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist (0ee011c) |
 | 2026-08-25 | 17:11 | — | — | Documentation | — | chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com> (fbfe9ed) |
