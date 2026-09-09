@@ -17,6 +17,24 @@ export interface AppSidebarProps {
   shellType: 'tenant' | 'platform-admin';
 }
 
+function IconInbox() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 17H2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3z" />
+      <path d="M21.6 8.38A2 2 0 0 0 19.76 7H4.24a2 2 0 0 0-1.84 1.38L2 13h20z" />
+    </svg>
+  );
+}
+
+function IconDiscovery() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="16.24 7.76 14.83 14.83 7.76 16.24 9.17 9.17 16.24 7.76" />
+    </svg>
+  );
+}
+
 function IconCompose() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -133,6 +151,8 @@ function IconExpand() {
 const TENANT_NAV_ITEMS: NavItem[] = [
   { label: 'Compose post', href: '/tenant/compose', icon: <IconCompose /> },
   { label: 'Posts', href: '/tenant/posts', icon: <IconPosts /> },
+  { label: 'Inbox', href: '/tenant/inbox', icon: <IconInbox /> },
+  { label: 'Discovery', href: '/tenant/discovery', icon: <IconDiscovery /> },
   { label: 'Analytics', href: '/tenant/analytics', icon: <IconAnalytics /> },
   { label: 'Connect platforms', href: '/tenant/connectors', icon: <IconConnectors /> },
   { label: 'Watchlists', href: '/tenant/watchlists', icon: <IconWatchlists /> },
@@ -141,6 +161,7 @@ const TENANT_NAV_ITEMS: NavItem[] = [
   { label: 'Connector status', href: '/tenant/connectors/status', icon: <IconStatus /> },
   { label: 'Team & Access', href: '/tenant/users', icon: <IconUsers /> },
   { label: 'Invite assist', href: '/tenant/invite-assist', icon: <IconInvite /> },
+  { label: 'Plan & Seats', href: '/tenant/plan', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> },
   { label: 'Tenant settings', href: '/tenant/settings', icon: <IconSettings /> },
 ];
 

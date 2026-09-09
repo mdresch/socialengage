@@ -1,4 +1,4 @@
-# ADR-0089: Platform operations dashboard
+﻿# ADR-0089: Platform operations dashboard
 
 **Status:** Accepted (2026-08-28)
 
@@ -117,12 +117,12 @@ They must **not** return:
 
 ---
 
-## Open questions
+## Open Questions
 
-- Which Azure cost API is the v1 source — Cost Management API, resource tags, or both?
-- Should the dashboard also show projected monthly spend based on current daily run rate?
-- How are multi-region deployments visualized — separate dashboards or region filters?
-- Should tenants see a read-only version of this dashboard for their own tenant?
+- [x] **[Q-0089-1]** ~~Which Azure cost API is the v1 source — Cost Management API, resource tags, or both?~~ **Resolved by ADR-0128:** Cost Management API with resource tag filtering locked.
+- [ ] **[Q-0089-2]** Should the dashboard also show projected monthly spend based on current daily run rate?
+- [ ] **[Q-0089-3]** How are multi-region deployments visualized — separate dashboards or region filters?
+- [ ] **[Q-0089-4]** Should tenants see a read-only version of this dashboard for their own tenant?
 
 ---
 
@@ -131,3 +131,7 @@ They must **not** return:
 - Related feature design: `docs/product-research/feature-designs/17-platform-operations-dashboard.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0030` (Platform Admin boundary), `ADR-0052` (live ingestion scheduler), `ADR-0010` (ingestion health), `ADR-0031` (audit log)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0128 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0128's own §1–§3 — specifically tenant quota consumption burn-rate forecasting and degraded connector auto-remediation playbooks. This is a pending note only: ADR-0128 is currently Proposed, not accepted.

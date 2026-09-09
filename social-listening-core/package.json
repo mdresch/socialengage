@@ -18,11 +18,13 @@
     "db:dev:down": "docker compose -f docker-compose.dev.yml down",
     "db:dev:reset": "docker compose -f docker-compose.dev.yml down -v",
     "db:dev:migrate": "node scripts/withDevEnv.js ts-node src/db/migrate.ts",
-    "rag:backfill": "node scripts/withDevEnv.js ts-node src/rag/backfill.ts"
+    "rag:backfill": "node scripts/withDevEnv.js ts-node src/rag/backfill.ts",
+    "geo:backfill": "node scripts/withDevEnv.js ts-node src/connectors/geo/backfillGeoLocations.ts"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
     "@types/jest": "30.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "26.1.2",
     "@types/pg": "8.20.0",
     "@types/sanitize-html": "2.16.1",
@@ -42,8 +44,9 @@
     "@azure/storage-blob": "^12.33.0",
     "express": "5.2.1",
     "jose": "^5.10.0",
+    "multer": "^2.3.0",
     "pg": "8.22.0",
-    "sanitize-html": "2.17.6",
+    "sanitize-html": "2.17.7",
     "turndown": "7.2.4",
     "turndown-plugin-gfm": "1.0.2"
   },

@@ -105,6 +105,7 @@ export async function pollYouTube(tenantId: string): Promise<RunIngestionAttempt
           text: bodyMarkdown,
           authorExternalId: normalized.authorExternalId,
           publishedAt: normalized.publishedAt,
+          discoveringWatchlistId: wl.id,
         });
 
         postsIngested++;

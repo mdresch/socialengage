@@ -7,7 +7,7 @@ description: GET/POST/PATCH /v1/admin/tenants — the Platform Admin-only REST s
 
 ## What this is
 
-`adminTenantsRouter.ts` mounts `GET /v1/admin/tenants` (list), `POST /v1/admin/tenants` (create), and `PATCH /v1/admin/tenants/:id` (update `status`/`licenseSeatCount`/`domain`/`name`) — the first HTTP surface over `tenantStore.ts`, which until this story was store/mechanism-level only (`.claude/skills/tenants/SKILL.md`'s own former "Known gaps" entry). Every route requires a `platform_admin` resolved identity (`requirePlatformAdmin()`, `src/http/auth/requireTenantUser.ts`) — a `tenant_admin`/`tenant_user` identity gets `403`. Every write reuses `createTenant()`/`updateTenantAdmin()`'s own existing `logPlatformAdminAction()` call — no new audit path.
+`adminTenantsRouter.ts` mounts `GET /v1/admin/tenants` (list), `POST /v1/admin/tenants` (create), `PATCH /v1/admin/tenants/:id` (update `status`/`licenseSeatCount`/`domain`/`name`/`plan`/`featureGates`), and `GET /v1/admin/tenants/:id/plan` (Story 13.6, ADR-0112) — the HTTP surface over `tenantStore.ts`, which until Story 5.12 was store/mechanism-level only. Every route requires a `platform_admin` resolved identity (`requirePlatformAdmin()`, `src/http/auth/requireTenantUser.ts`) — a `tenant_admin`/`tenant_user` identity gets `403`. Every write reuses `createTenant()`/`updateTenantAdmin()`'s own existing `logPlatformAdminAction()` call — no new audit path.
 
 ## Governing ADRs and Stories
 
@@ -16,6 +16,7 @@ description: GET/POST/PATCH /v1/admin/tenants — the Platform Admin-only REST s
 | ADR-0030 | Platform Admin's audited `BYPASSRLS` role and its authorization boundary — this surface exposes it over HTTP, doesn't redesign it | 5.7 (mechanism), 5.12 (this HTTP surface) |
 | ADR-0031 | `tenants` table shape, the `status`/`license_seat_count` column-scoped grant | 5.8 (mechanism), 5.12 (this HTTP surface) |
 | ADR-0037 §9 | `platform_admin_role` gains `UPDATE(domain)` on `tenants` — decided 2026-08-04, the actual grant migration was never built until this story | 5.12 |
+| ADR-0112 | `plan` and `feature_gates` columns, `GET /v1/admin/tenants/:id/plan` | 13.5 (backend), 13.6 (read surface) |
 
 ## Contracts that constrain this component
 

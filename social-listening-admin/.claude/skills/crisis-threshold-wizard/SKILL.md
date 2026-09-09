@@ -5,6 +5,10 @@ description: Crisis threshold wizard UI component (Story 9.4, ADR-0079, BRD-0079
 
 # Crisis Threshold Wizard (`CrisisThresholdWizard.tsx`)
 
+## Contracts that constrain this component
+
+- `social-listening-admin/contracts/epic-9/story-9.4.crisis-threshold-wizard.contract.test.ts` — Story 9.4 contract test.
+
 ## What this is
 
 A 3-step interactive UI wizard in `social-listening-admin` that allows brand managers and tenant administrators to preview, customize, and activate standard crisis monitoring templates (`brand-crisis`, `product-recall`, `exec-attack`, `competitor-surge`, `data-breach`) without writing boolean queries by hand.

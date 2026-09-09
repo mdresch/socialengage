@@ -1,6 +1,6 @@
-# ADR-0108: Influencer discovery and scoring
+﻿# ADR-0108: Influencer discovery and scoring
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** an `Author` scoring model (`influence_score`, `reach_score`, `engagement_score`, `authenticity_score`) and a `GET /v1/influencers` endpoint that discovers, ranks, and filters authors by topic, platform, and impact.
 
@@ -109,12 +109,12 @@ GET /v1/influencers?topicId=...&platformId=...&watchlistId=...&minScore=...&sort
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `authenticity_score` use an external bot-detection service, or in-house heuristics?
-- How are scores normalized across platforms with different metrics (e.g. X vs. LinkedIn)?
-- Should tenants be able to customize the weights, or is a fixed default enough?
-- How does the daily refresh handle new or rarely seen authors?
+- [ ] **[Q-0108-1]** Should `authenticity_score` use an external bot-detection service, or in-house heuristics?
+- [ ] **[Q-0108-2]** How are scores normalized across platforms with different metrics (e.g. X vs. LinkedIn)?
+- [ ] **[Q-0108-3]** Should tenants be able to customize the weights, or is a fixed default enough?
+- [ ] **[Q-0108-4]** How does the daily refresh handle new or rarely seen authors?
 
 ---
 

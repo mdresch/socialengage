@@ -137,6 +137,7 @@ export const wikipediaConnector: SocialConnector = {
   providerId: WIKIPEDIA_PROVIDER_ID,
   authMode: 'none',
   deliveryMode: 'poll',
+  sourceType: 'wiki',
 
   // ADR-0042 Decision §5/Open Questions — Wikimedia publishes a rate-limits
   // policy but this pass did not fetch it to an exact numeric ceiling (the

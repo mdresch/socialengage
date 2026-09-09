@@ -1,4 +1,4 @@
-# BRD-0104: AI Topic Clustering — Post-Topics Schema
+﻿# BRD-0104: AI Topic Clustering — Post-Topics Schema
 
 ## 1. Document Control
 
@@ -276,3 +276,5 @@ A scheduled `TopicClusteringRefresh` worker keeps the last 7 days up to date. Pl
 | Product Owner | Menno | | 2026-08-23 |
 | Technical Lead | Menno | | 2026-08-23 |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place per  4-ai-topic-clustering-deep-research.md. Adds rolling 24-hour topic velocity tracking and auto-naming label generator.

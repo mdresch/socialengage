@@ -43,24 +43,27 @@ selfServiceTenantDeletionRouter.post('/request', async (req, res) => {
   const identity = requireTenantAdmin(req as RequestWithIdentity, res);
   if (!identity) return;
 
-  await withTenant(identity.tenantId, async (client) => {
+  type RequestResult =
+    | { kind: 'not_found' }
+    | { kind: 'already_active' }
+    | { kind: 'created'; deletionRequestedAt: Date; graceEndsAt: Date };
+
+  const result = await withTenant<RequestResult>(identity.tenantId, async (client) => {
     const { rows } = await client.query<TenantDeletionState>(
       `SELECT deletion_requested_at, deletion_confirmed_at, status FROM tenants WHERE id = $1`,
       [identity.tenantId]
     );
-    if (rows.length === 0) {
-      res.status(404).json({ error: 'Tenant not found.' });
-      return;
-    }
-    if (rows[0].deletion_requested_at !== null) {
-      res.status(409).json({ error: 'A deletion request is already active for this tenant.' });
-      return;
+    if (rows.length === 0) return { kind: 'not_found' as const };
+    if (rows[0].deletion_requested_at !== null || rows[0].deletion_confirmed_at !== null) {
+      return { kind: 'already_active' as const };
     }
 
     const { rows: updated } = await client.query<{ deletion_requested_at: Date }>(
-      `UPDATE tenants SET deletion_requested_at = now() WHERE id = $1 RETURNING deletion_requested_at`,
+      `UPDATE tenants SET deletion_requested_at = now() WHERE id = $1 AND deletion_requested_at IS NULL AND deletion_confirmed_at IS NULL RETURNING deletion_requested_at`,
       [identity.tenantId]
     );
+    if (updated.length === 0) return { kind: 'already_active' as const };
+
     const deletionRequestedAt = updated[0].deletion_requested_at;
     const graceEndsAt = new Date(deletionRequestedAt.getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
 
@@ -73,12 +76,24 @@ selfServiceTenantDeletionRouter.post('/request', async (req, res) => {
       client
     );
 
-    res.status(202).json({
-      tenantId: identity.tenantId,
-      deletionRequestedAt: deletionRequestedAt.toISOString(),
-      graceEndsAt: graceEndsAt.toISOString(),
-    });
+    return { kind: 'created' as const, deletionRequestedAt, graceEndsAt };
   });
+
+  switch (result.kind) {
+    case 'not_found':
+      res.status(404).json({ error: 'Tenant not found.' });
+      return;
+    case 'already_active':
+      res.status(409).json({ error: 'A deletion request is already active for this tenant.' });
+      return;
+    case 'created':
+      res.status(202).json({
+        tenantId: identity.tenantId,
+        deletionRequestedAt: result.deletionRequestedAt.toISOString(),
+        graceEndsAt: result.graceEndsAt.toISOString(),
+      });
+      return;
+  }
 });
 
 /**
@@ -142,26 +157,25 @@ selfServiceTenantDeletionRouter.delete('/', async (req, res) => {
   const identity = requireTenantAdmin(req as RequestWithIdentity, res);
   if (!identity) return;
 
-  await withTenant(identity.tenantId, async (client) => {
+  type CancelResult =
+    | { kind: 'not_found' }
+    | { kind: 'no_request' }
+    | { kind: 'already_confirmed' }
+    | { kind: 'cancelled' };
+
+  const result = await withTenant<CancelResult>(identity.tenantId, async (client) => {
     const { rows } = await client.query<TenantDeletionState>(
       `SELECT deletion_requested_at, deletion_confirmed_at, status FROM tenants WHERE id = $1`,
       [identity.tenantId]
     );
-    if (rows.length === 0) {
-      res.status(404).json({ error: 'Tenant not found.' });
-      return;
-    }
-    if (rows[0].deletion_requested_at === null) {
-      res.status(409).json({ error: 'No active deletion request to cancel.' });
-      return;
-    }
-    if (rows[0].deletion_confirmed_at !== null) {
-      res.status(409).json({ error: 'Deletion has already been confirmed and cannot be cancelled.' });
-      return;
+    if (rows.length === 0) return { kind: 'not_found' as const };
+    if (rows[0].deletion_requested_at === null) return { kind: 'no_request' as const };
+    if (rows[0].deletion_confirmed_at !== null || rows[0].status === 'deleting') {
+      return { kind: 'already_confirmed' as const };
     }
 
     await client.query(
-      `UPDATE tenants SET deletion_requested_at = NULL, deletion_confirmed_at = NULL WHERE id = $1`,
+      `UPDATE tenants SET deletion_requested_at = NULL, deletion_confirmed_at = NULL WHERE id = $1 AND deletion_confirmed_at IS NULL`,
       [identity.tenantId]
     );
     await logPlatformAdminAction(
@@ -169,8 +183,23 @@ selfServiceTenantDeletionRouter.delete('/', async (req, res) => {
       client
     );
 
-    res.json({ tenantId: identity.tenantId, cancelled: true });
+    return { kind: 'cancelled' as const };
   });
+
+  switch (result.kind) {
+    case 'not_found':
+      res.status(404).json({ error: 'Tenant not found.' });
+      return;
+    case 'no_request':
+      res.status(409).json({ error: 'No active deletion request to cancel.' });
+      return;
+    case 'already_confirmed':
+      res.status(409).json({ error: 'Deletion has already been confirmed and cannot be cancelled.' });
+      return;
+    case 'cancelled':
+      res.json({ tenantId: identity.tenantId, cancelled: true });
+      return;
+  }
 });
 
 /**

@@ -65,14 +65,14 @@ Story 5.7's existing suspension mechanism (`tenants.status = 'suspended'`... now
 - **Immediate, fully synchronous deletion across every table in one transaction** — rejected (Decision §4): operationally risky at this project's own stated data volumes, and a poor fit for the partition-based archival mechanism this project already committed to and built (Story 3.5).
 - **Preserve `IngestionRun` rows for a deleted tenant indefinitely, exactly as ADR-0018 already does for an active tenant** — considered; rejected because it would mean "delete a tenant" never actually removes a real, potentially-identifying operational record (connector version, trigger type, timestamps) tied to that tenant, undermining the actual purpose of a deletion action; the referential reason ADR-0018 gives for preserving `IngestionRun` (other rows' FK-like references) does not apply once every one of the deleted tenant's own referencing rows is also gone in the same action.
 
-## Open Questions for decision
+## Open Questions
 
-- **Formal legal review of whether this ADR's own design actually satisfies GDPR Article 17/20 as a matter of law** — out of this ADR's own competence; named as a required follow-up, not resolved here.
-- **The exact export format and delivery mechanism** (a downloadable archive, an emailed link — this project has no outbound-email capability today, per ADR-0037's own already-named gap) — not decided here.
-- **The exact notice-window length between a deletion request and its execution**, and whether export is ever a hard gate rather than an offered opportunity — implementation defaults, not decided here.
-- **Whether a future self-service, Tenant-Admin-initiated deletion request (routed through Platform Admin for review, mirroring ADR-0030 §3's break-glass request/execute shape) is ever built** — named as a real possible future direction (Decision §1), not designed or committed to here.
-- **The exact SLA/completion-time bound for the asynchronous, partition-based deletion job** (Decision §4) — an implementation default, not decided here.
-- **Whether Blob-Storage-tier deletion is itself verifiably complete** (e.g., confirming no soft-delete/versioning retention on the storage account would silently preserve a "deleted" blob) — a real implementation-verification step for whoever builds this, not designed here.
+- [ ] **[Q-0039-1]** **Formal legal review of whether this ADR's own design actually satisfies GDPR Article 17/20 as a matter of law** — out of this ADR's own competence; named as a required follow-up, not resolved here.
+- [ ] **[Q-0039-2]** **The exact export format and delivery mechanism** (a downloadable archive, an emailed link — this project has no outbound-email capability today, per ADR-0037's own already-named gap) — not decided here.
+- [ ] **[Q-0039-3]** **The exact notice-window length between a deletion request and its execution**, and whether export is ever a hard gate rather than an offered opportunity — implementation defaults, not decided here.
+- [ ] **[Q-0039-4]** **Whether a future self-service, Tenant-Admin-initiated deletion request (routed through Platform Admin for review, mirroring ADR-0030 §3's break-glass request/execute shape) is ever built** — named as a real possible future direction (Decision §1), not designed or committed to here.
+- [ ] **[Q-0039-5]** **The exact SLA/completion-time bound for the asynchronous, partition-based deletion job** (Decision §4) — an implementation default, not decided here.
+- [ ] **[Q-0039-6]** **Whether Blob-Storage-tier deletion is itself verifiably complete** (e.g., confirming no soft-delete/versioning retention on the storage account would silently preserve a "deleted" blob) — a real implementation-verification step for whoever builds this, not designed here.
 
 **Pending supersession note, added 2026-08-06 — narrower supersession, since superseded by the note below.** [ADR-0043](0043-self-service-tenant-initiated-deletion.md) was originally drafted to supersede only this section's "A tenant cannot self-delete its own account via any self-service mechanism" sentence, leaving Decision §1's "Platform-Admin-initiated only" framing itself intact as an additional, parallel path. That narrower framing has itself since been superseded — see the note immediately below.
 

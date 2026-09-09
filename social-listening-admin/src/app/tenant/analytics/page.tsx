@@ -7,7 +7,7 @@ import { fetchAnalyticsSummary, fetchWatchlistCoverage } from './fetchAnalyticsS
 import { AnalyticsClient } from './AnalyticsClient';
 import { parseOverviewFiltersFromSearchParams, computeAnalyticsSummary, type DateRangeFilter } from './analyticsData';
 
-const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources'] as const;
+const TAB_VALUES = ['overview', 'sentiment', 'conversations', 'sources', 'location'] as const;
 export type AnalyticsTab = (typeof TAB_VALUES)[number];
 
 function defaultDateRange(): DateRangeFilter {
@@ -65,9 +65,16 @@ export default async function AnalyticsPage({
 
   const initialRange = defaultDateRange();
   const watchlists = await listWatchlists().catch(() => []);
-  const initialSummary = await fetchAnalyticsSummary(initialRange, initialOverviewFilters.activeWatchlistFilter || undefined)
-    .catch(() => computeAnalyticsSummary([], initialRange));
-  const initialWatchlistCoverage = await fetchWatchlistCoverage(initialRange, watchlists).catch(() => []);
+  const initialSummary = await fetchAnalyticsSummary(
+    initialRange,
+    initialOverviewFilters.activeWatchlistFilter || undefined,
+    initialOverviewFilters.activeSourceFilter || undefined
+  ).catch(() => computeAnalyticsSummary([], initialRange));
+  const initialWatchlistCoverage = await fetchWatchlistCoverage(
+    initialRange,
+    watchlists,
+    initialOverviewFilters.activeSourceFilter || undefined
+  ).catch(() => []);
 
   return (
     <main>

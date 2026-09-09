@@ -1,6 +1,6 @@
-# ADR-0106: API and integrations — versioning and webhooks
+﻿# ADR-0106: API and integrations — versioning and webhooks
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the public API versioning convention (`/v1/`), rate limiting, and tenant-configured webhooks that deliver `ServiceBus` events to the tenant's own endpoints.
 
@@ -99,12 +99,12 @@ DELETE /v1/webhooks/subscriptions/:id
 
 ---
 
-## Open questions
+## Open Questions
 
-- Which `ServiceBus` events should be available to webhooks in v1? All or a curated list?
-- Should webhook subscriptions be per-tenant or per-user?
-- How are webhook delivery failures surfaced to the tenant?
-- Should the OpenAPI spec be generated automatically or maintained by hand?
+- [ ] **[Q-0106-1]** Which `ServiceBus` events should be available to webhooks in v1? All or a curated list?
+- [ ] **[Q-0106-2]** Should webhook subscriptions be per-tenant or per-user?
+- [ ] **[Q-0106-3]** How are webhook delivery failures surfaced to the tenant?
+- [ ] **[Q-0106-4]** Should the OpenAPI spec be generated automatically or maintained by hand?
 
 ---
 

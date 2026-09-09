@@ -1,4 +1,4 @@
-# Epic 2: Ingestion, Connectors & Rate Limits
+﻿# Epic 2: Ingestion, Connectors & Rate Limits
 
 ## Story 2.1 — Unified provider connector framework
 
@@ -386,7 +386,9 @@
 
 **Built:** 2026-08-18 — social-listening-core@35e35c3
 
-**Source:** ADR-0059 Decision §2 · **Status:** Ready
+**Source:** ADR-0059 Decision §2 · **Status:** Built 2026-08-18
+
+**Documentation Steward correction, 2026-09-09.** Status line read "Ready" directly beside its own already-populated `**Built:**` field — confirmed against `docs/implementation-log.md`'s matching entry (`## 2026-08-18, later the same day — Story 2.18 — social-listening-core@35e35c3`, hash matches exactly). Corrected directly.
 
 **As a** core backend engineer / downstream consumer of Facebook posts,
 **I want** post-level engagement counts (`reactions`, `comments`, `shares`) captured during Page post polling,

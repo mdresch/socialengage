@@ -1,4 +1,4 @@
-# Epic 4: Derived Data, Analytics & Health
+﻿# Epic 4: Derived Data, Analytics & Health
 
 ## Story 4.1 — Raw author-topic signals for expert-finding
 

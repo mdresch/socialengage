@@ -2,6 +2,7 @@ import { getTenantSignupPool } from '../db/tenantSignupPool';
 import { withTenant } from '../db/withTenant';
 import { logPlatformAdminAction } from '../admin/platformAdminAuditLog';
 import { Tenant, TenantRow, mapRowToTenant, incrementActiveSeatCount } from './tenantStore';
+import { getPlanFeatureGates } from './featureGates';
 import { checkAndLogDomainEscalation } from './domainSignupAttempts';
 
 /**
@@ -73,11 +74,14 @@ export async function provisionTenantViaSignup(
   const domain = extractDomain(claims.email);
   const capturedDomain = domain && !PUBLIC_EMAIL_PROVIDER_DENYLIST.includes(domain) ? domain : null;
 
+  const plan = 'starter';
+  const featureGates = { ...getPlanFeatureGates(plan), max_seats: DEFAULT_SELF_SERVICE_SEAT_COUNT };
+
   let tenant: Tenant;
   try {
     const { rows } = await getTenantSignupPool().query<TenantRow>(
-      `INSERT INTO tenants (name, license_seat_count, domain) VALUES ($1, $2, $3) RETURNING *`,
-      [input.name, DEFAULT_SELF_SERVICE_SEAT_COUNT, capturedDomain]
+      `INSERT INTO tenants (name, license_seat_count, domain, plan, feature_gates) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [input.name, DEFAULT_SELF_SERVICE_SEAT_COUNT, capturedDomain, plan, JSON.stringify(featureGates)]
     );
     tenant = mapRowToTenant(rows[0]);
   } catch (err) {

@@ -1,4 +1,4 @@
-# ADR-0093: DSR self-service portal
+﻿# ADR-0093: DSR self-service portal
 
 **Status:** Accepted (2026-08-28)
 
@@ -93,12 +93,12 @@ GET  /public/v1/dsr/requests/:id/download               // download access packa
 
 ---
 
-## Open questions
+## Open Questions
 
-- How is the user's identity proven for an `access` or `erasure` request? Email verification only, or additional identity proof?
-- Should the platform offer a data-processor addendum that clarifies tenant vs. platform responsibilities?
-- How are cross-tenant erasure requests handled if the same user interacts with multiple tenants?
-- Should `correction` support bulk corrections, or one at a time?
+- [ ] **[Q-0093-1]** How is the user's identity proven for an `access` or `erasure` request? Email verification only, or additional identity proof?
+- [ ] **[Q-0093-2]** Should the platform offer a data-processor addendum that clarifies tenant vs. platform responsibilities?
+- [ ] **[Q-0093-3]** How are cross-tenant erasure requests handled if the same user interacts with multiple tenants?
+- [ ] **[Q-0093-4]** Should `correction` support bulk corrections, or one at a time?
 
 ---
 
@@ -107,3 +107,7 @@ GET  /public/v1/dsr/requests/:id/download               // download access packa
 - Related feature design: `docs/product-research/feature-designs/15-dsr-self-service-portal.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0092` (takedown/redaction), `ADR-0090` (CSV export), `ADR-0031` (audit log)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0126 (Proposed, 2026-08-28) is accepted, this ADR's Decision §2 would be refined by ADR-0126's own §1–§3 — specifically Article 18 restriction-of-processing flag propagation and tamper-evident cryptographic request receipts. This is a pending note only: ADR-0126 is currently Proposed, not accepted.

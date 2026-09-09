@@ -1,4 +1,4 @@
-# BRD-0109 — Connector Health Auto-Disable and Recovery
+﻿# BRD-0109 — Connector Health Auto-Disable and Recovery
 
 > **Note:** This Business Requirements Document is based on **ADR-0109**, which is currently **Proposed**. The contents are a draft for review and may change if the ADR is revised or rejected.
 

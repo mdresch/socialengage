@@ -126,13 +126,13 @@ The endpoint is `POST` by convention (because it accepts a body) but is strictly
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `date` dimension support `hour` grain in v1, or only `day/week/month`?
-- How should the endpoint handle a query that mixes dimensions that do not share a precomputed view?
-- Should users be able to save and share ad-hoc queries as named views?
-- What is the right rate-limit and row-cap for free vs. paid tiers?
-- ~~Does `dimensions: ['watchlist']` (or `filters.watchlist`) inherit `post_watchlist_matches`' tenant-only RLS, letting any tenant member enumerate every watchlist_id in the tenant and its match volume — including watchlists privately owned by other users?~~ **Resolved (2026-08-27), confirmed by Menno verbatim: *"no other users private watchlist widening."*** Owner-scoped only — see Decision §3 and Context §5. No caller can see or enumerate another user's private watchlist through this endpoint.
+- [x] ~~**[Q-0088-1]** Should `date` dimension support `hour` grain in v1, or only `day/week/month`?~~ — **Resolved by ADR-0132:** Allowed date dimensions, truncation grains (`day/week/month`), and metric aggregations locked.
+- [ ] **[Q-0088-2]** How should the endpoint handle a query that mixes dimensions that do not share a precomputed view?
+- [ ] **[Q-0088-3]** Should users be able to save and share ad-hoc queries as named views?
+- [ ] **[Q-0088-4]** What is the right rate-limit and row-cap for free vs. paid tiers?
+- [x] ~~**[Q-0088-5]** Does `dimensions: ['watchlist']` (or `filters.watchlist`) inherit `post_watchlist_matches`' tenant-only RLS, letting any tenant member enumerate every watchlist_id in the tenant and its match volume — including watchlists privately owned by other users?~~ — **Resolved by Sponsor decision (Menno, 2026-08-27):** Owner-scoped only per ADR-0088 Decision §3 and Context §5; no private watchlist widening.
 
 ---
 
@@ -153,3 +153,7 @@ The endpoint is `POST` by convention (because it accepts a body) but is strictly
 *Revised 2026-08-27 (pre-acceptance), first pass: removed the duplicate `platform`/`source` dimension; documented `topic_id`'s real source (ADR-0104) and merge semantics; added response-level `warnings` for the three partial-coverage metrics inherited from ADR-0087; named the `unique(author)` × `platform`/`sentiment` always-raw-fallback case explicitly; surfaced (left open) whether `watchlist` grouping/filtering should be scoped to the caller's own watchlists.*
 
 *Revised 2026-08-27 (pre-acceptance), second pass: resolved the watchlist-privacy question — `dimensions: ['watchlist']`/`filters.watchlist` are owner-scoped via `watchlists.owner_id = app.user_id` (ADR-0044's predicate), never enumerating or exposing another user's private watchlist. Every open question raised in review is now resolved; this ADR is awaiting formal acceptance.*
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0132 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0132's own §1–§3 — specifically parameterized AST template validation and query cost governor limits. This is a pending note only: ADR-0132 is currently Proposed, not accepted.

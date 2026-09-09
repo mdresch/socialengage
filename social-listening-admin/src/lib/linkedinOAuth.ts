@@ -7,12 +7,9 @@ export const LINKEDIN_AUTH_URL = 'https://www.linkedin.com/oauth/v2/authorizatio
 
 export const LINKEDIN_OAUTH_STATE_COOKIE_NAME = 'se_li_oauth_state';
 
-export const LINKEDIN_MEMBER_SCOPES = [
-  'openid',
-  'profile',
-  'email',
-  'w_member_social',
-];
+export const LINKEDIN_MEMBER_SCOPES = process.env.LINKEDIN_OAUTH_SCOPES
+  ? process.env.LINKEDIN_OAUTH_SCOPES.split(' ')
+  : ['openid', 'profile', 'email', 'w_member_social'];
 
 function requireEnv(name: string): string {
   const value = process.env[name];

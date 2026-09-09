@@ -4,6 +4,7 @@ import { getPool } from '../db/pool';
 import { waitForPostgresReady } from '../db/postgresReadiness';
 import { bootstrapConnectors } from '../connectors/bootstrapConnectors';
 import { startPollScheduler, isSchedulerEnabled } from '../scheduler/pollScheduler';
+import { startPlatformMetricsWorker, isPlatformMetricsWorkerEnabled } from '../platform/platformMetricsWorker';
 
 const port = Number(process.env.PORT ?? 3000);
 
@@ -29,6 +30,11 @@ async function main(): Promise<void> {
 
   if (isSchedulerEnabled()) {
     startPollScheduler();
+  }
+
+  // Story 13.8 (ADR-0114): start the hourly platform metrics worker.
+  if (isPlatformMetricsWorkerEnabled()) {
+    startPlatformMetricsWorker();
   }
 
   createApp().listen(port, () => {

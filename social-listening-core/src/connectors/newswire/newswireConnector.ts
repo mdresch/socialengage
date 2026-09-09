@@ -23,6 +23,7 @@ export const newswireConnector: SocialConnector = {
   providerId: NEWSWIRE_PROVIDER_ID,
   authMode: 'none',
   deliveryMode: 'poll',
+  sourceType: 'news',
 
   // Conservative fixed-window placeholder — neither wire publishes a rate
   // limit for its public feeds (ADR-0024's Implementation defaults).
@@ -43,6 +44,9 @@ export const newswireConnector: SocialConnector = {
   supportedQueryFeatures: [],
 };
 
+export const NEWSWIRE_USER_AGENT =
+  'SocialEngage/1.0 (Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36; +https://socialengage.example; contact@socialengage.example)';
+
 /**
  * Fetches and parses one Newswire feed, reclassifying network/HTTP failures
  * into ClassifiableError so runIngestionAttempt() can retry/dead-letter them
@@ -51,7 +55,13 @@ export const newswireConnector: SocialConnector = {
 export async function fetchNewswireFeed(feedUrl: string): Promise<ParsedRssItem[]> {
   let response: Response;
   try {
-    response = await fetch(feedUrl);
+    response = await fetch(feedUrl, {
+      headers: {
+        'User-Agent': NEWSWIRE_USER_AGENT,
+        Accept: 'application/rss+xml, application/xml, text/xml, */*',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
   } catch (err) {
     throw new ClassifiableError('network', `Failed to reach ${feedUrl}: ${(err as Error).message}`);
   }

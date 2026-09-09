@@ -1,6 +1,6 @@
-# ADR-0100: Composed post author mention suggestions
+﻿# ADR-0100: Composed post author mention suggestions
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `POST /v1/composer/mention-suggestions` endpoint that suggests relevant authors to mention or tag while a user is composing a post, based on `AuthorTopicSignal`, `RAG` search, and the composed message.
 
@@ -100,12 +100,12 @@ The endpoint combines up to three signals, with a configurable priority:
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the endpoint also suggest hashtags or topics, not just authors?
-- How is the author `handle` kept up to date across platforms? Does the connector refresh it?
-- Should `confidence` be shown in the UI, or only used for ranking?
-- How does the composer know the cursor position for inserting the mention?
+- [ ] **[Q-0100-1]** Should the endpoint also suggest hashtags or topics, not just authors?
+- [ ] **[Q-0100-2]** How is the author `handle` kept up to date across platforms? Does the connector refresh it?
+- [ ] **[Q-0100-3]** Should `confidence` be shown in the UI, or only used for ranking?
+- [ ] **[Q-0100-4]** How does the composer know the cursor position for inserting the mention?
 
 ---
 

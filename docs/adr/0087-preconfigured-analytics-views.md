@@ -163,14 +163,14 @@ Aggregate rows contain counts, sums, and identifiers only. The `watchlist_id` li
 
 ---
 
-## Open questions
+## Open Questions
 
-- ~~Should the current partial-day row be real-time or excluded until the next refresh?~~ **Resolved above** (Decision §4): a provisional row is computed and overwritten on the next run, with query-time fallback to `social_posts` for the partial day (§5) — this was already answered by the Decision text, not actually open.
-- ~~Should `TopicDailyCount` derive topic IDs from `AIProviderConnector` or from user-defined `watchlists`?~~ **Resolved** (Decision §7): neither — from `ADR-0104`'s `topics` catalog.
-- ~~How are topic merges reflected in historical daily counts?~~ **Resolved** (Decision §7): not backfilled, per `ADR-0104` §6. `ADR-0097` should converge on this rather than carry its own separate open copy of the same question.
-- How far back should daily aggregates be retained, and how does that relate to `ADR-0018` raw-payload retention? *(Still open — genuinely unresolved, no change.)*
-- ~~UNRESOLVED — relationship to `ADR-0054`'s already-shipped client-side dashboard.~~ **Resolved** (Decision §8): a scoped, widget-by-widget partial supersession, not a wholesale replacement. Several Overview/Sentiment/Sources/Watchlist widgets move to these tables; several others (word cloud, languages, Top Fans/Critics, Spike Storyteller, Location) stay exactly as ADR-0054 decided, since no table here carries phrase, language, per-author-sentiment, or geo data. Drill-down into actual posts stays on `GET /v1/posts` regardless. `ADR-0054` gains a matching "Pending supersession note."
-- ~~`sum_engagement`'s real data source?~~ **Resolved (2026-08-27): Facebook-only for v1.** Confirmed by Menno, verbatim: *"true accept sum_engagemetn as facebook only."* No per-post engagement metric (likes/shares/comments) exists today for the majority of real connectors (GNews, Newswire, tenant-owned-feed, Wikipedia, search-derived posts) — only Facebook Page posts carry one (Story 2.18). `sum_engagement` ships Facebook-only, reporting `NULL` for every other connector's posts — the same documented partial-coverage treatment `sum_reach` already gets for organization-as-Author connectors (Decision §2). Building a universal per-post engagement-capture mechanism across every connector remains deferred, consistent with this project's standing precedent against building ahead of demonstrated need (ADR-0020).
+- [-] ~~**[Q-0087-1]** Should the current partial-day row be real-time or excluded until the next refresh?~~ — **Superseded by ADR-0135:** Parameterized views replace materialized views, preserving PostgreSQL RLS isolation (see also ADR-0087 Decision §4).
+- [x] ~~**[Q-0087-2]** Should `TopicDailyCount` derive topic IDs from `AIProviderConnector` or from user-defined `watchlists`?~~ — **Resolved in ADR-0087 Decision §7:** Derived from ADR-0104's topics catalog.
+- [x] ~~**[Q-0087-3]** How are topic merges reflected in historical daily counts?~~ — **Resolved in ADR-0087 Decision §7:** Not backfilled, per ADR-0104 §6.
+- [ ] **[Q-0087-4]** How far back should daily aggregates be retained, and how does that relate to `ADR-0018` raw-payload retention? *(Still open — genuinely unresolved, no change.)*
+- [x] ~~**[Q-0087-5]** UNRESOLVED — relationship to `ADR-0054`'s already-shipped client-side dashboard~~ — **Resolved in ADR-0087 Decision §8:** Scoped, widget-by-widget partial supersession.
+- [x] ~~**[Q-0087-6]** `sum_engagement`'s real data source?~~ — **Resolved by Sponsor decision (Menno, 2026-08-27):** Facebook-only for v1 per ADR-0087 Decision §2.
 
 ---
 
@@ -194,3 +194,7 @@ Aggregate rows contain counts, sums, and identifiers only. The `watchlist_id` li
 *Revised 2026-08-27 (pre-acceptance), third pass: resolved the ADR-0054 relationship — added Decision §8, a scoped, widget-by-widget partial supersession of ADR-0054's client-side data-source strategy (Overview/Sentiment/Sources/Watchlist-Coverage widgets move to these tables; word cloud, languages, per-author sentiment, Spike Storyteller, and Location stay client-side, since no table here covers phrase, language, per-author-sentiment, or geo data; post drill-down stays on `GET /v1/posts` regardless) — and added the required matching "Pending supersession note" to ADR-0054's own Decision §3, alongside ADR-0062's existing one on the same clause.*
 
 *Revised 2026-08-27 (pre-acceptance), fourth pass: resolved the last open item — `sum_engagement` confirmed Facebook-only for v1, `NULL` elsewhere, matching `sum_reach`'s existing partial-coverage precedent. Every open question raised in review is now resolved; this ADR is awaiting formal acceptance.*
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0135 (Proposed, 2026-08-28) is accepted, this ADR's Decision §3 would be refined by ADR-0135's own §2 — specifically clarifying that the five *DailyCount views must be implemented as ordinary Postgres tables with RLS policies, not literal Postgres MATERIALIZED VIEW objects (which do not support RLS). This is a pending note only: ADR-0135 is currently Proposed, not accepted.

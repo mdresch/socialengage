@@ -1,6 +1,6 @@
-# ADR-0105: Dashboards and analytics widget contracts
+﻿# ADR-0105: Dashboards and analytics widget contracts
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `GET /v1/analytics/dashboard` contract, per-widget data shapes, filter rules, `selectedTopic` integration, and the `WidgetRenderer` component hierarchy for the analytics dashboard.
 
@@ -120,12 +120,12 @@ DashboardView
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `GET /v1/analytics/dashboard` return all widgets or support a `widgets` allowlist?
-- How is widget layout persisted per user? `user_dashboard_layout` table?
-- Should the `selectedTopic` filter persist across sessions?
-- How do widgets indicate that they are missing data for the current filter?
+- [ ] **[Q-0105-1]** Should `GET /v1/analytics/dashboard` return all widgets or support a `widgets` allowlist?
+- [ ] **[Q-0105-2]** How is widget layout persisted per user? `user_dashboard_layout` table?
+- [ ] **[Q-0105-3]** Should the `selectedTopic` filter persist across sessions?
+- [ ] **[Q-0105-4]** How do widgets indicate that they are missing data for the current filter?
 
 ---
 

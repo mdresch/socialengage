@@ -1,6 +1,6 @@
-# ADR-0111: Export bounding, streaming, and size caps
+﻿# ADR-0111: Export bounding, streaming, and size caps
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the resource guards for `GET /v1/posts/export.csv`, `GET /v1/exports/:id`, and export streaming, including synchronous size caps, async thresholds, Blob lifecycle, and rate-limiting.
 
@@ -96,12 +96,12 @@ Exports are expensive. A per-tenant rate limit prevents abuse and runaway costs.
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the synchronous cap be configurable per plan (free vs. paid)?
-- How is the matched-row count estimated before the export begins?
-- Should failed exports be retried automatically, or only on manual re-queue?
-- How are CSV and JSON exports signed for integrity?
+- [ ] **[Q-0111-1]** Should the synchronous cap be configurable per plan (free vs. paid)?
+- [ ] **[Q-0111-2]** How is the matched-row count estimated before the export begins?
+- [ ] **[Q-0111-3]** Should failed exports be retried automatically, or only on manual re-queue?
+- [ ] **[Q-0111-4]** How are CSV and JSON exports signed for integrity?
 
 ---
 

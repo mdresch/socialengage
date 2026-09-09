@@ -1,15 +1,16 @@
 'use client';
 
 /**
- * AnimatedChartTooltip — replaces the framer-motion version from the design
- * reference. Pure CSS transition on mount via the `.act-tooltip` class
- * (defined in globals.css ad-* block). No motion/react dependency.
+ * AnimatedChartTooltip — sleek dark tooltip for all analytics dashboard charts.
+ * Features customizable value text color coding, dark container styling,
+ * dot indicators, and optional badges.
  */
 
 export interface TooltipItem {
   name: string;
   value: string | number;
   color?: string;
+  valueColor?: string;
   badge?: string;
   badgeColor?: string;
 }
@@ -54,7 +55,10 @@ export function AnimatedChartTooltip({
                 <span className="ad-tooltip-name">{item.name}</span>
               </div>
               <div className="ad-tooltip-row-right">
-                <span className="ad-tooltip-value">
+                <span
+                  className="ad-tooltip-value"
+                  style={{ color: item.valueColor || item.color || '#ffffff' }}
+                >
                   {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
                 </span>
                 {item.badge && (

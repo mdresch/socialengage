@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 
@@ -53,12 +54,26 @@ storyFiles.sort().forEach(f => {
     let builtInfo = 'Built: not yet';
     let isBuilt = false;
     const builtMatch = sec.match(/\*\*Built:\*\*\s*([^\n\r]+)/i) || sec.match(/Built:\s*([^\n\r]+)/i);
+    const statusLower = status.toLowerCase();
+    const isStatusBuilt = statusLower.startsWith('complete') || statusLower.startsWith('built') || statusLower.startsWith('shipped');
+
     if (builtMatch) {
       builtInfo = builtMatch[1].trim();
       const lower = builtInfo.toLowerCase();
-      if (!lower.includes('not yet') && !lower.includes('planned') && (lower.includes('@') || lower.includes('2026-') || lower.includes('social-listening'))) {
+      if (!lower.includes('not yet') && !lower.includes('planned') && (
+        lower.startsWith('yes') ||
+        lower.includes('contract') ||
+        lower.includes('pass') ||
+        lower.includes('@') ||
+        lower.includes('2026-') ||
+        lower.includes('social-listening') ||
+        isStatusBuilt
+      )) {
         isBuilt = true;
       }
+    } else if (isStatusBuilt) {
+      isBuilt = true;
+      builtInfo = status;
     }
 
     const storyItem = {
@@ -130,7 +145,7 @@ const allAdrs = [];
 const allOpenQuestions = [];
 
 adrFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(adrDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(adrDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^(\d+)/);
   const id = idMatch ? idMatch[1] : '';
   const num = parseInt(id, 10) || 0;
@@ -174,20 +189,27 @@ adrFiles.sort().forEach(f => {
     let qCounter = 1;
 
     for (const line of lines) {
-      const qNumMatch = line.match(/^(\d+\.|\*|-)\s+(.*)/);
+      const trimmedLine = line.trim();
+      const qNumMatch = trimmedLine.match(/^(\d+\.|\*|-)\s+(.*)/);
       if (qNumMatch) {
         if (currentQ) allOpenQuestions.push(currentQ);
         const rawText = qNumMatch[2].trim();
+        const isCheckedResolved = rawText.startsWith('[x]') || rawText.startsWith('[X]');
+        const isCheckedSuperseded = rawText.startsWith('[-]');
         const isStruck = rawText.startsWith('~~') || rawText.includes('~~ **Resolved') || rawText.includes('**Resolved at acceptance:**');
-        const isSuperseded = rawText.toLowerCase().includes('supersed') || rawText.toLowerCase().includes('adr-');
+        const isSuperseded = rawText.toLowerCase().includes('supersed') || rawText.toLowerCase().includes('adr-') || isCheckedSuperseded;
 
         let qStatus = 'OPEN';
-        let questionClean = rawText.replace(/~~/g, '').trim();
+        let questionClean = rawText
+          .replace(/^\[[ xX\-]\]\s*/, '')
+          .replace(/^\*?\*?\[(Q-\d{4}-\d+)\]\*?\*?\s*/, '')
+          .replace(/~~/g, '')
+          .trim();
         let resolution = '';
 
-        if (isStruck || rawText.includes('**Resolved')) {
+        if (isStruck || isCheckedResolved || rawText.includes('**Resolved')) {
           qStatus = 'RESOLVED';
-          const resMatch = rawText.match(/\*\*Resolved(?: at acceptance)?:\*\*\s*(.*)/i);
+          const resMatch = rawText.match(/\*\*Resolved[^*]*:\*\*\s*(.*)/i);
           if (resMatch) resolution = resMatch[1].replace(/~~/g, '').trim();
         } else if (isSuperseded) {
           qStatus = 'SUPERSEDED';
@@ -202,11 +224,11 @@ adrFiles.sort().forEach(f => {
           question: questionClean,
           status: qStatus,
           resolutionNote: resolution,
-          category: rawText.toLowerCase().includes('schema') || rawText.toLowerCase().includes('column') || rawText.toLowerCase().includes('table') ? 'Data & Schema'
-                  : rawText.toLowerCase().includes('auth') || rawText.toLowerCase().includes('token') || rawText.toLowerCase().includes('security') || rawText.toLowerCase().includes('tenant') ? 'Security & Multi-Tenancy'
-                  : rawText.toLowerCase().includes('rate') || rawText.toLowerCase().includes('limit') || rawText.toLowerCase().includes('queue') || rawText.toLowerCase().includes('poll') ? 'Ingestion & Rate Limits'
-                  : rawText.toLowerCase().includes('ai') || rawText.toLowerCase().includes('rag') || rawText.toLowerCase().includes('vector') || rawText.toLowerCase().includes('sentiment') ? 'AI & Semantic Processing'
-                  : rawText.toLowerCase().includes('ui') || rawText.toLowerCase().includes('screen') || rawText.toLowerCase().includes('admin') ? 'Admin UI & User Experience'
+          category: questionClean.toLowerCase().includes('schema') || questionClean.toLowerCase().includes('column') || questionClean.toLowerCase().includes('table') ? 'Data & Schema'
+                  : questionClean.toLowerCase().includes('auth') || questionClean.toLowerCase().includes('token') || questionClean.toLowerCase().includes('security') || questionClean.toLowerCase().includes('tenant') ? 'Security & Multi-Tenancy'
+                  : questionClean.toLowerCase().includes('rate') || questionClean.toLowerCase().includes('limit') || questionClean.toLowerCase().includes('queue') || questionClean.toLowerCase().includes('poll') ? 'Ingestion & Rate Limits'
+                  : questionClean.toLowerCase().includes('ai') || questionClean.toLowerCase().includes('rag') || questionClean.toLowerCase().includes('vector') || questionClean.toLowerCase().includes('sentiment') ? 'AI & Semantic Processing'
+                  : questionClean.toLowerCase().includes('ui') || questionClean.toLowerCase().includes('screen') || questionClean.toLowerCase().includes('admin') ? 'Admin UI & User Experience'
                   : 'Operational & Governance'
         };
       } else if (currentQ && line.trim()) {
@@ -234,7 +256,7 @@ const brdFiles = fs.readdirSync(brdDir).filter(f => f.endsWith('.md'));
 const allBrds = [];
 
 brdFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(brdDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(brdDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^BRD-(\d+)/i);
   const id = idMatch ? idMatch[1].padStart(4, '0') : '';
   const num = parseInt(id, 10) || 0;
@@ -264,7 +286,7 @@ const fddFiles = fs.existsSync(fddDir) ? fs.readdirSync(fddDir).filter(f => f.en
 const allFdds = [];
 
 fddFiles.sort().forEach(f => {
-  const content = fs.readFileSync(path.join(fddDir, f), 'utf8');
+  const content = fs.readFileSync(path.join(fddDir, f), 'utf8').replace(/^\uFEFF/, '');
   const idMatch = f.match(/^FDD-(\d+)/i);
   const id = idMatch ? idMatch[1].padStart(4, '0') : '';
   const num = parseInt(id, 10) || 0;
@@ -453,3 +475,8 @@ export const MONOREPO_COVERAGE: MonorepoCoverage = {
 
 fs.writeFileSync(targetFile, dataFileContent, 'utf8');
 console.log(`\n🎉 Successfully synchronized data.ts at ${targetFile}!`);
+
+// Reconcile OPEN_QUESTIONS_LIST with the stricter ADR Open Questions governance parser.
+// This ensures the dashboard uses canonical IDs, anchored resolutions, and supersession state.
+console.log('🔄 Reconciling Open Questions with governance parser...');
+execSync(`node "${path.join(repoRoot, 'scripts', 'sync-open-questions.mjs')}" --sync`, { stdio: 'inherit', cwd: repoRoot });

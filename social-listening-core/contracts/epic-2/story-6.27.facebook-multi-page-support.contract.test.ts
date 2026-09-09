@@ -102,6 +102,7 @@ beforeAll(async () => {
   testKeyName = `test-key-${randomUUID()}`;
   const key = await getKeyClient().createRsaKey(testKeyName, { keySize: 2048 });
   testKeyId = key.id as string;
+  process.env.KEY_VAULT_KEY_ID = testKeyId;
 });
 
 afterAll(async () => {
@@ -300,15 +301,18 @@ describe('Story 6.27 — Facebook: multiple Pages per user (backend)', () => {
   });
 
   describe('deriveConnectorHealth() (ADR-0060 Decision §4): pageId now actually filters, independently correct per Page', () => {
-    it('two connected Pages under one user — one healthy, one failing — return different, independently correct statuses via deriveConnectorHealth(tenantId, "facebook", pageId)', async () => {
+    it('two connected Pages under one user — one healthy, one disabled — return different, independently correct statuses via deriveConnectorHealth(tenantId, "facebook", pageId)', async () => {
       const tenantId = await createTenantFixture(`Fb627Health-${randomUUID()}`);
       const userId = await createUserFixture(tenantId, `fb627-${randomUUID()}@example.com`);
       const pageA = 'page-healthy';
-      const pageB = 'page-failing';
+      const pageB = 'page-disabled';
 
       const runA = await startIngestionRun(tenantId, { platformId: FACEBOOK_PROVIDER_ID, triggerType: 'poll', connectorVersion: '1.0.0', userId, pageId: pageA });
       await completeIngestionRun(tenantId, runA.id, { status: 'succeeded', postsIngested: 1, postsSkipped: 0 });
 
+      // 2026-09-01: ADR-0109 supersedes ADR-0060's pre-0109 threshold-based
+      // `failing` expectation for a Page whose latest run is a non-retryable,
+      // non-credential failure. Such a Page now returns `disabled`.
       for (let i = 0; i < 20; i++) {
         const runB = await startIngestionRun(tenantId, { platformId: FACEBOOK_PROVIDER_ID, triggerType: 'poll', connectorVersion: '1.0.0', userId, pageId: pageB });
         await completeIngestionRun(tenantId, runB.id, { status: 'failed', postsIngested: 0, postsSkipped: 0, retryable: false });
@@ -317,7 +321,7 @@ describe('Story 6.27 — Facebook: multiple Pages per user (backend)', () => {
       const healthA = await deriveConnectorHealth(tenantId, FACEBOOK_PROVIDER_ID, pageA);
       const healthB = await deriveConnectorHealth(tenantId, FACEBOOK_PROVIDER_ID, pageB);
       expect(healthA.status).toBe('healthy');
-      expect(healthB.status).toBe('failing');
+      expect(healthB.status).toBe('disabled');
     });
 
     it('omitted pageId: behavior is byte-for-byte unchanged (existing 2-arg call still reads the platform-level rollup)', async () => {

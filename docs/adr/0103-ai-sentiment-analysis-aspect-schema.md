@@ -1,6 +1,6 @@
-# ADR-0103: AI sentiment analysis aspect schema
+﻿# ADR-0103: AI sentiment analysis aspect schema
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** an `enrichment.sentiment` schema with optional aspect-based sentiment and per-language support, plus a confidence grade and a human-override path.
 
@@ -65,6 +65,34 @@
 - Dashboards can group by `overall` or by aspect.
 - `SentimentDailyCount` (ADR-0087) counts `overall` only. Aspect-level counts can be added later.
 
+### 6. Revision (2026-08-28) — confidence tiering for `overall`
+
+This ADR's own Open Questions section (below) left the confidence threshold for `overall` label assignment unresolved ("0.6? 0.7?"). Competitive research (`03-ai-sentiment-analysis-deep-research.md`) found a concrete, published precedent: Sprout Social's BERT-based sentiment model treats a score above 80% as "strong" and flags anything below 50% as needing review (https://support.sproutsocial.com/hc/en-us/articles/18814496971533-How-does-Sprout-determine-sentiment). This resolves the open question with a documented industry baseline rather than an invented number:
+
+`enrichment.sentiment` gains a derived (not separately stored) confidence tier, computed from `confidence` at read time by the post feed and dashboard:
+- `confidence >= 0.8` → `strong`
+- `0.5 <= confidence < 0.8` → `moderate`
+- `confidence < 0.5` → `needs-review`
+
+This is a UI/consumption-layer addition — the stored schema (§1) is unchanged; `confidence` remains the single stored numeric field, and the tiering is a presentation convention for the `SentimentBadge` (Story 12.6), not a new database column.
+
+### 7. Revision (2026-08-28) — capture pre-override value for future model-quality signal
+
+Competitive research found that Meltwater treats manual sentiment corrections as a retraining signal (its GloVe+CNN model upgrade, informed partly by tracked corrections, cut override volume by over 50% — https://underthehood.meltwater.com/blog/2019/08/22/deep-learning-models-for-sentiment-analysis/), while Brandwatch explicitly does not feed corrections back into its model (https://social-media-management-help.brandwatch.com/en/articles/12767975-sentiment-and-emotion-analysis). This ADR did not previously make an explicit choice between these two postures.
+
+SocialEngage adopts a low-cost middle path for v1: capture the AI-derived value at the moment of override, without committing to any retraining pipeline. The `overridden` block (§1, §3) gains one additional field:
+
+```ts
+overridden?: {
+  by: string;
+  at: string;
+  reason?: string;
+  previousValue: { overall: string; confidence: number };  // the AI-derived value at the moment of override
+}
+```
+
+This preserves the correction as a durable, queryable signal (`enrichment.sentiment.overridden.previousValue`) for a future retraining or model-evaluation pipeline, at near-zero implementation cost — `PATCH /v1/posts/:id/enrichment` already reads the existing `sentiment.overall`/`confidence` before applying the update (§3), so capturing it costs one additional field write, not a new code path.
+
 ---
 
 ## Consequences
@@ -89,12 +117,12 @@
 
 ---
 
-## Open questions
+## Open Questions
 
-- How many aspect categories should the provider return in v1? A fixed set or free-form?
-- Should the AI provider be asked to return aspects in the post language or a canonical set?
-- How is `confidence` thresholded for `overall` label assignment? 0.6? 0.7?
-- Should `SentimentDailyCount` include aspect-level rollups now or in v2?
+- [ ] **[Q-0103-1]** How many aspect categories should the provider return in v1? A fixed set or free-form?
+- [ ] **[Q-0103-2]** Should the AI provider be asked to return aspects in the post language or a canonical set?
+- [ ] **[Q-0103-3]** How is `confidence` thresholded for `overall` label assignment? 0.6? 0.7?
+- [ ] **[Q-0103-4]** Should `SentimentDailyCount` include aspect-level rollups now or in v2?
 
 ---
 

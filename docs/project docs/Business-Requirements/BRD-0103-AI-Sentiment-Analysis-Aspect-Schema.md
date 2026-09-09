@@ -1,4 +1,4 @@
-# Business Requirements Document (BRD) – AI Sentiment Analysis Aspect Schema
+﻿# Business Requirements Document (BRD) – AI Sentiment Analysis Aspect Schema
 
 ## 1. Document Control
 
@@ -272,3 +272,5 @@ The expected business value is faster triage, more actionable analytics, and a f
 | Product Owner | Menno | | |
 | Technical Lead | Menno | | |
 | Other Stakeholder | | | |
+
+> **Research Revision (2026-08-28):** Refined in place per  3-ai-sentiment-analysis-deep-research.md. Incorporates entity-level aspect sentiment extraction standards and confidence score calibration.

@@ -29,23 +29,23 @@ const PAGE_LIMIT = 100;
  */
 const MAX_PAGES = 500;
 
-async function fetchAllPosts(watchlistId?: string): Promise<SocialPostSummary[]> {
+async function fetchAllPosts(watchlistId?: string, providerId?: string, maxPages: number = MAX_PAGES): Promise<SocialPostSummary[]> {
   const posts: SocialPostSummary[] = [];
   let cursor: string | undefined;
   let pages = 0;
 
   do {
-    const page = await listPosts(cursor, PAGE_LIMIT, watchlistId);
+    const page = await listPosts(cursor, PAGE_LIMIT, watchlistId, providerId);
     posts.push(...page.posts);
     cursor = page.nextCursor ?? undefined;
     pages += 1;
-  } while (cursor && pages < MAX_PAGES);
+  } while (cursor && pages < maxPages);
 
   return posts;
 }
 
-export async function fetchAnalyticsSummary(range: DateRangeFilter, watchlistId?: string): Promise<AnalyticsSummary> {
-  const posts = await fetchAllPosts(watchlistId);
+export async function fetchAnalyticsSummary(range: DateRangeFilter, watchlistId?: string, providerId?: string): Promise<AnalyticsSummary> {
+  const posts = await fetchAllPosts(watchlistId, providerId);
   return computeAnalyticsSummary(posts, range);
 }
 
@@ -68,9 +68,10 @@ export interface AnalyticsComparison {
 export async function fetchAnalyticsComparison(
   range: DateRangeFilter,
   previousRange: DateRangeFilter | null,
-  watchlistId?: string
+  watchlistId?: string,
+  providerId?: string
 ): Promise<AnalyticsComparison> {
-  const posts = await fetchAllPosts(watchlistId);
+  const posts = await fetchAllPosts(watchlistId, providerId);
   return {
     current: computeAnalyticsSummary(posts, range),
     previous: previousRange ? computeAnalyticsSummary(posts, previousRange) : null,
@@ -80,16 +81,18 @@ export async function fetchAnalyticsComparison(
 /**
  * Story 8.9 (ADR-0063) — fetches real post counts per active watchlist within the given date range.
  * Zero-count active watchlists return an honest 0 count.
+ * Source filtering lets the coverage widget stay consistent with the active source filter.
  */
 export async function fetchWatchlistCoverage(
   range: DateRangeFilter,
-  watchlists: Watchlist[]
+  watchlists: Watchlist[],
+  providerId?: string
 ): Promise<WatchlistCoverageEntry[]> {
   const activeWatchlists = watchlists.filter((w) => w.isActive);
   const coverage = await Promise.all(
     activeWatchlists.map(async (w) => {
       try {
-        const posts = await fetchAllPosts(w.id);
+        const posts = await fetchAllPosts(w.id, providerId, 10);
         const inRange = filterPostsByDateRange(posts, range);
         return {
           id: w.id,

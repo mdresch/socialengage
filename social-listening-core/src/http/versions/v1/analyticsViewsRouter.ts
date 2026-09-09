@@ -7,8 +7,45 @@ import { PoolClient } from 'pg';
 
 import { executeAdHocQuery, AdHocQueryRequest } from '../../../analytics/adHocQueryEngine';
 import { generateAiInsightsDigest } from '../../../analytics/aiDigestGenerator';
+import { getDashboardData } from '../../../analytics/dashboard/dashboardService';
+import { DashboardQueryParams } from '../../../analytics/dashboard/widgetRegistry';
 
 export const analyticsViewsRouter = Router();
+
+// GET /v1/analytics/dashboard (Story 12.9, ADR-0105)
+analyticsViewsRouter.get('/dashboard', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  try {
+    const { watchlistId, selectedTopic, granularity, includeExplanation } = req.query;
+
+    let timeRange: { start?: string; end?: string } | undefined;
+    if (typeof req.query.timeRange === 'object' && req.query.timeRange !== null) {
+      const tr = req.query.timeRange as Record<string, any>;
+      timeRange = { start: tr.start, end: tr.end };
+    } else if (req.query.start_date || req.query.end_date) {
+      timeRange = {
+        start: req.query.start_date as string | undefined,
+        end: req.query.end_date as string | undefined,
+      };
+    }
+
+    const params: DashboardQueryParams = {
+      watchlistId: typeof watchlistId === 'string' ? watchlistId : undefined,
+      selectedTopic: typeof selectedTopic === 'string' ? selectedTopic : undefined,
+      granularity: (granularity as any) || 'day',
+      includeExplanation: includeExplanation === 'true' || includeExplanation === '1',
+      timeRange,
+    };
+
+    const dashboard = await getDashboardData(identity.tenantId, params);
+    res.json(dashboard);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to retrieve analytics dashboard data.' });
+  }
+});
+
 
 // GET /v1/analytics/digest (Story 10.14, ADR-0094)
 analyticsViewsRouter.get('/digest', async (req, res) => {
@@ -53,6 +90,45 @@ analyticsViewsRouter.post('/query', async (req, res) => {
       return;
     }
     res.status(500).json({ error: err?.message || 'Failed to execute query.' });
+  }
+});
+
+/**
+ * Story 16.2 (ADR-0126, TDS-0126 §4.2) — GET /v1/analytics/overview
+ * Real-time aggregation excluding GDPR Article 18 processing-restricted posts.
+ */
+analyticsViewsRouter.get('/overview', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  try {
+    const data = await withTenant(
+      identity.tenantId,
+      async (client: PoolClient) => {
+        const { rows } = await client.query<{
+          total_posts: string;
+          avg_sentiment: string | null;
+        }>(
+          `SELECT 
+             COUNT(*)::int AS total_posts,
+             AVG((enrichment->>'sentimentScore')::numeric) AS avg_sentiment
+           FROM social_posts
+           WHERE tenant_id = $1
+             AND processing_restricted = FALSE`,
+          [identity.tenantId]
+        );
+
+        return {
+          totalPosts: parseInt(rows[0]?.total_posts || '0', 10),
+          avgSentiment: rows[0]?.avg_sentiment ? parseFloat(rows[0].avg_sentiment) : null,
+        };
+      },
+      getPool()
+    );
+
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to retrieve analytics overview.' });
   }
 });
 

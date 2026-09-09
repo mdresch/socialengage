@@ -5,6 +5,10 @@ description: Webhook subscriptions management, HMAC-SHA256 signature signing, an
 
 # Webhook Notifications (ADR-0092)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.11.webhook-notifications.contract.test.ts` — Story 10.11 contract test.
+
 ## Purpose
 Enables tenants to receive real-time webhook HTTP POST notifications on external systems (e.g., Slack, PagerDuty, Zapier, custom backend) when alerts or critical events occur.
 

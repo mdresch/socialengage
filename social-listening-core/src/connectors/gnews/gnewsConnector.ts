@@ -50,6 +50,7 @@ export const gnewsConnector: SocialConnector = {
   providerId: GNEWS_PROVIDER_ID,
   authMode: 'api_key',
   deliveryMode: 'poll',
+  sourceType: 'news',
 
   // 100 requests/day, 10 articles/request — a real, published, confirmed
   // ceiling (ADR-0026's Implementation defaults), unlike Newswire's

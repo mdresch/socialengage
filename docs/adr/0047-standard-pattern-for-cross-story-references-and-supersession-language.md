@@ -88,10 +88,10 @@ This is the same rule as the README's "common thread" paragraph, restated here a
 
 This pattern applies project-wide. It is immediately relevant to Epic 2 materials that currently reference supersession logic (notably Stories 2.3, 2.4, 2.5 and their linked ADRs), but the rule generalizes to every story and every ADR that may need a future cross-dependency note.
 
-## Open questions for decision
+## Open Questions
 
-- **Whether to introduce a strict AC label convention (e.g. AC1/AC2 numbering in every story)** to make cross-document references even more precise. **Note:** if pursued, this would require its own ADR — changing the metadata convention of every existing story file is exactly the breaking-change-to-record-format case ADR-0017 governs. This ADR deliberately does not decide that question; flagged here so the answer is "separate ADR if ever pursued," not "decide inside this ADR."
-- **Whether to add a lightweight lint/check script** that flags (a) unowned TBDs (§3), (b) cross-dependency notes missing one of §2's four fields, and (c) ACs whose obsolete-marker pattern doesn't match §1's exact wording. Likely useful once the series exceeds ~50 ADRs; premature now per the rule-of-three discipline this project already applies elsewhere (ADR-0020's deferred distributed rate-limit gate is the direct precedent for "build when actually needed, not speculatively").
+- [ ] **[Q-0047-1]** **Whether to introduce a strict AC label convention (e.g. AC1/AC2 numbering in every story)** to make cross-document references even more precise. **Note:** if pursued, this would require its own ADR — changing the metadata convention of every existing story file is exactly the breaking-change-to-record-format case ADR-0017 governs. This ADR deliberately does not decide that question; flagged here so the answer is "separate ADR if ever pursued," not "decide inside this ADR."
+- [ ] **[Q-0047-2]** **Whether to add a lightweight lint/check script** that flags (a) unowned TBDs (§3), (b) cross-dependency notes missing one of §2's four fields, and (c) ACs whose obsolete-marker pattern doesn't match §1's exact wording. Likely useful once the series exceeds ~50 ADRs; premature now per the rule-of-three discipline this project already applies elsewhere (ADR-0020's deferred distributed rate-limit gate is the direct precedent for "build when actually needed, not speculatively").
 
 ## Amendment Log
 

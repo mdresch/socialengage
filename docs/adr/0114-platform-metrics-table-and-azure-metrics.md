@@ -1,6 +1,6 @@
-# ADR-0114: Platform metrics table and Azure Metrics integration
+﻿# ADR-0114: Platform metrics table and Azure Metrics integration
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `platform_metrics` table, the Azure Metrics ingestion path, and the aggregation rules that feed the Platform Operations Dashboard (ADR-0089).
 
@@ -87,12 +87,12 @@ platform_metrics (
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `platform_metrics` be partitioned by `granularity` and `timestamp`?
-- How are Azure Cost Management delays handled? (Cost data is often 12-24 hours behind.)
-- Should `Tenant-Admin` see a read-only, tenant-filtered view of platform metrics for their own tenant?
-- What is the minimum Azure role needed for the worker to read metrics?
+- [ ] **[Q-0114-1]** Should `platform_metrics` be partitioned by `granularity` and `timestamp`?
+- [ ] **[Q-0114-2]** How are Azure Cost Management delays handled? (Cost data is often 12-24 hours behind.)
+- [ ] **[Q-0114-3]** Should `Tenant-Admin` see a read-only, tenant-filtered view of platform metrics for their own tenant?
+- [ ] **[Q-0114-4]** What is the minimum Azure role needed for the worker to read metrics?
 
 ---
 

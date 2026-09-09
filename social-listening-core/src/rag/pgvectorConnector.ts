@@ -151,10 +151,28 @@ export class PgvectorRAGConnector implements RAGConnector {
 
     const candidates: RAGSearchResult[] = [];
 
+    // Story 16.2 (ADR-0126): Exclude Article 18 processing_restricted posts from RAG search
+    let restrictedPostIds = new Set<string>();
+    try {
+      const pool = getAdminPool ? getAdminPool() : getPool();
+      const res = await pool.query<{ id: string }>(
+        `SELECT id FROM social_posts WHERE tenant_id = $1 AND processing_restricted = TRUE`,
+        [tenantId]
+      );
+      restrictedPostIds = new Set(res.rows.map((r) => r.id));
+    } catch {
+      // Degrade if database query fails
+    }
+
     // Filter and score against in-memory chunks
     for (const chunk of this.inMemoryChunks.values()) {
       // Mandatory Tenant Pre-Filter (ADR-0081 §2)
       if (chunk.metadata.tenant_id !== tenantId) {
+        continue;
+      }
+
+      // GDPR Article 18 Restriction Quarantine (ADR-0126)
+      if (chunk.metadata.post_id && restrictedPostIds.has(chunk.metadata.post_id)) {
         continue;
       }
 
@@ -276,7 +294,10 @@ export class PgvectorRAGConnector implements RAGConnector {
         count = parseInt(res.rows[0]?.count, 10) || 0;
       }
     } catch {
-      // Fallback to in-memory count
+      // Handled in fallback below
+    }
+
+    if (count === 0) {
       if (tenantId) {
         for (const chunk of this.inMemoryChunks.values()) {
           if (chunk.metadata.tenant_id === tenantId) count++;

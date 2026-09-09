@@ -15,23 +15,27 @@ const PAGE_LIMIT = 100;
 const MAX_PAGES = 500;
 
 async function fetchAllPosts(): Promise<SocialPostSummary[]> {
-  const posts: SocialPostSummary[] = [];
-  let cursor: string | undefined;
-  let pages = 0;
+  try {
+    const posts: SocialPostSummary[] = [];
+    let cursor: string | undefined;
+    let pages = 0;
 
-  do {
-    const page = await listPosts(cursor, PAGE_LIMIT);
-    posts.push(...page.posts);
-    cursor = page.nextCursor ?? undefined;
-    pages += 1;
-  } while (cursor && pages < MAX_PAGES);
+    do {
+      const page = await listPosts(cursor, PAGE_LIMIT);
+      posts.push(...page.posts);
+      cursor = page.nextCursor ?? undefined;
+      pages += 1;
+    } while (cursor && pages < MAX_PAGES);
 
-  // Story 6.25 — GET /v1/posts orders every page ORDER BY seq ASC (ADR-0011's
-  // keyset pagination, oldest-ingested first), unchanged here. This reverses
-  // the already-fully-fetched array once, client-side, so the feed shows
-  // most-recently-ingested first — a deliberately minimal display-order fix,
-  // not a change to the backend's own pagination/cursor mechanism.
-  return posts.reverse();
+    // Story 6.25 — GET /v1/posts orders every page ORDER BY seq ASC (ADR-0011's
+    // keyset pagination, oldest-ingested first), unchanged here. This reverses
+    // the already-fully-fetched array once, client-side, so the feed shows
+    // most-recently-ingested first — a deliberately minimal display-order fix,
+    // not a change to the backend's own pagination/cursor mechanism.
+    return posts.reverse();
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -56,12 +60,12 @@ export default async function PostFeedPage() {
 
   // Fetch posts, watchlists, and connected Facebook pages in parallel; failures are non-fatal.
   const [posts, watchlists, fbPagesRes] = await Promise.all([
-    fetchAllPosts(),
+    fetchAllPosts().catch(() => []),
     listWatchlists().catch(() => []),
     listFacebookPages().catch(() => ({ status: 500, body: {} })),
   ]);
 
-  const facebookPages = (fbPagesRes.body?.pages as { pageId: string; pageName: string }[]) || [];
+  const facebookPages = (fbPagesRes.body && 'pages' in fbPagesRes.body ? (fbPagesRes.body.pages as { pageId: string; pageName: string }[]) : []) || [];
 
   return (
     <main>

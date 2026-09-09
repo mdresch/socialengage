@@ -124,3 +124,7 @@ export interface RAGChunkMetadata {
 - `docs/adr/0015-tenant-isolation-via-postgres-row-level-security.md`
 - `docs/adr/0043-self-service-tenant-initiated-deletion.md`
 - `docs/adr/0071-human-in-the-loop-post-enrichment-overrides-and-cascading-drawer-ui.md`
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0138 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0138's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0138 is currently Proposed, not accepted.

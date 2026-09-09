@@ -98,17 +98,14 @@ describe('Story 4.2 — deferred topic time-series aggregation contract', () => 
     expect(post?.enrichment).toEqual({ entities: [acmeEntity], keyPhrases: ['acme is great'] });
   });
 
-  it('AC2: no topic_daily_count (or similarly named) table/view exists, and no charting route is mounted', async () => {
+  it('AC2: topic time-series aggregation historical deferral (built in Story 11.5 / ADR-0097)', async () => {
+    // 2026-08-28 (Story 11.5, ADR-0097): The topic daily count rollup table
+    // (topic_daily_counts) and topic evolution endpoint were implemented in
+    // Epic 11. We verify that the table created by migration 0056 is present.
     const { rows } = await getPool().query(
-      `SELECT table_name FROM information_schema.tables WHERE table_name ILIKE '%topic_daily_count%' OR table_name ILIKE '%topic%count%'`
+      `SELECT table_name FROM information_schema.tables WHERE table_name = 'topic_daily_counts'`
     );
-    expect(rows).toHaveLength(0);
-
-    const routerSource = fs.readFileSync(
-      path.resolve(__dirname, '..', '..', 'src', 'http', 'versions', 'v1', 'router.ts'),
-      'utf8'
-    );
-    expect(routerSource).not.toMatch(/chart|topic-?daily|dailyCount/i);
+    expect(rows.length).toBeGreaterThanOrEqual(1);
   });
 
   it('AC3: grouping raw SocialPost rows by day and topic reconstructs exact per-day-per-topic counts', async () => {

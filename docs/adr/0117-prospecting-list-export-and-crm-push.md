@@ -1,6 +1,6 @@
-# ADR-0117: Prospecting list export and CRM push
+﻿# ADR-0117: Prospecting list export and CRM push
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** `GET /v1/prospecting-lists/:id/export` and `POST /v1/prospecting-lists/:id/crm-handoff` for exporting a prospecting list and pushing its entries to a CRM (reusing `CRMConnector`, ADR-0095).
 
@@ -115,12 +115,20 @@ POST /v1/prospecting-lists/:id/crm-handoff
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the push create a CRM campaign or list, or just individual contacts?
-- How are duplicate leads handled? Key on `authorId` or on `authorName + platformId`?
-- Should the export include `influence_score` and `authenticity_score` as raw numbers or labels?
-- Can the user schedule a recurring CRM push as entries are added?
+- [ ] **[Q-0117-1]** Should the push create a CRM campaign or list, or just individual contacts?
+- [ ] **[Q-0117-2]** How are duplicate leads handled? Key on `authorId` or on `authorName + platformId`?
+- [ ] **[Q-0117-3]** Should the export include `influence_score` and `authenticity_score` as raw numbers or labels?
+- [ ] **[Q-0117-4]** Can the user schedule a recurring CRM push as entries are added?
+
+## Implementation notes
+
+Story 13.13 implemented this ADR on 2026-09-02:
+- `author_name` and `public_url` were added to `prospecting_list_entries` as add-time snapshots, so export/push can be built from the entry row without leaking connector secrets.
+- Authorization is owner-only for v1. ADR-0086's RLS model does not expose a per-list "edit share" table, and ADR-0086 §2 explicitly rejects `tenant_admin` override. Edit-share and tenant-admin override for export/push remain deferred to ADR-0129 (Proposed).
+- Scores in the CSV and payload are the entry's add-time snapshots (ADR-0086), not live `authors` scores, to keep the export deterministic.
+- Re-push deduplication is keyed on `(author_id, provider_id)` against `outbound_activities` with `activity_type='crm_prospect'`.
 
 ---
 

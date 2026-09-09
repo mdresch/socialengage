@@ -1,4 +1,4 @@
-# BRD-0105: Dashboards and Analytics Widget Contracts
+﻿# BRD-0105: Dashboards and Analytics Widget Contracts
 
 > **Draft notice:** This BRD is based on ADR-0105, which is currently **Proposed** (2026-08-23). It is a draft for review and may change upon ADR acceptance.
 

@@ -1,6 +1,6 @@
 # ADR-0118: Additional Social Platform Publishing
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Records the project's intent to extend ADR-0075's `SocialConnector.publish?()` outbound post path to Instagram, Bluesky, Mastodon, Threads, and X, and establishes a build order and shared design constraints for this second wave of publishing connectors. No primary-source API verification has been performed for these platforms yet; each requires its own connector-specific ADR before implementation.
 
@@ -77,16 +77,17 @@ This ADR is a roadmap, not a per-platform specification. Before building any of 
 
 ## Open Questions
 
-1. Which of these platforms, if any, should also support `SocialConnector.reply?()` or `SocialConnector.poll()?` (i.e., should the same per-platform ADR cover ingestion and engagement as well as publishing?)
-2. Should Mastodon support per-toot threading natively or map the Polypost Composer's thread model to multiple Mastodon posts?
-3. What is the exact Bluesky authentication model (OAuth, App Passwords, or DID-based) and its rate/cost model?
-4. Does Instagram support any text/link-only post type through the Content Publishing API, or is media always required?
-5. Is X/Twitter's paid API still economically viable for a self-funded project at the time of implementation?
+- [ ] **[Q-0118-1]** Which of these platforms, if any, should also support `SocialConnector.reply?()` or `SocialConnector.poll()?` (i.e., should the same per-platform ADR cover ingestion and engagement as well as publishing?)
+- [ ] **[Q-0118-2]** Should Mastodon support per-toot threading natively or map the Polypost Composer's thread model to multiple Mastodon posts?
+- [ ] **[Q-0118-3]** What is the exact Bluesky authentication model (OAuth, App Passwords, or DID-based) and its rate/cost model?
+- [ ] **[Q-0118-4]** Does Instagram support any text/link-only post type through the Content Publishing API, or is media always required?
+- [ ] **[Q-0118-5]** Is X/Twitter's paid API still economically viable for a self-funded project at the time of implementation?
 
 ---
 
 ## Related Documents
 
+- [Platform Build Library](../platform-library/README.md)
 - ADR-0075: Outbound Social Post Publishing
 - ADR-0072: Cross-Platform Polypost Composer and Multi-Network Preview Engine
 - ADR-0068: Instagram Connector
@@ -94,3 +95,11 @@ This ADR is a roadmap, not a per-platform specification. Before building any of 
 - ADR-0115: Publishing Media Upload and Asset Targeting
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0027: Connector Is Technical Intermediary, Not Contracting Party
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Platform-Specific Payload Validation**: Outbound social publishing across diverse networks (YouTube, Bluesky, TikTok, Threads) requires granular platform validation at the composer boundary rather than generic post schemas. For instance, YouTube community posts require strict channel ID scoping and media verification, while Bluesky requires UTF-8 byte length calculation (300 grapheme bytes) rather than raw string length.
+- **Operational Trade-offs**: Validating network-specific constraints in `social-listening-core` increases publishing orchestration complexity but prevents silent failures and malformed payloads at third-party API gateways.
+- **Reference Commits**: `1d03403` (Story 14.1 implementation), `8cde283` (telemetry sync).

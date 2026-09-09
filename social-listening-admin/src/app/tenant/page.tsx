@@ -306,9 +306,11 @@ export default async function TenantShellPage() {
                         {post.publishedAt && <RelativeTime timestamp={post.publishedAt} />}
                       </div>
 
-                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)', lineHeight: 1.4 }}>
-                        {title ?? 'Untitled post'}
-                      </div>
+                      {title ? (
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)', lineHeight: 1.4 }}>
+                          {title}
+                        </div>
+                      ) : null}
 
                       {snippet && (
                         <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

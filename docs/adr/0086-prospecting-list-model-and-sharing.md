@@ -1,4 +1,4 @@
-# ADR-0086: Prospecting list model and sharing
+﻿# ADR-0086: Prospecting list model and sharing
 
 **Status:** Accepted (2026-08-27)
 
@@ -138,13 +138,13 @@ POST   /v1/prospecting-lists/:id/crm-handoff
 
 ---
 
-## Open questions
+## Open Questions
 
-- ~~Should `engagement_score`/`authenticity_score` be recomputed on demand or denormalized at add time?~~ **Resolved:** all four ADR-0108 scores (`engagement_score`, `authenticity_score`, `influence_score`, `reach_score`) are denormalized as an add-time snapshot, never recomputed in place.
-- ~~Should `prospecting_list_entries` support custom fields per tenant?~~ **Resolved:** `custom_attributes jsonb`.
-- ~~Should `relationship_stage` transitions be logged?~~ **Resolved:** deferred. v1 only touches `updated_at`; an audit trail arrives with the future workflow-engine ADR, not `platform_admin_audit_log` (that log is scoped to platform-admin actions elsewhere in this codebase — the analogous pattern for tenant-level outward actions is `outbound_activities`, per ADR-0073/ADR-0075/ADR-0095/ADR-0117).
-- **Is a maximum entries-per-list ceiling needed?** No fixed number is adopted here — inventing one without usage data would repeat the precedent ADR-0044 and ADR-0020 already declined for the analogous per-user watchlist-count question. `GET .../entries` is cursor-paginated (default 50, max 200) regardless; revisit with a real cap only once usage data justifies one.
-- ~~Who may set `shared = true`, and what can non-owners do with a shared list?~~ **Resolved (2026-08-27):** owner-only, no `tenant_admin` override — true parity with ADR-0044 §5c. Sharing grants read-only visibility to teammates; only `owner_id` can mutate the list or its entries. See §2.
+- [x] **[Q-0086-1]** ~~Should `engagement_score`/`authenticity_score` be recomputed on demand or denormalized at add time?~~ **Resolved:** all four ADR-0108 scores (`engagement_score`, `authenticity_score`, `influence_score`, `reach_score`) are denormalized as an add-time snapshot, never recomputed in place.
+- [x] **[Q-0086-2]** ~~~~Should `prospecting_list_entries` support custom fields per tenant?~~ **Resolved by ADR-0129:** `custom_attributes jsonb` and tenant-wide sharing rules locked.~~ **Resolved:** `custom_attributes jsonb`.
+- [x] **[Q-0086-3]** ~~Should `relationship_stage` transitions be logged?~~ **Resolved:** deferred. v1 only touches `updated_at`; an audit trail arrives with the future workflow-engine ADR, not `platform_admin_audit_log` (that log is scoped to platform-admin actions elsewhere in this codebase — the analogous pattern for tenant-level outward actions is `outbound_activities`, per ADR-0073/ADR-0075/ADR-0095/ADR-0117).
+- [ ] **[Q-0086-4]** **Is a maximum entries-per-list ceiling needed?** No fixed number is adopted here — inventing one without usage data would repeat the precedent ADR-0044 and ADR-0020 already declined for the analogous per-user watchlist-count question. `GET .../entries` is cursor-paginated (default 50, max 200) regardless; revisit with a real cap only once usage data justifies one.
+- [x] **[Q-0086-5]** ~~Who may set `shared = true`, and what can non-owners do with a shared list?~~ **Resolved (2026-08-27):** owner-only, no `tenant_admin` override — true parity with ADR-0044 §5c. Sharing grants read-only visibility to teammates; only `owner_id` can mutate the list or its entries. See §2.
 
 ---
 
@@ -166,3 +166,7 @@ POST   /v1/prospecting-lists/:id/crm-handoff
 *Revised 2026-08-27 (pre-acceptance), second pass: fixed four fabricated footnote paths; dropped `author_id ON DELETE CASCADE` (its GDPR justification doesn't match ADR-0092's actual soft-redaction/no-author-deletion design) back to this codebase's existing no-cascade convention for `author_id` FKs; changed `owner_id`/`added_by_user_id` to `ON DELETE CASCADE` to match the `watchlists.user_id`/`connector_activations.user_id` precedent; dropped the invented 5,000-entry cap in favor of pagination-only, consistent with ADR-0044/ADR-0020's precedent against unjustified limits; added all four ADR-0108 score columns and `custom_attributes jsonb`.*
 
 *Revised 2026-08-27 (pre-acceptance), third pass: resolved the `shared`-permission open question — owner-only toggle, no `tenant_admin` override, matching ADR-0044 §5c exactly; sharing now grants read-only visibility to teammates, with `INSERT`/`UPDATE`/`DELETE` restricted to `owner_id` at all times, enforced per-command via RLS. §2 rewritten accordingly; a non-owner mutation attempt on a shared resource now explicitly documented as `404`, not `403`, per ADR-0044 §2's existing convention.*
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0129 (Proposed, 2026-08-28) is accepted, this ADR's Decision §2 would be refined by ADR-0129's own §1–§3 — specifically deduplicated Apollo/CRM export payloads and scoped team sharing permissions. This is a pending note only: ADR-0129 is currently Proposed, not accepted.

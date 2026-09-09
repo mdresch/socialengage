@@ -1,4 +1,4 @@
-# Functional Design Document
+﻿# Functional Design Document
 
 ## 1. Document Control
 
@@ -326,3 +326,5 @@ Backend engineers implementing the scoring columns, refresh worker, and endpoint
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
 | 0.2 | 2026-08-23 | FDD Writer Agent | Regenerated with a real per-capability Section 5 breakdown, data model, and workflow detail, replacing the prior defective BRD-table copy |
+
+> **Technical Revision (2026-08-28):** Author scoring algorithm formula updated to include network velocity and normalized engagement rate weighting.

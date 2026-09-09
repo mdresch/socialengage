@@ -1,4 +1,4 @@
-# Business Requirements Document — ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
+﻿# Business Requirements Document — ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
 
 ## 1. Document Control
 

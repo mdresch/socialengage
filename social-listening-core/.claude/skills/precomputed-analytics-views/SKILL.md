@@ -5,6 +5,10 @@ description: Precomputed daily count aggregate tables, 15-minute refresh backgro
 
 # Precomputed Analytics Views (ADR-0087)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.3.preconfigured-analytics-views.contract.test.ts` — Story 10.3 contract test.
+
 ## Purpose
 Provides sub-second analytics aggregations across sources, authors, sentiments, and watchlists via precomputed daily rollup tables instead of scanning million-row raw post tables on demand.
 

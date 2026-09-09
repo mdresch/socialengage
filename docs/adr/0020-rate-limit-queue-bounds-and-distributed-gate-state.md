@@ -45,10 +45,10 @@ Separately: requests that fail repeatedly once actually dispatched (not while wa
 - **In-memory gate with sticky routing** (always route a given tenant's requests to the same process instance) — avoids needing external shared state, but constrains deployment topology (no free load-balancing across instances) and loses all gate state on a process restart, which a shared store doesn't.
 - **Unbounded queue, status quo** — simplest, but is the exact problem this ADR exists to close.
 
-## Open questions for decision
+## Open Questions
 
-- ~~Are 6 hours / 1,000 / 3 the right numbers, or should they vary by platform (a slow-moving RSS feed vs. a high-volume X watchlist)?~~ **Resolved at acceptance:** kept flat for v1 — no real traffic data yet to justify per-platform tuning; log per-platform overrides in the Amendment Log if RSS and a high-volume connector actually show divergent needs once both are running.
-- ~~Should queue-depth rejection surface as a distinct `ConnectorHealth` status, or fold into the existing `degraded`/`failing` states (ADR-0009)?~~ **Resolved at acceptance:** folds into the existing states — a new top-level status is UI and derivation-logic surface area tenants mostly don't need to act on differently; the reason is already auditable via `IngestionRun.errorSummary` and surfaces in the connector detail view instead.
+- [x] **[Q-0020-1]** ~~Are 6 hours / 1,000 / 3 the right numbers, or should they vary by platform (a slow-moving RSS feed vs. a high-volume X watchlist)?~~ **Resolved at acceptance:** kept flat for v1 — no real traffic data yet to justify per-platform tuning; log per-platform overrides in the Amendment Log if RSS and a high-volume connector actually show divergent needs once both are running.
+- [x] **[Q-0020-2]** ~~Should queue-depth rejection surface as a distinct `ConnectorHealth` status, or fold into the existing `degraded`/`failing` states (ADR-0009)?~~ **Resolved at acceptance:** folds into the existing states — a new top-level status is UI and derivation-logic surface area tenants mostly don't need to act on differently; the reason is already auditable via `IngestionRun.errorSummary` and surfaces in the connector detail view instead.
 
 ## Amendment Log
 

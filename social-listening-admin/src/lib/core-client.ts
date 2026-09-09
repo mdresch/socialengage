@@ -45,6 +45,8 @@ function coreBaseUrl(): string {
   return baseUrl;
 }
 
+const getBaseUrl = coreBaseUrl;
+
 /**
  * Placeholder call proving the REST-only mechanism works end to end. Real endpoint
  * calls (connect/disconnect a platform, manage watchlists, connector status, ...)
@@ -140,6 +142,40 @@ export async function getMyTenant(): Promise<AdminTenant> {
     throw new Error(`Failed to load tenant settings: ${response.status}`);
   }
   return (await response.json()) as AdminTenant;
+}
+
+export interface TenantPlanView {
+  plan: string;
+  maxSeats: number;
+  usedSeats: number;
+  licenseSeatCount: number;
+  featureGates: Record<string, any>;
+}
+
+/**
+ * Story 13.6 (ADR-0112) — reads the caller's own tenant's plan, effective
+ * max_seats, used seats, and effective feature gates (GET /v1/tenants/plan).
+ * Throws on a non-2xx, the same convention getMyTenant() uses.
+ */
+export async function getMyPlan(): Promise<TenantPlanView> {
+  const response = await authenticatedCoreFetch('/v1/tenants/plan');
+  if (!response.ok) {
+    throw new Error(`Failed to load tenant plan: ${response.status}`);
+  }
+  return (await response.json()) as TenantPlanView;
+}
+
+/**
+ * Story 13.6 (ADR-0112) — Platform-Admin read of a specific tenant's plan,
+ * max_seats, used seats, and effective feature gates
+ * (GET /v1/admin/tenants/:tenantId/plan).
+ */
+export async function getAdminTenantPlan(tenantId: string): Promise<TenantPlanView> {
+  const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}/plan`);
+  if (!response.ok) {
+    throw new Error(`Failed to load tenant plan: ${response.status}`);
+  }
+  return (await response.json()) as TenantPlanView;
 }
 
 /**
@@ -782,7 +818,14 @@ export async function createAdminTenant(input: {
  */
 export async function updateAdminTenant(
   tenantId: string,
-  input: { status?: 'active' | 'suspended'; licenseSeatCount?: number; domain?: string | null; name?: string }
+  input: {
+    status?: 'active' | 'suspended';
+    licenseSeatCount?: number;
+    domain?: string | null;
+    name?: string;
+    plan?: string;
+    featureGates?: Record<string, any>;
+  }
 ): Promise<AdminTenantActionOutcome> {
   const response = await authenticatedCoreFetch(`/v1/admin/tenants/${encodeURIComponent(tenantId)}`, {
     method: 'PATCH',
@@ -858,12 +901,16 @@ export async function getCoreHealthStatus(): Promise<'ok' | 'unavailable'> {
   }
 }
 
+import { WatchlistAST, ConnectorQueryCapabilities } from './watchlist-ast';
+export type { WatchlistAST, ConnectorQueryCapabilities };
+
 export interface Watchlist {
   id: string;
   name: string;
   matchType: string;
   terms: string[] | null;
   booleanQuery?: string;
+  ast?: WatchlistAST;
   platformIds: string[];
   isActive: boolean;
   version: number;
@@ -873,7 +920,16 @@ export interface Watchlist {
 
 export interface WatchlistActionOutcome {
   status: number;
-  body: { code?: string; details?: string[]; current_version?: number; [key: string]: unknown };
+  body: { code?: string; details?: string[]; offendingClause?: unknown; reason?: string; current_version?: number; [key: string]: unknown };
+}
+
+/**
+ * Story 12.3 / 12.4 (ADR-0102) — fetch per-connector query capabilities.
+ */
+export async function getConnectorQueryCapabilities(platformId: string): Promise<ConnectorQueryCapabilities | null> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/query-capabilities`);
+  if (!response.ok) return null;
+  return (await response.json()) as ConnectorQueryCapabilities;
 }
 
 /**
@@ -906,6 +962,7 @@ export async function createWatchlist(input: {
   matchType: 'keyword' | 'hashtag' | 'account' | 'boolean';
   terms?: string[] | null;
   booleanQuery?: string | null;
+  ast?: WatchlistAST | null;
   platformIds?: string[];
 }): Promise<WatchlistActionOutcome> {
   const response = await authenticatedCoreFetch('/v1/watchlists', {
@@ -993,11 +1050,12 @@ export interface SocialPostFull extends SocialPostSummary {
  * `watchlistId` (Story 8.9, ADR-0063) is optional and forwarded as-is —
  * the real `GET /v1/posts?watchlistId=` server-side filter (Story 3.11).
  */
-export async function listPosts(cursor?: string, limit?: number, watchlistId?: string): Promise<SocialPostsPage> {
+export async function listPosts(cursor?: string, limit?: number, watchlistId?: string, providerId?: string): Promise<SocialPostsPage> {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', cursor);
   if (typeof limit === 'number') params.set('limit', String(limit));
   if (watchlistId) params.set('watchlistId', watchlistId);
+  if (providerId) params.set('providerId', providerId);
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const response = await authenticatedCoreFetch(`/v1/posts${suffix}`);
   if (!response.ok) {
@@ -1067,14 +1125,40 @@ export async function explainSpike(
   return { status: response.status, body };
 }
 
+export interface SentimentAspect {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export interface SentimentOverridden {
+  by: string;
+  at: string;
+  reason?: string;
+  previousValue?: {
+    overall: string;
+    confidence: number;
+  };
+}
+
+export interface PostSentimentEnrichment {
+  overall: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  language: string;
+  aspects?: SentimentAspect[];
+  overridden?: SentimentOverridden;
+}
+
 export interface PostEnrichmentUpdateInput {
-  sentiment?: 'positive' | 'neutral' | 'negative';
+  sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed' | (Partial<PostSentimentEnrichment> & { reason?: string });
   sentimentScore?: number;
   keyPhrases?: string[];
   detectedLanguage?: string | null;
   geoCountry?: string | null;
   geoCountryName?: string | null;
   summary?: string | null;
+  reason?: string;
 }
 
 export interface PostEnrichmentUpdateOutcome {
@@ -1759,7 +1843,9 @@ export interface ProspectingListEntry {
   prospecting_list_id: string;
   tenant_id: string;
   author_id: string;
+  author_name: string | null;
   platform_id: string;
+  public_url: string | null;
   topic: string | null;
   engagement_score: string | null;
   authenticity_score: string | null;
@@ -1940,6 +2026,52 @@ export async function deleteProspectingEntry(listId: string, entryId: string): P
 }
 
 // ---------------------------------------------------------------------------
+// Story 13.14 (ADR-0117) — Prospecting list export and CRM push UI
+// ---------------------------------------------------------------------------
+
+export interface PushProspectsToCrmInput {
+  crmConnectorId: string;
+  caseType: 'lead';
+  selectedEntryIds?: string[];
+  customFields?: Record<string, string>;
+}
+
+export interface PushProspectsToCrmResponse {
+  outboundActivityIds: string[];
+  pushedCount: number;
+  skippedCount: number;
+  crmUrl?: string;
+}
+
+/**
+ * Story 13.14 (ADR-0117) — downloads a metadata-only, bounded CSV export of a
+ * prospecting list. Returns the raw `Response` so the BFF proxy can stream the
+ * body through with the original `Content-Type` and `Content-Disposition`.
+ */
+export async function exportProspectingListCsv(listId: string, limit = 5000): Promise<Response> {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', String(limit));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/export.csv${qs}`);
+}
+
+/**
+ * Story 13.14 (ADR-0117) — pushes all or selected entries of a prospecting list
+ * to a configured CRM connector as leads. Returns the raw `Response` so the BFF
+ * proxy can pass through the status and body unchanged.
+ */
+export async function pushProspectingListToCrm(
+  listId: string,
+  input: PushProspectsToCrmInput
+): Promise<Response> {
+  return authenticatedCoreFetch(`/v1/prospecting-lists/${listId}/crm-handoff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Story 10.4 / 10.5 (ADR-0088) — Ad-Hoc Analytics Query Builder
 // ---------------------------------------------------------------------------
 
@@ -1986,8 +2118,19 @@ export async function executeAdHocAnalyticsQuery(
 }
 
 // ---------------------------------------------------------------------------
-// Story 10.6 / 10.7 (ADR-0089) — Platform Operations Telemetry Dashboard
+// Story 10.6 / 10.7 (ADR-0089), Story 16.4 (ADR-0128) — Platform Operations Telemetry & Remediation
 // ---------------------------------------------------------------------------
+
+export interface TenantQuotaBurnProjection {
+  tenantId: string;
+  tenantName: string;
+  monthlyQuota: number;
+  consumedTokens: number;
+  dailyVelocity7d: number;
+  daysRemaining: number | null;
+  projectedExhaustionDate: string | null;
+  status: 'healthy' | 'warning_30d' | 'critical_7d';
+}
 
 export interface PlatformDashboardData {
   throughputPostsSec: number;
@@ -2006,6 +2149,7 @@ export interface PlatformDashboardData {
     ingestionVolume: number;
     errorCount: number;
   }>;
+  tenantQuotaBurnProjections?: TenantQuotaBurnProjection[];
 }
 
 /**
@@ -2017,6 +2161,42 @@ export async function getPlatformDashboard(): Promise<PlatformDashboardData> {
     throw new Error(`Platform dashboard query failed: ${response.status}`);
   }
   return (await response.json()) as PlatformDashboardData;
+}
+
+export type RemediationAction =
+  | 'retry_now'
+  | 'override_backoff'
+  | 'clear_error_state'
+  | 'reprompt_credentials';
+
+export interface RemediationResponse {
+  connectorId: string;
+  action: RemediationAction;
+  status: 'active' | 'retrying' | 'healthy' | 'needs_reauth';
+  backoffLiftedUntil?: string;
+  remediatedAt: string;
+}
+
+/**
+ * Story 16.4 (ADR-0128) — guided operator remediation controls for connectors.
+ */
+export async function remediateConnector(
+  connectorId: string,
+  action: RemediationAction,
+  overrideMinutes?: number
+): Promise<RemediationResponse> {
+  const response = await authenticatedCoreFetch(
+    `/v1/admin/connectors/${encodeURIComponent(connectorId)}/remediate`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ action, overrideMinutes }),
+    }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `Remediation failed: ${response.status}`);
+  }
+  return (await response.json()) as RemediationResponse;
 }
 
 // ---------------------------------------------------------------------------
@@ -2259,6 +2439,1019 @@ export async function getAiInsightsDigest(period: 'daily' | 'weekly' = 'daily'):
   }
   return (await response.json()) as AiInsightsDigestResponse;
 }
+
+// ---------------------------------------------------------------------------
+// Story 11.1 / 11.2 (ADR-0095) — CRM Connector & Case Handoff
+// ---------------------------------------------------------------------------
+
+export interface PushCaseToCRMInput {
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  assignedTo?: string;
+  notes?: string;
+  customFields?: Record<string, any>;
+  allowDuplicate?: boolean;
+  authorId?: string;
+}
+
+export interface PushCaseToCRMResponse {
+  outboundActivityId: string;
+  crmRecordId: string;
+  crmRecordUrl: string;
+  status: 'success';
+}
+
+export interface CRMConnectorStatusItem {
+  id: string;
+  provider: 'dynamics365' | 'salesforce' | 'hubspot';
+  status: {
+    isActive: boolean;
+    provider: string;
+    lastValidatedAt?: string;
+  };
+}
+
+export interface CRMFieldMappingItem {
+  id: string;
+  tenantId: string;
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  sourceField: string;
+  targetField: string;
+  isRequired: boolean;
+  defaultValue: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — pushes a case/lead to an external CRM.
+ */
+export async function pushCaseToCRM(id: string, payload: PushCaseToCRMInput): Promise<Response> {
+  return authenticatedCoreFetch(`/v1/inbox/items/${id}/case`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — lists available CRM connectors.
+ */
+export async function listCRMConnectors(): Promise<CRMConnectorStatusItem[]> {
+  const response = await authenticatedCoreFetch('/v1/crm/connectors');
+  if (!response.ok) {
+    throw new Error(`Failed to list CRM connectors: ${response.status}`);
+  }
+  return (await response.json()) as CRMConnectorStatusItem[];
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — lists custom CRM field mappings.
+ */
+export async function listCRMFieldMappings(crmConnectorId?: string, entityType?: string): Promise<CRMFieldMappingItem[]> {
+  const params = new URLSearchParams();
+  if (crmConnectorId) params.append('crmConnectorId', crmConnectorId);
+  if (entityType) params.append('entityType', entityType);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await authenticatedCoreFetch(`/v1/crm/field-mappings${query}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list CRM field mappings: ${response.status}`);
+  }
+  return (await response.json()) as CRMFieldMappingItem[];
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — creates or updates custom CRM field mapping.
+ */
+export async function upsertCRMFieldMapping(mapping: {
+  crmConnectorId: string;
+  entityType: 'lead' | 'opportunity' | 'support';
+  sourceField: string;
+  targetField: string;
+  isRequired?: boolean;
+  defaultValue?: string | null;
+}): Promise<CRMFieldMappingItem> {
+  const response = await authenticatedCoreFetch('/v1/crm/field-mappings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(mapping),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to upsert CRM field mapping: ${response.status}`);
+  }
+  return (await response.json()) as CRMFieldMappingItem;
+}
+
+/**
+ * Story 11.1 / 11.2 (ADR-0095) — deletes custom CRM field mapping.
+ */
+export async function deleteCRMFieldMapping(id: string): Promise<boolean> {
+  const response = await authenticatedCoreFetch(`/v1/crm/field-mappings/${id}`, {
+    method: 'DELETE',
+  });
+  return response.ok;
+}
+
+export type CRMCredentialConfig = Record<string, string>;
+
+export interface CRMCredentialSummary {
+  crmConnectorId: string;
+  configured: boolean;
+  config: CRMCredentialConfig | null;
+}
+
+export async function getCRMCredential(crmConnectorId: string): Promise<CRMCredentialSummary> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load CRM credential: ${response.status}`);
+  }
+  return (await response.json()) as CRMCredentialSummary;
+}
+
+export async function saveCRMCredential(crmConnectorId: string, config: CRMCredentialConfig): Promise<unknown> {
+  const response = await authenticatedCoreFetch('/v1/crm/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ crmConnectorId, ...config }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save CRM credential: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function deleteCRMCredential(crmConnectorId: string): Promise<boolean> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}`, {
+    method: 'DELETE',
+  });
+  return response.ok;
+}
+
+export interface CRMConnectorHealth {
+  crmConnectorId: string;
+  status: {
+    isActive: boolean;
+    provider: string;
+    lastValidatedAt?: string;
+    error?: string;
+  };
+}
+
+export async function getCRMConnectorHealth(
+  crmConnectorId: string,
+  config?: Record<string, string>
+): Promise<CRMConnectorHealth> {
+  const response = await authenticatedCoreFetch(`/v1/crm/credentials/${crmConnectorId}/health`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ config: config ?? null }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to verify CRM connector: ${response.status}`);
+  }
+  return (await response.json()) as CRMConnectorHealth;
+}
+
+// ---------------------------------------------------------------------------
+// Story 11.3 / 11.4 (ADR-0096) — Daily Digest Email
+// ---------------------------------------------------------------------------
+
+export interface UserDigestPreferences {
+  id: string;
+  tenantId: string;
+  userId: string;
+  isEnabled: boolean;
+  sendAtLocal: string;
+  timezone: string;
+  watchlistIds: string[];
+  includeAiSummary: boolean;
+  includeTopPosts: boolean;
+  includeTopicBreakdown: boolean;
+  lastSentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DigestPreviewResponse {
+  data: {
+    tenantName: string;
+    recipientName: string;
+    recipientEmail: string;
+    dateRangeLabel: string;
+    totalMentions: number;
+    sentimentDistribution: {
+      positive: number;
+      neutral: number;
+      negative: number;
+      mixed: number;
+    };
+    topTopics: Array<{ topic: string; count: number; deltaPercentage?: number }>;
+    topPlatforms: Array<{ platform: string; count: number }>;
+    notablePosts: Array<{
+      postId: string;
+      platform: string;
+      authorName: string;
+      authorHandle?: string;
+      excerpt: string;
+      publishedAt: string;
+      url?: string;
+      impactScore: number;
+    }>;
+    aiSummary?: {
+      narrative: string;
+      keyThemes: string[];
+      sentimentTrend: string;
+    };
+    unsubscribeUrl: string;
+  };
+  rendered: {
+    subject: string;
+    html: string;
+    text: string;
+  };
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — gets current user's daily digest preferences.
+ */
+export async function getUserDigestPreferences(): Promise<UserDigestPreferences> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-preferences');
+  if (!response.ok) {
+    throw new Error(`Failed to get digest preferences: ${response.status}`);
+  }
+  return (await response.json()) as UserDigestPreferences;
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — updates current user's daily digest preferences.
+ */
+export async function upsertUserDigestPreferences(
+  input: Partial<UserDigestPreferences>
+): Promise<UserDigestPreferences> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-preferences', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update digest preferences: ${response.status}`);
+  }
+  return (await response.json()) as UserDigestPreferences;
+}
+
+/**
+ * Story 11.3 / 11.4 (ADR-0096) — generates a one-off preview of the daily digest.
+ */
+export async function previewDailyDigest(
+  customPreferences?: Partial<UserDigestPreferences>
+): Promise<DigestPreviewResponse> {
+  const response = await authenticatedCoreFetch('/v1/users/me/digest-previews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(customPreferences || {}),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to preview daily digest: ${response.status}`);
+  }
+  return (await response.json()) as DigestPreviewResponse;
+}
+
+// ---------------------------------------------------------------------------
+// Story 11.5 / 11.6 (ADR-0097) — Topic Evolution Timeline
+// ---------------------------------------------------------------------------
+
+export interface TopicEvolutionPoint {
+  date: string;
+  mentionCount: number;
+  uniqueAuthors: number;
+  sentiment: {
+    positive: number;
+    negative: number;
+    neutral: number;
+    mixed: number;
+  };
+  topAuthors: Array<{ authorId: string; authorName: string; count: number }>;
+  topKeywords: Array<{ keyword: string; count: number }>;
+  trend: 'rising' | 'stable' | 'falling';
+}
+
+export interface TopicEvolutionResponse {
+  topicId: string;
+  topicName: string;
+  startDate: string;
+  endDate: string;
+  granularity: 'day' | 'week' | 'month';
+  points: TopicEvolutionPoint[];
+  previousPeriodPoints?: Array<{
+    date: string;
+    mentionCount: number;
+    uniqueAuthors: number;
+  }>;
+}
+
+/**
+ * Story 11.5 / 11.6 (ADR-0097) — queries topic evolution longitudinal time-series data.
+ */
+export async function getTopicEvolution(options: {
+  topic?: string;
+  topicId?: string;
+  topicName?: string;
+  start?: string;
+  end?: string;
+  granularity?: 'day' | 'week' | 'month';
+  compareToPrevious?: boolean;
+}): Promise<TopicEvolutionResponse> {
+  const params = new URLSearchParams();
+  if (options.topic) params.set('topic', options.topic);
+  if (options.topicId) params.set('topicId', options.topicId);
+  if (options.topicName) params.set('topicName', options.topicName);
+  if (options.start) params.set('start', options.start);
+  if (options.end) params.set('end', options.end);
+  if (options.granularity) params.set('granularity', options.granularity);
+  if (options.compareToPrevious) params.set('compareToPrevious', 'true');
+
+  const response = await authenticatedCoreFetch(`/v1/topics/evolution?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch topic evolution: ${response.status}`);
+  }
+  return (await response.json()) as TopicEvolutionResponse;
+}
+
+export interface TopicDriftResult {
+  topicId: string;
+  start: string;
+  end: string;
+  driftScore: number;
+  topClustersNow: string[];
+  topClustersThen: string[];
+  samplePostsNow: string[];
+  samplePostsThen: string[];
+  warning: 'none' | 'mild' | 'significant';
+  cacheHit?: boolean;
+}
+
+/**
+ * Story 13.12 (ADR-0116) — fetches a semantic-drift result for a topic between two time windows.
+ */
+export async function getTopicDrift(
+  topicId: string,
+  start: string,
+  end: string
+): Promise<TopicDriftResult> {
+  const params = new URLSearchParams();
+  params.set('start', start);
+  params.set('end', end);
+
+  const response = await authenticatedCoreFetch(`/v1/topics/${encodeURIComponent(topicId)}/drift?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch topic drift: ${response.status}`);
+  }
+  return (await response.json()) as TopicDriftResult;
+}
+
+export interface OutboundPostAsset {
+  type: 'image' | 'video' | 'link-card';
+  mediaId?: string;
+  url?: string;
+  imageUrl?: string;
+  alt?: string;
+  target?: string;
+}
+
+export interface PublishOutboundPostInput {
+  text: string;
+  assets?: OutboundPostAsset[];
+  targetPlatforms: string[];
+  scheduledFor?: string | null;
+  assetTargets?: Record<string, string>;
+  perPlatformOverrides?: Record<string, string>;
+}
+
+export interface PublishOutboundPostResult {
+  activityIds: string[];
+  scheduledFor: string | null;
+}
+
+export interface OutboundActivityItem {
+  id: string;
+  tenantId: string;
+  userId: string;
+  providerId: string;
+  targetAssetId?: string | null;
+  targetAssetType?: string | null;
+  activityType: string;
+  body: string;
+  status: 'scheduled' | 'publishing' | 'published' | 'pending' | 'sent' | 'failed' | 'cancelled';
+  externalId?: string | null;
+  externalUrl?: string | null;
+  errorCode?: string | null;
+  scheduledFor?: string | null;
+  publishedAt?: string | null;
+  createdAt: string;
+  sentAt?: string | null;
+  failedAt?: string | null;
+  cancelledAt?: string | null;
+}
+
+export interface ConnectorTargetItem {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface MediaUploadResult {
+  mediaId: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+/**
+ * Story 13.10 (ADR-0115) — uploads a media file to tenant-scoped Blob Storage through
+ * social-listening-core's POST /v1/outbound/media endpoint, returning a 24-hour presigned URL.
+ */
+export async function uploadOutboundMedia(formData: FormData): Promise<MediaUploadResult> {
+  const response = await authenticatedCoreFetch('/v1/outbound/media', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to upload media: ${response.status}`);
+  }
+  return (await response.json()) as MediaUploadResult;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — creates immediate or scheduled outbound posts across platforms.
+ */
+export async function publishOutboundPost(input: PublishOutboundPostInput): Promise<PublishOutboundPostResult> {
+  const response = await authenticatedCoreFetch('/v1/outbound/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to publish outbound post: ${response.status}`);
+  }
+  return (await response.json()) as PublishOutboundPostResult;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — lists outbound posts queue with optional status filter.
+ */
+export async function listOutboundPosts(options?: {
+  status?: string;
+  providerId?: string;
+  limit?: number;
+}): Promise<{ posts: OutboundActivityItem[]; count: number }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set('status', options.status);
+  if (options?.providerId) params.set('providerId', options.providerId);
+  if (options?.limit) params.set('limit', String(options.limit));
+
+  const response = await authenticatedCoreFetch(`/v1/outbound/posts?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list outbound posts: ${response.status}`);
+  }
+  return (await response.json()) as { posts: OutboundActivityItem[]; count: number };
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — cancels a scheduled outbound post.
+ */
+export async function cancelOutboundActivity(activityId: string): Promise<OutboundActivityItem> {
+  const response = await authenticatedCoreFetch(`/v1/outbound/activities/${encodeURIComponent(activityId)}/cancel`, {
+    method: 'PATCH',
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to cancel outbound activity: ${response.status}`);
+  }
+  return (await response.json()) as OutboundActivityItem;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — reschedules a scheduled outbound post.
+ */
+export async function rescheduleOutboundActivity(
+  activityId: string,
+  scheduledFor: string
+): Promise<OutboundActivityItem> {
+  const response = await authenticatedCoreFetch(`/v1/outbound/activities/${encodeURIComponent(activityId)}/reschedule`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scheduledFor }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to reschedule outbound activity: ${response.status}`);
+  }
+  return (await response.json()) as OutboundActivityItem;
+}
+
+/**
+ * Story 11.7 / 11.8 (ADR-0098) — gets available targets for an asset-targeting platform.
+ */
+export async function getConnectorTargets(platformId: string): Promise<ConnectorTargetItem[]> {
+  const response = await authenticatedCoreFetch(`/v1/connectors/${encodeURIComponent(platformId)}/targets`);
+  if (!response.ok) {
+    return [];
+  }
+  const payload = (await response.json()) as { targets?: ConnectorTargetItem[] };
+  return Array.isArray(payload.targets) ? payload.targets : [];
+}
+
+export type AdminInboxStatus = 'open' | 'assigned' | 'snoozed' | 'resolved';
+export type AdminInboxPriority = 'urgent' | 'high' | 'normal' | 'low';
+
+export interface AdminInboxItem {
+  id: string;
+  tenantId: string;
+  postId: string;
+  watchlistId?: string | null;
+  providerId: string;
+  status: AdminInboxStatus;
+  priority: AdminInboxPriority;
+  assignedTo?: string | null;
+  snoozedUntil?: string | null;
+  notes?: string | null;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  post?: {
+    id: string;
+    rawPayload?: any;
+    publishedAt?: string;
+    sentiment?: string;
+    reach?: number;
+  };
+}
+
+export interface ListInboxItemsOptions {
+  status?: string;
+  priority?: string;
+  assignedTo?: string;
+  providerId?: string;
+  watchlistId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — lists triage inbox items with filters.
+ */
+export async function listInboxItems(
+  options?: ListInboxItemsOptions
+): Promise<{ items: AdminInboxItem[]; total: number }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set('status', options.status);
+  if (options?.priority) params.set('priority', options.priority);
+  if (options?.assignedTo) params.set('assignedTo', options.assignedTo);
+  if (options?.providerId) params.set('providerId', options.providerId);
+  if (options?.watchlistId) params.set('watchlistId', options.watchlistId);
+  if (options?.limit) params.set('limit', String(options.limit));
+  if (options?.offset) params.set('offset', String(options.offset));
+
+  const response = await authenticatedCoreFetch(`/v1/inbox?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list inbox items: ${response.status}`);
+  }
+  return (await response.json()) as { items: AdminInboxItem[]; total: number };
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — gets a single inbox item.
+ */
+export async function getInboxItem(id: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — updates notes/tags/priority on an inbox item.
+ */
+export async function updateInboxItem(
+  id: string,
+  updates: { notes?: string; tags?: string[]; priority?: AdminInboxPriority }
+): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — assigns an inbox item.
+ */
+export async function assignInboxItem(id: string, assignedTo: string | null): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/assign`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ assignedTo }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to assign inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — snoozes an inbox item.
+ */
+export async function snoozeInboxItem(id: string, snoozedUntil: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/snooze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ snoozedUntil }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to snooze inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — marks an inbox item resolved.
+ */
+export async function resolveInboxItem(id: string, notes?: string): Promise<AdminInboxItem> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/resolve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to resolve inbox item: ${response.status}`);
+  }
+  return (await response.json()) as AdminInboxItem;
+}
+
+/**
+ * Story 11.9 / 11.10 (ADR-0099) — replies to an inbox item and marks it resolved.
+ */
+export async function replyToInboxItem(
+  id: string,
+  body: string
+): Promise<{ activityId: string; externalId: string | null; externalUrl: string | null; status: 'resolved' }> {
+  const response = await authenticatedCoreFetch(`/v1/inbox/${encodeURIComponent(id)}/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed to reply to inbox item: ${response.status}`);
+  }
+  return (await response.json()) as { activityId: string; externalId: string | null; externalUrl: string | null; status: 'resolved' };
+}
+
+export interface MentionSuggestionItem {
+  authorId: string;
+  authorName: string;
+  platformId: string;
+  handle: string;
+  reason: string;
+  matchSource: 'topic' | 'rag' | 'keyword';
+  confidence: number;
+}
+
+export interface GetMentionSuggestionsParams {
+  text: string;
+  targetPlatforms: string[];
+  watchlistId?: string;
+  maxSuggestions?: number;
+}
+
+/**
+ * Story 11.11 / 11.12 (ADR-0100) — gets author mention suggestions for composer drafts.
+ */
+export async function getMentionSuggestions(
+  params: GetMentionSuggestionsParams
+): Promise<MentionSuggestionItem[]> {
+  const response = await authenticatedCoreFetch(`/v1/composer/mention-suggestions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    return [];
+  }
+  const payload = (await response.json()) as { suggestions?: MentionSuggestionItem[] };
+  return Array.isArray(payload.suggestions) ? payload.suggestions : [];
+}
+
+export interface SocialConnectorCapabilities {
+  sourceType: 'social' | 'news' | 'forum' | 'review' | 'broadcast' | 'blog' | 'wiki';
+  poll: boolean | { cadenceMs: number; supportsTimeWindow: boolean };
+  count?: { supportsExactCount: boolean };
+  publish?: { supportsScheduling: boolean; supportedAssetTypes: string[] };
+  reply?: boolean;
+  backfill?: { supportsHistorical: boolean; maxLookbackDays: number };
+}
+
+export interface ConnectorCapabilitySummary {
+  platformId: string;
+  name: string;
+  authMode: 'oauth' | 'api_key' | 'none';
+  capabilities: SocialConnectorCapabilities;
+}
+
+/**
+ * Story 12.1 / 12.2 (ADR-0101) — gets dynamic capability matrix for all connectors.
+ */
+export async function getConnectorCapabilities(): Promise<{ connectors: ConnectorCapabilitySummary[] }> {
+  const response = await authenticatedCoreFetch('/v1/connectors/capabilities', { method: 'GET' });
+  if (!response.ok) {
+    return { connectors: [] };
+  }
+  const payload = (await response.json()) as { connectors?: ConnectorCapabilitySummary[] };
+  return { connectors: Array.isArray(payload.connectors) ? payload.connectors : [] };
+}
+
+// ─── Story 12.8 (ADR-0104): Topic curation API client ────────────────────────
+
+export interface TopicRecord {
+  id: string;
+  tenant_id: string;
+  name: string;
+  slug: string;
+  status: 'active' | 'merged' | 'hidden';
+  merged_into_topic_id: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TopicsListResponse {
+  topics: TopicRecord[];
+}
+
+/**
+ * GET /v1/topics — lists all active topics for the current tenant.
+ */
+export async function listTopics(token: string): Promise<TopicsListResponse> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`listTopics failed: ${response.status}`);
+  return response.json() as Promise<TopicsListResponse>;
+}
+
+/**
+ * POST /v1/topics/:id/rename — renames a topic and updates its slug.
+ */
+export async function renameTopic(
+  token: string,
+  id: string,
+  name: string
+): Promise<TopicRecord> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/rename`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error(`renameTopic failed: ${response.status}`);
+  return response.json() as Promise<TopicRecord>;
+}
+
+/**
+ * POST /v1/topics/:id/merge — merges a source topic into a target topic.
+ */
+export async function mergeTopic(
+  token: string,
+  id: string,
+  targetTopicId: string
+): Promise<{ ok: true; target: TopicRecord }> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/merge`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetTopicId }),
+  });
+  if (!response.ok) throw new Error(`mergeTopic failed: ${response.status}`);
+  return response.json() as Promise<{ ok: true; target: TopicRecord }>;
+}
+
+/**
+ * POST /v1/topics/:id/hide — hides a topic so it is excluded from default list.
+ */
+export async function hideTopic(
+  token: string,
+  id: string
+): Promise<TopicRecord> {
+  const response = await fetch(`${getBaseUrl()}/v1/topics/${encodeURIComponent(id)}/hide`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`hideTopic failed: ${response.status}`);
+  return response.json() as Promise<TopicRecord>;
+}
+
+// ─── Story 12.10 (ADR-0105): Dashboard API client ────────────────────────────
+
+export interface DashboardQueryParamsInput {
+  watchlistId?: string | null;
+  selectedTopic?: string | null;
+  timeRange?: string | null;
+  granularity?: string | null;
+  includeExplanation?: boolean;
+}
+
+/**
+ * GET /v1/analytics/dashboard — fetches typed dashboard widgets and filter metadata.
+ */
+export async function fetchDashboardData(
+  token: string,
+  params: DashboardQueryParamsInput = {}
+): Promise<{ widgets: any[]; filters: any }> {
+  const q = new URLSearchParams();
+  if (params.watchlistId) q.set('watchlistId', params.watchlistId);
+  if (params.selectedTopic) q.set('selectedTopic', params.selectedTopic);
+  if (params.timeRange) q.set('timeRange', params.timeRange);
+  if (params.granularity) q.set('granularity', params.granularity);
+  if (params.includeExplanation) q.set('includeExplanation', 'true');
+
+  const url = `${getBaseUrl()}/v1/analytics/dashboard${q.toString() ? `?${q.toString()}` : ''}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`fetchDashboardData failed: ${response.status}`);
+  return response.json();
+}
+
+// ─── Story 12.12 (ADR-0106): Webhook Management API client ────────────────────
+
+export interface WebhookSubscriptionItem {
+  id: string;
+  tenant_id: string;
+  url: string;
+  secret: string;
+  events: string[];
+  enabled: boolean;
+  retry_count: number;
+  created_at: string;
+  updated_at: string;
+  last_delivery_status?: 'success' | 'failed' | 'pending';
+}
+
+export interface CreateWebhookSubscriptionInput {
+  url: string;
+  events: string[];
+  secret?: string;
+  enabled?: boolean;
+}
+
+export interface UpdateWebhookSubscriptionInput {
+  url?: string;
+  events?: string[];
+  secret?: string;
+  enabled?: boolean;
+}
+
+export async function listWebhooks(token: string): Promise<WebhookSubscriptionItem[]> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`listWebhooks failed: ${res.status}`);
+  const data = await res.json();
+  return data.subscriptions || [];
+}
+
+export async function createWebhook(
+  token: string,
+  input: CreateWebhookSubscriptionInput
+): Promise<WebhookSubscriptionItem> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`createWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+export async function updateWebhook(
+  token: string,
+  id: string,
+  input: UpdateWebhookSubscriptionInput
+): Promise<WebhookSubscriptionItem> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`updateWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteWebhook(token: string, id: string): Promise<void> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`deleteWebhook failed: ${res.status}`);
+}
+
+export async function testWebhook(token: string, id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${getBaseUrl()}/v1/webhooks/subscriptions/${id}/test`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`testWebhook failed: ${res.status}`);
+  return res.json();
+}
+
+// ─── Story 12.16 (ADR-0108): Influencer Discovery API client ─────────────────
+
+export interface InfluencerItem {
+  authorId: string;
+  authorName: string;
+  platformId: string;
+  publicUrl?: string;
+  reachScore: number;
+  engagementScore: number;
+  authenticityScore: number;
+  influenceScore: number;
+  topTopics: Array<{ topicId: string; topicName: string; relevance: number }>;
+  recentPosts: number;
+}
+
+export interface InfluencerQueryParamsInput {
+  topicId?: string;
+  platformId?: string;
+  watchlistId?: string;
+  minScore?: number;
+  sort?: 'influence' | 'reach' | 'engagement' | 'authenticity' | 'recentPosts';
+  limit?: number;
+}
+
+export interface InfluencerScoreExplanation {
+  authorId: string;
+  influenceScore: number;
+  breakdown: {
+    reach: { score: number; weight: number; weighted: number };
+    engagement: { score: number; weight: number; weighted: number };
+    authenticity: { score: number; weight: number; weighted: number };
+    topicRelevance: { score: number; weight: number; weighted: number };
+  };
+}
+
+export async function fetchInfluencers(
+  token: string,
+  params: InfluencerQueryParamsInput = {}
+): Promise<{ influencers: InfluencerItem[] }> {
+  const q = new URLSearchParams();
+  if (params.topicId) q.set('topicId', params.topicId);
+  if (params.platformId) q.set('platformId', params.platformId);
+  if (params.watchlistId) q.set('watchlistId', params.watchlistId);
+  if (params.minScore !== undefined) q.set('minScore', params.minScore.toString());
+  if (params.sort) q.set('sort', params.sort);
+  if (params.limit) q.set('limit', params.limit.toString());
+
+  const url = `${getBaseUrl()}/v1/influencers${q.toString() ? `?${q.toString()}` : ''}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`fetchInfluencers failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchInfluencerExplanation(
+  token: string,
+  authorId: string
+): Promise<InfluencerScoreExplanation> {
+  const res = await fetch(`${getBaseUrl()}/v1/influencers/${authorId}/explain`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`fetchInfluencerExplanation failed: ${res.status}`);
+  return res.json();
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

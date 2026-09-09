@@ -104,3 +104,18 @@ None of this project's existing enforcement layers would have caught it: `enforc
   - Zombie background network requests on unmount.
 - **Mechanism & Trade-offs**: AI research output lives strictly in ephemeral React component state. Panel close immediately releases memory; in-flight requests abort their `AbortController`.
 - **Evidence / Verified Commits**: `64ac1f3` (Story 6.41 Deep Research panel UI).
+
+### 4. Normalized Deterministic Request-Hash Caching & Provider-Agnostic Fallback
+- **Architecture Pattern Name**: Canonical Hash Caching with Resilient Multi-Provider Fallback
+- **Applicable Domains**: Composer Deep Research Caching (`ADR-0121`), Multi-Search Connectors (`ADR-0120`), AI Prompt Summaries (`ADR-0113`).
+- **Governing Decision**: `ADR-0120`, `ADR-0121` (Amended per `ADR-0122`).
+- **Anti-Patterns Prevented**:
+  - Cache misses caused by semantically identical queries with cosmetic differences (differing case, extraneous whitespace, permuted provider lists).
+  - Cross-tenant data leakage or cache poisoning in multi-tenant environments.
+  - Complete failure of research pipelines when a single upstream search provider encounters rate limits or downtime.
+- **Mechanism & Trade-offs**:
+  - Deterministic pre-hash canonicalization: trims and lowercases query strings, collapses multi-spaces, and sorts provider IDs alphabetically prior to computing SHA-256 hash.
+  - Multi-tenant RLS isolation: `research_cache` and `research_runs` tables enforce tenant boundaries via Postgres Row-Level Security, preventing cross-tenant cache hits or telemetry leakage.
+  - Explicit cache bypass: Supports `?refresh=true` re-trigger capability to force a fresh execution while overwriting outdated cached records.
+  - Provider fallback abstraction: `SearchProviderConnector` standardizes external search APIs behind unified capability probing and graceful fallback.
+- **Evidence / Verified Commits**: `c903723` (Story 14.3 SearchProviderConnector abstraction), `d2bd779` (Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry).

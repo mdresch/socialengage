@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 
 /**
  * Telemetry Synthesis Engine (ADR-0122 / FDD-0122)
@@ -27,12 +27,17 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const DEFAULT_VAULT = 'c:\\Users\\menno\\Documents\\Second Brain';
+const DEFAULT_VAULT = fs.existsSync('C:\\Users\\menno\\Documents\\Second Brain')
+  ? 'C:\\Users\\menno\\Documents\\Second Brain'
+  : (fs.existsSync('C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain')
+      ? 'C:\\Users\\MennoDrescher\\source\\repos\\obsidian brain'
+      : path.resolve(rootDir, '..', 'Second Brain'));
 
 // ─── CLI parsing ───────────────────────────────────────────────────────────
 
@@ -98,12 +103,12 @@ function capture(args) {
 
   // 2. Filtered healing/fix commits with full messages
   console.log('   🩹 Extracting healing & fix commits...');
-  const healLog = git('log -n 100 --format="%H%n%s%n%b%n---" --grep="heal(" --grep="fix(" --all-match');
+  const healLog = git('log -n 100 --format="%H%n%s%n%b%n---" --grep="heal(" --grep="fix("');
   write(path.join(repoDir, 'healing-commits.txt'), healLog || '(none found)');
 
   // 3. Feature commits for this epic
   console.log('   ✨ Extracting feature commits...');
-  const featLog = git(`log -n 100 --format="%H|%ai|%s" --grep="Story ${epic}." --grep="feat(" --all-match`);
+  const featLog = git(`log -n 150 --format="%H|%ai|%s" --grep="Story ${epic}." --grep="epic-${epic}"`);
   write(path.join(repoDir, 'feature-commits.txt'), featLog || '(none found)');
 
   // 4. Implementation log excerpt (last 200 lines — covers recent stories)
@@ -281,6 +286,49 @@ function compile(args) {
   const vaultOutPath = path.join(sprintDir, `Self-Learning-Synthesis-Epic-${epic}.md`);
   write(vaultOutPath, synthesis);
   console.log(`   📄 Vault artifact:   ${vaultOutPath}`);
+
+  // Write to wiki 06 Synthesis & Lessons Learned with frontmatter
+  const wikiDir = path.join(args.vault, 'wiki', 'Projects', 'SocialEngage', '06 Synthesis & Lessons Learned');
+  const wikiOutPath = path.join(wikiDir, `Self-Learning-Synthesis-Epic-${epic}.md`);
+  const now = new Date().toISOString();
+  const entityId = crypto.createHash('md5').update(`Self-Learning-Synthesis-Epic-${epic}`).digest('hex');
+  const wikiContent = `---
+title: "Self-Learning-Synthesis-Epic-${epic}"
+artifact_id: "Self-Learning-Synthesis-Epic-${epic}"
+entity_id: "${entityId}"
+version: "1.0.0"
+source_document: "docs/synthesis/Self-Learning-Synthesis-Epic-${epic}.md"
+created_at: "${manifest.capturedAt || now}"
+modified_at: "${now}"
+authority_level: 1
+confidence_score: 1.0
+type: "concept"
+status: "Synced"
+pm_class: "GovernanceArtifact"
+pm_subclass: "KnowledgeMap"
+pm_relationships:
+  - influences
+  - tracedTo
+domain_cluster: "Self-Learning, Telemetry & Operations"
+dmbok_category: "Data Governance"
+pmbok_category: "Integration Management"
+babok_category: "Solution Evaluation"
+aliases:
+  - "Self-Learning-Synthesis-Epic-${epic}"
+  - "Self-Learning Synthesis: Epic ${epic}"
+tags:
+  - concept
+  - synthesis
+  - telemetry
+  - self-learning
+  - dmbok/data-governance
+  - project/socialengage
+---
+
+${synthesis}
+`;
+  write(wikiOutPath, wikiContent);
+  console.log(`   📄 Wiki artifact:    ${wikiOutPath}`);
 
   // Print actionable recommendations
   printRecommendations(telemetry, epic);
@@ -535,7 +583,11 @@ const epicNames = {
   '7': 'Platform Admin UI',
   '8': 'Analytics Dashboard',
   '9': 'Onboarding & Watchlists',
-  '14': 'Self-Learning Synthesis',
+  '10': 'Analytics, Operations, and Trust',
+  '11': 'Topic Evolution & Real-Time Intelligence',
+  '12': 'Foundation Depth and AI Refinements',
+  '13': 'Sub-Decisions, v2 Features, and Closing Loops',
+  '14': 'Continuous Self-Learning Synthesis & Feedback',
 };
 
 function printRecommendations(t, epic) {

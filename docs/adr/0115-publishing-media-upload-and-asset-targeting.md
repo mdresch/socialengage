@@ -1,6 +1,6 @@
-# ADR-0115: Publishing — media upload and asset targeting
+﻿# ADR-0115: Publishing — media upload and asset targeting
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the media upload flow, per-asset targeting, and multi-asset dispatch rules for `POST /v1/outbound/posts` (ADR-0098).
 
@@ -103,12 +103,12 @@ Response:
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should video upload be supported in v1, or deferred to v2?
-- How is asset expiry handled? Should unreferenced media be cleaned up after 30 days?
-- Should `media_assets` include a thumbnail or preview for the UI?
-- How does the composer preview a multi-image post across different platforms?
+- [ ] **[Q-0115-1]** Should video upload be supported in v1, or deferred to v2?
+- [ ] **[Q-0115-2]** How is asset expiry handled? Should unreferenced media be cleaned up after 30 days?
+- [ ] **[Q-0115-3]** Should `media_assets` include a thumbnail or preview for the UI?
+- [ ] **[Q-0115-4]** How does the composer preview a multi-image post across different platforms?
 
 ---
 

@@ -33,6 +33,14 @@ description: The LinkedIn SocialConnector (LinkedIn REST API v2, confidential cl
 - **Rest.li 403 semantics:** a 403 from LinkedIn may mean either a permission error or a quota/rate-limit error. `publishToLinkedIn()` inspects the response message for `quota|rate|throttle|limit` and classifies as `rate_limited`; any other 403 is `missing_permission`. Re-verify this heuristic against live responses before relying on it for real traffic.
 - **`linkedinConnector.publish()` is the first real non-Facebook call site for `outboundPublishService.invoke()` (`outbound-post`)**, which gates the request under the `outbound_post` key and returns an `outbound_activities`-shaped `post` row.
 
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26 — filling a gap in this component's own convention coverage, not a new claim: the underlying relationship was already described in prose in "How to extend this safely" above; this section makes it findable via `grep "^## Relations"` per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention.)*
+
+- Calls into `src/connectors/requestGate.ts` (`acquireForProvider()` for ingestion polling) — pre-existing, predates this convention.
+- `linkedinConnector.publish()` is called by `src/outbound/outboundPublishService.ts`'s `invoke()`, reached at the real production call site `src/http/versions/v1/outboundPostsRouter.ts` (`getSocialConnector(providerId)` resolves the connector from `bootstrapConnectors.ts`'s real registry, not a test double) — relationship asserted by `story-2.30.linkedin-post-publishing.contract.test.ts`.
+- `linkedinOAuthRouter.ts` calls this connector's token-exchange/credential functions directly for the OAuth callback flow.
+
 ## Registration transparency (ADR-0048)
 
 - **Registration location:** `src/connectors/linkedin/linkedinConnector.ts` (connector object) and `src/connectors/linkedin/pollLinkedIn.ts`, wired into `bootstrapConnectors.ts` via `registerSocialConnector({ ...linkedinConnector, pollUser: pollLinkedIn, pollCadenceMs: ONE_HOUR_MS })`.

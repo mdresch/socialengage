@@ -65,7 +65,7 @@ Dumps raw telemetry from the git repo into the Second Brain vault's `raw/` folde
 **`--compile --epic <N> [--vault <path>]`**
 Reads the latest capture from `raw/`, parses the telemetry, and generates:
 - `docs/synthesis/Self-Learning-Synthesis-Epic-<N>.md` (in the repo).
-- `Sprint - Social Engage - Epic <N>/Outputs/Self-Learning-Synthesis-Epic-<N>.md` (in the vault).
+- `wiki/Projects/Social Engage/Guides & Operations/Self-Learning-Synthesis-Epic-<N>.md` (in the Second Brain vault).
 - Console output with actionable recommendations: healing commits to verify in gotchas, stories to check for ADR annotations, and a prompt to check for new cross-cutting patterns.
 
 The generated synthesis artifact includes: a telemetry summary table, healing/fix commit listing, feature commit listing, contract test inventory grouped by directory, ADR annotation status (annotated vs. unannotated), environment gotchas section summary, and synthesis recommendations.

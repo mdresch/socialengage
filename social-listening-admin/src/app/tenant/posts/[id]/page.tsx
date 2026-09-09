@@ -43,7 +43,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <main>
-      <h1>{title}</h1>
+      <h1>{title || `${provider ? provider.replace(/_/g, ' ') : 'Social'} Post`}</h1>
       <p>Provider: {provider}</p>
       {post.bodyMarkdown ? <ReactMarkdown>{post.bodyMarkdown}</ReactMarkdown> : snippet && <p>{snippet}</p>}
       <time>{post.publishedAt ?? 'unknown'}</time>

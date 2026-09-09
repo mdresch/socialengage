@@ -295,17 +295,17 @@ describe('Story 8.1 — Analytics dashboard shell, global date-range filter, Ove
       const Page = await renderPageAs('../../src/app/tenant/analytics/page', () =>
         new Response(JSON.stringify({ posts: [], nextCursor: null }), { status: 200 })
       );
-      const element = await Page({ searchParams: Promise.resolve({ tab: 'location' }) });
+      const element = await Page({ searchParams: Promise.resolve({ tab: 'invalid-tab' }) });
       expect(element.props.children.props.initialTab).toBe('overview');
     });
 
-    it('AnalyticsClient.tsx defines all four real tabs and structurally excludes a Location tab', () => {
+    it('AnalyticsClient.tsx defines all five real tabs including Location', () => {
       const source = readSrc(...clientPath);
       expect(source).toMatch(/id:\s*'overview'/);
       expect(source).toMatch(/id:\s*'sentiment'/);
       expect(source).toMatch(/id:\s*'conversations'/);
       expect(source).toMatch(/id:\s*'sources'/);
-      expect(source.toLowerCase()).not.toContain('location');
+      expect(source).toMatch(/id:\s*'location'/);
     });
 
     it('AnalyticsClient.tsx reflects the active tab in a real ?tab= query-string update', () => {

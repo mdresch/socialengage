@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ProspectingList, ProspectingListEntry } from '@/lib/core-client';
+import { CRMHandoffModal } from '@/components/crm/CRMHandoffModal';
+import { ProspectingListCrmPushModal } from './ProspectingListCrmPushModal';
 
 const STAGE_LABELS: Record<string, string> = {
   new: 'New Lead',
@@ -24,6 +26,7 @@ interface ProspectingListDetailViewProps {
   userId: string;
   initialList: ProspectingList;
   initialEntries: ProspectingListEntry[];
+  featureGates?: Record<string, any>;
 }
 
 export function ProspectingListDetailView({
@@ -31,11 +34,14 @@ export function ProspectingListDetailView({
   userId,
   initialList,
   initialEntries,
+  featureGates = {},
 }: ProspectingListDetailViewProps) {
   const [list, setList] = useState<ProspectingList>(initialList);
   const [entries, setEntries] = useState<ProspectingListEntry[]>(initialEntries);
   const [isOwner, setIsOwner] = useState(initialList.owner_id === userId);
   const [editing, setEditing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [pushModalOpen, setPushModalOpen] = useState(false);
   const [editName, setEditName] = useState(initialList.name);
   const [editDesc, setEditDesc] = useState(initialList.description || '');
   const [editShared, setEditShared] = useState(initialList.shared);
@@ -46,6 +52,7 @@ export function ProspectingListDetailView({
   const [editNotes, setEditNotes] = useState('');
   const [savingEntry, setSavingEntry] = useState(false);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [crmAuthor, setCrmAuthor] = useState<{ authorId: string; authorName: string; postExcerpt?: string } | null>(null);
 
   const refreshEntries = useCallback(async () => {
     try {
@@ -116,6 +123,35 @@ export function ProspectingListDetailView({
     }
   };
 
+  const canExport = isOwner && featureGates.exports !== false;
+  const canPush = isOwner && featureGates.prospecting_crm !== false;
+
+  const handleExportCsv = async () => {
+    if (!canExport) return;
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/prospecting-lists/${listId}/export.csv?limit=5000`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error || 'Failed to export prospecting list');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prospecting-list-${list.name || listId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(err.message || 'Failed to export prospecting list');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div>
       {/* Back nav */}
@@ -182,9 +218,32 @@ export function ProspectingListDetailView({
           </div>
         )}
         {isOwner && !editing && (
-          <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>
-            Edit
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            {canExport && (
+              <button
+                id="btn-export-csv"
+                className="btn btn-secondary btn-sm"
+                onClick={handleExportCsv}
+                disabled={exporting}
+                aria-label="Export CSV"
+              >
+                {exporting ? 'Exporting…' : 'Export CSV'}
+              </button>
+            )}
+            {canPush && (
+              <button
+                id="btn-push-crm"
+                className="btn btn-primary btn-sm"
+                onClick={() => setPushModalOpen(true)}
+                aria-label="Push to CRM"
+              >
+                Push to CRM
+              </button>
+            )}
+            <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>
+              Edit
+            </button>
+          </div>
         )}
       </div>
 
@@ -305,6 +364,14 @@ export function ProspectingListDetailView({
                               <button
                                 className="btn btn-secondary btn-sm"
                                 style={{ fontSize: '0.75rem' }}
+                                title="Push author lead to CRM"
+                                onClick={() => setCrmAuthor({ authorId: entry.author_id, authorName: entry.author_id, postExcerpt: entry.notes || undefined })}
+                              >
+                                💼 CRM
+                              </button>
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.75rem' }}
                                 onClick={() => handleStartEditEntry(entry)}
                               >
                                 Edit
@@ -329,6 +396,22 @@ export function ProspectingListDetailView({
           </table>
         </div>
       )}
+
+      <CRMHandoffModal
+        isOpen={Boolean(crmAuthor)}
+        onClose={() => setCrmAuthor(null)}
+        authorId={crmAuthor?.authorId}
+        authorName={crmAuthor?.authorName}
+        postExcerpt={crmAuthor?.postExcerpt}
+        defaultEntityType="lead"
+      />
+
+      <ProspectingListCrmPushModal
+        isOpen={pushModalOpen}
+        onClose={() => setPushModalOpen(false)}
+        listId={listId}
+        entries={entries}
+      />
     </div>
   );
 }

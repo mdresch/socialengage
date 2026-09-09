@@ -5,6 +5,10 @@ description: RAG vector-store RLS, metadata isolation, and lifecycle management 
 
 # RAG Vector Store RLS and Metadata Lifecycle
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-9/story-9.9.rag-vector-rls.contract.test.ts` — Story 9.9 contract test.
+
 ## What this is
 
 Governs the tenant isolation invariants, query-time metadata pre-filtering, in-place metadata updates (HITL overrides), and orphan-chunk reconciliation for the multi-tenant vector layer in `social-listening-core`.

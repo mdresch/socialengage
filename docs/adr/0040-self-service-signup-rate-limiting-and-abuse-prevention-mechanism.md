@@ -48,12 +48,12 @@ A `429` rejection under this ADR's own mechanism is a distinct outcome from ADR-
 - **A third-party bot/abuse-detection service (e.g. a CAPTCHA or a managed WAF rate-limiting product)** — considered; not chosen for v1, consistent with this project's own repeatedly-applied "no new external vendor machinery until a demonstrated need" discipline (ADR-0031 §3, ADR-0020's deferred distributed gate) — a self-contained counter is cheaper to build and sufficient for this project's own current, solo-operated scale; revisit if real abuse volume ever demonstrates this mechanism's own limits.
 - **Rely solely on ADR-0037 §8a's email-OTP-verification precondition, with no additional rate limiting at all** — rejected: ADR-0037 §7 itself already names this as insufficient ("narrowed, not closed" by §8a) — a real mailbox-controlling attacker (e.g. a role account like `info@acme.com`, or a script with access to many disposable-but-real mailboxes) is still unaffected by OTP verification alone.
 
-## Open Questions for decision
+## Open Questions
 
-- **Whether rejected-attempt counters (§4) should also flow into `platform_admin_audit_log`** for Platform Admin's own future review, alongside ADR-0037 §8c's separately-scoped escalation signal — not decided here, a real possible future enhancement.
-- **The exact numeric thresholds (§3)** — template defaults, explicitly revisable per this ADR's own Amendment Log once real usage data exists.
-- **Whether this mechanism should share infrastructure with a future, more general API-level rate-limiter** if this project ever needs one beyond this one endpoint — not designed here, named only so it isn't lost if that broader need materializes later.
-- **The exact storage mechanism (in-process vs. shared)** — an implementation default, following ADR-0020's own precedent of deferring distributed state until a real multi-instance deployment exists.
+- [ ] **[Q-0040-1]** **Whether rejected-attempt counters (§4) should also flow into `platform_admin_audit_log`** for Platform Admin's own future review, alongside ADR-0037 §8c's separately-scoped escalation signal — not decided here, a real possible future enhancement.
+- [ ] **[Q-0040-2]** **The exact numeric thresholds (§3)** — template defaults, explicitly revisable per this ADR's own Amendment Log once real usage data exists.
+- [ ] **[Q-0040-3]** **Whether this mechanism should share infrastructure with a future, more general API-level rate-limiter** if this project ever needs one beyond this one endpoint — not designed here, named only so it isn't lost if that broader need materializes later.
+- [ ] **[Q-0040-4]** **The exact storage mechanism (in-process vs. shared)** — an implementation default, following ADR-0020's own precedent of deferring distributed state until a real multi-instance deployment exists.
 
 ## Amendment Log
 

@@ -5,6 +5,10 @@ description: RAG post chunking and embedding pipeline (Story 9.8, ADR-0082, BRD-
 
 # RAG Post Chunking and Embedding Pipeline
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-9/story-9.8.rag-chunking-pipeline.contract.test.ts` — Story 9.8 contract test.
+
 ## What this is
 
 An asynchronous post chunking and embedding pipeline in `social-listening-core` that splits incoming posts into overlapping chunks, generates vector embeddings, upserts to vector storage, and tracks synchronization status in `rag_chunks_sync`.

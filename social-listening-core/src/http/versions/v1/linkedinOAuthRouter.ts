@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireTenantUserIdentity } from '../../auth/requireTenantUser';
 import { storeCredential } from '../../../credentials/credentialStore';
+import { getKeyVaultKeyId } from '../../../credentials/keyVaultProvider';
 import { setConnectorActivation } from '../../../connectors/connectorActivationStore';
 import {
   generateState,
@@ -53,7 +54,7 @@ linkedinOAuthRouter.post('/exchange', async (req, res) => {
     return;
   }
 
-  const keyVaultKeyId = process.env.KEY_VAULT_KEY_ID;
+  const keyVaultKeyId = getKeyVaultKeyId();
   if (!keyVaultKeyId) {
     res.status(500).json({ error: 'Credential storage is not configured (KEY_VAULT_KEY_ID missing).' });
     return;

@@ -169,4 +169,13 @@ if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/synthesize-telemetry.m
   fi
 fi
 
+# ─── Automatic Second Brain & Knowledge Graph Synchronization ──────────
+# Updates the Second Brain Obsidian vault so the Knowledge Graph view,
+# Dataview tables, and MOCs stay continuously in sync on every commit.
+# Mirrors committed walkthroughs and plans, recompiles 4-way traceability,
+# refreshes telemetry, and stamps commit hash provenance.
+if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/sync-committed-to-secondbrain.mjs" ]; then
+  node scripts/sync-committed-to-secondbrain.mjs || true
+fi
+
 exit 0

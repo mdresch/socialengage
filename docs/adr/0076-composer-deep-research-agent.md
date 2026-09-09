@@ -142,11 +142,11 @@ Deep research consumes a separate `RequestGate` key per `(tenantId, providerId, 
 
 ## Open Questions
 
-1. **Exact endpoint path:** `POST /v1/composer/research` vs. `POST /v1/posts/research` vs. `POST /v1/outbound/research`. Decide at implementation time. The proposal leans toward `/v1/composer/research` because the consumer is the composer and the operation is not a published post.
-2. **Generalize search to a shared `SearchProvider` interface?** If other features later want one-off search, a future ADR should extract `searchForResearch` into a first-class `SearchProviderConnector` abstraction rather than re-implementing it per connector.
-3. **Azure OpenAI `reasoning_effort` setting:** Research may benefit from a higher reasoning effort than `enrichPost()`; whether to make this a tenant setting or a fixed default is left for the implementation contract.
-4. **Citation rendering in the UI:** Whether sources are shown as a simple list, expandable cards, or linked inline within the `contextSummary` is a UI/UX decision, not an architectural one.
-5. **Caching and re-trigger:** Should repeated research for the same text be cached per tenant? v1 says no; a later ADR can decide if costs justify it.
+- [ ] **[Q-0076-1]** **Exact endpoint path:** `POST /v1/composer/research` vs. `POST /v1/posts/research` vs. `POST /v1/outbound/research`. Decide at implementation time. The proposal leans toward `/v1/composer/research` because the consumer is the composer and the operation is not a published post.
+- [ ] **[Q-0076-2]** **Generalize search to a shared `SearchProvider` interface?** If other features later want one-off search, a future ADR should extract `searchForResearch` into a first-class `SearchProviderConnector` abstraction rather than re-implementing it per connector.
+- [ ] **[Q-0076-3]** **Azure OpenAI `reasoning_effort` setting:** Research may benefit from a higher reasoning effort than `enrichPost()`; whether to make this a tenant setting or a fixed default is left for the implementation contract.
+- [ ] **[Q-0076-4]** **Citation rendering in the UI:** Whether sources are shown as a simple list, expandable cards, or linked inline within the `contextSummary` is a UI/UX decision, not an architectural one.
+- [ ] **[Q-0076-5]** **Caching and re-trigger:** Should repeated research for the same text be cached per tenant? v1 says no; a later ADR can decide if costs justify it.
 
 ## Resolved Questions
 

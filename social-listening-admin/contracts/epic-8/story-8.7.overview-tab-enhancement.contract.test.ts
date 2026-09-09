@@ -312,10 +312,12 @@ describe('Story 8.7 — Overview Tab Enhancement contract', () => {
   });
 
   describe('AC (Top Authors Feed): real post-count ranking, not sentiment-bucketed', () => {
+    // ADR-0141 Amendment: providerId was added to AuthorRanking for UI platform icons.
+    // Deep equality (toEqual) is relaxed to allow this extension.
     it('ranks authors by total post count descending', () => {
       const flat = FIXTURE;
       const ranking = computeTopAuthorsByVolume(flat);
-      expect(ranking[0]).toEqual({ author: 'Acme Corp', count: 2 });
+      expect(ranking[0]).toMatchObject({ author: 'Acme Corp', count: 2 });
     });
   });
 

@@ -5,6 +5,10 @@ description: RAGConnector provider abstraction (Story 9.7, ADR-0081, BRD-0081, F
 
 # RAGConnector Provider Abstraction (`src/rag/`)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-9/story-9.7.rag-connector.contract.test.ts` — Story 9.7 contract test.
+
 ## What this is
 
 A vendor-agnostic provider abstraction for vector store operations (upsert, search, delete, status) supporting semantic search and generative Q&A without leaking vendor-specific code into business logic.

@@ -30,29 +30,53 @@ export function extractUrl(rawPayload: unknown): string | null {
     if (typeof p.permalink_url === 'string') return p.permalink_url;
     if (typeof p.permalink === 'string') return p.permalink;
     if (typeof p.postUrl === 'string') return p.postUrl;
+    if (typeof p.videoId === 'string' && p.videoId.length > 0) {
+      return `https://www.youtube.com/watch?v=${encodeURIComponent(p.videoId)}`;
+    }
   }
   return null;
 }
 
 /**
- * Extracts `author` (or `source.name` / `username`) from rawPayload, best-effort.
+ * Extracts `author` (or `source.name` / `username` / `channelTitle`) from rawPayload, best-effort.
  */
 export function extractAuthor(rawPayload: unknown): string | null {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    if (typeof p.author === 'string' && p.author !== 'Facebook Page') return p.author;
-    if (typeof p.authorName === 'string' && p.authorName !== 'Facebook Page') return p.authorName;
+    if (typeof p.author === 'string' && p.author.trim().length > 0 && p.author !== 'Facebook Page') return p.author.trim();
+    if (typeof p.authorName === 'string' && p.authorName.trim().length > 0 && p.authorName !== 'Facebook Page') return p.authorName.trim();
+    if (typeof p.authorDisplayName === 'string' && p.authorDisplayName.trim().length > 0) return p.authorDisplayName.trim();
+    if (typeof p.channelTitle === 'string' && p.channelTitle.trim().length > 0) return p.channelTitle.trim();
     if (p.from && typeof p.from === 'object') {
       const from = p.from as Record<string, unknown>;
-      if (typeof from.name === 'string' && from.name !== 'Facebook Page') return from.name;
+      if (typeof from.name === 'string' && from.name.trim().length > 0 && from.name !== 'Facebook Page') return from.name.trim();
     }
-    if (typeof p.memberName === 'string') return p.memberName;
-    if (typeof p.username === 'string') return p.username;
-    if (typeof p.issuer === 'string') return p.issuer;
-    if (typeof p.pageName === 'string' && p.pageName !== 'Facebook Page') return p.pageName;
+    if (typeof p.memberName === 'string' && p.memberName.trim().length > 0) return p.memberName.trim();
+    if (typeof p.username === 'string' && p.username.trim().length > 0) return p.username.trim();
+    if (typeof p.issuer === 'string' && p.issuer.trim().length > 0) return p.issuer.trim();
+    if (typeof p.pageName === 'string' && p.pageName.trim().length > 0 && p.pageName !== 'Facebook Page') return p.pageName.trim();
+    if (typeof p.page_name === 'string' && p.page_name.trim().length > 0 && p.page_name !== 'Facebook Page') return p.page_name.trim();
+    if (p.page && typeof p.page === 'object') {
+      const page = p.page as Record<string, unknown>;
+      if (typeof page.name === 'string' && page.name.trim().length > 0 && page.name !== 'Facebook Page') return page.name.trim();
+    }
     if (p.source && typeof p.source === 'object') {
       const src = p.source as Record<string, unknown>;
-      if (typeof src.name === 'string') return src.name;
+      if (typeof src.name === 'string' && src.name.trim().length > 0) return src.name.trim();
+    }
+
+    // Fallback for Facebook posts when generic 'Facebook Page' or pageId is present
+    const isFacebook = p.providerId === 'facebook' || p.provider === 'facebook';
+    if (isFacebook) {
+      if (typeof p.pageName === 'string' && p.pageName.trim().length > 0) return p.pageName.trim();
+      if (typeof p.page_name === 'string' && p.page_name.trim().length > 0) return p.page_name.trim();
+      if (p.from && typeof p.from === 'object') {
+        const from = p.from as Record<string, unknown>;
+        if (typeof from.name === 'string' && from.name.trim().length > 0) return from.name.trim();
+      }
+      if (typeof p.pageId === 'string' && p.pageId.trim().length > 0) return `Facebook Page (${p.pageId.trim()})`;
+      if (typeof p.page_id === 'string' && p.page_id.trim().length > 0) return `Facebook Page (${p.page_id.trim()})`;
+      if (typeof p.author === 'string' && p.author.trim().length > 0) return p.author.trim();
     }
   }
   return null;
@@ -60,13 +84,36 @@ export function extractAuthor(rawPayload: unknown): string | null {
 
 /**
  * `rawPayload` is heterogeneous per connector (GNews: title+description;
- * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary).
+ * Newswire/tenant-owned-feed: title+link; Facebook: message; Instagram: caption; LinkedIn: commentary; YouTube: title/description or text/comment).
+ *
+ * Facebook posts do not carry an article/video title. Their text is the post
+ * body (message), so extractDisplayText() treats it as snippet rather than
+ * populating title with the entire body text.
  */
 export function extractDisplayText(rawPayload: unknown): DisplayText {
   if (rawPayload && typeof rawPayload === 'object') {
     const p = rawPayload as Record<string, unknown>;
-    if (typeof p.title === 'string') {
+    const isFacebook = p.providerId === 'facebook' || p.provider === 'facebook';
+
+    if (isFacebook) {
+      const message = typeof p.message === 'string' && p.message.length > 0 ? p.message : null;
+      return {
+        title: '',
+        snippet: message ?? (typeof p.permalink_url === 'string' ? p.permalink_url : null),
+      };
+    }
+
+    if (typeof p.title === 'string' && p.title.length > 0) {
       return { title: p.title, snippet: typeof p.description === 'string' ? p.description : null };
+    }
+    if (typeof p.text === 'string' && p.text.length > 0) {
+      return { title: p.text, snippet: typeof p.description === 'string' ? p.description : null };
+    }
+    if (typeof p.textDisplay === 'string' && p.textDisplay.length > 0) {
+      return { title: p.textDisplay, snippet: null };
+    }
+    if (typeof p.textOriginal === 'string' && p.textOriginal.length > 0) {
+      return { title: p.textOriginal, snippet: null };
     }
     if (typeof p.commentary === 'string' && p.commentary.length > 0) {
       return { title: p.commentary, snippet: null };
@@ -114,8 +161,38 @@ export interface PostEnrichmentNamedEntity {
   category: string | null;
 }
 
+/**
+ * Story 12.6 (ADR-0103) — Aspect-level sentiment summary.
+ */
+export interface SentimentAspectSummary {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export type SentimentConfidenceTier = 'strong' | 'moderate' | 'needs-review';
+
+/**
+ * Story 12.6 (ADR-0103 §6) — derives confidence tier from confidence score.
+ * - confidence >= 0.8 -> 'strong'
+ * - 0.5 <= confidence < 0.8 -> 'moderate'
+ * - confidence < 0.5 -> 'needs-review'
+ */
+export function getSentimentConfidenceTier(confidence: number): SentimentConfidenceTier {
+  if (confidence >= 0.8) return 'strong';
+  if (confidence >= 0.5) return 'moderate';
+  return 'needs-review';
+}
+
 export interface PostEnrichmentSummary {
   sentiment: string | null;
+  /** Story 12.6 (ADR-0103) — confidence score (0.0 to 1.0) */
+  sentimentConfidence?: number | null;
+  /** Story 12.6 (ADR-0103 §6) — derived presentation confidence tier */
+  sentimentTier?: SentimentConfidenceTier;
+  /** Story 12.6 (ADR-0103) — aspect-level sentiment breakdown */
+  sentimentAspects?: SentimentAspectSummary[];
   sentimentScores: SentimentScores | null;
   entities: string[];
   namedEntities?: PostEnrichmentNamedEntity[];
@@ -151,7 +228,26 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   if (!enrichment || typeof enrichment !== 'object') return null;
   const e = enrichment as Record<string, unknown>;
 
-  const sentiment = typeof e.sentiment === 'string' ? e.sentiment : null;
+  let sentiment: string | null = null;
+  let sentimentConfidence: number | null = null;
+  let sentimentAspects: SentimentAspectSummary[] | undefined = undefined;
+
+  if (typeof e.sentiment === 'string') {
+    sentiment = e.sentiment;
+    sentimentConfidence = typeof e.sentimentScore === 'number' ? e.sentimentScore : null;
+  } else if (e.sentiment && typeof e.sentiment === 'object') {
+    const s = e.sentiment as Record<string, unknown>;
+    sentiment = typeof s.overall === 'string' ? s.overall : null;
+    sentimentConfidence = typeof s.confidence === 'number' ? s.confidence : (typeof e.sentimentScore === 'number' ? e.sentimentScore : null);
+    if (Array.isArray(s.aspects)) {
+      sentimentAspects = s.aspects.filter(
+        (a): a is SentimentAspectSummary =>
+          Boolean(a && typeof a === 'object' && typeof (a as any).aspect === 'string' && typeof (a as any).label === 'string')
+      );
+    }
+  }
+
+  const sentimentTier = sentimentConfidence !== null ? getSentimentConfidenceTier(sentimentConfidence) : undefined;
 
   let sentimentScores: SentimentScores | null = null;
   if (e.sentimentScores && typeof e.sentimentScores === 'object') {
@@ -219,6 +315,9 @@ export function extractEnrichmentSummary(enrichment: unknown): PostEnrichmentSum
   if (!sentiment && entities.length === 0 && keyPhrases.length === 0 && !modelUsed && !geoCountry && !override) return null;
   return {
     sentiment,
+    sentimentConfidence,
+    sentimentTier,
+    sentimentAspects,
     sentimentScores,
     entities,
     namedEntities,
@@ -315,11 +414,19 @@ export function extractFacebookPageContext(
         (isFacebook && author && author !== 'Facebook Page' ? author : null) ||
         (pageId ? `Facebook Page (${pageId})` : 'Facebook Page');
 
+      const isSyntheticAuthor =
+        !author ||
+        author === 'Facebook Page' ||
+        (pageId && author === `Facebook Page (${pageId})`) ||
+        (typeof p.page_id === 'string' && author === `Facebook Page (${p.page_id})`);
+      const finalAuthor = isSyntheticAuthor ? null : author;
+      const isPageAuthor = isSyntheticAuthor || author === resolvedPageName;
+
       return {
         pageId: pageId || matchedFbPage?.pageId || singleFbPage?.pageId || null,
         pageName: resolvedPageName,
-        author,
-        isPageAuthor: author === resolvedPageName || !author,
+        author: finalAuthor,
+        isPageAuthor,
       };
     }
   }

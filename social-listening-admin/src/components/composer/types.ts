@@ -142,6 +142,9 @@ export interface MediaAttachment {
   url: string;
   altText?: string;
   type: 'image' | 'video';
+  mediaId?: string;
+  mimeType?: string;
+  sizeBytes?: number;
 }
 
 export interface PlatformOverride {

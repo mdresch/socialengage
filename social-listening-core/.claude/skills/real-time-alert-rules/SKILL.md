@@ -5,6 +5,10 @@ description: Real-time alert rules definition, cooldown enforcement, notificatio
 
 # Real-Time Alert Rules & Alerts Inbox (ADR-0091)
 
+## Contracts that constrain this component
+
+- `social-listening-core/contracts/epic-10/story-10.9.real-time-alert-rules.contract.test.ts` — Story 10.9 contract test.
+
 ## Purpose
 Allows workspace administrators and analysts to define threshold-based alert rules (volume spikes, negative sentiment cascades, influential posts, connector errors, keyword bursts) with per-rule cooldown suppression and an actionable in-app triage inbox.
 

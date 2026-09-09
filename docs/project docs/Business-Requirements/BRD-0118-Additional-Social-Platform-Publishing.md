@@ -1,4 +1,4 @@
-# Business Requirements Document (BRD) — Additional Social Platform Publishing
+﻿# Business Requirements Document (BRD) — Additional Social Platform Publishing
 
 ## 1. Document Control
 
