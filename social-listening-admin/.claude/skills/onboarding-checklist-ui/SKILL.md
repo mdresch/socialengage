@@ -1,15 +1,5 @@
 ---
 name: onboarding-checklist-ui
-<<<<<<< HEAD
-description: Onboarding checklist UI component (Story 9.6, ADR-0080, BRD-0080, FDD-0080) — visual guide and progress tracking for new tenant admins in social-listening-admin. Read this before touching src/app/tenant/OnboardingChecklist.tsx or src/app/api/tenants/[id]/onboarding-checklist/.
----
-
-# Onboarding Checklist UI (`OnboardingChecklist.tsx`)
-
-## What this is
-
-A dashboard guide component in `social-listening-admin` that reflects the 4 core onboarding steps (`connect_source`, `build_watchlist`, `invite_user`, `verify_posts`) and optional advanced steps (`enable_enrichment`, `configure_alerts`).
-=======
 description: Frontend Onboarding Checklist UI (Story 9.6, ADR-0080) — guided progress tracker for new Tenant-Admins in the admin dashboard. Read this before modifying src/components/OnboardingChecklist.tsx, src/app/api/onboarding-checklist/route.ts, or the onboarding checklist methods in src/lib/core-client.ts.
 ---
 
@@ -17,25 +7,12 @@ description: Frontend Onboarding Checklist UI (Story 9.6, ADR-0080) — guided p
 
 ## What this is
 
-The user-facing setup progress widget displayed in the tenant workspace overview dashboard ([src/app/tenant/page.tsx](file:///d:/Source/socialengage/social-listening-admin/src/app/tenant/page.tsx)). It consumes the backend checklist state from `GET /v1/tenants/:id/onboarding-checklist` (Story 9.5, ADR-0080), rendering step completion, progress percentage, deep-links to relevant configuration screens, dismiss/reopen controls, and toggleable advanced step visibility without blocking any existing user flows.
->>>>>>> origin/main
+The user-facing setup progress widget displayed in the tenant workspace overview dashboard (`src/app/tenant/page.tsx`). It consumes the backend checklist state from `GET /v1/tenants/:id/onboarding-checklist` (Story 9.5, ADR-0080), rendering step completion, progress percentage, deep-links to relevant configuration screens, dismiss/reopen controls, and toggleable advanced step visibility without blocking any existing user flows.
 
 ## Governing ADRs and Stories
 
 | ADR | Decision | Story |
 |---|---|---|
-<<<<<<< HEAD
-| ADR-0080 | Onboarding checklist state model & single-query reconciliation | 9.6 (frontend), 9.5 (backend) |
-| BRD-0080 | Business requirements for self-service tenant onboarding | 9.6 |
-| FDD-0080 | Functional design for checklist progress, deep-linking, and dismissal | 9.6 |
-
-## Key Invariants
-
-1. **Non-blocking Guide:** The checklist is purely advisory and dismissible; it never gates or restricts access to any feature.
-2. **Deep-linking:** Each step links directly to the relevant management page (`/tenant/connectors`, `/tenant/watchlists`, `/tenant/users`, `/tenant/posts`).
-3. **Persistent Dismissal:** Dismissal state is saved server-side via `PATCH /api/tenants/:id/onboarding-checklist`, with a trigger button available to reopen.
-4. **Advanced Steps:** Advanced steps can be toggled without gating existing workflows.
-=======
 | ADR-0080 | Onboarding checklist state — JSONB on `tenants`, bundled `SELECT EXISTS` evaluation, one-way milestone caching, `GET`/`PATCH` API | 9.5 (backend) |
 | ADR-0080 | Onboarding checklist UI — dismissible dashboard guide, deep-links, advanced step visibility | 9.6 (frontend) |
 | ADR-0036 §2 | Bearer token attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 |
@@ -58,4 +35,12 @@ The user-facing setup progress widget displayed in the tenant workspace overview
 2. **Sole Choke Point for Tokens:** `OnboardingChecklist.tsx` speaks to `/api/onboarding-checklist`, and the BFF route speaks to `core-client.ts` via `authenticatedCoreFetch()`. No bearer token or `CORE_API_BASE_URL` is ever exposed to the client.
 3. **Role Gating:** Only `tenant_admin` callers can mutate dismissal status or advanced step visibility (`PATCH`). `tenant_user` can view progress in read-only mode.
 4. **Milestone Re-check on Focus:** `window.addEventListener('focus', ...)` automatically refreshes state when the user completes a task in another tab or screen and returns.
->>>>>>> origin/main
+
+## Relations to other components
+
+- **`src/app/api/onboarding-checklist/route.ts`** — BFF proxy that proxies GET/PATCH requests to `GET /v1/tenants/:id/onboarding-checklist` and `PATCH /v1/tenants/:id/onboarding-checklist` on core; attaches the session bearer token via `authenticatedCoreFetch()` (ADR-0036 §2).
+- **`src/lib/core-client.ts`** — `getOnboardingChecklist()` and `patchOnboardingChecklist()` are the typed wrappers for the two endpoints; this is the only caller.
+- **`src/app/tenant/page.tsx`** — mounts `<OnboardingChecklist>` as a non-blocking widget alongside the post feed and other dashboard cards; checklist data is fetched in parallel on the server side.
+- **`social-listening-core` onboarding-checklist skill** — the backend counterpart (Story 9.5); governs the JSONB schema, `SELECT EXISTS` derivation, one-way milestone caching, and the `GET`/`PATCH` REST surface this component consumes.
+- **`src/components/ConnectorStatus.tsx`** (connector status view, Story 6.5) — linked from the `connect_source` checklist step's deep-link; a user clicking that step is routed to `/tenant/connectors`.
+- **`src/components/WatchlistManager.tsx`** (watchlist UI, Story 6.4) — linked from the `build_watchlist` step deep-link (`/tenant/watchlists`).

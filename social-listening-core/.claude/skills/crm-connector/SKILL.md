@@ -37,3 +37,11 @@ Governed by **ADR-0095**, **BRD-0095**, **FDD-0095**, **Story 11.1**, and **Stor
    - Rejects duplicate case pushes with `409 Conflict` containing the previous `crmRecordId` and `crmRecordUrl` unless `allowDuplicate: true` is passed.
    - Writes all case handoff attempts into `outbound_activities` with `activity_type='crm_handoff'` and diagnostic details.
    - Prospecting-list handoff (Story 13.13): writes one `outbound_activities` row per entry with `activity_type='crm_prospect'`, supports re-push updates keyed by `(author_id, provider_id)`, and reuses existing CRM records when the connector's `externalId` is supplied.
+
+## Relations to other components
+
+- **`outbound_activities` table** — all CRM handoff and CRM prospect push attempts are written here with `activity_type='crm_handoff'`/`'crm_prospect'`; deduplication reads this table to block repeat sends.
+- **`social_posts` table** — posts being escalated to CRM are the primary source for `CRMCasePayload`; `post_id` is the deduplication key for case handoffs.
+- **`prospecting-lists` skill** — prospecting list entries are pushed to CRM in batch via `pushProspectsBatch()`; the CRM connector is the outbound transport for Story 13.13 exports.
+- **`outbound-engagement` skill** — CRM handoff follows the same outbound-activity audit pattern as reply/publish; `outbound_activities` is the shared audit table for all outbound action types.
+- **`connector-capability-matrix` skill** — the CRM connector's provider type (`dynamics365`, `salesforce`, `hubspot`) and entity targets are registered in the connector capability matrix.
