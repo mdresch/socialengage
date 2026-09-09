@@ -3215,3 +3215,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-09 — e00da58 — fix(docs): correct Facebook reply gating wording in user-manual.md
+
+- **Full commit:** `e00da584a475dfac91038ac384e634c2f563d61d`
+- **Files touched:** docs/manuals/user-manual.md
+- **Status:** Pending review
+
