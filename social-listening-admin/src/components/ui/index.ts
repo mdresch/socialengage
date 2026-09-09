@@ -7,3 +7,4 @@ export * from './EmptyState';
 export * from './InlineError';
 export * from './RelativeTime';
 export * from './Skeleton';
+export * from './PlatformIcon';

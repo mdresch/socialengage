@@ -28,10 +28,10 @@ ADR-0001 already decided `social-listening-admin` is one repository, independent
 
 - **Two separate deployable apps from the start** (a "Platform Console" and a "Tenant App") — rejected for now, not permanently; see Decision's deferral and named revisit trigger.
 
-## Open Questions for decision
+## Open Questions
 
-- **Whether a real second Platform Admin operator or a concrete security incident ever triggers the deferred split** — not resolved here, by design; this is a "revisit when the trigger fires" item, not a fixed timeline.
-- **Added 2026-08-03 — a UI design mockup has been brought into the repo** (`docs/design/admin-ui-mockup-2026-08-03.html`, see that folder's own `README.md`) but not yet reconciled screen-by-screen against this ADR's role-gating decision or ADR-0030/0031/0032's own specifics (the break-glass action's real scope, domain-routing UX, `access_ends_at` modeling). Not designed or verified here — flagged so the mockup isn't assumed pre-validated against this project's own architecture.
+- [ ] **[Q-0035-1]** **Whether a real second Platform Admin operator or a concrete security incident ever triggers the deferred split** — not resolved here, by design; this is a "revisit when the trigger fires" item, not a fixed timeline.
+- [ ] **[Q-0035-2]** **Added 2026-08-03 — a UI design mockup has been brought into the repo** (`docs/design/admin-ui-mockup-2026-08-03.html`, see that folder's own `README.md`) but not yet reconciled screen-by-screen against this ADR's role-gating decision or ADR-0030/0031/0032's own specifics (the break-glass action's real scope, domain-routing UX, `access_ends_at` modeling). Not designed or verified here — flagged so the mockup isn't assumed pre-validated against this project's own architecture.
 
 ## A note on this ADR's own place in the series' conventions
 

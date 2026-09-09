@@ -3,9 +3,10 @@ import { isConnectorActive } from '../connectors/connectorActivationStore';
 import { acquireForAiModel, QueueTtlExceededError, QueueDepthExceededError } from '../connectors/requestGate';
 import { ClassifiableError } from '../ingestion/errorClassification';
 import { azureOpenAiConnector } from '../connectors/azureOpenAi/azureOpenAiConnector';
-import { searchForResearch as searchBrave, BRAVE_SEARCH_PROVIDER_ID } from '../connectors/braveSearch/braveSearchConnector';
-import { searchForResearch as searchBing, BING_SEARCH_PROVIDER_ID } from '../connectors/bingSearch/bingSearchConnector';
-import { ResearchSearchResult } from '../connectors/braveSearch/braveSearchConnector';
+import { BRAVE_SEARCH_PROVIDER_ID, braveSearchProviderConnector } from '../connectors/braveSearch/braveSearchConnector';
+import { BING_SEARCH_PROVIDER_ID, bingSearchProviderConnector } from '../connectors/bingSearch/bingSearchConnector';
+import { getSearchProviderConnector } from '../connectors/registry';
+import { SearchProviderConnector } from '../connectors/types';
 
 const DEFAULT_MAX_SEARCH_RESULTS = 5;
 const HARD_MAX_SEARCH_RESULTS = 10;
@@ -19,11 +20,18 @@ export interface ComposerResearchRequest {
   maxSearchResultsPerQuery?: number;
 }
 
+export interface ComposerResearchSource {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+}
+
 export interface ComposerResearchResult {
   keyPhrases: string[];
   relatedTopics: string[];
   searchQueries: string[];
-  sources: ResearchSearchResult[];
+  sources: ComposerResearchSource[];
   contextSummary: string;
   comparison: string;
 }
@@ -76,28 +84,67 @@ async function loadAiCredential(tenantId: string): Promise<string> {
   return readCredential(tenantId, credentialId);
 }
 
-async function discoverActiveSearchProviders(tenantId: string): Promise<Array<{ providerId: string; search: typeof searchBrave }>> {
-  const providers: Array<{ providerId: string; search: typeof searchBrave }> = [];
-  for (const { id, search } of [
-    { id: BRAVE_SEARCH_PROVIDER_ID, search: searchBrave },
-    { id: BING_SEARCH_PROVIDER_ID, search: searchBing },
-  ]) {
+const fallbackSearchProviders: Record<string, SearchProviderConnector> = {
+  [BRAVE_SEARCH_PROVIDER_ID]: braveSearchProviderConnector,
+  [BING_SEARCH_PROVIDER_ID]: bingSearchProviderConnector,
+};
+
+async function discoverActiveSearchProviders(tenantId: string): Promise<SearchProviderConnector[]> {
+  const candidateIds = [BRAVE_SEARCH_PROVIDER_ID, BING_SEARCH_PROVIDER_ID];
+  const providers: SearchProviderConnector[] = [];
+
+  for (const id of candidateIds) {
     if (await isConnectorActive(tenantId, id, 'tenant')) {
-      providers.push({ providerId: id, search });
+      const connector = getSearchProviderConnector(id) ?? fallbackSearchProviders[id];
+      if (connector?.search) {
+        providers.push(connector);
+      }
     }
   }
+
   return providers;
 }
 
+
+
+import { withTenant } from '../db/withTenant';
+import {
+  computeResearchTextHash,
+  getCachedResearchResult,
+  getDailyResearchRunCount,
+  getMonthlyResearchEstimatedCost,
+  getTenantResearchSettings,
+  recordResearchRun,
+  setCachedResearchResult,
+} from './composerResearchStore';
+
+export interface ComposerResearchOptions {
+  userId?: string;
+  refresh?: boolean;
+}
+
+// Approximate token estimation: 4 chars per token
+function estimateTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4));
+}
+
+// Cost estimates based on gpt-5-mini pricing ($0.15 / 1M in, $0.60 / 1M out) + search API costs
+function estimateResearchCost(tokensIn: number, tokensOut: number, searchCalls: number): number {
+  const llmCost = (tokensIn / 1_000_000) * 0.15 + (tokensOut / 1_000_000) * 0.6;
+  const searchCost = searchCalls * 0.005; // ~$0.005 per web search query
+  return Number((llmCost + searchCost).toFixed(6));
+}
+
 /**
- * Story 3.17 (ADR-0076) — pure orchestration for the composer Deep Research
+ * Story 3.17 (ADR-0076) & Story 14.4 (ADR-0121) — pure orchestration for the composer Deep Research
  * pipeline. Runs extraction (Azure OpenAI), one-off web searches (Brave/Bing),
- * and synthesis (Azure OpenAI) for the caller's own tenant. Read-only: never
- * inserts social_posts or post_watchlist_matches.
+ * and synthesis (Azure OpenAI) for the caller's own tenant.
+ * Integrates tenant-scoped caching, cap checks (daily & monthly), and cost telemetry.
  */
 export async function performResearch(
   tenantId: string,
-  request: ComposerResearchRequest
+  request: ComposerResearchRequest,
+  options?: ComposerResearchOptions
 ): Promise<ComposerResearchResult> {
   const { text } = request;
   if (typeof text !== 'string' || text.trim().length === 0) {
@@ -113,6 +160,63 @@ export async function performResearch(
     throw new ComposerResearchError(422, 'SEARCH_PROVIDER_UNAVAILABLE', 'No active Brave/Bing search provider for this tenant.');
   }
 
+  const aiProviderId = azureOpenAiConnector.providerId;
+  const searchProviderIds = activeSearchProviders.map((p) => p.providerId);
+  const textHash = computeResearchTextHash(text, aiProviderId, searchProviderIds);
+  const refresh = options?.refresh === true;
+  const userId = options?.userId ?? '00000000-0000-0000-0000-000000000000';
+
+  // Step 1: Cap checks inside withTenant
+  const settings = await withTenant(tenantId, async (client) => {
+    return getTenantResearchSettings(tenantId, client);
+  });
+
+  const dailyCount = await withTenant(tenantId, async (client) => {
+    return getDailyResearchRunCount(tenantId, client);
+  });
+
+  if (dailyCount >= settings.researchDailyRequestCap) {
+    throw new ComposerResearchError(429, 'RESEARCH_DAILY_CAP_EXCEEDED', 'Daily research request cap exceeded.');
+  }
+
+  if (settings.researchMonthlyCostCapUsd !== null) {
+    const monthlyCost = await withTenant(tenantId, async (client) => {
+      return getMonthlyResearchEstimatedCost(tenantId, client);
+    });
+    if (monthlyCost >= settings.researchMonthlyCostCapUsd) {
+      throw new ComposerResearchError(422, 'RESEARCH_MONTHLY_COST_CAP_EXCEEDED', 'Monthly research cost cap exceeded.');
+    }
+  }
+
+  // Step 2: Cache lookup if !refresh
+  if (!refresh) {
+    const cached = await withTenant(tenantId, async (client) => {
+      return getCachedResearchResult(tenantId, textHash, client);
+    });
+
+    if (cached) {
+      // Record cache hit telemetry (tokens = 0, cost = 0)
+      await withTenant(tenantId, async (client) => {
+        await recordResearchRun(
+          tenantId,
+          {
+            userId,
+            textHash,
+            aiProviderId,
+            searchProviderIds,
+            cacheHit: true,
+            tokensIn: 0,
+            tokensOut: 0,
+            estimatedCostUsd: 0,
+          },
+          client
+        );
+      });
+      return cached;
+    }
+  }
+
+  // Step 3: Live Pipeline Execution
   // Extraction stage
   await gatedAcquireForAiModel(tenantId);
   const extraction = await azureOpenAiConnector.research!(text, [], AI_OPTIONS, credential);
@@ -122,14 +226,22 @@ export async function performResearch(
   let searchQueries = (extraction.searchQueries ?? []).slice(0, MAX_SEARCH_QUERIES);
 
   // Search stage
-  const collectedSources: ResearchSearchResult[] = [];
+  const collectedSources: ComposerResearchSource[] = [];
   let lastSearchError: Error | undefined;
+  let searchCallsMade = 0;
 
   for (const query of searchQueries) {
     for (const provider of activeSearchProviders) {
       try {
-        const results = await provider.search(tenantId, query, maxSearchResultsPerQuery);
-        collectedSources.push(...results.slice(0, maxSearchResultsPerQuery));
+        searchCallsMade += 1;
+        const response = await provider.search!({ tenantId }, { q: query, limit: maxSearchResultsPerQuery });
+        const mapped = response.results.slice(0, maxSearchResultsPerQuery).map((r) => ({
+          title: r.title,
+          url: r.url,
+          snippet: r.snippet,
+          provider: provider.providerId,
+        }));
+        collectedSources.push(...mapped);
       } catch (err) {
         lastSearchError = err instanceof Error ? err : new Error(String(err));
       }
@@ -151,7 +263,7 @@ export async function performResearch(
   await gatedAcquireForAiModel(tenantId);
   const synthesis = await azureOpenAiConnector.research!(text, collectedSources, AI_OPTIONS, credential);
 
-  return {
+  const result: ComposerResearchResult = {
     keyPhrases,
     relatedTopics,
     searchQueries,
@@ -159,4 +271,33 @@ export async function performResearch(
     contextSummary: synthesis.contextSummary ?? '',
     comparison: synthesis.comparison ?? '',
   };
+
+  // Step 4: Token and Cost telemetry calculation
+  const promptChars = text.length + JSON.stringify(collectedSources).length;
+  const completionChars = (synthesis.contextSummary ?? '').length + (synthesis.comparison ?? '').length;
+  const tokensIn = Math.max(1, Math.ceil(promptChars / 4)) + 500; // include system instructions
+  const tokensOut = Math.max(1, Math.ceil(completionChars / 4)) + 100;
+  const estimatedCostUsd = estimateResearchCost(tokensIn, tokensOut, searchCallsMade);
+
+  // Step 5: Save to cache and log telemetry inside withTenant
+  await withTenant(tenantId, async (client) => {
+    await setCachedResearchResult(tenantId, textHash, result, settings.researchCacheTtlHours, client);
+    await recordResearchRun(
+      tenantId,
+      {
+        userId,
+        textHash,
+        aiProviderId,
+        searchProviderIds,
+        cacheHit: false,
+        tokensIn,
+        tokensOut,
+        estimatedCostUsd,
+      },
+      client
+    );
+  });
+
+  return result;
 }
+

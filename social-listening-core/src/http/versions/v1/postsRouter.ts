@@ -15,6 +15,7 @@ import { getLatestCredentialId, readCredential } from '../../../credentials/cred
 import { getSocialConnector } from '../../../connectors/registry';
 import { invoke } from '../../../outbound/outboundEngagementService';
 import { insertPending, setSent, setFailed, listForPost } from '../../../outbound/outboundActivityStore';
+import { explainSpike, SpikeStorytellerError } from '../../../posts/spikeStorytellerService';
 
 export const postsRouter = Router();
 
@@ -41,6 +42,7 @@ postsRouter.get('/', async (req, res) => {
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const watchlistId = typeof req.query.watchlistId === 'string' ? req.query.watchlistId : undefined;
+  const providerId = typeof req.query.providerId === 'string' ? req.query.providerId : undefined;
   const format = typeof req.query.format === 'string' ? req.query.format : undefined;
 
   if (watchlistId !== undefined) {
@@ -72,7 +74,7 @@ postsRouter.get('/', async (req, res) => {
   }
 
   try {
-    const page = await listSocialPosts(tenantId, { cursor, limit, watchlistId });
+    const page = await listSocialPosts(tenantId, { cursor, limit, watchlistId, providerId });
     res.json(page);
   } catch {
     res.status(400).json({ error: 'Invalid cursor.' });
@@ -273,5 +275,35 @@ postsRouter.get('/:id/replies', async (req, res) => {
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const replies = await listForPost(tenantId, post.id, { limit });
   res.json({ replies, nextCursor: null });
+});
+
+/**
+ * Story 8.8 (ADR-0062 Decision §6) — AI Spike Storyteller. An on-demand,
+ * user-triggered call that pages GET /v1/posts internally for a ±1 day
+ * window around spikeDate, composes a prompt from the posts' title/body/
+ * keyPhrases, and calls the existing azureOpenAiConnector.research() to
+ * generate a narrative explanation. Available to both tenant_admin and
+ * tenant_user (read-and-explain operation, not a write). Stateless: no
+ * persistence, no stored aggregation. Returns 503 AI_UNAVAILABLE when no
+ * Azure OpenAI credential is configured for the tenant.
+ */
+postsRouter.post('/explain-spike', async (req, res) => {
+  const tenantId = requireTenantUser(req, res);
+  if (!tenantId) return;
+
+  try {
+    const result = await explainSpike(tenantId, {
+      spikeDate: req.body?.spikeDate,
+      context: req.body?.context,
+      customPrompt: req.body?.customPrompt,
+    });
+    res.status(200).json(result);
+  } catch (err) {
+    if (err instanceof SpikeStorytellerError) {
+      res.status(err.status).json({ error: err.message, code: err.code });
+      return;
+    }
+    res.status(500).json({ error: 'Spike explanation failed unexpectedly.' });
+  }
 });
 

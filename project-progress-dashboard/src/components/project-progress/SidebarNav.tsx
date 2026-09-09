@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { MONOREPO_COVERAGE } from "@/lib/project-dashboard/data";
+import { MONOREPO_COVERAGE, STORIES_LIST } from "@/lib/project-dashboard/data";
 
 export interface NavItem {
   id: string;
@@ -345,12 +345,22 @@ export function SidebarNav({
 
             <div className="bg-slate-900/90 rounded-lg p-2 border border-slate-800 text-[11px] space-y-1">
               <div className="flex justify-between text-slate-400">
-                <span>Phase 4 Active:</span>
-                <span className="text-white font-mono font-bold">89.9% (125/139)</span>
+                <span>Foundation (Epics 1–12):</span>
+                <span className="text-emerald-400 font-mono font-bold">100% (192/192)</span>
               </div>
               <div className="flex justify-between text-slate-400">
-                <span>Roadmap (Epics 1–13):</span>
-                <span className="text-blue-300 font-mono font-bold">60.7% (125/206)</span>
+                <span>Roadmap (Epics 1–19):</span>
+                <span className="text-blue-300 font-mono font-bold">
+                  {STORIES_LIST.filter((s) => !s.isRetired && !s.isRelocated).length > 0
+                    ? `${Math.round(
+                        (STORIES_LIST.filter((s) => s.isBuilt).length /
+                          STORIES_LIST.filter((s) => !s.isRetired && !s.isRelocated).length) *
+                          100
+                      )}% (${STORIES_LIST.filter((s) => s.isBuilt).length}/${
+                        STORIES_LIST.filter((s) => !s.isRetired && !s.isRelocated).length
+                      })`
+                    : "0%"}
+                </span>
               </div>
               <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800/80">
                 <span>Coverage:</span>

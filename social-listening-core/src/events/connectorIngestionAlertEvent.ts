@@ -2,7 +2,8 @@ export type IngestionAlertType =
   | 'run_timed_out'
   | 'ingestion_stalled'
   | 'connector_failing'
-  | 'reconnect_required';
+  | 'reconnect_required'
+  | 'connector_disabled';
 
 export type AlertSeverity = 'warning' | 'critical';
 

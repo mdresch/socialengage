@@ -1,6 +1,6 @@
-# ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
+﻿# ADR-0121: Composer Deep Research Caching, Re-Trigger, and Cost Justification
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Defines how ADR-0076's Composer Deep Research can cache results, allow users to re-run research, and justify the feature's cost through usage telemetry and tenant-level caps. v1 of ADR-0076 is intentionally cache-free; this ADR is the path to a cheaper, audit-ready v2.
 
@@ -107,10 +107,10 @@ Caching is justified when the same or nearly identical draft is researched more 
 
 ## Open Questions
 
-1. Should `research_cache` be pruned by background job or by `expires_at` filtering at query time?
-2. How should the `text_hash` treat minor edits (punctuation, case, emoji) to maximize useful cache hits without over-matching?
-3. Which Azure OpenAI cost fields (prompt tokens, completion tokens, reasoning tokens) are actually exposed by the SDK and should be stored?
-4. Should cost caps be per-user or per-tenant? v1 proposes per-tenant; per-user is a future option.
+- [ ] **[Q-0121-1]** Should `research_cache` be pruned by background job or by `expires_at` filtering at query time?
+- [ ] **[Q-0121-2]** How should the `text_hash` treat minor edits (punctuation, case, emoji) to maximize useful cache hits without over-matching?
+- [ ] **[Q-0121-3]** Which Azure OpenAI cost fields (prompt tokens, completion tokens, reasoning tokens) are actually exposed by the SDK and should be stored?
+- [ ] **[Q-0121-4]** Should cost caps be per-user or per-tenant? v1 proposes per-tenant; per-user is a future option.
 
 ---
 
@@ -123,3 +123,13 @@ Caching is justified when the same or nearly identical draft is researched more 
 - ADR-0066: Active Watchlist Sourcing via Bing Search API
 - ADR-0027: Connector Is a Technical Intermediary, Not Contracting Party
 - ADR-0015: Tenant Isolation via Postgres Row-Level Security
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Canonical Deterministic SHA-256 Hashing**: Un-sanitized string hashing leads to high cache miss rates on identical queries. Pre-hash canonicalization (lowercase trimming, whitespace collapsing, and provider list sorting) is strictly required to ensure stable cache hits across equivalent prompts.
+- **Postgres Row-Level Security Isolation**: The `research_cache` table must be scoped by `tenant_id` under Postgres RLS via `withTenant` context. Cross-tenant cache hits must be impossible, ensuring tenant privacy and isolated quota accounting.
+- **Cost Telemetry & Cap Enforcement**: Every research run records token usage and estimated USD cost in `research_runs`. Daily request caps (`research_daily_request_cap`, 429) and monthly cost caps (`research_monthly_cost_cap_usd`, 422) prevent runaway billing.
+- **Operational Trade-offs**: Full response caching dramatically reduces LLM spend and latency for repeated research runs, but necessitates an explicit `?refresh=true` bypass flag so users can force real-time fresh queries when needed.
+- **Reference Commits**: `d2bd779` (Story 14.4 implementation), `82b276e` (documentation), `4b8bea8` (telemetry sync).

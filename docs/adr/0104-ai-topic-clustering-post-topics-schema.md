@@ -1,6 +1,6 @@
-# ADR-0104: AI topic clustering post-topics schema
+﻿# ADR-0104: AI topic clustering post-topics schema
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `post_topics` many-to-many table, `topics` catalog, and `TopicClusteringService` refresh contract for AI-driven topic clustering, plus the `selectedTopic` dashboard filter.
 
@@ -105,12 +105,12 @@ POST   /v1/topics/:id/hide
 
 ---
 
-## Open questions
+## Open Questions
 
-- How many topics should a single post be associated with? 1? 3? Up to the confidence threshold?
-- Should the AI provider return hierarchical topics (parent/child) or flat labels?
-- How are near-duplicate topics detected? Is it manual merge only, or an auto-merge job?
-- Should `topics` support a `color` or `icon` for UI display?
+- [ ] **[Q-0104-1]** How many topics should a single post be associated with? 1? 3? Up to the confidence threshold?
+- [ ] **[Q-0104-2]** Should the AI provider return hierarchical topics (parent/child) or flat labels?
+- [ ] **[Q-0104-3]** How are near-duplicate topics detected? Is it manual merge only, or an auto-merge job?
+- [ ] **[Q-0104-4]** Should `topics` support a `color` or `icon` for UI display?
 
 ---
 

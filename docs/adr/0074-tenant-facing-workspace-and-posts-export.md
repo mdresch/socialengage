@@ -100,10 +100,10 @@ ADR-0043's deletion export (Decision §4) remains the sole offboarding/deletion 
 
 ## Open Questions
 
-1. **Endpoint naming:** `GET /v1/tenants/me/export/workspace` vs. `GET /v1/tenants/export/workspace` — the former is consistent with `GET /v1/tenants/me`; the latter is shorter for the UI. Decide at implementation time.
-2. **Async export for large tenants:** Synchronous v1 is capped. Whether to build a background job + Azure Blob Storage + polling endpoint for unbounded exports is deferred to a later ADR/story.
-3. **Workspace JSON exact column set:** The precise inclusion/exclusion of `ingestion_runs` archived rows, `watchlists` full query AST text, and `platform_credentials` non-secret metadata is left for the implementation contract.
-4. **CSV watchlist match expansion:** Whether `watchlist_ids` is a single column, a one-row-per-match expansion, or omitted for the initial version is left to the frontend story's contract.
+- [x] ~~**[Q-0074-1]** Endpoint naming: `GET /v1/tenants/me/export/workspace` vs. `GET /v1/tenants/export/workspace`~~ — **Resolved in ADR-0074 Decision §2 (2026-08-23):** Finalized as `GET /v1/tenants/export/workspace`.
+- [-] ~~**[Q-0074-2]** Async export for large tenants: Synchronous v1 is capped~~ — **Superseded by ADR-0111:** Large-tenant async background export with Blob Storage streaming.
+- [x] ~~**[Q-0074-3]** Workspace JSON exact column set~~ — **Resolved at Acceptance Review (2026-08-23):** Safe metadata archive defined; secret credentials, raw payloads, and internal envelopes excluded.
+- [x] ~~**[Q-0074-4]** CSV watchlist match expansion~~ — **Resolved at Acceptance Review (2026-08-23):** Single `watchlist_ids` column with comma-separated IDs.
 
 ## Resolved Questions
 
@@ -113,3 +113,14 @@ Resolved during acceptance review on 2026-08-23:
 2. **Async export for large tenants:** V1 remains synchronous and capped. Async background export to Azure Blob Storage is deferred to a later ADR/story (see ADR-0111).
 3. **Workspace JSON exact column set:** Export is a "safe metadata" archive, not a raw dump. Include tenant, users list, watchlists with full query AST, connector activations, and `platform_credentials` non-secret metadata (provider, `owner_type`, active/inactive, created date). For posts, include the same canonical fields as the CSV (`id`, `published_at`, `provider`, `author_name`, `author_url`, `title`, `body_markdown`, `url`, `sentiment`, `keywords`, `watchlist_ids`). Exclude `rawPayload`, full `enrichment` JSONB internals, credential secrets, OAuth refresh tokens, and Key Vault envelopes. Exclude archived `ingestion_runs` raw rows; include only run summary rows if audit continuity is required.
 4. **CSV watchlist match expansion:** A single `watchlist_ids` column with comma-separated watchlist IDs. One-row-per-match expansion is deferred to a future "exploded export" option.
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-08-27 per ADR-0122)
+
+- **`$O(1)` Memory-Bounded Chunked Streaming**: In `social-listening-admin`, the proxy route handlers (`src/app/api/tenants/export/workspace/route.ts` and `src/app/api/posts/export.csv/route.ts`) stream response chunks directly from `social-listening-core` to the client response stream, maintaining constant `$O(1)` memory consumption in Node.js runtime.
+- **Operational Trade-offs & Protocol Limits**:
+  - *Connection Handle Hold*: Proxying large synchronous downloads holds Node.js server connections open for the duration of the transfer.
+  - *Timeout Limits*: Next.js serverless/route handler timeouts constrain single synchronous export duration (bounded by v1 synchronous caps; unbounded multi-gigabyte exports are delegated to asynchronous Azure Blob Storage exports per ADR-0111).
+  - *Backpressure*: Proxy pipelines use Node.js `ReadableStream` piping to propagate client backpressure automatically to the core service.
+- **Reference Commits**: `cf1f96c` (Story 6.40 workspace and CSV streaming export routes), `12d4f69` (Story 6.40 PR merge).

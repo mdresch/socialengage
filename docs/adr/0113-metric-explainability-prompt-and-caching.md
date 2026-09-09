@@ -1,6 +1,6 @@
-# ADR-0113: Metric explainability prompt and caching
+﻿# ADR-0113: Metric explainability prompt and caching
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the prompt template, caching strategy, determinism rules, and confidence grading for `POST /v1/explain` (ADR-0078).
 
@@ -98,12 +98,12 @@ Confidence: high if the data is complete and the change is clear; medium if the 
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the prompt support multiple languages? If so, how is `locale` included in the cache key?
-- Should `confidence` also reflect model-calibrated probabilities (e.g. logprobs)?
-- How are prompt version changes rolled out without breaking existing cached results?
-- Should the cache be per-tenant, or can tenants with the same metric values share cache?
+- [ ] **[Q-0113-1]** Should the prompt support multiple languages? If so, how is `locale` included in the cache key?
+- [ ] **[Q-0113-2]** Should `confidence` also reflect model-calibrated probabilities (e.g. logprobs)?
+- [ ] **[Q-0113-3]** How are prompt version changes rolled out without breaking existing cached results?
+- [ ] **[Q-0113-4]** Should the cache be per-tenant, or can tenants with the same metric values share cache?
 
 ---
 

@@ -90,16 +90,15 @@ describe('Story 6.9 — Tenant settings screen', () => {
   });
 
   describe('AC4: no tenant-content data in the metadata cards — export actions are ADR-0074 additions', () => {
-    // ADR-0074 Amendment (Story 6.40): the original AC4 prohibited any
-    // reference to "posts/watchlists/credentials" on this screen. ADR-0074
-    // explicitly adds "Export Matched Posts (CSV)" as a real export button
-    // on this screen, so "posts" now legitimately appears. The metadata
-    // cards themselves remain settings/administrative metadata only — no
-    // post content, watchlist queries, or credential secrets are displayed.
-    it('metadata cards do not reference watchlists or credentials', () => {
+    // ADR-0074 Amendment (Story 6.40): "posts" is allowed for export button.
+    // ADR-0141 Amendment: "credentials" is allowed in static UI descriptive 
+    // copy. We now use targeted regex for secret leakage rather than natural
+    // language substring matching.
+    it('metadata cards do not reference watchlists or leak secrets', () => {
       const source = readSrc(...pagePath);
       expect(source.toLowerCase()).not.toContain('watchlist');
-      expect(source.toLowerCase()).not.toContain('credential');
+      const secretPattern = /(?:sk_live_|api[_-]?key\s*[:=]\s*["'][a-zA-Z0-9_\-]{16,}["'])/i;
+      expect(source).not.toMatch(secretPattern);
     });
   });
 

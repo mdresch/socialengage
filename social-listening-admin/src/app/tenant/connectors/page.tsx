@@ -214,6 +214,27 @@ const PLATFORMS: PlatformDef[] = [
     personalScopeAllowed: true,
     tenantScopeAllowed: false,
   },
+  {
+    id: 'youtube',
+    name: 'YouTube Data API',
+    subtitle: 'Video Comments & Channel Mentions',
+    description: 'Ingests comments, community discussions, and video descriptions matching brand watchlists via YouTube Data API v3.',
+    authMode: 'api_key',
+    color: 'red',
+    icon: 'youtube',
+    adNotice: 'billing',
+    credentialFields: [
+      {
+        key: 'apiKey',
+        label: 'YouTube Data API Key',
+        type: 'password',
+        placeholder: 'AIzaSy...',
+        hint: 'Obtained from your Google Cloud Console project with YouTube Data API v3 enabled.',
+      },
+    ],
+    personalScopeAllowed: false,
+    tenantScopeAllowed: true,
+  },
 ];
 
 /**

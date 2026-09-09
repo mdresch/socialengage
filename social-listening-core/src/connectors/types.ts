@@ -109,22 +109,52 @@ export interface NativeQueryTranslation {
 }
 
 /**
- * Story 2.28 (ADR-0075) — payload for a new outbound post. Carries the final
- * text, per-asset targeting, and optional per-platform overrides / link card /
- * media refs. Media upload itself is explicitly deferred (v1 is text/link-card
- * only); `media` here is a placeholder for future media references.
+ * Story 13.9 (ADR-0115) — a single asset attached to an outbound post.
+ * `mediaId` references the tenant's `media_assets` table; `url` is a 24-hour
+ * presigned Blob URL resolved by the publishing service before dispatch.
+ */
+export interface OutboundAsset {
+  type: 'image' | 'video' | 'link-card';
+  mediaId?: string;
+  url?: string;
+  imageUrl?: string;
+  alt?: string;
+  target?: string;
+}
+
+/**
+ * Story 2.28 (ADR-0075) / Story 13.9 (ADR-0115) — payload for a new outbound
+ * post. Carries the final text, per-asset targeting, optional per-platform
+ * overrides, and a resolved `assets` array with presigned media URLs.
  */
 export interface OutboundPostPayload {
   text: string;
   perPlatformOverrides?: Record<string, string>;
   media?: unknown[];
   linkPreview?: unknown;
+  assets?: OutboundAsset[];
+  assetTargets?: Record<string, string>;
   targetAssetId: string;
   targetAssetType: string;
 }
 
+export interface OutboundActivitySummary {
+  id: string;
+  tenantId: string;
+  userId: string;
+  providerId: string;
+  activityType: 'post' | 'reply' | string;
+  targetAssetId: string | null;
+  targetAssetType?: string | null;
+  externalId: string | null;
+  externalUrl?: string | null;
+  body?: string;
+  payload?: Record<string, unknown> | null;
+}
+
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
+  readonly sourceType?: SocialConnectorCapabilities['sourceType'];
   normalize(rawItem: unknown): NormalizedPost;
   /** Optional, authMode-agnostic hook — a specific connector's OAuth exchange
    * logic (if any) lives in its own implementation, not this interface. */
@@ -184,6 +214,24 @@ export interface SocialConnector extends ProviderConnector {
     credential: string
   ): Promise<{ externalId: string; externalUrl: string }>;
   /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity edit capability.
+   * Connectors that do not implement it fail with `edit_not_supported` (422).
+   */
+  edit?(
+    activity: OutboundActivitySummary,
+    body: string,
+    payload?: OutboundPostPayload,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
+  /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity delete capability.
+   * Connectors that do not implement it fail with `delete_not_supported` (422).
+   */
+  delete?(
+    activity: OutboundActivitySummary,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
+  /**
    * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
    * deliveryMode: 'poll'. The scheduler's one generic invocation surface —
    * getSocialConnector(platformId)?.poll?.(tenantId), never a hardcoded
@@ -215,6 +263,16 @@ export interface SocialConnector extends ProviderConnector {
    */
   pollUser?(tenantId: string, userId: string): Promise<RunIngestionAttemptResult>;
   /**
+   * Story 13.1 (ADR-0109) — optional dedicated health-check method used by the
+   * manual re-enable flow (`POST /v1/connectors/:platformId/enable`). If a
+   * connector implements this, `runConnectorHealthCheck()` delegates to it and
+   * the run is opened with `trigger_type='health_check'` from the start. If a
+   * connector omits this, the re-enable endpoint falls back to
+   * `connector.poll()` / `connector.pollUser()` and rewrites the run's
+   * `trigger_type` after the fact.
+   */
+  healthCheck?(tenantId: string, userId?: string): Promise<RunIngestionAttemptResult>;
+  /**
    * Story 9.1 (ADR-0077 §1) — optional per-connector post-count estimate for
    * the watchlist volume preview. Connectors whose platform exposes a
    * total-results field (GNews `totalArticles`, Brave/Bing page counts)
@@ -238,6 +296,22 @@ export interface SocialConnector extends ProviderConnector {
     ctx: ConnectorContext,
     args: { ast: WatchlistAST; timeWindow: TimeWindow; limit: number }
   ): Promise<ConnectorSampleResult>;
+  /**
+   * Story 12.1 (ADR-0101) — optional explicit capability matrix method.
+   */
+  getCapabilities?(tenantId?: string): SocialConnectorCapabilities;
+}
+
+/**
+ * Story 12.1 (ADR-0101) — Unified capability declaration for social & news connectors.
+ */
+export interface SocialConnectorCapabilities {
+  sourceType: 'social' | 'news' | 'forum' | 'review' | 'broadcast' | 'blog' | 'wiki';
+  poll: boolean | { cadenceMs: number; supportsTimeWindow: boolean };
+  count?: { supportsExactCount: boolean };
+  publish?: { supportsScheduling: boolean; supportedAssetTypes: string[] };
+  reply?: boolean;
+  backfill?: { supportsHistorical: boolean; maxLookbackDays: number };
 }
 
 export interface ModelCapabilities {
@@ -261,6 +335,34 @@ export interface SentimentScores {
 }
 
 /**
+ * Story 12.5 (ADR-0103) — Aspect-based sentiment breakdown.
+ */
+export interface SentimentAspect {
+  aspect: string;
+  label: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  evidence: string;
+}
+
+export interface SentimentOverridden {
+  by: string;
+  at: string;
+  reason?: string;
+  previousValue?: {
+    overall: string;
+    confidence: number;
+  };
+}
+
+export interface PostSentimentEnrichment {
+  overall: 'positive' | 'negative' | 'neutral' | 'mixed';
+  confidence: number;
+  language: string;
+  aspects?: SentimentAspect[];
+  overridden?: SentimentOverridden;
+}
+
+/**
  * Story 2.8 (ADR-0038) — widened from its original, never-yet-implemented-
  * against-a-real-provider shape (sentiment?: string; entities?: string[]) to
  * match what a real provider's own output actually looks like — confirmed
@@ -279,6 +381,14 @@ export interface ResearchResult {
   comparison: string;
 }
 
+/**
+ * Story 13.7 (ADR-0113) — structured result of a metric-explainability call.
+ */
+export interface AIExplainResult {
+  explanation: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
 export interface ResearchOptions {
   maxKeyPhrases: number;
   maxRelatedTopics: number;
@@ -292,41 +402,28 @@ export interface SearchSnippet {
   provider: string;
 }
 
+/**
+ * Story 12.7 (ADR-0104) — AI topic extraction result.
+ */
+export interface ExtractedTopic {
+  name: string;
+  confidence: number;
+}
+
 export interface AnalyzeResult {
   sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
   sentimentScores?: SentimentScores;
+  /** Story 12.5 (ADR-0103) — aspect-based sentiment breakdown. */
+  aspects?: SentimentAspect[];
+  sentimentObject?: PostSentimentEnrichment;
+  /** Story 12.7 (ADR-0104) — extracted topics. */
+  topics?: ExtractedTopic[];
   entities?: EnrichmentEntity[];
   keyPhrases?: string[];
   detectedLanguage?: string;
   /** e.g. "azure-ai-language:2025-01-01" — which provider/model version actually produced this result. */
   modelUsed?: string;
-  /**
-   * Story 2.9 (ADR-0038) — an LLM-based provider's own self-reported
-   * confidence (0.0-1.0) in its complete answer, after an explicit self-
-   * review step (see azureOpenAiConnector.ts's own system prompt).
-   * Deliberately a separate field from entities[].confidenceScore
-   * (per-entity, and — for a calibrated-classifier provider like Azure AI
-   * Language — a real statistical probability, not a self-assessment).
-   * Never populated by azureAiLanguageConnector.ts; this directly answers
-   * (for the LLM side only) the fitness-for-purpose question ADR-0038's
-   * own Open Questions section named before this field existed: whether
-   * self-reported confidence is comparable to a calibrated probability.
-   * It isn't — callers reading this field should treat it as an LLM's own
-   * self-assessment, not interchangeable with sentimentScores'/
-   * confidenceScore's calibrated-probability semantics.
-   */
   overallConfidence?: number;
-  /**
-   * Story 2.17 — a concise, LLM-generated summary of the enriched text.
-   * Populated only by an LLM-based provider capable of producing one as
-   * part of its own single structured-output call (currently
-   * azureOpenAiConnector.ts only) — azureAiLanguageConnector.ts's four
-   * capability calls have no summarization output of their own (real Azure
-   * AI Language document summarization is a separate, asynchronous
-   * endpoint, not this field's source) and correctly leave this
-   * `undefined`, the same "absence is correct, not a gap" treatment
-   * `overallConfidence` already established for that provider.
-   */
   summary?: string;
   /** Story 2.20 (ADR-0064) — ISO 3166-1 alpha-2 country code (e.g. "US", "GB", "NL"). */
   geoCountry?: string | null;
@@ -345,15 +442,15 @@ export interface AIProviderConnector extends ProviderConnector {
   /** Per-model, not per-provider — ADR-0002's one exception to the shared contract. */
   getModelRateLimit(modelId: string): RateLimitConfig;
   getModelCapabilities(modelId: string): ModelCapabilities;
-  /**
-   * `credential` (Story 2.8) is additive and optional — a real provider's
-   * own implementation needs the caller's resolved, decrypted credential to
-   * authenticate; a stateless example/mock implementation (Story 2.1's own
-   * fixtures) simply ignores it. Never resolved by analyze() itself — the
-   * caller (e.g. enrichPost.ts) reads it from the tenant's own stored
-   * credential first (ADR-0027: never a SocialEngage-held key).
-   */
   analyze(modelId: string, text: string, credential?: string): Promise<AnalyzeResult>;
+  /**
+   * Story 12.5 (ADR-0103) — optional aspect-based sentiment analyzer.
+   */
+  analyzeSentiment?(text: string, language?: string, credential?: string): Promise<PostSentimentEnrichment>;
+  /**
+   * Story 12.7 (ADR-0104) — optional topic clustering/extraction.
+   */
+  extractTopics?(text: string, language?: string, credential?: string): Promise<ExtractedTopic[]>;
   /**
    * Story 2.32 (ADR-0076) — optional deep-research capability. Only
    * generative providers (Azure OpenAI in v1) implement it; classifiers
@@ -365,4 +462,54 @@ export interface AIProviderConnector extends ProviderConnector {
     options: ResearchOptions,
     credential?: string
   ): Promise<ResearchResult>;
+
+  /**
+   * Story 13.7 (ADR-0113) — optional metric-explainability call. Generative
+   * providers (Azure OpenAI in v1) return a one-to-two-sentence explanation
+   * and a high/medium/low confidence grade. The caller supplies the fully
+   * rendered prompt, the credential, and deterministic model parameters.
+   */
+  explain?(
+    text: string,
+    credential?: string,
+    options?: { seed?: number; promptVersion?: number }
+  ): Promise<AIExplainResult>;
 }
+
+/**
+ * Story 14.3 (ADR-0120) — standardized request shape for one-off search.
+ */
+export interface SearchRequest {
+  q: string;
+  limit?: number; // default 5, hard cap 10
+  freshness?: 'any' | 'day' | 'week' | 'month';
+  market?: string; // optional ISO country/language hint (e.g. 'en-US')
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized individual search result item.
+ */
+export interface SearchItem {
+  title: string;
+  url: string;
+  snippet: string;
+  publishedAt?: string;
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized response shape for one-off search.
+ */
+export interface SearchResponse {
+  results: SearchItem[];
+}
+
+/**
+ * Story 14.3 (ADR-0120) — shared interface for on-demand one-off search providers.
+ */
+export interface SearchProviderConnector {
+  readonly providerId: string;
+  search?(ctx: ConnectorContext, request: SearchRequest): Promise<SearchResponse>;
+  getRateLimitConfig?(): RateLimitConfig;
+  getSearchRateLimitConfig?(): RateLimitConfig;
+}
+

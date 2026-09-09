@@ -2,7 +2,15 @@ import { Pool } from 'pg';
 import { withTenant } from '../db/withTenant';
 import { getAdminPool } from '../db/adminPool';
 
-export type TriggerType = 'poll' | 'webhook';
+/**
+ * ADR-0109 (Story 13.1) — `health_check` is the trigger type used by the
+ * manual re-enable flow (`POST /v1/connectors/:platformId/enable`). It is a
+ * reset marker: `deriveConnectorHealth()` treats the most recent
+ * `health_check` run as the start of a new consecutive-failure/success
+ * streak, so a failed re-enable attempt resets the counter to 1 and a
+ * successful re-enable attempt can immediately restore `healthy`.
+ */
+export type TriggerType = 'poll' | 'webhook' | 'health_check';
 export type IngestionRunStatus = 'running' | 'succeeded' | 'failed';
 
 export interface ReconciledStaleRun {
@@ -122,6 +130,27 @@ export async function completeIngestionRun(
         input.retryable ?? null,
         input.isCredentialFailure ?? null,
       ]
+    );
+  });
+}
+
+/**
+ * Story 13.1 (ADR-0109) — changes the trigger type of an already-closed run.
+ * Used by the health-check fallback path: when a connector has no dedicated
+ * `healthCheck()` method, the re-enable endpoint calls `connector.poll()` /
+ * `connector.pollUser()` (which opens a `poll` run) and then rewrites that
+ * run's `trigger_type` to `health_check` so `deriveConnectorHealth()` applies
+ * the reset boundary.
+ */
+export async function updateIngestionRunTriggerType(
+  tenantId: string,
+  runId: string,
+  triggerType: TriggerType
+): Promise<void> {
+  await withTenant(tenantId, async (client) => {
+    await client.query(
+      `UPDATE ingestion_runs SET trigger_type = $2 WHERE id = $1`,
+      [runId, triggerType]
     );
   });
 }

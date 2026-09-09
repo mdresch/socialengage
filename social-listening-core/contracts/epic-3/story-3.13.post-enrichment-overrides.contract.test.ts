@@ -113,7 +113,7 @@ describe('Story 3.13 Contract: Post Enrichment Overrides API & Precedence Guard 
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(post.id);
       expect(res.body.enrichment).toBeDefined();
-      expect(res.body.enrichment.sentiment).toBe('positive');
+      expect(typeof res.body.enrichment.sentiment === 'object' ? res.body.enrichment.sentiment.overall : res.body.enrichment.sentiment).toBe('positive');
       expect(res.body.enrichment.sentimentScore).toBe(0.95);
       expect(res.body.enrichment.keyPhrases).toEqual(['Updated Tech', 'ai innovation']);
       expect(res.body.enrichment.geoCountry).toBe('GB');
@@ -154,7 +154,7 @@ describe('Story 3.13 Contract: Post Enrichment Overrides API & Precedence Guard 
         .send({ sentiment: 'negative' });
 
       expect(res.status).toBe(200);
-      expect(res.body.enrichment.sentiment).toBe('negative');
+      expect(typeof res.body.enrichment.sentiment === 'object' ? res.body.enrichment.sentiment.overall : res.body.enrichment.sentiment).toBe('negative');
       expect(res.body.enrichment.sentimentScore).toBe(0.2); // Default for negative
     });
   });

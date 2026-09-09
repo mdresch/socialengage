@@ -8,12 +8,263 @@ export type AstNode =
   | { type: 'HASHTAG'; value: string }
   | { type: 'ACCOUNT'; value: string };
 
+/* =========================================================================
+ * Canonical WatchlistAST (ADR-0102)
+ * ========================================================================= */
+
+export type WatchlistClauseType =
+  | 'keyword'
+  | 'phrase'
+  | 'hashtag'
+  | 'mention'
+  | 'author'
+  | 'source'
+  | 'sentiment'
+  | 'date'
+  | 'nested';
+
+export type WatchlistOperator = 'AND' | 'OR' | 'NOT';
+
+export interface WatchlistKeywordClause {
+  type: 'keyword';
+  value: string;
+}
+
+export interface WatchlistPhraseClause {
+  type: 'phrase';
+  value: string;
+}
+
+export interface WatchlistHashtagClause {
+  type: 'hashtag';
+  value: string;
+}
+
+export interface WatchlistMentionClause {
+  type: 'mention';
+  value: string;
+}
+
+export interface WatchlistAuthorClause {
+  type: 'author';
+  value: string;
+}
+
+export interface WatchlistSourceClause {
+  type: 'source';
+  value: string;
+}
+
+export interface WatchlistSentimentClause {
+  type: 'sentiment';
+  value: 'positive' | 'negative' | 'neutral' | string;
+}
+
+export interface WatchlistDateClause {
+  type: 'date';
+  operator: '>=' | '<=' | '=' | '>' | '<';
+  value: string;
+}
+
+export interface WatchlistNestedClause {
+  type: 'nested';
+  operator: WatchlistOperator;
+  clauses: WatchlistClause[];
+}
+
+export type WatchlistClause =
+  | WatchlistKeywordClause
+  | WatchlistPhraseClause
+  | WatchlistHashtagClause
+  | WatchlistMentionClause
+  | WatchlistAuthorClause
+  | WatchlistSourceClause
+  | WatchlistSentimentClause
+  | WatchlistDateClause
+  | WatchlistNestedClause;
+
+export interface WatchlistAST {
+  operator: WatchlistOperator;
+  clauses: WatchlistClause[];
+}
+
+const VALID_CLAUSE_TYPES = new Set<WatchlistClauseType>([
+  'keyword',
+  'phrase',
+  'hashtag',
+  'mention',
+  'author',
+  'source',
+  'sentiment',
+  'date',
+  'nested',
+]);
+
+const VALID_OPERATORS = new Set<WatchlistOperator>(['AND', 'OR', 'NOT']);
+
+/**
+ * Validates the structure and types of a WatchlistAST object.
+ */
+export function validateWatchlistAst(ast: any): { valid: boolean; errors?: string[] } {
+  const errors: string[] = [];
+
+  if (!ast || typeof ast !== 'object') {
+    return { valid: false, errors: ['AST must be a non-null object.'] };
+  }
+
+  if (!VALID_OPERATORS.has(ast.operator)) {
+    errors.push(`Invalid operator '${ast.operator}'. Must be AND, OR, or NOT.`);
+  }
+
+  if (!Array.isArray(ast.clauses)) {
+    errors.push('AST clauses must be an array.');
+    return { valid: false, errors };
+  }
+
+  function validateClause(clause: any, path: string): void {
+    if (!clause || typeof clause !== 'object') {
+      errors.push(`Clause at ${path} must be an object.`);
+      return;
+    }
+
+    if (!VALID_CLAUSE_TYPES.has(clause.type)) {
+      errors.push(`Invalid clause type '${clause.type}' at ${path}.`);
+      return;
+    }
+
+    if (clause.type === 'nested') {
+      if (!VALID_OPERATORS.has(clause.operator)) {
+        errors.push(`Invalid nested operator '${clause.operator}' at ${path}.`);
+      }
+      if (!Array.isArray(clause.clauses)) {
+        errors.push(`Nested clauses at ${path} must be an array.`);
+      } else {
+        clause.clauses.forEach((c: any, i: number) => validateClause(c, `${path}.clauses[${i}]`));
+      }
+    } else if (clause.type === 'date') {
+      if (typeof clause.value !== 'string' || !clause.value) {
+        errors.push(`Date clause at ${path} requires a non-empty string value.`);
+      }
+      if (!['>=', '<=', '=', '>', '<'].includes(clause.operator)) {
+        errors.push(`Date clause at ${path} has invalid operator '${clause.operator}'.`);
+      }
+    } else {
+      if (typeof clause.value !== 'string' || !clause.value) {
+        errors.push(`Clause of type '${clause.type}' at ${path} requires a non-empty string value.`);
+      }
+    }
+  }
+
+  ast.clauses.forEach((clause: any, index: number) => validateClause(clause, `clauses[${index}]`));
+
+  return {
+    valid: errors.length === 0,
+    errors: errors.length > 0 ? errors : undefined,
+  };
+}
+
+/**
+ * Converts a legacy boolean query text string into a canonical WatchlistAST (ADR-0102 §4).
+ */
+export function parseBooleanQueryToAst(query: string): WatchlistAST {
+  const legacyAst = parseBooleanQuery(query);
+
+  function convertNode(node: AstNode): { operator: WatchlistOperator; clauses: WatchlistClause[] } {
+    if (node.type === 'AND' || node.type === 'OR') {
+      const left = convertNode(node.left);
+      const right = convertNode(node.right);
+
+      const clauses: WatchlistClause[] = [];
+
+      if (left.operator === node.type) {
+        clauses.push(...left.clauses);
+      } else if (left.clauses.length === 1) {
+        clauses.push(left.clauses[0]);
+      } else if (left.clauses.length > 1) {
+        clauses.push({ type: 'nested', operator: left.operator, clauses: left.clauses });
+      }
+
+      if (right.operator === node.type) {
+        clauses.push(...right.clauses);
+      } else if (right.clauses.length === 1) {
+        clauses.push(right.clauses[0]);
+      } else if (right.clauses.length > 1) {
+        clauses.push({ type: 'nested', operator: right.operator, clauses: right.clauses });
+      }
+
+      return { operator: node.type, clauses };
+    }
+
+    if (node.type === 'NOT') {
+      const operand = convertNode(node.operand);
+      return {
+        operator: 'NOT',
+        clauses:
+          operand.clauses.length === 1
+            ? operand.clauses
+            : [{ type: 'nested', operator: operand.operator, clauses: operand.clauses }],
+      };
+    }
+
+    if (node.type === 'HASHTAG') {
+      return { operator: 'AND', clauses: [{ type: 'hashtag', value: node.value }] };
+    }
+
+    if (node.type === 'ACCOUNT') {
+      return { operator: 'AND', clauses: [{ type: 'mention', value: node.value }] };
+    }
+
+    return { operator: 'AND', clauses: [{ type: 'keyword', value: node.value }] };
+  }
+
+  const result = convertNode(legacyAst);
+  return {
+    operator: result.operator,
+    clauses: result.clauses,
+  };
+}
+
+/**
+ * Serializes a canonical WatchlistAST back to a human-readable query string.
+ */
+export function astToBooleanQuery(ast: WatchlistAST): string {
+  function serializeClause(clause: WatchlistClause): string {
+    switch (clause.type) {
+      case 'keyword':
+        return clause.value;
+      case 'phrase':
+        return `"${clause.value}"`;
+      case 'hashtag':
+        return `#${clause.value}`;
+      case 'mention':
+        return `@${clause.value}`;
+      case 'author':
+        return `from:${clause.value}`;
+      case 'source':
+        return `source:${clause.value}`;
+      case 'sentiment':
+        return `sentiment:${clause.value}`;
+      case 'date':
+        return `date:${clause.operator}${clause.value}`;
+      case 'nested':
+        return `(${clause.clauses.map(serializeClause).join(` ${clause.operator} `)})`;
+    }
+  }
+
+  if (ast.operator === 'NOT') {
+    return `NOT (${ast.clauses.map(serializeClause).join(' AND ')})`;
+  }
+
+  return ast.clauses.map(serializeClause).join(` ${ast.operator} `);
+}
+
+/* =========================================================================
+ * Legacy Parser (ADR-0021)
+ * ========================================================================= */
+
 const KEYWORDS = new Set(['AND', 'OR', 'NOT']);
 
 function tokenize(query: string): string[] {
-  // Parens always split as their own tokens; everything else splits on
-  // whitespace. No quoted-phrase support (ADR-0021's v1 node types don't
-  // name one) — a single word is a single token.
   return query
     .replace(/([()])/g, ' $1 ')
     .split(/\s+/)

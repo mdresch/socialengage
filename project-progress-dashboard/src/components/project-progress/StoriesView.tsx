@@ -33,7 +33,9 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
       const matchBuilt =
         selectedBuiltStatus === "All" ||
         (selectedBuiltStatus === "Built" && story.isBuilt) ||
-        (selectedBuiltStatus === "Pending" && !story.isBuilt);
+        (selectedBuiltStatus === "Pending" && !story.isBuilt && !story.isRetired && !story.isRelocated) ||
+        (selectedBuiltStatus === "Retired" && story.isRetired) ||
+        (selectedBuiltStatus === "Relocated" && story.isRelocated);
 
       return matchSearch && matchEpic && matchBuilt;
     });
@@ -41,7 +43,9 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
 
   const totalStories = STORIES_LIST.length;
   const builtStories = STORIES_LIST.filter((s) => s.isBuilt).length;
-  const pendingStories = totalStories - builtStories;
+  const retiredStories = STORIES_LIST.filter((s) => s.isRetired).length;
+  const relocatedStories = STORIES_LIST.filter((s) => s.isRelocated).length;
+  const pendingStories = STORIES_LIST.filter((s) => !s.isBuilt && !s.isRetired && !s.isRelocated).length;
 
   const totalPages = Math.ceil(filteredStories.length / pageSize) || 1;
   const paginatedStories = useMemo(() => {
@@ -66,7 +70,7 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
     const rows = filteredStories
       .map(
         (s) =>
-          `"${s.storyId}","${s.epicTitle}","${s.title.replace(/"/g, '""')}","${s.source}","${s.isBuilt ? "Implemented" : "Pending"}","${(s.builtInfo || "").replace(/"/g, '""')}"`
+          `"${s.storyId}","${s.epicTitle}","${s.title.replace(/"/g, '""')}","${s.source}","${s.isBuilt ? "Implemented" : (s.isRetired ? "Retired" : (s.isRelocated ? "Relocated" : "Pending"))}","${(s.builtInfo || "").replace(/"/g, '""')}"`
       )
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
@@ -84,14 +88,14 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
         <CardHeader className="pb-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Epics Delivery Matrix (Epics 1–13)</CardTitle>
+              <CardTitle>Epics Delivery Matrix (Epics 1–19)</CardTitle>
               <CardDescription>
                 Click any epic below to filter the story backlog table.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="success" className="text-xs py-1 px-3">
-                {builtStories} Built (93.2%)
+                {builtStories} Built ({totalStories > 0 ? ((builtStories / totalStories) * 100).toFixed(1) : 0}%)
               </Badge>
               <Badge variant={pendingStories > 0 ? "warning" : "default"} className="text-xs py-1 px-3">
                 {pendingStories} Pending
@@ -158,6 +162,8 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
                 <option value="All">All Stories ({totalStories})</option>
                 <option value="Built">Implemented / Built Only ({builtStories})</option>
                 <option value="Pending">Pending / Scheduled Only ({pendingStories})</option>
+                <option value="Retired">Retired / Superseded Only ({retiredStories})</option>
+                <option value="Relocated">Relocated Only ({relocatedStories})</option>
               </select>
             </div>
             <button
@@ -221,8 +227,8 @@ export function StoriesView({ onSelectItem }: StoriesViewProps) {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={story.isBuilt ? "success" : "warning"} className="text-xs">
-                        {story.isBuilt ? "Implemented" : "Pending"}
+                      <Badge variant={story.isBuilt ? "success" : (story.isRetired || story.isRelocated ? "secondary" : "warning")} className="text-xs">
+                        {story.isBuilt ? "Implemented" : (story.isRetired ? "Retired" : (story.isRelocated ? "Relocated" : "Pending"))}
                       </Badge>
                     </TableCell>
                   </TableRow>

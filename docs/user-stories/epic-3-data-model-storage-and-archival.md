@@ -1,4 +1,4 @@
-# Epic 3: Data Model, Storage & Archival
+﻿# Epic 3: Data Model, Storage & Archival
 
 ## Story 3.1 — Normalized author entity
 

@@ -1,4 +1,4 @@
-# ADR-0080: Onboarding checklist state
+﻿# ADR-0080: Onboarding checklist state
 
 **Status:** Accepted (2026-08-24)
 
@@ -134,12 +134,12 @@ The admin dashboard displays the checklist at the top. Each step deep-links dire
 
 ---
 
-## Open questions
+## Open Questions
 
-- ~~Should completion be computed on every `GET` or refreshed by a trigger/hook when the underlying tables change?~~ **Resolved at acceptance:** Computed on `GET` using a single bundled `SELECT EXISTS` query with one-way JSONB milestone caching.
-- ~~Should `Platform-Admin` see onboarding completion metrics across tenants?~~ **Resolved at acceptance:** Yes, `tenants.onboarding_checklist` enables standard SQL aggregation for platform activation funnels and drop-off analysis.
-- ~~Should the checklist order or step names be configurable per tenant?~~ **Resolved at acceptance:** No, kept fixed in v1 to preserve standard SaaS self-service simplicity.
-- ~~How does the checklist behave for tenants created before this ADR is implemented?~~ **Resolved at acceptance:** Auto-reconciled on first `GET` — existing active tenants have their steps marked `completed: true` and are automatically set to `dismissed: true`.
+- [x] **[Q-0080-1]** ~~Should completion be computed on every `GET` or refreshed by a trigger/hook when the underlying tables change?~~ **Resolved at acceptance:** Computed on `GET` using a single bundled `SELECT EXISTS` query with one-way JSONB milestone caching.
+- [x] **[Q-0080-2]** ~~Should `Platform-Admin` see onboarding completion metrics across tenants?~~ **Resolved at acceptance:** Yes, `tenants.onboarding_checklist` enables standard SQL aggregation for platform activation funnels and drop-off analysis.
+- [x] **[Q-0080-3]** ~~Should the checklist order or step names be configurable per tenant?~~ **Resolved at acceptance:** No, kept fixed in v1 to preserve standard SaaS self-service simplicity.
+- [x] **[Q-0080-4]** ~~How does the checklist behave for tenants created before this ADR is implemented?~~ **Resolved at acceptance:** Auto-reconciled on first `GET` — existing active tenants have their steps marked `completed: true` and are automatically set to `dismissed: true`.
 
 ---
 
@@ -148,3 +148,7 @@ The admin dashboard displays the checklist at the top. Each step deep-links dire
 - Related feature design: `docs/product-research/feature-designs/19-self-service-onboarding-checklist.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0051` (connector activation), `ADR-0044` (watchlists), `ADR-0032` (users/invites)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0130 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 would be refined by ADR-0130's own §1–§2 — specifically role-tailored step branches (Admin vs Analyst vs Marketer) and automated step verification probes. This is a pending note only: ADR-0130 is currently Proposed, not accepted.

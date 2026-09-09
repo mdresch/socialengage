@@ -1,21 +1,21 @@
-# Business Requirements Document (BRD) — DSR Self-Service Portal
+﻿# Business Requirements Document (BRD) — DSR Self-Service Portal
 
 ## 1. Document Control
 
 | Field | Value |
 |---|---|
 | Document Title | SocialEngage – DSR Self-Service Portal Business Requirements Document |
-| Version | 0.1 |
-| Date | 2026-08-23 |
+| Version | 1.0 |
+| Date | 2026-08-28 |
 | Author(s) | BRD Writer Agent |
 | Approver(s) | Menno, Product Owner / Technical Lead |
-| Status | Draft for review — source ADR-0093 is Proposed and may change |
+| Status | Draft for review — source ADR-0093 (Accepted 2026-08-28) is Proposed and may change |
 
 ### Revision History
 
 | Version | Date | Author | Description of Changes |
 |---|---|---|---|
-| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0093, feature design, and user stories |
+| 0.1 | 2026-08-23 | BRD Writer Agent | Initial draft from ADR-0093 (Accepted 2026-08-28), feature design, and user stories |
 
 ---
 
@@ -158,7 +158,7 @@ A public DSR portal will allow a requester to create, view, and download respons
 | Data Element | Description | Source | Owner | Sensitivity |
 |---|---|---|---|---|
 | `data_subject_requests` | Tracks request type, status, requester email, received/resolved dates, SLA | ADR-0092/0093 | Platform | Personal data / legal |
-| `correction_proposals` | Holds proposed corrections pending Tenant-Admin review | ADR-0093 | Tenant | Personal data |
+| `correction_proposals` | Holds proposed corrections pending Tenant-Admin review | ADR-0093 (Accepted 2026-08-28) | Tenant | Personal data |
 | Access package ZIP | CSV of posts, JSON profile, manifest, stored in Blob | ADR-0090/0093 | Tenant | Personal data |
 | `social_posts` | Public posts redacted during erasure or corrected via enrichment | Existing | Tenant | Public / personal |
 | `users` | Tenant user record, removable on verified erasure | Existing | Tenant | Personal data |

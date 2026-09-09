@@ -1,6 +1,6 @@
-# ADR-0119: Editing and Deleting Published Outbound Posts
+﻿# ADR-0119: Editing and Deleting Published Outbound Posts
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Extends ADR-0075's outbound post publishing and ADR-0073's `outbound_activities` audit model to support editing and deleting already-published posts and replies. Preserves the append-only audit trail by recording every edit and delete as a separate `outbound_activity_revision` row.
 
@@ -122,11 +122,11 @@ async delete?(
 
 ## Open Questions
 
-1. **Which platforms support `edit?()` and `delete?()`?** Primary-source verification is required for each connector before implementation.
-2. **Should replies (ADR-0073) use the same `outbound_activity_revisions` table?** Mechanically yes; the child table references any `outbound_activities` row, but the per-platform semantics of editing a reply may differ from a top-level post.
-3. **Should deletes be soft-deleted in `outbound_activities` or hard-removed from lists?** The parent row remains for audit; a `deleted_at` column filters it from default UI lists.
-4. **Is there a time window after which a platform disallows edit/delete?** This is platform-specific and must be recorded in each per-platform ADR.
-5. **Should `target_asset_id` be editable?** v1 does not allow retargeting an edit to a different Page/profile.
+- [ ] **[Q-0119-1]** **Which platforms support `edit?()` and `delete?()`?** Primary-source verification is required for each connector before implementation.
+- [ ] **[Q-0119-2]** **Should replies (ADR-0073) use the same `outbound_activity_revisions` table?** Mechanically yes; the child table references any `outbound_activities` row, but the per-platform semantics of editing a reply may differ from a top-level post.
+- [ ] **[Q-0119-3]** **Should deletes be soft-deleted in `outbound_activities` or hard-removed from lists?** The parent row remains for audit; a `deleted_at` column filters it from default UI lists.
+- [ ] **[Q-0119-4]** **Is there a time window after which a platform disallows edit/delete?** This is platform-specific and must be recorded in each per-platform ADR.
+- [ ] **[Q-0119-5]** **Should `target_asset_id` be editable?** v1 does not allow retargeting an edit to a different Page/profile.
 
 ---
 
@@ -139,3 +139,12 @@ async delete?(
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0028: Credential Creation Authority by Ownership Tier
 - ADR-0014: Credential Storage Envelope Encryption
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Asymmetric Social Platform Edit/Delete Windows**: Third-party social networks enforce drastically differing post lifecycle rules. While deletion is universally supported, edit windows vary widely (e.g. LinkedIn limits edits to post text within specific windows, whereas X/Twitter edit APIs require paid enterprise tiers).
+- **Tombstone Audit Retention**: Soft deletion with `deleted_at` timestamps in `published_posts` is mandatory for enterprise compliance and audit logs, even when the remote outbound post is permanently erased from the social platform via REST API.
+- **Operational Trade-offs**: Retaining tombstone rows maintains data lineage and compliance audit trails without allowing stale outbound posts to appear in active tenant content streams.
+- **Reference Commits**: `c1ab9b2` (Story 14.2 implementation), `d2aeb80` (telemetry sync).

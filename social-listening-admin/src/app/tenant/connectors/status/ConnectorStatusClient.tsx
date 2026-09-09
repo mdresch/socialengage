@@ -2,7 +2,7 @@
 
 import { useState, type ReactElement } from 'react';
 import type { ConnectorStatus } from '@/lib/core-client';
-import { StatusBadge, type StatusBadgeVariant } from '@/components/ui';
+import { StatusBadge, type StatusBadgeVariant, PlatformIcon } from '@/components/ui';
 import { RelativeTime } from '@/components/ui';
 import { ActivateDeactivateButton } from '../ActivateDeactivateButton';
 
@@ -137,6 +137,9 @@ const POLL_INTERVAL_MINUTES: Record<string, number> = {
   facebook: 30,
   instagram: 30,
   linkedin: 60,
+  youtube: 15,
+  'brave-search': 60,
+  'bing-search': 60,
 };
 
 /** Story 6.24 — mirrors `CONSECUTIVE_FAILURE_CEILING` (`social-listening-core/src/connectors/connectorHealth.ts`), the real, single global ceiling. Not importable across the repo boundary; restated here, kept in sync by hand. */
@@ -305,7 +308,10 @@ export function ConnectorStatusClient({ rows, isTenantAdmin }: ConnectorStatusCl
       <div className="cs-card-top">
         <div className="cs-card-info">
           <div className="cs-card-title-row">
-            <h2 className="cs-card-name">{platform.name}</h2>
+            <h2 className="cs-card-name">
+              <PlatformIcon platformId={platform.id} size={18} />
+              <span>{platform.name}</span>
+            </h2>
             {badge}
             <span className="cs-category-pill">{platform.category}</span>
           </div>

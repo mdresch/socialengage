@@ -45,10 +45,10 @@ A large share of this project's existing 132 contract tests set `X-Tenant-Id` di
 - **Keep `X-Tenant-Id` as a secondary, defense-in-depth signal alongside real authentication** — rejected: a coexisting, client-trusted alternate tenant source reopens exactly the spoofing vector §3 closes, unless demoted to advisory-only (logged, never acted on), which provides no real benefit over removing it outright.
 - **A transition period accepting both mechanisms**, to reduce the one-shot size of the test rework in §5 — considered, and named as a legitimate, rejected-for-now option rather than silently dismissed: rejected because it directly conflicts with §3's security requirement for as long as it lasts, and this project has no external caller today whose migration needs to be staged — the "reduce rework pain" benefit accrues only to this project's own test suite, which can be reworked directly instead.
 
-## Open Questions for decision
+## Open Questions
 
-- **The exact test-harness replacement mechanism** (§5) — minted test JWTs vs. an explicit test-mode auth bypass vs. something else — left to implementation.
-- **Whether a staged, both-mechanisms transition is actually safer** given how much test code is touched at once, weighed against §3's security requirement — named in Alternatives Considered as rejected, but flagged here as worth Menno's own explicit sign-off given the real size of the one-shot rework, not treated as a closed question by this ADR alone.
+- [ ] **[Q-0033-1]** **The exact test-harness replacement mechanism** (§5) — minted test JWTs vs. an explicit test-mode auth bypass vs. something else — left to implementation.
+- [ ] **[Q-0033-2]** **Whether a staged, both-mechanisms transition is actually safer** given how much test code is touched at once, weighed against §3's security requirement — named in Alternatives Considered as rejected, but flagged here as worth Menno's own explicit sign-off given the real size of the one-shot rework, not treated as a closed question by this ADR alone.
 
 ## Amendment Log
 

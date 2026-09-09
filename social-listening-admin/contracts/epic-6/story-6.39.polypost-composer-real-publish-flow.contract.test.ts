@@ -42,33 +42,34 @@ function readSrc(...segments: string[]): string {
 
 describe('Story 6.39 — Polypost Composer Real Publish Flow', () => {
   // -----------------------------------------------------------------------
-  // AC1: core-client.ts gains publishPost calling POST /v1/outbound/posts
+  // AC1: core-client.ts publishPost / publishOutboundPost function
+  // Note: Story 11.8 (ADR-0098) upgraded publishing with publishOutboundPost
   // -----------------------------------------------------------------------
   describe('AC1: core-client.ts publishPost function', () => {
-    it('exports a publishPost function that calls POST /v1/outbound/posts', () => {
+    it('exports a publishPost or publishOutboundPost function that calls POST /v1/outbound/posts', () => {
       const source = readSrc('lib', 'core-client.ts');
-      expect(source).toMatch(/export async function publishPost\(/);
+      expect(source).toMatch(/export\s+async\s+function\s+(publishPost|publishOutboundPost)\s*\(/);
       expect(source).toContain('/v1/outbound/posts');
       expect(source).toMatch(/OutboundActivity/);
     });
 
-    it('publishPost returns a { rows, status } outcome shape', () => {
+    it('publishPost returns a { rows, status } or PublishOutboundPostResult outcome shape', () => {
       const source = readSrc('lib', 'core-client.ts');
-      expect(source).toMatch(/publishPost/);
-      // The return type must include rows and status
-      expect(source).toMatch(/rows.*PublishPostRow/);
+      expect(source).toMatch(/publishPost|publishOutboundPost/);
+      expect(source).toMatch(/rows.*PublishPostRow|PublishOutboundPostResult/);
     });
   });
 
   // -----------------------------------------------------------------------
   // AC2: Same-origin proxy route /api/outbound/posts
+  // Note: Story 11.8 (ADR-0098) proxies via publishOutboundPost
   // -----------------------------------------------------------------------
   describe('AC2: Same-origin proxy route', () => {
-    it('src/app/api/outbound/posts/route.ts exists and proxies to publishPost', () => {
+    it('src/app/api/outbound/posts/route.ts exists and proxies to publishPost or publishOutboundPost', () => {
       const routePath = path.join(ADMIN_ROOT, 'src', 'app', 'api', 'outbound', 'posts', 'route.ts');
       expect(fs.existsSync(routePath)).toBe(true);
       const routeSource = fs.readFileSync(routePath, 'utf8');
-      expect(routeSource).toContain('publishPost');
+      expect(routeSource).toMatch(/publishPost|publishOutboundPost/);
       expect(routeSource).toContain('POST');
     });
   });

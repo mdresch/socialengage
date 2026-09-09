@@ -21,12 +21,21 @@ description: The second real AIProviderConnector (Azure OpenAI Service, gpt-5-mi
 
 || ADR-0076 | `AIProviderConnector` gains optional `research?()` for the composer deep-research agent; Azure OpenAI implements it as one structured-output call | 2.32 |
 
+|| ADR-0062 Decision §6 | `research?()` is reused as-is (no new public method) by `spikeStorytellerService.ts` (Story 8.8) — the AI Spike Storyteller composes a prompt from ±1 day context posts and maps `ResearchResult.contextSummary` → `narrative` | 8.8 |
+
 ## Contracts that constrain this component
 
 - `contracts/epic-2/story-2.9.second-ai-provider-connector.contract.test.ts` — a registered `AIProviderConnector` with a `providerId` distinct from `azure-ai-language`; `analyze()` rejects with no credential; a real call against the real Azure OpenAI resource returns all four enrichment fields plus `overallConfidence` (a real number in `[0,1]`) from one structured-output call; neither `pollGNewsSearch.ts` nor `pollNewswireFeeds.ts` references this connector directly (no core pipeline change); a tenant on either provider enriches successfully (provider swap); a tenant with neither provider connected, or with only the other provider connected, still resolves cleanly (skip); a tenant's broken credential for one provider never affects a different tenant on the other provider; two tenants on different providers gate independently; a malformed Azure OpenAI credential resolves to `undefined`, never throws.
 - `contracts/epic-2/story-2.32.azure-openai-research-capability.contract.test.ts` (ADR-0076) — `azureOpenAiConnector.research()` returns a structured `ResearchResult` (key phrases, related topics, search queries, context summary, comparison) from one `chat/completions` call; `azureAiLanguageConnector.research` is undefined; a missing/invalid credential throws the same `ClassifiableError('http_401')` path as `analyze()`.
 - `contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts` — proves this connector's own `AZURE_OPENAI_PROVIDER_ID` literal (`'azure-openai'`) appears nowhere in any core ingestion/orchestration file (ADR-0048 §1).
 - `contracts/epic-2/story-2.17.azure-openai-summary-field.contract.test.ts` — a real call against the real Azure OpenAI resource returns a non-empty `summary` string, genuinely shorter than the input, alongside the five existing fields; a real `enrichPost()` result for a tenant served by this connector round-trips `summary` through `insertSocialPost()` into `SocialPost.enrichment.summary` unchanged; a tenant served by Azure AI Language instead (both providers connected/active, the existing fixed-order default) has `enrichment.summary` absent, not a placeholder.
+
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26, per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention — this section did not previously exist on this file.)*
+
+- `enrichPost.ts` calls this connector's `analyze()` as one of its ordered `PROVIDERS` — pre-existing, predates this convention.
+- `research()` is called by `src/composer/composerResearchService.ts`'s `performResearch()`, reached at the real production call site `POST /v1/composer/research` (`src/http/versions/v1/composerRouter.ts`) — relationship asserted by `story-3.17.composer-deep-research.contract.test.ts` (endpoint-level) and `story-2.32.azure-openai-research-capability.contract.test.ts` (connector-level).
 
 ## Registration transparency (ADR-0048)
 

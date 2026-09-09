@@ -1,6 +1,6 @@
-# ADR-0116: Semantic drift detection
+﻿# ADR-0116: Semantic drift detection
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a v2 `SemanticDriftService` that uses vector embeddings from `RAGConnector` (ADR-0081–0085) to detect when a topic's meaning has shifted over time, and the `GET /v1/topics/:id/drift` endpoint.
 
@@ -91,12 +91,12 @@ GET /v1/topics/:id/drift?start=...&end=...
 
 ---
 
-## Open questions
+## Open Questions
 
-- How many chunks per time window should be sampled? 100? 1,000?
-- Should drift use all chunks for the topic or only those with high confidence?
-- How are ties in `topClusters` handled if cluster names are auto-generated?
-- Should drift be computed for sub-topics or only root topics?
+- [ ] **[Q-0116-1]** How many chunks per time window should be sampled? 100? 1,000?
+- [ ] **[Q-0116-2]** Should drift use all chunks for the topic or only those with high confidence?
+- [ ] **[Q-0116-3]** How are ties in `topClusters` handled if cluster names are auto-generated?
+- [ ] **[Q-0116-4]** Should drift be computed for sub-topics or only root topics?
 
 ---
 

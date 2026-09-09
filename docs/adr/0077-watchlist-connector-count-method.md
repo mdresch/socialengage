@@ -1,4 +1,4 @@
-# ADR-0077: Watchlist connector count and preview endpoint
+﻿# ADR-0077: Watchlist connector count and preview endpoint
 
 **Status:** Accepted 2026-08-23 (review adjustments incorporated 2026-08-23)
 
@@ -150,3 +150,7 @@ When `count?()` is absent or the connector cannot count the supplied AST:
 - Related feature design: `docs/product-research/feature-designs/26-watchlist-volume-preview.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related skills: `social-listening-core/.claude/skills/watchlist-matching/SKILL.md`, `social-listening-core/.claude/skills/provider-connector-framework/SKILL.md`
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0134 (Proposed, 2026-08-28) is accepted, this ADR's Decision §4 would be extended by ADR-0134's own §2–§4 — specifically an explicit confidence-display contract for the UI and an additive estimatedCost projection block on WatchlistVolumePreview. **Supersession update (2026-08-28):** ADR-0134 was accepted on 2026-08-28. ADR-0077 Decision §4 is now extended with an explicit confidence-display contract for the UI and an additive estimatedCost projection block.

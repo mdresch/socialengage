@@ -182,9 +182,43 @@ export async function setPostEnrichment(tenantId: string, id: string, enrichment
   });
 }
 
+import {
+  PostSentimentEnrichment,
+  SentimentAspect,
+  SentimentOverridden,
+} from '../connectors/types';
+
 /**
- * Story 3.13 (ADR-0071) — updates post enrichment attributes with full override
- * audit lineage and returns the updated SocialPostSummary.
+ * Story 12.5 (ADR-0103) — normalizes legacy string or structured sentiment
+ * in enrichment JSONB into canonical PostSentimentEnrichment.
+ */
+export function normalizePostSentiment(enrichment: Record<string, any> | null | undefined): PostSentimentEnrichment | undefined {
+  if (!enrichment || enrichment.sentiment === undefined || enrichment.sentiment === null) {
+    return undefined;
+  }
+  const s = enrichment.sentiment;
+  if (typeof s === 'string') {
+    return {
+      overall: s as 'positive' | 'neutral' | 'negative' | 'mixed',
+      confidence: typeof enrichment.sentimentScore === 'number' ? enrichment.sentimentScore : 0.5,
+      language: typeof enrichment.detectedLanguage === 'string' ? enrichment.detectedLanguage : 'unknown',
+    };
+  }
+  if (typeof s === 'object') {
+    return {
+      overall: s.overall ?? 'neutral',
+      confidence: typeof s.confidence === 'number' ? s.confidence : (typeof enrichment.sentimentScore === 'number' ? enrichment.sentimentScore : 0.5),
+      language: s.language || enrichment.detectedLanguage || 'unknown',
+      aspects: Array.isArray(s.aspects) ? s.aspects : undefined,
+      overridden: s.overridden,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Story 3.13 (ADR-0071) & Story 12.5 (ADR-0103) — updates post enrichment
+ * attributes with full override audit lineage and returns the updated SocialPostSummary.
  * Returns null if the post does not exist for the given tenant.
  */
 export async function updatePostEnrichment(
@@ -192,13 +226,14 @@ export async function updatePostEnrichment(
   id: string,
   userId: string,
   updates: {
-    sentiment?: 'positive' | 'neutral' | 'negative';
+    sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed' | (Partial<PostSentimentEnrichment> & { reason?: string });
     sentimentScore?: number;
     keyPhrases?: string[];
     detectedLanguage?: string | null;
     geoCountry?: string | null;
     geoCountryName?: string | null;
     summary?: string | null;
+    reason?: string;
   }
 ): Promise<SocialPostSummary | null> {
   return withTenant(tenantId, async (client) => {
@@ -222,30 +257,63 @@ export async function updatePostEnrichment(
     const overriddenFields: string[] = [];
 
     // Sentiment & Score
+    const prevSentiment = normalizePostSentiment(currentEnrichment);
+    const prevOverall = prevSentiment?.overall ?? (typeof currentEnrichment.sentiment === 'string' ? currentEnrichment.sentiment : 'neutral');
+    const prevConfidence = prevSentiment?.confidence ?? currentEnrichment.sentimentScore ?? 0.5;
+
     let sentiment = currentEnrichment.sentiment;
     let sentimentScore = currentEnrichment.sentimentScore;
 
     if (updates.sentiment !== undefined) {
-      if (!['positive', 'neutral', 'negative'].includes(updates.sentiment)) {
-        throw new Error('INVALID_SENTIMENT');
-      }
-      sentiment = updates.sentiment;
       overriddenFields.push('sentiment');
+      const now = new Date().toISOString();
 
-      if (updates.sentimentScore === undefined) {
-        switch (updates.sentiment) {
-          case 'positive':
-            sentimentScore = 0.8;
-            break;
-          case 'negative':
-            sentimentScore = 0.2;
-            break;
-          case 'neutral':
-          default:
-            sentimentScore = 0.5;
-            break;
+      if (typeof updates.sentiment === 'string') {
+        if (!['positive', 'neutral', 'negative', 'mixed'].includes(updates.sentiment)) {
+          throw new Error('INVALID_SENTIMENT');
         }
-        overriddenFields.push('sentimentScore');
+        const calcScore = updates.sentimentScore ?? (
+          updates.sentiment === 'positive' ? 0.8 : updates.sentiment === 'negative' ? 0.2 : 0.5
+        );
+        sentimentScore = calcScore;
+        sentiment = {
+          overall: updates.sentiment,
+          confidence: calcScore,
+          language: updates.detectedLanguage || currentEnrichment.detectedLanguage || 'unknown',
+          aspects: prevSentiment?.aspects,
+          overridden: {
+            by: userId,
+            at: now,
+            reason: updates.reason,
+            previousValue: {
+              overall: prevOverall,
+              confidence: prevConfidence,
+            },
+          },
+        };
+      } else if (typeof updates.sentiment === 'object') {
+        const obj = updates.sentiment;
+        const targetOverall = obj.overall ?? prevOverall;
+        if (!['positive', 'neutral', 'negative', 'mixed'].includes(targetOverall)) {
+          throw new Error('INVALID_SENTIMENT');
+        }
+        const targetScore = obj.confidence ?? updates.sentimentScore ?? 0.8;
+        sentimentScore = targetScore;
+        sentiment = {
+          overall: targetOverall,
+          confidence: targetScore,
+          language: obj.language || updates.detectedLanguage || currentEnrichment.detectedLanguage || 'unknown',
+          aspects: obj.aspects ?? prevSentiment?.aspects,
+          overridden: {
+            by: userId,
+            at: now,
+            reason: obj.reason ?? updates.reason,
+            previousValue: {
+              overall: prevOverall,
+              confidence: prevConfidence,
+            },
+          },
+        };
       }
     }
 
@@ -259,6 +327,9 @@ export async function updatePostEnrichment(
         throw new Error('INVALID_SENTIMENT_SCORE');
       }
       sentimentScore = updates.sentimentScore;
+      if (typeof sentiment === 'object' && sentiment) {
+        sentiment = { ...sentiment, confidence: updates.sentimentScore };
+      }
       if (!overriddenFields.includes('sentimentScore')) {
         overriddenFields.push('sentimentScore');
       }
@@ -419,6 +490,8 @@ export interface ListSocialPostsOptions {
   limit?: number;
   /** Story 3.11 (ADR-0063) — filters to posts with a real post_watchlist_matches row for this watchlist. */
   watchlistId?: string;
+  /** Optional source filter — raw_payload->>'providerId' must equal this value. */
+  providerId?: string;
 }
 
 export interface SocialPostSummary {
@@ -453,8 +526,8 @@ export async function listSocialPosts(
 
   return withTenant(tenantId, async (client) => {
     const rows = options.cursor
-      ? await queryAfterCursor(client, options.cursor, limit, options.watchlistId)
-      : await queryFirstPage(client, limit, options.watchlistId);
+      ? await queryAfterCursor(client, options.cursor, limit, options.watchlistId, options.providerId)
+      : await queryFirstPage(client, limit, options.watchlistId, options.providerId);
 
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
@@ -496,17 +569,32 @@ interface PostRow {
 async function queryFirstPage(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
   limit: number,
-  watchlistId?: string
+  watchlistId?: string,
+  providerId?: string
 ): Promise<PostRow[]> {
-  const join = watchlistId
-    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $2`
-    : '';
-  const params = watchlistId ? [limit + 1, watchlistId] : [limit + 1];
+  const params: unknown[] = [limit + 1];
+  const joins: string[] = [];
+  const conditions: string[] = [];
+
+  if (watchlistId) {
+    joins.push(`JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $${params.length + 1}`);
+    params.push(watchlistId);
+  }
+
+  if (providerId) {
+    conditions.push(`raw_payload->>'providerId' = $${params.length + 1}`);
+    params.push(providerId);
+  }
+
+  const joinSql = joins.join(' ');
+  const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
   const { rows } = await client.query(
     `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
             social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
      FROM social_posts
-     ${join}
+     ${joinSql}
+     ${whereSql}
      ORDER BY seq ASC
      LIMIT $1`,
     params
@@ -518,19 +606,33 @@ async function queryAfterCursor(
   client: { query: (sql: string, params: unknown[]) => Promise<{ rows: PostRow[] }> },
   cursorToken: string,
   limit: number,
-  watchlistId?: string
+  watchlistId?: string,
+  providerId?: string
 ): Promise<PostRow[]> {
   const { seq } = decodeCursor(cursorToken);
-  const join = watchlistId
-    ? `JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $3`
-    : '';
-  const params = watchlistId ? [seq, limit + 1, watchlistId] : [seq, limit + 1];
+  const params: unknown[] = [seq, limit + 1];
+  const joins: string[] = [];
+  const conditions: string[] = ['seq > $1'];
+
+  if (watchlistId) {
+    joins.push(`JOIN post_watchlist_matches pwm ON pwm.post_id = social_posts.id AND pwm.watchlist_id = $${params.length + 1}`);
+    params.push(watchlistId);
+  }
+
+  if (providerId) {
+    conditions.push(`raw_payload->>'providerId' = $${params.length + 1}`);
+    params.push(providerId);
+  }
+
+  const joinSql = joins.join(' ');
+  const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
   const { rows } = await client.query(
     `SELECT social_posts.id, social_posts.seq, social_posts.created_at, social_posts.raw_payload,
             social_posts.published_at, social_posts.enrichment, social_posts.body_markdown
      FROM social_posts
-     ${join}
-     WHERE seq > $1
+     ${joinSql}
+     ${whereSql}
      ORDER BY seq ASC
      LIMIT $2`,
     params
@@ -576,8 +678,8 @@ export async function exportSocialPostsCsv(
       ? `SELECT COUNT(*)::int as count
          FROM social_posts sp
          JOIN post_watchlist_matches pwm ON pwm.post_id = sp.id AND pwm.watchlist_id = $2 AND pwm.tenant_id = sp.tenant_id
-         WHERE sp.tenant_id = $1`
-      : `SELECT COUNT(*)::int as count FROM social_posts WHERE tenant_id = $1`;
+         WHERE sp.tenant_id = $1 AND sp.processing_restricted = FALSE`
+      : `SELECT COUNT(*)::int as count FROM social_posts WHERE tenant_id = $1 AND processing_restricted = FALSE`;
     const countParams = options.watchlistId ? [tenantId, options.watchlistId] : [tenantId];
     const { rows: countRows } = await client.query<{ count: number }>(countSql, countParams);
     if (countRows[0].count > maxRows) {
@@ -599,7 +701,7 @@ export async function exportSocialPostsCsv(
        FROM social_posts sp
        LEFT JOIN authors a ON a.id = sp.author_id
        ${join}
-       WHERE sp.tenant_id = $1
+       WHERE sp.tenant_id = $1 AND sp.processing_restricted = FALSE
        ORDER BY sp.seq ASC
        LIMIT $2`,
       params

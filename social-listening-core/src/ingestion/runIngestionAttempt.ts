@@ -3,6 +3,7 @@ import { ClassifiableError, isCredentialError, isRetryable } from './errorClassi
 import { withTenant } from '../db/withTenant';
 import { deriveConnectorHealth } from '../connectors/connectorHealth';
 import { buildConnectorHealthChangedEvent } from '../events/connectorHealthChangedEvent';
+import { publishConnectorAlertEvent } from '../events/publishConnectorAlertEvents';
 import { publishEvent } from '../events/serviceBusPublisher';
 
 export interface IngestionAttemptResult {
@@ -56,7 +57,12 @@ export async function runIngestionAttempt(
   // connector's own connectorInfo never sets pageId, so this argument is
   // always undefined for them — zero behavior change to any other
   // connector's event-publishing.
-  const previousHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId, options.connectorInfo.pageId);
+  const previousHealth = await deriveConnectorHealth(
+    options.tenantId,
+    options.connectorInfo.platformId,
+    options.connectorInfo.pageId,
+    options.connectorInfo.userId
+  );
 
   /**
    * ADR-0058 Decision §2 — the one, shared exit point every return below
@@ -66,7 +72,12 @@ export async function runIngestionAttempt(
    * precedent, same as publishSocialPostIngestedEvents()).
    */
   async function finish(result: RunIngestionAttemptResult): Promise<RunIngestionAttemptResult> {
-    const newHealth = await deriveConnectorHealth(options.tenantId, options.connectorInfo.platformId, options.connectorInfo.pageId);
+    const newHealth = await deriveConnectorHealth(
+      options.tenantId,
+      options.connectorInfo.platformId,
+      options.connectorInfo.pageId,
+      options.connectorInfo.userId
+    );
     if (newHealth.status !== previousHealth.status) {
       const event = buildConnectorHealthChangedEvent({
         tenantId: options.tenantId,
@@ -81,6 +92,39 @@ export async function runIngestionAttempt(
           `[ingestion-events] Failed to publish ConnectorHealthChangedEvent (tenant=${options.tenantId} platform=${options.connectorInfo.platformId}):`,
           err
         );
+      }
+
+      // Story 13.1 (ADR-0109) — emit a ConnectorIngestionAlertEvent when the
+      // health transition is `failing` -> `disabled` or
+      // `failing` -> `reconnect_required`. This is best-effort and never
+      // blocks the run result.
+      if (
+        previousHealth.status === 'failing' &&
+        (newHealth.status === 'disabled' || newHealth.status === 'reconnect_required')
+      ) {
+        try {
+          await publishConnectorAlertEvent({
+            tenantId: options.tenantId,
+            platformId: options.connectorInfo.platformId,
+            userId: options.connectorInfo.userId,
+            alertType: newHealth.status === 'disabled' ? 'connector_disabled' : 'reconnect_required',
+            severity: 'critical',
+            message:
+              newHealth.status === 'disabled'
+                ? `Connector ${options.connectorInfo.platformId} has been disabled after repeated failures`
+                : `Connector ${options.connectorInfo.platformId} requires reconnection after a credential failure`,
+            metadata: {
+              consecutiveFailures: newHealth.consecutiveFailures,
+              lastAttemptAt: newHealth.lastAttemptAt,
+              lastSuccessfulFetchAt: newHealth.lastSuccessfulFetchAt,
+            },
+          });
+        } catch (err) {
+          console.error(
+            `[ingestion-events] Failed to publish ConnectorIngestionAlertEvent (tenant=${options.tenantId} platform=${options.connectorInfo.platformId}):`,
+            err
+          );
+        }
       }
     }
     return result;

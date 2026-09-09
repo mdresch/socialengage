@@ -85,9 +85,13 @@ export function EnrichmentEditDrawer({
 }: EnrichmentEditDrawerProps): ReactElement | null {
   const current = post.enrichmentSummary;
 
-  const [sentiment, setSentiment] = useState<'positive' | 'neutral' | 'negative'>(
-    (current?.sentiment as 'positive' | 'neutral' | 'negative') ?? 'neutral'
+  const [sentiment, setSentiment] = useState<'positive' | 'neutral' | 'negative' | 'mixed'>(
+    (current?.sentiment as 'positive' | 'neutral' | 'negative' | 'mixed') ?? 'neutral'
   );
+  const [confidence, setConfidence] = useState<number>(
+    typeof current?.sentimentConfidence === 'number' ? current.sentimentConfidence : 0.8
+  );
+  const [reason, setReason] = useState<string>('');
   const [keyPhrases, setKeyPhrases] = useState<string[]>(current?.keyPhrases ?? []);
   const [newPhraseInput, setNewPhraseInput] = useState('');
   const [detectedLanguage, setDetectedLanguage] = useState<string>(current?.language ?? 'en');
@@ -154,6 +158,8 @@ export function EnrichmentEditDrawer({
 
     const updates: PostEnrichmentUpdateInput = {
       sentiment,
+      sentimentScore: confidence,
+      reason: reason.trim() ? reason.trim() : undefined,
       keyPhrases,
       detectedLanguage: detectedLanguage ? detectedLanguage : null,
       geoCountry: geoCountry ? geoCountry : null,
@@ -216,7 +222,7 @@ export function EnrichmentEditDrawer({
         <div className="pf-edit-section">
           <label className="pf-edit-label">Sentiment Classification</label>
           <div className="pf-segmented-control" role="radiogroup" aria-label="Sentiment Classification">
-            {(['positive', 'neutral', 'negative'] as const).map((s) => {
+            {(['positive', 'neutral', 'negative', 'mixed'] as const).map((s) => {
               const isActive = sentiment === s;
               const capitalized = s.charAt(0).toUpperCase() + s.slice(1);
               return (
@@ -233,6 +239,22 @@ export function EnrichmentEditDrawer({
               );
             })}
           </div>
+        </div>
+
+        {/* Override Audit Reason */}
+        <div className="pf-edit-section">
+          <label htmlFor="enrichment-override-reason" className="pf-edit-label">
+            Override Reason (Optional)
+          </label>
+          <input
+            id="enrichment-override-reason"
+            type="text"
+            className="pf-edit-input"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g. Sarcasm missed by AI model, manual customer review"
+            maxLength={300}
+          />
         </div>
 
         {/* Key Phrases Tag Editor */}

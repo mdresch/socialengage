@@ -1,6 +1,6 @@
-# ADR-0120: SearchProviderConnector — Shared One-Off Search Abstraction
+﻿# ADR-0120: SearchProviderConnector — Shared One-Off Search Abstraction
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Drafted 2026-08-23.** Generalizes the one-off search helpers used by ADR-0076's Composer Deep Research into a first-class `SearchProviderConnector` abstraction, so Brave Search, Bing Search, and future search providers can be called on demand without duplicating query building and rate-limit logic across features.
 
@@ -90,10 +90,10 @@ interface SearchResponse {
 
 ## Open Questions
 
-1. Should `SearchProviderConnector` be a top-level `SearchConnector` under `SocialConnector.search?()` instead of a separate interface?
-2. What is the exact Bing `freshness` parameter mapping and does it support a `market` hint in the free/news tiers?
-3. Should Brave and Bing share a common query-normalization step or keep it per-connector?
-4. Does this abstraction also cover internal `tenant-owned-feed` search? Probably not — that is content already owned by the tenant, not public web search.
+- [ ] **[Q-0120-1]** Should `SearchProviderConnector` be a top-level `SearchConnector` under `SocialConnector.search?()` instead of a separate interface?
+- [ ] **[Q-0120-2]** What is the exact Bing `freshness` parameter mapping and does it support a `market` hint in the free/news tiers?
+- [ ] **[Q-0120-3]** Should Brave and Bing share a common query-normalization step or keep it per-connector?
+- [ ] **[Q-0120-4]** Does this abstraction also cover internal `tenant-owned-feed` search? Probably not — that is content already owned by the tenant, not public web search.
 
 ---
 
@@ -105,3 +105,12 @@ interface SearchResponse {
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0028: Credential Creation Authority by Ownership Tier
 - ADR-0003: Per-Tenant Per-Provider Rate Limiting
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Unified Search Normalization Layer**: Different search providers (Brave Search, Bing Search, Google, Tavily) return idiosyncratic schema structures, pagination markers, and rate-limit headers. A strict `SearchProviderResult` normalizer is required to map raw search payloads into consistent title, snippet, url, and published_at fields.
+- **Dynamic Provider Failover**: If the primary search provider encounters rate limiting (`429 Too Many Requests`) or credential degradation, the orchestrator seamlessly attempts the secondary active search connector before failing the user request.
+- **Operational Trade-offs**: Normalizing search results introduces minor mapping overhead but isolates research agents from third-party schema deprecations and outages.
+- **Reference Commits**: `c903723` (Story 14.3 implementation), `77a8e02` (telemetry sync).

@@ -1,6 +1,8 @@
-# ADR-0091: Real-time alert rules and delivery
+﻿# ADR-0091: Real-time alert rules and delivery
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the real-time alert rules engine, cooldown suppression, and alerts inbox triage workflow. Story 10.9 and Story 10.10 are fully implemented and verified.
 
 **Authorizes:** an `alert_rules` data model, threshold-evaluation engine, and delivery channels (in-app, email, webhook) for tenant-scoped and platform-scoped real-time alerts.
 
@@ -103,12 +105,12 @@ alert_rules (
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should alert evaluation be real-time (per-event) or batched (every N minutes)?
-- How are duplicate alert emails suppressed across a tenant?
-- Should `Platform-Admin` have platform-wide alert rules (e.g., a connector failing across any tenant)?
-- What is the maximum number of active alert rules per tenant?
+- [ ] **[Q-0091-1]** Should alert evaluation be real-time (per-event) or batched (every N minutes)?
+- [ ] **[Q-0091-2]** How are duplicate alert emails suppressed across a tenant?
+- [ ] **[Q-0091-3]** Should `Platform-Admin` have platform-wide alert rules (e.g., a connector failing across any tenant)?
+- [ ] **[Q-0091-4]** What is the maximum number of active alert rules per tenant?
 
 ---
 
@@ -117,3 +119,7 @@ alert_rules (
 - Related feature design: `docs/product-research/feature-designs/09-real-time-alerts.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0012`/`ADR-0013` (events), `ADR-0044` (watchlists), `ADR-0087` (precomputed views, for fast threshold evaluation)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0123 (Proposed, 2026-08-28) is accepted, this ADR's Decision §1 and §5 would be extended by ADR-0123's own §1–§4 — specifically rule-level noise exclusions (excluded_watchlist_ids, excluded_topic_ids), a hard per-rule daily cap (max_alerts_per_day), sensitivity presets, and a pre-save alert volume preview endpoint (POST /v1/alert-rules/preview). This is a pending note only: ADR-0123 is currently Proposed, not accepted. Per ADR-0047 §2, don't assume already-shipped code changes automatically — it would only change once ADR-0123's own story is actually built following acceptance. This ADR's original Decision and Consequences text above is unchanged and remains the historical record.

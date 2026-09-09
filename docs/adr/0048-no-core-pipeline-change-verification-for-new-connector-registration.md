@@ -52,12 +52,14 @@ Adopt an explicit, enforceable verification policy for every new connector regis
 - Story 2.8 and Story 2.9 follow-up swappability validation direction
 - All downstream connector stories that rely on no-core-path registration changes
 
-## Open questions for decision
+## Open Questions
 
-- Whether to enforce this with a dedicated CI script in the repository or as a test-level contract gate inside `social-listening-core`.
-- Whether to define a strict allowlist of files/directories as extension points, and where that allowlist is maintained.
-- Whether this policy should also apply to connector deprecation/removal PRs with the same strictness.
+- [x] ~~**[Q-0048-1]** Whether to enforce this with a dedicated CI script in the repository or as a test-level contract gate inside `social-listening-core`.~~ — **Resolved (2026-09-04):** Enforced in Story 2.10 via Jest contract gate (`contracts/epic-2/story-2.10.connector-registration-transparency.contract.test.ts`) running under `npm test` on every PR, avoiding custom external CI runner scripts.
+- [x] ~~**[Q-0048-2]** Whether to define a strict allowlist of files/directories as extension points, and where that allowlist is maintained.~~ — **Resolved (2026-09-04):** Maintained directly in Story 2.10 inside `story-2.10.connector-registration-transparency.contract.test.ts` via the `CORE_FILES` complement list, extended when new core files/orchestrators (such as `src/scheduler/pollScheduler.ts`) are introduced.
+- [x] ~~**[Q-0048-3]** Whether this policy should also apply to connector deprecation/removal PRs with the same strictness.~~ — **Resolved (2026-09-04):** Deferred and out of scope for v1 — connector deprecation/removal is managed by connector registry de-listing without enforcing strict no-touch gates on deprecation cleanups.
 
 ## Amendment Log
 
 - 2026-08-08 — Initial proposal drafted from backlog input; left Proposed pending acceptance.
+- 2026-08-11 — Accepted by Menno as drafted (Story 2.10 moved to Ready).
+- 2026-09-04 — Open questions resolved: confirmed Jest contract gate implementation and `CORE_FILES` complement list in Story 2.10, with deprecation scope deferred for v1.

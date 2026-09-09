@@ -10,15 +10,18 @@ import { azureAiLanguageConnector } from './azureAiLanguage/azureAiLanguageConne
 import { azureOpenAiConnector } from './azureOpenAi/azureOpenAiConnector';
 import { facebookConnector } from './facebook/facebookConnector';
 import { pollFacebook } from './facebook/pollFacebook';
-import { braveSearchConnector } from './braveSearch/braveSearchConnector';
+import { braveSearchConnector, braveSearchProviderConnector } from './braveSearch/braveSearchConnector';
 import { pollBraveSearch } from './braveSearch/pollBraveSearch';
-import { bingSearchConnector } from './bingSearch/bingSearchConnector';
+import { bingSearchConnector, bingSearchProviderConnector } from './bingSearch/bingSearchConnector';
 import { pollBingSearch } from './bingSearch/pollBingSearch';
 import { instagramConnector } from './instagram/instagramConnector';
 import { pollInstagram } from './instagram/pollInstagram';
 import { linkedinConnector } from './linkedin/linkedinConnector';
 import { pollLinkedIn } from './linkedin/pollLinkedIn';
-import { registerSocialConnector, registerAIProviderConnector } from './registry';
+import { youtubeConnector } from './youtube/youtubeConnector';
+import { pollYouTube } from './youtube/pollYouTube';
+import { registerSocialConnector, registerAIProviderConnector, registerSearchProviderConnector } from './registry';
+
 
 /** Implementation defaults (ADR-0052 §9) — real, named, revisable numbers. */
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
@@ -131,6 +134,18 @@ export function bootstrapConnectors(): void {
     pollCadenceMs: ONE_HOUR_MS,
   });
 
+  // Story 10.13 (ADR-0093) — YouTube Data API v3 Ingestion Connector.
+  registerSocialConnector({
+    ...youtubeConnector,
+    poll: (tenantId: string) => pollYouTube(tenantId),
+    pollCadenceMs: FIFTEEN_MINUTES_MS,
+  });
+
   registerAIProviderConnector(azureAiLanguageConnector);
   registerAIProviderConnector(azureOpenAiConnector);
+
+  // Story 14.3 (ADR-0120) — Register SearchProviderConnectors for one-off web search.
+  registerSearchProviderConnector(braveSearchProviderConnector);
+  registerSearchProviderConnector(bingSearchProviderConnector);
 }
+

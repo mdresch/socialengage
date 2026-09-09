@@ -1,13 +1,11 @@
-export type AdminRole = 'tenant_admin' | 'tenant_user' | 'platform_admin';
-
 export type RoleShell = 'tenant' | 'platform-admin';
 
 /**
  * Mirrors social-listening-core/src/identity/identityResolution.ts's own ResolvedIdentity
- * type exactly — a discriminated union, NOT a flat `{ role }` shape. This distinction is
- * load-bearing: a real platform_admin identity has no `role` field at all (see this
- * component's own SKILL.md Load-bearing constraint — a flat `{role}` cast onto this shape
- * was exactly the bug healed 2026-08-06).
+ * type exactly — a discriminated union, NOT a flat `{ role }` shape (ADR-0041).
+ * This distinction is load-bearing: a real platform_admin identity has no `role` field
+ * at all (see this component's own SKILL.md Load-bearing constraint — a flat `{role}`
+ * cast onto this shape was exactly the bug healed 2026-08-06).
  */
 export type ResolvedIdentity =
   | { type: 'tenant_user'; tenantId: string; userId: string; role: string }

@@ -64,12 +64,12 @@ export interface PatchOnboardingChecklistRequest {
 }
 
 const DEEP_LINKS: Record<CoreStepName | AdvancedStepName, string> = {
-  connect_source: '/settings/connectors',
-  build_watchlist: '/watchlists',
-  invite_user: '/settings/users',
-  verify_posts: '/posts',
-  enable_enrichment: '/settings/enrichment',
-  configure_alerts: '/settings/alerts',
+  connect_source: '/tenant/connectors',
+  build_watchlist: '/tenant/watchlists',
+  invite_user: '/tenant/users',
+  verify_posts: '/tenant/posts',
+  enable_enrichment: '/tenant/connectors',
+  configure_alerts: '/tenant/watchlists',
 };
 
 /**

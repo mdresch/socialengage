@@ -23,7 +23,7 @@ export default async function TenantSettingsPage() {
   }
 
   const tenant = await getMyTenant();
-  const isAdmin = identity?.role === 'tenant_admin';
+  const isAdmin = identity && 'role' in identity && identity.role === 'tenant_admin';
   const createdAt = new Date(tenant.createdAt);
 
   return (
@@ -126,6 +126,80 @@ export default async function TenantSettingsPage() {
             Export Matched Posts (CSV)
           </a>
         </div>
+      </section>
+
+      {/* CRM Connector Settings Card */}
+      <section
+        aria-label="CRM Connectors"
+        style={{
+          border: '1px solid #e5e7eb',
+          borderRadius: 8,
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
+          background: '#fff',
+        }}
+      >
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>CRM Connectors</h2>
+        <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          Configure the credentials used when escalating social items to Dynamics 365, HubSpot, or Salesforce.
+        </p>
+        <a
+          href="/tenant/settings/crm"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '0.5rem 1rem',
+            border: '1px solid #d1d5db',
+            borderRadius: 6,
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            color: '#111827',
+            background: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          <span>⚙️</span>
+          <span>Manage CRM Connectors</span>
+        </a>
+      </section>
+
+      {/* Notifications & Daily Digest Card */}
+      <section
+        aria-label="Notification Preferences"
+        style={{
+          border: '1px solid #e5e7eb',
+          borderRadius: 8,
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
+          background: '#fff',
+        }}
+      >
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Notification Preferences</h2>
+        <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          Configure your morning daily digest email subscription, delivery timezone, and content preferences.
+        </p>
+        <a
+          href="/tenant/settings/digest"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '0.5rem 1rem',
+            border: '1px solid #d1d5db',
+            borderRadius: 6,
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            color: '#111827',
+            background: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          <span>✉️</span>
+          <span>Manage Daily Digest Email</span>
+        </a>
       </section>
 
       {/* Offboarding/decommission section — tenant_admin only (AC2) */}

@@ -17,6 +17,7 @@ The `/tenant/settings` screen — a Server Component that reads `GET /v1/tenants
 | ADR-0036 §2 | `core-client.ts` is the sole Bearer-attachment choke point | 6.1, re-verified by 6.9 and 6.40's own contracts |
 | ADR-0074 | Tenant-facing workspace JSON and matched-posts CSV export endpoints | 3.16 (backend), 6.40 (this screen's export buttons) |
 | ADR-0043 | Self-service tenant deletion/offboarding — the `/tenant/settings/delete` page this screen links to | 3.8 (backend), 6.13 (offboarding UI) |
+| ADR-0112 | Plan, feature gates, and seat limit UI surfaced in `/tenant/plan` | 13.6 |
 
 ## Contracts that constrain this component
 
@@ -28,7 +29,8 @@ The `/tenant/settings` screen — a Server Component that reads `GET /v1/tenants
 ## Files that make this work
 
 - `src/app/tenant/settings/page.tsx` — the Server Component. Reads session, gates on `'tenant'` shell, calls `getMyTenant()`, renders styled cards + export buttons + role-gated offboarding link.
-- `src/lib/core-client.ts` — `getMyTenant()` (Story 6.9), `exportWorkspace()` and `exportPostsCsv()` (Story 6.40) — the sole Bearer-attachment choke point for all three calls.
+- `src/app/tenant/plan/page.tsx` (Story 13.6, ADR-0112) — read-only tenant plan/seat/feature-gate view; reachable from the sidebar as "Plan & Seats".
+- `src/lib/core-client.ts` — `getMyTenant()` (Story 6.9), `getMyPlan()` (Story 13.6), `exportWorkspace()` and `exportPostsCsv()` (Story 6.40) — the sole Bearer-attachment choke point for all three calls.
 - `src/app/api/tenants/export/workspace/route.ts` — same-origin proxy for `GET /v1/tenants/me/export/workspace`.
 - `src/app/api/posts/export.csv/route.ts` — same-origin proxy for `GET /v1/posts?format=csv`.
 

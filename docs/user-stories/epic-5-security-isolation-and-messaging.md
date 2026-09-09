@@ -1,4 +1,4 @@
-# Epic 5: Security, Isolation & Messaging
+﻿# Epic 5: Security, Isolation & Messaging
 
 ## Story 5.1 — Thin ingestion events with REST fetch on demand
 

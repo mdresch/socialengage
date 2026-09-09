@@ -25,12 +25,15 @@
 // 2026-07-30 (dated note, ADR-0023): the `failing` derivation rule changed from a
 // flat "≥10 failures/hour" placeholder to a rate-relative rule (see ADR-0009's
 // "Supersession update" note) — this is the one thing ADR-0023 changes;
-// degraded/disconnected/healthy and credentialStatus are unaffected. AC2's
-// "failing" test below still uses 10 pure failures and its assertion is
-// unchanged: 10/10 attempts is 100% failure with 10 attempts, which trivially
-// clears the new rule's 50%-rate/5-attempt-floor too, just for a different
-// underlying reason than before. It is a superset case, not a test of the new
-// rule's exact boundary — that precision lives in Story 2.5's own contract.
+// degraded/disconnected/healthy and credentialStatus are unaffected.
+//
+// 2026-08-28 (dated note, ADR-0109/Story 13.1): the rate-relative rule and the
+// 20-consecutive ceiling are themselves superseded. `failing` now follows from
+// 5 consecutive failed `ingestion_runs` of any kind. AC2's "failing" test
+// below still uses 10 pure failures and its assertion is unchanged: 10
+// consecutive failures trivially clears the new threshold. It remains a
+// superset case; the exact boundary lives in Story 2.5's and Story 13.1's
+// own contracts.
 
 import { randomUUID } from 'crypto';
 import { getPool, closePool } from '../../src/db/pool';

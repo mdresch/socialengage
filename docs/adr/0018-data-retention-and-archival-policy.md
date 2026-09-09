@@ -47,11 +47,11 @@ Retention is tiered — hot primary storage plus cheaper archival storage — ra
 - **Retain everything indefinitely, no tiering** — simplest to implement (nothing to build), but directly at odds with `SocialPost` being explicitly "high-volume and unbounded" (§6); primary storage cost and query performance degrade without limit as tenants and time accumulate.
 - **Fixed whole-row TTL with hard deletion** (e.g., delete `SocialPost` rows entirely after N months) — simple and bounds storage cleanly, but breaks the multi-year topic-graphing capability the original design conversation explicitly anticipated, and would also orphan `AuthorTopicSignal`/`IngestionRun` references depending on cutoff timing.
 
-## Open questions (implementation defaults, not blocking acceptance)
+## Open Questions
 
-- ~~Is 90 days the right window for both `rawPayload` and `IngestionRun`, or should they diverge, or be configurable?~~ **Resolved at acceptance:** they diverge (90 days / 18 months) and both are configurable rather than tenant-tied at this stage.
-- Is monthly partitioning the right granularity, or is that premature before real ingestion-volume data exists?
-- Tenant offboarding and right-to-erasure handling is out of scope here and needs its own decision.
+- [x] **[Q-0018-1]** ~~Is 90 days the right window for both `rawPayload` and `IngestionRun`, or should they diverge, or be configurable?~~ **Resolved at acceptance:** they diverge (90 days / 18 months) and both are configurable rather than tenant-tied at this stage.
+- [ ] **[Q-0018-2]** Is monthly partitioning the right granularity, or is that premature before real ingestion-volume data exists?
+- [ ] **[Q-0018-3]** Tenant offboarding and right-to-erasure handling is out of scope here and needs its own decision.
 
 **Pending supersession note, added 2026-08-05 — not yet in effect, ADR-0039 is still Proposed.** [ADR-0039](0039-tenant-offboarding-data-lifecycle-export-and-deletion.md), if accepted, resolves this Open Question directly and decides one narrow, scoped exception to this ADR's own "`IngestionRun` archived, never hard-deleted" Decision text — for a deleted tenant's own `IngestionRun` rows only, once every `SocialPost` row referencing them is also deleted in the same action. This ADR's own Decision and Consequences text is unaffected and stays exactly as written; the general rule (archive, don't hard-delete `IngestionRun` for an *active* tenant) is unchanged. Per this file's own governance-table convention, this note takes effect only once ADR-0039 is actually accepted, not before.
 

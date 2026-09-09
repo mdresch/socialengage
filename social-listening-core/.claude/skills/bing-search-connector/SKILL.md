@@ -20,6 +20,11 @@ Actively query the Bing Search API (Azure AI Services / Azure AI Foundry Groundi
 - `bingSearchQueryBuilder.ts` — Watchlist query string formatting (quoted terms OR-expression or boolean expression) and in-process AST candidate matching.
 - `pollBingSearch.ts` — Scheduled polling loop across tenant active watchlists, 1.2s sequential pacing delay, deterministic auto endpoint fallback, candidate evaluation cap, post deduplication, event emission, `post_watchlist_matches` junction insertion, and Azure cost telemetry.
 
+## Relations to other components
+
+*(Documentation Steward addition, 2026-08-26, per `docs/implementation-methodology.md`'s 2026-08-13 relationship-assertion convention.)*
+- `searchForResearch()` is called by `src/composer/composerResearchService.ts`, reached at the real production call site `POST /v1/composer/research` (`composerRouter.ts`) — relationship asserted by `story-2.31.brave-and-bing-one-off-research-search-helpers.contract.test.ts` (helper-level) and `story-3.17.composer-deep-research.contract.test.ts` (endpoint-level, in `composer-research/SKILL.md`).
+
 ## Registration transparency (ADR-0048)
 - **Registration location:** `src/connectors/bootstrapConnectors.ts` (via `bootstrapConnectors()`)
 - **Extension points used:** `registerSocialConnector()` with `poll: (tenantId) => pollBingSearch(tenantId)` and `pollCadenceMs: ONE_HOUR_MS`

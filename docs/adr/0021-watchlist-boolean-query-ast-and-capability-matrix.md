@@ -40,10 +40,10 @@ Each connector declares which AST node types it can translate to its platform's 
 - **Require every connector to support the full boolean AST** — would eliminate degradation entirely, but is unrealistic given real platform search APIs vary widely in expressiveness (some RSS/newswire aggregators offer no boolean query support at all); would effectively block onboarding weaker-capability platforms.
 - **Per-clause degradation instead of whole-query** — preserves more native-filtering benefit, rejected as the v1 default only for implementation simplicity and tenant-facing clarity, not because it's architecturally wrong; worth revisiting once whole-query degradation is shown to matter often enough in practice.
 
-## Open questions for decision
+## Open Questions
 
-- ~~Is whole-query degradation an acceptable v1 simplification, or does the native-filtering cost benefit (ADR-0006) matter enough that per-clause degradation should be built from the start?~~ **Resolved at acceptance:** whole-query, as drafted — with only RSS/News and Reddit in near-term scope, there isn't yet a real case where per-clause degradation recovers meaningful value; revisit once a 3rd connector's capability matrix shows partial, divergent support (rule of three).
-- ~~Where does `supportedQueryFeatures` surface to the tenant — connector status page, watchlist creation UI, both?~~ **Resolved at acceptance:** the connector status page (already planned Phase 1 admin UI scope), plus a lightweight badge on the watchlist detail view — not a creation-time blocking warning, which would be building creation-flow validation UI ahead of need.
+- [x] **[Q-0021-1]** ~~Is whole-query degradation an acceptable v1 simplification, or does the native-filtering cost benefit (ADR-0006) matter enough that per-clause degradation should be built from the start?~~ **Resolved at acceptance:** whole-query, as drafted — with only RSS/News and Reddit in near-term scope, there isn't yet a real case where per-clause degradation recovers meaningful value; revisit once a 3rd connector's capability matrix shows partial, divergent support (rule of three).
+- [x] **[Q-0021-2]** ~~Where does `supportedQueryFeatures` surface to the tenant — connector status page, watchlist creation UI, both?~~ **Resolved at acceptance:** the connector status page (already planned Phase 1 admin UI scope), plus a lightweight badge on the watchlist detail view — not a creation-time blocking warning, which would be building creation-flow validation UI ahead of need.
 
 ## Amendment Log
 

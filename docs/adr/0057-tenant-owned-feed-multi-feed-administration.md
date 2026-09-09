@@ -106,10 +106,10 @@ DELETE /v1/connectors/tenant-owned-feed/:id               — soft-remove
 
 The following are explicitly not resolved by this ADR:
 
-1. **Feed-count ceiling.** Left unbounded at v1 (Decision §3). Revisit only if real tenant usage or measured cost/load data ever justifies a specific number — not speculatively.
-2. **Scheduled cleanup for stale `pending` and now-`removed` rows.** Neither this ADR nor any prior one designs a background job for either. `tenant-owned-feed-connector/SKILL.md` already names the `pending`-expiry half of this gap; this ADR adds the `removed`-retention half without closing either.
-3. **Platform-Admin cross-tenant feed visibility.** A real, confirmed gap (zero references anywhere in the Platform-Admin console today) found while investigating this ADR's own scope — deliberately left for a separate, future, not-yet-drafted ADR rather than folded in here.
-4. **Whether editing `feedUrl` on a `pending` activation should interact with the verification token's TTL.** This ADR's answer is "no, they're orthogonal" (Decision §1), but the reasoning is asserted here, not exhaustively tested against every edge case an implementer might invent — worth a dated note at Story time if a real case surfaces that argues otherwise.
+- [ ] **[Q-0057-1]** **Feed-count ceiling.** Left unbounded at v1 (Decision §3). Revisit only if real tenant usage or measured cost/load data ever justifies a specific number — not speculatively.
+- [ ] **[Q-0057-2]** **Scheduled cleanup for stale `pending` and now-`removed` rows.** Neither this ADR nor any prior one designs a background job for either. `tenant-owned-feed-connector/SKILL.md` already names the `pending`-expiry half of this gap; this ADR adds the `removed`-retention half without closing either.
+- [ ] **[Q-0057-3]** **Platform-Admin cross-tenant feed visibility.** A real, confirmed gap (zero references anywhere in the Platform-Admin console today) found while investigating this ADR's own scope — deliberately left for a separate, future, not-yet-drafted ADR rather than folded in here.
+- [ ] **[Q-0057-4]** **Whether editing `feedUrl` on a `pending` activation should interact with the verification token's TTL.** This ADR's answer is "no, they're orthogonal" (Decision §1), but the reasoning is asserted here, not exhaustively tested against every edge case an implementer might invent — worth a dated note at Story time if a real case surfaces that argues otherwise.
 
 ---
 

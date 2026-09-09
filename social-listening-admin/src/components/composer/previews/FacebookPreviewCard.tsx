@@ -84,7 +84,7 @@ export function FacebookPreviewCard({ config, text, media, linkPreview }: Facebo
         <div className="preview-media-frame">
           <img
             src={media[0].url}
-            alt="Facebook attachment"
+            alt={media[0].altText || 'Facebook attachment'}
             style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
           />
         </div>

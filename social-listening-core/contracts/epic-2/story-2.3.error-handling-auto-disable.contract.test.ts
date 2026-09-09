@@ -30,10 +30,15 @@
 // ADR-0023 (accepted 2026-07-29) explicitly supersedes (see ADR-0009's/ADR-0010's
 // "Supersession update" notes). That rule-specific claim cannot survive under any
 // rate-based rule that can trigger before a flat count of exactly 10 — under
-// ADR-0023's now-current rule, 5 consecutive pure failures already crosses the
-// 50%-rate/5-attempt-floor threshold. AC4 was rewritten to prove the same thing
-// (auto-disable wiring + visible reason) using Story 2.5's now-current threshold,
-// per Story 2.5's own implementation — not a decision this file makes on its own.
+// ADR-0023's now-current rule, 5 consecutive pure failures already crossed the
+// threshold. AC4 was rewritten to prove the same thing (auto-disable wiring +
+// visible reason) using Story 2.5's then-current threshold.
+//
+// 2026-08-28 (dated note, ADR-0109/Story 13.1): the rate rule and 20-consecutive
+// ceiling are replaced by a 5-consecutive-failure `failing` threshold and an
+// immediate `disabled` state when the *latest* run is non-retryable. Auto-disable
+// remains behavior driven by derived health and `shouldAttemptIngestion()`; the
+// visible reason is still the most recent failure's `errorSummary`.
 //
 // 2026-08-12 (dated note, ADR-0051/Story 1.11): shouldAttemptIngestion() now
 // additionally requires an active connector_activations row for the scope
@@ -146,10 +151,9 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
   });
 
   it('AC4: auto-disables once the connector-level failure threshold is crossed, with a visible reason', async () => {
-    // Story 2.5/ADR-0023's now-current threshold, not re-asserted here in
-    // detail (see that story's own contract): >=5 attempts with >=50%
-    // failing crosses it. 4 pure failures stays under the attempt floor;
-    // the 5th crosses both the floor and the rate.
+    // ADR-0109's threshold: 5 consecutive failed runs of any kind. We use
+    // `network` (retryable) so the state becomes `failing`, not the
+    // immediate `disabled` a non-retryable latest run would produce.
     const tenantId = randomUUID();
     // 2026-08-12 (ADR-0051/Story 1.11): shouldAttemptIngestion() now also
     // requires activation — held constant (on) here so this AC keeps
@@ -160,8 +164,9 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
         tenantId,
         connectorInfo,
         backoffMs: fastBackoff,
+        maxRetries: 0,
         attempt: async () => {
-          throw new ClassifiableError('malformed_watchlist', `failure #${i}`);
+          throw new ClassifiableError('network', `failure #${i}`);
         },
       });
     }
@@ -171,13 +176,34 @@ describe('Story 2.3 — error handling and per-tenant auto-disable contract', ()
       tenantId,
       connectorInfo,
       backoffMs: fastBackoff,
+      maxRetries: 0,
       attempt: async () => {
-        throw new ClassifiableError('malformed_watchlist', 'the fifth failure');
+        throw new ClassifiableError('network', 'the fifth failure');
       },
     });
 
     expect(await shouldAttemptIngestion(tenantId, connectorInfo.platformId)).toBe(false);
-    expect(await getAutoDisableReason(tenantId, connectorInfo.platformId)).toBe('the fifth failure');
+    const reason = await getAutoDisableReason(tenantId, connectorInfo.platformId);
+    expect(reason).toMatch(/the fifth failure/);
+  });
+
+  it('AC4a (ADR-0109): a non-retryable failure on the latest run immediately disables, not failing', async () => {
+    const tenantId = randomUUID();
+    await setConnectorActivation(tenantId, connectorInfo.platformId, 'tenant', true);
+
+    // A single malformed-watchlist (non-retryable) run immediately produces
+    // `disabled`; there is no threshold to cross.
+    await runIngestionAttempt({
+      tenantId,
+      connectorInfo,
+      backoffMs: fastBackoff,
+      attempt: async () => {
+        throw new ClassifiableError('malformed_watchlist', 'bad query disables immediately');
+      },
+    });
+
+    expect(await shouldAttemptIngestion(tenantId, connectorInfo.platformId)).toBe(false);
+    expect(await getAutoDisableReason(tenantId, connectorInfo.platformId)).toBe('bad query disables immediately');
   });
 
   it('AC5: a second tenant is provably unaffected by the first tenant\'s auto-disable', async () => {

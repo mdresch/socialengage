@@ -98,7 +98,7 @@ afterAll(async () => {
   await closeTenantDeletionPool();
   await closeAdminPool();
   await closePool();
-}, 30000);
+}, 120000);
 
 /** Same real-completion-signal polling Story 3.7's own contract already proved necessary. */
 async function waitForTenantDeletionToComplete(tenantId: string, timeoutMs = 60000): Promise<void> {

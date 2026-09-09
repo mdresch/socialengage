@@ -1,6 +1,6 @@
 # ADR-0110: Per-connector query translation and validation
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `WatchlistAST` to platform-specific query translation layer, the `ConnectorQueryCapability` allowlist, and the validation that rejects unsupported clauses before they reach a connector.
 
@@ -89,12 +89,19 @@ interface NativeQuery {
 
 ---
 
-## Open questions
+## Open Questions
 
-- How are boolean `NOT` groups translated for platforms that do not support `NOT`?
-- Should the connector use native `OR` or split into multiple queries?
-- How is query length measured — characters, bytes, or encoded length?
-- Should `date` clauses be validated against the connector's lookback window?
+- [x] ~~**[Q-0110-1]** How are boolean `NOT` groups translated for platforms that do not support `NOT`?~~ — **Resolved (2026-09-04):** Implemented in Story 13.2 via `social-listening-core/src/connectors/queryTranslation.ts`; platforms omitting `NOT` from `supportedOperators` fail fast with `UNSUPPORTED_QUERY_CLAUSE` at validation time; platforms supporting `NOT` translate the group as `NOT (${fragments[0]})` or `NOT (${fragments.join(' OR ')})`.
+- [x] ~~**[Q-0110-2]** Should the connector use native `OR` or split into multiple queries?~~ — **Resolved (2026-09-04):** Implemented in Story 13.2 via `social-listening-core/src/connectors/queryTranslation.ts`; native `OR` translation is used when `OR` is present in `supportedOperators`; if unsupported, the query fails validation and falls back to in-process watchlist matching rather than generating multiple queries.
+- [x] ~~**[Q-0110-3]** How is query length measured — characters, bytes, or encoded length?~~ — **Resolved (2026-09-04):** Implemented in Story 13.2 via `social-listening-core/src/connectors/queryTranslation.ts`; measured by character length (`native.query.length > profile.maxQueryLength`).
+- [x] ~~**[Q-0110-4]** Should `date` clauses be validated against the connector's lookback window?~~ — **Resolved (2026-09-04):** Implemented in Story 13.2 via `social-listening-core/src/connectors/queryTranslation.ts`; `date` clauses are mapped directly to connector parameters (`from`/`to` or `publishedAfter`/`publishedBefore`). Platforms that do not support native date filtering omit `'date'` from `supportedClauses`, failing validation with `UNSUPPORTED_QUERY_CLAUSE` and routing to in-process fallback.
+
+---
+
+## Amendment Log
+
+- 2026-08-28 — Accepted at drafting.
+- 2026-09-04 — Open questions resolved against Story 13.2 query translation implementation in `social-listening-core/src/connectors/queryTranslation.ts`.
 
 ---
 

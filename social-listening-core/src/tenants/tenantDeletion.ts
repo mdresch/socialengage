@@ -245,6 +245,7 @@ export async function executeTenantDeletion(tenantId: string, actorIdentity: str
     if (deleted) archivedIngestionRunBlobsDeleted += 1;
   }
 
+  const watchlistShares = await batchDeleteByTenant('watchlist_shares', tenantId);
   const watchlists = await batchDeleteByTenant('watchlists', tenantId);
   const platformCredentials = await batchDeleteByTenant('platform_credentials', tenantId);
   const users = await batchDeleteByTenant('users', tenantId);
@@ -267,6 +268,7 @@ export async function executeTenantDeletion(tenantId: string, actorIdentity: str
           detail: {
             socialPosts,
             authors,
+            watchlistShares,
             watchlists,
             platformCredentials,
             users,

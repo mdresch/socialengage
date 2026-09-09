@@ -20,6 +20,7 @@ import { OverviewTab } from './OverviewTab';
 import { SourcesTab } from './SourcesTab';
 import { SentimentTab } from './SentimentTab';
 import { ConversationsTab } from './ConversationsTab';
+import { LocationTab } from './LocationTab';
 import type { AnalyticsTab } from './page';
 
 function providerPillClass(providerId: string): string {
@@ -69,6 +70,7 @@ const TABS: { id: AnalyticsTab; label: string }[] = [
   { id: 'sentiment', label: 'Sentiment' },
   { id: 'conversations', label: 'Conversations' },
   { id: 'sources', label: 'Sources' },
+  { id: 'location', label: 'Location' },
 ];
 
 interface AnalyticsClientProps {
@@ -101,6 +103,7 @@ export function AnalyticsClient({
   const [coverage, setCoverage] = useState<WatchlistCoverageEntry[]>(initialWatchlistCoverage);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const sourceFilter = overviewFilters.activeSourceFilter;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [detailPostId, setDetailPostId] = useState<string | null>(null);
   const [detailPost, setDetailPost] = useState<FlatPost | null>(null);
@@ -144,20 +147,23 @@ export function AnalyticsClient({
   }
 
   /**
-   * Story 8.4 — reads DateRangeValue.compareWithPrevious.
-   * Story 8.9 — also forwards current active watchlistId and refreshes coverage.
+   * Story 8.4 / Story 8.9 — shared re-fetch of /api/analytics/summary.
+   * Forwards optional watchlist, source, and period-comparison params.
    */
-  async function handleRangeChange(value: DateRangeValue) {
-    setRangeKey(value.key);
-    const nextRange: DateRangeFilter = { startDate: value.startDate, endDate: value.endDate };
-    setRange(nextRange);
+  async function fetchSummaryAndCoverage(
+    nextRange: DateRangeFilter,
+    nextWatchlist: string | null,
+    nextSource: string | null,
+    withCompare = false
+  ) {
     setLoading(true);
     setError(null);
-    const compareParam = value.compareWithPrevious ? '&compare=true' : '';
-    const wlParam = watchlistFilter ? `&watchlistId=${encodeURIComponent(watchlistFilter)}` : '';
+    const compareParam = withCompare ? '&compare=true' : '';
+    const wlParam = nextWatchlist ? `&watchlistId=${encodeURIComponent(nextWatchlist)}` : '';
+    const sourceParam = nextSource ? `&providerId=${encodeURIComponent(nextSource)}` : '';
     try {
       const response = await fetch(
-        `/api/analytics/summary?startDate=${encodeURIComponent(nextRange.startDate)}&endDate=${encodeURIComponent(nextRange.endDate)}${compareParam}${wlParam}&coverage=true`
+        `/api/analytics/summary?startDate=${encodeURIComponent(nextRange.startDate)}&endDate=${encodeURIComponent(nextRange.endDate)}${compareParam}${wlParam}${sourceParam}&coverage=true`
       );
       if (!response.ok) {
         throw new Error('Failed to load analytics data.');
@@ -173,10 +179,21 @@ export function AnalyticsClient({
         setCoverage(result.coverage);
       }
     } catch {
-      setError('Could not load analytics for this date range. Try again.');
+      setError('Could not load analytics data.');
     } finally {
       setLoading(false);
     }
+  }
+
+  /**
+   * Story 8.4 — reads DateRangeValue.compareWithPrevious.
+   * Story 8.9 — also forwards current active watchlistId and refreshes coverage.
+   */
+  async function handleRangeChange(value: DateRangeValue) {
+    setRangeKey(value.key);
+    const nextRange: DateRangeFilter = { startDate: value.startDate, endDate: value.endDate };
+    setRange(nextRange);
+    await fetchSummaryAndCoverage(nextRange, watchlistFilter, sourceFilter, value.compareWithPrevious);
   }
 
   /**
@@ -186,35 +203,22 @@ export function AnalyticsClient({
   async function handleWatchlistChange(nextWatchlistId: string | null) {
     setWatchlistFilter(nextWatchlistId);
     setOverviewFilters((prev) => ({ ...prev, activeWatchlistFilter: nextWatchlistId }));
-    setLoading(true);
-    setError(null);
-    const wlParam = nextWatchlistId ? `&watchlistId=${encodeURIComponent(nextWatchlistId)}` : '';
-    try {
-      const response = await fetch(
-        `/api/analytics/summary?startDate=${encodeURIComponent(range.startDate)}&endDate=${encodeURIComponent(range.endDate)}${wlParam}&coverage=true`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to load analytics data.');
-      }
-      const result = (await response.json()) as {
-        current: AnalyticsSummary;
-        previous: AnalyticsSummary | null;
-        coverage?: WatchlistCoverageEntry[];
-      };
-      setSummary(result.current);
-      setPreviousSummary(result.previous);
-      if (result.coverage) {
-        setCoverage(result.coverage);
-      }
-    } catch {
-      setError('Could not load analytics for this watchlist. Try again.');
-    } finally {
-      setLoading(false);
+    await fetchSummaryAndCoverage(range, nextWatchlistId, sourceFilter);
+  }
+
+  /**
+   * Story 8.7 — re-fetch summary and coverage when a source filter is toggled
+   * so the watchlist coverage widget stays consistent with the filtered posts.
+   */
+  function handleOverviewFiltersChange(next: OverviewFilters) {
+    setOverviewFilters(next);
+    if (next.activeSourceFilter !== sourceFilter) {
+      void fetchSummaryAndCoverage(range, watchlistFilter, next.activeSourceFilter);
     }
   }
 
   return (
-    <div className="an-shell" id="tenant-analytics-dashboard">
+    <div className="an-shell an-root" id="tenant-analytics-dashboard">
       <div className="an-header">
         <div className="an-header-title-wrap">
           <h1 className="an-page-title">Analytics</h1>
@@ -283,16 +287,17 @@ export function AnalyticsClient({
             range={range}
             initialFilters={initialOverviewFilters}
             filters={overviewFilters}
-            onFiltersChange={setOverviewFilters}
+            onFiltersChange={handleOverviewFiltersChange}
             watchlists={watchlists}
             watchlistCoverage={coverage}
             onWatchlistChange={handleWatchlistChange}
             hideHeaderControls={true}
           />
         )}
-        {activeTab === 'sources' && <SourcesTab summary={summary} />}
+        {activeTab === 'sources' && <SourcesTab summary={summary} previousSummary={previousSummary} range={range} />}
         {activeTab === 'sentiment' && <SentimentTab summary={summary} range={range} />}
         {activeTab === 'conversations' && <ConversationsTab summary={summary} range={range} />}
+        {activeTab === 'location' && <LocationTab summary={summary} previousSummary={previousSummary} range={range} />}
       </div>
 
       {drawerOpen && (

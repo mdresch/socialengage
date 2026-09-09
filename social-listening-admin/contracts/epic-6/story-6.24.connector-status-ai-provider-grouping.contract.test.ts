@@ -153,8 +153,25 @@ describe('Story 6.24 — connector status screen groups Connectors and AI Provid
   });
 
   describe('AC4: Connector cards show each real platform interval, not a universal "2 minutes"', () => {
-    it('gnews (15-minute cadence) and wikipedia (30-minute cadence) each show their own real interval', () => {
-      const rows = [gnewsRow, wikipediaRow];
+    it('gnews (15-minute cadence), wikipedia (30-minute cadence), and youtube (15-minute cadence) each show their own real interval', () => {
+      const youtubeRow = {
+        platform: {
+          id: 'youtube',
+          name: 'YouTube Data API',
+          authMode: 'api_key',
+          category: 'Ingestion',
+          description: 'YouTube connector',
+          personalScopeAllowed: false,
+        },
+        isActive: true,
+        health: {
+          status: 'healthy',
+          lastAttemptAt: '2026-08-19T10:00:00.000Z',
+          lastSuccessfulFetchAt: '2026-08-19T10:00:00.000Z',
+          consecutiveFailures: 0,
+        },
+      };
+      const rows = [gnewsRow, wikipediaRow, youtubeRow];
       const html = renderComponent(STATUS_CLIENT_MODULE, 'ConnectorStatusClient', { rows, isTenantAdmin: true });
       expect(html).toContain('Interval: every 15 minutes');
       expect(html).toContain('Interval: every 30 minutes');

@@ -1,6 +1,6 @@
-# ADR-0101: Multi-source connector capability matrix
+﻿# ADR-0101: Multi-source connector capability matrix
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** a `SocialConnector` capability matrix (`poll`, `count`, `publish`, `reply`, `backfill`) and the `GET /v1/connectors/capabilities` endpoint that lets the UI render the right actions per platform.
 
@@ -68,6 +68,33 @@ interface SocialConnector {
 - It is optional and bounded by `maxLookbackDays`.
 - Backfill is triggered by a Platform-Admin or Tenant-Admin action, not automatically.
 
+### 6. Revision (2026-08-28) — `sourceType` on the capability matrix
+
+Competitive research (`01-multi-source-ingestion-deep-research.md`) found that every major listening product markets source-type breadth as a distinct, user-facing coverage dimension, not just a backend implementation detail:
+
+- Brandwatch markets forums, news, and broadcast as separate coverage areas (100M+ sources across social, news, blogs, forums, reviews, broadcast — https://www.brandwatch.com/datanetworks/forums/).
+- Meltwater lists traditional media, online publications, podcasts, and region-specific platforms (WeChat, Weibo, Douyin, LINE) as distinct categories (https://www.meltwater.com/en/products/media-monitoring).
+- Mention lets users scope a query to specific source *categories* — news only, blogs only, social only (https://mention.com/en/media-monitoring/).
+
+This is a materially useful extension to the capability matrix, not just a UI nicety: without a stable `sourceType` field, the admin UI has no principled way to group connectors by category, and `02-boolean-query-builder`'s planned source-type query scoping (ADR-0102) has no canonical vocabulary to draw from.
+
+`SocialConnectorCapabilities` gains a required `sourceType` field:
+
+```ts
+interface SocialConnectorCapabilities {
+  sourceType: 'social' | 'news' | 'forum' | 'review' | 'broadcast' | 'blog' | 'wiki';
+  poll: boolean | { cadenceMs: number; supportsTimeWindow: boolean };
+  count?: { supportsExactCount: boolean };
+  publish?: { supportsScheduling: boolean; supportedAssetTypes: string[] };
+  reply?: boolean;
+  backfill?: { supportsHistorical: boolean; maxLookbackDays: number };
+}
+```
+
+`GET /v1/connectors/capabilities` responses include `sourceType`, letting the admin UI's `ConnectorGrid`/`ConnectorCard` group connectors by category so tenants can see coverage gaps at a glance instead of a flat platform list. This is additive only — existing consumers that ignore `sourceType` are unaffected.
+
+Each existing connector is classified once at implementation time: GNews/Brave/Bing → `news`, Newswire → `news`, tenant-owned-feed → `blog`, Wikipedia → `wiki`, Facebook/Instagram/LinkedIn → `social`.
+
 ---
 
 ## Consequences
@@ -92,12 +119,19 @@ interface SocialConnector {
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `count` capability vary by connector or by platform? A single platform may have multiple connector implementations.
-- How are capability differences per API tier exposed? A `tier` field or `capabilities.tier`?
-- Should `backfill` require a separate `tenant_admin` permission?
-- How is `getCapabilities()` tested in contract tests?
+- [ ] **[Q-0101-1]** Should `count` capability vary by connector or by platform? A single platform may have multiple connector implementations.
+- [ ] **[Q-0101-2]** How are capability differences per API tier exposed? A `tier` field or `capabilities.tier`?
+- [ ] **[Q-0101-3]** Should `backfill` require a separate `tenant_admin` permission?
+- [ ] **[Q-0101-4]** How is `getCapabilities()` tested in contract tests?
+- [ ] **[Q-0101-5]** **Added 2026-08-28:** Should `sourceType` (Decision §6) support more than one value per connector (e.g., a connector that is both `social` and covers `review` content)? Deferred to Story 12.1 implementation — v1 assumes one `sourceType` per connector, consistent with every competitor product reviewed treating source type as a single coverage category per data source.
+
+---
+
+## Amendment Log
+
+- 2026-08-28 — Added Decision §6 (`sourceType` field) per competitive research findings in `c:/Users/menno/Documents/Second Brain/raw/01-multi-source-ingestion-deep-research.md` (Brandwatch, Meltwater, Mention). See Decision §6 for the full rationale and citations. Status remains **Proposed** — the drafting persona does not hold ADR-acceptance authority; only Menno accepts an ADR.
 
 ---
 

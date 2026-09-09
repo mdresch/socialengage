@@ -1,4 +1,4 @@
-# BRD-0096: Daily Digest Email
+﻿# BRD-0096: Daily Digest Email
 
 ## 1. Document Control
 

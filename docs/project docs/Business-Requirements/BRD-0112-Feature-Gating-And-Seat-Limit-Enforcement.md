@@ -1,4 +1,4 @@
-# Business Requirements Document — Feature Gating and Seat-Limit Enforcement
+﻿# Business Requirements Document — Feature Gating and Seat-Limit Enforcement
 
 ## 1. Document Control
 

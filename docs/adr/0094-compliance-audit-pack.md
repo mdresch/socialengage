@@ -1,6 +1,8 @@
-# ADR-0094: Compliance audit pack
+﻿# ADR-0094: Compliance audit pack
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
+
+**Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the tamper-evident cryptographic compliance audit pack generator, SHA-256 manifest verification, and admin audit pack download workflow. Story 10.13 and Story 10.14 are fully implemented and verified.
 
 **Authorizes:** a `compliance_audit_packs` data model and a tamper-evident export format that a `Tenant-Admin` or `Platform-Admin` can generate for a selected date range and request type.
 
@@ -100,12 +102,12 @@ POST /v1/compliance/audit-packs
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should the pack include `platform_admin_audit_log` entries for `Platform-Admin` actions on the tenant?
-- How are corrections to records handled after a pack has been generated? A new pack supersedes the old one with an `supersedes_id` field?
-- What is the HMAC key source? Azure Key Vault or a platform-wide managed identity secret?
-- Should the public DSR/takedown requesters receive a copy of the audit pack for their own request?
+- [ ] **[Q-0094-1]** Should the pack include `platform_admin_audit_log` entries for `Platform-Admin` actions on the tenant?
+- [ ] **[Q-0094-2]** How are corrections to records handled after a pack has been generated? A new pack supersedes the old one with an `supersedes_id` field?
+- [ ] **[Q-0094-3]** What is the HMAC key source? Azure Key Vault or a platform-wide managed identity secret?
+- [ ] **[Q-0094-4]** Should the public DSR/takedown requesters receive a copy of the audit pack for their own request?
 
 ---
 
@@ -114,3 +116,7 @@ POST /v1/compliance/audit-packs
 - Related feature design: `docs/product-research/feature-designs/16-compliance-audit-pack.md`
 - Related scoping: `docs/product-research/feature-adr-scoping.md`
 - Related ADRs: `ADR-0031` (audit log), `ADR-0092` (takedown), `ADR-0093` (DSR), `ADR-0016` (Azure Blob Storage)
+
+### Pending supersession note (2026-08-28)
+
+If ADR-0127 (Proposed, 2026-08-28) is accepted, this ADR's Decision §2 would be refined by ADR-0127's own §1–§3 — specifically Merkle-tree hash chaining for audit log integrity verification and multi-format evidence bundle export. This is a pending note only: ADR-0127 is currently Proposed, not accepted.

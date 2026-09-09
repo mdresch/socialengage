@@ -1,6 +1,6 @@
-# ADR-0112: Feature gating and seat-limit enforcement
+﻿# ADR-0112: Feature gating and seat-limit enforcement
 
-**Status:** Proposed (2026-08-23)
+**Status:** Accepted (2026-08-28)
 
 **Authorizes:** the `tenant_settings.feature_gates` schema, the per-plan feature allowlist, and the seat-limit enforcement that keeps `active_seat_count` within the tenant's plan.
 
@@ -104,12 +104,12 @@ const PLANS = {
 
 ---
 
-## Open questions
+## Open Questions
 
-- Should `Tenant-Admin` see an upgrade path in the UI when they hit a gate or seat limit?
-- How are historical users who exceed a new lower `max_seats` handled? Grandfathered or forced to deactivate?
-- Should `Platform-Admin` be able to override a gate for a single tenant without changing the plan?
-- How are feature gates exposed in the OpenAPI spec?
+- [ ] **[Q-0112-1]** Should `Tenant-Admin` see an upgrade path in the UI when they hit a gate or seat limit?
+- [ ] **[Q-0112-2]** How are historical users who exceed a new lower `max_seats` handled? Grandfathered or forced to deactivate?
+- [ ] **[Q-0112-3]** Should `Platform-Admin` be able to override a gate for a single tenant without changing the plan?
+- [ ] **[Q-0112-4]** How are feature gates exposed in the OpenAPI spec?
 
 ---
 

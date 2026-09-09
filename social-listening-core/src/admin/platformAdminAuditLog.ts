@@ -30,18 +30,45 @@ export interface PlatformAdminAuditEntry {
  * RLS-scoped connection so it can never be confused with either role's own
  * bypass.
  */
+import { randomUUID } from 'crypto';
+import { computeRecordHash, GENESIS_HASH } from '../compliance/auditHashChaining';
+
 export async function logPlatformAdminAction(
   entry: PlatformAdminAuditEntry,
   pool: Pool | PoolClient = getPlatformAdminPool()
 ): Promise<void> {
+  const lastRow = await pool.query<{ record_hash: string }>(
+    `SELECT record_hash FROM platform_admin_audit_log
+     WHERE (target_tenant_id = $1 OR ($1 IS NULL AND target_tenant_id IS NULL))
+     ORDER BY created_at DESC, id DESC
+     LIMIT 1`,
+    [entry.targetTenantId ?? null]
+  );
+  const previousRecordHash = lastRow.rows[0]?.record_hash || GENESIS_HASH;
+  const id = randomUUID();
+  const timestamp = new Date().toISOString();
+  const recordHash = computeRecordHash({
+    id,
+    tenantId: entry.targetTenantId ?? null,
+    actorId: entry.actorIdentity,
+    action: entry.operation,
+    timestamp,
+    payload: entry.detail ?? null,
+    previousRecordHash,
+  });
+
   await pool.query(
-    `INSERT INTO platform_admin_audit_log (actor_identity, operation, target_tenant_id, detail)
-     VALUES ($1, $2, $3, $4)`,
+    `INSERT INTO platform_admin_audit_log (id, actor_identity, operation, target_tenant_id, detail, previous_record_hash, record_hash, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
     [
+      id,
       entry.actorIdentity,
       entry.operation,
       entry.targetTenantId ?? null,
       entry.detail ? JSON.stringify(entry.detail) : null,
+      previousRecordHash,
+      recordHash,
+      timestamp,
     ]
   );
 }
@@ -59,6 +86,7 @@ export interface PlatformAdminAuditLogEntry {
 export interface AuditLogQueryFilters {
   tenantId?: string;
   actorIdentity?: string;
+  operation?: string;
   from?: string;
   to?: string;
   cursor?: string;
@@ -114,6 +142,10 @@ export async function queryPlatformAdminAuditLog(filters: AuditLogQueryFilters =
   if (filters.actorIdentity) {
     params.push(filters.actorIdentity);
     conditions.push(`actor_identity = $${params.length}`);
+  }
+  if (filters.operation) {
+    params.push(filters.operation);
+    conditions.push(`operation = $${params.length}`);
   }
   if (filters.from) {
     params.push(filters.from);
