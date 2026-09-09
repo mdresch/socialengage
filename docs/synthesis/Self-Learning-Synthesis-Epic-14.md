@@ -1,9 +1,9 @@
 # Self-Learning Synthesis: Epic 14 (Continuous Self-Learning Synthesis & Feedback)
 
-**Compiled Date:** 2026-09-07
-**Source Capture:** `raw/synthesis-epic-14-2026-09-07/`
-**Git HEAD:** `e2df874705ea5bc3cdcc560b820b19899ed34309`
-**Branch:** `main`
+**Compiled Date:** 2026-09-08
+**Source Capture:** `raw/synthesis-epic-14-2026-09-08/`
+**Git HEAD:** `9ad8286a1440e97d7c9aff727d196a8fd4eb186a`
+**Branch:** `feat/story-17.2`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,11 +12,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 542 |
+| Git commits scanned | 393 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 15 |
-| Contract test files | 222 |
-| ADRs with Implementation Learnings | 9/140 |
+| Feature commits (this epic) | 20 |
+| Contract test files | 232 |
+| ADRs with Implementation Learnings | 10/142 |
 
 ## 2. Healing & Fix Passes
 
@@ -74,6 +74,9 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `9dd1747464b9538ccee14b25cfbefd5f7fb398ce` | 2026-09-07 13:10:24 +0200 | docs(plan): archive Story 14.5 pre-execution implementation plan |
+| `84a92eb3c2441e2facf4f18ee27f77482dea5cc9` | 2026-09-07 13:08:13 +0200 | docs(walkthrough): archive Story 14.5 empirical verification walkthrough |
+| `ca0383ea93028abd3eae38b4a47a5cda484e6ae0` | 2026-09-07 11:10:37 +0200 | chore(synthesis): refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry |
 | `c951ecbd857f60b9b832b4985d863eaa02ff09d0` | 2026-09-07 11:09:25 +0200 | chore: record post-commit hook metadata for Story 14.5 |
 | `02e27bb1b1c01a210305f454a9da556d9c367e1f` | 2026-09-07 11:09:02 +0200 | feat(epic-14): implement Story 14.5 Continuous Self-Learning Synthesis and Telemetry Feedback Architecture |
 | `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b` | 2026-09-06 00:18:53 +0200 | chore(telemetry): sync dashboard telemetry for Story 14.4 |
@@ -83,7 +86,9 @@
 | `c9037238ac90eaae565594f81b045e5a3123c578` | 2026-09-05 22:04:42 +0200 | feat(epic-14): implement Story 14.3 SearchProviderConnector abstraction |
 | `d2aeb80610bfde1b6153eece71a59b30e420bfaa` | 2026-09-04 17:20:27 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.2 |
 | `c1ab9b297a5a7a279da99825432d27319e3ab69a` | 2026-09-04 17:06:18 +0200 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) |
+| `f53a870143c97aa723711eba3cf20dd2eec3a53e` | 2026-09-04 16:31:39 +0200 | Merge remote-tracking branch 'origin/main' |
 | `8cde283a9dc0bdd74e2aeb1e6e8f499e4bbba921` | 2026-09-04 16:18:24 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1 |
+| `c68c1a13814e47e19627dd8ad8c6ee2540261673` | 2026-09-04 16:18:12 +0200 | docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1) |
 | `1d03403524f6855863156ef054fe1cc50f4dff2c` | 2026-09-04 16:17:04 +0200 | feat(publishing): implement Story 14.1 — Additional social platform publishing roadmap (ADR-0118) |
 | `d1ab715cc34ffede1dd5545fed688e3ea7e92a25` | 2026-08-27 12:40:57 +0200 | feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5 |
 | `6f4f25eaf4cc158c643a5d53de064e7cbe44a078` | 2026-08-27 12:36:19 +0200 | feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122 |
@@ -92,9 +97,9 @@
 
 ## 4. Contract Test Inventory
 
-Total: 222 contract test files.
+Total: 232 contract test files.
 
-### social-listening-admin/contracts (81 files)
+### social-listening-admin/contracts (83 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -122,6 +127,8 @@ Total: 222 contract test files.
 - `story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts` (modified 2026-09-02)
 - `story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (modified 2026-08-31)
 - `story-13.6.plan-and-seat-management-ui.contract.test.ts` (modified 2026-09-01)
+- `story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts` (modified 2026-09-08)
+- `story-17.2.onboarding-journeys-ui.contract.test.ts` (modified 2026-09-08)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
 - `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
@@ -178,7 +185,7 @@ Total: 222 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (141 files)
+### social-listening-core/contracts (149 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -234,6 +241,14 @@ Total: 222 contract test files.
 - `story-14.3.search-provider-connector-abstraction.contract.test.ts` (modified 2026-09-05)
 - `story-14.4.composer-deep-research-caching.contract.test.ts` (modified 2026-09-05)
 - `story-14.5.self-learning-telemetry.contract.test.ts` (modified 2026-09-07)
+- `story-15.1.alert-rules-refinements.contract.test.ts` (modified 2026-09-07)
+- `story-15.2.data-export-sampling.contract.test.ts` (modified 2026-09-07)
+- `story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts` (modified 2026-09-07)
+- `story-16.2.dsr-article-18-restriction.contract.test.ts` (modified 2026-09-08)
+- `story-16.3.audit-hash-chaining-manifest.contract.test.ts` (modified 2026-09-08)
+- `story-16.4.platform-ops-quota-burn-rate.contract.test.ts` (modified 2026-09-08)
+- `story-17.1.prospecting-list-refinements.contract.test.ts` (modified 2026-09-08)
+- `story-17.2.onboarding-probes.contract.test.ts` (modified 2026-09-08)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
@@ -324,7 +339,7 @@ Total: 222 contract test files.
 
 ## 5. ADR Implementation Learnings Status
 
-**Annotated (9):**
+**Annotated (10):**
 - 0036-admin-ui-authentication-session-and-role-gating-mechanism
 - 0074-tenant-facing-workspace-and-posts-export
 - 0076-composer-deep-research-agent
@@ -334,8 +349,9 @@ Total: 222 contract test files.
 - 0120-search-provider-connector
 - 0121-composer-deep-research-caching-retrigger-cost
 - 0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop
+- 0123-real-time-alert-rules-and-delivery-refinements
 
-**Not yet annotated (131):** _Not all ADRs need annotations — only those whose upfront assumptions were refined by implementation._
+**Not yet annotated (132):** _Not all ADRs need annotations — only those whose upfront assumptions were refined by implementation._
 
 ## 6. Environment Gotchas (Snapshot)
 

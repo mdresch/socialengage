@@ -2,8 +2,8 @@
 
 **Compiled Date:** 2026-09-08
 **Source Capture:** `raw/synthesis-epic-17-2026-09-08/`
-**Git HEAD:** `4faf6ee2afe41bef75ef8cdac742446587239d2c`
-**Branch:** `feat/story-17.1`
+**Git HEAD:** `0a1fe76696ff3f0a43e575cbe861945a22557e0d`
+**Branch:** `feat/story-17.2`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,11 +12,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 442 |
+| Git commits scanned | 390 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 2 |
-| Contract test files | 230 |
-| ADRs with Implementation Learnings | 10/140 |
+| Feature commits (this epic) | 5 |
+| Contract test files | 232 |
+| ADRs with Implementation Learnings | 10/142 |
 
 ## 2. Healing & Fix Passes
 
@@ -74,14 +74,17 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
+| `0a1fe76696ff3f0a43e575cbe861945a22557e0d` | 2026-09-08 21:28:43 +0200 | chore(telemetry): sync dashboard telemetry for Story 17.2 |
+| `62a4641763cfaee702ea16cc63a371b2e5eca818` | 2026-09-08 21:28:13 +0200 | docs(epic-17): record Story 17.2 build in implementation log and user stories |
+| `26d210fcb26f2a02040593fd2338f89058eef8d7` | 2026-09-08 21:26:42 +0200 | feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes |
 | `4faf6ee2afe41bef75ef8cdac742446587239d2c` | 2026-09-08 13:11:28 +0200 | chore(telemetry): update user stories, implementation log, and sync dashboard for Story 17.1 |
 | `53e63ba0ce01745ff429f24ca798ec4c823c2d3e` | 2026-09-08 13:06:04 +0200 | feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129) |
 
 ## 4. Contract Test Inventory
 
-Total: 230 contract test files.
+Total: 232 contract test files.
 
-### social-listening-admin/contracts (82 files)
+### social-listening-admin/contracts (83 files)
 
 - `story-1.1.rest-only-boundary.contract.test.ts` (modified 2026-08-01)
 - `story-10.10.real-time-alert-ui.contract.test.ts` (modified 2026-08-27)
@@ -110,6 +113,7 @@ Total: 230 contract test files.
 - `story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` (modified 2026-08-31)
 - `story-13.6.plan-and-seat-management-ui.contract.test.ts` (modified 2026-09-01)
 - `story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts` (modified 2026-09-08)
+- `story-17.2.onboarding-journeys-ui.contract.test.ts` (modified 2026-09-08)
 - `story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts` (modified 2026-08-27)
 - `story-6.10.same-domain-invite-assist-view.contract.test.ts` (modified 2026-08-10)
 - `story-6.11.post-feed.contract.test.ts` (modified 2026-08-30)
@@ -166,7 +170,7 @@ Total: 230 contract test files.
 - `story-9.4.crisis-threshold-wizard.contract.test.ts` (modified 2026-08-27)
 - `story-9.6.onboarding-checklist-ui.contract.test.ts` (modified 2026-08-29)
 
-### social-listening-core/contracts (148 files)
+### social-listening-core/contracts (149 files)
 
 - `story-1.1.independent-repo-scaffold.contract.test.ts` (modified 2026-08-01)
 - `story-1.10.postgres-readiness-and-health.contract.test.ts` (modified 2026-08-12)
@@ -229,6 +233,7 @@ Total: 230 contract test files.
 - `story-16.3.audit-hash-chaining-manifest.contract.test.ts` (modified 2026-09-08)
 - `story-16.4.platform-ops-quota-burn-rate.contract.test.ts` (modified 2026-09-08)
 - `story-17.1.prospecting-list-refinements.contract.test.ts` (modified 2026-09-08)
+- `story-17.2.onboarding-probes.contract.test.ts` (modified 2026-09-08)
 - `story-2.1.provider-connector-framework.contract.test.ts` (modified 2026-08-01)
 - `story-2.10.connector-registration-transparency.contract.test.ts` (modified 2026-08-21)
 - `story-2.11.tenant-owned-feed-connector.contract.test.ts` (modified 2026-08-17)
@@ -331,7 +336,7 @@ Total: 230 contract test files.
 - 0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop
 - 0123-real-time-alert-rules-and-delivery-refinements
 
-**Not yet annotated (130):** _Not all ADRs need annotations — only those whose upfront assumptions were refined by implementation._
+**Not yet annotated (132):** _Not all ADRs need annotations — only those whose upfront assumptions were refined by implementation._
 
 ## 6. Environment Gotchas (Snapshot)
 
@@ -403,7 +408,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 17.1.
+Feature commits reference stories: 17.2, 17.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns
