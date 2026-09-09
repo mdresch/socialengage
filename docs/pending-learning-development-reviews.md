@@ -2879,301 +2879,351 @@
 
 - **Full commit:** `aa2488b9cdb08d1b78aee9df7a5f88e3622e59eb`
 - **Files touched:**
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — this is a merge commit merging `origin/main` into the working branch, with no files of its own; the underlying commits it merges are each reviewed under their own entries in this queue.
 
 ## 2026-08-25 — 4878510 — chore(infra): extend multi-agent isolation to social-listening-admin; add user-story skill
 
 - **Full commit:** `4878510b65999cf372d225809acc31a4ab1122d8`
 - **Files touched:** .devin/skills/user-story/SKILL.md, CLAUDE.md, docs/implementation-methodology.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.7.self-service-signup.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/testUtils/devServerLock.ts, social-listening-admin/src/testUtils/portCleanup.ts, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — extends the per-run worktree/database isolation pattern (already noted in this project's own root `CLAUDE.md`) to `social-listening-admin`'s own dev-server/port-cleanup test utilities, and adds a `.devin/skills/user-story` skill. Pure dev/test infrastructure, no product code or screen touched.
 
 ## 2026-08-25 — acb4ec9 — docs(trace): align FDD-0079 and Stories 9.3/9.4 with ADR-0079's 2026-08-25 amendment
 
 - **Full commit:** `acb4ec9e966ea8add3c2442f4c92deda9df011b4`
 - **Files touched:** docs/adr/0079-crisis-template-bundle-and-activation.md, docs/project docs/Business-Requirements/BRD-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Functional-Design/FDD-0079-Crisis-Template-Bundle-And-Activation.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — aligns FDD-0079 and Stories 9.3/9.4 with a same-day ADR-0079 amendment; documentation-only, nothing built.
 
 ## 2026-08-25 — b12f5ec — docs(adr): reviewed ADR-0081–0084, BRD/FDD-0081–0085, and Epic 9 stories
 
 - **Full commit:** `b12f5ecf708c9690c17e4828306214f8359899d0`
 - **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0082-rag-post-chunking-and-embedding.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Business-Requirements/BRD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0081-RAG-Connector-Provider-Abstraction.md, docs/project docs/Functional-Design/FDD-0082-RAG-Post-Chunking-And-Embedding.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — adds ADR-0081–0084 (RAG connector/chunking/vector-store/search-ask design) plus their BRD/FDD companions and Epic 9 stories. All four ADRs record design decisions only at this commit; nothing implemented yet (the RAG feature's own real build is reviewed further down this queue, at `a4dbb66`, where it's added to both manuals).
 
 ## 2026-08-25 — fbfe9ed — chore(dashboard): sync local project telemetry  Generated with [Devin](https://devin.ai)  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 
 - **Full commit:** `fbfe9edc86995bfa99d3194e618fa184b391be2d`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — syncs the internal `project-progress-dashboard` telemetry snapshot and review-queue bookkeeping. Not a source of truth per this project's own `CLAUDE.md`, and touches no manual-relevant product code.
 
 ## 2026-08-18 — be3807d — chore: SessionStart git-hook self-heal, plus queued review/time-tracking entries
 
 - **Full commit:** `be3807d9c575e530b20f6671e6b17454769b443f`
 - **Files touched:** .claude/hooks/verify-git-hooks-installed.cjs, .claude/settings.json, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/README.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — a `SessionStart` git-hook self-heal fix plus queued review/time-tracking bookkeeping. Internal tooling only.
 
 ## 2026-08-18 — d623dac — docs: add Social Ingest and Command Center Design brainstorm (Gemini/AI Studio)
 
 - **Full commit:** `d623dac7fb88aa2015e368501e084e999a666ea2`
 - **Files touched:** docs/design/Social Ingest and Command Center Design/.env.example, docs/design/Social Ingest and Command Center Design/.gitignore, docs/design/Social Ingest and Command Center Design/Data Engineering and backend specification.md, docs/design/Social Ingest and Command Center Design/README.md, docs/design/Social Ingest and Command Center Design/bun.lock, docs/design/Social Ingest and Command Center Design/index.html, docs/design/Social Ingest and Command Center Design/metadata.json, docs/design/Social Ingest and Command Center Design/package.json, docs/design/Social Ingest and Command Center Design/server.ts, docs/design/Social Ingest and Command Center Design/src/App.tsx, docs/design/Social Ingest and Command Center Design/src/components/AnimatedChartTooltip.tsx, docs/design/Social Ingest and Command Center Design/src/components/ContentIntelligencePanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/GeminiChatbotPanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/LocationDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SentimentDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SourcesDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/index.css, docs/design/Social Ingest and Command Center Design/src/main.tsx, docs/design/Social Ingest and Command Center Design/src/types.ts, docs/design/Social Ingest and Command Center Design/tsconfig.json, docs/design/Social Ingest and Command Center Design/vite.config.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — adds a standalone design-brainstorm prototype (`docs/design/Social Ingest and Command Center Design/`, a separate Gemini/AI-Studio-generated scaffold) as a design reference document, not part of `social-listening-admin` or `social-listening-core`. Nothing here is built or contract-verified in the real app.
 
 ## 2026-08-18 — 2de0b19 — docs: analytics dashboard tab frontend specs (Overview, Sentiment, Source, Conversations, Location)
 
 - **Full commit:** `2de0b1925e2582fece7ddf7fddb2c16f7f502e03`
 - **Files touched:** docs/design/Analytics Dashboard Tab Specs/Location-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Overview-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Sentiment-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/Source-tab-frontend-spec.md, docs/design/Analytics Dashboard Tab Specs/conversations-tab-frontend-spec.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — adds frontend design-spec documents for Analytics dashboard tabs (Overview, Sentiment, Source, Conversations, Location). Design specs only, not an implementation; the real Analytics dashboard is documented in both manuals against the stories that actually shipped it (8.1–8.7, 8.9, 8.10), not this spec doc.
 
 ## 2026-08-18 — 35e35c3 — feat(story-2.18): Facebook connector captures post-level engagement counts
 
 - **Full commit:** `35e35c301a054dd950a08eade0883e9da42e8bcb`
 - **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-2.18.facebook-engagement-counts.contract.test.ts, social-listening-core/src/connectors/facebook/facebookConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Backend-only real change — Story 2.18 adds `reactions.summary(total_count)`, `comments.summary(total_count)`, and `shares` to the Facebook Graph API fields the connector requests, so a Facebook post's real engagement counts are now captured in its stored `rawPayload`. Confirmed by reading `facebookConnector.ts` directly. Checked `social-listening-admin`'s own post-display code (`postDisplay.ts`) and confirmed no screen extracts or shows these fields — unlike the real `extractLinkedInContext`/`extractInstagramContext` engagement-count extractors that already exist for those two platforms. Added as a named backend-only gap to both `tenant-admin-manual.md` and `user-manual.md`'s 'What's not built yet' sections.
 
 ## 2026-08-18 — 87c6792 — docs(story-2.18): implementation log entry and Built field
 
 - **Full commit:** `87c67923f0af12d79df77619635290b49a74f32e`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log/Built-field entry for Story 2.18, reviewed above (35e35c3).
 
 ## 2026-08-18 — b270662 — feat(story-1.15): Tier-3 per-user poll scheduling (ADR-0061)
 
 - **Full commit:** `b2706626a1a5b0a1ef67d1bac084783b80754a7b`
 - **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-1-repository-and-api-foundation.md, social-listening-core/.claude/skills/connector-activation/SKILL.md, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/live-ingestion-polling-scheduler/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-1/story-1.13.live-ingestion-polling-scheduler.contract.test.ts, social-listening-core/contracts/epic-1/story-1.15.tier3-poll-scheduling.contract.test.ts, social-listening-core/migrations/0033_add_ingestion_runs_user_id.sql, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/connectorActivationStore.ts, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/scheduler/pollScheduler.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Backend scheduler fix with a real, user-visible consequence — Story 1.15 wires `pollFacebook` into a new per-user scheduler loop in `bootstrapConnectors.ts`; per the commit's own message, `pollFacebook()` had zero real call sites in the running server before this, so a tenant's connected Facebook Page was never actually auto-polled despite showing as Connected. Confirmed directly by reading the `bootstrapConnectors.ts` diff (Facebook's registration changed from an unreachable `poll` stub that threw, to a real `pollUser: pollFacebook` wired into the scheduler on a 30-minute cadence). Updated the 'Browsing your tenant's posts' auto-polling sentence in both manuals to include Facebook, naming the prior gap honestly in the same sentence.
 
 ## 2026-08-18 — 42b1e59 — docs: implementation log entry for Story 1.15
 
 - **Full commit:** `42b1e5928308222f142f7141dfd135ab99323384`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-1-repository-and-api-foundation.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for Story 1.15, reviewed above (b270662).
 
 ## 2026-08-18 — b58b323 — feat(story-6.27): Facebook multi-Page-per-user support (ADR-0060)
 
 - **Full commit:** `b58b323cd18e4eb81dcc5adf93613c9c54b1bf75`
 - **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-connect-disconnect/SKILL.md, social-listening-admin/contracts/epic-6/story-6.23.facebook-oauth-connect-flow.contract.test.ts, social-listening-admin/contracts/epic-6/story-6.27.facebook-multi-page-picker.contract.test.ts, social-listening-admin/src/app/api/connectors/facebook/oauth/select-page/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/[id]/route.ts, social-listening-admin/src/app/api/connectors/facebook/pages/route.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/ConnectorsClient.tsx, social-listening-admin/src/app/tenant/connectors/page.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/lib/facebookOAuth.ts, social-listening-core/.claude/skills/connector-health-and-error-handling/SKILL.md, social-listening-core/.claude/skills/credential-envelope-encryption/SKILL.md, social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/.claude/skills/social-post-lineage/SKILL.md, social-listening-core/contracts/epic-2/story-2.15.facebook-connector.contract.test.ts, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts, social-listening-core/migrations/0034_create_facebook_connected_pages.sql, social-listening-core/migrations/0035_add_ingestion_runs_page_id.sql, social-listening-core/src/connectors/connectorHealth.ts, social-listening-core/src/connectors/facebook/facebookConnectedPagesStore.ts, social-listening-core/src/connectors/facebook/pollFacebook.ts, social-listening-core/src/credentials/credentialStore.ts, social-listening-core/src/http/versions/v1/facebookOAuthRouter.ts, social-listening-core/src/http/versions/v1/facebookPagesRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/ingestion/ingestionRunStore.ts, social-listening-core/src/ingestion/runIngestionAttempt.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Already documented — Story 6.27 (Facebook multi-Page-per-user support) is already covered in both manuals' 'Connecting your own social accounts' sections, explicitly citing Story 6.27 for the multi-Page checkbox picker, per-Page rows, and independent Reconnect/Disconnect actions. No further edit needed.
 
 ## 2026-08-18 — a02edb1 — docs: implementation log entry for Story 6.27
 
 - **Full commit:** `a02edb1b9c7e118f49f839cbb9eabe30a9db60d7`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for Story 6.27, reviewed above (b58b323).
 
 ## 2026-08-18 — fc011df — fix(post-feed): normalize Facebook post titles instead of raw JSON
 
 - **Full commit:** `fc011dff25330c55d8c3b930e443dba51cbda272`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.11.post-feed.contract.test.ts, social-listening-admin/src/app/tenant/posts/postDisplay.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new manual text needed — a real bug fix (a Facebook post's title previously fell through to a raw-JSON fallback because `extractDisplayText()` didn't recognize Facebook's own `message`/`permalink_url` shape), confirmed by reading the diff to `postDisplay.ts`. The fix makes the post feed actually match what both manuals already describe ('title and body preview', Story 6.11) for a Facebook post, rather than adding a new capability — no manual ever described the broken raw-JSON behavior, so there's nothing to correct.
 
 ## 2026-08-18 — afd846b — docs: implementation log entry for Story 6.11 Facebook title fix
 
 - **Full commit:** `afd846be090f1e7183f9c8e0c732f964e1c7ea74`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for the Story 6.11 Facebook title fix, reviewed above (fc011df).
 
 ## 2026-08-19 — 5d76e44 — feat(story-6.24): connector status screen groups Connectors and AI Providers
 
 - **Full commit:** `5d76e443262992672b0c89e29143959f7b8c127a`
 - **Files touched:** docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/connector-status-view/SKILL.md, social-listening-admin/contracts/epic-6/story-6.24.connector-status-ai-provider-grouping.contract.test.ts, social-listening-admin/src/app/globals.css, social-listening-admin/src/app/tenant/connectors/status/ConnectorStatusClient.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Already documented — Story 6.24 (connector status screen splits into 'Connectors' and 'AI Providers' sections) is already covered in both manuals' 'Checking connector status' sections, explicitly citing Story 6.24. No further edit needed. (This project's own root `CLAUDE.md` status line still calls Story 6.24 'Ready but not yet built' — stale against this real, contract-verified commit and `docs/implementation-log.md`; not this role's own file to correct, flagging for awareness only.)
 
 ## 2026-08-19 — 8fe2960 — docs: implementation log entry for Story 6.24
 
 - **Full commit:** `8fe296034535020ea927febb99f7754706f08ab2`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for Story 6.24, reviewed above (5d76e44).
 
 ## 2026-08-19 — 23e94fc — heal(story-6.1): fix broken local-dev login and Jest TLS-trust gap
 
 - **Full commit:** `23e94fc7c9ff52db4e2274d258b2afcbbd0dc8c4`
 - **Files touched:** social-listening-admin/.claude/skills/admin-auth-session/SKILL.md, social-listening-admin/.gitignore, social-listening-admin/contracts/epic-6/story-6.1.nextjs-scaffold-and-entra-signin.contract.test.ts, social-listening-admin/package-lock.json, social-listening-admin/package.json
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — fixes a local-dev login issue and a Jest TLS-trust gap in Story 6.1's own contract suite. Dev/test environment fix only, no change to the real sign-in flow either manual describes.
 
 ## 2026-08-19 — afe53ac — docs: implementation log entry for Story 6.1 healing pass
 
 - **Full commit:** `afe53ac0b85c9be14e97ea18d92ef0d3f3371b55`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for the Story 6.1 healing pass, reviewed above (23e94fc).
 
 ## 2026-08-19 — 1974d1d — heal(story-6.27): give the fan-out test enough real-world margin
 
 - **Full commit:** `1974d1dd363242eae763e49c9db48c9a5cc2eb48`
 - **Files touched:** social-listening-core/.claude/skills/facebook-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — widens a fan-out contract test's own timing margin for Story 6.27's backend suite. Test-reliability fix only.
 
 ## 2026-08-19 — 49a7e26 — docs: implementation log entry for Story 6.27 backend healing pass
 
 - **Full commit:** `49a7e26b6f61bc7a3a88f44a8c59a4987de1e352`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for the Story 6.27 backend healing pass, reviewed above (1974d1d).
 
 ## 2026-08-20 — ca847c0 — docs: record review logs for 8bc60a1
 
 - **Full commit:** `ca847c0eb230193f930c15f49169321432bd0f35`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — records review-queue log entries for commit 8bc60a1 across the Manager/Documentation-Steward/L&D queues. Pure governance bookkeeping.
 
 ## 2026-08-22 — f459114 — feat(admin): Story 6.36 / ADR-0072 — contract, SKILL.md, and alt-text traceability for Polypost Composer
 
 - **Full commit:** `f459114d8a252dd9f279aa9e6f04e97f5ba7fa59`
 - **Files touched:** docs/adr/0072-cross-platform-polypost-composer-and-multi-network-preview-engine.md, docs/adr/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md, social-listening-admin/contracts/epic-6/story-6.36.polypost-composer.contract.test.ts, social-listening-admin/src/components/composer/previews/InstagramPreviewCard.tsx, social-listening-admin/src/components/composer/previews/LinkedInPreviewCard.tsx
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Already documented — this commit adds the Story 6.36 (Polypost Composer) contract test, SKILL.md, and alt-text traceability; the alt-text-carries-through-every-preview-card behavior it hardens is already described in both manuals' 'Drafting a cross-platform post' section. No further edit needed.
 
 ## 2026-08-22 — ef24e9d — docs: finalize Story 6.36 traceability and Implementation Log
 
 - **Full commit:** `ef24e9d1440a25f543f93737cf244e6dc452900d`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — finalizes Story 6.36 traceability and its Implementation Log entry, reviewed above (f459114).
 
 ## 2026-08-22 — 3d16bf1 — docs(adr): amend ADR-0067 with admin-side Facebook Page and matched watchlist attribution
 
 - **Full commit:** `3d16bf193ce4e33d7792f4e747ff4e977e665172`
 - **Files touched:** docs/adr/0067-reconfirm-facebook-connector.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — amends ADR-0067 with the admin-side Facebook Page/watchlist attribution design decision. Design-record-only; the real shipped behavior is Story 6.37, reviewed below (b40041f).
 
 ## 2026-08-22 — 5f962e8 — docs(user-stories): add Story 6.37 for ADR-0067 admin-side Facebook Page and watchlist attribution
 
 - **Full commit:** `5f962e893fd003babf94885321b738ae23c7180f`
 - **Files touched:** docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — adds the Story 6.37 user story itself. Documentation-only; nothing built at this commit.
 
 ## 2026-08-22 — b40041f — feat: Story 6.37 — admin post-feed Facebook Page and matched watchlist attribution (ADR-0067)
 
 - **Full commit:** `b40041fc87d2d6d2e8820e709375630a3918b325`
 - **Files touched:** docs/adr/README.md, docs/user-stories/README.md, social-listening-admin/.claude/skills/post-feed/SKILL.md, social-listening-admin/contracts/epic-6/story-6.37.post-page-and-watchlist-attribution.contract.test.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/PostsFeedClient.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-core/.claude/skills/wikipedia-connector/SKILL.md, social-listening-core/contracts/epic-2/story-6.37.watchlist-raw-payload.contract.test.ts, social-listening-core/src/connectors/wikipedia/pollWikipedia.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Already documented — Story 6.37 (admin post-feed Facebook Page and matched-watchlist attribution) is already covered in both manuals' 'Browsing your tenant's posts' sections, explicitly citing Story 6.37. No further edit needed.
 
 ## 2026-08-22 — 6f6990f — docs: Implementation Log and Built field for Story 6.37
 
 - **Full commit:** `6f6990ff1623e3d2c390cc9458a971e2b3d023d1`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log/Built-field entry for Story 6.37, reviewed above (b40041f).
 
 ## 2026-08-22 — f9273d5 — docs(adr): accept ADR-0073 and add user stories for outbound reply to ingested posts
 
 - **Full commit:** `f9273d560ee3807f3e177149ca641f8dfaa3deb4`
 - **Files touched:** docs/adr/0073-outbound-reply-to-ingested-posts.md, docs/adr/README.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-3-data-model-storage-and-archival.md, docs/user-stories/epic-6-tenant-admin-ui.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — accepts ADR-0073 and adds the user stories for outbound reply to ingested posts (later built as Stories 2.26/2.27/3.14/6.38, already documented in both manuals' 'Replying to a post' sections). Documentation-only at this commit; nothing built yet.
 
 ## 2026-08-26 — 0ee011c — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
 - **Full commit:** `0ee011cefe422f4addb1e65cfc0cba4a616f303f`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — fixes a stale Jest template database missing `pg_cron` and the `onboarding_checklist` table. Pure test-infrastructure fix, no product code touched.
 
 ## 2026-08-26 — 00066ec — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
 - **Full commit:** `00066ec85d20fc95ff54521e8633d0b25241c7ec`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — the same stale-test-template-database fix as `0ee011c` above, re-applied (a concurrent-worktree merge artifact produced five near-identical commits/entries for this one underlying fix). No product code touched.
 
 ## 2026-08-26 — 01064dd — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
 - **Full commit:** `01064dddc82c895b5f197531592c8f73416c9580`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — same stale-test-template-database fix as `0ee011c`/`00066ec` above, re-applied again. No product code touched.
 
 ## 2026-08-26 — 7920e48 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
 - **Full commit:** `7920e48933336a27f595bfa80fe49deefca4f8b4`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — same stale-test-template-database fix as `0ee011c`/`00066ec`/`01064dd` above, re-applied again. No product code touched.
 
 ## 2026-08-26 — 01bce70 — heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist
 
 - **Full commit:** `01bce70d1e9d74c31131a128eaaf6b98e1ab3629`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/jest.global-setup.js, social-listening-core/scripts/testDbClone.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — same stale-test-template-database fix as the four entries above, re-applied a fifth time. No product code touched.
 
 ## 2026-08-26 — 0e4b787 — docs(trace): fix healing pass implementation log commit hash
 
 - **Full commit:** `0e4b78769144ef9db78f8592953ea67df1e36772`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — corrects a truncated commit hash in a prior healing pass's own Implementation Log entry. Traceability-only.
 
 ## 2026-08-26 — 3cb453d — heal(story-6.2): add CSS module mapper to Jest config for page.module.css import
 
 - **Full commit:** `3cb453d5a0a0b08906108f0b6a81e6fe05766469`
 - **Files touched:** social-listening-admin/jest.config.js, social-listening-admin/package-lock.json, social-listening-admin/package.json
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — adds a CSS-module mapper to `social-listening-admin`'s Jest config so a `page.module.css` import doesn't break the Story 6.2 contract suite. Test-tooling fix only, no change to the real routing shell either manual describes.
 
 ## 2026-08-26 — fe8ef00 — docs(trace): add Story 6.2 healing pass implementation log entry
 
 - **Full commit:** `fe8ef0015a8cd0326da3d33ad021e421805c38b8`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — Implementation Log entry for the Story 6.2 Jest-config healing pass, reviewed above (3cb453d).
 
 ## 2026-08-27 — 1eac41f — chore: sync tracking docs and dashboard telemetry after pull
 
 - **Full commit:** `1eac41fc0c5b90cea692e0ce2361796637839acc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — syncs tracking docs and dashboard telemetry after a pull. Bookkeeping only.
 
 ## 2026-08-27 — 4595a20 — docs(adr-0122): complete Story 14.5 self-learning synthesis remediation
 
 - **Full commit:** `4595a200866fdaa9a8576aa57b1fce05b12ad5f1`
 - **Files touched:** docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0076-composer-deep-research-agent.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0122-continuous-self-learning-synthesis-and-telemetry-feedback-loop.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/project docs/Lessons-Learned-Register.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0121.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — completes Story 14.5 (Continuous Self-Learning Synthesis and Telemetry Feedback Architecture) documentation remediation across several ADRs. This is internal AI-role/process tooling (a synthesis pipeline over this project's own build history, for future AI-agent sessions), not a tenant- or platform-admin-facing product capability — none of the three manuals apply.
 
 ## 2026-08-27 — 6f4f25e — feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122
 
 - **Full commit:** `6f4f25eaf4cc158c643a5d53de064e7cbe44a078`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, scripts/synthesize-telemetry.mjs
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — wires the full raw/capture-compile pipeline for ADR-0122's Continuous Self-Learning Synthesis architecture. Internal AI-role/process tooling (a synthesis pipeline over this project's own build history), not a tenant- or platform-admin-facing capability.
 
 ## 2026-08-27 — d1ab715 — feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5
 
 - **Full commit:** `d1ab715cc34ffede1dd5545fed688e3ea7e92a25`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — wires the same ADR-0122 capture-compile pipeline into the post-commit hook itself. Internal tooling only, reviewed alongside 6f4f25e above.
 
 ## 2026-08-27 — 0a7def7 — fix(synthesis): run capture-compile sequentially in post-commit hook
 
 - **Full commit:** `0a7def75f57922f064ce0277641b40dfd543516a`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md, scripts/git-hooks/README.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — makes the ADR-0122 capture-compile step run sequentially in the post-commit hook rather than in parallel. Internal tooling fix only.
 
 ## 2026-08-27 — f5d56ab — Accept ADR-0083, ADR-0084, ADR-0085 — RAG vector store, search/ask endpoints, and UI/UX patterns
 
 - **Full commit:** `f5d56ab5e60f3742ce883e2ea1a59c7e5daa10d4`
 - **Files touched:** docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0084-rag-search-and-ask-endpoint.md, docs/adr/0085-rag-ui-ux-and-loading-patterns.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Business-Requirements/BRD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Business-Requirements/BRD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/project docs/Functional-Design/FDD-0083-RAG-Vector-Store-RLS-And-Metadata.md, docs/project docs/Functional-Design/FDD-0084-RAG-Search-And-Ask-Endpoint.md, docs/project docs/Functional-Design/FDD-0085-RAG-UI-UX-And-Loading-Patterns.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — accepts ADR-0083/0084/0085 (RAG vector store, search/ask endpoints, and UI/UX patterns). Design-record-only at this commit; the real RAG feature these ADRs describe is documented in both manuals under 'Semantic search and an AI assistant over your posts — Discovery,' against the stories that actually built it (9.7–9.11, confirmed via real source further up this pass).
 
 ## 2026-08-27 — c490a99 — fix(dashboard): recognize Retired story status so Story 3.7 is not counted as pending
 
 - **Full commit:** `c490a9969df68a220df1403dc4accf1d9057b78e`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — fixes the internal `project-progress-dashboard` telemetry app to recognize a 'Retired' story status so Story 3.7 isn't miscounted as pending. Internal tooling only, not a source of truth per this project's own `CLAUDE.md`.
 
 ## 2026-08-27 — 2ccc739 — fix(dashboard): recognize Relocated story status so Story 6.6 stub is not counted as pending
 
 - **Full commit:** `2ccc739d97c475292e1fc1e233b1d886343bec49`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/components/project-progress/DetailDrawer.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/components/project-progress/ProjectedWorkView.tsx, project-progress-dashboard/src/components/project-progress/StoriesView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, project-progress-dashboard/src/lib/project-dashboard/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — same internal dashboard fix as `c490a99` above, for a 'Relocated' story status (Story 6.6's own stub). Internal tooling only.
 
 ## 2026-08-27 — 1f581dd — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
 
 - **Full commit:** `1f581dd9cdf144015dbe7b24b78b4363264c907c`
 - **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/user-stories/epic-10-adr-0086-to-0094.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — accepts ADR-0086 (Prospecting list model and sharing) and ADR-0087 (Preconfigured analytics views), plus their BRD/FDD companions. Design-record-only at this commit; real Prospecting-list UI ships later in the queue as part of Epic 10's own commits, which this pass has not yet reached — left for a future scheduled pass, since the sidebar's real 'Prospecting' item deserves its own full source review rather than a rushed mention here.
 
 ## 2026-08-27 — a15222e — docs(adr): accept ADR-0086 (Prospecting list model) and ADR-0087 (Preconfigured analytics views)
 
 - **Full commit:** `a15222ea2d56a4c77f82998aa8ebd2095ecd6807`
 - **Files touched:** docs/adr/0008-defer-topic-time-series-and-charting.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/project docs/Business-Requirements/BRD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Business-Requirements/BRD-0087-Preconfigured-Analytics-Views.md, docs/project docs/Functional-Design/FDD-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Functional-Design/FDD-0087-Preconfigured-Analytics-Views.md, docs/user-stories/epic-10-adr-0086-to-0094.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — an exact-duplicate commit of `1f581dd` above (same ADR-0086/0087 acceptance, same title and file set, produced by a concurrent-worktree merge). Reviewed once; no separate action needed.
 
 ## 2026-08-27 — b3599e5 — chore(synthesis): commit self-learning synthesis outputs and tracking docs
 
 - **Full commit:** `b3599e52963e59bfab548deb2c61327a8e80e90e`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-3.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — commits self-learning synthesis pipeline outputs (Epic 3/Epic 6 synthesis artifacts) and routine tracking-doc bookkeeping. Internal AI-role tooling only.
 
 ## 2026-08-27 — 8fd0aa4 — feat(story-9.6): Onboarding checklist UI (frontend)
 
 - **Full commit:** `8fd0aa4e816f7acb33240d3edd61623099e4ff79`
 - **Files touched:** docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/README.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-9-adr-0077-to-0085.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/page.tsx, social-listening-admin/src/app/tenant/page.tsx, social-listening-admin/src/components/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** Real feature, now documented — Story 9.6's getting-started checklist. Investigated in depth (see the tenant-admin and user manuals' new 'Getting-started checklist' sections). One important correction found while verifying: this specific commit's own component (`social-listening-admin/src/components/OnboardingChecklist.tsx`) is **not** the one actually mounted in the running app — `tenant/page.tsx` imports a different, later component at `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx`, which arrived via a separate, not-independently-queued commit (`c4021b3`, see the `3f21e11`/`6fe3b5d` entries below) and was reconciled by the dedup fix at `4ae7f92`. Confirmed via `grep` that this commit's own component file has zero real importers today — it's dead code. The manual sections describe the real, live component, not this one.
 
 ## 2026-08-27 — 3f21e11 — Merge branch 'main' of https://github.com/mdresch/socialengage
 
@@ -3181,60 +3231,70 @@
 - **Files touched:** 
 ~~**Status:** Pending review~~
 - **Resolved 2026-08-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — a merge commit reconciling this branch with `origin/main`; its constituent changes (the 2026-08-24 Manager/L&D/Steward passes, Story 2.26–3.17/9.1 backend work, and the dashboard/BRD/FDD batches) are each reviewed individually above and below in this queue, not re-reviewed again here.
+- **Correction, 2026-09-09 (Learning & Development Writer, scheduled queue pass):** The 2026-08-26 resolution above is incomplete — this merge commit's own "Files touched" field was empty (apparently because the post-commit hook's diff strategy doesn't show a merge commit's real combined content), which the 2026-08-26 pass took at face value without independently checking. Running `git show 3f21e11` directly (rather than trusting the empty "Files touched" field) shows this merge is where Stories 9.2 (Metric Explainability backend), 9.3 (Crisis Template Bundle backend), and 9.4 (Crisis Threshold Wizard UI) actually landed on `main` — real, substantial, previously-undocumented tenant-facing capability. Confirmed against real source: `CrisisThresholdWizard.tsx` is imported and rendered from `WatchlistsClient.tsx` behind a real "⚡ Crisis Wizard" button on the Manage watchlists screen, backed by real `GET /api/crisis-templates` and `POST /api/crisis-templates/:key/activate` routes calling the real `crisisTemplateStore.ts`/`crisisTemplatesRouter.ts` backend. Added a new "Crisis Threshold Wizard (Story 9.4)" subsection to both `tenant-admin-manual.md` and `user-manual.md`'s "Managing watchlists" section, including the wizard's own honest in-product disclosure that automated alert dispatch isn't built yet. Story 9.2's own endpoint (`POST /v1/explain`, a plain-language metric-explanation service) has no UI consumer anywhere in `social-listening-admin` yet — confirmed by `grep` against `core-client.ts` and the `app/` tree — so it's named as a backend-only gap in both manuals' "What's not built yet" instead. Lesson for future passes, named plainly: an empty "Files touched" field on a merge commit is not sufficient grounds to resolve it as "nothing to review" — a merge can carry real, un-queued content, as this one did.
 
 ## 2026-08-26 — 48e8b5d — Scheduled doc review: 2026-08-26 — clear ~58-entry backlog across all three review queues
 
 - **Full commit:** `48e8b5d94d5d0db4fa2b658bb20e75c216f7d9a0`
 - **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-core/.claude/skills/azure-openai-connector/SKILL.md, social-listening-core/.claude/skills/bing-search-connector/SKILL.md, social-listening-core/.claude/skills/brave-search-connector/SKILL.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/.claude/skills/linkedin-connector/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new user-facing change from this commit itself — this is this same role's own prior scheduled catch-up pass (2026-08-26), which resolved the L&D queue down to commit `aa2488b` at the time and updated both tenant-facing manuals for the outbound-reply capability (Stories 2.26/2.27/3.14/6.38) then current. Its own content is superseded by this pass's further edits; nothing further to add on its own account.
 
 ## 2026-08-27 — 6fe3b5d — Merge branch 'main' of https://github.com/mdresch/socialengage into main (Epic 9 completed)
 
 - **Full commit:** `6fe3b5dccfa824f1aa71f84b551a0f0f2b370e40`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new user-facing change beyond what's already covered — this merge brings a second, parallel implementation of Story 9.6's onboarding checklist (`social-listening-admin/src/components/OnboardingChecklist.tsx`, from the same branch as `8fd0aa4` above) into `main` alongside the one that actually ended up live. Reviewed together with `8fd0aa4` and `4ae7f92` above/below; the manuals describe the real, live component only.
 
 ## 2026-08-27 — 4ae7f92 — fix(admin): eliminate duplicate onboarding checklist exports and fix typing in OnboardingChecklist
 
 - **Full commit:** `4ae7f926ee52e562673a8ca36e0573cefbf84ddb`
 - **Files touched:** social-listening-admin/contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new user-facing change — this is the real cleanup commit that resolves the Story 9.6 duplicate-implementation mess (`8fd0aa4`/`6fe3b5d` above): removes the dead `components/OnboardingChecklist.tsx` export duplication and fixes its typing, leaving `app/tenant/OnboardingChecklist.tsx` as the one real, live component. Confirmed by reading the diff; the manuals' new 'Getting-started checklist' sections already describe this corrected, live state.
 
 ## 2026-08-27 — a57a0d5 — fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync
 
 - **Full commit:** `a57a0d5f29ff0faee0c4fcb272060e6269fe238b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new manual text needed — a real backend permissions/RLS fix (migration 0047) that makes the already-documented Discovery feature's RAG chunk storage actually work correctly against Postgres, rather than adding a new capability. Confirmed by reading the migration; already covered by this pass's new "Semantic search and an AI assistant over your posts — Discovery" sections (Stories 9.7–9.11).
 
 ## 2026-08-27 — 57d4be3 — feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector
 
 - **Full commit:** `57d4be3df763b09f37aa28ea9d57b10ea28c361b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new manual text needed — adds an `npm run rag:backfill` operator script and DB-backed sync status to `PgvectorRAGConnector`. Confirmed by reading `backfill.ts` and `ragIndexingPipeline.ts` directly: `indexPostForRAG()` is only ever called from this backfill script, never from the live ingestion pipeline itself — this is exactly the 'not kept current with live ingestion, needs an operator-run backfill' limitation already named in both manuals' Discovery section and 'What's not built yet' list (added this pass, informed by reading this very commit).
 
 ## 2026-08-27 — e2ba717 — feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline
 
 - **Full commit:** `e2ba717685c574c3626804cbb58d22aa9186eb16`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new manual text needed — further enhances the RAG backfill pipeline and `PgvectorRAGConnector`. Same already-documented backend-only/backfill-lag limitation as `57d4be3` above; no new user-facing behavior.
 
 ## 2026-08-27 — 13a38b0 — chore: remove ephemeral test db json
 
 - **Full commit:** `13a38b0662f0ecf3547a512fff810964cbe634cb`
 - **Files touched:** social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — removes an ephemeral local test-database JSON artifact accidentally committed. Pure repo hygiene.
 
 ## 2026-08-27 — a4dbb66 — fix(rag): fetch live status on mount in RAGDiscoveryClient
 
 - **Full commit:** `a4dbb663a292007930d6d2632dfc3c67429a7832`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No new manual text needed — a real UX fix confirmed by reading the diff: `RAGDiscoveryClient.tsx`'s status indicator now fetches live status via `/api/rag/status` on mount instead of only showing the server-rendered initial value. This refines, rather than changes, the 'status indicator at the top' already described in this pass's new Discovery section — no manual claim depended on the indicator being static, so no correction needed.
 
 ## 2026-08-27 — 7cccf96 — feat(dashboard): update Phase Milestone Story Velocity curve and synchronized telemetry
 
 - **Full commit:** `7cccf966de164fad8553bd9a4f0ac025529ecd0f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-09 (Learning & Development Writer, scheduled queue pass):** No user-facing change — updates the internal `project-progress-dashboard` app's own Phase Milestone Story Velocity chart and telemetry sync. Internal tooling only, not a source of truth per this project's own `CLAUDE.md`.
 
 ## 2026-08-27 — 6cc1089 — feat(story-10.1): prospecting list model and sharing backend (ADR-0086)
 
@@ -7700,5 +7760,29 @@
 
 - **Full commit:** `cbd4869360bd7244f0db55002924e287b432b82c`
 - **Files touched:** 
+- **Status:** Pending review
+
+## 2026-09-09 — f15d9f1 — docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work
+
+- **Full commit:** `f15d9f1446b01a2995c1f0edad2fa685f19441ca`
+- **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-09-09 — 614e6e5 — docs(review): checkpoint — Documentation Steward pass complete
+
+- **Full commit:** `614e6e5b9c3ec9efb8432a4d01a21942fdcaef5c`
+- **Files touched:** CLAUDE.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-09 — e4f4826 — docs(epic-9): standardize Story 9.5's Built field to the em-dash convention
+
+- **Full commit:** `e4f4826685f3d9d3fb533a26672be1bf1d909f7a`
+- **Files touched:** docs/user-stories/epic-9-adr-0077-to-0085.md
+- **Status:** Pending review
+
+## 2026-09-09 — eeacc20 — chore(tracking): post-commit hook sync for e4f4826 nit fix
+
+- **Full commit:** `eeacc20dd54df05f5f7190b7f933f02601fed454`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-9.md, docs/time-tracking.md
 - **Status:** Pending review
 

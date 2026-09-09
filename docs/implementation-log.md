@@ -4965,3 +4965,24 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Handled PostgreSQL RLS constraint error `42501` when unauthorized teammates attempt entry insertions on `workspace_read` lists, translating to a clean 404 response.
   - Implemented cross-network deduplication engine (`prospectingDeduplicationEngine.ts`) with canonical handle normalization (`normalizeHandle`), social URL extraction (`extractHandleFromPublicUrl`), and contact clustering (`clusterDeduplicatedContacts`) merging author records across Twitter, LinkedIn, Instagram, etc.
   - Extended CRM handoff service (`prospectingCRMHandoffService.ts`) with `deduplicate` flag (`POST /v1/prospecting-lists/:id/crm-handoff?deduplicate=true`), assembling unified `DeduplicatedAuthorContact` CRM payloads with merged notes, highest engagement/influence scores, combined platform handles, and audit logs.
+
+---
+
+## 2026-09-09 — Documentation Steward correction: backfilling a missing log entry for Stories 9.7–9.11 (commit c4021b3, 2026-08-27)
+
+- **Full commit:** `c4021b3b24e9b6445bfb39dd3fe5457cd20f4a46`
+- **Repo:** social-listening-core + social-listening-admin
+- **Story / ADR:** 9.7/9.8/9.9/9.10/9.11 / ADR-0081/ADR-0082/ADR-0083/ADR-0084/ADR-0085
+- **Why this entry exists:** found during a scheduled Documentation Steward pass while reviewing commit `b12f5ec` (ADR-0081–0084 acceptance). `docs/user-stories/epic-9-adr-0077-to-0085.md` marks Stories 9.7–9.11 `**Status:** Built`, `**Built:** 2026-08-27 — social-listening-core`/`social-listening-admin` (no commit hash cited), but this log had **no entry at all** for any of them — confirmed by exhaustive search (`Story 9.7`–`Story 9.11`, `RAGConnector`, `pgvector`, `ragConnectorRegistry` all absent from this file prior to this entry) and by `git log` for RAG-related commits in the 2026-08-25–2026-08-28 window, which surfaced `c4021b3` ("feat(epic-9): complete remaining stories 9.6-9.11") as the real shipping commit. This is a genuine "shipped but never logged" gap, not a formatting nit — appended here per this file's own append-only convention (never editing the record, only adding to it) rather than fixed by inventing a retroactive edit to an existing entry.
+- **Files touched (confirmed via `git diff-tree --no-commit-id --name-only -r c4021b3`):**
+  - `social-listening-core/migrations/0046_create_rag_chunks_and_sync_tables.sql`
+  - `social-listening-core/src/rag/pgvectorConnector.ts`, `ragChunkingService.ts`, `ragConnectorRegistry.ts`, `ragIndexingPipeline.ts`, `ragReconciliationService.ts`, `ragSearchService.ts`, `types.ts`
+  - `social-listening-core/src/http/versions/v1/ragRouter.ts`, `router.ts` (extended)
+  - `social-listening-core/contracts/epic-9/story-9.7.rag-connector.contract.test.ts`, `story-9.8.rag-chunking-pipeline.contract.test.ts`, `story-9.9.rag-vector-rls.contract.test.ts`, `story-9.10.rag-endpoints.contract.test.ts`
+  - `social-listening-core/.claude/skills/rag-connector/SKILL.md`, `rag-chunking-pipeline/SKILL.md`, `rag-vector-rls/SKILL.md`, `rag-endpoints/SKILL.md`
+  - `social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx`, `page.tsx`, `src/app/api/rag/ask/route.ts`, `search/route.ts`, `status/route.ts`, `src/lib/core-client.ts` (extended)
+  - `social-listening-admin/contracts/epic-9/story-9.11.rag-discovery-ui.contract.test.ts`
+  - `social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md`
+  - `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx`, `src/app/api/tenants/[id]/onboarding-checklist/route.ts`, `contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts`, `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md` (this commit's own message says "complete remaining stories 9.6-9.11" and re-touches Story 9.6's files too — Story 9.6 already has its own separate, earlier log entry above dated 2026-08-27 sourced from a different commit (`8fd0aa4`); not re-litigated here, flagged only for whoever next touches Story 9.6 that its onboarding-checklist component appears to have moved from `src/components/OnboardingChecklist.tsx` to `src/app/tenant/OnboardingChecklist.tsx` between the two commits)
+  - `docs/user-stories/epic-9-adr-0077-to-0085.md`, `project-progress-dashboard/src/lib/project-dashboard/data.ts`
+- **Notes:** This entry is a Documentation Steward backfill, not a contemporaneous build record — validation/suite counts at the time of the original commit are not independently re-derived here. `docs/user-stories/epic-9-adr-0077-to-0085.md`'s own `**Built:**` fields for Stories 9.7–9.11 are corrected in the same pass to cite this commit hash, per that file's own fixed-shape Built convention (`YYYY-MM-DD — <repo>@<short-hash>`).
