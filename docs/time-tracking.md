@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 06:27 | — | — | Review | — | Merge origin/main into docs-review/2026-08-28, resolve conflicts (b704784) |
 | 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for eeacc20 checkpoint (38f0867) |
 | 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for e4f4826 nit fix (eeacc20) |
 | 2026-09-09 | 05:28 | — | — | Documentation | Story 9.5 | docs(epic-9): standardize Story 9.5's Built field to the em-dash convention (e4f4826) |
