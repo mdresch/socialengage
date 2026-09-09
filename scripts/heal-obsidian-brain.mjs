@@ -714,8 +714,13 @@ function auditAndHeal() {
       if (data.status) {
         const validStatuses = new Set([ONTOLOGY.nodeTypes[data.type].defaultStatus]);
         for (const t of ONTOLOGY.nodeTypes[data.type].validTransitions) {
-          validStatuses.add(t.split(' -> ')[0]);
-          validStatuses.add(t.split(' -> ')[1]);
+          if (typeof t === 'string') {
+            validStatuses.add(t.split(' -> ')[0]);
+            validStatuses.add(t.split(' -> ')[1]);
+          } else if (t && typeof t === 'object' && t.from && t.to) {
+            validStatuses.add(t.from);
+            validStatuses.add(t.to);
+          }
         }
         if (!validStatuses.has(data.status)) {
           warn(`${rel}: status "${data.status}" is not a valid lifecycle state for type "${data.type}"`);

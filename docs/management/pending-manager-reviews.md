@@ -8116,3 +8116,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-09 — dc3958f — fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md
+
+- **Full commit:** `dc3958f4b9bbdce2945826c668c5ce4d73107d59`
+- **Files touched:** social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md
+- **Status:** Pending review
+
