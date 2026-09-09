@@ -1,5 +1,7 @@
 # Implementation Log
 
+**Format note (added 2026-09-09, applies forward only):** an entry's commit hash may read `pending` — the log entry is written in the *same* commit as the implementation it describes (`docs/implementation-methodology.md` §7 / its 2026-09-09 Amendment Log entry), so the hash isn't knowable until that commit exists. `scripts/git-hooks/pre-commit` backfills `pending` with the real hash automatically, folded into whichever commit runs next — no dedicated commit just for the hash. A `pending` entry is a normal, self-resolving transient state, not an error; an entry that's still `pending` long after it was written is worth a direct look, not an assumption either way. Entries before this date that read `pending` (Story 3.13, Stories 2.23–2.25) predate this mechanism and were never auto-resolved — a manual gap, not this same self-healing state.
+
 ---
 
 ## 2026-09-05 — Story 14.4 — social-listening-core@d2bd779

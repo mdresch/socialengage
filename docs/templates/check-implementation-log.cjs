@@ -69,6 +69,20 @@ if (fs.existsSync(LOG_PATH)) {
       continue;
     }
 
+    // 2026-09-09 amendment (docs/implementation-methodology.md §7): the log
+    // entry and its commit are now written together in one commit, so the
+    // hash is a legitimate, self-healing "pending" placeholder until
+    // scripts/git-hooks/pre-commit backfills it on whichever commit runs
+    // next. That's an expected transient state, not a parse failure — warn,
+    // don't fail, and skip the hash/file-list checks below (nothing to
+    // verify yet). A "pending" that's still unresolved by the time this
+    // check actually runs is worth a human glance, but isn't itself proof
+    // anything is wrong.
+    if (entry.commit === 'pending') {
+      console.warn(`WARN: entry "${entry.header}" still has a pending commit hash (not yet backfilled).`);
+      continue;
+    }
+
     try {
       // Plain existence check (no `^{commit}` peel syntax): execSync runs
       // through cmd.exe on Windows by default, which treats `^` as its own

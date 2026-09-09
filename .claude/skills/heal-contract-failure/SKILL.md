@@ -58,7 +58,7 @@ When a contract from a different story or component fails after your changes:
 6b. **Hard stop — attempt cap:** if Step 5 just failed for the 3rd time on this failure, stop. Do not start a 4th walk regardless of how promising the next idea seems.
 
 7. **Commit and log — only on a genuine pass, never after a 6a/6b stop.**
-   Stage and commit the fix. Append an entry to `docs/implementation-log.md` with commit hash, story/ADR, files touched, and suite result. Run `npm run sync` to refresh dashboard telemetry.
+   One commit, not two (`docs/implementation-methodology.md` §7 / its 2026-09-09 Amendment Log entry): run `npm run sync` first, append the `docs/implementation-log.md` entry with `— commit pending` / `` **Full commit:** `pending` `` (the real hash isn't known until this commit exists), then stage and commit the fix, the log entry, and the dashboard-sync output together. Run `git rev-parse HEAD` afterward for your own Step 9 report — `scripts/git-hooks/pre-commit` backfills the `pending` placeholder into whichever commit runs next; don't create a follow-up commit just for the hash.
 
 8. **Merge & Teardown (if in a Git Worktree).**
    If running in an isolated worktree (`feat/story-X.Y`), merge cleanly into `main` and remove the worktree.
