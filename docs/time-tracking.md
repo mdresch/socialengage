@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-09 | 06:21 | — | — | Review | — | chore: sync review-queue tracking for the wording-fix commit (898eedd) |
 | 2026-09-09 | 06:20 | — | — | Documentation | — | fix(docs): correct Facebook reply gating wording in user-manual.md (e00da58) |
 | 2026-08-27 | 07:30 | — | — | Review | — | chore: sync review-queue tracking for the merge commit (26b10c0) |
 | 2026-08-27 | 07:29 | — | — | Review | — | Merge remote-tracking branch 'origin/main' into docs-review/2026-08-27 (c905fd0) |
