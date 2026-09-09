@@ -8294,3 +8294,9 @@
 - ~~**Status:** Pending review~~
 **Resolved 2026-09-09:** see docs/management/manager-register.md's entry reviewing 4eac552/4dedbff/cff52e1/264c4fd/a76b564/0052a8f/754db11/f723f60/.../cbd4869/f15d9f1/614e6e5/e4f4826/eeacc20/b704784/f845ac9 (2026-08-28 through 2026-09-09 batch).
 
+## 2026-09-09 — c11df84 — docs(review): complete scheduled three-role documentation review pass (2026-09-09)
+
+- **Full commit:** `c11df84c824aacc832441158d8966ad757f77eea`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/data-retention-and-archival/SKILL.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- **Status:** Pending review
+
