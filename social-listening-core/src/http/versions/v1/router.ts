@@ -27,6 +27,7 @@ import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
 import { crisisTemplatesRouter } from './crisisTemplatesRouter';
+import { crisisIncidentsRouter } from './crisisIncidentsRouter';
 import { explainRouter } from './explainRouter';
 import { ragRouter } from './ragRouter';
 import { prospectingListsRouter } from './prospectingListsRouter';
@@ -206,6 +207,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.3 (ADR-0079) — crisis template bundle & activation. */
   v1Router.use('/crisis-templates', authMiddleware, crisisTemplatesRouter);
+
+  /** Story 17.3 (ADR-0131) — crisis incident lifecycle (acknowledge/resolve). */
+  v1Router.use('/crisis/incidents', authMiddleware, crisisIncidentsRouter);
 
   /** Story 9.2 (ADR-0078) — metric explainability endpoint. */
   v1Router.use('/explain', authMiddleware, explainRouter);
