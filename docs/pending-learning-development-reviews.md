@@ -7798,3 +7798,9 @@
 - **Files touched:** —
 - **Status:** Pending review
 
+## 2026-09-09 — f845ac9 — Address Copilot review: fix stale reply-support claim, blank queue metadata
+
+- **Full commit:** `f845ac9dbe171e2c16ec96014504f8ff48feb6fd`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md
+- **Status:** Pending review
+
