@@ -5,3 +5,9 @@
 **What "reviewed" means here:** the Personal Development Reviewer may propose append-only updates to `docs/ai-roles/developer-learning-plan.md` (new dated snapshot, progress note, or learning-goal entry) — but it never commits its own changes. A human commit (Menno's own, or Claude Code committing only when explicitly asked to) is the approval gate, the same "propose in the working tree, human commit confirms" pattern this project already uses for every other AI-role output. An entry here is only marked resolved once any proposed plan update has actually been committed — not merely drafted.
 
 ---
+## 2026-09-09 — 9a796f5 — feat(ai-roles): add personal-development-reviewer agent and developer learning plan
+
+- **Full commit:** `9a796f5f9320d3bf8a0f327304756d6554245fd8`
+- **Files touched:** .claude/agents/personal-development-reviewer.md, docs/ai-roles/developer-learning-plan.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
