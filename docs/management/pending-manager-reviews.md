@@ -8122,3 +8122,9 @@
 - **Files touched:** social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-09 — f83bf05 — chore(tracking): sync post-commit tracking for dc3958f
+
+- **Full commit:** `f83bf05940a2cf307d0e6c92c92bf12bc0c5155b`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs
+- **Status:** Pending review
+
