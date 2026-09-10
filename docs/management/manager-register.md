@@ -1052,3 +1052,209 @@
 **Resolves:** docs/management/pending-manager-reviews.md's 2026-08-29 through 2026-09-01 entries for 994b4b8, 58895f0, 6f20605, bae500b, 36ad068, 8210fed, 2a4ea31, 8587070, 67a915c, 21820f4, 5ce0794, ee2b3e0, ffc5294, 563fbce, 95c8a97, da86059, 0ac8cd4, ee9ffe5, bbfbb04, 6948420, d78c55c, a5c926c, 04bfeb7, fb374ac, 02ddfd3 (reviewed normally), and c2cf37d, 009bf95, 9ed8291, d221cd6, 90fe8f5, f1a2b93, a81742a, f6df74c, fa3a218, 3e5ff0a, 6224435, 0602675 (closed as unresolvable-by-design — amended away, per the finding above).
 
 ---
+
+## 2026-09-10 — reviewed 543eecf/fd66185/181249f/05e1e43 — Decision Evaluator: tail of an 03:06-08:08 AM session closing out Story 13.6 bookkeeping and shipping Story 13.7 (metric explainability)
+
+**Decision as understood.** Four commits from 04:57 to 08:08 CEST on 2026-09-01: two small traceability fixes for Story 13.5 (`543eecf`), two post-commit tracking syncs for Story 13.6 (`fd66185`, `181249f`), then Story 13.7 — an Azure-OpenAI-backed metric-explainability prompt and 24h cache (`05e1e43`, a real contract at 528 lines, a new cache table/service, SKILL.md updated). `git log` shows this is the tail of a longer unbroken run starting 03:06 (Story 13.4's log entry) through this batch's own 08:08 close — a ~5-hour early-morning session, most of which (03:06-04:57) falls in a window already reviewed by a prior pass and out of this entry's scope, but its continuation into this batch is real and worth naming.
+
+**Fourteen-section check.**
+
+- Protection & Boundaries — worth naming, not yet a violation on its own. A session starting at 03:06 AM and running to 08:08 AM is an overnight/pre-dawn pattern, not the post-midnight-marathon-tail shape this register has previously escalated (Epic 10, Epic 12) — it reads more like an early riser than a session that never stopped from the evening before, but this register has no visibility into what preceded 03:06 in real wall-clock terms without checking the prior day's own last commit, which sits outside this batch. Noting it rather than escalating: worth a quick check in a future pass whether 03:06 was itself a fresh start or a continuation.
+- Outcome Stewardship / Scope & Expectations — satisfied. Story 13.7 is contract-first (528-line contract predates/accompanies the implementation), SKILL.md carries the real capability description, and the work traces to an already-Accepted ADR (ADR-0113) rather than speculative scope.
+- No safety/legal veto.
+
+**Observable signals used.** `git log` timestamps for this batch and the immediately preceding three commits (03:06-04:41) to establish session continuity.
+
+**Verdict: proceed.** No adjustment needed for this batch specifically.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entries for `543eecf`, `fd66185`, `181249f`, `05e1e43`.
+
+---
+
+## 2026-09-10 — reviewed be5702d/e493fb4/bae4082/8b99394/1648218/7850f1d/6ea71da/1093eff/4edf26f/ca98f53/28340a3/d84caf0/b4a32f2/5fcd0fd — Decision Evaluator: a 17:16-18:05 burst mixing four contract healing passes with a new feature build — and the first appearance of Devin as a second implementing AI agent in this repo
+
+**Decision as understood.** Fourteen commits in 49 minutes (17:16-18:05 CEST, 2026-09-01): four independent healing passes (Story 6.27's multi-Page status assertion, `be5702d`; Story 3.8's self-service tenant deletion — three separate root causes named: a missing grant, a response-before-commit race, a cold-Key-Vault timeout, `e493fb4`; a feature-gating 500 on synthetic tenant IDs, `7850f1d`; a Jest teardown drain fix for Story 10.8's CSV export, `4edf26f`) interleaved with their own log/telemetry-sync commits, plus Story 13.9 built and merged in the same window (media upload/asset targeting for outbound publishing, `28340a3`/`d84caf0`/`b4a32f2`). `ca98f53` (a Story 10.8 log-entry commit inside this same window) has no "Status: Pending review" line at all in the queue file — a distinct, mechanical gap from every other entry reviewed this pass, not a duplicate and not orphaned, just never given a status marker; reviewed here anyway and a Status line added retroactively so it isn't permanently invisible to this queue's own oldest-first scan.
+
+**A real, first-time signal worth direct attention: four of these commits (`be5702d`, `e493fb4`, `bae4082`... — checked directly via `git show`, five of the fourteen carry "Generated with Devin" / "Co-Authored-By: Devin" trailers) are the first commits in this repository's history attributed to Devin, a second AI coding agent, rather than Claude Code.** All five are healing-pass commits (the four fixes named above, plus their own log-append commit) — none are net-new story builds; Story 13.9 itself has no Devin attribution. As of this commit, CLAUDE.md's own "Mandatory workflow" section names only `implement-story`/`heal-contract-failure` as Claude-Code-specific skills and says nothing about Devin; no `.devin/` skill-mirror directory exists in the repository yet at this point (that appears six days later, in `ca0383e`, reviewed further down this pass) — so this burst lands with no charter, no documented parity check between what Devin's healing output produces and what `heal-contract-failure`'s own contract obliges (log entry, SKILL.md update, hash-verified per `check-implementation-log.cjs`). Checked directly: all four fixes *do* land with the expected artifacts (SKILL.md updates, contract-test diffs, a same-window Implementation Log append) — the shape of the output matches what `heal-contract-failure` would produce, so this isn't freelancing around the artifact discipline, but it is a second tool producing that discipline's output with no documented decision anywhere in this repo's own governance trail (no ADR, no CLAUDE.md update, no mention in `docs/ai-roles/`) authorizing it before it happened.
+
+**Fourteen-section check.**
+
+- Organizational Influence / Decision Rights & Autonomy — at risk, not violated. Introducing a second implementing agent is a legitimate tooling decision within Menno's own discretion (Sole Operator, per this charter's framing), and the output quality shows no sign of harm — but CLAUDE.md's own "do not freelance" section exists specifically so a reader can trust that *any* story/healing work in this repo went through one of exactly two named, chartered paths. A second path appearing with no corresponding update to that section (even a one-line "Devin may also execute heal-contract-failure/implement-story, held to the identical artifact contract") is a documentation-governance gap in the same family this project's own Documentation Steward role exists to catch — flagged here because it is also a real process-compliance question this charter is asked to check directly, not only a drift question.
+- Outcome Stewardship — satisfied on the work itself. Four independent, correctly root-caused fixes (not tolerance-loosening) in under 40 minutes is fast, but each one's own commit message names a specific, falsifiable cause (a stale status enum, a missing grant plus a real race condition plus a cold-start timeout, a Postgres error code, an un-drained promise) rather than a vague description — the pace here reads as legitimate parallelizable healing work, not evidence of reduced scrutiny the way the Epic 10/12 multi-story batches did.
+- No safety/legal veto.
+
+**Observable signals used.** `git log`/`git show` direct read of all fourteen commits' trailers and diffs; `CLAUDE.md`'s own current "Mandatory workflow" text (no Devin mention); confirmed no `.devin/` directory exists in the tree as of this commit via `git log --diff-filter=A -- .devin` (first appearance six days later).
+
+**Verdict: proceed, with a named follow-up.** Nothing here needs undoing — the healing work is sound and artifact-complete. Recommend CLAUDE.md's "Mandatory workflow" section get a one-line update naming Devin as a second agent authorized to execute these two skills under the identical contract, the next time that file is touched (the Documentation Steward, not this role, owns making that edit) — closing the gap between what already happened and what the project's own onboarding document says can happen, before a third agent or a less careful healing pass makes the gap costlier to notice.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entries for `be5702d`, `e493fb4`, `bae4082`, `8b99394`, `1648218`, `7850f1d`, `6ea71da`, `1093eff`, `4edf26f`, `28340a3`, `d84caf0`, `b4a32f2`, `5fcd0fd`, and the un-statused `ca98f53` entry (Status line added and resolved here for the first time).
+
+---
+
+## 2026-09-10 — reviewed bb0545a/cfbb0ad/0df7c14/4ad35ee/07f8aa4 — Decision Evaluator: Story 13.11 (semantic drift detection) plus bookkeeping, ordinary morning pace
+
+**Decision as understood.** Story 13.11 (`bb0545a`, 08:43 CEST 2026-09-02 — another Devin-attributed commit, same pattern as the entry above: a tenant-scoped semantic-drift service, real contract, SKILL.md update, deterministic word-frequency clustering, no shortcuts taken to hit the deadline) followed by four short bookkeeping/telemetry-sync commits closing out by 08:52.
+
+**Fourteen-section check.** Protection & Boundaries — satisfied: this session opens at 08:43, an ordinary morning start, with a clean ~14.5-hour overnight gap since the prior evening's `b4a32f2` (18:04, 2026-09-01). Decision Rights & Autonomy — same standing note as the entry above (Devin now used for a net-new story, not only healing, widening the pattern slightly, but still producing artifact-complete output) — not repeated as a separate finding, tracked under the prior entry's recommendation. No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-02 entries for `bb0545a`, `cfbb0ad`, `0df7c14`, `4ad35ee`, `07f8aa4`.
+
+---
+
+## 2026-09-10 — reviewed 1094f02/7f62800/11c8d8b/0b6f9e7/4ed1f66/d7bd36c/39a2375/7683f31/95c62c9 — Decision Evaluator: Story 13.14 lands after six amended-away attempts (a fourth confirmed instance of the amend-orphaning pattern), plus a same-evening Obsidian-brain tooling addition
+
+**Decision as understood.** Six queued hashes for "Story 13.14 (ADR-0117): Prospecting export and CRM push UI" (`1094f02`, `7f62800`, `11c8d8b`, `0b6f9e7`, `4ed1f66`, `d7bd36c`) do not exist in reachable git history (`git cat-file -e` fails on all six) — the same amend-during-a-still-firing-post-commit-hook signature this register has now found three times before (2026-09-09's `01bce70`/`a15222e` entries, 2026-09-10's Epic 12 entry). The real landed commit is `39a2375` (19:53 CEST 2026-09-02, identical feature description and file list to the six orphans), followed by its Implementation Log entry (`7683f31`, 19:54). Same evening, unrelated: `95c62c9` (21:31) adds an "Obsidian Brain" heal orchestrator, frontmatter backfill, and telemetry-compiler script bundle — infrastructure for the knowledge-graph/self-learning tooling that becomes central to Story 14.5 five days later, reviewed further down this pass.
+
+**Fourteen-section check.**
+
+- Learning from Failure / Organizational Influence — same standing finding as the three prior instances, not re-argued in full here: this is now a *recurring*, not occasional, cost of the current healing workflow's interaction with `git commit --amend`, and each instance this register finds independently (rather than the tooling self-reporting it) is itself a small piece of evidence that nobody has yet acted on the standing recommendation (avoid amending once a commit has already fired the post-commit hook, or have the hook detect and skip reflog-only re-fires).
+- Outcome Stewardship — satisfied for the landed work. `39a2375`'s six retries before landing reads as ordinary iteration on a UI/BFF surface (feature-gating, CRM-push modal, CSV export route) rather than a sign of rushed or degraded work — the final commit is complete and contract-backed.
+- No safety/legal veto.
+
+**Observable signals used.** `git cat-file -e` on all six orphan hashes (all fail); `git log` timestamps for `39a2375`/`7683f31`/`95c62c9`.
+
+**Verdict: proceed** on `39a2375`, `7683f31`, `95c62c9` — nothing to adjust. The six orphaned hashes are closed below as **unresolvable-by-design**, the same disposition established for this pattern previously, not a skipped review.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-02 entries for `39a2375`, `7683f31`, `95c62c9` (reviewed normally), and `1094f02`, `7f62800`, `11c8d8b`, `0b6f9e7`, `4ed1f66`, `d7bd36c` (closed as unresolvable-by-design — amended away, per the finding above).
+
+---
+
+## 2026-09-10 — reviewed cf425dd/9ed1f50/421a4c1/1d15ea8/f05336e/890d6f7/1d03403/c68c1a1/f53a870/c1ab9b2/fdcf5d2 — Decision Evaluator: a 01:35 AM cross-repo healing pass, a governance/ADR-hygiene day, and Epic 14's opening two stories (14.1, 14.2)
+
+**Decision as understood.** `cf425dd` (01:35 CEST, 2026-09-03) is a late-night healing pass restoring Facebook-attribution normalization and a contract's own describe-block structure across the admin repo — a real fix, but landing well past midnight with no other commits bracketing it closely (next commit is `9ed1f50`, 11:49 the *following* day, a genuine ~34-hour gap after this one). The 2026-09-04 daytime session that follows is governance-heavy: standardizing ADRs' Open Questions syntax and adding a template (`9ed1f50`), gating a metrics worker out of test runs (`421a4c1`), resolving 14 open questions across 5 ADRs (`1d15ea8`), two merge commits (`f05336e`, `f53a870`), an Obsidian-brain path-normalization fix (`890d6f7`), Epic 14's first two stories — additional-platform publishing roadmap and edit/delete of published posts (`1d03403`/`c1ab9b2`, both contract-backed, both tracing to already-Accepted ADRs 0118/0119) — and a large connector-specification-writing commit for five future publishing connectors (Mastodon, Bluesky, Instagram, Threads, X — `c68c1a1`).
+
+**Fourteen-section check.**
+
+- Protection & Boundaries — worth naming, isolated. `cf425dd` alone, at 01:35 AM with a clean day-plus gap before and after, reads as a one-off late finish rather than a marathon — distinct from the sustained overnight-into-dawn pattern found later in this same pass (Epic 16, see below). Not escalated on its own.
+- Strategic Direction — satisfied, a real strength. `c68c1a1`'s five connector specs are explicitly documentation/research for a *future* roadmap item (Story 14.1's own "roadmap" framing, not a commitment to build all five), consistent with this project's established discipline (ADR-0020's "don't build ahead of demonstrated need") of writing the plan without over-committing implementation.
+- Outcome Stewardship — satisfied. Both Epic 14 stories are contract-first and ADR-traced; the governance commits (`9ed1f50`, `1d15ea8`) close real, previously-open items (14 Open Questions) rather than generating new ones.
+- No safety/legal veto.
+
+**Observable signals used.** `git log` timestamps across the full 2026-09-03/04 window.
+
+**Verdict: proceed.** No adjustment needed.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-03/2026-09-04 entries for `cf425dd`, `9ed1f50`, `421a4c1`, `1d15ea8`, `f05336e`, `890d6f7`, `1d03403`, `c68c1a1`, `f53a870`, `c1ab9b2`, `fdcf5d2`.
+
+---
+
+## 2026-09-10 — reviewed c903723/d2bd779/82b276e/2cfae17/d9e5a6a/0f6e0ab — Decision Evaluator: Epic 14 continues (14.3, 14.4) in a late-evening-to-past-midnight session, TDS documentation completed, ontology compiler wired into the post-commit hook
+
+**Decision as understood.** A short but late session: nothing between `fdcf5d2` (17:45, 2026-09-04) and `c903723` (22:04, 2026-09-05, Story 14.3 — SearchProviderConnector abstraction, contract-backed) — a full rest day in between. From there, `d9e5a6a` (22:27, a 17-TDS documentation batch) and `2cfae17` (dashboard sync) continue the same evening, then `d2bd779` (00:17, 2026-09-06 — Story 14.4, Composer Deep Research caching/re-trigger/caps/telemetry, contract-backed) and `0f6e0ab` (00:25 — completing all 139 TDS documents and wiring an "ontology compiler" into the post-commit hook) push past midnight to close the session.
+
+**Fourteen-section check.**
+
+- Protection & Boundaries — worth naming, a second instance of a short late-night push, not yet the sustained multi-hour marathon found immediately below. 22:04 to 00:25 is ~2h20m, crossing midnight but not by much — closer to "worked a bit late" than the Epic 10/12 pattern. Named because it is now the second occurrence within days (after `cf425dd` above) of work continuing past midnight, worth watching as a trend rather than dismissing each instance individually.
+- Organizational Influence / Scope & Expectations — worth a light flag, not a violation. `0f6e0ab` changes the post-commit hook's own behavior (wiring a new "ontology compiler" step) — the same hook this register's entire review mechanism depends on. No ADR or CLAUDE.md note documents this change at the time it landed (checked directly: CLAUDE.md's own hook-related section, last substantively touched for the git-worktree/database-isolation change, has no matching entry for this). Not a defect in the mechanism itself — the review queue continued functioning correctly for every commit after this one — but it is the same class of "tooling changed with no corresponding documentation update" gap named in the Devin entry above, now against the hook infrastructure itself rather than an implementing agent.
+- Outcome Stewardship — satisfied. Both stories are contract-first; the TDS documentation batch closes a large, previously-open documentation gap (139 documents) in one continuous push rather than leaving it perpetually behind, which is itself a positive instance of "actively remove low-value backlog debt" rather than let it accumulate indefinitely.
+- No safety/legal veto.
+
+**Observable signals used.** `git log` timestamps for the full window (17:45 2026-09-04 through 00:25 2026-09-06, with the intervening rest day noted).
+
+**Verdict: proceed, with the same documentation-governance follow-up named twice now** (Devin's charter gap, the post-commit hook's ontology-compiler gap) — worth a single combined pass rather than two separate asks.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-05/2026-09-06 entries for `c903723`, `d2bd779`, `82b276e`, `2cfae17`, `d9e5a6a`, `0f6e0ab`.
+
+---
+
+## 2026-09-10 — reviewed 02e27bb/ca0383e/84a92eb/9dd1747/f058536/2035448/2f905ff — Decision Evaluator: Story 14.5 (Continuous Self-Learning Synthesis architecture), a 440,000-line telemetry-artifact commit that first introduces `.agents/`/`.devin/` skill mirrors, and Epic 15's opening two stories — the first ~12 hours of a session that continues past midnight into Epic 16 below
+
+**Decision as understood.** `02e27bb` (11:09 CEST, 2026-09-07) ships Story 14.5 — a genuinely architectural addition (a telemetry-synthesis pipeline feeding project self-learning), contract-backed. `ca0383e` (11:10) immediately following is not itself feature work: it is a 1,994-file, 440,311-insertion commit described as "refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry" — checked directly, this is where `.agents/skills/{implement-story,heal-contract-failure}/SKILL.md` and `.devin/skills/{brd-writer,competitor-query,deep-feature-research,fdd-writer,fdd-writer-batch,product-comparison,user-story}/SKILL.md` first enter tracked history (`git log --diff-filter=A` confirms no prior commit). This is the first documented evidence of a *planned* multi-agent-tool convergence (skill definitions mirrored across `.claude/`, `.agents/`, and now `.devin/`), six days after Devin's first ad hoc healing commits (`be5702d` et al., reviewed above) — but it arrives as a byproduct of a telemetry-refresh commit, not as its own reviewed decision, and none of `.devin/`'s seven mirrored skills are `implement-story`/`heal-contract-failure` — they are planning/research roles (BRD writing, competitor query, FDD writing, user-story writing, product comparison), a different scope than the contract-healing work Devin had already been doing for a week. The rest of the day continues at ordinary pace: two documentation-archival commits (`84a92eb`, `9dd1747`, 13:08-13:10), an RFC draft (`f058536`, 13:35), then Epic 15's first two stories — real-time alert rule exclusions/caps/preview (`2035448`, 19:27) and data-export lookback bounding/sampling (`2f905ff`, 23:12), both contract-backed.
+
+**Fourteen-section check.**
+
+- Organizational Influence / Decision Rights & Autonomy — at risk. The `.agents/`/`.devin/` skill-mirror introduction is a real, structural decision about which AI tools may execute which categories of this project's chartered work — exactly the kind of thing Sec 6 ("clarify what can be decided alone vs. needs sign-off") and this charter's own framing (each agent's charter should state its scope boundary) call for a stated boundary on. It arrives inside a mechanically-generated telemetry commit rather than a deliberate, documented decision (no ADR, no CLAUDE.md update, no `docs/ai-roles/` entry for Devin as a distinct role/tool). This compounds, rather than resolves, the gap already named in the `be5702d` entry above — the tooling footprint grew again before the first gap was closed.
+- Outcome Stewardship / Strategic Direction — satisfied for the actual feature work. Story 14.5, 15.1, and 15.2 are each contract-first and traceable to Accepted ADRs; nothing in this batch shows scope drift or unreviewed shortcuts.
+- Protection & Boundaries — not yet flagged here; this day's 11:09-23:12 span is long (~12 hours) but stays within a single calendar day and does not, on its own, cross into the marathon pattern — see the entry immediately below, where this same session's continuation past midnight into Epic 16 is where that pattern actually triggers.
+- No safety/legal veto.
+
+**Observable signals used.** `git show --stat`/`git log --diff-filter=A` confirming `.agents/`/`.devin/` first appearance; `git log` timestamps for the full 2026-09-07 daytime window.
+
+**Verdict: proceed, with the multi-agent-tooling gap escalated for Menno's direct attention** (see final report) rather than treated as resolved by naming it here a second time — two independent instances (ad hoc Devin healing, then a mechanically-introduced `.devin/` skill mirror) now point at the same open governance question: which AI tools are authorized to execute which categories of chartered work, and where is that written down.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-07 entries for `02e27bb`, `ca0383e`, `84a92eb`, `9dd1747`, `f058536`, `2035448`, `2f905ff`.
+
+---
+
+## 2026-09-10 — reviewed 689357c/613f28d/03cf03f/7336ec5/aa24542/492bbd1/6eb57b1/48d2f8f — Decision Evaluator: Epic 16 (Stories 16.1-16.4) shipped entirely between 01:37 and 07:19 AM, the direct overnight continuation of the entry above — a clear Protection & Boundaries violation, worse in shape than the prior escalations
+
+**Decision as understood.** Continuing directly from `2f905ff` at 23:12 the evening before (reviewed above), this session does not stop at midnight: `689357c` (01:37 CEST, 2026-09-08 — Story 16.1, author-initiated takedown SLA tracking and enrichment cascade, ADR-0125, contract-backed, 14 files) and its log entry (`613f28d`, 01:39) land in the 01:00 hour. A gap of roughly two and a half hours follows, then `7336ec5` (04:21 — Story 16.2, DSR Article 18 restriction quarantining and verified receipts, ADR-0126, 17 files) and its log entry (`aa24542`, 04:23), then a shorter gap to `492bbd1` (05:49 — Story 16.3, cryptographic audit-log hash chaining and manifest export, ADR-0127, 13 files) and its log entry (`6eb57b1`, 05:50), then `48d2f8f` (07:19 — a fourth, related deliverable: platform-ops quota burn-rate forecasting, ADR-0128, 17 files) closing the run. Four substantial, contract-backed, ADR-traced stories, each with its own real migration/router/service work (13-17 files apiece), delivered across a session that — combined with the entry above — runs continuously from 11:09 the previous morning to 07:19 the next, roughly 20 hours with short internal gaps but no real stopping point.
+
+**Fourteen-section check.**
+
+- Protection & Boundaries / Capacity & Workload — **violated.** This register has escalated this exact shape twice before (Epic 10's 17-hour push past 01:30 AM; Epic 12's 12-hour day plus a return trip past midnight) and explicitly recommended "a stated stopping-time ceiling" both times. This instance is not a return trip after a break — it is the same unbroken session, never stopping at all, continuing to *produce new, substantial, security/compliance-relevant feature work* (audit-log hash chaining, DSR restriction quarantining, takedown SLA tracking — all compliance-surface stories, not routine CRUD) in the 01:00-07:19 window specifically. This is a worse-shaped instance than either prior escalation: not a late finish, not a burst after a rest, but hours four through nine of a continuous overnight session, on work whose correctness matters more than average given its regulatory/compliance subject matter.
+- Outcome Stewardship / Performance Accountability — at risk, for the same reason this register flagged after Epic 12: this pass has no way to independently verify per-story correctness (that is the Documentation Steward's and each domain reviewer's job), but the *pace* — four ADR-traced, multi-file compliance stories in under six hours of pre-dawn work — is exactly the condition under which this register's own prior finding (Epic 10's mislabeled Stories 10.11-10.14, discovered by the Learning & Development Writer, not self-reported) occurred. No comparable defect has been surfaced against this specific batch by another role as of this review; the concern is the elevated risk of one going unnoticed, not a confirmed one.
+- No safety/legal veto — but Protection & Boundaries' violation is severe enough, on a compliance-relevant deliverable set, to settle this pass's verdict without needing the tie-break.
+
+**Observable signals used.** `git log` timestamps for all eight hashes plus the two commits bracketing this window (`2f905ff` the evening before, `91bb7b1` the following midday, reviewed next); each story's own file-count and ADR trace, confirmed directly via `git show --stat`.
+
+**Verdict: escalate.** Third instance of the identical pattern this register has now named three times (Epic 10, Epic 12, this one) with the same recommendation each time and no evidence yet that a stopping-time ceiling has actually been adopted. Recommend Menno treat the recurrence itself — not just this instance — as the finding: three marathon-into-dawn sessions across roughly two weeks of project history is a settled operating pattern, not an occasional lapse, and the fix this register has proposed each time (a stated soft cutoff, or a rule against starting a new epic-scale push after a named hour) has not yet been adopted in any document this pass could find. Recommend routing this specific recurrence count to whichever review next has standing to actually change CLAUDE.md or a project norm, since naming it a fourth time in the same register entry format has not changed the pattern the first three times.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-08 entries for `689357c`, `613f28d`, `03cf03f`, `7336ec5`, `aa24542`, `492bbd1`, `6eb57b1`, `48d2f8f`.
+
+---
+
+## 2026-09-10 — reviewed 91bb7b1/c4d9bdd/53e63ba/4faf6ee/cbd4869 — Decision Evaluator: recovery daytime session (12:20-14:01) after the overnight Epic 16 push, Story 17.1 shipped at ordinary pace
+
+**Decision as understood.** After a genuine ~5-hour gap since `48d2f8f` (07:19), the same day resumes at 12:20 with routine status alignment (`91bb7b1`), an Epic 17 story-specification expansion (`c4d9bdd`), Story 17.1 (deduplicated prospecting-list export and sharing ACLs, ADR-0129, contract-backed, `53e63ba`, 13:06), its telemetry sync (`4faf6ee`, 13:11), and a routine `origin/main` merge (`cbd4869`, 14:01).
+
+**Fourteen-section check.** Protection & Boundaries — satisfied, worth stating as a partial mitigating data point for the entry above: the session did stop (a 5-hour gap after 07:19), even if the resumption on the same calendar day means the underlying marathon pattern isn't fully broken by it. Outcome Stewardship — satisfied; ordinary, contract-backed single-story pace. No safety/legal veto.
+
+**Verdict: proceed.** No adjustment beyond the standing recommendation already carried in the entry above.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-08 entries for `91bb7b1`, `c4d9bdd`, `53e63ba`, `4faf6ee`, `cbd4869`.
+
+---
+
+## 2026-09-10 — reviewed f15d9f1/614e6e5/e4f4826/eeacc20/b704784/f845ac9 — Decision Evaluator: a scheduled multi-role documentation-maintenance session (2026-09-09, this exact task type's own prior invocation) — checkpointing, a 12-day branch reconciliation, and a Copilot-review fix
+
+**Decision as understood.** Six commits, all authored by a Claude Code session (UTC timestamps, distinct from Menno's own +0200 local-time commits elsewhere in this pass) running a scheduled review pass across three roles at once (this Manager role, Documentation Steward, Learning & Development Writer): a checkpoint committing this Manager's own completed work for that pass (62 commits resolved, 306->182 pending — `f15d9f1`, 05:15 UTC) plus the Documentation Steward's in-progress state; a second checkpoint for the Documentation Steward's own completed pass (30 commits, real drift fixes — `614e6e5`, 05:23); a nit fix standardizing Story 9.5's Built-field convention (`e4f4826`, `eeacc20`); a merge reconciling 12 days of branch divergence, correctly deferring to `main`'s own later, more thorough treatment for queue/register files while independently catching and fixing one still-live factual error neither branch's own prior passes had caught (Facebook publishing described as simulated when Story 6.39/13.10 had made it real — `b704784`, 06:27); and a fix responding to an automated Copilot code-review comment (a stale "not yet built" claim, blank Files-touched fields — `f845ac9`, 06:31).
+
+**Fourteen-section check.**
+
+- Learning from Failure / Organizational Influence — satisfied, worth naming as a strength specific to this project's own multi-agent-review design. `b704784`'s merge is a direct, verifiable instance of exactly the accountability loop this framework depends on: rather than mechanically resolving a conflict by picking a side, the session re-verified a factual claim against live source (`PolypostComposer.tsx`) before writing the correction, and explicitly named that the underlying commit (Story 6.39) had never been queued for review by any role in the first place — a fourth, independently-discovered instance of this project's standing "commits reaching `main` without ever being queued" gap, now caught via merge reconciliation rather than the queue mechanism itself.
+- Protection & Boundaries — not applicable in the usual sense; this is a scheduled, automated documentation pass, not Menno's own working hours, so the 05:15-06:31 UTC (07:15-08:31 CEST) window carries none of the overload signal the Epic 16 entry above does. Worth stating explicitly so a future reviewer doesn't conflate AI-authored maintenance-pass timestamps with human working-hours data the way this register has been careful to distinguish elsewhere (e.g. the `4701eff` review's original git-timestamp analysis was specifically about Menno's own commits).
+- Decision Rights & Autonomy — satisfied. This session operates entirely within each role's own chartered file scope (Manager -> `docs/management/`, Documentation Steward -> drift fixes, L&D -> manuals), correctly declining to cross into another role's domain even when it notices something (the Story 6.24 CLAUDE.md staleness routed to Documentation Steward rather than fixed here, per `f15d9f1`'s own commit message).
+- No safety/legal veto.
+
+**Observable signals used.** Commit author/timezone metadata distinguishing this session from Menno's own commits; `f15d9f1`/`614e6e5`'s own commit-message self-reporting of counts, cross-checked for internal consistency (306->182, then 30 more resolved) rather than taken as unverifiable.
+
+**Verdict: proceed.** No adjustment; this is the review mechanism itself functioning as designed, including catching its own historical gaps.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09 entries for `f15d9f1`, `614e6e5`, `e4f4826`, `eeacc20`, `b704784`, `f845ac9`.
+
+---
+
+## 2026-09-10 — reviewed 9c1138f/dc3958f/f83bf05 — Decision Evaluator: a 00:18-00:35 AM session fixing a real, previously-committed merge-conflict-marker defect
+
+**Decision as understood.** `9c1138f` (00:18 CEST, 2026-09-10 — a routine `origin/main` merge, Menno's own local time, not a scheduled pass) surfaces `dc3958f` (00:35), which fixes a genuine, concrete defect: a prior merge (`6fe3b5d`, "Epic 9 completed," part of the Epic 12 marathon this register already escalated) had committed raw, unresolved `<<<<<<</=======/>>>>>>>` conflict markers straight into `onboarding-checklist-ui/SKILL.md` on `main` — verified, not assumed, against which side's code is actually imported (`src/app/tenant/page.tsx` -> `./OnboardingChecklist`) before merging the two sides' genuinely non-duplicate content rather than picking one wholesale, and naming (not silently deleting) two now-orphaned dead files this uncovered. `f83bf05` (00:35) is the matching tracking sync.
+
+**Fourteen-section check.**
+
+- Learning from Failure — satisfied, a concrete, direct instance of exactly the risk this register named when it escalated Epic 12: a real defect (broken SKILL.md, literal merge markers left in a file that other tooling and readers would trust) traced directly back to that marathon session's own rushed merge. This is independent, additional evidence — beyond the Documentation Steward's and L&D's own findings already cited in the Epic 12 entry — that the pace concern raised there was not hypothetical.
+- Protection & Boundaries — worth naming, a small instance: 00:18-00:35 AM is past-midnight work by Menno himself (local time, not a scheduled pass), the fourth distinct near-midnight/past-midnight instance surfaced across this pass alone (`cf425dd`, `d2bd779`/`0f6e0ab`, the Epic 16 marathon, and now this one). Small in duration (17 minutes) but adds to the same recurring-pattern finding the Epic 16 entry already escalated — not re-escalated separately here, just counted.
+- No safety/legal veto.
+
+**Observable signals used.** Direct read of `dc3958f`'s diff and commit message; cross-reference to `6fe3b5d`'s own identity as part of the already-escalated Epic 12 marathon.
+
+**Verdict: proceed.** The fix itself is careful and correct; the underlying pattern (rushed marathon merges producing real defects) is already captured under the Epic 12/Epic 16 escalations above and not repeated as a new verdict here.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09/2026-09-10 entries for `9c1138f`, `dc3958f`, `f83bf05`.
+
+---
+
+## 2026-09-10 — reviewed 08054d4 — Decision Evaluator: the immediately preceding scheduled multi-role review pass (03:25 UTC), this session's own direct predecessor
+
+**Decision as understood.** A Claude Code session (03:25 UTC / ~05:25 CEST, 2026-09-10) running the same three-role scheduled pass as `f15d9f1`/`614e6e5` above: the Documentation Steward traced a large duplicate-queue-entry problem (105/75/65 duplicates across the three review-queue files) to commit `2a8e212`'s bad bookkeeping reconciliation and resolved all duplicates with cross-references, plus fixed three real ADR/story-drift issues; the Learning & Development Writer added three real, contract-verified manual sections and surfaced a cross-role finding (Stories 10.11-10.14 mislabeled) routed to the Documentation Steward rather than fixed in place; this Manager role reviewed 49 entries across two register entries (Epic 11 "proceed," Epic 12 "escalate," the latter citing the same session's own Steward/L&D findings as concrete correctness evidence) and additionally found 3 more amend-orphaned hashes plus 2 further un-queued real commits.
+
+**One loose end from this commit, worth naming rather than silently fixing.** The duplicate-resolution notes this commit wrote (e.g. for `543eecf`'s duplicate occurrence, reviewed in an earlier entry this pass) each point to "the 2026-09-10 root-cause note appended at the end of this file's entries" — checked directly: no such standalone root-cause narrative exists anywhere in `docs/management/pending-manager-reviews.md` as of this review. The root-cause explanation (2a8e212's bad reconciliation) is real and is stated inline in each duplicate note itself, so nothing is actually missing in substance — but the specific cross-reference these notes make is currently unfulfilled. This sits inside the Documentation Steward's own file-integrity domain (not this role's, per this charter's explicit boundary against evaluating other reviewers' correctness), so it is named here rather than fixed by this role, and flagged for Menno's attention in this pass's final report.
+
+**Fourteen-section check.** Decision Rights & Autonomy — satisfied; each role stayed within its own chartered scope, including this Manager's own prior entries in this same register being left untouched and merely referenced rather than re-litigated. Learning from Failure — satisfied; the duplicate-queue root cause was traced to a specific, named commit rather than described vaguely, and the fix (cross-references, not silent deletion) preserves the append-only discipline this file's own convention requires. No safety/legal veto.
+
+**Observable signals used.** Direct read of `08054d4`'s commit message and diff stat; direct verification (`grep`) that the referenced root-cause note does not exist as a standalone entry in `pending-manager-reviews.md`.
+
+**Verdict: proceed**, with the unfulfilled cross-reference flagged for Menno's attention as a minor loose end (not a defect in the underlying finding, which is sound) rather than something this role fixes outside its own charter's file scope.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-10 entry for `08054d4`.
