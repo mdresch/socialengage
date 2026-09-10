@@ -8137,3 +8137,9 @@
 - **What was corrected:** each of the 65 duplicate entries is marked resolved above with a short cross-reference note back to the original occurrence — not independently re-evaluated, since it's a byte-for-byte duplicate. The true unique pending backlog in this file is 126 entries, not 191.
 - **Recommendation (Advisor mode, not a queue-entry verdict):** consider having `scripts/git-hooks/post-commit` (or a periodic check) detect duplicate "Full commit" hashes within a single queue file and refuse/warn rather than silently accepting them — the append-only convention that makes these queues trustworthy is only as strong as what's allowed to append to them. Proceed with adjustment: no urgent action needed (the drift was caught and is now bounded), but the root cause (an off-roster tool committing directly to governance files) is worth a stated policy, not just a one-time cleanup.
 - **Left open, not fixed here:** whether any already-resolved entries were also duplicated (harmless if so) was not swept.
+## 2026-09-10 — 08054d4 — docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review
+
+- **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+

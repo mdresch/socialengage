@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): log previous commit hash (31525e3) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for dc3958f (f83bf05) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md (dc3958f) |
