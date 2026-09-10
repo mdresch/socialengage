@@ -7851,3 +7851,9 @@
 - **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
 - **Status:** Pending review
 
+## 2026-09-10 — c501d9f — docs(review): scheduled doc review 2026-09-10 — Documentation Steward pass (in progress, interim)
+
+- **Full commit:** `c501d9f23ffe77a7ef411bab0142b138f6765667`
+- **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- **Status:** Pending review
+
