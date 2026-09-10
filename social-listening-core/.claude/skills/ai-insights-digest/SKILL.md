@@ -19,3 +19,5 @@ Synthesizes high-level brand intelligence, sentiment trends, top emerging themes
 
 ## Endpoints
 - `GET /v1/analytics/digest?period=daily|weekly`: Fetch AI executive intelligence digest.
+
+**Documentation Steward correction, 2026-09-10.** The `ADR-0094` citation above is wrong: real `ADR-0094` (`docs/adr/0094-compliance-audit-pack.md`) is "Compliance audit pack," unrelated to this digest feature. No real governing ADR exists for this component in the current numbering — see `webhook-notifications/SKILL.md`'s matching 2026-09-10 correction for the full account. Not fixed by inventing a correct ADR number here; flagged for Menno.

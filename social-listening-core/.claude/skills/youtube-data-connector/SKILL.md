@@ -20,3 +20,5 @@ Ingests YouTube video comments, community posts, and video descriptions matching
 ## Endpoints
 - `GET /v1/connectors/youtube/status`: Get YouTube connector health and quota usage
 - `POST /v1/connectors/youtube/connect`: Subscribe and link YouTube channel
+
+**Documentation Steward correction, 2026-09-10.** The `ADR-0093` citation above is wrong: real `ADR-0093` (`docs/adr/0093-dsr-self-service-portal.md`) is "DSR self-service portal," unrelated to YouTube ingestion. This connector has no real governing ADR in the current numbering — see `webhook-notifications/SKILL.md`'s matching 2026-09-10 correction for the full account of how this mislabeling happened (Batch 5, `social-listening-core@fdb9bb8`, predates/conflicts with the ADR-0086–0094 numbering actually in effect). Not fixed by inventing a correct ADR number here; flagged for Menno.

@@ -7845,3 +7845,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** Pending review
 
+## 2026-09-10 — c7afb92 — docs(review): scheduled doc review 2026-09-10 — L&D Writer pass complete
+
+- **Full commit:** `c7afb9206b9a8023ab56c19cdd2d6c22027a771d`
+- **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-learning-development-reviews.md
+- **Status:** Pending review
+
