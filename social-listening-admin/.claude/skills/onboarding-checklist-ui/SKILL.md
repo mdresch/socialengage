@@ -15,7 +15,7 @@ The user-facing setup progress widget displayed in the tenant workspace overview
 |---|---|---|
 | ADR-0080 | Onboarding checklist state — JSONB on `tenants`, bundled `SELECT EXISTS` evaluation, one-way milestone caching, `GET`/`PATCH` API | 9.5 (backend) |
 | ADR-0080 | Onboarding checklist UI — dismissible dashboard guide, deep-links, advanced step visibility | 9.6 (frontend) |
-| ADR-0036 §2 | Bearer token attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 |
+| ADR-0036 §2 | Authorization header attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 |
 | ADR-0035 | Design system tokens and non-blocking dashboard cards | 6.2 / 9.6 |
 
 ## Contracts that constrain this component
