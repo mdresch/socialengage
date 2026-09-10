@@ -20,3 +20,11 @@ Enables analysts to run ad-hoc multi-dimensional aggregations over social posts 
 
 ## Endpoints
 - `POST /v1/analytics/query`: Execute parameterized aggregation query.
+
+## Relations to other components
+
+- **`social_posts` table** — all generated queries execute against `social_posts` with mandatory `sp.tenant_id = $1` predicate via `withTenant()`; no cross-tenant data is ever accessible.
+- **`withTenant()` (RLS middleware)** — gates the router handler; provides the `tenant_id` binding used in parameterized queries.
+- **`precomputed-analytics-views` skill** — the companion component serving fast precomputed rollups; ad-hoc queries are the flexible complement when precomputed views don't cover a requested dimension combination.
+- **`analytics-dashboard` admin SKILL.md** — the frontend `AdHocQueryBuilder` component (Story 10.5) calling `POST /v1/analytics/query` via the BFF proxy route `/api/analytics/query`.
+- **`watchlist` dimension** — when `dimensions` includes `watchlist`, the engine joins `social_posts` to `watchlist_posts` (many-to-many) to group results by watchlist assignment.

@@ -57,3 +57,11 @@ jobs that are streamed to Azure Blob Storage and polled through
 
 - Hard deletion of expired Blob objects is not implemented by application code; ADR-0111's 7-day object lifecycle is enforced by container lifecycle policy and the `expires_at` metadata, not a worker in Story 13.4.
 - Plan-configurable sync caps are an open question in ADR-0111 and remain unimplemented.
+
+## Relations to other components
+
+- **`export_jobs` table** — async job lifecycle (`pending`→`running`→`ready`/`failed`/`expired`); per-tenant rate-limit counters are also tracked here.
+- **`social_posts` table** — source of all exported post data; queries run through `withTenant()` RLS; `raw_payload` is never written to exports.
+- **`posts-csv-export` skill** — the sync streaming CSV path (`GET /v1/posts/export.csv`, ADR-0090, Story 10.8) is a sibling endpoint on the same router; the legacy status shape from Story 10.8 is preserved via field mapping.
+- **`tenant-export` skill** — the tenant-facing matched-posts CSV export (ADR-0074, Story 3.16) is an earlier export surface; column set and RLS contract are defined there and inform this skill's column exclusions.
+- **`data-retention-and-archival` skill** — `raw_payload` may be replaced by a blob pointer for aged posts; export engine must not assume the field is always populated in Postgres.

@@ -2045,7 +2045,7 @@
 ## 2026-08-20 — 93dadab — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `93dadabf2c3e52e4e25c20f26acc61a5fbe8dc87`
-- **Files touched:** 
+- **Files touched:**
 - ~~**Status:** Pending review~~
 - **Resolved 2026-08-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — an empty-diff merge commit reconciling two development branches, no files of its own.
 
@@ -7827,6 +7827,20 @@
 - **Status:** Pending review
 
 
+## 2026-09-09 — c11df84 — docs(review): complete scheduled three-role documentation review pass (2026-09-09)
+
+- **Full commit:** `c11df84c824aacc832441158d8966ad757f77eea`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/data-retention-and-archival/SKILL.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-09 — 9a796f5 — feat(ai-roles): add personal-development-reviewer agent and developer learning plan
+
+- **Full commit:** `9a796f5f9320d3bf8a0f327304756d6554245fd8`
+- **Files touched:** .claude/agents/personal-development-reviewer.md, docs/ai-roles/developer-learning-plan.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
+- **Status:** Pending review
+
+
+
 ## 2026-09-10 — Learning & Development Writer: queue-integrity finding — 75 duplicate pending entries traced to a bad bookkeeping reconciliation
 
 - **Not a queued entry — a scheduled-review-pass finding about this queue file's own integrity, not about a single commit's user-facing content.** Filed here per this file's own append-only convention, mirroring the matching 2026-09-10 finding in `docs/pending-documentation-steward-reviews.md`.
@@ -7838,4 +7852,3 @@
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** Pending review
-

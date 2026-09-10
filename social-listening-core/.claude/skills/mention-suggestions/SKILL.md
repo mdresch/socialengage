@@ -41,3 +41,11 @@ Governed by **ADR-0100**, **BRD-0100**, **FDD-0100**, and **Story 11.11**.
        ]
      }
      ```
+
+## Relations to other components
+
+- **`author-topic-signals` skill** — the highest-weighted signal (0.50) for mention suggestions; `author_topic_signals` rows identify authors strongly associated with topics in the draft text.
+- **`rag-vector-rls` / `rag-connector` skill** — semantic RAG relevance (weight 0.30) uses the tenant-scoped vector index to surface authors whose content is semantically close to the draft.
+- **`social_posts` table** — author platform activity is derived from post history; only authors with posts on the requested `targetPlatforms` are returned.
+- **`composer-research` skill** — the mention suggestions endpoint is called from the Polypost Composer (Story 6.41/ADR-0076) during draft authoring to surface relevant @-mention candidates.
+- **`outbound-publishing` skill** — mention suggestions inform the draft before the post is submitted through the outbound publishing pipeline.

@@ -40,3 +40,12 @@ Governed by **ADR-0099**, **BRD-0099**, **FDD-0099**, and **Story 11.9**.
    - `POST /v1/inbox/:id/resolve`: marks status `resolved`.
    - `POST /v1/inbox/:id/reply`: executes `SocialConnector.reply()`, creates reply outbound activity, and marks item `resolved`.
    - `autoResolveRedactedPostItems`: automatically marks matched items `resolved` with notes `redacted` when post is redacted.
+
+## Relations to other components
+
+- **`inbox_items` table** — primary backing table; RLS-gated per `tenant_id`.
+- **`social_posts` table** — each inbox item references a post; the reply endpoint reads post payload to build the reply context.
+- **`outbound-engagement` skill** — `POST /v1/inbox/:id/reply` delegates to `SocialConnector.reply()` and writes an `outbound_activities` row via the same outbound audit mechanism as the standalone reply endpoint.
+- **`watchlist-matching` skill** — watchlist-matched posts are the primary source of new inbox items; `watchlist_id` on each inbox item traces back to the originating watchlist.
+- **`influencer-discovery-and-scoring` skill** — inbox priority heuristics (`urgent`/`high`) reference `reach_score` thresholds computed by the author scoring worker in that skill.
+- **`real-time-alert-rules` skill** — alert evaluation may fan out to inbox item creation for high-severity matches alongside webhook delivery.

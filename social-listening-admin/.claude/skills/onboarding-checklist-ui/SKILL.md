@@ -17,7 +17,7 @@ The user-facing setup progress widget mounted on the tenant workspace overview d
 | ADR-0080 | Onboarding checklist UI — dismissible dashboard guide, deep-links, advanced step visibility | 9.6 (frontend) |
 | BRD-0080 | Business requirements for self-service tenant onboarding | 9.6 |
 | FDD-0080 | Functional design for checklist progress, deep-linking, and dismissal | 9.6 |
-| ADR-0036 §2 | Bearer token attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 |
+| ADR-0036 §2 | Authorization header attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 |
 | ADR-0035 | Design system tokens and non-blocking dashboard cards | 6.2 / 9.6 |
 
 ## Contracts that constrain this component
@@ -40,8 +40,16 @@ The user-facing setup progress widget mounted on the tenant workspace overview d
 5. **Sole Choke Point for Tokens:** `OnboardingChecklist.tsx` speaks only to `/api/tenants/:id/onboarding-checklist`; that BFF route speaks to `core-client.ts`, which alone calls `authenticatedCoreFetch()`. No bearer token or `CORE_API_BASE_URL` is ever exposed to the client.
 6. **Role Gating:** Only `tenant_admin` callers can mutate dismissal status or advanced-step visibility (`PATCH`); `tenant_user` can view progress in read-only mode.
 
+## Relations to other components
+
+- **`src/app/api/tenants/[id]/onboarding-checklist/route.ts`** — same-origin BFF proxy for `GET /v1/tenants/:id/onboarding-checklist` and `PATCH /v1/tenants/:id/onboarding-checklist`; attaches the session bearer token via `authenticatedCoreFetch()` (ADR-0036 §2).
+- **`src/lib/core-client.ts`** — `getOnboardingChecklist()` and `patchOnboardingChecklist()` are the typed wrappers for the two endpoints consumed by the tenant dashboard.
+- **`src/app/tenant/page.tsx`** — mounts `<OnboardingChecklist>` as a non-blocking widget alongside the post feed and other dashboard cards; checklist data is fetched in parallel on the server side.
+- **`social-listening-core` onboarding-checklist skill** — the backend counterpart (Story 9.5); governs the JSONB schema, `SELECT EXISTS` derivation, one-way milestone caching, and the `GET`/`PATCH` REST surface this component consumes.
+- **`src/components/ConnectorStatus.tsx`** — linked from the `connect_source` checklist step's deep-link; a user clicking that step is routed to `/tenant/connectors`.
+- **`src/components/WatchlistManager.tsx`** — linked from the `build_watchlist` step deep-link (`/tenant/watchlists`).
+- **Legacy `src/components/OnboardingChecklist.tsx` and `src/app/api/onboarding-checklist/route.ts`** — older same-feature paths still exist on disk, but the current tenant dashboard imports `./OnboardingChecklist` from `src/app/tenant/page.tsx`; the active UI path documented above is the load-bearing one.
+
 ## Note on stale, orphaned files (found 2026-09-10, resolving a leftover unresolved merge conflict)
 
-`c4021b3` ("feat(epic-9): complete remaining stories 9.6-9.11") relocated this component from `src/components/OnboardingChecklist.tsx` to `src/app/tenant/OnboardingChecklist.tsx`, and its BFF route from `src/app/api/onboarding-checklist/route.ts` to `src/app/api/tenants/[id]/onboarding-checklist/route.ts` — but a later merge (`6fe3b5d`, "Merge branch 'main' ... (Epic 9 completed)") never actually resolved the resulting conflict in this file; it committed raw `<<<<<<<`/`=======`/`>>>>>>>` markers describing both the old and new locations side by side, verbatim, straight to `main`. This pass resolves that conflict using the current, actually-imported code as the source of truth (confirmed by grep: `src/app/tenant/page.tsx` imports `./OnboardingChecklist`; nothing imports `src/components/OnboardingChecklist.tsx` or fetches `/api/onboarding-checklist` from any live call site).
-
-The two old-path files — `src/components/OnboardingChecklist.tsx` and `src/app/api/onboarding-checklist/route.ts` — still exist on disk and are genuinely dead code (confirmed, not assumed), left over from before the move. Not deleted here — that's a separate cleanup decision, out of scope for a documentation-conflict fix — but flagged so it isn't silently rediscovered.
+`c4021b3` ("feat(epic-9): complete remaining stories 9.6-9.11") relocated this component from `src/components/OnboardingChecklist.tsx` to `src/app/tenant/OnboardingChecklist.tsx`, and its BFF route from `src/app/api/onboarding-checklist/route.ts` to `src/app/api/tenants/[id]/onboarding-checklist/route.ts` — but a later merge (`6fe3b5d`, "Merge branch 'main' ... (Epic 9 completed)") never actually resolved the resulting conflict in this file; it committed raw `<<<<<<<`/`=======`/`>>>>>>>` markers describing both the old and new locations side by side, verbatim, straight to `main`. This pass resolves that conflict using the current tenant-dashboard import path as the source of truth.

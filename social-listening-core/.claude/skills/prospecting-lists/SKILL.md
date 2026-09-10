@@ -46,3 +46,12 @@ Enables `Social-Selling-Strategist` and sales team collaborators to create, anno
 - `POST /v1/prospecting-lists/:id/export`: Asynchronous CSV export (up to 100,000 rows); status via `GET /v1/posts/exports/:jobId`
 - `POST /v1/prospecting-lists/:id/crm-handoff`: Push entries to CRM as `lead`, supporting `?deduplicate=true` cross-platform author clustering
 
+
+## Relations to other components
+
+- **`authors` table / ADR-0108** — author `engagement_score`, `authenticity_score`, `influence_score`, and `reach_score` are snapshotted into `prospecting_list_entries` at creation; also `author_name` and `public_url` are denormalized from `authors`. Score columns are never updated in-place on the entry.
+- **`outbound_activities` table** — `POST /v1/prospecting-lists/:id/crm-handoff` writes one `outbound_activities` row per pushed contact with `activity_type='crm_prospect'`; this is the same audit table used by the reply/publish framework (ADR-0073/0075).
+- **`withTenant()` (RLS middleware)** — all router handlers run inside `withTenant()`, scoping every query to the caller's `tenant_id` via the `app_user` role and PostgreSQL RLS.
+- **`prospecting-list-ui` (admin SKILL.md)** — the frontend counterpart (Story 10.2, ADR-0086) consuming `GET/POST/PATCH/DELETE /v1/prospecting-lists/**` and the CRM handoff endpoint.
+- **`crm-handoff-ui` (admin SKILL.md)** — frontend modal for the CRM push flow that calls `/api/prospecting-lists/:id/crm-handoff`.
+- **`posts-csv-export` skill** — `POST /v1/prospecting-lists/:id/export` delegates async export jobs through the shared `postExportEngine.ts` and the same `export_jobs` table.
