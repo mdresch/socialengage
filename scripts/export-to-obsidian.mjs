@@ -61,7 +61,7 @@ function getEntityMetadata(node) {
   }
   return {
     entity_id: sha256(`${node.id}::${sourceDoc}`).slice(0, 32),
-    version: '1.0.0',
+    version: ONTOLOGY?.version || '1.0.0',
     source_document: sourceDoc.replace(/\\/g, '/'),
     created_at: createdAt,
     modified_at: modifiedAt,

@@ -31,7 +31,7 @@ export interface User {
   externalSubject: string | null;
   email: string;
   displayName: string | null;
-  role: 'tenant_admin' | 'tenant_user';
+  role: 'tenant_admin' | 'tenant_user' | 'tenant_brand_reputation_manager';
   status: 'invited' | 'active';
   invitedAt: string;
   activatedAt: string | null;
@@ -42,7 +42,7 @@ export interface User {
 
 export interface CreateInvitedUserInput {
   email: string;
-  role?: 'tenant_admin' | 'tenant_user';
+  role?: 'tenant_admin' | 'tenant_user' | 'tenant_brand_reputation_manager';
 }
 
 /**
@@ -70,7 +70,7 @@ function mapRowToUser(row: UserRow): User {
     externalSubject: row.external_subject,
     email: row.email,
     displayName: row.display_name,
-    role: row.role as 'tenant_admin' | 'tenant_user',
+    role: row.role as 'tenant_admin' | 'tenant_user' | 'tenant_brand_reputation_manager',
     status: row.status as 'invited' | 'active',
     invitedAt: row.invited_at.toISOString(),
     activatedAt: row.activated_at ? row.activated_at.toISOString() : null,

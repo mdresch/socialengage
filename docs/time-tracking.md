@@ -15,10 +15,18 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
 | 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
 | 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
 | 2026-09-09 | 19:26 | — | — | Review | — | chore(tracking): post-commit hook sync for scheduled review pass commit (38c5f7d) |
 | 2026-09-09 | 19:25 | — | — | Review | — | docs(review): complete scheduled three-role documentation review pass (2026-09-09) (c11df84) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): log previous commit hash (31525e3) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for dc3958f (f83bf05) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md (dc3958f) |
+| 2026-09-09 | 00:18 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for merge 9c1138f (6738e64) |
+| 2026-09-09 | 00:18 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (9c1138f) |
+| 2026-09-09 | 23:49 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for efaa197 (84815fd) |
+| 2026-09-09 | 23:48 | — | — | Documentation | — | feat(process): collapse implement-story's 2-3 commits per story into one, via self-healing pending-hash backfill (efaa197) |
 | 2026-09-09 | 06:31 | — | — | Review | — | Queue commit f845ac9 for Manager, Documentation Steward, and Learning & Development review (d44e6b2) |
 | 2026-09-09 | 06:31 | — | — | Review | — | Address Copilot review: fix stale reply-support claim, blank queue metadata (f845ac9) |
 | 2026-09-09 | 06:27 | — | — | Review | — | Queue commit b704784 for Manager, Documentation Steward, and Learning & Development review (c642d02) |

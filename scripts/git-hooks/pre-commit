@@ -32,4 +32,55 @@ if [ "$BLOCKED" -eq 1 ]; then
   exit 1
 fi
 
+# ─── Backfill a "pending" commit hash from the immediately-preceding commit ──
+# implement-story/heal-contract-failure (docs/implementation-methodology.md §7,
+# 2026-09-09 Amendment Log entry) write their docs/implementation-log.md entry
+# and the story's Built: line in the SAME commit as the implementation — but
+# that commit's own hash isn't knowable until after it exists, so both fields
+# are written with the literal placeholder "pending" at that point, instead of
+# requiring a whole second, hash-only commit just to record it. This backfills
+# HEAD's own still-pending placeholder (using HEAD's now-fully-known hash) into
+# whichever commit is about to be created — bundling the fix into that commit's
+# own diff at zero extra commit cost.
+#
+# Correctness: only ever resolves a "pending" marker that HEAD's own diff
+# actually introduced (git diff --name-only HEAD~1 HEAD), never blindly
+# patching every "pending" string on sight. An orphaned placeholder from
+# further back (a sign the invariant broke — e.g. hooks were bypassed for one
+# commit) is deliberately left alone rather than mis-attributed to the wrong
+# commit; it stays visibly "pending" until someone looks at it directly.
+#
+# Never blocks the commit: any failure in this section is swallowed.
+backfill_pending_hash() {
+  git rev-parse --verify HEAD >/dev/null 2>&1 || return 0
+  git rev-parse --verify HEAD~1 >/dev/null 2>&1 || return 0
+
+  FULL_HASH=$(git rev-parse HEAD)
+  SHORT_HASH=$(git rev-parse --short HEAD)
+  CHANGED_BY_HEAD=$(git diff --name-only HEAD~1 HEAD 2>/dev/null)
+
+  LOG_FILE="docs/implementation-log.md"
+  if [ -f "$LOG_FILE" ] \
+    && echo "$CHANGED_BY_HEAD" | grep -qx "$LOG_FILE" \
+    && grep -q -- "— commit pending$" "$LOG_FILE" 2>/dev/null; then
+    sed \
+      -e "s/— commit pending\$/— commit ${SHORT_HASH}/" \
+      -e "s/\*\*Full commit:\*\* \`pending\`/\*\*Full commit:\*\* \`${FULL_HASH}\`/" \
+      "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+    git add "$LOG_FILE"
+  fi
+
+  for STORY_FILE in $(echo "$CHANGED_BY_HEAD" | grep -E "^docs/user-stories/epic-.*\.md$" 2>/dev/null || true); do
+    [ -f "$STORY_FILE" ] || continue
+    if grep -q -- "@pending\$" "$STORY_FILE" 2>/dev/null; then
+      sed -e "s/@pending\$/@${SHORT_HASH}/" "$STORY_FILE" > "${STORY_FILE}.tmp" && mv "${STORY_FILE}.tmp" "$STORY_FILE"
+      git add "$STORY_FILE"
+    fi
+  done
+
+  return 0
+}
+
+backfill_pending_hash 2>/dev/null || true
+
 exit 0
