@@ -8160,3 +8160,9 @@
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-11:** see docs/management/manager-register.md's "## 2026-09-11 — reviewed 9c1138f/c11df84/9a796f5/08054d4 — Decision Evaluator: a new AI role added to the roster without a Stakeholder-Register entry, invisible to the very next scheduled review pass because of ordinary branch divergence" entry.
+## 2026-09-11 — a16db03 — docs(review): scheduled doc review 2026-09-11 — 4-role queue pass
+
+- **Full commit:** `a16db03e183f2cae3761ddcb958c0f52a916cd28`
+- **Files touched:** docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- **Status:** Pending review
+
