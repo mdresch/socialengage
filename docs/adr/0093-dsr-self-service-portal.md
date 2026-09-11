@@ -4,6 +4,8 @@
 
 **Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the public DSR portal for access, correction, and erasure requests, along with ZIP export package fulfillment. Story 10.12 is fully implemented and verified.
 
+**Documentation Steward clarification, 2026-09-11:** the "Story 10.12 is fully implemented and verified" claim above is not supported by git history — the commit cited by Story 10.12's own `Built` field (`fdb9bb8`) implements unrelated webhook/YouTube/AI-digest work, not a DSR portal. See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own 2026-09-11 correction on Story 10.12 for the full account; `dsrPublicRouter.ts` does exist, apparently built under the later, differently-numbered Story 16.2 (`7336ec5`, 2026-09-08, ADR-0126). This note does not alter the Decision above — it corrects a factual claim in the Acceptance note only, per this project's own ADR-drift governance table (a "dated Clarification").
+
 **Authorizes:** a tenant-scoped self-service portal where an end user can request access to, correction of, or erasure of the personal data a tenant holds about them, plus the worker that fulfills those requests.
 
 **Source:** `docs/product-research/feature-designs/15-dsr-self-service-portal.md` and `docs/product-research/feature-adr-scoping.md`

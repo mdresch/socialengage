@@ -4,6 +4,8 @@
 
 **Acceptance note (2026-08-28):** Accepted by Menno. Authorizes author-initiated content takedowns, soft-redaction flow for `social_posts`, and `data_subject_requests` audit tracking. Story 10.11 is fully implemented and verified.
 
+**Documentation Steward clarification, 2026-09-11:** the "Story 10.11 is fully implemented and verified" claim above is not supported by git history — the commit cited by Story 10.11's own `Built` field (`fdb9bb8`) implements unrelated webhook/YouTube/AI-digest work, and no commit anywhere implements author-initiated takedown under the Story 10.11 number. See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own 2026-09-11 correction on Story 10.11 for the full account; the closest real coverage found is the later, differently-numbered Story 16.1 (`689357c`, 2026-09-08, ADR-0125). This note does not alter the Decision above — it corrects a factual claim in the Acceptance note only, per this project's own ADR-drift governance table (a "dated Clarification").
+
 **Authorizes:** a public, unauthenticated form for an author or data subject to request the removal of their content from SocialEngage, a `data_subject_requests` tracking table, and the soft-redaction flow for `social_posts`.
 
 **Source:** `docs/product-research/feature-designs/14-author-initiated-takedown.md` and `docs/product-research/feature-adr-scoping.md`

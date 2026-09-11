@@ -4,6 +4,8 @@
 
 **Acceptance note (2026-08-28):** Accepted by Menno. Authorizes the tamper-evident cryptographic compliance audit pack generator, SHA-256 manifest verification, and admin audit pack download workflow. Story 10.13 and Story 10.14 are fully implemented and verified.
 
+**Documentation Steward clarification, 2026-09-11:** the "Story 10.13 and Story 10.14 are fully implemented and verified" claim above is not supported by git history — the commit cited by Stories 10.13/10.14's own `Built` fields (`fdb9bb8`) implements unrelated webhook/YouTube/AI-digest work, not a compliance audit pack or trust admin UI. See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own 2026-09-11 corrections on Stories 10.13/10.14 for the full account; the audit-pack backend does exist, apparently built under the later, differently-numbered Story 16.3 (`492bbd1`, 2026-09-08, ADR-0127) — but no "Trust and rights admin UI" (Story 10.14) exists anywhere. This note does not alter the Decision above — it corrects a factual claim in the Acceptance note only, per this project's own ADR-drift governance table (a "dated Clarification").
+
 **Authorizes:** a `compliance_audit_packs` data model and a tamper-evident export format that a `Tenant-Admin` or `Platform-Admin` can generate for a selected date range and request type.
 
 **Source:** `docs/product-research/feature-designs/16-compliance-audit-pack.md` and `docs/product-research/feature-adr-scoping.md`
