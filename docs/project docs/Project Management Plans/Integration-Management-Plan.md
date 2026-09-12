@@ -380,9 +380,11 @@ This plan's own external-integration roster is also incomplete against the real,
 | gnews-connector | GNews API | Data source | Medium | ✅ Active |
 | newswire-connector | GlobeNewswire RSS | Data source | Medium | ✅ Active |
 | newswire-connector | PR Newswire RSS | Data source | Medium | ✅ Active |
-| Future | Azure Service Bus | Eventing | Medium | ⏳ Planned |
-| Future | Azure AI Language | Enrichment | Medium | ⏳ Planned |
-| Future | Reddit API | Data source | Medium | ⏳ Planned |
+| social-listening-core (ingestion pipeline) | Azure Service Bus | Eventing | Medium | ✅ Active (*Documentation Steward correction, 2026-09-12: was "⏳ Planned" — real since Story 5.19/ADR-0058, `publishEvent()` has been called from the real ingestion pipeline, not just contract-tested, since 2026-08-17.*) |
+| azureAiLanguage-connector, azureOpenAi-connector | Azure AI Language / Azure OpenAI | Enrichment | Medium | ✅ Active (*Documentation Steward correction, 2026-09-12: was "⏳ Planned" — both real `AIProviderConnector`s have shipped and been wired into the live enrichment path since Phase 2 (Stories 2.8/2.9).*) |
+| Future | Reddit API | Data source | Medium | ⏳ Planned (still accurate — Reddit has genuinely not been started, per `CLAUDE.md`'s own "Facts worth not re-deriving" section) |
+| social-listening-core (multiple connectors) | Facebook, Instagram, LinkedIn, Brave Search, Bing Search, Wikipedia, YouTube, GNews, GlobeNewswire/PR Newswire, tenant-owned RSS | Data source | Medium | ✅ Active (*Documentation Steward addition, 2026-09-12: this matrix listed only the original 2 connectors (GNews, Newswire RSS) — a real, long-standing gap, not caused by any single commit reviewed this pass. Full current connector roster confirmed against `social-listening-core/src/connectors/bootstrapConnectors.ts`'s own real registrations; do not re-derive an exact count here — `CLAUDE.md`'s own "Facts worth not re-deriving" section and `docs/adr/README.md` are the authoritative, currently-maintained rosters.*) |
+| social-listening-core / social-listening-admin | Azure Key Vault, Azure Blob Storage, Entra External ID | Credential storage / retention-archival / authentication | High | ✅ Active |
 
 ### 5.6 Integration Verification
 
@@ -460,11 +462,13 @@ This plan's own external-integration roster is also incomplete against the real,
 
 **Note:** consider generating this table from `docs/templates/measure-project-health.cjs`'s output rather than hand-maintaining it.
 
+**Documentation Steward correction, 2026-09-12:** the table below is still dated "last verified 2026-08-03" and the "159/159 (32/32 suites)"/"2/2 connectors (GNews, Newswire)" figures are the same 2026-08-03 baseline `docs/project docs/Project Management Plans/Measurement-Management-Plan.md` is already known-stale on (flagged repeatedly in this queue, e.g. the 2026-08-26 pass). Real current contract/suite counts require an actual `npm test` run in both repos' real Azure-backed environment, which this role cannot execute as part of a documentation-only pass — not recomputed here to avoid asserting an unverified number. What *is* independently confirmable without running the suite: the "2/2 connectors" figure is real drift, not just a stale count — `social-listening-core/src/connectors/bootstrapConnectors.ts` now registers ten real `SocialConnector`s (GNews, Newswire, tenant-owned-feed, Wikipedia, Facebook, Brave Search, Bing Search, Instagram, LinkedIn, YouTube) plus two `AIProviderConnector`s (Azure AI Language, Azure OpenAI) and two `SearchProviderConnector`s (Brave, Bing), confirmed directly by reading that file this pass. Flagged for Menno: this table needs an actual re-run of both suites to re-baseline honestly, not a documentation-only estimate.
+
 | Metric | Current Value | Target | Status | Trend |
 |--------|---------------|--------|--------|-------|
-| Integration Test Coverage | ~95% | 100% | ⚠️ Needs Review | → |
-| Integration Test Pass Rate | 159/159 (100%, 32/32 suites) | 100% | ✅ On Track | → |
-| End-to-End Flow Verification | 2/2 connectors (GNews, Newswire) | 100% | ✅ On Track | → |
+| Integration Test Coverage | ~95% (2026-08-03 baseline — stale, not re-verified) | 100% | ⚠️ Needs Review | → |
+| Integration Test Pass Rate | 159/159 (100%, 32/32 suites) (2026-08-03 baseline — stale, not re-verified) | 100% | ⚠️ Needs Review | → |
+| End-to-End Flow Verification | 10 real `SocialConnector`s + 2 `AIProviderConnector`s + 2 `SearchProviderConnector`s, per `bootstrapConnectors.ts` (2026-09-12) — up from the stale "2/2 connectors (GNews, Newswire)" baseline | 100% | ⚠️ Needs Review | ↑ |
 | Dependency Health | 100% | 100% | ✅ On Track | → |
 | Configuration Drift | ~90% | 100% | ⚠️ Needs Review | → |
 
@@ -492,6 +496,7 @@ This plan is reviewed when:
 |---------|------|--------|---------|--------|
 | 1.0 | 2026-08-01 | Menno Drescher | Initial version | TBD |
 | 1.1 | 2026-08-03 | Menno Drescher | Re-baselined §5.3.2 and §7.2 integration test figures to 159/159 contracts (32/32 suites), last verified 2026-08-03 | TBD |
+| 1.2 | 2026-09-12 | Documentation Steward | §5.5.2 External Dependency Matrix corrected: Azure Service Bus and Azure AI Language/Azure OpenAI were marked "⏳ Planned" though both have been real and Active since 2026-08-17/Phase 2 respectively; the matrix listed only 2 connectors (GNews, Newswire) against the real current 10 `SocialConnector`/2 `AIProviderConnector`/2 `SearchProviderConnector` roster. §7.2 dated-noted as still running on the same stale 2026-08-03 baseline as `Measurement-Management-Plan.md` (not re-baselined here — requires an actual suite run, outside this role's scope). Reddit correctly remains "⏳ Planned" (still genuinely not started). | TBD |
 
 ---
 
