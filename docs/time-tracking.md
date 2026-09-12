@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-12 | 05:21 | — | — | Review | — | docs(review): Documentation Steward pass — resolve 95 of 146 entries (065d2a7) |
+| 2026-09-12 | 05:05 | — | — | Review | — | docs(review): Personal Development Reviewer pass — resolve 9a796f5 (511de5a) |
 | 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
 | 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
 | 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
