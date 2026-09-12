@@ -8184,3 +8184,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-09-12 — ac74b41 — docs(review): Learning & Development Writer pass — resolve 43 more entries
+
+- **Full commit:** `ac74b4179bb15f2fa00541d14ecd7c2ec7c6b9f9`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
