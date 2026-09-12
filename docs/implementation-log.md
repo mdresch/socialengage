@@ -5027,3 +5027,34 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx`, `src/app/api/tenants/[id]/onboarding-checklist/route.ts`, `contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts`, `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md` (this commit's own message says "complete remaining stories 9.6-9.11" and re-touches Story 9.6's files too — Story 9.6 already has its own separate, earlier log entry above dated 2026-08-27 sourced from a different commit (`8fd0aa4`); not re-litigated here, flagged only for whoever next touches Story 9.6 that its onboarding-checklist component appears to have moved from `src/components/OnboardingChecklist.tsx` to `src/app/tenant/OnboardingChecklist.tsx` between the two commits)
   - `docs/user-stories/epic-9-adr-0077-to-0085.md`, `project-progress-dashboard/src/lib/project-dashboard/data.ts`
 - **Notes:** This entry is a Documentation Steward backfill, not a contemporaneous build record — validation/suite counts at the time of the original commit are not independently re-derived here. `docs/user-stories/epic-9-adr-0077-to-0085.md`'s own `**Built:**` fields for Stories 9.7–9.11 are corrected in the same pass to cite this commit hash, per that file's own fixed-shape Built convention (`YYYY-MM-DD — <repo>@<short-hash>`).
+
+---
+
+## 2026-09-12 — Story 15.1: Real-time alert rule exclusions, caps, and pre-save volume preview (backend) — commit 2035448
+
+- **Full commit:** `2035448b25bd9ddfbe5717d74f331b71eb766114`
+- **Repo:** social-listening-core
+- **Story / ADR:** 15.1 / ADR-0123 (governed by BRD-0123, TDS-0123)
+- **Contract:** `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md`
+- **Suite:** PASS (5/5 story tests; 13/13 across Epic 15 including Story 15.2). `npm run typecheck` clean (0 errors) — verified against the current `main` state.
+- **Why this entry exists:** the implementation commit `2035448` was already merged into `main` (its contract test and production code are present and pass), but this log had no entry and `docs/user-stories/epic-15-adr-0123-to-0124.md`'s `**Built:**` field still read `not yet`. Appended here per this file's own append-only convention rather than re-writing history; the same pass updates the story's `**Built:**` field and `real-time-alert-rules/SKILL.md` to reflect the already-shipped behavior.
+- **Files touched (implementation commit `2035448`):**
+  - `docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md`
+  - `docs/implementation-plans/Plan-Story-15.1-Alert-Rules-Refinements.md`
+  - `docs/project docs/Technical-Design/TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md`
+  - `docs/user-stories/epic-15-adr-0123-to-0124.md`
+  - `docs/walkthroughs/walkthrough-story-15.1.md`
+  - `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts`
+  - `social-listening-core/migrations/0076_add_alert_rules_refinements.sql`
+  - `social-listening-core/src/alerts/alertEvaluationWorker.ts`
+  - `social-listening-core/src/alerts/alertRulesStore.ts`
+  - `social-listening-core/src/http/versions/v1/alertRulesRouter.ts`
+  - `social-listening-core/src/http/versions/v1/router.ts`
+- **Additional files touched in this traceability pass:** `social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md`, `docs/user-stories/epic-15-adr-0123-to-0124.md` (`**Built:**` field), `docs/implementation-log.md` (this entry), `project-progress-dashboard/src/lib/project-dashboard/data.ts` (telemetry sync)
+- **Notes:**
+  - Applied DDL migration `0076_add_alert_rules_refinements.sql` adding `excluded_watchlist_ids UUID[]`, `excluded_topic_ids TEXT[]`, and `max_alerts_per_day INT NOT NULL DEFAULT 20` to `alert_rules`, plus `idx_tenant_alerts_rolling_cap` on `tenant_alerts (tenant_id, alert_rule_id, created_at)`.
+  - Implemented `evaluateRuleForPost()` in `alertEvaluationWorker.ts` enforcing the ADR-0123 order of evaluation: independent disjunctive watchlist/topic exclusions first, then the rolling 24-hour daily cap (`max_alerts_per_day`, bounded 1–500), then `cooldown_minutes`, then threshold evaluation — suppression returns `{status:'excluded'|'suppressed'}` without writing `tenant_alerts`.
+  - Implemented `simulateAlertRulePreview()` read-only preview engine replaying `watchlist_daily_counts` over `lookbackDays` ∈ [1, 30], returning `{estimatedAlertCount, lookbackDays, sensitivity}`; exposed as `POST /v1/alert-rules/preview` and alias `POST /v1/alerts/rules/preview` in `alertRulesRouter.ts`.
+  - `alertRulesStore.ts`/`alertRulesRouter.ts` accept `excluded_watchlist_ids`, `excluded_topic_ids`, and `max_alerts_per_day` on create/update with validation; `triggerAlert()` enforces exclusions before inserting.
+  - **Traceability-only pass:** this session did not re-implement Story 15.1 — the code and contract were already on `main` via `2035448`. This entry backfills the missing log record and updates the story's `**Built:**` field and the component `SKILL.md` to match the already-merged behavior.
