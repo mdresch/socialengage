@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-12 | 05:21 | — | — | Review | — | docs(review): Ideal Manager pass — drain 85-entry queue, 4 findings, 3 escalations (241fa72) |
 | 2026-09-12 | 05:21 | — | — | Review | — | docs(review): Documentation Steward pass — resolve 95 of 146 entries (065d2a7) |
 | 2026-09-12 | 05:05 | — | — | Review | — | docs(review): Personal Development Reviewer pass — resolve 9a796f5 (511de5a) |
 | 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |

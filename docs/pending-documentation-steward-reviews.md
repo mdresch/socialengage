@@ -7048,3 +7048,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/pending-documentation-steward-reviews.md, docs/project docs/Project Management Plans/Integration-Management-Plan.md, docs/user-stories/epic-10-adr-0086-to-0094.md, docs/user-stories/epic-11-adr-0095-to-0100.md, docs/user-stories/epic-13-adr-0109-to-0117.md
 - **Status:** Pending review
 
+## 2026-09-12 — 241fa72 — docs(review): Ideal Manager pass — drain 85-entry queue, 4 findings, 3 escalations
+
+- **Full commit:** `241fa72b84a06d9e13aa112f1a05344976a57f64`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+

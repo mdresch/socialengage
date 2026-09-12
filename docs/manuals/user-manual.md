@@ -2,6 +2,8 @@
 
 **Audience:** a `tenant_user` identity — an ordinary member of your organization's SocialEngage tenant, invited by your own Tenant-Admin.
 
+**Learning & Development Writer addendum, 2026-09-12 (scheduled queue pass, continuing oldest-first from `4eac552` through `754db11`):** two more real, previously-undocumented capabilities confirmed and added — escalating a post or a prospecting-list lead to an external CRM (Dynamics 365, Salesforce, or HubSpot) via a real send-with-duplicate-detection dialog (Stories 11.1/11.2), and a personal daily digest email with its own schedule, content, and watchlist-scope preferences and a real preview (Story 11.4). Both are confirmed gated to any tenant identity (not admin-only), by reading `CRMHandoffModal.tsx`/`PostDetailPanel.tsx`/`ProspectingListDetailView.tsx` and `DigestPreferencesView.tsx`'s own real shell gates. Several `docs(adr)`/`docs`-only commits in this same range (`4eac552`, `4dedbff`, `cff52e1`) touched only ADR/BRD/FDD/story documents, not shipped code — nothing to document from those. Two backend-only commits in this range (`264c4fd` CRM connector/case-handoff backend, `0052a8f` daily-digest backend) shipped no screen of their own at the time — each is superseded by its own UI commit reviewed in the same pass.
+
 **Learning & Development Writer addendum, 2026-09-10 (scheduled queue pass, continuing oldest-first from `4ae7f92`):** added three new screens confirmed built and contract-verified from Epic 10 — Prospecting lists (Story 10.2), ad-hoc analytics query (Story 10.5), and real-time alerts (Story 10.10) — plus YouTube Data API as an eleventh connector, Tenant-Admin-connected only (Story 10.13; this project's own epic-10 story document mislabels 10.13 as "Compliance audit pack" — flagged for the Documentation Steward, not resolved here). Epic-10 story numbers 10.11/10.12/10.14 appear mislabelled in `docs/user-stories/epic-10-adr-0086-to-0094.md`; there is no in-app Trust/Compliance UI to document here, and takedown/DSR backend work is tracked under later stories (e.g. Stories 16.1/16.2).
 
 **Current coverage, as of 2026-09-09 (Learning & Development Writer, scheduled queue pass):** sign-in, plus every tenant-facing screen a Tenant User can actually reach that this pass has traced through real source and confirmed built, processing the `docs/pending-learning-development-reviews.md` backlog oldest-first from commit `aa2488b` through `4ae7f92` (2026-08-25 through 2026-08-27 by commit date). Three genuinely new, previously-undocumented capabilities were confirmed and added this pass: a getting-started checklist on the Workspace Overview page (Story 9.6), a "Crisis Threshold Wizard" on the Manage watchlists screen for activating a standardized risk-monitoring template (Stories 9.3/9.4), and a semantic-search-and-AI-assistant "Discovery" screen over your tenant's own posts (Stories 9.7–9.11) — all three documented in their own sections below. (Two of these three were only found by reading real source, since the commit that actually shipped them, `social-listening-admin@c4021b3`, was never itself queued for this role's review by the post-commit hook; flagged for awareness, not something this role's own file can fix.) Also corrected this pass: your own connected Facebook Page is now confirmed to be auto-polled every 30 minutes (Story 1.15) — before that story shipped, a connected Facebook Page was never actually polled at all despite showing as connected; and Facebook's own engagement counts (Story 2.18) are now captured by the connector but still not shown anywhere in the post feed, named as a gap below. **This pass did not reach every pending queue entry** — the tenant sidebar now also lists Inbox, Prospecting, Alerts, and Plan & Seats screens (shipped via Epics 10–11 and beyond) that this pass's oldest-first review had not yet reached and that are therefore deliberately not described here yet; they'll be added once a future scheduled pass reaches and verifies them. Before this pass, as of 2026-08-26: sign-in, plus every tenant-facing screen a Tenant User could then reach. Since that note, one genuinely new capability had shipped: replying to a Facebook post directly from its detail panel, with a real (not simulated) send and its own audit trail (Stories 2.26, 2.27, 3.14, 6.38) — documented in its own section below. A large amount of outbound-publishing backend work also landed in the same window (Stories 2.28–2.30, ADR-0075; Story 3.15's outbound-post audit table; Story 3.16's tenant/posts export; Story 3.17's Deep Research composer endpoint; Story 9.1's watchlist preview-volume endpoint) — all real, contract-verified `social-listening-core` backend, but none of it has a screen in `social-listening-admin` yet, so none of it is documented here as something you can actually do; see "What's not built yet." The connector roster has grown substantially since this note was last written (2026-08-19): connecting your own personal platform credential and turning it on or off now spans GNews, Wikipedia, Facebook (with support for more than one of your own connected Pages, since Story 6.27), Instagram Business, and LinkedIn (Stories 6.3, 6.15, 6.21, 6.23, 6.27, 6.34, 6.35), managing your own watchlists, now with Brave Search and Bing Search as additional selectable sources alongside GNews/Newswire/Wikipedia once your Tenant-Admin has connected them (Stories 6.4, 6.22, 6.30, 6.32), checking connector status, now split into a "Connectors" section and a separate "AI Providers" section, plus real ingestion status badges (including a new "stalled" state) and a dismissible stalled/failing/reconnect-required alerts banner (Stories 6.5, 6.24, 6.29), viewing your tenant's user list on a redesigned Team & access screen with a real seat-utilization meter (Story 6.8, restyled 2026-08-17), a read-only view of your tenant's own settings (Story 6.9), browsing your tenant's ingested posts — newest-first, with search and filtering that now covers every ingested post rather than just the current page, entity/key-phrase chips, per-post Facebook Page and matched-watchlist attribution, and a manual "run enrichment now" button plus a full manual-override editing drawer for a post's AI-assigned sentiment, key phrases, language, country, and summary (Stories 6.11, 6.16, 6.18, 6.19, 6.25, 6.26, 6.31, 6.33, 6.37), a full Analytics dashboard whose Overview tab was substantially rebuilt into an eight-widget grid — including a new Location & geospatial insights widget with a real country map, and a Watchlist Coverage widget with a topic/watchlist selector — alongside the existing Sentiment, Conversations, and Sources tabs (Stories 8.1–8.7, 8.9, 8.10), and a cross-platform post composer with live preview rails for seven networks and an AI rewrite assistant, where drafting and previewing are real, and publishing to your own connected Facebook Pages is now genuinely real too (Story 6.39, extended by Story 13.10) — other networks remain simulated. **All of these screens are real, backed by your tenant's actual data, with working actions**, except where a section below says otherwise. **Corrected 2026-08-19, still true today: setting up your own company domain's content feed (Story 6.12) is no longer something a Tenant User can do** — Story 6.20 (2026-08-17) restricted that entire screen to Tenant-Admins only; see "What's not built yet" below. A few things stay a Tenant-Admin's job only, called out plainly wherever that's the case — this manual only ever describes what a Tenant User can actually do, never an admin-only screen in detail. The app also gained its first real stylesheet on 2026-08-12, the main content area was widened from 900px to 1280px on 2026-08-18, and the sidebar navigation gained icons and became collapsible on 2026-08-20 — all purely visual/navigational changes, nothing about how any screen below works changed because of any of them. **Merge-conflict resolution correction, 2026-09-09:** this note's own body previously said Facebook publishing was still simulated — Story 6.39 (`social-listening-admin@e0abfdd`, 2026-08-26), later extended by Story 13.10, made it genuinely real; corrected here since `e0abfdd` was never queued by the post-commit hook and so fell outside every oldest-first pass's own queue range, this one included.
@@ -92,6 +94,14 @@ An "⚡ Crisis Wizard" button on the Manage watchlists screen (also offered from
 
 **Current limitation, disclosed directly in the wizard itself:** activating a template creates a real monitoring watchlist right away, but automated alert dispatch (email, Slack, or webhook) for a crossed threshold is not built yet.
 
+### Boolean query visual builder (Story 12.4)
+
+When you choose the "Boolean" match type for a watchlist, you get a real visual query builder instead of just a text box — confirmed against the real `BooleanQueryBuilder.tsx` component.
+
+1. Switch between **🧭 Guided Builder** — add clauses one at a time (Keyword, Phrase, Hashtag, Mention, Author, Source, Sentiment, or Date, plus a nested group for more complex logic) joined by AND/OR/NOT — and **⚡ Advanced Text**, where you can type or paste a boolean query directly. Editing in either mode keeps the other in sync.
+2. As you build a query, SocialEngage checks it against every platform your watchlist actually targets and shows two kinds of feedback: an amber "⚠️ Platform Query Warnings" notice when a clause type a platform can't natively evaluate would be silently dropped for that platform, and a red "🚫 Cannot save" error when your query exceeds a platform's own limits — a query with real errors can't be saved until you fix it.
+3. A "View AST JSON" toggle shows the underlying structured query, for reference.
+
 ## Checking connector status (Story 6.5, restructured by Stories 6.24 and 6.29)
 
 1. From your tenant's screens, open "View connector status."
@@ -122,7 +132,7 @@ Once your tenant has connected and activated a platform, SocialEngage polls it a
 2. A search box and Provider/Sentiment/Watchlist filters sit above the list, and, as of Story 6.18, both search and every filter now cover your tenant's entire ingested history, not just the current page. The Provider filter automatically includes every platform your tenant actually has posts from (Story 6.26).
 3. A "Show more" button reveals more of your already-filtered result set in batches; there's no page-number picker or server round trip for paging.
 4. Click any post to open a detail panel on the same screen (a slide-over, not a separate page) showing the same information plus the full article body rendered as real, formatted Markdown (Story 6.19), the author (currently shown as a raw internal identifier — there's no lookup yet to turn it into a friendlier name) and which ingestion run brought it in (also a raw identifier, for the same reason).
-5. **A post from Facebook shows which of your connected Pages it came from** (Story 6.33), plus a separate "By: <author>" line whenever Facebook reports a real author distinct from the Page itself. **Any post matched by one of your watchlists shows that watchlist's name** in the card and detail view too (Stories 6.37, 3.11–3.12). An Instagram post shows its own media type and a thumbnail, with a gallery for a multi-image carousel; a LinkedIn post shows its own reaction/comment/share counts.
+5. **A post from Facebook shows which of your connected Pages it came from** (Story 6.33), plus a separate "By: <author>" line whenever Facebook reports a real author distinct from the Page itself. **Any post matched by one of your watchlists shows that watchlist's name** in the card and detail view too (Stories 6.37, 3.11–3.12). An Instagram post shows its own media type and a thumbnail, with a gallery for a multi-image carousel; a LinkedIn post shows its own reaction/comment/share counts. **A YouTube video or comment shows its real title (or comment text), the channel name as its author, and links directly to the video on YouTube** (Story 6.11's post-feed contract, extended for the YouTube connector — confirmed against `postDisplay.ts`).
 
 ## Replying to a post (Stories 2.26, 2.27, 3.14, 6.38)
 
@@ -134,14 +144,15 @@ Once your tenant has connected and activated a platform, SocialEngage polls it a
 
 **Current limitations:** replying only works for Facebook today — no other platform's connector supports it yet, so the button stays disabled everywhere else. If you have more than one of your own Facebook Pages connected, replying currently uses whichever Page you connected most recently, not necessarily the Page the post actually came from — if those two differ, Facebook will reject the reply with a permission error. The reply composer also has no media attachment or AI-rewrite option, unlike the full cross-platform post composer.
 
-## Running enrichment manually, and correcting it by hand (Story 6.16, extended by Stories 3.13 and 6.31)
+## Running enrichment manually, and correcting it by hand (Story 6.16, extended by Stories 3.13, 6.31, and 12.6)
 
 1. On a post's detail screen, if that post has never been analyzed by an AI provider, you'll see a "Run enrichment now" button — this typically applies to a post that was ingested before your tenant had connected and activated any AI provider.
 2. Clicking it asks SocialEngage to analyze that one post right now, using whichever AI provider your tenant currently has connected and active. On success, the screen reloads and shows the real sentiment, key phrases, entities, and which provider produced them.
 3. If no AI provider is currently connected and active for your tenant, you'll see a plain message saying so rather than an error.
-4. **As of Story 6.31, a post that has been analyzed also has an "Edit" button** on its AI analysis card. It opens a second panel letting you correct the AI's own sentiment, key phrases, detected language, country, and summary by hand — this isn't a Tenant-Admin-only action, any Tenant User can use it. Saving marks the post with an amber "Edited by user" badge showing who made the change and when.
-5. Once a post has been manually corrected, clicking "Run enrichment now" again asks you to confirm first, since re-running would otherwise overwrite the correction with a fresh AI result.
-6. This button only appears on a post with no enrichment yet, or after you've explicitly confirmed re-running it on a corrected one.
+4. **The sentiment badge itself shows a confidence percentage and a plain-language confidence tier — Strong, Moderate, or Needs review** (Story 12.6) — and, when the AI provider detects distinct opinions about different things within the same post, an "Aspect-Level Sentiment Breakdown" list shows each aspect with its own sentiment badge and a short supporting quote.
+5. **As of Story 6.31, a post that has been analyzed also has an "Edit" button** on its AI analysis card. It opens a second panel letting you correct the AI's own sentiment (now including a "Mixed" option, Story 12.6), key phrases, detected language, country, and summary by hand — plus an optional free-text "Override Reason" field to note why — this isn't a Tenant-Admin-only action, any Tenant User can use it. Saving marks the post with an amber "Edited by user" badge showing who made the change and when.
+6. Once a post has been manually corrected, clicking "Run enrichment now" again asks you to confirm first, since re-running would otherwise overwrite the correction with a fresh AI result.
+7. This button only appears on a post with no enrichment yet, or after you've explicitly confirmed re-running it on a corrected one.
 
 ## Your organization's own company domain content feed (Story 6.12, corrected 2026-08-19)
 
@@ -160,6 +171,16 @@ Open "Analytics" from your tenant's screens to see aggregated, dashboard-style v
 
 **Current limitations:** the "Compare to previous period" checkbox doesn't visibly change anything on the current Overview tab. Location coverage only reflects GNews, Newswire, tenant-owned-feed, and Instagram posts today — every other platform's posts land in "Unknown / Unmapped." No per-widget export exists, and period-over-period comparison, where shown, only ever appears on the Overview tab's own totals.
 
+## Topic evolution timeline (Story 11.6)
+
+Go directly to `/tenant/analytics/topics` (there's no link to this screen from the Analytics dashboard or the sidebar yet, so you have to type or bookmark the address) to see how a topic's volume and sentiment have moved over time — confirmed against the real `TopicEvolutionTimeline.tsx` component, gated to any tenant identity.
+
+1. Pick a topic from a dropdown — today this is a fixed list of five built-in topics (Artificial Intelligence, Customer Support, Product Feedback, Pricing, Security), not your own custom topics — and a granularity (day, week, or month).
+2. A stacked bar chart shows real mention volume per period, split into positive/neutral/negative sentiment, with a 🔥 "Rising Trend" or 📉 "Falling Trend" badge shown for the most recent period and per individual bar.
+3. A "Compare Previous" checkbox overlays the prior period's data as a dashed reference line.
+
+**Current limitation:** the topic list is fixed to five built-in names, not derived from your tenant's own real topics, and there's no in-app link to this screen yet.
+
 ## Drafting a cross-platform post (Story 6.36, publishing made real by Story 6.39)
 
 Open "Compose" from your tenant's screens (or the "Compose Post" button on the Posts screen) to draft a single message and preview how it would look on up to seven different networks (Facebook, Instagram, LinkedIn, X/Twitter, Bluesky, Mastodon, and Threads) side by side.
@@ -168,6 +189,27 @@ Open "Compose" from your tenant's screens (or the "Compose Post" button on the P
 2. Drafts save automatically to your own browser as you work — not to shared tenant storage, so a draft made on one device isn't visible from another.
 3. **As of Story 6.39, publishing to Facebook is genuinely real, not simulated.** The "Publish" button opens a dialog listing your active, connected Facebook Pages; select which ones to send to and confirm, and SocialEngage actually posts your message to each one through Facebook's own API — you'll see a real link to the published post on success, or a plain per-Page error on failure.
 4. **Every other network — Instagram, LinkedIn, X/Twitter, Bluesky, Mastodon, Threads — still can't actually be published to.** The same dialog shows each of them as "not yet available for publishing." You can still draft and preview a message for them; only Facebook can actually be sent to today.
+
+## Scheduling an outbound post (Stories 11.7, 11.8, 11.12)
+
+Go directly to `/tenant/posts/outbound` — this screen isn't linked from the sidebar, the Posts screen, or anywhere else in the app yet, so you have to type or bookmark the address — for a second way to send and schedule outbound posts, separate from the "Compose" screen described above. Confirmed against the real `OutboundComposerModal.tsx` and `OutboundPostsView.tsx` components.
+
+1. Click "Create Outbound Post" to open a composer. Write your message, and choose one or more target networks: LinkedIn, Facebook, Bluesky, or X/Twitter.
+2. **As you type, a "Finding relevant authors to tag..." suggestion list appears (Story 11.12)** — a short pause after you stop typing, SocialEngage suggests real authors from your own tenant's data you might want to @mention, each tagged with why it was suggested (a matching topic, a matching keyword, or a semantic/RAG match). Click a suggestion to insert `@theirhandle` into your text.
+3. For LinkedIn or Facebook, also pick which of your connected Pages or accounts to send to.
+4. Choose "Publish now" to send immediately, or pick a future date and time to schedule it instead.
+5. The main screen lists every outbound post you've created here, filterable by tab: All, Scheduled, Published, or Failed. A still-scheduled post can be Cancelled or Rescheduled to a new date and time.
+
+**Current limitation — please read before using Bluesky or X/Twitter here:** sending to LinkedIn or Facebook from this screen is real, using the same real connection this app uses elsewhere. **Bluesky and X/Twitter are offered as selectable targets on this screen, but there is no real connector behind either one yet** — unlike the ordinary Compose screen, which plainly labels them "not yet available for publishing," this screen shows no such warning. Selecting one and publishing immediately creates an activity that never resolves to success or failure; it's simply left stuck. Stick to LinkedIn and Facebook here until this is fixed.
+
+## Unified social inbox (Stories 11.9, 11.10)
+
+Open "Inbox" from your tenant's screens for a dedicated triage queue over incoming social mentions, separate from the ordinary Posts feed — confirmed against the real `InboxView.tsx`/`InboxItemDetail.tsx` components, gated to any tenant identity.
+
+1. Filter the queue by tab: All Items, 🔥 Urgent, ⚠️ High Priority, 💤 Snoozed, or ✓ Resolved, plus a free-text search box.
+2. Selecting an item opens its detail: the post content, its priority, provider, and status, an internal notes field, and three actions — **Reply**, **Snooze** (for a chosen number of hours), and **Resolve**.
+
+**Current limitation — a real, serious one, please read before relying on Reply here:** clicking "Reply" always reports success, but **sending a real reply currently only actually works for Facebook**, the only provider with a real reply capability behind it. For every other provider (LinkedIn, Instagram, and everything else), this screen's backend silently records a *fake* "sent" result with a made-up link instead of warning you or disabling the button — unlike the ordinary post detail panel's own Reply button, which correctly disables itself for anything but Facebook. **Do not trust a "sent" confirmation from this screen for a non-Facebook item — it does not mean anything was actually posted.**
 
 ## Prospecting lists (Story 10.2)
 
@@ -187,6 +229,29 @@ Open "Alerts" from your tenant's screens for two things:
 
 1. **Alert rules** — create a rule by naming it and choosing a trigger type (Volume Spike, Negative Sentiment Outcry, Influential/VIP Author Post, Connector Error/Ingestion Failure, or Keyword Burst) and a cooldown period between repeat firings. New rules start enabled and notify in-app.
 2. **Alert feed** — a filterable list (All / Active / Acknowledged / Resolved) of alerts your rules have actually triggered, each showing its severity. Mark an alert Acknowledged or Resolved from this feed.
+
+## Escalating a post or lead to CRM (Stories 11.1, 11.2)
+
+From a post's detail panel, or from an author's row inside a prospecting list, you can push that item to your organization's own CRM system as a real record — confirmed against the real `CRMHandoffModal.tsx` component, wired into both `PostDetailPanel.tsx` and `ProspectingListDetailView.tsx`, and available to any tenant member, not just Tenant-Admins.
+
+1. On a post's detail panel, click "💼 Push to CRM." On an author's row inside a prospecting list, click "💼 CRM" instead — this pushes that one author as a lead, separately from a list's own bulk "Push to CRM" action described above.
+2. Choose which CRM connector to send it to — Microsoft Dynamics 365, Salesforce, or HubSpot — and a record type (Support Case/Incident, Lead/Prospect, Opportunity/Deal, Account, or Contact). You can optionally add an assignee and internal notes.
+3. Click "Escalate to CRM" to send it. **This is a real send, not a preview** — it creates or updates an actual record in your organization's connected CRM.
+4. If that same post or author was already escalated to that CRM connector before, you'll see a duplicate warning with a link to the existing record, and the option to create a duplicate anyway rather than being silently blocked.
+5. On success, you get the CRM's own record ID and a direct link to open it in the CRM.
+
+**Current limitation:** this only works once your organization's CRM connector has real credentials configured — that setup is a separate, tenant-wide screen this pass has not yet traced through and confirmed in full, so it isn't described here; if no credential is configured yet, the push will fail rather than silently succeeding.
+
+## Daily digest email (Story 11.4)
+
+From "Tenant settings," under "Notification Preferences," click "Manage Daily Digest Email" to set up your own personal morning summary email — confirmed against the real `DigestPreferencesView.tsx` component, gated to any tenant identity; these are your own preferences, not a tenant-wide setting.
+
+1. Turn the "Daily Digest Subscription" switch on or off.
+2. Pick a delivery time and your own timezone from a list of common timezones.
+3. Choose what to include: an AI-generated executive summary, your top 5 highest-impact conversations, and/or a trending-topics breakdown.
+4. Optionally narrow the digest to specific watchlists — leave none selected to include all of your active watchlists.
+5. Click "Preview Daily Digest" at any time to see a real rendered sample of the email with your current settings, before saving.
+6. Click "Save Preferences" to save your choices.
 
 ## What's not built yet
 
