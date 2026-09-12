@@ -7054,3 +7054,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-09-12 — 02255ce — docs(review): Learning & Development Writer pass (checkpoint, in progress)
+
+- **Full commit:** `02255cea0e357675bab8679d513c63e0613eda12`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+

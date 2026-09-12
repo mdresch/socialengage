@@ -3500,119 +3500,119 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.6.ai-sentiment-aspect-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/posts/EnrichmentEditDrawer.tsx, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/components/sentiment/SentimentAspectsList.tsx, social-listening-admin/src/components/sentiment/SentimentBadge.tsx, social-listening-admin/src/lib/core-client.ts
 - **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** This is the real commit behind the fabricated-hash queue entry above (`9ed8291`) — already reviewed and documented there (Story 12.6, AI sentiment aspect UI: "Mixed" sentiment option, Override Reason field, confidence tier badge, aspect breakdown list). No separate audit needed here.
 
-## 2026-08-29 — 21820f4 — feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend)
+## ~~2026-08-29 — 21820f4 — feat(epic-12): implement Story 12.7 - AI topic clustering post-topics schema (backend)~~
 
 - **Full commit:** `21820f4106eacf3a47635bf2be3ee3883592b65a`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-12-adr-0101-to-0108.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/contracts/epic-12/story-12.7.ai-topic-clustering-post-topics-schema.contract.test.ts, social-listening-core/migrations/0060_create_topics_and_post_topics.sql, social-listening-core/src/connectors/azureAiLanguage/azureAiLanguageConnector.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/topics/topicClusteringService.ts, social-listening-core/src/topics/topicStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change at this commit — backend-only (AI topic-clustering schema/service, `topics`/`post_topics` tables). No screen calls it yet.
 
-## 2026-08-29 — 5ce0794 — feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend)
+## ~~2026-08-29 — 5ce0794 — feat(epic-12): implement Story 12.8 - topic curation and selected topic UI (frontend)~~
 
 - **Full commit:** `5ce07949b2d502fcad60b89695eb33ff2a7a7eff`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.8.topic-curation-selected-topic-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/topics/TopicBadge.tsx, social-listening-admin/src/components/topics/TopicSelector.tsx, social-listening-admin/src/components/topics/TopicsView.tsx, social-listening-admin/src/components/topics/topicCurationUtils.ts, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change today, despite being a real, contract-tested "frontend" commit. `TopicBadge.tsx`/`TopicSelector.tsx`/`TopicsView.tsx` are real components, but **none is imported anywhere under `social-listening-admin/src/app/`** — checked directly (`grep -r "TopicsView\|TopicSelector" social-listening-admin/src/app` returns nothing). No route or page renders this feature, so nothing here is reachable by an actual user yet. Not documented, per this role's hard rule against documenting a component with no shipped screen — flagged for the Documentation Steward as a "component built, never wired to a route" gap, distinct from a straightforward backend-only commit.
 
-## 2026-08-29 — ee2b3e0 — feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend)
+## ~~2026-08-29 — ee2b3e0 — feat(epic-12): implement Story 12.9 - dashboard widget contracts (backend)~~
 
 - **Full commit:** `ee2b3e037ed95ec914c9cd87125d3d922c2e47ee`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/next-env.d.ts, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/contracts/epic-12/story-12.9.dashboard-widget-contracts.contract.test.ts, social-listening-core/src/analytics/dashboard/dashboardService.ts, social-listening-core/src/analytics/dashboard/widgetRegistry.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change at this commit — backend-only (dashboard widget-contract schema/registry). No screen calls it yet.
 
-## 2026-08-29 — d221cd6 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)
+## ~~2026-08-29 — d221cd6 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)~~
 
 - **Full commit:** `d221cd61a2694230fe5f31aa689229225bd573d6`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts, social-listening-admin/src/components/analytics/dashboard/DashboardView.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetGrid.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetRenderer.tsx, social-listening-admin/src/components/analytics/dashboard/dashboardTypes.ts, social-listening-admin/src/components/analytics/dashboard/widgets/BarChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/DataTable.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/MetricTile.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/PieChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/RankedList.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`d221cd61a2694230fe5f31aa689229225bd573d6` does not exist in the repository** — checked directly. The real commit with this exact file list is `ffc5294`, reviewed at its own queue entry immediately below. No separate audit performed here.
 
-## 2026-08-29 — ffc5294 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)
+## ~~2026-08-29 — ffc5294 — feat(epic-12): implement Story 12.10 - dashboard widget renderer (frontend)~~
 
 - **Full commit:** `ffc5294f7f54658267439d4d39c9f8db8b202297`
-- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts, social-listening-admin/src/components/analytics/dashboard/DashboardView.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetGrid.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetRenderer.tsx, social-listening-admin/src/components/analytics/dashboard/dashboardTypes.ts, social-listening-admin/src/components/analytics/dashboard/widgets/BarChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/DataTable.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/MetricTile.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/PieChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/RankedList.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/contracts/epic-12/story-12.10.dashboard-widget-renderer.contract.test.ts, social-listening-admin/src/components/analytics/dashboard/DashboardView.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetGrid.tsx, social-listening-admin/src/components/analytics/dashboard/WidgetRenderer.tsx, social-listening-admin/src/components/analytics/dashboard/dashboardTypes.ts, social-listening-admin/src/components/analytics/dashboard/widgets/BarChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/MetricTile.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/PieChart.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/RankedList.tsx, social-listening-admin/src/components/analytics/dashboard/widgets/TimeSeriesChart.tsx, social-listening-admin/src/lib/core-client.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change today. `DashboardView.tsx`/`WidgetGrid.tsx`/`WidgetRenderer.tsx` are real, contract-tested components, but **none is imported anywhere under `social-listening-admin/src/app/`** — checked directly. No route renders this generic widget-dashboard renderer (distinct from the already-documented, real Analytics dashboard, Stories 8.1–8.10, which is a separate, hand-built set of screens). Not documented; flagged for the Documentation Steward alongside the same gap on `5ce0794` above.
 
-## 2026-08-29 — 90fe8f5 — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)
+## ~~2026-08-29 — 90fe8f5 — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)~~
 
 - **Full commit:** `90fe8f5e32c8fdca5d44758f3ddfa747c3ebbb10`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`90fe8f5e32c8fdca5d44758f3ddfa747c3ebbb10` does not exist in the repository.** The real commit is `563fbce`, reviewed immediately below.
 
-## 2026-08-29 — 563fbce — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)
+## ~~2026-08-29 — 563fbce — feat(epic-12): implement Story 12.11 - public API versioning and webhooks (backend)~~
 
 - **Full commit:** `563fbce6b6d581a54b1249f96ed6b8ebca3a7f63`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/contracts/epic-12/story-12.11.public-api-and-webhooks.contract.test.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/rateLimitMiddleware.ts, social-listening-core/src/http/versions/v1/webhooksRouter.ts, social-listening-core/src/webhooks/webhookDispatcher.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change — backend-only (rate-limit middleware, webhook dispatcher/router). This is a distinct backend webhook system from the already-documented Real-time alerts feature's own webhook UI (Story 10.12); no screen calls this one.
 
-## 2026-08-29 — f1a2b93 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)
+## ~~2026-08-29 — f1a2b93 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)~~
 
 - **Full commit:** `f1a2b9308264d73f782378284d2b87b6d0e39d00`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/components/webhooks/WebhookForm.tsx, social-listening-admin/src/components/webhooks/WebhooksView.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`f1a2b9308264d73f782378284d2b87b6d0e39d00` does not exist in the repository.** The real commit is `95c8a97`, reviewed immediately below.
 
-## 2026-08-29 — 95c8a97 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)
+## ~~2026-08-29 — 95c8a97 — feat(epic-12): implement Story 12.12 - webhook management UI (frontend)~~
 
 - **Full commit:** `95c8a973c3b2f9d2794767c89b28f84ea85f4920`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.12.webhook-management-ui.contract.test.ts, social-listening-admin/src/components/webhooks/WebhookForm.tsx, social-listening-admin/src/components/webhooks/WebhooksView.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change today. `WebhookForm.tsx`/`WebhooksView.tsx` are real components (for the Story 12.11 webhook backend above), but **neither is imported anywhere under `social-listening-admin/src/app/`** — checked directly; not to be confused with the already-documented, separately-built webhook subscriptions screen (Story 10.12, `tenant/settings/webhooks/page.tsx`, a different feature entirely). Not documented; flagged for the Documentation Steward.
 
-## 2026-08-29 — a81742a — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)
+## ~~2026-08-29 — a81742a — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)~~
 
 - **Full commit:** `a81742aa4d0b99e0e69281127cab996ebd9d1fe6`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`a81742aa4d0b99e0e69281127cab996ebd9d1fe6` does not exist in the repository.** The real commit is `da86059`, reviewed immediately below.
 
-## 2026-08-29 — da86059 — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)
+## ~~2026-08-29 — da86059 — feat(epic-12): implement Story 12.13 - multi-user workspaces and RBAC permissions (backend)~~
 
 - **Full commit:** `da86059e1db111b27c6d3a3e88531bb044e1614b`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/contracts/epic-12/story-12.13.multi-user-workspaces-rbac.contract.test.ts, social-listening-core/migrations/0061_create_watchlist_shares_and_feature_gates.sql, social-listening-core/migrations/0062_update_watchlists_rls_for_sharing.sql, social-listening-core/src/auth/permissionMatrix.ts, social-listening-core/src/http/versions/v1/tenantSelfViewRouter.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts, social-listening-core/src/tenants/tenantStore.ts, social-listening-core/src/watchlists/watchlistShareStore.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change — backend-only (a permission matrix, watchlist-sharing tables/store, RLS update). No screen calls it yet — the already-documented "Watchlists are private to you" behavior in both manuals is unaffected, since nothing surfaces this new sharing capability in the UI yet.
 
-## 2026-08-29 — f6df74c — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+## ~~2026-08-29 — f6df74c — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)~~
 
 - **Full commit:** `f6df74c811da6410acf70fd5ad68330a81d96d9b`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`f6df74c811da6410acf70fd5ad68330a81d96d9b` does not exist in the repository.** The real commit is `0ac8cd4`, reviewed immediately below.
 
-## 2026-08-29 — 0ac8cd4 — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)
+## ~~2026-08-29 — 0ac8cd4 — feat(epic-12): implement Story 12.14 - RBAC and workspace settings UI (frontend)~~
 
 - **Full commit:** `0ac8cd49f506c7a7c7b633fd395bb3bde86b7586`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.14.workspace-settings-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/settings/WorkspaceSettingsView.tsx
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass):** No user-facing change today. `WorkspaceSettingsView.tsx` is a real component, but **it is never imported anywhere under `social-listening-admin/src/app/`** — checked directly; not to be confused with the already-documented, separately-built Tenant settings screen (Story 6.9/6.40). Not documented; flagged for the Documentation Steward.
 
-## 2026-08-30 — fa3a218 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+## ~~2026-08-30 — fa3a218 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)~~
 
 - **Full commit:** `fa3a21882d542859c170196be3d9bc9a5e700d7b`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`fa3a21882d542859c170196be3d9bc9a5e700d7b` does not exist in the repository.** The real commit is `ee9ffe5`, reviewed below (two fabricated hashes share this same file list — see `3e5ff0a` too).
 
-## 2026-08-30 — 3e5ff0a — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+## ~~2026-08-30 — 3e5ff0a — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)~~
 
 - **Full commit:** `3e5ff0abf9e48a233e4f8b0ba08bb26022403578`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`3e5ff0abf9e48a233e4f8b0ba08bb26022403578` also does not exist in the repository.** The real commit is `ee9ffe5`, reviewed immediately below — a third occurrence of the same story/file list under a third distinct hash, only one of which (`ee9ffe5`) is real.
 
-## 2026-08-30 — ee9ffe5 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)
+## ~~2026-08-30 — ee9ffe5 — feat(epic-12): implement Story 12.15 - influencer discovery and scoring (backend)~~
 
 - **Full commit:** `ee9ffe51710c818f364f8af199fceb4c48b1a7ae`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/contracts/epic-12/story-12.15.influencer-discovery-and-scoring.contract.test.ts, social-listening-core/migrations/0063_add_author_scoring_columns.sql, social-listening-core/src/authors/influencerService.ts, social-listening-core/src/http/versions/v1/influencersRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), the one real commit of the three above.** Confirmed to exist via `git cat-file`/`git diff-tree`. No user-facing change — backend-only (author influence-scoring service and endpoint). No screen calls it yet; the real UI ships next (Story 12.16, below).
 
-## 2026-08-31 — 6224435 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+## ~~2026-08-31 — 6224435 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)~~
 
 - **Full commit:** `6224435a6e82fe15d932e8f70c6a3803c9570791`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`6224435a6e82fe15d932e8f70c6a3803c9570791` does not exist in the repository.** The real commit is `bbfbb04`, reviewed below (a third fabricated duplicate, `0602675`, follows immediately).
 
-## 2026-08-31 — 0602675 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+## ~~2026-08-31 — 0602675 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)~~
 
 - **Full commit:** `060267514e379e6977cb132e23d28817581502b1`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), hash-integrity problem found.** **`060267514e379e6977cb132e23d28817581502b1` also does not exist in the repository.** The real commit is `bbfbb04`, reviewed immediately below.
 
-## 2026-08-31 — bbfbb04 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)
+## ~~2026-08-31 — bbfbb04 — feat(epic-12): implement Story 12.16 - influencer discovery UI (frontend)~~
 
 - **Full commit:** `bbfbb043aaf91608f026b741c78f8a14d0e49542`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/contracts/epic-12/story-12.16.influencer-discovery-ui.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/components/influencers/InfluencerCard.tsx, social-listening-admin/src/components/influencers/InfluencerDiscoveryView.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-12 (Learning & Development Writer, scheduled queue pass), the one real commit of the three above.** Confirmed to exist via `git cat-file`/`git diff-tree`. No user-facing change today. `InfluencerCard.tsx`/`InfluencerDiscoveryView.tsx` are real components, but **neither is imported anywhere under `social-listening-admin/src/app/`** — checked directly. Not documented; flagged for the Documentation Steward alongside the same "component built, never wired to a route" gap found repeatedly across this Epic 12 batch (Stories 12.8, 12.10, 12.12, 12.14, 12.16 — five separate "frontend" stories in a row, none of them actually reachable in the running app). This is a pattern worth its own dedicated look, not five independent one-offs.
 
 ## 2026-08-31 — 6948420 — feat(geo): add backfillGeoLocations.ts and geo:backfill npm script (no-story: backfill utility only, not a story impl) - Backfilled 2,644 posts; final coverage 4757/4757 (100%) - Contract story-2.20 PASS (12/12)
 
@@ -7862,5 +7862,11 @@
 
 - **Full commit:** `241fa72b84a06d9e13aa112f1a05344976a57f64`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-12 — 02255ce — docs(review): Learning & Development Writer pass (checkpoint, in progress)
+
+- **Full commit:** `02255cea0e357675bab8679d513c63e0613eda12`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
