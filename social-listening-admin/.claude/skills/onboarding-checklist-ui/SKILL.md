@@ -20,6 +20,8 @@ Both layers are non-blocking, dismissible guides — neither locks any existing 
 |---|---|---|
 | ADR-0080 | Onboarding checklist state — JSONB on `tenants`, bundled `SELECT EXISTS` evaluation, one-way milestone caching, `GET`/`PATCH` API | 9.5 (backend) |
 | ADR-0080 | Onboarding checklist UI — dismissible dashboard guide, deep-links, advanced step visibility | 9.6 (frontend) |
+| BRD-0080 | Business requirements for self-service tenant onboarding | 9.6 |
+| FDD-0080 | Functional design for checklist progress, deep-linking, and dismissal | 9.6 |
 | ADR-0130 | Onboarding checklist state refinements — role-tailored step trees, automated verification probes | 17.2 (frontend/backend) |
 | ADR-0036 §2 | Bearer token attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 / 17.2 |
 | ADR-0035 | Design system tokens and non-blocking dashboard cards | 6.2 / 9.6 |
@@ -37,7 +39,7 @@ Both layers are non-blocking, dismissible guides — neither locks any existing 
 - `src/lib/core-client.ts`: `getOnboardingChecklist()` / `patchOnboardingChecklist()` (Story 9.5/9.6, call core directly at `/v1/tenants/:id/onboarding-checklist`) and `getRoleOnboardingChecklist()` (Story 17.2, calls core at `/v1/onboarding/checklist`).
 - `src/app/tenant/page.tsx`: Server Component overview page fetching the tenant-wide checklist server-side in parallel with other dashboard feeds, and mounting `OnboardingChecklist`.
 
-## Load-Bearing Invariants
+## Key Invariants
 
 1. **Non-blocking / non-gating, both layers:** the checklist and the role journeys are guides, not gates. Users can navigate freely and all other pages/features remain fully usable regardless of either checklist's status.
 2. **Sole choke point for tokens:** `OnboardingChecklist.tsx` never calls core directly — it goes through the two BFF routes above, and `core-client.ts`'s `authenticatedCoreFetch()` is the only place a bearer token is attached (ADR-0036 §2). No bearer token or `CORE_API_BASE_URL` is ever exposed to the client.
@@ -47,8 +49,8 @@ Both layers are non-blocking, dismissible guides — neither locks any existing 
 
 ## Known gaps / deferred work / orphaned code
 
-- **`src/components/OnboardingChecklist.tsx` is dead code — do not edit it expecting it to render anywhere.** It's a duplicate component left over from an old `main` merge (`6fe3b5d`, "Epic 9 completed") that combined two independently-built onboarding UIs. Confirmed via grep: nothing imports `components/OnboardingChecklist`; `src/app/tenant/OnboardingChecklist.tsx` is the only one wired into `page.tsx`. Not deleted as part of Story 17.2 (out of scope) — flagged here so it isn't mistaken for live code or edited by accident.
-- **This SKILL.md itself previously held unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>> origin/main` conflict markers**, committed to `main` as-is since that same merge, and was stale on Story 17.2 entirely. Rewritten here to describe the actual current, merged state of the code on disk (verified against real imports, not assumed).
+- **`src/components/OnboardingChecklist.tsx` is dead code — do not edit it expecting it to render anywhere.** It's a duplicate component left over from an old `main` merge (`6fe3b5d`, "Epic 9 completed") that combined two independently-built onboarding UIs — `c4021b3` ("feat(epic-9): complete remaining stories 9.6-9.11") had relocated the component from `src/components/` to `src/app/tenant/` and its BFF route from `src/app/api/onboarding-checklist/route.ts` to `src/app/api/tenants/[id]/onboarding-checklist/route.ts`, but that merge never resolved the resulting conflict in this SKILL.md and committed raw `<<<<<<<`/`=======`/`>>>>>>>` markers straight to `main`. Confirmed via grep: nothing imports `components/OnboardingChecklist`; `src/app/tenant/OnboardingChecklist.tsx` is the only one wired into `page.tsx`. Not deleted as part of Story 17.2 (out of scope) — flagged here so it isn't mistaken for live code or edited by accident. (`src/app/api/onboarding-checklist/route.ts`, which the same relocation orphaned, is live *again* as of Story 17.2 — it now hosts the `?role=` journey read.)
+- **This SKILL.md itself previously held unresolved `<<<<<<< HEAD` / `=======` / `>>>>>>> origin/main` conflict markers**, committed to `main` as-is since that same merge, and was stale on Story 17.2 entirely. Rewritten to describe the actual current, merged state of the code on disk (verified against real imports, not assumed).
 - **No server-side check that a caller's `?role=` matches their own role** (see Load-Bearing Invariant 3) — any tenant member can view any persona's journey progress. Not named as a bug by any of Story 17.2's Acceptance Criteria (the story is about progress *visibility and verification*, not access restriction), but worth knowing if a future story tightens this.
 
 ## Relations to other components

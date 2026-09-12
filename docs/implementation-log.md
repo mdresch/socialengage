@@ -1,5 +1,7 @@
 # Implementation Log
 
+**Format note (added 2026-09-09, applies forward only):** an entry's commit hash may read `pending` — the log entry is written in the *same* commit as the implementation it describes (`docs/implementation-methodology.md` §7 / its 2026-09-09 Amendment Log entry), so the hash isn't knowable until that commit exists. `scripts/git-hooks/pre-commit` backfills `pending` with the real hash automatically, folded into whichever commit runs next — no dedicated commit just for the hash. A `pending` entry is a normal, self-resolving transient state, not an error; an entry that's still `pending` long after it was written is worth a direct look, not an assumption either way. Entries before this date that read `pending` (Story 3.13, Stories 2.23–2.25) predate this mechanism and were never auto-resolved — a manual gap, not this same self-healing state.
+
 ---
 
 ## 2026-09-08 — Story 17.2 healing pass — social-listening-core@26d210f, social-listening-admin@26d210f
@@ -5008,3 +5010,94 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - Handled PostgreSQL RLS constraint error `42501` when unauthorized teammates attempt entry insertions on `workspace_read` lists, translating to a clean 404 response.
   - Implemented cross-network deduplication engine (`prospectingDeduplicationEngine.ts`) with canonical handle normalization (`normalizeHandle`), social URL extraction (`extractHandleFromPublicUrl`), and contact clustering (`clusterDeduplicatedContacts`) merging author records across Twitter, LinkedIn, Instagram, etc.
   - Extended CRM handoff service (`prospectingCRMHandoffService.ts`) with `deduplicate` flag (`POST /v1/prospecting-lists/:id/crm-handoff?deduplicate=true`), assembling unified `DeduplicatedAuthorContact` CRM payloads with merged notes, highest engagement/influence scores, combined platform handles, and audit logs.
+
+---
+
+## 2026-09-09 — Story 17.3: Crisis threshold baseline calibration and escalation matrix (backend) — commit 5284e80
+
+- **Full commit:** `5284e8046e5e0dd96224e6c0d1fff5a6f931d068`
+- **Preceding docs commit** (ADR-0131/BRD-0131/FDD-0131 Decision content, drafted ahead of this commit, not part of its file list below): `788aeac034936a8f5f3a342c84b68055e7bd07f5`
+- **Repo:** social-listening-core
+- **Story / ADR:** 17.3 / ADR-0131 (governed by BRD-0131, FDD-0131)
+- **Contract:**
+  - `social-listening-core/contracts/epic-17/story-17.3.crisis-baseline-escalation.contract.test.ts`
+- **SKILL.md:**
+  - `social-listening-core/.claude/skills/crisis-baseline-escalation/SKILL.md`
+- **Suite:** PASS (10/10 story tests; 16/16 full epic-17 suite). Full accumulated `social-listening-core` contract suite run for the shared-file touches (see Notes): pre-existing failures only, verified against a clean baseline (see Notes) — no new regressions attributable to this story.
+- **Files touched:**
+  - docs/implementation-plan.md
+  - docs/user-stories/epic-17-adr-0129-to-0133.md
+  - social-listening-core/.claude/skills/crisis-baseline-escalation/SKILL.md
+  - social-listening-core/contracts/epic-17/story-17.3.crisis-baseline-escalation.contract.test.ts
+  - social-listening-core/migrations/0081_create_crisis_baseline_calibration_and_escalation.sql
+  - social-listening-core/src/crisis/crisisBaselineStore.ts
+  - social-listening-core/src/crisis/crisisEscalationEngine.ts
+  - social-listening-core/src/crisis/crisisIncidentStore.ts
+  - social-listening-core/src/http/versions/v1/crisisIncidentsRouter.ts
+  - social-listening-core/src/http/versions/v1/router.ts
+  - social-listening-core/src/identity/identityResolution.ts
+- **Notes:**
+  - **Pre-implementation blocker, resolved before any code was written:** ADR-0131, BRD-0131, and FDD-0131 were one-line stubs despite being marked Accepted/Approved since 2026-08-28 — no schema, no escalation semantics, no delivery-channel decision. Rather than freelance that design, spawned the `ba-requirements-analyst` agent to draft real Decision content first (committed separately as `788aeac`), following the exact precedent ADR-0079's 2026-08-25 Correction/Amendment established for Story 9.3 (an `implement-story` agent that stopped rather than invent a schema/vendor decision an ADR assumed but never specified).
+  - **Tier 2/3 delivery resolution (the core design question):** grep-verified (both repos, `src/`/`migrations/`/`contracts/`) that no SMS, PagerDuty, Twilio, or telephony/voice-broadcast integration exists anywhere in this codebase and none is authorized by any Accepted ADR. Tier 1 reuses ADR-0091's already-Accepted, already-Built signed-webhook delivery mechanism (`deliverWebhookWithRetry` in `webhookDispatcher.ts`) unchanged — a real, working dispatch. Tier 2 (SMS/PagerDuty) and Tier 3 (executive phone-call broadcast) are fully modeled — schema (`tier2_delivery`/`tier3_delivery` JSONB), state machine, and audit trail (`escalation_action_log`) — but record a `recorded_intent` entry only; no outbound call is made or claimed. A named follow-on (a future, not-yet-proposed SMS/PagerDuty/telephony ADR) is documented in ADR-0131 §4 rather than silently dropped.
+  - Applied DDL migration `0081_create_crisis_baseline_calibration_and_escalation.sql`: `crisis_baseline_metrics`, `crisis_escalation_rules`, `crisis_incident_logs` (RLS + time-bucket indexes, following ADR-0044's established conventions), plus a minimal, explicitly-justified widening of `users.role`'s CHECK constraint by exactly one value (`tenant_brand_reputation_manager`) — the first time this project's role model has grown past `tenant_admin`/`tenant_user`, required directly by Story 17.3's own Must-priority role-gating AC. `identityResolution.ts`'s `role` type unions were widened to match; grepped for other exhaustive-switch assumptions on the old two-value union (none found — `tenantUsersRouter.ts`'s own cast is a harmless invite-endpoint restriction, left unchanged).
+  - Implemented `calibrateWatchlistBaselines()` (`crisisBaselineStore.ts`): a single `INSERT ... ON CONFLICT DO UPDATE` upserting rolling 14-day mean/stddev/sample_count per `(watchlist_id, metric_type, day_of_week, hour_of_day)` bucket, joining `post_watchlist_matches`/`social_posts` the same way `dailyAggregatesWorker.ts` does for `watchlist_daily_counts`, but bucketed by hour-of-day/day-of-week (no precomputed view exists at that granularity).
+  - **Corrected the ADR's own "suggested floor: 14" sample-count minimum** (`crisisEscalationEngine.ts`'s `MIN_SAMPLE_COUNT`, set to 2, documented inline): a `(day_of_week, hour_of_day)` bucket recurs only weekly, so a 14-calendar-day window can supply at most ~2-3 samples per bucket, never 14 — a floor of 14 would make every bucket permanently uncalibrated, contradicting the ADR's own Consequences framing of the calibration gap as temporary. The ADR itself named this floor an explicit "implementation detail."
+  - Implemented `evaluateCrisisZScore()`, `dispatchTierAction()`, `createCrisisIncident()`, `sweepAckTimeoutIncidents()` (`crisisEscalationEngine.ts`): dynamic tier assignment gated by both a Z-score threshold and a negative-sentiment floor; exactly one incident row per triggering observation at its highest-qualifying tier; ack-timeout sweep re-notifies at the same tier without promoting it (tier is fixed at creation).
+  - Implemented `acknowledgeIncident()`/`resolveIncident()` (`crisisIncidentStore.ts`) and `POST /v1/crisis/incidents/:id/acknowledge`/`:id/resolve` (`crisisIncidentsRouter.ts`, mounted at `/crisis/incidents` in `router.ts`), role-gated to `tenant_admin`/`tenant_brand_reputation_manager`, following `watchlistsRouter.ts`'s ADR-0044 §2 error-mapping shape (`{code: ...}`) rather than the looser `{error: ...}` shape older crisis-domain routers use.
+  - Contract test exercises the **real production call site** for Tier 1 (a local `http.createServer()` test webhook receiving an actual signed HTTP POST via `deliverWebhookWithRetry`/`fetch`), not a mock of the dispatch function itself, per this project's "exercise the real call relationship" convention.
+  - **Full accumulated suite verification:** `npm run test:contracts` showed 24 pre-existing failing suites unrelated to this story (real-third-party-credential-dependent connector/Entra/Azure tests — GNews, Facebook, Instagram, LinkedIn, YouTube, Azure AI Language/OpenAI, Entra authentication — matching `docs/environment-gotchas.md`'s documented "missing real third-party/Azure credentials in the local dev environment, not a code defect" pattern). Verified rather than assumed: `git stash`-ed all Story 17.3 changes and re-ran the six most output-visible flagged suites (`story-3.8`, `story-5.2`, `story-5.5`, `story-5.19`, `story-13.7`, `story-14.5`) against the clean baseline — identical failures reproduced with zero Story 17.3 changes present, confirming non-attribution per `docs/environment-gotchas.md`'s own stated verification method. `contracts/epic-17/story-17.3` itself showed as failing in one full-149-suite parallel run but passed cleanly both in isolation (10/10) and in a smaller mixed-parallel batch alongside `story-9.3`/`story-10.9`/`story-13.1` — consistent with the same general resource-contention-under-maximum-parallel-load pattern, not a logic defect, though this single-run signal was not independently reproduced a second time at full 149-suite scale.
+  - **Documentation gap noted, not fixed (out of scope for this story):** `docs/adr/README.md`'s master ADR index and `docs/user-stories/README.md`'s Epics table do not list Epic 17 or ADRs 0129–0133 at all — a pre-existing gap spanning the whole ADR-0129-to-0140 batch, predating this story and well beyond its own scope to backfill. Flagged for `documentation-steward`.
+  - **Real, verified tooling bug found in `docs/templates/check-implementation-log.cjs` (not fixed — shared template, out of this story's scope):** its `Files touched` field regex (`\*\*Files touched:\*\*\s*` `?`([^` `\n]+)` `?`) lets `\s*` consume the newline into the bullet list, then `[^`` \n]+` stops at the very next newline — so it only ever captures the *first* bullet line as the entire claimed file list, for every entry in this ~140-entry log, not just this one. Confirmed by direct regex testing against this entry's own block text (`files: []`/single-line capture, not the real multi-line list). This makes its "file list doesn't match commit" failure a false positive on essentially every entry that uses the log's own standard multi-line bullet convention — verified by running it (`IMPL_LOG_PATH`/`IMPL_LOG_BASE_REF` overrides, since it's never actually been copied into `social-listening-core/scripts/` per its own header comment) rather than assumed. This story's own entry above uses the same standard bullet convention as every other entry (not reformatted to chase the broken checker) for consistency.
+  - **Known, pre-existing, unrelated loose end also noted, not fixed:** at session start, the repo's primary checkout was on `feat/story-17.2` with several uncommitted tracking/synthesis-file changes and that branch not yet merged into `main`. This story's worktree branched cleanly off `main` (unaffected by that state) per the worktree-isolation process; the `feat/story-17.2` branch's own merge-back is a separate, already-flagged loose end for a future session.
+
+---
+
+## 2026-09-09 — Documentation Steward correction: backfilling a missing log entry for Stories 9.7–9.11 (commit c4021b3, 2026-08-27)
+
+- **Full commit:** `c4021b3b24e9b6445bfb39dd3fe5457cd20f4a46`
+- **Repo:** social-listening-core + social-listening-admin
+- **Story / ADR:** 9.7/9.8/9.9/9.10/9.11 / ADR-0081/ADR-0082/ADR-0083/ADR-0084/ADR-0085
+- **Why this entry exists:** found during a scheduled Documentation Steward pass while reviewing commit `b12f5ec` (ADR-0081–0084 acceptance). `docs/user-stories/epic-9-adr-0077-to-0085.md` marks Stories 9.7–9.11 `**Status:** Built`, `**Built:** 2026-08-27 — social-listening-core`/`social-listening-admin` (no commit hash cited), but this log had **no entry at all** for any of them — confirmed by exhaustive search (`Story 9.7`–`Story 9.11`, `RAGConnector`, `pgvector`, `ragConnectorRegistry` all absent from this file prior to this entry) and by `git log` for RAG-related commits in the 2026-08-25–2026-08-28 window, which surfaced `c4021b3` ("feat(epic-9): complete remaining stories 9.6-9.11") as the real shipping commit. This is a genuine "shipped but never logged" gap, not a formatting nit — appended here per this file's own append-only convention (never editing the record, only adding to it) rather than fixed by inventing a retroactive edit to an existing entry.
+- **Files touched (confirmed via `git diff-tree --no-commit-id --name-only -r c4021b3`):**
+  - `social-listening-core/migrations/0046_create_rag_chunks_and_sync_tables.sql`
+  - `social-listening-core/src/rag/pgvectorConnector.ts`, `ragChunkingService.ts`, `ragConnectorRegistry.ts`, `ragIndexingPipeline.ts`, `ragReconciliationService.ts`, `ragSearchService.ts`, `types.ts`
+  - `social-listening-core/src/http/versions/v1/ragRouter.ts`, `router.ts` (extended)
+  - `social-listening-core/contracts/epic-9/story-9.7.rag-connector.contract.test.ts`, `story-9.8.rag-chunking-pipeline.contract.test.ts`, `story-9.9.rag-vector-rls.contract.test.ts`, `story-9.10.rag-endpoints.contract.test.ts`
+  - `social-listening-core/.claude/skills/rag-connector/SKILL.md`, `rag-chunking-pipeline/SKILL.md`, `rag-vector-rls/SKILL.md`, `rag-endpoints/SKILL.md`
+  - `social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx`, `page.tsx`, `src/app/api/rag/ask/route.ts`, `search/route.ts`, `status/route.ts`, `src/lib/core-client.ts` (extended)
+  - `social-listening-admin/contracts/epic-9/story-9.11.rag-discovery-ui.contract.test.ts`
+  - `social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md`
+  - `social-listening-admin/src/app/tenant/OnboardingChecklist.tsx`, `src/app/api/tenants/[id]/onboarding-checklist/route.ts`, `contracts/epic-9/story-9.6.onboarding-checklist-ui.contract.test.ts`, `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md` (this commit's own message says "complete remaining stories 9.6-9.11" and re-touches Story 9.6's files too — Story 9.6 already has its own separate, earlier log entry above dated 2026-08-27 sourced from a different commit (`8fd0aa4`); not re-litigated here, flagged only for whoever next touches Story 9.6 that its onboarding-checklist component appears to have moved from `src/components/OnboardingChecklist.tsx` to `src/app/tenant/OnboardingChecklist.tsx` between the two commits)
+  - `docs/user-stories/epic-9-adr-0077-to-0085.md`, `project-progress-dashboard/src/lib/project-dashboard/data.ts`
+- **Notes:** This entry is a Documentation Steward backfill, not a contemporaneous build record — validation/suite counts at the time of the original commit are not independently re-derived here. `docs/user-stories/epic-9-adr-0077-to-0085.md`'s own `**Built:**` fields for Stories 9.7–9.11 are corrected in the same pass to cite this commit hash, per that file's own fixed-shape Built convention (`YYYY-MM-DD — <repo>@<short-hash>`).
+
+---
+
+## 2026-09-12 — Story 15.1: Real-time alert rule exclusions, caps, and pre-save volume preview (backend) — commit 2035448
+
+- **Full commit:** `2035448b25bd9ddfbe5717d74f331b71eb766114`
+- **Repo:** social-listening-core
+- **Story / ADR:** 15.1 / ADR-0123 (governed by BRD-0123, TDS-0123)
+- **Contract:** `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md`
+- **Suite:** PASS (5/5 story tests; 13/13 across Epic 15 including Story 15.2). `npm run typecheck` clean (0 errors) — verified against the current `main` state.
+- **Why this entry exists:** the implementation commit `2035448` was already merged into `main` (its contract test and production code are present and pass), but this log had no entry and `docs/user-stories/epic-15-adr-0123-to-0124.md`'s `**Built:**` field still read `not yet`. Appended here per this file's own append-only convention rather than re-writing history; the same pass updates the story's `**Built:**` field and `real-time-alert-rules/SKILL.md` to reflect the already-shipped behavior.
+- **Files touched (implementation commit `2035448`):**
+  - `docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md`
+  - `docs/implementation-plans/Plan-Story-15.1-Alert-Rules-Refinements.md`
+  - `docs/project docs/Technical-Design/TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md`
+  - `docs/user-stories/epic-15-adr-0123-to-0124.md`
+  - `docs/walkthroughs/walkthrough-story-15.1.md`
+  - `social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts`
+  - `social-listening-core/migrations/0076_add_alert_rules_refinements.sql`
+  - `social-listening-core/src/alerts/alertEvaluationWorker.ts`
+  - `social-listening-core/src/alerts/alertRulesStore.ts`
+  - `social-listening-core/src/http/versions/v1/alertRulesRouter.ts`
+  - `social-listening-core/src/http/versions/v1/router.ts`
+- **Additional files touched in this traceability pass:** `social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md`, `docs/user-stories/epic-15-adr-0123-to-0124.md` (`**Built:**` field), `docs/implementation-log.md` (this entry), `project-progress-dashboard/src/lib/project-dashboard/data.ts` (telemetry sync)
+- **Notes:**
+  - Applied DDL migration `0076_add_alert_rules_refinements.sql` adding `excluded_watchlist_ids UUID[]`, `excluded_topic_ids TEXT[]`, and `max_alerts_per_day INT NOT NULL DEFAULT 20` to `alert_rules`, plus `idx_tenant_alerts_rolling_cap` on `tenant_alerts (tenant_id, alert_rule_id, created_at)`.
+  - Implemented `evaluateRuleForPost()` in `alertEvaluationWorker.ts` enforcing the ADR-0123 order of evaluation: independent disjunctive watchlist/topic exclusions first, then the rolling 24-hour daily cap (`max_alerts_per_day`, bounded 1–500), then `cooldown_minutes`, then threshold evaluation — suppression returns `{status:'excluded'|'suppressed'}` without writing `tenant_alerts`.
+  - Implemented `simulateAlertRulePreview()` read-only preview engine replaying `watchlist_daily_counts` over `lookbackDays` ∈ [1, 30], returning `{estimatedAlertCount, lookbackDays, sensitivity}`; exposed as `POST /v1/alert-rules/preview` and alias `POST /v1/alerts/rules/preview` in `alertRulesRouter.ts`.
+  - `alertRulesStore.ts`/`alertRulesRouter.ts` accept `excluded_watchlist_ids`, `excluded_topic_ids`, and `max_alerts_per_day` on create/update with validation; `triggerAlert()` enforces exclusions before inserting.
+  - **Traceability-only pass:** this session did not re-implement Story 15.1 — the code and contract were already on `main` via `2035448`. This entry backfills the missing log record and updates the story's `**Built:**` field and the component `SKILL.md` to match the already-merged behavior.

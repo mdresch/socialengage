@@ -18,6 +18,9 @@ const PMO = ONTOLOGY.projectManagementOntology
   : {};
 
 const validTypes = new Set(Object.keys(ONTOLOGY.nodeTypes || {}));
+for (const def of Object.values(ONTOLOGY.nodeTypes || {})) {
+  for (const alias of def.aliases || []) validTypes.add(alias);
+}
 const validPmClasses = new Set(Object.keys(PMO.classes || {}));
 const validClusters = new Set(ONTOLOGY.taxonomies?.domainClusters || []);
 const validDmbok = new Set(ONTOLOGY.taxonomies?.dmbokAreas || []);
@@ -645,7 +648,20 @@ function auditAndHeal() {
     addId(basename);
     if (data.artifact_id) {
       if (byArtifact.has(data.artifact_id)) {
-        error(`${rel}: duplicate artifact_id "${data.artifact_id}" (also in ${byArtifact.get(data.artifact_id)})`);
+        // Auto-heal: basename-derived artifact_ids collide across sibling directories
+        // (e.g. many ADAP READMEs). Disambiguate with the parent directory instead of
+        // just flagging — the id itself is the bug, not the page.
+        const original = data.artifact_id;
+        const parentSlug = path.basename(path.dirname(rel)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        let newId = parentSlug ? `${original}-${parentSlug}` : original;
+        if (!parentSlug || byArtifact.has(newId)) {
+          newId = `${original}-${crypto.createHash('sha1').update(rel).digest('hex').slice(0, 8)}`;
+        }
+        data.artifact_id = newId;
+        fs.writeFileSync(file, serializeFrontmatter(data) + body, 'utf8');
+        autoFixed++;
+        info(`${rel}: duplicate artifact_id "${original}" (also in ${byArtifact.get(original)}) — auto-renamed to "${newId}"`);
+        byArtifact.set(newId, rel);
       } else {
         byArtifact.set(data.artifact_id, rel);
       }
@@ -714,8 +730,13 @@ function auditAndHeal() {
       if (data.status) {
         const validStatuses = new Set([ONTOLOGY.nodeTypes[data.type].defaultStatus]);
         for (const t of ONTOLOGY.nodeTypes[data.type].validTransitions) {
-          validStatuses.add(t.split(' -> ')[0]);
-          validStatuses.add(t.split(' -> ')[1]);
+          if (typeof t === 'string') {
+            validStatuses.add(t.split(' -> ')[0]);
+            validStatuses.add(t.split(' -> ')[1]);
+          } else if (t && typeof t === 'object' && t.from && t.to) {
+            validStatuses.add(t.from);
+            validStatuses.add(t.to);
+          }
         }
         if (!validStatuses.has(data.status)) {
           warn(`${rel}: status "${data.status}" is not a valid lifecycle state for type "${data.type}"`);

@@ -1,9 +1,9 @@
-# Self-Learning Synthesis: Epic 14 (Continuous Self-Learning Synthesis & Feedback)
+# Self-Learning Synthesis: Epic 9 (Onboarding & Watchlists)
 
 **Compiled Date:** 2026-09-09
-**Source Capture:** `raw/synthesis-epic-14-2026-09-09/`
-**Git HEAD:** `788aeac034936a8f5f3a342c84b68055e7bd07f5`
-**Branch:** `feat/story-17.3`
+**Source Capture:** `raw/synthesis-epic-9-2026-09-09/`
+**Git HEAD:** `e4f4826685f3d9d3fb533a26672be1bf1d909f7a`
+**Branch:** `docs-review/2026-09-09`
 **Governing Architecture:** ADR-0122 / FDD-0122 / Story 14.5
 
 ---
@@ -12,9 +12,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Git commits scanned | 383 |
+| Git commits scanned | 381 |
 | Healing / fix commits | 47 |
-| Feature commits (this epic) | 20 |
+| Feature commits (this epic) | 15 |
 | Contract test files | 230 |
 | ADRs with Implementation Learnings | 10/140 |
 
@@ -74,26 +74,21 @@
 
 | Commit | Date | Subject |
 |--------|------|---------|
-| `9dd1747464b9538ccee14b25cfbefd5f7fb398ce` | 2026-09-07 13:10:24 +0200 | docs(plan): archive Story 14.5 pre-execution implementation plan |
-| `84a92eb3c2441e2facf4f18ee27f77482dea5cc9` | 2026-09-07 13:08:13 +0200 | docs(walkthrough): archive Story 14.5 empirical verification walkthrough |
-| `ca0383ea93028abd3eae38b4a47a5cda484e6ae0` | 2026-09-07 11:10:37 +0200 | chore(synthesis): refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry |
-| `c951ecbd857f60b9b832b4985d863eaa02ff09d0` | 2026-09-07 11:09:25 +0200 | chore: record post-commit hook metadata for Story 14.5 |
-| `02e27bb1b1c01a210305f454a9da556d9c367e1f` | 2026-09-07 11:09:02 +0200 | feat(epic-14): implement Story 14.5 Continuous Self-Learning Synthesis and Telemetry Feedback Architecture |
-| `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b` | 2026-09-06 00:18:53 +0200 | chore(telemetry): sync dashboard telemetry for Story 14.4 |
-| `82b276e8347850ebf485c2b30b3ec8cef8c3b685` | 2026-09-06 00:18:42 +0200 | docs(epic-14): record Story 14.4 build in implementation log and user stories |
-| `d2bd77979b88017746bf7f799d324687efc507f2` | 2026-09-06 00:17:33 +0200 | feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry |
-| `77a8e02fe9c6ae4d268c57dc1b00f62a1a77b1ad` | 2026-09-05 22:10:20 +0200 | docs(epic-14): record Story 14.3 build and dashboard sync |
-| `c9037238ac90eaae565594f81b045e5a3123c578` | 2026-09-05 22:04:42 +0200 | feat(epic-14): implement Story 14.3 SearchProviderConnector abstraction |
-| `d2aeb80610bfde1b6153eece71a59b30e420bfaa` | 2026-09-04 17:20:27 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.2 |
-| `c1ab9b297a5a7a279da99825432d27319e3ab69a` | 2026-09-04 17:06:18 +0200 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) |
-| `f53a870143c97aa723711eba3cf20dd2eec3a53e` | 2026-09-04 16:31:39 +0200 | Merge remote-tracking branch 'origin/main' |
-| `8cde283a9dc0bdd74e2aeb1e6e8f499e4bbba921` | 2026-09-04 16:18:24 +0200 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 14.1 |
-| `c68c1a13814e47e19627dd8ad8c6ee2540261673` | 2026-09-04 16:18:12 +0200 | docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1) |
-| `1d03403524f6855863156ef054fe1cc50f4dff2c` | 2026-09-04 16:17:04 +0200 | feat(publishing): implement Story 14.1 — Additional social platform publishing roadmap (ADR-0118) |
-| `d1ab715cc34ffede1dd5545fed688e3ea7e92a25` | 2026-08-27 12:40:57 +0200 | feat(synthesis): wire ADR-0122 capture-compile into post-commit hook for Story 14.5 |
-| `6f4f25eaf4cc158c643a5d53de064e7cbe44a078` | 2026-08-27 12:36:19 +0200 | feat(synthesis): wire full raw/ capture-compile pipeline for ADR-0122 |
-| `4595a200866fdaa9a8576aa57b1fce05b12ad5f1` | 2026-08-27 12:10:27 +0200 | docs(adr-0122): complete Story 14.5 self-learning synthesis remediation |
-| `0a7c4500cadcd5b4d0e481e2bf314365be321934` | 2026-08-24 20:24:30 +0200 | docs(trace): fix ADR-0080 README status, create Epic 14, update no-story ADR list |
+| `e4f4826685f3d9d3fb533a26672be1bf1d909f7a` | 2026-09-09 05:28:43 +0000 | docs(epic-9): standardize Story 9.5's Built field to the em-dash convention |
+| `c4021b3b24e9b6445bfb39dd3fe5457cd20f4a46` | 2026-08-27 20:13:52 +0200 | feat(epic-9): complete remaining stories 9.6-9.11 (Onboarding UI, RAG pipeline, semantic search & generative Q&A) |
+| `bb3281c40d7ff0824c8dc866e494e552d29017eb` | 2026-08-27 20:05:30 +0200 | chore(tracking): record post-commit review entries for Story 9.6 |
+| `8fd0aa4e816f7acb33240d3edd61623099e4ff79` | 2026-08-27 20:04:59 +0200 | feat(story-9.6): Onboarding checklist UI (frontend) |
+| `5ecab17a48bc7171fa5b0d78a632b77cc8bdf829` | 2026-08-27 19:57:49 +0200 | feat(epic-9): implement Story 9.4 (Crisis Threshold Wizard UI) and update project-progress-dashboard sync parser |
+| `e822c6dea29e1cd17cb31c714e37e58d79e5b6d2` | 2026-08-27 19:33:46 +0200 | feat(epic-9): implement Story 9.2 (metric explainability) and Story 9.3 (crisis templates), add 4-way Obsidian traceability linker |
+| `f5d56ab5e60f3742ce883e2ea1a59c7e5daa10d4` | 2026-08-27 12:47:03 +0200 | Accept ADR-0083, ADR-0084, ADR-0085 — RAG vector store, search/ask endpoints, and UI/UX patterns |
+| `01bce70d1e9d74c31131a128eaaf6b98e1ab3629` | 2026-08-26 09:53:52 +0200 | heal(story-4.4/9.5): fix stale test template DB missing pg_cron and onboarding_checklist |
+| `186754e4db18efd1ce94955ab84673a4eaa93c02` | 2026-08-25 11:24:17 +0200 | Merge branch 'feat/story-9.5' — Story 9.5 / ADR-0080 onboarding checklist state |
+| `5160adfef98a18481c5d29959f88d7f7f80fd404` | 2026-08-25 11:23:47 +0200 | docs(trace): finalize Story 9.5 Built field and Implementation Log entry |
+| `3add1256fbfb4085c6c5e2f62bb32708b8736bed` | 2026-08-25 11:17:15 +0200 | feat(core): Story 9.5 / ADR-0080 — tenant onboarding checklist state |
+| `acb4ec9e966ea8add3c2442f4c92deda9df011b4` | 2026-08-25 10:11:09 +0200 | docs(trace): align FDD-0079 and Stories 9.3/9.4 with ADR-0079's 2026-08-25 amendment |
+| `f912b139d8f92b16bf711652e6a27d5490c192ff` | 2026-08-24 18:04:39 +0200 | docs(trace): finalize Story 9.1 Built field and Implementation Log entry |
+| `a4bf27620f07cf9019878790abc245c16145b852` | 2026-08-24 18:01:24 +0200 | feat(core): Story 9.1 / ADR-0077 — watchlist connector count and preview volume endpoint |
+| `b64bf07cce291aa829297cf5e1732aa190067ff4` | 2026-08-23 20:03:36 +0200 | docs(user-stories): mark ADR-0079 stories Ready and refresh Epic 9 statuses |
 
 ## 4. Contract Test Inventory
 
@@ -421,7 +416,7 @@ The following are surfaced from the captured telemetry for manual review:
 
 ### ADR In-Place Annotations to Verify
 
-Feature commits reference stories: 14.5, 14.4, 14.3, 14.2, 14.1.
+Feature commits reference stories: 9.5, 9.6, 9.4, 9.2, 9.1.
 Verify that any ADR whose assumptions were refined by these stories carries a `## Implementation Learnings & Real-World Constraints` section with commit references.
 
 ### Lessons-Learned-Register Patterns

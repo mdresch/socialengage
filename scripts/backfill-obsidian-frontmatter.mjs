@@ -160,7 +160,7 @@ function backfillFile(filePath) {
   newData.title = title;
   newData.artifact_id = artifactId;
   newData.entity_id = sha256(`${artifactId}::${sourceDoc}`).slice(0, 32);
-  newData.version = data.version || '1.0.0';
+  newData.version = data.version || ONTOLOGY?.version || '1.0.0';
   newData.source_document = sourceDoc;
   newData.created_at = createdAt;
   newData.modified_at = modifiedAt;
