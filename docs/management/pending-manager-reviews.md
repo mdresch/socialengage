@@ -8186,3 +8186,9 @@
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Functional-Design/FDD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/user-stories/README.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/contracts/epic-19/story-19.1.rag-connector-namespace-isolation.contract.test.ts, social-listening-core/migrations/0082_force_rls_rag_chunks.sql, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/types.ts
 - **Status:** Pending review
 
+## 2026-09-13 — a12b947 — feat(rag): implement Story 19.2 — RAG chunking/embedding namespace routing (ADR-0137)
+
+- **Full commit:** `a12b947bac99d8ab6f68f605bff0681f0b20e2e6`
+- **Files touched:** docs/adr/0137-rag-post-chunking-and-embedding-namespace-routing.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Functional-Design/FDD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/contracts/epic-19/story-19.2.rag-chunking-embedding-namespace-routing.contract.test.ts, social-listening-core/migrations/0083_force_rls_rag_chunks_sync.sql, social-listening-core/src/rag/ragIndexingPipeline.ts
+- **Status:** Pending review
+
