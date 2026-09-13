@@ -69,6 +69,8 @@ export interface ProspectingListEntryPayload {
   notes: string;
   tags: string[];
   customFields?: Record<string, any>;
+  matchedHandles?: Array<{ platformId: string; handle: string; publicUrl?: string }>;
+  entryIds?: string[];
 }
 
 export interface CRMConnector {

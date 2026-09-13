@@ -35,6 +35,8 @@ export interface OutboundActivityRow {
   sentAt: string | null;
   failedAt: string | null;
   cancelledAt: string | null;
+  editedAt: string | null;
+  deletedAt: string | null;
 }
 
 interface RawOutboundActivityRow {
@@ -58,6 +60,8 @@ interface RawOutboundActivityRow {
   sent_at: Date | null;
   failed_at: Date | null;
   cancelled_at: Date | null;
+  edited_at: Date | null;
+  deleted_at: Date | null;
 }
 
 function toCamel(row: RawOutboundActivityRow): OutboundActivityRow {
@@ -82,6 +86,8 @@ function toCamel(row: RawOutboundActivityRow): OutboundActivityRow {
     sentAt: row.sent_at ? row.sent_at.toISOString() : null,
     failedAt: row.failed_at ? row.failed_at.toISOString() : null,
     cancelledAt: row.cancelled_at ? row.cancelled_at.toISOString() : null,
+    editedAt: row.edited_at ? row.edited_at.toISOString() : null,
+    deletedAt: row.deleted_at ? row.deleted_at.toISOString() : null,
   };
 }
 
@@ -263,5 +269,69 @@ export async function listForPost(
       [postId, limit]
     );
     return rows.map(toCamel);
+  });
+}
+
+/**
+ * Story 14.2 (ADR-0119) — updates a pending outbound activity's body (and payload) in place
+ * and marks edited_at = NOW().
+ */
+export async function updateBodyInPlace(
+  tenantId: string,
+  id: string,
+  body: string,
+  payload?: Record<string, unknown> | null
+): Promise<OutboundActivityRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<RawOutboundActivityRow>(
+      `UPDATE outbound_activities
+       SET body = $2,
+           payload = COALESCE($3, payload),
+           edited_at = NOW()
+       WHERE id = $1 AND status = 'pending'
+       RETURNING *`,
+      [id, body, payload ? JSON.stringify(payload) : null]
+    );
+    return rows.length > 0 ? toCamel(rows[0]) : null;
+  });
+}
+
+/**
+ * Story 14.2 (ADR-0119) — sets edited_at timestamp when an edit revision reaches 'applied'.
+ */
+export async function setEdited(
+  tenantId: string,
+  id: string,
+  editedAt: string = new Date().toISOString()
+): Promise<OutboundActivityRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<RawOutboundActivityRow>(
+      `UPDATE outbound_activities
+       SET edited_at = $2
+       WHERE id = $1
+       RETURNING *`,
+      [id, editedAt]
+    );
+    return rows.length > 0 ? toCamel(rows[0]) : null;
+  });
+}
+
+/**
+ * Story 14.2 (ADR-0119) — sets deleted_at timestamp when a delete revision reaches 'applied'.
+ */
+export async function setDeleted(
+  tenantId: string,
+  id: string,
+  deletedAt: string = new Date().toISOString()
+): Promise<OutboundActivityRow | null> {
+  return withTenant(tenantId, async (client) => {
+    const { rows } = await client.query<RawOutboundActivityRow>(
+      `UPDATE outbound_activities
+       SET deleted_at = $2
+       WHERE id = $1
+       RETURNING *`,
+      [id, deletedAt]
+    );
+    return rows.length > 0 ? toCamel(rows[0]) : null;
   });
 }

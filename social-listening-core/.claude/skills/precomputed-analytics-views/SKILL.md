@@ -21,3 +21,12 @@ Provides sub-second analytics aggregations across sources, authors, sentiments, 
 
 ## Endpoints
 - `GET /v1/analytics/:view?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`: Fetch precomputed daily rollup rows.
+
+## Relations to other components
+
+- **`source_daily_counts`, `author_daily_counts`, `sentiment_daily_counts`, `watchlist_daily_counts` tables** — the four precomputed rollup tables populated by the 15-minute worker; all partitioned by `tenant_id` with RLS.
+- **`social_posts` table** — source for aggregations; the worker computes `COUNT(*)` grouped by platform/author/sentiment/watchlist over the `published_at` date.
+- **`getAdminPool()` (admin connection pool)** — the background worker uses the admin pool to run cross-tenant batch upserts without leaking RLS session state from individual tenant connections.
+- **`ad-hoc-query-engine` skill** — the complement; use ad-hoc queries when the needed dimension/metric combination isn't precomputed.
+- **`analytics-dashboard` admin SKILL.md** — the frontend `AnalyticsDashboard` component (Story 8.x) and the precomputed views tab consuming `GET /v1/analytics/:view`.
+- **`watchlist_posts` join table** — the `watchlist_daily_counts` rollup joins through this many-to-many table to attribute posts to their matching watchlists.

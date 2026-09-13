@@ -2174,8 +2174,19 @@ export async function executeAdHocAnalyticsQuery(
 }
 
 // ---------------------------------------------------------------------------
-// Story 10.6 / 10.7 (ADR-0089) — Platform Operations Telemetry Dashboard
+// Story 10.6 / 10.7 (ADR-0089), Story 16.4 (ADR-0128) — Platform Operations Telemetry & Remediation
 // ---------------------------------------------------------------------------
+
+export interface TenantQuotaBurnProjection {
+  tenantId: string;
+  tenantName: string;
+  monthlyQuota: number;
+  consumedTokens: number;
+  dailyVelocity7d: number;
+  daysRemaining: number | null;
+  projectedExhaustionDate: string | null;
+  status: 'healthy' | 'warning_30d' | 'critical_7d';
+}
 
 export interface PlatformDashboardData {
   throughputPostsSec: number;
@@ -2194,6 +2205,7 @@ export interface PlatformDashboardData {
     ingestionVolume: number;
     errorCount: number;
   }>;
+  tenantQuotaBurnProjections?: TenantQuotaBurnProjection[];
 }
 
 /**
@@ -2205,6 +2217,42 @@ export async function getPlatformDashboard(): Promise<PlatformDashboardData> {
     throw new Error(`Platform dashboard query failed: ${response.status}`);
   }
   return (await response.json()) as PlatformDashboardData;
+}
+
+export type RemediationAction =
+  | 'retry_now'
+  | 'override_backoff'
+  | 'clear_error_state'
+  | 'reprompt_credentials';
+
+export interface RemediationResponse {
+  connectorId: string;
+  action: RemediationAction;
+  status: 'active' | 'retrying' | 'healthy' | 'needs_reauth';
+  backoffLiftedUntil?: string;
+  remediatedAt: string;
+}
+
+/**
+ * Story 16.4 (ADR-0128) — guided operator remediation controls for connectors.
+ */
+export async function remediateConnector(
+  connectorId: string,
+  action: RemediationAction,
+  overrideMinutes?: number
+): Promise<RemediationResponse> {
+  const response = await authenticatedCoreFetch(
+    `/v1/admin/connectors/${encodeURIComponent(connectorId)}/remediate`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ action, overrideMinutes }),
+    }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `Remediation failed: ${response.status}`);
+  }
+  return (await response.json()) as RemediationResponse;
 }
 
 // ---------------------------------------------------------------------------

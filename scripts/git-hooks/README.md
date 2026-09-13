@@ -12,6 +12,10 @@ The `pre-commit` hook is the commit-boundary backstop for the same rule `.claude
 
 It's a repo-wide check, not per-file — it can confirm *a* contract is staged, not that it's *the right* contract for this specific change (see `docs/implementation-methodology.md`).
 
+### Pending commit-hash backfill (added 2026-09-09)
+
+The same `pre-commit` hook also resolves `docs/implementation-log.md`/story-file `Built:` lines still reading a literal `pending` commit hash — the placeholder `implement-story`/`heal-contract-failure` write when the log entry has to be committed in the same commit as the implementation, before that commit's own hash exists (`docs/implementation-methodology.md` §7). On every subsequent commit, before it's created, the hook checks whether `HEAD`'s own diff (versus `HEAD~1`) introduced a `pending` marker and, if so, replaces it with `HEAD`'s now-known hash, staging the fix so it rides along in the commit about to be made — no dedicated commit just for the hash. It never touches a `pending` marker introduced further back than the immediate parent (a sign the invariant broke somewhere), and never fails the commit if this step itself errors.
+
 ## Installation
 
 ### Automatic Setup
@@ -79,7 +83,7 @@ Note why in the commit message — see `docs/templates/pre-commit-hook.md`.
 
 ## Files
 
-- `pre-commit` - The main hook script (POSIX shell)
+- `pre-commit` - The main hook script (POSIX shell): contract-first backstop plus the pending-commit-hash backfill described above
 - `post-commit` - Queues each commit for three independent reviews (Ideal Manager, Documentation Steward, Learning & Development Writer) and, when the commit subject references a Story X.Y, runs the ADR-0122 telemetry capture + compile pipeline in the background
 - This README.md - Documentation
 

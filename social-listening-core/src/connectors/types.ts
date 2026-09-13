@@ -138,6 +138,20 @@ export interface OutboundPostPayload {
   targetAssetType: string;
 }
 
+export interface OutboundActivitySummary {
+  id: string;
+  tenantId: string;
+  userId: string;
+  providerId: string;
+  activityType: 'post' | 'reply' | string;
+  targetAssetId: string | null;
+  targetAssetType?: string | null;
+  externalId: string | null;
+  externalUrl?: string | null;
+  body?: string;
+  payload?: Record<string, unknown> | null;
+}
+
 export interface SocialConnector extends ProviderConnector {
   readonly deliveryMode: DeliveryMode;
   readonly sourceType?: SocialConnectorCapabilities['sourceType'];
@@ -199,6 +213,24 @@ export interface SocialConnector extends ProviderConnector {
     payload: OutboundPostPayload,
     credential: string
   ): Promise<{ externalId: string; externalUrl: string }>;
+  /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity edit capability.
+   * Connectors that do not implement it fail with `edit_not_supported` (422).
+   */
+  edit?(
+    activity: OutboundActivitySummary,
+    body: string,
+    payload?: OutboundPostPayload,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
+  /**
+   * Story 14.2 (ADR-0119) — optional outbound post/activity delete capability.
+   * Connectors that do not implement it fail with `delete_not_supported` (422).
+   */
+  delete?(
+    activity: OutboundActivitySummary,
+    credential?: string
+  ): Promise<{ externalId?: string; externalUrl?: string }>;
   /**
    * Story 1.13 (ADR-0052 Decision §4) — present only on connectors with
    * deliveryMode: 'poll'. The scheduler's one generic invocation surface —
@@ -443,3 +475,41 @@ export interface AIProviderConnector extends ProviderConnector {
     options?: { seed?: number; promptVersion?: number }
   ): Promise<AIExplainResult>;
 }
+
+/**
+ * Story 14.3 (ADR-0120) — standardized request shape for one-off search.
+ */
+export interface SearchRequest {
+  q: string;
+  limit?: number; // default 5, hard cap 10
+  freshness?: 'any' | 'day' | 'week' | 'month';
+  market?: string; // optional ISO country/language hint (e.g. 'en-US')
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized individual search result item.
+ */
+export interface SearchItem {
+  title: string;
+  url: string;
+  snippet: string;
+  publishedAt?: string;
+}
+
+/**
+ * Story 14.3 (ADR-0120) — standardized response shape for one-off search.
+ */
+export interface SearchResponse {
+  results: SearchItem[];
+}
+
+/**
+ * Story 14.3 (ADR-0120) — shared interface for on-demand one-off search providers.
+ */
+export interface SearchProviderConnector {
+  readonly providerId: string;
+  search?(ctx: ConnectorContext, request: SearchRequest): Promise<SearchResponse>;
+  getRateLimitConfig?(): RateLimitConfig;
+  getSearchRateLimitConfig?(): RateLimitConfig;
+}
+

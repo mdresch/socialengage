@@ -105,3 +105,12 @@ interface SearchResponse {
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0028: Credential Creation Authority by Ownership Tier
 - ADR-0003: Per-Tenant Per-Provider Rate Limiting
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Unified Search Normalization Layer**: Different search providers (Brave Search, Bing Search, Google, Tavily) return idiosyncratic schema structures, pagination markers, and rate-limit headers. A strict `SearchProviderResult` normalizer is required to map raw search payloads into consistent title, snippet, url, and published_at fields.
+- **Dynamic Provider Failover**: If the primary search provider encounters rate limiting (`429 Too Many Requests`) or credential degradation, the orchestrator seamlessly attempts the secondary active search connector before failing the user request.
+- **Operational Trade-offs**: Normalizing search results introduces minor mapping overhead but isolates research agents from third-party schema deprecations and outages.
+- **Reference Commits**: `c903723` (Story 14.3 implementation), `77a8e02` (telemetry sync).

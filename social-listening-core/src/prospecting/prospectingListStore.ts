@@ -37,6 +37,8 @@ function resolveAuthorPublicUrl(raw: Record<string, any>, handle?: string, platf
   return undefined;
 }
 
+export type SharingScope = 'private' | 'workspace_read' | 'workspace_write';
+
 export interface ProspectingList {
   id: string;
   tenant_id: string;
@@ -44,6 +46,7 @@ export interface ProspectingList {
   name: string;
   description: string | null;
   shared: boolean;
+  sharing_scope: SharingScope;
   created_at: string;
   updated_at: string;
 }
@@ -74,12 +77,14 @@ export interface CreateProspectingListInput {
   name: string;
   description?: string | null;
   shared?: boolean;
+  sharingScope?: SharingScope;
 }
 
 export interface UpdateProspectingListInput {
   name?: string;
   description?: string | null;
   shared?: boolean;
+  sharingScope?: SharingScope;
 }
 
 export interface CreateEntryInput {
@@ -113,11 +118,22 @@ export async function createProspectingList(
   return withTenant<ProspectingList>(
     tenantId,
     async (client: PoolClient) => {
+      let sharingScope: SharingScope = 'private';
+      let isShared = false;
+
+      if (input.sharingScope) {
+        sharingScope = input.sharingScope;
+        isShared = sharingScope !== 'private';
+      } else if (input.shared) {
+        sharingScope = 'workspace_read';
+        isShared = true;
+      }
+
       const { rows } = await client.query(
-        `INSERT INTO prospecting_lists (tenant_id, owner_id, name, description, shared, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, now(), now())
+        `INSERT INTO prospecting_lists (tenant_id, owner_id, name, description, shared, sharing_scope, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, now(), now())
          RETURNING *`,
-        [tenantId, userId, input.name.trim(), input.description?.trim() || null, input.shared ?? false]
+        [tenantId, userId, input.name.trim(), input.description?.trim() || null, isShared, sharingScope]
       );
       return rows[0] as ProspectingList;
     },
@@ -187,9 +203,16 @@ export async function updateProspectingList(
         fields.push(`description = $${idx++}`);
         values.push(input.description?.trim() || null);
       }
-      if (input.shared !== undefined) {
+      if (input.sharingScope !== undefined) {
+        fields.push(`sharing_scope = $${idx++}`);
+        values.push(input.sharingScope);
+        fields.push(`shared = $${idx++}`);
+        values.push(input.sharingScope !== 'private');
+      } else if (input.shared !== undefined) {
         fields.push(`shared = $${idx++}`);
         values.push(input.shared);
+        fields.push(`sharing_scope = $${idx++}`);
+        values.push(input.shared ? 'workspace_read' : 'private');
       }
 
       if (fields.length === 0) {
@@ -208,6 +231,30 @@ export async function updateProspectingList(
          WHERE id = $1 AND tenant_id = $2
          RETURNING *`,
         values
+      );
+      return (rows[0] as ProspectingList) || null;
+    },
+    getPool(),
+    userId
+  );
+}
+
+export async function updateProspectingListScope(
+  tenantId: string,
+  userId: string,
+  listId: string,
+  sharingScope: SharingScope
+): Promise<ProspectingList | null> {
+  return withTenant<ProspectingList | null>(
+    tenantId,
+    async (client: PoolClient) => {
+      const isShared = sharingScope !== 'private';
+      const { rows } = await client.query(
+        `UPDATE prospecting_lists
+         SET sharing_scope = $1, shared = $2, updated_at = now()
+         WHERE id = $3 AND tenant_id = $4 AND owner_id = $5
+         RETURNING *`,
+        [sharingScope, isShared, listId, tenantId, userId]
       );
       return (rows[0] as ProspectingList) || null;
     },

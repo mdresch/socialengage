@@ -123,3 +123,13 @@ Caching is justified when the same or nearly identical draft is researched more 
 - ADR-0066: Active Watchlist Sourcing via Bing Search API
 - ADR-0027: Connector Is a Technical Intermediary, Not Contracting Party
 - ADR-0015: Tenant Isolation via Postgres Row-Level Security
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Canonical Deterministic SHA-256 Hashing**: Un-sanitized string hashing leads to high cache miss rates on identical queries. Pre-hash canonicalization (lowercase trimming, whitespace collapsing, and provider list sorting) is strictly required to ensure stable cache hits across equivalent prompts.
+- **Postgres Row-Level Security Isolation**: The `research_cache` table must be scoped by `tenant_id` under Postgres RLS via `withTenant` context. Cross-tenant cache hits must be impossible, ensuring tenant privacy and isolated quota accounting.
+- **Cost Telemetry & Cap Enforcement**: Every research run records token usage and estimated USD cost in `research_runs`. Daily request caps (`research_daily_request_cap`, 429) and monthly cost caps (`research_monthly_cost_cap_usd`, 422) prevent runaway billing.
+- **Operational Trade-offs**: Full response caching dramatically reduces LLM spend and latency for repeated research runs, but necessitates an explicit `?refresh=true` bypass flag so users can force real-time fresh queries when needed.
+- **Reference Commits**: `d2bd779` (Story 14.4 implementation), `82b276e` (documentation), `4b8bea8` (telemetry sync).

@@ -16,7 +16,9 @@ export type ErrorKind =
   | 'publish_not_supported'
   | 'target_asset_not_found'
   | 'media_not_supported'
-  | 'platform_asset_rejected';
+  | 'platform_asset_rejected'
+  | 'search_not_supported';
+
 
 const RETRYABLE_KINDS: ReadonlySet<ErrorKind> = new Set(['rate_limit', 'network', 'http_5xx']);
 const CREDENTIAL_KINDS: ReadonlySet<ErrorKind> = new Set(['http_401', 'http_403']);

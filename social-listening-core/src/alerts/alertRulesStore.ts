@@ -1,6 +1,7 @@
 import { withTenant } from '../db/withTenant';
 import { getPool } from '../db/pool';
 import { PoolClient } from 'pg';
+import { getAdminPool } from '../db/adminPool';
 
 export interface AlertRule {
   id: string;
@@ -14,6 +15,9 @@ export interface AlertRule {
   last_triggered_at: string | null;
   channels: string[];
   enabled: boolean;
+  excluded_watchlist_ids: string[];
+  excluded_topic_ids: string[];
+  max_alerts_per_day: number;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +45,12 @@ export interface CreateAlertRuleInput {
   cooldown_minutes?: number;
   channels?: string[];
   enabled?: boolean;
+  excluded_watchlist_ids?: string[];
+  excluded_topic_ids?: string[];
+  max_alerts_per_day?: number;
+  excludedWatchlistIds?: string[];
+  excludedTopicIds?: string[];
+  maxAlertsPerDay?: number;
 }
 
 export interface UpdateAlertRuleInput {
@@ -52,6 +62,17 @@ export interface UpdateAlertRuleInput {
   cooldown_minutes?: number;
   channels?: string[];
   enabled?: boolean;
+  excluded_watchlist_ids?: string[];
+  excluded_topic_ids?: string[];
+  max_alerts_per_day?: number;
+  excludedWatchlistIds?: string[];
+  excludedTopicIds?: string[];
+  maxAlertsPerDay?: number;
+}
+
+export interface PostAlertContext {
+  matchedWatchlistIds?: string[];
+  topicIds?: string[];
 }
 
 export async function createAlertRule(
@@ -59,14 +80,20 @@ export async function createAlertRule(
   userId: string,
   input: CreateAlertRuleInput
 ): Promise<AlertRule> {
+  const excludedWatchlists = input.excluded_watchlist_ids ?? input.excludedWatchlistIds ?? [];
+  const excludedTopics = input.excluded_topic_ids ?? input.excludedTopicIds ?? [];
+  const maxAlerts = input.max_alerts_per_day ?? input.maxAlertsPerDay ?? 20;
+
   return withTenant<AlertRule>(
     tenantId,
     async (client: PoolClient) => {
       const { rows } = await client.query(
         `INSERT INTO alert_rules (
            tenant_id, name, type, thresholds, watchlist_id, platform_id,
-           cooldown_minutes, channels, enabled, created_at, updated_at
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
+           cooldown_minutes, channels, enabled,
+           excluded_watchlist_ids, excluded_topic_ids, max_alerts_per_day,
+           created_at, updated_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, now(), now())
          RETURNING *`,
         [
           tenantId,
@@ -78,6 +105,9 @@ export async function createAlertRule(
           input.cooldown_minutes ?? 60,
           input.channels || ['in_app'],
           input.enabled ?? true,
+          excludedWatchlists,
+          excludedTopics,
+          maxAlerts,
         ]
       );
       return rows[0] as AlertRule;
@@ -168,6 +198,24 @@ export async function updateAlertRule(
       if (input.enabled !== undefined) {
         fields.push(`enabled = $${idx++}`);
         values.push(input.enabled);
+      }
+
+      const excludedWatchlists = input.excluded_watchlist_ids ?? input.excludedWatchlistIds;
+      if (excludedWatchlists !== undefined) {
+        fields.push(`excluded_watchlist_ids = $${idx++}`);
+        values.push(excludedWatchlists);
+      }
+
+      const excludedTopics = input.excluded_topic_ids ?? input.excludedTopicIds;
+      if (excludedTopics !== undefined) {
+        fields.push(`excluded_topic_ids = $${idx++}`);
+        values.push(excludedTopics);
+      }
+
+      const maxAlerts = input.max_alerts_per_day ?? input.maxAlertsPerDay;
+      if (maxAlerts !== undefined) {
+        fields.push(`max_alerts_per_day = $${idx++}`);
+        values.push(maxAlerts);
       }
 
       if (fields.length === 0) {
@@ -261,20 +309,24 @@ export async function updateTenantAlertStatus(
   );
 }
 
-import { getAdminPool } from '../db/adminPool';
-
+/**
+ * Triggers an alert for a given rule with dual throttling (cooldown & rolling daily cap)
+ * and noise exclusion evaluation (TDS-0123 §4.1 / ADR-0123 §1 & §2).
+ */
 export async function triggerAlert(
   tenantId: string,
   ruleId: string,
   severity: 'info' | 'warning' | 'critical',
   summary: string,
-  payload: Record<string, any> = {}
+  payload: Record<string, any> = {},
+  postContext?: PostAlertContext
 ): Promise<TenantAlert | null> {
   const pool = getAdminPool();
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    // Check cooldown
+
+    // Fetch rule
     const { rows: ruleRows } = await client.query<AlertRule>(
       `SELECT * FROM alert_rules WHERE id = $1 AND tenant_id = $2 AND enabled = true`,
       [ruleId, tenantId]
@@ -285,15 +337,49 @@ export async function triggerAlert(
       return null;
     }
 
-    if (rule.last_triggered_at) {
-      const elapsedMinutes = (Date.now() - new Date(rule.last_triggered_at).getTime()) / 60000;
-      if (elapsedMinutes < rule.cooldown_minutes) {
+    // 1. Noise Exclusion Check (Watchlists and Topics evaluate independently)
+    if (postContext) {
+      if (
+        rule.excluded_watchlist_ids?.length > 0 &&
+        postContext.matchedWatchlistIds?.some((id) => rule.excluded_watchlist_ids.includes(id))
+      ) {
         await client.query('ROLLBACK');
-        return null; // Suppressed by cooldown
+        return null; // Suppressed: MATCHED_EXCLUDED_WATCHLIST
+      }
+
+      if (
+        rule.excluded_topic_ids?.length > 0 &&
+        postContext.topicIds?.some((topic) => rule.excluded_topic_ids.includes(topic))
+      ) {
+        await client.query('ROLLBACK');
+        return null; // Suppressed: MATCHED_EXCLUDED_TOPIC
       }
     }
 
-    // Insert alert
+    // 2. Rolling 24-Hour Daily Cap Check
+    const maxDaily = rule.max_alerts_per_day ?? 20;
+    const { rows: capRows } = await client.query<{ count: string }>(
+      `SELECT COUNT(*)::int AS count
+       FROM tenant_alerts
+       WHERE tenant_id = $1 AND alert_rule_id = $2 AND created_at >= now() - interval '24 hours'`,
+      [tenantId, ruleId]
+    );
+    const rollingCount = parseInt(capRows[0]?.count ?? '0', 10);
+    if (rollingCount >= maxDaily) {
+      await client.query('ROLLBACK');
+      return null; // Suppressed: DAILY_CAP_EXCEEDED
+    }
+
+    // 3. Cooldown Verification
+    if (rule.last_triggered_at && rule.cooldown_minutes > 0) {
+      const elapsedMinutes = (Date.now() - new Date(rule.last_triggered_at).getTime()) / 60000;
+      if (elapsedMinutes < rule.cooldown_minutes) {
+        await client.query('ROLLBACK');
+        return null; // Suppressed: COOLDOWN_ACTIVE
+      }
+    }
+
+    // 4. Insert alert into tenant_alerts
     const { rows: alertRows } = await client.query<TenantAlert>(
       `INSERT INTO tenant_alerts (
          tenant_id, alert_rule_id, severity, summary, payload, status, triggered_at, created_at
@@ -302,7 +388,7 @@ export async function triggerAlert(
       [tenantId, ruleId, severity, summary, JSON.stringify(payload)]
     );
 
-    // Update rule last_triggered_at
+    // 5. Update rule last_triggered_at
     await client.query(
       `UPDATE alert_rules SET last_triggered_at = now() WHERE id = $1`,
       [ruleId]

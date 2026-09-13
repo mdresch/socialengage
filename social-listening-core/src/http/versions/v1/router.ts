@@ -12,6 +12,7 @@ import { instagramAccountsRouter } from './instagramAccountsRouter';
 import { linkedinOAuthRouter } from './linkedinOAuthRouter';
 import { watchlistsRouter } from './watchlistsRouter';
 import { outboundPostsRouter } from './outboundPostsRouter';
+import { outboundActivitiesRouter } from './outboundActivitiesRouter';
 import { meRouter } from './meRouter';
 import { adminTenantsRouter } from './adminTenantsRouter';
 import { adminBreakGlassRouter } from './adminBreakGlassRouter';
@@ -26,6 +27,7 @@ import { tenantExportRouter } from './tenantExportRouter';
 import { onboardingChecklistRouter } from './onboardingChecklistRouter';
 import { composerRouter } from './composerRouter';
 import { crisisTemplatesRouter } from './crisisTemplatesRouter';
+import { crisisIncidentsRouter } from './crisisIncidentsRouter';
 import { explainRouter } from './explainRouter';
 import { ragRouter } from './ragRouter';
 import { prospectingListsRouter } from './prospectingListsRouter';
@@ -42,6 +44,11 @@ import { createCRMRoutes } from '../../routes/crmRoutes';
 import { createDigestRoutes, createPublicDigestRoutes } from '../../routes/digestRoutes';
 import { createPublishingRoutes } from '../../routes/publishingRoutes';
 import { influencersRouter } from './influencersRouter';
+import { takedownsRouter } from './takedownsRouter';
+import { takedownsPublicRouter } from './takedownsPublicRouter';
+import { dsrRouter } from './dsrRouter';
+import { dsrPublicRouter } from './dsrPublicRouter';
+import { complianceRouter } from './complianceRouter';
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass
@@ -189,6 +196,8 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 3.15 (ADR-0075) / Story 11.7 (ADR-0098) — outbound post publishing, scheduling, and asset targeting. */
   v1Router.use('/', authMiddleware, createPublishingRoutes(authMiddleware));
   v1Router.use('/outbound/posts', authMiddleware, outboundPostsRouter);
+  /** Story 14.2 (ADR-0119) — editing and deleting published outbound posts and revisions. */
+  v1Router.use('/outbound/activities', authMiddleware, outboundActivitiesRouter);
 
   /** Story 3.17 (ADR-0076) — composer Deep Research endpoint. */
   v1Router.use('/composer', authMiddleware, composerRouter);
@@ -198,6 +207,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 9.3 (ADR-0079) — crisis template bundle & activation. */
   v1Router.use('/crisis-templates', authMiddleware, crisisTemplatesRouter);
+
+  /** Story 17.3 (ADR-0131) — crisis incident lifecycle (acknowledge/resolve). */
+  v1Router.use('/crisis/incidents', authMiddleware, crisisIncidentsRouter);
 
   /** Story 9.2 (ADR-0078) — metric explainability endpoint. */
   v1Router.use('/explain', authMiddleware, explainRouter);
@@ -217,6 +229,9 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
   /** Story 10.9 (ADR-0091) — real-time alert rules & alerts inbox. */
   v1Router.use('/alerts', authMiddleware, alertRulesRouter);
 
+  /** Story 15.1 (ADR-0123) � alert rules refinements and volume preview. */
+  v1Router.use('/alert-rules', authMiddleware, alertRulesRouter);
+
   /** Story 10.11 (ADR-0092) — webhook subscriptions & delivery dispatcher. */
   v1Router.use('/webhooks', authMiddleware, webhooksRouter);
 
@@ -235,6 +250,17 @@ export function createV1Router(authMiddleware: RequestHandler, claimsAuthMiddlew
 
   /** Story 12.15 (ADR-0108) — influencer discovery and multi-factor scoring. */
   v1Router.use('/influencers', authMiddleware, influencersRouter);
+
+  /** Story 16.1 (ADR-0125) — author takedowns review queue, grant cascade, and public endpoints. */
+  v1Router.use('/takedowns', authMiddleware, takedownsRouter);
+  v1Router.use('/public/takedowns', takedownsPublicRouter);
+
+  /** Story 16.2 (ADR-0126) — DSR Article 18 restriction quarantining and receipts. */
+  v1Router.use('/dsr', authMiddleware, dsrRouter);
+  v1Router.use('/public/dsr', dsrPublicRouter);
+
+  /** Story 16.3 (ADR-0127) — compliance audit log hash chaining and audit pack exports. */
+  v1Router.use('/compliance', authMiddleware, complianceRouter);
 
   return v1Router;
 }

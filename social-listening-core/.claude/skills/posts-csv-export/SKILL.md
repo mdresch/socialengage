@@ -52,3 +52,12 @@ tenant-scoped rate limits and a 7-day Azure Blob lifecycle.
   and Azure Blob lifecycle details.
 - `tenant-export/SKILL.md` — Story 3.16 on-demand workspace JSON and posts CSV
   exports (`GET /v1/posts?format=csv`).
+
+## Relations to other components
+
+- **`export_jobs` table / `export-jobs` skill** — async export job records live in `export_jobs` with ADR-0111 statuses (`pending`, `running`, `ready`, `expired`, `failed`) and `sha256` integrity hash; ADR-0111 is the authoritative bounding and lifecycle spec.
+- **Azure Blob Storage (ADR-0029)** — async export blobs are uploaded to the tenant's blob container with a `7d` lifecycle policy; download links are presigned SAS URLs valid 24 hours.
+- **`exportRateLimit.ts`** — rate-limits export operations per tenant: 60 sync/hour, 20 async/hour, 120 status/hour, 10 downloads/hour. Returns `429 Too Many Requests` when exceeded.
+- **`drainActiveExportJobs()`** — test cleanup helper; contract suites must `await drainActiveExportJobs()` in `afterAll` to prevent background workers from continuing after Jest tears down pools.
+- **`prospecting-lists` skill** — `POST /v1/prospecting-lists/:id/export` also goes through `postExportEngine.ts` and `export_jobs`, sharing the same async export infrastructure.
+- **`tenant-export` skill** — Story 3.16's full workspace JSON/posts export surface; separate from the per-query sync streaming CSV export here.

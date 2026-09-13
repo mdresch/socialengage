@@ -56,19 +56,18 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 8. **Update traceability.**
    Confirm and update the story status and references in `docs/user-stories/README.md`, `docs/adr/README.md`, and `docs/implementation-plan.md`. If the story entry in its epic file does not have a `**Built:**` field, set it to `**Built:** not yet`.
 
-9. **Commit story implementation.**
-   Stage and commit the contract test, implementation code, component `SKILL.md`, and traceability updates:
-   ```bash
-   git commit -m "feat(<scope>): implement Story <X.Y> — <title> (ADR-<NNNN>)"
-   ```
+9. **Log completion, synchronize dashboard telemetry, and commit — all as one commit.**
+   The Implementation Log entry and the `Built:` line are written into this *same* commit, not a separate one afterward — its own hash isn't known yet, so both use the literal placeholder `pending` in place of a hash; `scripts/git-hooks/pre-commit` backfills it automatically into whichever commit runs next (see `docs/implementation-methodology.md` §7 and its 2026-09-09 Amendment Log entry — this is not optional cleanup, it's how the hash-anchoring stays true without a dedicated second commit).
+   - Run `npm run sync` in `project-progress-dashboard/` first, so its output is part of this commit.
+   - Update the story file's `**Built:** not yet` to `**Built:** YYYY-MM-DD — <repo>@pending`.
+   - Append the completion record to [`docs/implementation-log.md`](../../../docs/implementation-log.md), with `— commit pending` in the header and `` **Full commit:** `pending` `` in the body.
+   - Stage and commit the contract test, implementation code, component `SKILL.md`, traceability updates, dashboard sync output, and this log entry/Built-line together:
+     ```bash
+     git commit -m "feat(<scope>): implement Story <X.Y> — <title> (ADR-<NNNN>)"
+     ```
+   - Run `git rev-parse HEAD` immediately after — you need the real hash for your own Step 11 report, even though the on-disk log/story-file still literally say `pending` until the next commit resolves them. Do not create a follow-up commit just to write the hash down.
 
-10. **Log completion & synchronize dashboard telemetry.**
-    - Run `git rev-parse HEAD` to capture the commit hash.
-    - Append the completion record to [`docs/implementation-log.md`](../../../docs/implementation-log.md).
-    - Update the story file's `**Built:** not yet` to `**Built:** YYYY-MM-DD — <repo>@<short-hash>`.
-    - Run `npm run sync` in `project-progress-dashboard/` to refresh the dashboard telemetry.
-
-11. **Merge Worktree into Main & Teardown Worktree.**
+10. **Merge Worktree into Main & Teardown Worktree.**
     Merge the verified branch back into `main` and remove the isolated worktree:
     ```bash
     git checkout main
@@ -77,8 +76,9 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
     git worktree remove ../socialengage-story-<X.Y>
     git branch -d feat/story-<X.Y>
     ```
+    This merge is itself "whichever commit runs next" for Step 9's `pending` placeholder — if it's a fast-forward, no new commit is created here to carry the backfill, so the placeholder resolves on the merge target's own *next* real commit instead (report the real hash from Step 9 regardless; don't wait on the placeholder to resolve before reporting).
 
-12. **Report back concisely:** Story number, files modified, contract test added, test suite result, `SKILL.md` updated, commit hash, and Implementation Log entry.
+11. **Report back concisely:** Story number, files modified, contract test added, test suite result, `SKILL.md` updated, the real commit hash (from Step 9's `git rev-parse HEAD`, not the on-disk `pending` placeholder), and Implementation Log entry.
 
 ## Hard rules, not preferences
 
@@ -86,5 +86,5 @@ Full rationale lives in [`docs/implementation-methodology.md`](../../../docs/imp
 - Never touch a file outside the Step 2 scope list without explicitly flagging it first.
 - Never delete or silently weaken a passing contract from an earlier story.
 - Never start work on a `Blocked` story whose source ADR is not Accepted.
-- Never report a story as done without an Implementation Log entry and a verified commit hash.
-- Never edit or rewrite prior Implementation Log entries. Append only.
+- Never report a story as done without an Implementation Log entry and a verified commit hash (verified via your own `git rev-parse HEAD` in Step 9, even while the file still shows `pending` — see that step).
+- Never edit or rewrite prior Implementation Log entries. Append only — the automatic `pending`-hash backfill (`scripts/git-hooks/pre-commit`) is the one sanctioned exception, and only ever for the placeholder the immediately-preceding commit itself introduced.

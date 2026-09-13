@@ -27,6 +27,58 @@ export interface ExportFilters {
   startDate?: string;
   endDate?: string;
   sentiment?: string;
+  sample?: boolean;
+}
+
+export const MAX_EXPORT_LOOKBACK_MONTHS = 24;
+
+export function validateLookbackWindow(
+  start?: string,
+  end?: string
+): { valid: boolean; code?: string; error?: string } {
+  if (!start && !end) {
+    return { valid: true };
+  }
+
+  let startDate: Date;
+  let endDate: Date;
+
+  if (start) {
+    startDate = new Date(start);
+    if (isNaN(startDate.getTime())) {
+      return { valid: false, code: 'INVALID_DATE_FORMAT', error: `Invalid start date format: ${start}` };
+    }
+  } else {
+    startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - MAX_EXPORT_LOOKBACK_MONTHS);
+  }
+
+  if (end) {
+    endDate = new Date(end);
+    if (isNaN(endDate.getTime())) {
+      return { valid: false, code: 'INVALID_DATE_FORMAT', error: `Invalid end date format: ${end}` };
+    }
+  } else {
+    endDate = new Date();
+  }
+
+  if (startDate.getTime() > endDate.getTime()) {
+    return { valid: false, code: 'INVALID_DATE_RANGE', error: 'Start date cannot be after end date.' };
+  }
+
+  const maxAllowedEnd = new Date(startDate);
+  maxAllowedEnd.setMonth(maxAllowedEnd.getMonth() + MAX_EXPORT_LOOKBACK_MONTHS);
+  const maxAllowedEndMs = maxAllowedEnd.getTime() + 86400000; // 1-day margin for DST/TZ
+
+  if (endDate.getTime() > maxAllowedEndMs) {
+    return {
+      valid: false,
+      code: 'EXPORT_RANGE_TOO_LARGE',
+      error: `Date range exceeds maximum lookback of ${MAX_EXPORT_LOOKBACK_MONTHS} months.`,
+    };
+  }
+
+  return { valid: true };
 }
 
 export interface ExportJobRecord {
@@ -123,7 +175,7 @@ export class ExportFileTooLargeError extends Error {
 }
 
 function buildWhereClauses(filters: ExportFilters, params: any[]): { whereClauses: string[]; join: string } {
-  const whereClauses: string[] = ['sp.tenant_id = $1'];
+  const whereClauses: string[] = ['sp.tenant_id = $1', 'sp.processing_restricted = FALSE'];
   let paramIdx = params.length + 1;
 
   if (filters.startDate) {
@@ -285,18 +337,176 @@ function jsonRowFromRow(row: Record<string, unknown>): Record<string, unknown> {
   };
 }
 
+async function countTotalMatchedPosts(
+  tenantId: string,
+  userId: string,
+  filters: ExportFilters
+): Promise<number> {
+  return withTenant<number>(
+    tenantId,
+    async (client: PoolClient) => {
+      const params: any[] = [tenantId];
+      const { whereClauses, join } = buildWhereClauses(filters, params);
+
+      const sql = `
+        SELECT COUNT(*)::int as count
+        FROM social_posts sp
+        ${join}
+        WHERE ${whereClauses.join(' AND ')}
+      `;
+      const { rows } = await client.query<{ count: number }>(sql, params);
+      return rows[0].count;
+    },
+    getPool(),
+    userId
+  );
+}
+
+async function* exportSampledPostRows(
+  tenantId: string,
+  userId: string,
+  filters: ExportFilters,
+  stride: number,
+  limit: number
+): AsyncGenerator<Record<string, unknown>> {
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT set_config($1, $2, true)', ['app.tenant_id', tenantId]);
+    if (userId) {
+      await client.query('SELECT set_config($1, $2, true)', ['app.user_id', userId]);
+    }
+
+    const params: any[] = [tenantId];
+    const { whereClauses, join } = buildWhereClauses(filters, params);
+    const cursorName = `export_sample_cursor_${tenantId.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
+    const strideIdx = params.length + 1;
+    params.push(stride);
+    const limitIdx = params.length + 1;
+    params.push(limit);
+
+    const declareSql = `
+      DECLARE ${cursorName} CURSOR FOR
+      WITH ranked_posts AS (
+        SELECT
+          sp.id,
+          sp.published_at,
+          COALESCE(sp.raw_payload->>'providerId', 'unknown') AS platform,
+          COALESCE(sp.enrichment->>'sentiment', 'neutral') AS sentiment,
+          sp.author_follower_count_at_publish AS author_followers,
+          sp.body_markdown AS content,
+          ROW_NUMBER() OVER (ORDER BY sp.published_at DESC) AS row_num
+        FROM social_posts sp
+        ${join}
+        WHERE ${whereClauses.join(' AND ')}
+      )
+      SELECT
+        id,
+        published_at,
+        platform,
+        sentiment,
+        author_followers,
+        content
+      FROM ranked_posts
+      WHERE (row_num % $${strideIdx}) = 0
+      ORDER BY published_at DESC
+      LIMIT $${limitIdx}
+    `;
+
+    await client.query(declareSql, params);
+
+    let more = true;
+    while (more) {
+      const { rows } = await client.query<{
+        id: string;
+        published_at: Date;
+        platform: string;
+        sentiment: string;
+        author_followers: number | null;
+        content: string | null;
+      }>(`FETCH 100 FROM ${cursorName}`);
+      if (rows.length === 0) {
+        more = false;
+        break;
+      }
+      for (const row of rows) {
+        yield row;
+      }
+    }
+
+    await client.query(`CLOSE ${cursorName}`);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export interface SyncExportResult {
+  csv: string;
+  isSampled: boolean;
+  sampleFraction?: number;
+  totalMatched?: number;
+  sampleSize?: number;
+}
+
 /**
  * Synchronous CSV export. Returns the full CSV string (headers + rows) for
- * requests within the sync limit.
+ * requests within the sync limit, or a representative systematic sample if sample=true.
  */
 export async function fetchPostsForSyncExport(
   tenantId: string,
   userId: string,
   filters: ExportFilters,
-  limit = 5000
-): Promise<string> {
-  if (limit > syncRowLimit()) {
-    throw new ExportValidationError('INVALID_LIMIT', `Synchronous CSV limit cannot exceed ${syncRowLimit()}`);
+  limit = 5000,
+  sample = false
+): Promise<SyncExportResult> {
+  const syncCap = syncRowLimit();
+  if (limit > syncCap) {
+    throw new ExportValidationError('INVALID_LIMIT', `Synchronous CSV limit cannot exceed ${syncCap}`);
+  }
+
+  if (sample) {
+    const totalMatched = await countTotalMatchedPosts(tenantId, userId, filters);
+
+    if (totalMatched <= limit) {
+      const lines: string[] = [
+        `# socialengage_export: sampled=false; sample_fraction=1.0; total_matched=${totalMatched}; sample_size=${totalMatched}`,
+        'id,published_at,platform,sentiment,author_followers,content',
+      ];
+      for await (const row of exportPostRows(tenantId, userId, filters, limit)) {
+        lines.push(csvLineFromRow(row));
+      }
+      return {
+        csv: lines.join('\n'),
+        isSampled: false,
+        sampleFraction: 1.0,
+        totalMatched,
+        sampleSize: totalMatched,
+      };
+    }
+
+    const stride = Math.max(1, Math.floor(totalMatched / limit));
+    const sampleFraction = Number((limit / totalMatched).toFixed(4));
+    const lines: string[] = [
+      `# socialengage_export: sampled=true; sample_fraction=${sampleFraction}; total_matched=${totalMatched}; sample_size=${limit}`,
+      'id,published_at,platform,sentiment,author_followers,content',
+    ];
+    let count = 0;
+    for await (const row of exportSampledPostRows(tenantId, userId, filters, stride, limit)) {
+      lines.push(csvLineFromRow(row));
+      count++;
+    }
+
+    return {
+      csv: lines.join('\n'),
+      isSampled: true,
+      sampleFraction,
+      totalMatched,
+      sampleSize: count,
+    };
   }
 
   const cap = asyncCsvMaxRows();
@@ -309,7 +519,13 @@ export async function fetchPostsForSyncExport(
   for await (const row of exportPostRows(tenantId, userId, filters, limit)) {
     lines.push(csvLineFromRow(row));
   }
-  return lines.join('\n');
+  return {
+    csv: lines.join('\n'),
+    isSampled: false,
+    sampleFraction: 1.0,
+    totalMatched: lines.length - 1,
+    sampleSize: lines.length - 1,
+  };
 }
 
 function makeBlobPath(tenantId: string, jobId: string, format: 'csv' | 'json'): string {

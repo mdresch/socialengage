@@ -95,3 +95,11 @@ This ADR is a roadmap, not a per-platform specification. Before building any of 
 - ADR-0115: Publishing Media Upload and Asset Targeting
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0027: Connector Is Technical Intermediary, Not Contracting Party
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Platform-Specific Payload Validation**: Outbound social publishing across diverse networks (YouTube, Bluesky, TikTok, Threads) requires granular platform validation at the composer boundary rather than generic post schemas. For instance, YouTube community posts require strict channel ID scoping and media verification, while Bluesky requires UTF-8 byte length calculation (300 grapheme bytes) rather than raw string length.
+- **Operational Trade-offs**: Validating network-specific constraints in `social-listening-core` increases publishing orchestration complexity but prevents silent failures and malformed payloads at third-party API gateways.
+- **Reference Commits**: `1d03403` (Story 14.1 implementation), `8cde283` (telemetry sync).

@@ -5,6 +5,10 @@ import { getCRMConnector } from '../connectors/crm/crmRegistry';
 import { CRMConnectorContext, CRMProspectPushResult, ProspectingListEntryPayload } from '../connectors/crm/types';
 import { listEntriesForExport, ProspectingListEntry } from '../prospecting/prospectingListStore';
 import { readCRMCredential } from './crmCredentialStore';
+import {
+  clusterDeduplicatedContacts,
+  deduplicatedContactToPayload,
+} from '../prospecting/prospectingDeduplicationEngine';
 
 export interface PushProspectsInput {
   tenantId: string;
@@ -13,12 +17,15 @@ export interface PushProspectsInput {
   crmConnectorId: string;
   selectedEntryIds?: string[];
   customFields?: Record<string, any>;
+  deduplicate?: boolean;
 }
 
 export interface PushProspectsResponse {
   outboundActivityIds: string[];
   pushedCount: number;
   skippedCount: number;
+  rawEntriesCount?: number;
+  deduplicatedContactsCount?: number;
   crmUrl?: string;
 }
 
@@ -76,7 +83,7 @@ async function resolveRePushExternalIds(
 }
 
 export async function pushProspectsToCRM(input: PushProspectsInput): Promise<PushProspectsResponse> {
-  const { tenantId, userId, listId, crmConnectorId, selectedEntryIds, customFields } = input;
+  const { tenantId, userId, listId, crmConnectorId, selectedEntryIds, customFields, deduplicate } = input;
 
   const connector = getCRMConnector(crmConnectorId);
   if (!connector) {
@@ -99,7 +106,32 @@ export async function pushProspectsToCRM(input: PushProspectsInput): Promise<Pus
   const ctx: CRMConnectorContext = { tenantId, credentials: credentials ?? undefined };
   const rePushByExternalId = await resolveRePushExternalIds(tenantId, crmConnectorId, entries);
 
-  const payloads: ProspectingListEntryPayload[] = entries.map((entry) => toProspectPayload(entry, customFields));
+  let payloads: ProspectingListEntryPayload[];
+
+  if (deduplicate) {
+    // Query author metadata to assist handle resolution
+    const authors = await withTenant<Array<{ id: string; handle: string; display_name: string }>>(
+      tenantId,
+      async (client: PoolClient) => {
+        const { rows } = await client.query<{ id: string; handle: string; display_name: string }>(
+          `SELECT id, handle, display_name FROM authors WHERE tenant_id = $1 AND id = ANY($2::uuid[])`,
+          [tenantId, entries.map((e) => e.author_id)]
+        );
+        return rows;
+      },
+      getPool()
+    );
+
+    const authorMeta: Record<string, { handle?: string; displayName?: string }> = {};
+    for (const a of authors) {
+      authorMeta[a.id] = { handle: a.handle, displayName: a.display_name };
+    }
+
+    const clusters = clusterDeduplicatedContacts(entries, authorMeta);
+    payloads = clusters.map((c) => deduplicatedContactToPayload(c, customFields));
+  } else {
+    payloads = entries.map((entry) => toProspectPayload(entry, customFields));
+  }
 
   const chunks: ProspectingListEntryPayload[][] = [];
   for (let i = 0; i < payloads.length; i += BATCH_SIZE) {
@@ -130,29 +162,31 @@ export async function pushProspectsToCRM(input: PushProspectsInput): Promise<Pus
     tenantId,
     async (client: PoolClient) => {
       const ids: string[] = [];
-      for (let i = 0; i < entries.length; i++) {
-        const entry = entries[i];
+      for (let i = 0; i < payloads.length; i++) {
+        const payloadItem = payloads[i];
         const result = results[i] ?? {
-          entryId: entry.id,
+          entryId: payloadItem.entryId,
           crmRecordId: 'unknown',
           crmRecordUrl: '',
           entityType: 'lead',
         };
 
-        const body = `${entry.topic || ''}\n\n${entry.notes || ''}`.trim() || 'Prospecting list handoff';
+        const body = `${payloadItem.topic || ''}\n\n${payloadItem.notes || ''}`.trim() || 'Prospecting list handoff';
         const payload = {
           prospectingListId: listId,
-          entryId: entry.id,
-          authorId: entry.author_id,
-          platformId: entry.platform_id,
-          topic: entry.topic,
-          engagementScore: Number(entry.engagement_score) || 0,
-          authenticityScore: Number(entry.authenticity_score) || 0,
-          influenceScore: Number(entry.influence_score) || 0,
-          relationshipStage: entry.relationship_stage,
-          tags: entry.tags,
+          entryId: payloadItem.entryId,
+          entryIds: payloadItem.entryIds || [payloadItem.entryId],
+          authorId: payloadItem.authorId,
+          platformId: payloadItem.platformId,
+          topic: payloadItem.topic,
+          engagementScore: Number(payloadItem.engagementScore) || 0,
+          authenticityScore: Number(payloadItem.authenticityScore) || 0,
+          influenceScore: Number(payloadItem.influenceScore) || 0,
+          relationshipStage: payloadItem.relationshipStage,
+          tags: payloadItem.tags,
           crmConnectorId,
           customFields: customFields ?? null,
+          matchedHandles: payloadItem.matchedHandles,
         };
 
         const { rows } = await client.query<{ id: string }>(
@@ -164,7 +198,7 @@ export async function pushProspectsToCRM(input: PushProspectsInput): Promise<Pus
            RETURNING id`,
           [
             tenantId,
-            entry.author_id,
+            payloadItem.authorId,
             userId,
             crmConnectorId,
             credentialId,
@@ -188,6 +222,9 @@ export async function pushProspectsToCRM(input: PushProspectsInput): Promise<Pus
     outboundActivityIds,
     pushedCount: outboundActivityIds.length,
     skippedCount: 0,
+    rawEntriesCount: entries.length,
+    deduplicatedContactsCount: payloads.length,
     crmUrl,
   };
 }
+

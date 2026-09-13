@@ -93,6 +93,45 @@ analyticsViewsRouter.post('/query', async (req, res) => {
   }
 });
 
+/**
+ * Story 16.2 (ADR-0126, TDS-0126 §4.2) — GET /v1/analytics/overview
+ * Real-time aggregation excluding GDPR Article 18 processing-restricted posts.
+ */
+analyticsViewsRouter.get('/overview', async (req, res) => {
+  const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
+  if (!identity) return;
+
+  try {
+    const data = await withTenant(
+      identity.tenantId,
+      async (client: PoolClient) => {
+        const { rows } = await client.query<{
+          total_posts: string;
+          avg_sentiment: string | null;
+        }>(
+          `SELECT 
+             COUNT(*)::int AS total_posts,
+             AVG((enrichment->>'sentimentScore')::numeric) AS avg_sentiment
+           FROM social_posts
+           WHERE tenant_id = $1
+             AND processing_restricted = FALSE`,
+          [identity.tenantId]
+        );
+
+        return {
+          totalPosts: parseInt(rows[0]?.total_posts || '0', 10),
+          avgSentiment: rows[0]?.avg_sentiment ? parseFloat(rows[0].avg_sentiment) : null,
+        };
+      },
+      getPool()
+    );
+
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Failed to retrieve analytics overview.' });
+  }
+});
+
 const VALID_VIEWS = ['sources', 'authors', 'sentiments', 'watchlists'] as const;
 type ViewName = typeof VALID_VIEWS[number];
 

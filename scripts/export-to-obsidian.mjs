@@ -61,7 +61,7 @@ function getEntityMetadata(node) {
   }
   return {
     entity_id: sha256(`${node.id}::${sourceDoc}`).slice(0, 32),
-    version: '1.0.0',
+    version: ONTOLOGY?.version || '1.0.0',
     source_document: sourceDoc.replace(/\\/g, '/'),
     created_at: createdAt,
     modified_at: modifiedAt,
@@ -100,6 +100,7 @@ function validateNode(node) {
   path.join(wikiProjectRoot, '01 Architecture Decisions (ADR)'),
   path.join(wikiProjectRoot, '02 Business Requirements (BRD)'),
   path.join(wikiProjectRoot, '03 Functional Design (FDD)'),
+  path.join(wikiProjectRoot, '03.5 Technical Design (TDS)'),
   path.join(wikiProjectRoot, '04 User Stories & Epics'),
   path.join(wikiProjectRoot, '05 Project Governance & Plans'),
   path.join(wikiProjectRoot, '06 Synthesis & Lessons Learned'),
@@ -233,6 +234,7 @@ function convertToWikilinks(markdown) {
     .replace(/\[ADR-(\d+)\]\([^)]+\)/gi, '[[ADR-$1]]')
     .replace(/\[BRD-(\d+)\]\([^)]+\)/gi, '[[BRD-$1]]')
     .replace(/\[FDD-(\d+)\]\([^)]+\)/gi, '[[FDD-$1]]')
+    .replace(/\[TDS-(\d+)\]\([^)]+\)/gi, '[[TDS-$1]]')
     .replace(/\[Epic\s*(\d+)\]\([^)]+\)/gi, '[[Epic $1]]')
     .replace(/\[Story\s*([\d\.]+)\]\([^)]+\)/gi, '[[Story $1]]');
 }
@@ -293,6 +295,7 @@ function registerNode(node) {
     if (node.type === 'ADR') t.adr = node;
     if (node.type === 'BRD') t.brd = node;
     if (node.type === 'FDD') t.fdd = node;
+    if (node.type === 'TDS') t.tds = node;
   }
 }
 
@@ -404,6 +407,44 @@ if (fs.existsSync(fddSrcDir)) {
       babokCategory: classifyBabok(idNum, title, content, 'FDD'),
       status: 'Ready',
       rawContent: content,
+      outgoingRefs: new Set(),
+      incomingRefs: new Set(),
+      upstreamDependencies: new Set(),
+      downstreamDependents: new Set(),
+      satisfyingStories: new Set(),
+    });
+  });
+}
+
+// Ingest TDSs
+const tdsSrcDir = path.join(repoRoot, 'docs', 'project docs', 'Technical-Design');
+if (fs.existsSync(tdsSrcDir)) {
+  fs.readdirSync(tdsSrcDir).forEach(f => {
+    if (!f.endsWith('.md') || f === 'README.md' || f === 'TDS-template.md') return;
+    const raw = fs.readFileSync(path.join(tdsSrcDir, f), 'utf8');
+    const tdsMatch = f.match(/TDS-(\d+)/i);
+    const idNum = tdsMatch ? parseInt(tdsMatch[1], 10) : 0;
+    const padId = idNum.toString().padStart(4, '0');
+    const id = `TDS-${padId}`;
+
+    const titleMatch = raw.match(/^#\s*Technical Design Specification[^\n]*[-—–]?\s*(.*)/m) || raw.match(/^#\s*(.*)/m);
+    const title = titleMatch ? titleMatch[1].trim() : f;
+
+    registerNode({
+      id,
+      type: 'TDS',
+      title,
+      padId,
+      idNum,
+      fileName: f,
+      relPath: path.join('docs', 'project docs', 'Technical-Design', f),
+      destFolder: path.join(wikiProjectRoot, '03.5 Technical Design (TDS)'),
+      domainCluster: classifyDomain(idNum, title, raw),
+      dmbokCategory: classifyDmbok(idNum, title, raw),
+      pmbokCategory: classifyPmbok(idNum, title, raw, 'TDS'),
+      babokCategory: classifyBabok(idNum, title, raw, 'TDS'),
+      status: 'Approved',
+      rawContent: raw,
       outgoingRefs: new Set(),
       incomingRefs: new Set(),
       upstreamDependencies: new Set(),
@@ -528,6 +569,7 @@ nodeMap.forEach(node => {
   const adrLink = t.adr ? `[[${t.adr.id}|${t.adr.id}: ${t.adr.title}]]` : (node.padId ? `[[ADR-${node.padId}]]` : 'N/A');
   const brdLink = t.brd ? `[[${t.brd.id}|${t.brd.id}: ${t.brd.title}]]` : (node.padId ? `[[BRD-${node.padId}]]` : 'N/A');
   const fddLink = t.fdd ? `[[${t.fdd.id}|${t.fdd.id}: ${t.fdd.title}]]` : (node.padId ? `[[FDD-${node.padId}]]` : 'N/A');
+  const tdsLink = t.tds ? `[[${t.tds.id}|${t.tds.id}: ${t.tds.title}]]` : (node.padId ? `[[TDS-${node.padId}]]` : 'N/A');
   const storiesList = linkedStories.length > 0
     ? linkedStories.map(s => `[[Story ${s.storyId}]] (${s.isBuilt ? '✅ Built' : '⏳ Pending'})`).join(', ')
     : 'Implemented via Parent Epic';
@@ -578,10 +620,11 @@ tags:
 
   // Prominent Top-of-Page 4-Way Traceability Card
   const topTraceabilityCard = `
-> [!NOTE] 🔗 **4-Way Traceability Quad (ADR ↔ BRD ↔ FDD ↔ Story)**
+> [!NOTE] 🔗 **5-Way Traceability Mesh (ADR ↔ BRD ↔ FDD ↔ TDS ↔ Story)**
 > - 🏛️ **Architecture Decision:** ${adrLink}
 > - 📋 **Business Requirements:** ${brdLink}
 > - 📐 **Functional Design:** ${fddLink}
+> - 🛠️ **Technical Design (TDS):** ${tdsLink}
 > - 🎯 **User Stories & Delivery:** ${storiesList}
 
 `;

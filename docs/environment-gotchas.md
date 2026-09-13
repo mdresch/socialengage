@@ -35,6 +35,13 @@ A cross-cutting index of recurring **environment/tooling** surprises — not log
 - **Global tables (`platform_metrics`) and background workers started from `server.ts` pollute full-suite runs sharing a single cloned test database.** When `server.ts` is spawned in tests (e.g. Story 1.10), un-gated background workers write rows to global tables and aggregation windows, causing late-running tests (like Story 13.8) to see unexpected row counts or aggregated totals. Fix: gate background workers with `is*Enabled()` checking `process.env.NODE_ENV !== 'test'`, call `timer.unref()`, and ensure contracts testing global tables clean up in `beforeEach`.
 
 
+
+- **Postgres testDbClone template isolation requires migrations applied to template prior to worker thread fork (Story 14.4).** When running tests against newly migrated tables (e.g. `migrations/0075_create_research_cache_and_runs.sql`), individual test worker threads cloning `social_listening_template` on port 5434 fail with `relation "research_cache" does not exist` if the template database itself was created before the migration ran. Fix: Ensure `jest.global-setup.js` connects to `social_listening_template` and executes `runMigrations()` before any test suites run (`docs/implementation-log.md`'s Story 14.4 entry, commit `d2bd7797`).
+
+## Caching & Hashing (composerResearchService.ts)
+
+- **Deterministic SHA-256 research caching requires normalized text and sorted provider IDs.** In `composerResearchService.ts`, hashing un-sanitized input strings produces cache misses when callers pass equivalent queries with leading/trailing whitespace, uppercase characters, or differing search provider array order (`['bing', 'brave']` vs `['brave', 'bing']`). Fix: Enforce canonical pre-hash normalization: `text.trim().toLowerCase().replace(/\s+/g, ' ')` and `[...searchProviderIds].sort().join(',')` before calculating `crypto.createHash('sha256')` (`social-listening-core/src/composer/composerResearchService.ts`, commit `d2bd7797`).
+
 ## Local dev environment / scripts
 
 - **A custom dev-orchestration script can silently never load `.env` at all**, even while `npm test` works fine, if only Jest's own global-setup wires `dotenv` and nothing calls it from the dev script. Symptom: an `.env` var (e.g. `PORT`) appears to have "no effect" on `npm run dev`. Don't assume a dev script loads `.env` just because tests pass — verify directly (`docs/implementation-log.md`'s `15756e0` entry, `scripts/withDevEnv.js`).

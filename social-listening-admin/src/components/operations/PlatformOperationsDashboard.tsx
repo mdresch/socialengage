@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import type { PlatformDashboardData } from '@/lib/core-client';
+import { QuotaBurnRateForecast } from './QuotaBurnRateForecast';
+import { ConnectorRemediationDrawer } from './ConnectorRemediationDrawer';
 
 interface PlatformOperationsDashboardProps {
   initialData: PlatformDashboardData | null;
@@ -10,6 +12,12 @@ interface PlatformOperationsDashboardProps {
 export function PlatformOperationsDashboard({ initialData }: PlatformOperationsDashboardProps) {
   const [data, setData] = useState<PlatformDashboardData | null>(initialData);
   const [loading, setLoading] = useState(false);
+  const [remediatingConnector, setRemediatingConnector] = useState<{
+    platformId: string;
+    status: string;
+    errorCountLast24h: number;
+    lastSuccessAt: string | null;
+  } | null>(null);
 
   const refresh = async () => {
     setLoading(true);
@@ -102,9 +110,19 @@ export function PlatformOperationsDashboard({ initialData }: PlatformOperationsD
         </div>
       </div>
 
-      {/* Connector Health Table */}
+      {/* Quota Velocity & Burn-Rate Forecast (Story 16.4, ADR-0128) */}
+      <QuotaBurnRateForecast projections={data.tenantQuotaBurnProjections || []} />
+
+      {/* Connector Health Table with Guided Remediation Controls */}
       <div className="card" style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-        <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Active Connector Health & Status</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: '1.125rem', margin: 0 }}>Active Connector Health & Status</h2>
+            <p style={{ margin: '2px 0 0', fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>
+              Connector liveliness monitoring with operator-guided remediation playbooks
+            </p>
+          </div>
+        </div>
         <div className="table-container" style={{ overflowX: 'auto' }}>
           <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -113,6 +131,7 @@ export function PlatformOperationsDashboard({ initialData }: PlatformOperationsD
                 <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', fontWeight: 700, fontSize: '0.8125rem', borderBottom: '2px solid var(--color-border)' }}>Status</th>
                 <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', fontWeight: 700, fontSize: '0.8125rem', borderBottom: '2px solid var(--color-border)' }}>24h Errors</th>
                 <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', fontWeight: 700, fontSize: '0.8125rem', borderBottom: '2px solid var(--color-border)' }}>Last Success</th>
+                <th style={{ textAlign: 'center', padding: 'var(--space-2) var(--space-3)', fontWeight: 700, fontSize: '0.8125rem', borderBottom: '2px solid var(--color-border)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -141,12 +160,30 @@ export function PlatformOperationsDashboard({ initialData }: PlatformOperationsD
                   <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'right', fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>
                     {c.lastSuccessAt ? new Date(c.lastSuccessAt).toLocaleTimeString() : '—'}
                   </td>
+                  <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center' }}>
+                    <button
+                      id={`btn-open-remediate-${c.platformId}`}
+                      className="btn btn-secondary btn-xs"
+                      onClick={() => setRemediatingConnector(c)}
+                      title="Open guided remediation playbooks"
+                    >
+                      🛠 Remediate
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Guided Remediation Drawer (Story 16.4, ADR-0128) */}
+      <ConnectorRemediationDrawer
+        connector={remediatingConnector}
+        isOpen={remediatingConnector !== null}
+        onClose={() => setRemediatingConnector(null)}
+        onSuccess={refresh}
+      />
     </div>
   );
 }

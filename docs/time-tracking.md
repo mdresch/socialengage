@@ -16,6 +16,62 @@
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
 | 2026-09-13 | 02:22 | — | — | Documentation | Story 18.1 | feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134) (e479a59) |
+| 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
+| 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
+| 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
+| 2026-09-09 | 19:26 | — | — | Review | — | chore(tracking): post-commit hook sync for scheduled review pass commit (38c5f7d) |
+| 2026-09-09 | 19:25 | — | — | Review | — | docs(review): complete scheduled three-role documentation review pass (2026-09-09) (c11df84) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): log previous commit hash (31525e3) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for dc3958f (f83bf05) |
+| 2026-09-09 | 00:35 | — | — | Documentation | — | fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md (dc3958f) |
+| 2026-09-09 | 00:18 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for merge 9c1138f (6738e64) |
+| 2026-09-09 | 00:18 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (9c1138f) |
+| 2026-09-09 | 23:49 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for efaa197 (84815fd) |
+| 2026-09-09 | 23:48 | — | — | Documentation | — | feat(process): collapse implement-story's 2-3 commits per story into one, via self-healing pending-hash backfill (efaa197) |
+| 2026-09-09 | 06:31 | — | — | Review | — | Queue commit f845ac9 for Manager, Documentation Steward, and Learning & Development review (d44e6b2) |
+| 2026-09-09 | 06:31 | — | — | Review | — | Address Copilot review: fix stale reply-support claim, blank queue metadata (f845ac9) |
+| 2026-09-09 | 06:27 | — | — | Review | — | Queue commit b704784 for Manager, Documentation Steward, and Learning & Development review (c642d02) |
+| 2026-09-09 | 06:27 | — | — | Review | — | Merge origin/main into docs-review/2026-08-28, resolve conflicts (b704784) |
+| 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for eeacc20 checkpoint (38f0867) |
+| 2026-09-09 | 05:29 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for e4f4826 nit fix (eeacc20) |
+| 2026-09-09 | 05:28 | — | — | Documentation | Story 9.5 | docs(epic-9): standardize Story 9.5's Built field to the em-dash convention (e4f4826) |
+| 2026-09-09 | 05:24 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for 614e6e5 checkpoint (202dddf) |
+| 2026-09-09 | 05:23 | — | — | Review | — | docs(review): checkpoint — Documentation Steward pass complete (614e6e5) |
+| 2026-09-09 | 05:15 | — | — | Review | — | docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work (f15d9f1) |
+| 2026-09-08 | 14:01 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (cbd4869) |
+| 2026-09-08 | 13:11 | — | — | Documentation | Story 17.1 | chore(telemetry): update user stories, implementation log, and sync dashboard for Story 17.1 (4faf6ee) |
+| 2026-09-08 | 13:06 | — | — | Documentation | Story 17.1 | feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129) (53e63ba) |
+| 2026-09-08 | 12:25 | — | — | Documentation | — | docs: expand Epic 17 user stories to full explainable specification (c4d9bdd) |
+| 2026-09-08 | 12:20 | — | — | Documentation | — | docs: align status to Built for completed stories 16.1-16.3 (91bb7b1) |
+| 2026-09-08 | 07:19 | — | — | Documentation | Story 16.4 | feat(ops): platform ops quota burn-rate forecasting and guided connector remediation (Story 16.4, ADR-0128) (48d2f8f) |
+| 2026-09-08 | 05:50 | — | — | Documentation | Story 16.3 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.3 (6eb57b1) |
+| 2026-09-08 | 05:49 | — | — | Documentation | Story 16.3 | feat(epic-16): implement Story 16.3 — cryptographic audit log hash chaining and manifest export (ADR-0127) (492bbd1) |
+| 2026-09-08 | 04:23 | — | — | Documentation | Story 16.2 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.2 (aa24542) |
+| 2026-09-08 | 04:21 | — | — | Documentation | Story 16.2 | feat(epic-16): implement Story 16.2 — DSR Article 18 restriction quarantining and verified receipts (ADR-0126) (7336ec5) |
+| 2026-09-07 | 01:39 | — | — | Review | Story 16.1 | chore(tracking): record post-commit review entries and Epic 16 synthesis for Story 16.1 (03cf03f) |
+| 2026-09-07 | 01:39 | — | — | Documentation | Story 16.1 | chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.1 (613f28d) |
+| 2026-09-07 | 01:37 | — | — | Documentation | Story 16.1 | feat(epic-16): implement Story 16.1 — author-initiated takedown SLA tracking and enrichment cascade (ADR-0125) (689357c) |
+| 2026-09-07 | 23:44 | — | — | Documentation | Story 15.2 | docs: sync time-tracking table for Story 15.2 (0f1b97e) |
+| 2026-09-07 | 23:12 | — | — | Documentation | Story 15.2 | feat(epic-15): implement Story 15.2 data export lookback bounding and representative sampling (2f905ff) |
+| 2026-09-07 | 19:27 | — | — | Review | — | chore: record post-commit review queue for merge commit (6f15e86) |
+| 2026-09-07 | 19:27 | — | — | Review | Story 15.1 | feat(epic-15): implement Story 15.1 real-time alert rule exclusions, caps, and pre-save volume preview (2035448) |
+| 2026-09-07 | 13:36 | — | — | Review | — | chore: record review queue metadata for RFC commit (2d58960) |
+| 2026-09-07 | 13:35 | — | — | Documentation | — | docs(rfc): add RFC for Antigravity team proposing persistent artifact knowledge integration (f058536) |
+| 2026-09-07 | 13:10 | — | — | Documentation | Story 14.5 | docs(plan): archive Story 14.5 pre-execution implementation plan (9dd1747) |
+| 2026-09-07 | 13:08 | — | — | Documentation | Story 14.5 | docs(walkthrough): archive Story 14.5 empirical verification walkthrough (84a92eb) |
+| 2026-09-07 | 11:10 | — | — | Documentation | Story 14.5 | chore(synthesis): refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry (ca0383e) |
+| 2026-09-07 | 11:09 | — | — | Review | — | chore: record post-commit review queue for merge commit (e2df874) |
+| 2026-09-07 | 11:09 | — | — | Documentation | Story 14.5 | feat(epic-14): implement Story 14.5 Continuous Self-Learning Synthesis and Telemetry Feedback Architecture (02e27bb) |
+| 2026-09-07 | 09:20 | — | — | Documentation | — | chore: record post-commit metadata for 0f6e0ab (b44d46a) |
+| 2026-09-05 | 00:25 | — | — | Infrastructure | — | docs(tds): complete all 139 TDS documents, wire ontology compiler to post-commit hook (0f6e0ab) |
+| 2026-09-05 | 00:18 | — | — | Documentation | Story 14.4 | chore(telemetry): sync dashboard telemetry for Story 14.4 (4b8bea8) |
+| 2026-09-05 | 00:18 | — | — | Documentation | Story 14.4 | docs(epic-14): record Story 14.4 build in implementation log and user stories (82b276e) |
+| 2026-09-05 | 00:17 | — | — | Documentation | Story 14.4 | feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry (d2bd779) |
+| 2026-09-05 | 22:27 | — | — | Documentation | — | docs(tds): complete Batch 7 technical design specifications (17 TDS) (d9e5a6a) |
+| 2026-09-05 | 22:10 | — | — | Documentation | — | chore: sync dashboard on main for story 14.3 (2cfae17) |
+| 2026-09-05 | 22:04 | — | — | Documentation | Story 14.3 | feat(epic-14): implement Story 14.3 SearchProviderConnector abstraction (c903723) |
+| 2026-09-04 | 17:45 | — | — | Documentation | — | docs(tds): author Batch 1 and Batch 2 technical design specifications (37 TDS) (fdcf5d2) |
+| 2026-09-04 | 17:06 | — | — | Documentation | Story 14.2 | feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119) (c1ab9b2) |
 | 2026-09-04 | 16:33 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (124a1cf) |
 | 2026-09-04 | 16:31 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (f53a870) |
 | 2026-09-04 | 16:18 | — | — | Documentation | Story 14.1 | docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1) (c68c1a1) |

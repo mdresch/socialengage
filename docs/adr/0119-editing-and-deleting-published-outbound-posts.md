@@ -139,3 +139,12 @@ async delete?(
 - ADR-0048: No-Core-Pipeline-Change Verification for New Connector Registration
 - ADR-0028: Credential Creation Authority by Ownership Tier
 - ADR-0014: Credential Storage Envelope Encryption
+
+---
+
+## Implementation Learnings & Real-World Constraints (Amended 2026-09-07 per ADR-0122)
+
+- **Asymmetric Social Platform Edit/Delete Windows**: Third-party social networks enforce drastically differing post lifecycle rules. While deletion is universally supported, edit windows vary widely (e.g. LinkedIn limits edits to post text within specific windows, whereas X/Twitter edit APIs require paid enterprise tiers).
+- **Tombstone Audit Retention**: Soft deletion with `deleted_at` timestamps in `published_posts` is mandatory for enterprise compliance and audit logs, even when the remote outbound post is permanently erased from the social platform via REST API.
+- **Operational Trade-offs**: Retaining tombstone rows maintains data lineage and compliance audit trails without allowing stale outbound posts to appear in active tenant content streams.
+- **Reference Commits**: `c1ab9b2` (Story 14.2 implementation), `d2aeb80` (telemetry sync).

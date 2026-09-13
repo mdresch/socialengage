@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SocialEngage Dev Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFBFC;
+  --bg2: #F3F4F6;
+  --bg3: #FFFFFF;
+  --border: #D0D7DE;
+  --border2: #E1E4E8;
+  --text: #1F2328;
+  --text2: #57606A;
+  --text3: #8C959F;
+  --accent: #0969DA;
+  --accent-bg: #DDF4FF;
+  --green: #1A7F37;
+  --green-bg: #DAFBE1;
+  --amber: #9A6700;
+  --amber-bg: #FFF8C5;
+  --violet: #6E40C9;
+  --violet-bg: #FBEFFF;
+  --red: #CF222E;
+  --red-bg: #FFEBE9;
+  --sidebar-w: 220px;
+  --mono: 'JetBrains Mono', 'Consolas', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1117;
+    --bg2: #161B22;
+    --bg3: #1C2128;
+    --border: #30363D;
+    --border2: #21262D;
+    --text: #E6EDF3;
+    --text2: #8B949E;
+    --text3: #6E7681;
+    --accent: #4493F8;
+    --accent-bg: #0D2746;
+    --green: #3FB950;
+    --green-bg: #0D2A18;
+    --amber: #E3B341;
+    --amber-bg: #2D1F00;
+    --violet: #A371F7;
+    --violet-bg: #1E1040;
+    --red: #F85149;
+    --red-bg: #2D0C0C;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1117; --bg2: #161B22; --bg3: #1C2128;
+  --border: #30363D; --border2: #21262D;
+  --text: #E6EDF3; --text2: #8B949E; --text3: #6E7681;
+  --accent: #4493F8; --accent-bg: #0D2746;
+  --green: #3FB950; --green-bg: #0D2A18;
+  --amber: #E3B341; --amber-bg: #2D1F00;
+  --violet: #A371F7; --violet-bg: #1E1040;
+  --red: #F85149; --red-bg: #2D0C0C;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+body{display:flex;overflow:hidden}
+/* Sidebar */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.sidebar-logo{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:-.3px}
+.sidebar-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sidebar-nav{padding:8px 0;flex:1}
+.nav-section{padding:4px 12px 2px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;border-radius:6px;margin:1px 8px;font-size:13px;font-weight:500;color:var(--text2);transition:all .12s}
+.nav-item:hover{background:var(--border2);color:var(--text)}
+.nav-item.active{background:var(--accent-bg);color:var(--accent)}
+.nav-item .icon{width:16px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.sidebar-stat{display:flex;justify-content:space-between;margin-bottom:3px}
+.sidebar-stat span:last-child{font-family:var(--mono);font-weight:500;color:var(--text2)}
+/* Main */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg3);flex-shrink:0}
+.stat-cell{padding:10px 20px;border-right:1px solid var(--border);flex:1;min-width:0}
+.stat-cell:last-child{border-right:none}
+.stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);white-space:nowrap}
+.stat-value{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);margin-top:1px;white-space:nowrap}
+.stat-meta{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap}
+/* Views */
+#view-container{flex:1;overflow-y:auto;padding:20px 24px}
+.view{display:none}
+.view.active{display:block}
+/* Cards */
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+.card-body{padding:16px}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* KPI */
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+.kpi-value{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);line-height:1}
+.kpi-sub{font-size:12px;color:var(--text2)}
+.kpi.green .kpi-value{color:var(--green)}
+.kpi.amber .kpi-value{color:var(--amber)}
+.kpi.violet .kpi-value{color:var(--violet)}
+.kpi.blue .kpi-value{color:var(--accent)}
+/* Progress bar */
+.prog-row{margin-bottom:10px}
+.prog-label{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;color:var(--text2)}
+.prog-label span:last-child{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.prog-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s}
+.prog-fill.green{background:var(--green)}
+.prog-fill.amber{background:var(--amber)}
+.prog-fill.accent{background:var(--accent)}
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.badge.violet{background:var(--violet-bg);color:var(--violet)}
+.badge.blue{background:var(--accent-bg);color:var(--accent)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+/* ADR table */
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-row input{flex:1;min-width:200px;padding:7px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:13px;font-family:var(--sans);outline:none}
+.filter-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.filter-row select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px;font-family:var(--sans);outline:none;cursor:pointer}
+.adr-table{width:100%;border-collapse:collapse}
+.adr-table th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:2px solid var(--border);background:var(--bg2)}
+.adr-table td{padding:8px 12px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.adr-table tbody tr:hover{background:var(--bg2)}
+.adr-table .adr-id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.adr-table .adr-title{font-size:13px;color:var(--text);max-width:440px}
+.adr-table .adr-cat{font-size:11px;color:var(--text3);white-space:nowrap}
+.hidden{display:none!important}
+/* Stories */
+.epic-section{margin-bottom:20px}
+.epic-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px 6px 0 0;cursor:pointer;user-select:none}
+.epic-header:hover{background:var(--border2)}
+.epic-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.epic-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:12px}
+.epic-body{border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;overflow:hidden}
+.story-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border2)}
+.story-row:last-child{border-bottom:none}
+.story-row:hover{background:var(--bg2)}
+.story-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.story-dot.built{background:var(--green)}
+.story-dot.ready{background:var(--amber)}
+.story-dot.proposed{background:var(--violet)}
+.story-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text3);min-width:36px}
+.story-title{font-size:12px;color:var(--text);flex:1}
+.story-adr{font-family:var(--mono);font-size:10px;color:var(--text3)}
+/* BRD / FDD */
+.section-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.req-group{margin-bottom:20px}
+.req-group-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.req-item{padding:10px 14px;border:1px solid var(--border2);border-radius:6px;margin-bottom:6px;display:flex;gap:12px;align-items:flex-start}
+.req-item:hover{border-color:var(--border);background:var(--bg2)}
+.req-item .req-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);min-width:52px;padding-top:1px}
+.req-item .req-content{}
+.req-item .req-name{font-size:13px;font-weight:600;color:var(--text)}
+.req-item .req-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.req-item .req-adr{font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:3px}
+/* Module cards */
+.module-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.module-header{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.module-name{font-size:13px;font-weight:700;color:var(--text)}
+.module-path{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.module-features{padding:4px 0}
+.feature-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border2)}
+.feature-item:last-child{border-bottom:none}
+.feature-item:hover{background:var(--bg2)}
+.feature-status{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.feature-status.built{background:var(--green)}
+.feature-status.ready{background:var(--amber)}
+.feature-status.proposed{background:var(--violet)}
+.feature-text{font-size:12px;color:var(--text);flex:1}
+.feature-tag{font-size:10px;font-family:var(--mono);color:var(--text3);padding:1px 6px;background:var(--bg2);border-radius:3px;border:1px solid var(--border2)}
+/* Util */
+.mono{font-family:var(--mono)}
+.text-sm{font-size:12px}
+.text-xs{font-size:11px}
+.text-muted{color:var(--text2)}
+.text-xs.muted{color:var(--text3)}
+.flex{display:flex}
+.items-center{align-items:center}
+.gap-8{gap:8px}
+.section-header{margin-bottom:20px}
+.view-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.view-desc{font-size:13px;color:var(--text2)}
+.toggle-theme{position:fixed;bottom:16px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2);z-index:100;transition:all .15s}
+.toggle-theme:hover{border-color:var(--accent);color:var(--accent)}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .12s}
+.pill:hover,.pill.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.count-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--bg2);font-size:10px;font-family:var(--mono);font-weight:600;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">SocialEngage</div>
+    <div class="sidebar-sub">Dev Dashboard · 2026-08-24</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Project</div>
+    <div class="nav-item active" onclick="showView('overview')">
+      <span class="icon">◎</span> Overview
+    </div>
+    <div class="nav-section">Architecture</div>
+    <div class="nav-item" onclick="showView('adrs')">
+      <span class="icon">▤</span> ADRs
+    </div>
+    <div class="nav-item" onclick="showView('brd')">
+      <span class="icon">◈</span> Business Requirements
+    </div>
+    <div class="nav-item" onclick="showView('fdd')">
+      <span class="icon">⊞</span> Functional Design
+    </div>
+    <div class="nav-section">Delivery</div>
+    <div class="nav-item" onclick="showView('stories')">
+      <span class="icon">◱</span> User Stories
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-stat"><span>Core tests</span><span>537/537</span></div>
+    <div class="sidebar-stat"><span>Admin tests</span><span>519/519</span></div>
+    <div class="sidebar-stat"><span>Total suites</span><span>103</span></div>
+    <div class="sidebar-stat" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border2)"><span>Connectors live</span><span>5</span></div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <div class="stat-label">ADRs</div>
+      <div class="stat-value">111</div>
+      <div class="stat-meta">77 accepted · 34 proposed</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Stories Built</div>
+      <div class="stat-value" style="color:var(--green)">116</div>
+      <div class="stat-meta">of ~200 total</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" style="color:var(--amber)">~84</div>
+      <div class="stat-meta">across 13 epics</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Tests Passing</div>
+      <div class="stat-value">1,056</div>
+      <div class="stat-meta">103 suites · 100%</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Completion</div>
+      <div class="stat-value" style="color:var(--accent)">58%</div>
+      <div class="stat-meta">Phases 0–4.5 + Epic 8</div>
+    </div>
+  </div>
+
+  <div id="view-container">
+
+    <!-- OVERVIEW -->
+    <div id="view-overview" class="view active">
+      <div class="section-header">
+        <div class="view-title">Project Overview</div>
+        <div class="view-desc">SocialEngage · Social Listening &amp; Insights · Solo-developer rebuild of Microsoft Social Engagement</div>
+      </div>
+      <div class="grid-4" style="margin-bottom:20px">
+        <div class="kpi green"><div class="kpi-label">ADRs Accepted</div><div class="kpi-value">77</div><div class="kpi-sub">0001 – 0079</div></div>
+        <div class="kpi violet"><div class="kpi-label">ADRs Proposed</div><div class="kpi-value">34</div><div class="kpi-sub">0080 – 0113</div></div>
+        <div class="kpi blue"><div class="kpi-label">Total Epics</div><div class="kpi-value">13</div><div class="kpi-sub">Epic 1–13</div></div>
+        <div class="kpi amber"><div class="kpi-label">Connectors Live</div><div class="kpi-value">5</div><div class="kpi-sub">+6 Ready/Proposed</div></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Epic Progress</div><span class="badge green">Phases 0–4.5 complete</span></div>
+          <div class="card-body">
+            <div id="epic-progress"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Connector Status</div></div>
+          <div class="card-body">
+            <div id="connector-status"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Architecture Categories</div></div>
+          <div class="card-body">
+            <div id="adr-cats"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Technology Stack</div></div>
+          <div class="card-body">
+            <div id="tech-stack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADRs -->
+    <div id="view-adrs" class="view">
+      <div class="section-header">
+        <div class="view-title">Architecture Decision Records</div>
+        <div class="view-desc">111 real ADRs (0001–0113, excl. 0045/0046) · 77 Accepted · 34 Proposed</div>
+      </div>
+      <div class="filter-row">
+        <input type="text" id="adr-search" placeholder="Search ADRs by ID or title…" oninput="filterADRs()">
+        <select id="adr-status" onchange="filterADRs()">
+          <option value="">All status</option>
+          <option value="accepted">Accepted</option>
+          <option value="proposed">Proposed</option>
+        </select>
+        <select id="adr-cat" onchange="filterADRs()">
+          <option value="">All categories</option>
+          <option value="infra">Infrastructure</option>
+          <option value="connector">Connectors</option>
+          <option value="data">Data Model</option>
+          <option value="security">Security &amp; Auth</option>
+          <option value="events">Events &amp; Messaging</option>
+          <option value="analytics">Analytics</option>
+          <option value="ai">AI &amp; Enrichment</option>
+          <option value="ui">Admin UI</option>
+          <option value="compliance">Compliance &amp; Export</option>
+          <option value="engage">Engagement</option>
+          <option value="rag">RAG &amp; Search</option>
+          <option value="governance">Governance</option>
+        </select>
+      </div>
+      <div class="pill-row" id="adr-pills"></div>
+      <div class="card" style="overflow-x:auto">
+        <table class="adr-table">
+          <thead>
+            <tr>
+              <th style="width:70px">ADR</th>
+              <th>Title</th>
+              <th style="width:120px">Category</th>
+              <th style="width:90px">Status</th>
+            </tr>
+          </thead>
+          <tbody id="adr-tbody"></tbody>
+        </table>
+      </div>
+      <div id="adr-count" style="font-size:12px;color:var(--text3);margin-top:8px;text-align:right"></div>
+    </div>
+
+    <!-- STORIES -->
+    <div id="view-stories" class="view">
+      <div class="section-header">
+        <div class="view-title">User Stories</div>
+        <div class="view-desc">13 Epics · ~200 total stories · ~116 built · ~84 pending</div>
+      </div>
+      <div class="filter-row" style="margin-bottom:12px">
+        <input type="text" id="story-search" placeholder="Search stories…" oninput="filterStories()">
+        <select id="story-filter" onchange="filterStories()">
+          <option value="">All</option>
+          <option value="built">Built only</option>
+          <option value="pending">Pending only</option>
+        </select>
+      </div>
+      <div id="stories-container"></div>
+    </div>
+
+    <!-- BRD -->
+    <div id="view-brd" class="view">
+      <div class="section-header">
+        <div class="view-title">Business Requirements</div>
+        <div class="view-desc">Functional and non-functional requirements derived from the Social Listening / Insights specification</div>
+      </div>
+      <div id="brd-content"></div>
+    </div>
+
+    <!-- FDD -->
+    <div id="view-fdd" class="view">
+      <div class="section-header">
+        <div class="view-title">Functional Design</div>
+        <div class="view-desc">Component-level functional specifications organized by module</div>
+      </div>
+      <div id="fdd-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<button class="toggle-theme" onclick="toggleTheme()" title="Toggle theme">◑</button>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────
+const CAT_LABELS = {
+  infra:'Infrastructure', connector:'Connectors & Ingestion',
+  data:'Data Model & Storage', security:'Security & Auth',
+  events:'Events & Messaging', analytics:'Analytics & Insights',
+  ai:'AI & Enrichment', ui:'Admin UI', compliance:'Compliance & Export',
+  engage:'Engagement & Publishing', rag:'RAG & Search', governance:'Governance & Policy'
+};
+
+const ADRS = [
+  ['0001','Split into social-listening-core and social-listening-admin repositories','accepted','infra'],
+  ['0002','Unified ProviderConnector contract for social platforms and AI providers','accepted','connector'],
+  ['0003','Rate limiting enforced per (tenantId, providerId) via a shared RequestGate','accepted','connector'],
+  ['0004','Normalize Author once per platform account, not embedded per post','accepted','data'],
+  ['0005','IngestionRun as the immutable acquisition/audit anchor for every post','accepted','data'],
+  ['0006','Prefer connector-side native filtering for watchlist matching, with post-fetch fallback','accepted','connector'],
+  ['0007','AuthorTopicSignal ships with raw signals only, no computed expertise score','accepted','data'],
+  ['0008','Defer TopicDailyCount aggregation and all charting to a future subsystem','accepted','analytics'],
+  ['0009','ConnectorHealth is fully derived from IngestionRun history, not stored mutable state','accepted','analytics'],
+  ['0010','Retryable-vs-non-retryable error policy with per-tenant auto-disable','accepted','connector'],
+  ['0011','Cursor-based pagination for GET /posts','accepted','data'],
+  ['0012','Service Bus events carry IDs and minimal fields only; full data fetched via REST on demand','accepted','events'],
+  ['0013','Per-tenant event filtering via Service Bus subscription SQL filters','accepted','events'],
+  ['0014','Envelope-encrypted credential storage via Azure Key Vault, OAuth preferred with API-key fallback','accepted','security'],
+  ['0015','Enforce tenant isolation at the database layer with Postgres Row-Level Security','accepted','security'],
+  ['0016','Postgres as the database engine','accepted','infra'],
+  ['0017','API versioning and compatibility policy','accepted','governance'],
+  ['0018','Data retention and archival policy','accepted','data'],
+  ['0019','Event schema versioning policy','accepted','governance'],
+  ['0020','Rate-limit queue bounds, dead-letter handling, and distributed gate state','accepted','connector'],
+  ['0021','Unified boolean-query AST for watchlist matching, with per-connector capability matrix','accepted','connector'],
+  ['0022','Derived-data caching and refresh strategy','accepted','analytics'],
+  ['0023','Proportional (rate-relative) connector failure threshold for auto-disable','accepted','connector'],
+  ['0024','Newswire connector — direct wire-service RSS feeds, issuer-as-Author modeling','accepted','connector'],
+  ['0025','Persistent local dev Postgres database, separate from Jest ephemeral test database','accepted','infra'],
+  ['0026','RSS/News connector — GNews API, publication-as-Author modeling','accepted','connector'],
+  ['0027','Connector architecture is a technical intermediary only','accepted','governance'],
+  ['0028','Credential creation authority scoped by ownership tier','accepted','security'],
+  ['0029','Authentication mechanism — Microsoft Entra External ID OIDC token issuer','accepted','security'],
+  ['0030','Admin-tier design — Platform Admin via BYPASSRLS; Tenant-Admin via ordinary RLS','accepted','security'],
+  ['0031','tenants table shape — RLS scoped by id; app-layer seat/license enforcement','accepted','security'],
+  ['0032','users table shape and RLS — tenant-scoped; Platform Admin as separate table','accepted','security'],
+  ['0033','Retire X-Tenant-Id header, replaced by Authorization: Bearer + server-side resolution','accepted','security'],
+  ['0034','Connector connect/disconnect CRUD reworked to be ownership-tier-aware','accepted','security'],
+  ['0035','Admin UI shape — one role-gated Next.js app, not two separate deployables','accepted','ui'],
+  ['0036','Admin UI authentication/session — server-side BFF session, no bearer token in browser JS','accepted','ui'],
+  ['0037','Self-service tenant sign-up — new tenant_signup_role, domain-match rejection, denylist','accepted','ui'],
+  ['0038','AI enrichment provider selection — Azure AI Language first, LLM second-candidate','accepted','ai'],
+  ['0039','Tenant offboarding data lifecycle — export before deletion, async bounded deletion','accepted','data'],
+  ['0040','Self-service sign-up rate limiting — per-IP and per-email-domain counter','accepted','security'],
+  ['0041','Platform Admin formalized as a distinct identity kind, never a role enum value','accepted','security'],
+  ['0042','Wikipedia connector — MediaWiki Action API, authMode: none, article-as-Author','accepted','connector'],
+  ['0043','Self-service Tenant-Admin-initiated tenant deletion with grace period','accepted','data'],
+  ['0044','Watchlist CRUD contract — JSON Merge Patch, 404/403 split, optimistic locking','accepted','data'],
+  ['0047','Standard pattern for cross-story references and supersession language','accepted','governance'],
+  ['0048','No-core-pipeline-change verification policy for new connector registration','accepted','governance'],
+  ['0049','Retain point-in-time author follower count on SocialPost','accepted','data'],
+  ['0050','Tenant-owned-domain RSS/content-feed connector with DNS TXT ownership verification','accepted','connector'],
+  ['0051','Connector activation decoupled from credential storage — two new ownership-scoped tables','accepted','connector'],
+  ['0052','Live ingestion-polling scheduler — in-process interval loop in social-listening-core','accepted','connector'],
+  ['0053','Canonical Markdown post-body normalization at ingestion','accepted','ai'],
+  ['0054','Tenant-facing Analytics Dashboard — v1 scope, 100% client-side aggregation','accepted','analytics'],
+  ['0055','Language and location enrichment feasibility for Analytics Dashboard','accepted','analytics'],
+  ['0056','AI-provider-inferred origin location from Newswire post dateline text','accepted','ai'],
+  ['0057','Multi-feed administration for tenant-owned-feed connector','accepted','connector'],
+  ['0058','Wire SocialPostIngestedEvent/ConnectorHealthChangedEvent into real ingestion pipeline','accepted','events'],
+  ['0059','Facebook connector — tenant owned Page, authMode: oauth, Tier 3 credential','accepted','connector'],
+  ['0060','Facebook connector — one user may connect more than one Page','accepted','connector'],
+  ['0061','Tier-3 (user-bound) poll scheduling — nullable user_id on ingestion_runs','accepted','connector'],
+  ['0062','Analytics Dashboard Overview Tab Enhancement — 3-column grid, 7-dimension filter model','accepted','analytics'],
+  ['0063','Post-watchlist match persistence — post_watchlist_matches junction table','accepted','data'],
+  ['0064','Location and geospatial insights — country-level ISO 3166-1 alpha-2, SVG Choropleth','accepted','analytics'],
+  ['0065','Active watchlist sourcing via Brave Search API','accepted','connector'],
+  ['0066','Active watchlist sourcing via Bing Search API (Azure)','accepted','connector'],
+  ['0067','Facebook connector reconfirmation — Managed Pages, two-tier author resolution','accepted','connector'],
+  ['0068','Instagram connector — Business/Creator accounts, Graph API, carousel model','accepted','connector'],
+  ['0069','LinkedIn connector — OAuth 2.0, 60-day token refresh, Rest.li rate limiting','accepted','connector'],
+  ['0070','Connector ingestion health — hanging run watchdog, stalled state, alert events','accepted','connector'],
+  ['0071','Human-in-the-Loop Post Enrichment Overrides — PATCH /v1/posts/:id/enrichment','accepted','engage'],
+  ['0072','Cross-Platform Polypost Composer and Multi-Network Preview Engine','accepted','engage'],
+  ['0073','Outbound Reply to Ingested Posts via Platform APIs','accepted','engage'],
+  ['0074','Tenant-facing workspace and matched-posts export — workspace JSON and posts CSV','accepted','compliance'],
+  ['0075','Outbound Social Post Publishing via Platform APIs — SocialConnector.publish()','accepted','engage'],
+  ['0076','Composer Deep Research Agent — context from post text, key phrases, Brave/Bing search','accepted','ai'],
+  ['0077','Watchlist connector count and preview endpoint — POST /v1/watchlists/preview-volume','accepted','analytics'],
+  ['0078','Metric explainability endpoint — POST /v1/explain plain-language metric explanations','accepted','analytics'],
+  ['0079','Crisis template bundle and activation — one-click reputation-crisis monitoring','accepted','engage'],
+  ['0080','Onboarding checklist state — onboarding_checklist JSONB on tenants','proposed','ui'],
+  ['0081','RAGConnector provider abstraction — vector-store interface for Pinecone/Azure AI Search/pgvector','proposed','rag'],
+  ['0082','RAG post chunking and embedding pipeline — RAGChunkingService, embed(), async events','proposed','rag'],
+  ['0083','RAG vector-store RLS and metadata — mandatory tenant_id metadata filter','proposed','rag'],
+  ['0084','RAG search and ask endpoint — POST /v1/rag/search, POST /v1/rag/ask with citations','proposed','rag'],
+  ['0085','RAG UI/UX — RAGSearchBox, RAGResultCard, RAGAsk answer/citation components','proposed','rag'],
+  ['0086','Prospecting list model and sharing — prospecting_lists/entries schema, export, CRM stage','proposed','data'],
+  ['0087','Preconfigured analytics views — TopicDailyCount, SourceDailyCount, SentimentDailyCount tables','proposed','analytics'],
+  ['0088','Ad-hoc query allowlist — POST /v1/analytics/query with allowlisted dimensions and metrics','proposed','analytics'],
+  ['0089','Platform operations dashboard — cross-tenant health, cost, queue metrics for Platform Admin','proposed','ui'],
+  ['0090','Data export posts CSV — GET /v1/posts/export.csv with streaming and async large-export','proposed','compliance'],
+  ['0091','Real-time alert rules and delivery — alert_rules, threshold worker, in-app/email/webhook','proposed','events'],
+  ['0092','Author-initiated takedown — public form, data_subject_requests, soft-redaction flow','proposed','compliance'],
+  ['0093','DSR self-service portal — access/correction/erasure request portal and fulfillment worker','proposed','compliance'],
+  ['0094','Compliance audit pack — tamper-evident signed export for audit/defensibility','proposed','compliance'],
+  ['0095','Case handoff to CRM — CRMConnector abstraction, POST /v1/inbox/items/:id/case','proposed','engage'],
+  ['0096','Daily digest email — timezone-aware preferences, hourly scheduler, AI-summarized digest','proposed','engage'],
+  ['0097','Topic evolution timeline — GET /v1/topics/evolution for longitudinal topic/sentiment trends','proposed','analytics'],
+  ['0098','Publishing and scheduling — SocialConnector.publish(), outbound_activities, scheduled_for','proposed','engage'],
+  ['0099','Unified social inbox and reply — inbox_items workflow model, triage/assignment','proposed','engage'],
+  ['0100','Composed post author mention suggestions — POST /v1/composer/mention-suggestions','proposed','engage'],
+  ['0101','Multi-source connector capability matrix — SocialConnector.getCapabilities()','proposed','connector'],
+  ['0102','Boolean query AST and visual builder — WatchlistAST, BooleanQueryBuilder','proposed','connector'],
+  ['0103','AI sentiment analysis aspect schema — enrichment.sentiment with aspect-based analysis','proposed','ai'],
+  ['0104','AI topic clustering post-topics schema — topics, post_topics, TopicClusteringService','proposed','ai'],
+  ['0105','Dashboards and analytics widget contracts — GET /v1/analytics/dashboard, widget shapes','proposed','analytics'],
+  ['0106','API and integrations versioning and webhooks — public API rate limits, HMAC-signed events','proposed','governance'],
+  ['0107','Multi-user workspaces and RBAC permissions — per-connector and per-watchlist permissions','proposed','security'],
+  ['0108','Influencer discovery and scoring — Author scoring columns, GET /v1/influencers','proposed','analytics'],
+  ['0109','Connector health auto-disable and recovery — failing/disabled transitions, retryable flag','proposed','connector'],
+  ['0110','Per-connector query translation and validation — ConnectorQueryTranslator','proposed','connector'],
+  ['0111','Export bounding, streaming, and size caps — sync/async thresholds, export_jobs, Blob lifecycle','proposed','compliance'],
+  ['0112','Feature gating and seat-limit enforcement — tenant_settings.feature_gates, per-plan allowlist','proposed','security'],
+  ['0113','Metric explainability prompt and caching — prompt template, JSON output, cache key','proposed','ai'],
+];
+
+const EPICS = [
+  { id:1, title:'Repository & API Foundation', built:14, total:16, adrs:'0001,0016,0017,0025,0031,0032,0034,0044,0051,0052,0061,0070',
+    stories:[
+      {id:'1.1',title:'Project scaffold, repo structure, and core API skeleton',built:true,adr:'0001'},
+      {id:'1.2',title:'Postgres schema initialization and migration framework',built:true,adr:'0016'},
+      {id:'1.3',title:'API versioning and compatibility enforcement',built:true,adr:'0017'},
+      {id:'1.4',title:'Persistent local dev database, separate from test database',built:true,adr:'0025'},
+      {id:'1.5',title:'Watchlist CRUD surface — personal ownership, RFC 7396 Merge Patch',built:true,adr:'0044'},
+      {id:'1.6',title:'Connector connect/disconnect endpoints (POST/DELETE /v1/connectors)',built:true,adr:'-'},
+      {id:'1.7',title:'Connector connect/disconnect rework to be ownership-tier-aware',built:true,adr:'0034'},
+      {id:'1.8',title:'Tenants list/create/update REST endpoints for Platform Admin',built:true,adr:'-'},
+      {id:'1.9',title:'Break-glass access reset endpoint for Platform Admin',built:true,adr:'-'},
+      {id:'1.10',title:'users table shape, RLS, and identity resolution middleware',built:true,adr:'0032'},
+      {id:'1.11',title:'Connector activation tables — decoupled from credential storage',built:true,adr:'0051'},
+      {id:'1.12',title:'Connector activation: Open Question 5 clarification (activation-only queries)',built:true,adr:'0051'},
+      {id:'1.13',title:'Live ingestion-polling scheduler — in-process interval loop',built:true,adr:'0052'},
+      {id:'1.14',title:'Scheduler per-connector poll() dispatch and cadence derivation',built:true,adr:'0052'},
+      {id:'1.15',title:'Tier-3 per-user poll scheduling — pollUser?() method, user_id on ingestion_runs',built:false,adr:'0061'},
+      {id:'1.16',title:'Connector ingestion health watchdog — hanging run reconciliation, stalled state',built:false,adr:'0070'},
+    ]
+  },
+  { id:2, title:'Ingestion, Connectors & Rate Limits', built:18, total:30, adrs:'0002,0003,0010,0020,0021,0023,0024,0026,0038,0042,0048,0050,0059,0060,0065–0070',
+    stories:[
+      {id:'2.1',title:'ProviderConnector contract and connector registry bootstrap',built:true,adr:'0002'},
+      {id:'2.2',title:'RequestGate — per-tenant per-provider rate limiting',built:true,adr:'0003'},
+      {id:'2.3',title:'Error/auto-disable policy — retryable vs. non-retryable classification',built:true,adr:'0010'},
+      {id:'2.4',title:'Rate-limit queue bounds and dead-letter handling',built:true,adr:'0020'},
+      {id:'2.5',title:'Proportional (rate-relative) connector failure threshold',built:true,adr:'0023'},
+      {id:'2.6',title:'Newswire connector — wire-service RSS (GlobeNewswire, PR Newswire)',built:true,adr:'0024'},
+      {id:'2.7',title:'GNews connector — news API with publication-as-Author',built:true,adr:'0026'},
+      {id:'2.8',title:'Azure AI Language enrichment connector — first AIProviderConnector',built:true,adr:'0038'},
+      {id:'2.9',title:'Azure OpenAI enrichment connector — second AIProviderConnector',built:true,adr:'0038'},
+      {id:'2.10',title:'No-core-pipeline-change verification guardrail for connector registration',built:true,adr:'0048'},
+      {id:'2.11',title:'Tenant-owned-domain RSS/content-feed connector with DNS TXT verification',built:true,adr:'0050'},
+      {id:'2.12',title:'Retryable flag clarification — error policy edge cases',built:true,adr:'0010'},
+      {id:'2.13',title:'Wikipedia connector — MediaWiki Action API, article-as-Author',built:true,adr:'0042'},
+      {id:'2.14',title:'Wikipedia connector: watchlist matching extension (ADR-0042 §5)',built:true,adr:'0042'},
+      {id:'2.15',title:'Facebook connector — tenant Page posts, authMode: oauth, Tier 3',built:true,adr:'0059'},
+      {id:'2.16',title:'AI enrichment: Azure AI Language interface corrections',built:true,adr:'0038'},
+      {id:'2.17',title:'AI enrichment: Azure OpenAI interface corrections',built:true,adr:'0038'},
+      {id:'2.18',title:'Facebook engagement counts on ingested posts',built:true,adr:'0059'},
+      {id:'2.19',title:'Tenant-owned-feed multi-feed naming and per-item byline extraction',built:false,adr:'0050'},
+      {id:'2.20',title:'Country-level geospatial extraction and normalization on post enrichment',built:false,adr:'0064'},
+      {id:'2.21',title:'Active watchlist sourcing via Brave Search API',built:false,adr:'0065'},
+      {id:'2.22',title:'Active watchlist sourcing via Bing Search API (Azure)',built:false,adr:'0066'},
+      {id:'2.23',title:'Facebook connector hosting Page dependency and two-tier author resolution',built:false,adr:'0067'},
+      {id:'2.24',title:'Instagram Business Connector — Graph API, carousel model',built:false,adr:'0068'},
+      {id:'2.25',title:'LinkedIn Connector — Confidential Client OAuth, Rest.li rate limiting',built:false,adr:'0069'},
+      {id:'2.28',title:'Connector publish framework — SocialConnector.publish?() method',built:false,adr:'0075'},
+      {id:'2.29',title:'Facebook Page publish via Graph API',built:false,adr:'0075'},
+      {id:'2.30',title:'LinkedIn publish via UGC Posts API',built:false,adr:'0075'},
+      {id:'2.31',title:'Deep research Brave/Bing search helpers',built:false,adr:'0076'},
+      {id:'2.32',title:'Azure OpenAI research capability for composer',built:false,adr:'0076'},
+    ]
+  },
+  { id:3, title:'Data Model, Storage & Archival', built:12, total:15, adrs:'0004,0005,0006,0011,0018,0021,0039,0043,0049,0053,0063,0074,0075',
+    stories:[
+      {id:'3.1',title:'Author normalization — single Author per platform account, not per post',built:true,adr:'0004'},
+      {id:'3.2',title:'IngestionRun as immutable audit anchor for every post',built:true,adr:'0005'},
+      {id:'3.3',title:'Watchlist matching — connector-side native filtering with fallback',built:true,adr:'0006'},
+      {id:'3.4',title:'Cursor-based pagination for GET /posts',built:true,adr:'0011'},
+      {id:'3.5',title:'Data retention and archival policy — IngestionRun archival',built:true,adr:'0018'},
+      {id:'3.6',title:'Boolean-query AST for watchlist matching with capability matrix',built:true,adr:'0021'},
+      {id:'3.7',title:'[Retired] Platform-Admin-initiated tenant deletion',built:true,adr:'0039'},
+      {id:'3.8',title:'Self-service Tenant-Admin-initiated deletion with export + grace period',built:true,adr:'0043'},
+      {id:'3.9',title:'Point-in-time author follower count on SocialPost',built:true,adr:'0049'},
+      {id:'3.10',title:'Canonical Markdown post-body normalization at ingestion',built:true,adr:'0053'},
+      {id:'3.11',title:'post_watchlist_matches junction table and GET /v1/posts?watchlistId filter',built:true,adr:'0063'},
+      {id:'3.12',title:'Historical backfill and discovery-driven watchlist attribution',built:true,adr:'0063'},
+      {id:'3.15',title:'Outbound Post Publishing — outbound_activities table, activity_type=post',built:false,adr:'0075'},
+      {id:'3.16',title:'Tenant-facing workspace and matched-posts export — JSON and CSV',built:false,adr:'0074'},
+      {id:'3.17',title:'Composer deep research endpoint — POST /v1/composer/research',built:false,adr:'0076'},
+    ]
+  },
+  { id:4, title:'Derived Data, Analytics & Health', built:4, total:4, adrs:'0007,0008,0009,0022',
+    stories:[
+      {id:'4.1',title:'AuthorTopicSignal — raw signals only, no computed expertise score',built:true,adr:'0007'},
+      {id:'4.2',title:'Defer TopicDailyCount aggregation — no charting in v1',built:true,adr:'0008'},
+      {id:'4.3',title:'ConnectorHealth derived from IngestionRun history, not stored mutable state',built:true,adr:'0009'},
+      {id:'4.4',title:'Derived-data caching and refresh strategy for ConnectorHealth',built:true,adr:'0022'},
+    ]
+  },
+  { id:5, title:'Security, Isolation & Messaging', built:19, total:19, adrs:'0012,0013,0014,0015,0019,0029,0030,0031,0032,0033,0036,0037,0040,0058',
+    stories:[
+      {id:'5.1',title:'Service Bus thin events — IDs only, REST fetch on demand',built:true,adr:'0012'},
+      {id:'5.2',title:'Per-tenant event filtering via Service Bus subscription SQL filters',built:true,adr:'0013'},
+      {id:'5.3',title:'Envelope-encrypted credential storage via Azure Key Vault',built:true,adr:'0014'},
+      {id:'5.4',title:'Postgres Row-Level Security for tenant isolation',built:true,adr:'0015'},
+      {id:'5.5',title:'Event schema versioning policy',built:true,adr:'0019'},
+      {id:'5.6',title:'Entra External ID OIDC integration — thin pluggable token issuer',built:true,adr:'0029'},
+      {id:'5.7',title:'Platform Admin BYPASSRLS role — narrowly scoped, audited',built:true,adr:'0030'},
+      {id:'5.8',title:'tenants table shape — RLS, seat enforcement, domain capture',built:true,adr:'0031'},
+      {id:'5.9',title:'users table shape and RLS — tenant-scoped, Platform Admin separate',built:true,adr:'0032'},
+      {id:'5.10',title:'Retire X-Tenant-Id header — replace with Bearer + server-side resolution',built:true,adr:'0033'},
+      {id:'5.11',title:'GET /v1/me — identity exposure endpoint',built:true,adr:'0036'},
+      {id:'5.12',title:'Platform Admin tenant management endpoints',built:true,adr:'-'},
+      {id:'5.13',title:'Break-glass access request and execution endpoints',built:true,adr:'-'},
+      {id:'5.14',title:'Platform Admin audit log query endpoint',built:true,adr:'-'},
+      {id:'5.15',title:'POST /v1/tenants/self-service-signup — tenant_signup_role',built:true,adr:'0037'},
+      {id:'5.16',title:'GET /v1/tenants/domain-signup-attempts — Same-Domain Invite Assist backend',built:true,adr:'0037'},
+      {id:'5.17',title:'User invitation management endpoints',built:true,adr:'-'},
+      {id:'5.18',title:'Self-service sign-up rate limiting — per-IP and per-email-domain',built:true,adr:'0040'},
+      {id:'5.19',title:'Wire SocialPostIngestedEvent and ConnectorHealthChangedEvent into real ingestion',built:true,adr:'0058'},
+    ]
+  },
+  { id:6, title:'Tenant Admin UI', built:25, total:39, adrs:'0036,0037,0050,0043,0051,0011,0053,0057,0042,0059,0060,0070,0065,0071,0066,0067,0068,0069,0074,0075,0076',
+    stories:[
+      {id:'6.1',title:'Next.js scaffold + Entra External ID sign-in + BFF session',built:true,adr:'0036'},
+      {id:'6.2',title:'Role-gated routing shell (tenant_admin / tenant_user / platform_admin)',built:true,adr:'-'},
+      {id:'6.3',title:'Connector connect/disconnect UI',built:true,adr:'-'},
+      {id:'6.4',title:'Watchlist management UI',built:true,adr:'-'},
+      {id:'6.5',title:'Connector status view',built:true,adr:'-'},
+      {id:'6.7',title:'Self-service tenant sign-up screen',built:true,adr:'0037'},
+      {id:'6.8',title:'User invitation and management screen',built:true,adr:'-'},
+      {id:'6.9',title:'Tenant settings screen',built:true,adr:'-'},
+      {id:'6.10',title:'Same-Domain Invite Assist UI',built:true,adr:'0037'},
+      {id:'6.11',title:'Post feed screen',built:true,adr:'-'},
+      {id:'6.12',title:'Tenant-owned-feed connector setup UI',built:true,adr:'0050'},
+      {id:'6.13',title:'Tenant deletion / offboarding UI',built:true,adr:'0043'},
+      {id:'6.14',title:'Access history view',built:true,adr:'-'},
+      {id:'6.15',title:'Connector activate/deactivate control',built:true,adr:'0051'},
+      {id:'6.16',title:'Manual enrichment button',built:true,adr:'-'},
+      {id:'6.17',title:'Tenant-owned-feed activate/deactivate control',built:true,adr:'0051'},
+      {id:'6.18',title:'Post feed search/filter over all matched posts',built:true,adr:'0011'},
+      {id:'6.19',title:'Post body rendered as real Markdown',built:true,adr:'0053'},
+      {id:'6.20',title:'Tenant-owned-feed multi-feed administration',built:true,adr:'0057'},
+      {id:'6.21',title:'Wikipedia connector exposed in connector UI',built:true,adr:'0042'},
+      {id:'6.22',title:'Wikipedia in watchlist screen platform list',built:true,adr:'0042'},
+      {id:'6.23',title:'Facebook OAuth connect flow with Page selection',built:true,adr:'0059'},
+      {id:'6.25',title:'Post feed ordering fix',built:true,adr:'-'},
+      {id:'6.26',title:'Post feed provider-filter fix',built:true,adr:'-'},
+      {id:'6.24',title:'Connector status screen AI-provider grouping',built:false,adr:'-'},
+      {id:'6.27',title:'Facebook multiple Pages per user UI',built:false,adr:'0060'},
+      {id:'6.28',title:'Extended connector setup UI improvements',built:false,adr:'-'},
+      {id:'6.29',title:'Connector ingestion status badges and stalled alerts banner',built:false,adr:'0070'},
+      {id:'6.30',title:'Brave Search API connector setup',built:false,adr:'0065'},
+      {id:'6.31',title:'Post Enrichment Cascading Edit Drawer',built:false,adr:'0071'},
+      {id:'6.32',title:'Bing Search API connector setup',built:false,adr:'0066'},
+      {id:'6.33',title:'Facebook connector hosting Page attribution display',built:false,adr:'0067'},
+      {id:'6.34',title:'Instagram Business connector setup and post presentation',built:false,adr:'0068'},
+      {id:'6.35',title:'LinkedIn connector setup and token/scope status display',built:false,adr:'0069'},
+      {id:'6.37',title:'Facebook post-feed Page and matched watchlist attribution UI',built:false,adr:'0067'},
+      {id:'6.39',title:'Polypost Composer real publish flow',built:false,adr:'0075'},
+      {id:'6.40',title:'Tenant settings export UI — workspace JSON and posts CSV',built:false,adr:'0074'},
+      {id:'6.41',title:'Composer Deep Research panel',built:false,adr:'0076'},
+    ]
+  },
+  { id:7, title:'Platform Admin UI', built:1, total:1, adrs:'0030,0031,0035',
+    stories:[
+      {id:'6.6',title:'Platform Admin console — tenant CRUD, break-glass, audit log UI',built:true,adr:'-'},
+    ]
+  },
+  { id:8, title:'Analytics Dashboard', built:8, total:10, adrs:'0054,0055,0056,0062,0063,0064',
+    stories:[
+      {id:'8.1',title:'Analytics Dashboard scaffold — Overview/Sentiment/Conversations/Sources tabs',built:true,adr:'0054'},
+      {id:'8.2',title:'Language detection surfaced on Overview tab',built:true,adr:'0055'},
+      {id:'8.3',title:'Sentiment tab — AI sentiment chart and breakdown',built:true,adr:'0054'},
+      {id:'8.4',title:'Conversations tab — post volume, engagement trends',built:true,adr:'0054'},
+      {id:'8.5',title:'Sources tab — by-connector and by-provider breakdown',built:true,adr:'0054'},
+      {id:'8.6',title:'AI Newswire dateline inferred location — named buildable, exposed in Overview',built:true,adr:'0056'},
+      {id:'8.7',title:'Overview Tab Enhancement — 3-column grid, 7-dimension filter model, deep-link',built:false,adr:'0062'},
+      {id:'8.8',title:'AI Spike Storyteller and statistical volume forecast widget',built:false,adr:'0062'},
+      {id:'8.9',title:'Watchlist Coverage widget — post_watchlist_matches filter and attribution',built:true,adr:'0063'},
+      {id:'8.10',title:'Location Insights — SVG Choropleth Map, country-level geospatial',built:true,adr:'0064'},
+    ]
+  },
+  { id:9, title:'v1.5 Features (ADRs 0077–0085)', built:0, total:11, adrs:'0077,0078,0079,0080,0081,0082,0083,0084,0085',
+    stories:[
+      {id:'9.1',title:'Watchlist connector count — SocialConnector.count?(), preview-volume endpoint',built:false,adr:'0077'},
+      {id:'9.2',title:'Metric explainability endpoint — POST /v1/explain',built:false,adr:'0078'},
+      {id:'9.3',title:'Crisis template bundle — crisis_templates, tenant_crisis_templates, activation',built:false,adr:'0079'},
+      {id:'9.4',title:'Onboarding checklist state — JSONB on tenants, GET/PATCH endpoint',built:false,adr:'0080'},
+      {id:'9.5',title:'RAGConnector provider abstraction — vector-store interface',built:false,adr:'0081'},
+      {id:'9.6',title:'RAG post chunking and embedding pipeline',built:false,adr:'0082'},
+      {id:'9.7',title:'RAG vector-store RLS and metadata enforcement',built:false,adr:'0083'},
+      {id:'9.8',title:'RAG search endpoint — POST /v1/rag/search',built:false,adr:'0084'},
+      {id:'9.9',title:'RAG ask endpoint — POST /v1/rag/ask with citations',built:false,adr:'0084'},
+      {id:'9.10',title:'RAG status endpoint — GET /v1/rag/status',built:false,adr:'0084'},
+      {id:'9.11',title:'RAG UI — RAGSearchBox, RAGResultCard, RAGAsk components',built:false,adr:'0085'},
+    ]
+  },
+  { id:10, title:'Analytics, Operations & Trust (ADRs 0086–0094)', built:0, total:14, adrs:'0086,0087,0088,0089,0090,0091,0092,0093,0094',
+    stories:[
+      {id:'10.1',title:'Prospecting list model — prospecting_lists/entries schema, sharing rules',built:false,adr:'0086'},
+      {id:'10.2',title:'Prospecting list export and CRM relationship-stage labels',built:false,adr:'0086'},
+      {id:'10.3',title:'Preconfigured analytics views — TopicDailyCount, SourceDailyCount tables',built:false,adr:'0087'},
+      {id:'10.4',title:'SentimentDailyCount, WatchlistDailyCount and refresh routing',built:false,adr:'0087'},
+      {id:'10.5',title:'Ad-hoc query allowlist — POST /v1/analytics/query',built:false,adr:'0088'},
+      {id:'10.6',title:'Platform operations dashboard — cross-tenant health and cost metrics',built:false,adr:'0089'},
+      {id:'10.7',title:'Posts CSV export — GET /v1/posts/export.csv with streaming',built:false,adr:'0090'},
+      {id:'10.8',title:'Async large-export support — export_jobs, Blob lifecycle',built:false,adr:'0090'},
+      {id:'10.9',title:'Real-time alert rules — alert_rules model and threshold evaluation worker',built:false,adr:'0091'},
+      {id:'10.10',title:'Alert delivery — in-app, email, and webhook with cooldown',built:false,adr:'0091'},
+      {id:'10.11',title:'Author-initiated takedown — public form, data_subject_requests, soft-redaction',built:false,adr:'0092'},
+      {id:'10.12',title:'DSR self-service portal — access/correction/erasure and fulfillment worker',built:false,adr:'0093'},
+      {id:'10.13',title:'Compliance audit pack — tamper-evident signed export',built:false,adr:'0094'},
+      {id:'10.14',title:'Tenant admin review UI for DSR requests',built:false,adr:'0093'},
+    ]
+  },
+  { id:11, title:'Engagement, Workflow & Composer (ADRs 0095–0100)', built:0, total:12, adrs:'0095,0096,0097,0098,0099,0100',
+    stories:[
+      {id:'11.1',title:'Case handoff to CRM — CRMConnector abstraction, POST /v1/inbox/items/:id/case',built:false,adr:'0095'},
+      {id:'11.2',title:'CRM field mapping and outbound_activities audit',built:false,adr:'0095'},
+      {id:'11.3',title:'Daily digest email — timezone-aware preferences and hourly scheduler',built:false,adr:'0096'},
+      {id:'11.4',title:'AI-summarized digest using precomputed analytics views',built:false,adr:'0096'},
+      {id:'11.5',title:'Topic evolution timeline — GET /v1/topics/evolution',built:false,adr:'0097'},
+      {id:'11.6',title:'Post publishing and scheduling — POST /v1/outbound/posts with scheduled_for',built:false,adr:'0098'},
+      {id:'11.7',title:'Unified social inbox — inbox_items model, triage, and assignment',built:false,adr:'0099'},
+      {id:'11.8',title:'Inbox reply — POST /v1/inbox/:id/reply',built:false,adr:'0099'},
+      {id:'11.9',title:'Author mention suggestions — POST /v1/composer/mention-suggestions',built:false,adr:'0100'},
+      {id:'11.10',title:'Human-in-the-Loop enrichment overrides — PATCH /v1/posts/:id/enrichment',built:false,adr:'0071'},
+      {id:'11.11',title:'Polypost Composer — 7-network preview rails, OpenGraph scraping',built:false,adr:'0072'},
+      {id:'11.12',title:'Outbound reply to ingested posts — POST /v1/posts/:id/replies',built:false,adr:'0073'},
+    ]
+  },
+  { id:12, title:'Foundation Depth & AI Refinements (ADRs 0101–0108)', built:0, total:16, adrs:'0101,0102,0103,0104,0105,0106,0107,0108',
+    stories:[
+      {id:'12.1',title:'Multi-source connector capability matrix — SocialConnector.getCapabilities()',built:false,adr:'0101'},
+      {id:'12.2',title:'GET /v1/connectors/capabilities — capability discovery endpoint',built:false,adr:'0101'},
+      {id:'12.3',title:'Boolean query AST — WatchlistAST and per-connector validation',built:false,adr:'0102'},
+      {id:'12.4',title:'Visual BooleanQueryBuilder UI component',built:false,adr:'0102'},
+      {id:'12.5',title:'AI sentiment aspect schema — enrichment.sentiment with aspect-based analysis',built:false,adr:'0103'},
+      {id:'12.6',title:'Multi-language sentiment support and confidence scores',built:false,adr:'0103'},
+      {id:'12.7',title:'AI topic clustering — topics, post_topics tables, TopicClusteringService',built:false,adr:'0104'},
+      {id:'12.8',title:'selectedTopic filter and dashboard integration',built:false,adr:'0104'},
+      {id:'12.9',title:'Dashboard widget contracts — GET /v1/analytics/dashboard',built:false,adr:'0105'},
+      {id:'12.10',title:'Widget data shapes and selectedTopic filter routing',built:false,adr:'0105'},
+      {id:'12.11',title:'Public API versioning — rate limits and API key management',built:false,adr:'0106'},
+      {id:'12.12',title:'Webhook subscriptions — POST /v1/webhooks/subscriptions, HMAC-signed events',built:false,adr:'0106'},
+      {id:'12.13',title:'Per-connector and per-watchlist RBAC permissions',built:false,adr:'0107'},
+      {id:'12.14',title:'Feature gates and role matrix',built:false,adr:'0107'},
+      {id:'12.15',title:'Influencer discovery — Author scoring columns and GET /v1/influencers',built:false,adr:'0108'},
+      {id:'12.16',title:'Influencer score explainability and ranking',built:false,adr:'0108'},
+    ]
+  },
+  { id:13, title:'Sub-decisions, v2 & Closing Loops (ADRs 0109–0117)', built:0, total:14, adrs:'0109,0110,0111,0112,0113',
+    stories:[
+      {id:'13.1',title:'Connector health auto-disable — failing/disabled transitions',built:false,adr:'0109'},
+      {id:'13.2',title:'Manual and auto re-enable rules and retryable flag handling',built:false,adr:'0109'},
+      {id:'13.3',title:'Per-connector query translation — ConnectorQueryTranslator',built:false,adr:'0110'},
+      {id:'13.4',title:'GET /v1/connectors/:platformId/query-capabilities and save-time validation',built:false,adr:'0110'},
+      {id:'13.5',title:'Export bounding — sync/async thresholds and size caps',built:false,adr:'0111'},
+      {id:'13.6',title:'export_jobs table and Blob lifecycle management',built:false,adr:'0111'},
+      {id:'13.7',title:'Feature gating — tenant_settings.feature_gates and per-plan allowlist',built:false,adr:'0112'},
+      {id:'13.8',title:'Active seat count enforcement and seat limit guards',built:false,adr:'0112'},
+      {id:'13.9',title:'Metric explainability prompt template and JSON output contract',built:false,adr:'0113'},
+      {id:'13.10',title:'Explainability cache key, determinism, and confidence rules',built:false,adr:'0113'},
+      {id:'13.11',title:'Platform metrics and cost telemetry for operations dashboard',built:false,adr:'-'},
+      {id:'13.12',title:'Media upload pipeline for composer attachments',built:false,adr:'-'},
+      {id:'13.13',title:'Semantic drift detection for watchlist performance',built:false,adr:'-'},
+      {id:'13.14',title:'Prospecting list CRM export integration',built:false,adr:'-'},
+    ]
+  },
+];
+
+const CONNECTORS = [
+  {name:'GNews API',type:'News',status:'live',adr:'0026',tier:'2'},
+  {name:'Newswire RSS',type:'News',status:'live',adr:'0024',tier:'2'},
+  {name:'Tenant-owned Feed',type:'RSS/Custom',status:'live',adr:'0050',tier:'2'},
+  {name:'Wikipedia',type:'Reference',status:'live',adr:'0042',tier:'none'},
+  {name:'Facebook Pages',type:'Social',status:'live',adr:'0059',tier:'3'},
+  {name:'Brave Search',type:'Search',status:'ready',adr:'0065',tier:'2'},
+  {name:'Bing Search',type:'Search',status:'ready',adr:'0066',tier:'2'},
+  {name:'Instagram',type:'Social',status:'ready',adr:'0068',tier:'3'},
+  {name:'LinkedIn',type:'Social',status:'ready',adr:'0069',tier:'3'},
+  {name:'Reddit',type:'Social',status:'planned',adr:'-',tier:'?'},
+];
+
+const BRD = [
+  { group:'Core Platform', icon:'⬡', reqs:[
+    {id:'BR-01',name:'Multi-tenant isolation',desc:'Every data operation must be scoped to a tenant at the database layer via Postgres Row-Level Security. No cross-tenant data leakage is acceptable, ever.',adrs:'ADR-0015'},
+    {id:'BR-02',name:'Entra External ID authentication',desc:'All API requests are authenticated via Microsoft Entra External ID OIDC tokens. The X-Tenant-Id header is fully retired.',adrs:'ADR-0029, ADR-0033'},
+    {id:'BR-03',name:'Credential envelope encryption',desc:'All third-party API credentials are stored envelope-encrypted in Azure Key Vault. OAuth preferred; API-key fallback permitted.',adrs:'ADR-0014'},
+    {id:'BR-04',name:'Immutable audit anchoring',desc:'Every ingested post references an IngestionRun record that is never modified. This is the acquisition audit anchor.',adrs:'ADR-0005'},
+    {id:'BR-05',name:'Three-tier ownership model',desc:'Platform Admin (BYPASSRLS), Tenant Admin (tenant-scoped RLS + app role check), Tenant User. Credential creation authority matches ownership tier.',adrs:'ADR-0028, ADR-0030'},
+  ]},
+  { group:'Ingestion & Connectors', icon:'⬡', reqs:[
+    {id:'BR-06',name:'Unified connector contract',desc:'All social and AI connectors implement the ProviderConnector interface. New connectors require no core pipeline changes.',adrs:'ADR-0002, ADR-0048'},
+    {id:'BR-07',name:'Per-tenant rate limiting',desc:'Rate limiting is enforced per (tenantId, providerId) pair via a shared RequestGate. Proportional failure thresholds trigger auto-disable.',adrs:'ADR-0003, ADR-0023'},
+    {id:'BR-08',name:'Live ingestion polling',desc:'An in-process scheduler in social-listening-core polls all active connectors. Cadence is derived from IngestionRun history.',adrs:'ADR-0052'},
+    {id:'BR-09',name:'Watchlist-matched ingestion',desc:'Posts are matched against tenant watchlists at ingestion time. Match results are persisted in post_watchlist_matches.',adrs:'ADR-0006, ADR-0063'},
+    {id:'BR-10',name:'Author normalization',desc:'Authors are normalized once per platform account, not duplicated per post. Organization-as-Author is supported for wire/feed connectors.',adrs:'ADR-0004'},
+  ]},
+  { group:'Data & Storage', icon:'⬡', reqs:[
+    {id:'BR-11',name:'Postgres as sole database',desc:'PostgreSQL with RLS is the only data store. No secondary database, no Redis, no separate search index in v1.',adrs:'ADR-0016'},
+    {id:'BR-12',name:'Data retention and archival',desc:'IngestionRun records older than the retention window are archived, not deleted. SocialPost records follow a separate, configurable lifecycle.',adrs:'ADR-0018'},
+    {id:'BR-13',name:'Canonical Markdown normalization',desc:'All post bodies are normalized to canonical Markdown at ingestion via a shared, version-pinned sanitize-html → turndown pipeline.',adrs:'ADR-0053'},
+    {id:'BR-14',name:'Cursor-based pagination',desc:'The GET /posts endpoint uses cursor-based pagination. Offset pagination is not permitted.',adrs:'ADR-0011'},
+    {id:'BR-15',name:'Self-service tenant offboarding',desc:'Tenant Admin (never Platform Admin) initiates deletion. Export window + 30-day grace period + confirmation triggers async hard-delete.',adrs:'ADR-0043'},
+  ]},
+  { group:'Admin & UI', icon:'⬡', reqs:[
+    {id:'BR-16',name:'Single gated Next.js admin app',desc:'One role-gated Next.js application serves both Tenant Admin and Platform Admin surfaces. No separate deployables in v1.',adrs:'ADR-0035'},
+    {id:'BR-17',name:'Server-side BFF session',desc:'Admin UI uses server-side session only. No bearer token in browser JavaScript. No third-party auth library in v1.',adrs:'ADR-0036'},
+    {id:'BR-18',name:'Self-service tenant sign-up',desc:'New tenants sign up via a dedicated tenant_signup_role endpoint. Domain-match signups are redirected to the invite flow.',adrs:'ADR-0037'},
+    {id:'BR-19',name:'Tenant connector activation decoupled from credential',desc:'Connectors can be activated/deactivated without affecting stored credentials. Two new ownership-scoped activation tables.',adrs:'ADR-0051'},
+    {id:'BR-20',name:'Analytics Dashboard — client-side aggregation',desc:'v1 Analytics Dashboard aggregates 100% client-side from GET /posts. No new backend aggregation endpoints in v1.',adrs:'ADR-0054'},
+  ]},
+  { group:'AI & Enrichment', icon:'⬡', reqs:[
+    {id:'BR-21',name:'Pluggable AI enrichment providers',desc:'AI enrichment uses a shared AIProviderConnector interface. Azure AI Language is the first concrete provider; Azure OpenAI is the second.',adrs:'ADR-0038'},
+    {id:'BR-22',name:'SocialEngage is never a billing intermediary',desc:'The connector architecture is a technical intermediary only. SocialEngage never resells or intermediates data-source relationships.',adrs:'ADR-0027'},
+    {id:'BR-23',name:'Enrichment persisted in JSONB',desc:'All AI enrichment results (sentiment, entities, key phrases) are stored in a social_posts.enrichment JSONB column. Overridable by Tenant users.',adrs:'ADR-0038, ADR-0071'},
+    {id:'BR-24',name:'Event sourcing via Service Bus',desc:'All inter-service events (post ingested, connector health changed) flow through Azure Service Bus with thin payloads.',adrs:'ADR-0012, ADR-0058'},
+    {id:'BR-25',name:'No speculative distributed infrastructure',desc:'Distributed rate-limit gate state is explicitly deferred until a second concurrent instance actually runs. No premature optimization.',adrs:'ADR-0020'},
+  ]},
+];
+
+const FDD = [
+  { module:'social-listening-core / Connector Pipeline', path:'social-listening-core/src/connectors/', status:'built', features:[
+    {text:'ProviderConnector interface with poll(), count?(), publish?(), reply?(), getCapabilities?()',status:'built',tag:'ADR-0002'},
+    {text:'RequestGate — per-(tenantId,providerId) rate limiting with proportional failure threshold',status:'built',tag:'ADR-0003/0023'},
+    {text:'Connector registry bootstrap at server startup (ADR-0048 compliant)',status:'built',tag:'ADR-0048'},
+    {text:'Connector activation tables (connector_activations, connector_user_activations)',status:'built',tag:'ADR-0051'},
+    {text:'Watchdog reconciliation for hanging runs (MAX_RUN_DURATION_MS = 15m)',status:'ready',tag:'ADR-0070'},
+    {text:'Per-connector query translation (ConnectorQueryTranslator)',status:'proposed',tag:'ADR-0110'},
+  ]},
+  { module:'social-listening-core / Ingestion Scheduler', path:'social-listening-core/src/scheduler/', status:'built', features:[
+    {text:'In-process interval loop — runSchedulerTick() dispatches poll() per active connector',status:'built',tag:'ADR-0052'},
+    {text:'Cadence derived from ingestion_runs history, not stored config',status:'built',tag:'ADR-0052'},
+    {text:'Per-connector jitterFraction() for load spreading',status:'built',tag:'ADR-0052'},
+    {text:'Tier-3 per-user enumeration — pollUser?() per user_id',status:'ready',tag:'ADR-0061'},
+    {text:'ConnectorIngestionAlertEvent publishing on stalled/inactive connectors',status:'ready',tag:'ADR-0070'},
+  ]},
+  { module:'social-listening-core / Live Connectors (5)', path:'social-listening-core/src/connectors/', status:'built', features:[
+    {text:'GNews — news API, publication-as-Author, watchlist matching',status:'built',tag:'ADR-0026'},
+    {text:'Newswire — wire-service RSS (GlobeNewswire, PR Newswire), issuer-as-Author',status:'built',tag:'ADR-0024'},
+    {text:'Tenant-owned feed — DNS TXT verification, multi-feed administration',status:'built',tag:'ADR-0050'},
+    {text:'Wikipedia — MediaWiki Action API, authMode:none, recentchanges polling',status:'built',tag:'ADR-0042'},
+    {text:'Facebook Pages — authMode:oauth, Tier-3, organization-as-Author, multi-page fan-out',status:'built',tag:'ADR-0059/0060'},
+  ]},
+  { module:'social-listening-core / Ready Connectors (4)', path:'social-listening-core/src/connectors/', status:'ready', features:[
+    {text:'Brave Search — active watchlist sourcing, 1-4h cadence, AST validation filter',status:'ready',tag:'ADR-0065'},
+    {text:'Bing Search — Azure-aligned active discovery, multi-step URL canonicalization',status:'ready',tag:'ADR-0066'},
+    {text:'Instagram — Business/Creator accounts, linked Facebook Page, carousel model',status:'ready',tag:'ADR-0068'},
+    {text:'LinkedIn — confidential client OAuth, 60-day token refresh, Rest.li rate limit parsing',status:'ready',tag:'ADR-0069'},
+  ]},
+  { module:'social-listening-core / Data Layer', path:'social-listening-core/src/store/', status:'built', features:[
+    {text:'PostgreSQL with per-tenant RLS — app_user, tenant_admin, platform_admin roles',status:'built',tag:'ADR-0015'},
+    {text:'social_posts — body_markdown/body_markdown_version columns, enrichment JSONB',status:'built',tag:'ADR-0053'},
+    {text:'post_watchlist_matches — junction table, ingestion write, GET /posts?watchlistId',status:'built',tag:'ADR-0063'},
+    {text:'platform_admin_audit_log — append-only, BYPASSRLS, tamper-evident',status:'built',tag:'ADR-0030'},
+    {text:'outbound_activities table — audit trail for publish, reply, case handoff',status:'ready',tag:'ADR-0073/0075'},
+    {text:'Preconfigured analytics views (TopicDailyCount, SourceDailyCount, etc.)',status:'proposed',tag:'ADR-0087'},
+  ]},
+  { module:'social-listening-core / AI Enrichment', path:'social-listening-core/src/enrichment/', status:'built', features:[
+    {text:'enrichPost() shared hook — tries each registered AIProviderConnector in order',status:'built',tag:'ADR-0038'},
+    {text:'azureAiLanguageConnector — sentiment, key phrases, entity recognition',status:'built',tag:'ADR-0038'},
+    {text:'azureOpenAiConnector — structured JSON-schema extraction, gpt-5-mini',status:'built',tag:'ADR-0038'},
+    {text:'Canonical Markdown normalization pipeline (sanitize-html → turndown + GFM plugin)',status:'built',tag:'ADR-0053'},
+    {text:'PATCH /v1/posts/:id/enrichment — Human-in-the-Loop override with audit tracking',status:'ready',tag:'ADR-0071'},
+    {text:'Aspect-based sentiment schema — enrichment.sentiment with language and confidence',status:'proposed',tag:'ADR-0103'},
+  ]},
+  { module:'social-listening-core / Security & Auth', path:'social-listening-core/src/identity/', status:'built', features:[
+    {text:'Entra External ID OIDC token verification — resolveIdentity() maps to tenants/users',status:'built',tag:'ADR-0029'},
+    {text:'GET /v1/me — identity exposure endpoint (tenant_admin, tenant_user, platform_admin)',status:'built',tag:'ADR-0036'},
+    {text:'POST /v1/tenants/self-service-signup — tenant_signup_role, denylist, domain-match reject',status:'built',tag:'ADR-0037'},
+    {text:'Break-glass access request, execution, and audit endpoints',status:'built',tag:'ADR-0030'},
+    {text:'Azure Key Vault envelope-encrypted credential storage and rotation',status:'built',tag:'ADR-0014'},
+    {text:'Service Bus SAS-authenticated event publishing',status:'built',tag:'ADR-0012'},
+  ]},
+  { module:'social-listening-admin / Tenant Admin UI', path:'social-listening-admin/src/app/tenant/', status:'built', features:[
+    {text:'Next.js scaffold with Entra External ID MSAL sign-in and BFF session',status:'built',tag:'Story 6.1'},
+    {text:'Role-gated routing shell — /tenant/, /platform-admin/ path guards',status:'built',tag:'Story 6.2'},
+    {text:'Connector connect/disconnect flow with OAuth PKCE for Tier-3 connectors',status:'built',tag:'Story 6.3'},
+    {text:'Watchlist CRUD UI — create, edit, match-count, personal ownership',status:'built',tag:'Story 6.4'},
+    {text:'Post feed with search, filter, Markdown rendering, and provider filters',status:'built',tag:'Story 6.11/6.18/6.19'},
+    {text:'Facebook OAuth connect flow with Page picker',status:'built',tag:'Story 6.23'},
+    {text:'Multi-feed administration for tenant-owned-feed connector',status:'built',tag:'Story 6.20'},
+    {text:'Connector status badges, stalled alert banner, force re-sync action',status:'ready',tag:'Story 6.29'},
+    {text:'Post Enrichment Cascading Edit Drawer for Human-in-the-Loop overrides',status:'ready',tag:'Story 6.31'},
+    {text:'Brave Search API connector setup screen',status:'ready',tag:'Story 6.30'},
+    {text:'Bing Search API connector setup screen',status:'ready',tag:'Story 6.32'},
+    {text:'Instagram Business connector setup and multi-account picker',status:'ready',tag:'Story 6.34'},
+    {text:'LinkedIn connector setup and token/scope status display',status:'ready',tag:'Story 6.35'},
+    {text:'Polypost Composer with real publish flow (7-network preview rails)',status:'ready',tag:'Story 6.39'},
+    {text:'Composer Deep Research panel',status:'ready',tag:'Story 6.41'},
+    {text:'Tenant settings export UI (workspace JSON + posts CSV)',status:'ready',tag:'Story 6.40'},
+  ]},
+  { module:'social-listening-admin / Analytics Dashboard', path:'social-listening-admin/src/app/tenant/analytics/', status:'built', features:[
+    {text:'Overview tab — volume chart, top sources, sentiment summary, language breakdown',status:'built',tag:'Story 8.1/8.2'},
+    {text:'Sentiment tab — AI sentiment chart, timeline, by-source breakdown',status:'built',tag:'Story 8.3'},
+    {text:'Conversations tab — post volume trend, engagement and reach metrics',status:'built',tag:'Story 8.4'},
+    {text:'Sources tab — by-connector and by-provider breakdown, connector health',status:'built',tag:'Story 8.5'},
+    {text:'Watchlist Coverage widget — matched post attribution via post_watchlist_matches',status:'built',tag:'Story 8.9'},
+    {text:'Location Insights — SVG Choropleth Map, country-level geospatial aggregation',status:'built',tag:'Story 8.10'},
+    {text:'Overview Tab Enhancement — 3-column grid, 7-dimension filter, deep-link share',status:'ready',tag:'Story 8.7'},
+    {text:'AI Spike Storyteller and statistical volume forecast widget',status:'ready',tag:'Story 8.8'},
+  ]},
+  { module:'social-listening-admin / Platform Admin UI', path:'social-listening-admin/src/app/platform-admin/', status:'built', features:[
+    {text:'Platform Admin console — tenant CRUD, break-glass, audit log query UI',status:'built',tag:'Story 6.6'},
+    {text:'Platform operations dashboard — cross-tenant health and cost metrics',status:'proposed',tag:'ADR-0089'},
+  ]},
+];
+
+// ─── RENDER FUNCTIONS ──────────────────────────────────────────────────
+
+function renderOverview() {
+  // Epic progress
+  let epProg = '';
+  EPICS.forEach(ep => {
+    const pct = Math.round(ep.built / ep.total * 100);
+    const cls = pct === 100 ? 'green' : pct > 0 ? 'amber' : 'accent';
+    epProg += `<div class="prog-row">
+      <div class="prog-label"><span>Epic ${ep.id}: ${ep.title.substring(0,38)}${ep.title.length>38?'…':''}</span>
+        <span>${ep.built}/${ep.total} (${pct}%)</span></div>
+      <div class="prog-bar"><div class="prog-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+  document.getElementById('epic-progress').innerHTML = epProg;
+
+  // Connectors
+  let connHTML = '';
+  CONNECTORS.forEach(c => {
+    const cls = c.status === 'live' ? 'green' : c.status === 'ready' ? 'amber' : 'violet';
+    const lbl = c.status === 'live' ? 'Live' : c.status === 'ready' ? 'Ready' : 'Planned';
+    connHTML += `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border2)">
+      <div>
+        <span style="font-size:13px;font-weight:500;color:var(--text)">${c.name}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:6px">${c.type}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${c.adr !== '-' ? `<span class="mono" style="font-size:10px;color:var(--text3)">ADR-${c.adr}</span>` : ''}
+        <span class="badge ${cls}">${lbl}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('connector-status').innerHTML = connHTML;
+
+  // ADR categories
+  const cats = {};
+  ADRS.forEach(a => { cats[a[2]] = (cats[a[2]]||0)+1; });
+  const sortedCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  let catHTML = '';
+  sortedCats.forEach(([cat,count]) => {
+    const pct = Math.round(count/111*100);
+    catHTML += `<div class="prog-row">
+      <div class="prog-label"><span>${CAT_LABELS[cat]||cat}</span><span>${count} ADRs</span></div>
+      <div class="prog-bar"><div class="prog-fill accent" style="width:${Math.max(pct*3,4)}%"></div></div>
+    </div>`;
+  });
+  document.getElementById('adr-cats').innerHTML = catHTML;
+
+  // Tech stack
+  const stack = [
+    ['Backend','Node.js / TypeScript','social-listening-core'],
+    ['Frontend','Next.js / TypeScript','social-listening-admin'],
+    ['Database','PostgreSQL + RLS','Azure Database for PostgreSQL'],
+    ['Auth','Microsoft Entra External ID','OIDC + BFF session'],
+    ['Credentials','Azure Key Vault','Envelope encryption'],
+    ['Events','Azure Service Bus','Thin events, REST fetch on demand'],
+    ['AI Language','Azure AI Language','Sentiment, entities, key phrases'],
+    ['AI LLM','Azure OpenAI / GPT','Structured extraction, research'],
+    ['Storage','Azure Blob Storage','Archival, exports'],
+    ['CI','GitHub Actions','Contract-first TDD, 103 suites'],
+  ];
+  let stkHTML = '';
+  stack.forEach(([layer, tech, detail]) => {
+    stkHTML += `<div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2)">
+      <span style="font-size:11px;color:var(--text3);min-width:90px">${layer}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text);flex:1">${tech}</span>
+      <span style="font-size:11px;color:var(--text3)">${detail}</span>
+    </div>`;
+  });
+  document.getElementById('tech-stack').innerHTML = stkHTML;
+}
+
+function renderADRs() {
+  const pills = document.getElementById('adr-pills');
+  const cats = ['All',...Object.keys(CAT_LABELS)];
+  pills.innerHTML = cats.map((c,i) => {
+    const count = c==='All' ? ADRS.length : ADRS.filter(a=>a[2]===c).length;
+    return `<span class="pill ${i===0?'active':''}" onclick="selectCatPill(this,'${c}')">${c==='All'?'All':CAT_LABELS[c]} <span class="count-bubble">${count}</span></span>`;
+  }).join('');
+  filterADRs();
+}
+
+function selectCatPill(el, cat) {
+  document.querySelectorAll('#adr-pills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('adr-cat').value = cat==='All'?'':cat;
+  filterADRs();
+}
+
+function filterADRs() {
+  const q = document.getElementById('adr-search').value.toLowerCase();
+  const st = document.getElementById('adr-status').value;
+  const ct = document.getElementById('adr-cat').value;
+  const tbody = document.getElementById('adr-tbody');
+  const rows = [];
+  let shown = 0;
+  ADRS.forEach(([id,title,status,cat]) => {
+    if (st && status !== st) return;
+    if (ct && cat !== ct) return;
+    if (q && !(`ADR-${id} ${title}`).toLowerCase().includes(q)) return;
+    shown++;
+    const stCls = status === 'accepted' ? 'green' : 'violet';
+    const stLbl = status === 'accepted' ? 'Accepted' : 'Proposed';
+    rows.push(`<tr>
+      <td class="adr-id">ADR-${id}</td>
+      <td class="adr-title">${title}</td>
+      <td class="adr-cat">${CAT_LABELS[cat]||cat}</td>
+      <td><span class="badge ${stCls}">${stLbl}</span></td>
+    </tr>`);
+  });
+  tbody.innerHTML = rows.join('');
+  document.getElementById('adr-count').textContent = `Showing ${shown} of ${ADRS.length} ADRs`;
+}
+
+function renderStories() {
+  const container = document.getElementById('stories-container');
+  container.innerHTML = EPICS.map((ep, idx) => {
+    const pct = Math.round(ep.built / ep.total * 100);
+    const badge = pct===100?'<span class="badge green">Complete</span>':pct>0?`<span class="badge amber">${ep.built}/${ep.total} built</span>`:'<span class="badge violet">Not started</span>';
+    return `<div class="epic-section" id="ep-section-${ep.id}">
+      <div class="epic-header" onclick="toggleEpic(${ep.id})">
+        <div class="epic-title">
+          <span class="mono" style="font-size:11px;color:var(--text3)">Epic ${ep.id}</span>
+          ${ep.title}
+        </div>
+        <div class="epic-meta">
+          ${badge}
+          <span class="mono" style="font-size:11px">${pct}%</span>
+          <span style="font-size:14px;color:var(--text3)" id="ep-chevron-${ep.id}">▾</span>
+        </div>
+      </div>
+      <div class="epic-body" id="ep-body-${ep.id}" style="${idx>3?'display:none':''}">
+        ${ep.stories.map(s => {
+          const dot = s.built ? 'built' : 'ready';
+          return `<div class="story-row" data-built="${s.built}" data-title="${s.title.toLowerCase()}">
+            <span class="story-dot ${dot}"></span>
+            <span class="story-id">${s.id}</span>
+            <span class="story-title">${s.title}</span>
+            ${s.adr&&s.adr!=='-'?`<span class="story-adr">ADR-${s.adr}</span>`:''}
+            <span class="badge ${s.built?'green':'amber'}" style="font-size:10px">${s.built?'Built':'Ready'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleEpic(id) {
+  const body = document.getElementById(`ep-body-${id}`);
+  const ch = document.getElementById(`ep-chevron-${id}`);
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  ch.textContent = hidden ? '▾' : '▸';
+}
+
+function filterStories() {
+  const q = document.getElementById('story-search').value.toLowerCase();
+  const f = document.getElementById('story-filter').value;
+  document.querySelectorAll('.story-row').forEach(row => {
+    const built = row.dataset.built === 'true';
+    const title = row.dataset.title;
+    let show = true;
+    if (q && !title.includes(q)) show = false;
+    if (f === 'built' && !built) show = false;
+    if (f === 'pending' && built) show = false;
+    row.classList.toggle('hidden', !show);
+  });
+}
+
+function renderBRD() {
+  const content = document.getElementById('brd-content');
+  content.innerHTML = BRD.map(group => `
+    <div class="req-group">
+      <div class="req-group-title">${group.icon} ${group.group}</div>
+      ${group.reqs.map(r => `
+        <div class="req-item">
+          <div class="req-id">${r.id}</div>
+          <div class="req-content">
+            <div class="req-name">${r.name}</div>
+            <div class="req-desc">${r.desc}</div>
+            <div class="req-adr">${r.adrs}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function renderFDD() {
+  const content = document.getElementById('fdd-content');
+  content.innerHTML = FDD.map(mod => {
+    const statusCls = mod.status === 'built' ? 'green' : mod.status === 'ready' ? 'amber' : 'violet';
+    const statusLbl = mod.status === 'built' ? 'Built' : mod.status === 'ready' ? 'Ready' : 'Proposed';
+    const builtCount = mod.features.filter(f=>f.status==='built').length;
+    return `<div class="module-card">
+      <div class="module-header">
+        <div>
+          <div class="module-name">${mod.module}</div>
+          <div class="module-path">${mod.path}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--text3)">${builtCount}/${mod.features.length} built</span>
+          <span class="badge ${statusCls}">${statusLbl}</span>
+        </div>
+      </div>
+      <div class="module-features">
+        ${mod.features.map(f => `
+          <div class="feature-item">
+            <div class="feature-status ${f.status}"></div>
+            <div class="feature-text">${f.text}</div>
+            <span class="feature-tag">${f.tag}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── VIEW SWITCHING ─────────────────────────────────────────────────────
+
+const VIEWS = ['overview','adrs','stories','brd','fdd'];
+let rendered = {};
+
+function showView(name) {
+  VIEWS.forEach(v => {
+    document.getElementById(`view-${v}`).classList.toggle('active', v===name);
+  });
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.onclick.toString().includes(`'${name}'`));
+  });
+  if (!rendered[name]) {
+    rendered[name] = true;
+    if (name==='overview') renderOverview();
+    else if (name==='adrs') renderADRs();
+    else if (name==='stories') renderStories();
+    else if (name==='brd') renderBRD();
+    else if (name==='fdd') renderFDD();
+  }
+}
+
+// Theme toggle
+function toggleTheme() {
+  const root = document.documentElement;
+  const cur = root.getAttribute('data-theme');
+  root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────
+rendered.overview = true;
+renderOverview();
+</script>
+</body>
+</html>

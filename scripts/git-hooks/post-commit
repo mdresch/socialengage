@@ -46,7 +46,7 @@ fi
 # unrelated diff appear immediately after every single commit, forever. Applying the
 # same guard here, generalized to the fixed bookkeeping fileset a pure hook-output
 # commit touches.
-BOOKKEEPING_FILES=" docs/time-tracking.md docs/management/pending-manager-reviews.md docs/pending-documentation-steward-reviews.md docs/pending-learning-development-reviews.md "
+BOOKKEEPING_FILES=" docs/time-tracking.md docs/management/pending-manager-reviews.md docs/pending-documentation-steward-reviews.md docs/pending-learning-development-reviews.md docs/pending-personal-development-reviews.md "
 ONLY_TOUCHES_BOOKKEEPING=1
 if [ -z "$FILES" ]; then
   ONLY_TOUCHES_BOOKKEEPING=0
@@ -144,6 +144,11 @@ if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ]; then
     "docs/pending-learning-development-reviews.md" \
     "Pending Learning & Development Reviews" \
     "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Learning & Development Writer (\`.claude/agents/learning-development-writer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Writer may edit the three manuals under docs/manuals/ directly, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting manual edit is actually committed. Most commits resolve with 'no user-facing change' — a legitimate outcome, not a non-answer."
+
+  queue_commit \
+    "docs/pending-personal-development-reviews.md" \
+    "Pending Personal Development Reviews" \
+    "**Queued by:** \`scripts/git-hooks/post-commit\`, one entry per commit, automatically, non-blocking. **Reviewed by:** the Personal Development Reviewer (\`.claude/agents/personal-development-reviewer.md\`) whenever a Claude Code session is actively working in this repo and checks this file — not a live daemon, not guaranteed same-day. Append-only, same discipline as \`docs/implementation-log.md\`: a reviewed entry gets struck through with a dated resolution note, never deleted. The Reviewer may propose append-only updates to \`docs/ai-roles/developer-learning-plan.md\`, but never commits its own changes — a human commit is the approval gate; an entry is resolved only once any resulting plan update is actually committed. Most commits resolve with 'no skill-relevant change observed' — a legitimate outcome, not a non-answer."
 fi
 
 # ─── ADR-0122 Self-Learning Synthesis capture + compile ─────────────────────
@@ -167,6 +172,15 @@ if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/synthesize-telemetry.m
     node scripts/synthesize-telemetry.mjs --capture --epic "$EPIC" >/dev/null 2>&1 && \
     node scripts/synthesize-telemetry.mjs --compile --epic "$EPIC" >/dev/null 2>&1 &
   fi
+fi
+
+# ─── Automatic Second Brain & Knowledge Graph Synchronization ──────────
+# Updates the Second Brain Obsidian vault so the Knowledge Graph view,
+# Dataview tables, and MOCs stay continuously in sync on every commit.
+# Mirrors committed walkthroughs and plans, recompiles 4-way traceability,
+# refreshes telemetry, and stamps commit hash provenance.
+if [ "$ONLY_TOUCHES_BOOKKEEPING" -eq 0 ] && [ -f "scripts/sync-committed-to-secondbrain.mjs" ]; then
+  node scripts/sync-committed-to-secondbrain.mjs || true
 fi
 
 exit 0
