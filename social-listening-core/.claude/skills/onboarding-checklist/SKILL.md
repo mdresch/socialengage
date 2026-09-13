@@ -1,6 +1,6 @@
 ---
 name: onboarding-checklist
-description: Tenant-scoped onboarding checklist state (Story 9.5, ADR-0080) and role-tailored onboarding journeys with automated probes (Story 17.2, ADR-0130). Read this before touching src/tenants/onboardingChecklist.ts, src/http/versions/v1/onboardingChecklistRouter.ts, src/onboarding/roleOnboardingService.ts, src/onboarding/automatedVerificationProbeRunner.ts, src/http/versions/v1/onboardingRouter.ts, the tenants.onboarding_checklist JSONB column, migration 0043, the tenant_onboarding_state table, or migration 0081.
+description: Tenant-scoped onboarding checklist state (Story 9.5, ADR-0080) and role-tailored onboarding journeys with automated probes (Story 17.2, ADR-0130). Read this before touching src/tenants/onboardingChecklist.ts, src/http/versions/v1/onboardingChecklistRouter.ts, src/onboarding/roleOnboardingService.ts, src/onboarding/automatedVerificationProbeRunner.ts, src/http/versions/v1/onboardingRouter.ts, the tenants.onboarding_checklist JSONB column, migration 0043, the tenant_onboarding_state table, or migration 0082.
 ---
 
 # Onboarding Checklist State
@@ -46,7 +46,7 @@ Both are dismissible/non-blocking progress guides, never mandatory gates — nei
 - **`invite_user` derivation excludes the caller:** `DERIVATION_SQL.invite_user` uses `id != $2` where `$2` is the calling user's own id. The ADR's own SQL parameterizes a second argument without naming what it represents; this resolves that ambiguity as "the calling user's own id" (the only value available without a schema change), not "the tenant's original creator."
 - **Role-journey steps are one-way-locked too, per probe:** `getRoleOnboardingChecklist()` only evaluates a role step's probe if that step isn't already `completed:true` in stored `role_journeys`; once true it's never re-checked. Same "historical milestone integrity" invariant as the tenant-wide checklist (AC6, proven by deleting the seeding row after completion and confirming the step stays `true`), independently implemented — do not assume touching one checklist's locking logic touches the other's.
 - **Probes are one bundled query, not twelve:** `AutomatedVerificationProbeRunner.runProbes()` evaluates all 12 `probeKey`s (3 steps × 4 personas) in a single `SELECT ... EXISTS(...)...` round-trip regardless of which role was requested — mirrors the tenant-wide checklist's bundled-query discipline (ADR-0080 Consequences §3's `<3ms` target). Do not split into per-role or per-step queries.
-- **`tenant_onboarding_state` is a separate table from `tenants.onboarding_checklist`**, not a rename or an added column — migration 0081 creates it fresh with its own RLS policy (`tenant_isolation`), independent of migration 0043's grant on `tenants`. The two checklists' storage is fully decoupled even though both render in the same admin dashboard.
+- **`tenant_onboarding_state` is a separate table from `tenants.onboarding_checklist`**, not a rename or an added column — migration 0082 creates it fresh with its own RLS policy (`tenant_isolation`), independent of migration 0043's grant on `tenants`. The two checklists' storage is fully decoupled even though both render in the same admin dashboard.
 
 ## Known gaps / deferred work
 

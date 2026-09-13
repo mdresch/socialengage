@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-09-13 — Story 17.2 merge/revalidation pass — commit c47b7d3
+
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79` (pre-split single workspace repo — covers both `social-listening-core/` and `social-listening-admin/`)
+- **Repos:** social-listening-core, social-listening-admin
+- **Story / ADR:** 17.2 / ADR-0130
+- **Contracts:**
+  - `social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts` (7/7 passing)
+  - `social-listening-admin/contracts/epic-17/story-17.2.onboarding-journeys-ui.contract.test.ts` (6/6 passing)
+- **Files touched:**
+  - `social-listening-core/migrations/0082_create_tenant_onboarding_state.sql` (renamed from `0081_...`)
+  - `social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts` (Intent scope comment only — migration path)
+  - `social-listening-core/.claude/skills/onboarding-checklist/SKILL.md` (migration number references only)
+  - `social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md` (merge-conflict resolution)
+  - `docs/synthesis/Self-Learning-Synthesis-Epic-14.md`, `docs/synthesis/Self-Learning-Synthesis-Epic-17.md` (resolved to main's newer snapshots)
+  - `docs/user-stories/epic-15-adr-0123-to-0124.md` (resolved to main's version)
+  - `project-progress-dashboard/src/lib/project-dashboard/data.ts` (re-synced)
+- **Validation re-run:** both contracts PASS individually; core epic-17 suite PASS (23/23 across 17.1/17.2/17.3); `npm run typecheck` clean in both repos.
+- **Notes:** Story 17.2's implementation (`26d210f`) and its own traceability commit (`62a4641`) were committed on `feat/story-17.2` on 2026-09-08 but the branch was **never merged into `main`** — same "shipped but not landed" shape as Story 15.1, one level earlier in the workflow. This pass reattached a worktree to the existing branch, merged current `main` into it (`c47b7d3`), resolved the resulting conflicts, and re-validated per `heal-contract-failure` Steps 1–5 rather than assuming the stale branch state was still correct.
+  - **Merge-conflict dispositions:** `docs/design/Gemini Designs|Google AI Studio/package*.json` — kept the branch's intentional deletion (`cd9257e`, "Frontend Designs Removed will sketch UI in own repos"); both synthesis files resolved to main's newer 2026-09-09 compiled snapshots; `epic-15` story file resolved to main's version (carries Story 15.1's corrected `Built:`); `onboarding-checklist-ui/SKILL.md` hand-merged — kept the branch's post-17.2 rewrite (which already covered the previously-committed raw conflict markers and the dead `src/components/OnboardingChecklist.tsx`), re-added main's BRD-0080/FDD-0080 table rows and its `c4021b3`/`6fe3b5d` relocation history. Main's 2026-09-10 claim that `src/app/api/onboarding-checklist/route.ts` is dead code is itself now stale — Story 17.2 makes it live again for `?role=` reads; the merged SKILL.md says so explicitly.
+  - **Real finding fixed, not just noted — migration number collision:** both Story 17.3 (merged to main) and Story 17.2 (this branch) shipped a `0081_*` migration. `runMigrations()` tracks by full filename so both apply, but the one-number-per-migration convention was violated; renamed this story's migration to `0082_create_tenant_onboarding_state.sql` and updated the two live references (contract Intent scope comment, core SKILL.md ×2). The prior entry's Files-touched list below is left as-is — it correctly records what commit `26d210f` actually touched.
+  - **Not re-run:** the full accumulated suites — the same documented pre-existing environmental failures from the entry below still apply (missing local GNews/Facebook/YouTube/Azure AI credentials; Story 6.1 Playwright flake); no shared file outside the epic was modified by this pass beyond `router.ts`'s already-auto-merged import/mount lines.
+
+---
+
 ## 2026-09-08 — Story 17.2 healing pass — social-listening-core@26d210f, social-listening-admin@26d210f
 
 - **Full commit:** `26d210fcb26f2a02040593fd2338f89058eef8d7` (pre-split single workspace repo — covers both `social-listening-core/` and `social-listening-admin/`)
@@ -3102,7 +3126,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ## 2026-08-20 — Story 3.13 — social-listening-core
 
-- **Full commit:** `pending`
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
 - **Repo:** social-listening-core
 - **Story / ADR:** 3.13 / ADR-0071 (Post Enrichment Overrides API & Precedence Guard)
 - **Contract:** social-listening-core/contracts/epic-3/story-3.13.post-enrichment-overrides.contract.test.ts (9/9)
@@ -3121,7 +3145,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ## 2026-08-20 — Story 6.31 — social-listening-admin
 
-- **Full commit:** `pending`
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
 - **Repo:** social-listening-admin
 - **Story / ADR:** 6.31 / ADR-0071 (Human-in-the-Loop Post Enrichment Cascading Edit Drawer)
 - **Contract:** social-listening-admin/contracts/epic-6/story-6.31.post-enrichment-cascading-edit-drawer.contract.test.ts (10/10)
@@ -3141,7 +3165,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ## 2026-08-20 — Story 2.23 — social-listening-core
 
-- **Full commit:** `pending`
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
 - **Repo:** social-listening-core
 - **Story / ADR:** 2.23 / ADR-0067 (Facebook connector: Graph API `from` extraction, hosting Page post dependency, and two-tier author resolution)
 - **Contract:** social-listening-core/contracts/epic-2/story-2.23.facebook-page-dependency-and-author-resolution.contract.test.ts (3/3)
@@ -3162,7 +3186,7 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ## 2026-08-20 — Story 6.33 — social-listening-admin
 
-- **Full commit:** `pending`
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
 - **Repo:** social-listening-admin
 - **Story / ADR:** 6.33 / ADR-0067 (Facebook connector: Display hosting Page attribution and author distinction in Post Feed and Details Drawer)
 - **Contract:** social-listening-admin/contracts/epic-6/story-6.33.facebook-page-attribution-display.contract.test.ts (5/5)

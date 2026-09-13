@@ -7044,3 +7044,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs
 - **Status:** Pending review
 
+## 2026-09-12 — c47b7d3 — Merge branch 'main' into feat/story-17.2
+
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
+- **Files touched:** 
+- **Status:** Pending review
+

@@ -4,7 +4,7 @@
 // Intent: Story 17.2 — Role-tailored onboarding journeys with automated probe verification
 // Source: ADR-0130, BRD-0130, FDD-0130, TDS-0130
 // Scope:
-//   migrations/0081_create_tenant_onboarding_state.sql
+//   migrations/0082_create_tenant_onboarding_state.sql
 //   src/onboarding/automatedVerificationProbeRunner.ts
 //   src/onboarding/roleOnboardingService.ts
 //   src/http/versions/v1/onboardingRouter.ts
