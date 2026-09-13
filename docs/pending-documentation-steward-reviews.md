@@ -7066,3 +7066,9 @@
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-18-adr-0134-to-0135.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-09-13 — 8962e1d — feat(rag): implement Story 19.1 — RAGConnector namespace-per-tenant isolation (ADR-0136)
+
+- **Full commit:** `8962e1da22be233713a1ba424cf39dc75d0b30e7`
+- **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Functional-Design/FDD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/user-stories/README.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/contracts/epic-19/story-19.1.rag-connector-namespace-isolation.contract.test.ts, social-listening-core/migrations/0082_force_rls_rag_chunks.sql, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/types.ts
+- **Status:** Pending review
+
