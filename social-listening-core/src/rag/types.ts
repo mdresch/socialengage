@@ -1,5 +1,7 @@
 /**
  * Story 9.7 (ADR-0081, BRD-0081, FDD-0081) — RAGConnector provider abstraction types.
+ * Story 19.1 (ADR-0136, BRD-0136, FDD-0136) — adds `isolationModel` to RAGConnectorStatus
+ * and the optional `ensureTenantNamespace?` lifecycle hook, per ADR-0136 Decision §1.
  */
 
 export interface RAGChunkMetadata {
@@ -47,6 +49,9 @@ export interface RAGConnectorStatus {
   dimension: number;
   indexedChunksCount?: number;
   lastError?: string | null;
+  // Story 19.1 / ADR-0136 Decision §1: which physical-isolation mechanism is
+  // actually in effect for this connector instance — never an aspirational label.
+  isolationModel: 'namespace' | 'shard' | 'row-level-rls' | 'metadata-filter-only';
 }
 
 export interface RAGConnector {
@@ -57,4 +62,9 @@ export interface RAGConnector {
   deleteTenant(tenantId: string): Promise<void>;
   status(tenantId?: string): Promise<RAGConnectorStatus>;
   updateMetadata?(tenantId: string, postId: string, partialMetadata: Partial<RAGChunkMetadata>): Promise<void>;
+  // Story 19.1 / ADR-0136 Decision §1: optional lifecycle hook for providers that
+  // require explicit provisioning of a physical per-tenant scope (namespace, shard,
+  // or RLS-backed table) before first write. pgvector's isolation is a static,
+  // already-provisioned table-level RLS policy, so it does not implement this.
+  ensureTenantNamespace?(tenantId: string): Promise<void>;
 }

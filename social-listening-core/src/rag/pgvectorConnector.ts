@@ -6,8 +6,8 @@ import type {
   RAGConnectorStatus,
   RAGChunkMetadata,
 } from './types';
-import { getPool } from '../db/pool';
 import { getAdminPool } from '../db/adminPool';
+import { withTenant } from '../db/withTenant';
 import { generateMockEmbedding } from './ragChunkingService';
 
 /**
@@ -67,37 +67,41 @@ export class PgvectorRAGConnector implements RAGConnector {
       });
     }
 
-    // Try executing database upsert
+    // Try executing database upsert. Story 19.1 (ADR-0136 Decision §2): via
+    // withTenant()/app_user, so rag_chunks' tenant_isolation RLS policy is the
+    // real, operative boundary for this connector's own writes — never the
+    // superuser admin pool, which bypasses RLS unconditionally.
     try {
-      const pool = getAdminPool ? getAdminPool() : getPool();
-      for (const chunk of vectors) {
-        const recordId = chunk.id || `${tenantId}:${chunk.metadata.post_id}:${chunk.metadata.chunk_index}`;
-        await pool.query(
-          `INSERT INTO rag_chunks (
-            id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics, created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
-          ON CONFLICT (id) DO UPDATE SET
-            content = EXCLUDED.content,
-            platform_id = EXCLUDED.platform_id,
-            published_at = EXCLUDED.published_at,
-            watchlist_ids = EXCLUDED.watchlist_ids,
-            sentiment = EXCLUDED.sentiment,
-            topics = EXCLUDED.topics,
-            updated_at = now()`,
-          [
-            recordId,
-            tenantId,
-            chunk.metadata.post_id,
-            chunk.metadata.chunk_index,
-            chunk.metadata.content,
-            chunk.metadata.platform_id,
-            chunk.metadata.published_at,
-            chunk.metadata.watchlist_ids || [],
-            chunk.metadata.sentiment || null,
-            chunk.metadata.topics || [],
-          ]
-        );
-      }
+      await withTenant(tenantId, async (client) => {
+        for (const chunk of vectors) {
+          const recordId = chunk.id || `${tenantId}:${chunk.metadata.post_id}:${chunk.metadata.chunk_index}`;
+          await client.query(
+            `INSERT INTO rag_chunks (
+              id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
+            ON CONFLICT (id) DO UPDATE SET
+              content = EXCLUDED.content,
+              platform_id = EXCLUDED.platform_id,
+              published_at = EXCLUDED.published_at,
+              watchlist_ids = EXCLUDED.watchlist_ids,
+              sentiment = EXCLUDED.sentiment,
+              topics = EXCLUDED.topics,
+              updated_at = now()`,
+            [
+              recordId,
+              tenantId,
+              chunk.metadata.post_id,
+              chunk.metadata.chunk_index,
+              chunk.metadata.content,
+              chunk.metadata.platform_id,
+              chunk.metadata.published_at,
+              chunk.metadata.watchlist_ids || [],
+              chunk.metadata.sentiment || null,
+              chunk.metadata.topics || [],
+            ]
+          );
+        }
+      });
     } catch {
       // Degrade to in-memory store in unit test harnesses where DB table is mocked
     }
@@ -118,12 +122,13 @@ export class PgvectorRAGConnector implements RAGConnector {
     const hasTenantChunks = Array.from(this.inMemoryChunks.values()).some((c) => c.metadata.tenant_id === tenantId);
     if (!hasTenantChunks) {
       try {
-        const pool = getAdminPool ? getAdminPool() : getPool();
-        const res = await pool.query(
-          `SELECT id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics
-           FROM rag_chunks
-           WHERE tenant_id = $1`,
-          [tenantId]
+        const res = await withTenant(tenantId, (client) =>
+          client.query(
+            `SELECT id, tenant_id, post_id, chunk_index, content, platform_id, published_at, watchlist_ids, sentiment, topics
+             FROM rag_chunks
+             WHERE tenant_id = $1`,
+            [tenantId]
+          )
         );
         for (const row of res.rows) {
           const chunkValues = generateMockEmbedding(row.content, this.dimension);
@@ -154,10 +159,11 @@ export class PgvectorRAGConnector implements RAGConnector {
     // Story 16.2 (ADR-0126): Exclude Article 18 processing_restricted posts from RAG search
     let restrictedPostIds = new Set<string>();
     try {
-      const pool = getAdminPool ? getAdminPool() : getPool();
-      const res = await pool.query<{ id: string }>(
-        `SELECT id FROM social_posts WHERE tenant_id = $1 AND processing_restricted = TRUE`,
-        [tenantId]
+      const res = await withTenant(tenantId, (client) =>
+        client.query<{ id: string }>(
+          `SELECT id FROM social_posts WHERE tenant_id = $1 AND processing_restricted = TRUE`,
+          [tenantId]
+        )
       );
       restrictedPostIds = new Set(res.rows.map((r) => r.id));
     } catch {
@@ -244,8 +250,9 @@ export class PgvectorRAGConnector implements RAGConnector {
     }
 
     try {
-      const pool = getAdminPool ? getAdminPool() : getPool();
-      await pool.query('DELETE FROM rag_chunks WHERE tenant_id = $1 AND post_id = $2', [tenantId, postId]);
+      await withTenant(tenantId, (client) =>
+        client.query('DELETE FROM rag_chunks WHERE tenant_id = $1 AND post_id = $2', [tenantId, postId])
+      );
     } catch {
       // Handled in-memory
     }
@@ -261,8 +268,9 @@ export class PgvectorRAGConnector implements RAGConnector {
     }
 
     try {
-      const pool = getAdminPool ? getAdminPool() : getPool();
-      await pool.query('DELETE FROM rag_chunks WHERE tenant_id = $1', [tenantId]);
+      await withTenant(tenantId, (client) =>
+        client.query('DELETE FROM rag_chunks WHERE tenant_id = $1', [tenantId])
+      );
     } catch {
       // Handled in-memory
     }
@@ -285,11 +293,17 @@ export class PgvectorRAGConnector implements RAGConnector {
   public async status(tenantId?: string): Promise<RAGConnectorStatus> {
     let count = 0;
     try {
-      const pool = getAdminPool ? getAdminPool() : getPool();
       if (tenantId) {
-        const res = await pool.query('SELECT count(*) FROM rag_chunks WHERE tenant_id = $1', [tenantId]);
+        // Story 19.1 (ADR-0136): tenant-scoped — via withTenant()/app_user, RLS-enforced.
+        const res = await withTenant(tenantId, (client) =>
+          client.query('SELECT count(*) FROM rag_chunks WHERE tenant_id = $1', [tenantId])
+        );
         count = parseInt(res.rows[0]?.count, 10) || 0;
       } else {
+        // Cross-tenant aggregate: no single tenant to scope an RLS session context by.
+        // No real production caller omits tenantId (ragRouter.ts, ragReconciliationService.ts
+        // always pass one) — this remains the one legitimate admin-pool call site.
+        const pool = getAdminPool();
         const res = await pool.query('SELECT count(*) FROM rag_chunks');
         count = parseInt(res.rows[0]?.count, 10) || 0;
       }
@@ -313,6 +327,9 @@ export class PgvectorRAGConnector implements RAGConnector {
       dimension: this.dimension,
       indexedChunksCount: count,
       lastError: null,
+      // Story 19.1 / ADR-0136 Decision §1: honest because every tenant-scoped query
+      // above now runs via withTenant()/app_user, subject to rag_chunks' RLS policy.
+      isolationModel: 'row-level-rls',
     };
   }
 }
