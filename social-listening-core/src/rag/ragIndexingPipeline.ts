@@ -1,8 +1,7 @@
 import { getRagConnector } from './ragConnectorRegistry';
 import { RAGChunkingService, SplitPostInput } from './ragChunkingService';
 import type { RAGConnector } from './types';
-import { getPool } from '../db/pool';
-import { getAdminPool } from '../db/adminPool';
+import { withTenant } from '../db/withTenant';
 
 export interface IndexPostResult {
   chunkCount: number;
@@ -79,6 +78,11 @@ export async function indexPostForRAG(
         }
       }
 
+      // Step 3.5 (ADR-0136 Decision §1 / ADR-0137 Decision §2): provision a physical
+      // per-tenant scope before first write, for providers that need it. A no-op for
+      // any connector that does not implement the hook (pgvector, today).
+      await connector.ensureTenantNamespace?.(tenantId);
+
       // Step 4: Upsert chunks to vector connector
       await connector.upsert(tenantId, embeddedChunks);
 
@@ -95,19 +99,23 @@ export async function indexPostForRAG(
       syncTracker.set(syncKey, syncRecord);
 
       try {
-        const pool = getAdminPool ? getAdminPool() : getPool();
-        await pool.query(
-          `INSERT INTO rag_chunks_sync (
-            tenant_id, post_id, chunk_count, embedding_model, status, last_indexed_at, error_message, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, now(), null, now())
-          ON CONFLICT (tenant_id, post_id) DO UPDATE SET
-            chunk_count = EXCLUDED.chunk_count,
-            embedding_model = EXCLUDED.embedding_model,
-            status = EXCLUDED.status,
-            last_indexed_at = now(),
-            error_message = null,
-            updated_at = now()`,
-          [tenantId, post.id, embeddedChunks.length, 'text-embedding-3-small', 'synced']
+        // Story 19.1 / ADR-0137 Decision §3: via withTenant()/app_user, so
+        // rag_chunks_sync's tenant_isolation RLS policy is the real, operative
+        // boundary — never the superuser admin pool.
+        await withTenant(tenantId, (client) =>
+          client.query(
+            `INSERT INTO rag_chunks_sync (
+              tenant_id, post_id, chunk_count, embedding_model, status, last_indexed_at, error_message, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, now(), null, now())
+            ON CONFLICT (tenant_id, post_id) DO UPDATE SET
+              chunk_count = EXCLUDED.chunk_count,
+              embedding_model = EXCLUDED.embedding_model,
+              status = EXCLUDED.status,
+              last_indexed_at = now(),
+              error_message = null,
+              updated_at = now()`,
+            [tenantId, post.id, embeddedChunks.length, 'text-embedding-3-small', 'synced']
+          )
         );
       } catch {
         // Handled in-memory
