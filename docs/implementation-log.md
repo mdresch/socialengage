@@ -4,7 +4,33 @@
 
 ---
 
-## 2026-09-13 — Story 17.2 merge/revalidation pass — commit c47b7d3
+## 2026-09-13 — Story 17.4 implementation — commit 0f3e15e
+
+- **Full commit:** `0f3e15eb625aadc470e8532963cc89327e3af526` (pre-split single workspace repo — covers `social-listening-core/`)
+- **Repos:** social-listening-core
+- **Story / ADR:** 17.4 / ADR-0132 (TDS-0132)
+- **Contracts:**
+  - `social-listening-core/contracts/epic-17/story-17.4.ast-query-governor.contract.test.ts` (6/6 passing)
+  - `social-listening-core/contracts/epic-10/story-10.4.ad-hoc-query-endpoint.contract.test.ts` re-verified (3/3 passing)
+- **SKILL.md:** `social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/src/analytics/queryGovernor.ts` (new — `QueryGovernorConfig`, `getGovernorConfig()` env-overridable defaults, `QueryCostExceededError`, `executeGovernedQuery()`, `suggestFilterAdjustments()`)
+  - `social-listening-core/src/analytics/adHocQueryEngine.ts` (compile step extracted into `compileAdHocQuery()` returning a deep-frozen `{ ast, sql, params }` template; execution routed through the governor; LIMIT cap 1,000 → 5,000; `governor` telemetry block added to the response)
+  - `social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts` (`requirePermission('analytics', 'read')` middleware on `/query`; `QueryCostExceededError` → 422 `QUERY_COST_EXCEEDED` mapping)
+  - `social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md` (rewritten for ADR-0132; documents the role-gate reconciliation, dead `analyticsQueryRouter.ts`, the non-storable `analyst` role, and the TDS-0132 §1.2 "Story 17.2" traceability typo)
+  - `social-listening-core/contracts/epic-17/story-17.4.ast-query-governor.contract.test.ts` (new)
+  - `docs/user-stories/epic-17-adr-0129-to-0133.md`, `docs/user-stories/README.md`, `docs/implementation-plan.md` (traceability)
+  - `project-progress-dashboard/src/lib/project-dashboard/data.ts` (re-synced)
+- **Validation:** contract RED → GREEN; epic-17 suite PASS (4/4 suites, 29/29); epic-10 Story 10.4 regression contract PASS (3/3); `npm run typecheck` clean.
+- **Notes:**
+  - **Spec reconciliation, deliberate:** AC5 says "(`tenant_admin`, `analyst`)" but `analyst` is not a storable `users.role` CHECK value (migration 0081 admits only `tenant_admin`/`tenant_user`/`tenant_brand_reputation_manager`) while `permissionMatrix.ts` already defines it — and `tenant_user` also holds `analytics: 'read'`, which the 10.4 contract requires to keep passing. The gate is therefore `hasPermission(role, 'analytics', 'read')` via the existing `requirePermission` middleware — it permits the two AC-named roles (and the matrix-authorized `tenant_user`) and 403s everything else. Widening the CHECK constraint remains a separate migration decision.
+  - **`app.current_tenant_id` vs `app.tenant_id`:** the AC/TDS name a session variable the codebase does not use — `withTenant()` sets `app.tenant_id` transaction-locally (ADR-0015 convention). Treated as naming drift, not a requirement to introduce a second variable; no shared tenant infrastructure was touched.
+  - **Honest verification choice:** `statement_timeout`/`work_mem` are proven by a real `SELECT current_setting(...)` readback inside the governed transaction, surfaced as `governor.appliedSettings` in the response — not self-reported config echo. Cost-governor rejection is exercised end-to-end by driving `QUERY_GOVERNOR_MAX_COST=0.0001` so the real planner's estimate trips the budget.
+  - **Pre-existing dead code found:** `src/http/versions/v1/analyticsQueryRouter.ts` is never mounted (only `analyticsViewsRouter` is) — left in place, documented in the SKILL.md known-gaps section.
+  - **TDS-0132 §1.2 traceability matrix cites "Story 17.2"** as the governing story — a doc bug (the governing story is 17.4); documented in SKILL.md, not silently edited.
+  - **Not re-run:** full accumulated suite — same documented pre-existing environmental failures (missing local credentials; Story 6.1 Playwright flake). `docs/implementation-plan.md` has no Story 17.2 entry (its merge pass logged only here) — noted, not backfilled, to keep this commit scoped to 17.4.
+
+---
 
 - **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79` (pre-split single workspace repo — covers both `social-listening-core/` and `social-listening-admin/`)
 - **Repos:** social-listening-core, social-listening-admin

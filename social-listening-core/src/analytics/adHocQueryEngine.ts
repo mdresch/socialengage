@@ -1,16 +1,25 @@
 /**
- * Story 10.4 (ADR-0088) — Ad-Hoc Analytics Parameterized Query Engine.
+ * Story 10.4 (ADR-0088) + Story 17.4 (ADR-0132, TDS-0132) — Ad-Hoc Analytics
+ * Query Engine.
  *
- * Provides flexible multi-dimensional aggregation across social posts with:
- * - Strict allowlisted dimensions, metrics, and time grains to prevent SQL injection.
- * - Statement timeout (30s) and row count ceiling (1,000 max).
- * - Automatic precomputed view routing when possible, falling back to parameterized raw table scans.
- * - Multi-format serialization: JSON and streaming CSV.
+ * compileAdHocQuery() validates a request against the allowlist enums and
+ * compiles it into an immutable AST template — every user-supplied value binds
+ * as a positional $N parameter; no request data is ever interpolated into SQL
+ * text. executeAdHocQuery() then runs the template through the ADR-0132 budget
+ * governor (EXPLAIN cost ceiling, 3s statement_timeout, 32MB work_mem,
+ * 5,000-row cap) inside withTenant()'s transaction.
+ *
+ * See .claude/skills/ad-hoc-query-engine/SKILL.md.
  */
 
 import { withTenant } from '../db/withTenant';
 import { getPool } from '../db/pool';
 import { PoolClient } from 'pg';
+import {
+  executeGovernedQuery,
+  getGovernorConfig,
+  QueryGovernorConfig,
+} from './queryGovernor';
 
 export const ALLOWED_DIMENSIONS = ['platform', 'sentiment', 'watchlist', 'author', 'date', 'hour'] as const;
 export type Dimension = typeof ALLOWED_DIMENSIONS[number];
@@ -45,6 +54,32 @@ export interface AdHocQueryRequest {
   format?: 'json' | 'csv';
 }
 
+export interface FrozenQueryFilters {
+  readonly startDate?: string;
+  readonly endDate?: string;
+  readonly platforms?: readonly string[];
+  readonly sentiments?: readonly string[];
+  readonly watchlists?: readonly string[];
+  readonly authors?: readonly string[];
+}
+
+/** Frozen, tenant-independent query template. $1 is reserved for tenantId. */
+export interface AdHocQueryAst {
+  dimensions: readonly Dimension[];
+  metrics: readonly Metric[];
+  timeGrain: TimeGrain;
+  filters: FrozenQueryFilters;
+  limit: number;
+  needsWatchlistJoin: boolean;
+}
+
+export interface CompiledAdHocQuery {
+  ast: AdHocQueryAst;
+  sql: string;
+  /** Bind values for $2..$N — tenantId ($1) is prepended at execution. */
+  params: readonly unknown[];
+}
+
 export interface AdHocQueryResponse {
   dimensions: Dimension[];
   metrics: Metric[];
@@ -52,92 +87,109 @@ export interface AdHocQueryResponse {
   executionTimeMs: number;
   data: Record<string, any>[];
   csv?: string;
+  governor?: {
+    estimatedCost: number;
+    rowCap: number;
+    appliedSettings: { statement_timeout: string; work_mem: string };
+  };
 }
 
-export async function executeAdHocQuery(
-  tenantId: string,
-  userId: string,
-  request: AdHocQueryRequest
-): Promise<AdHocQueryResponse> {
-  const startTime = Date.now();
+const DIMENSION_EXPRESSIONS: Record<Exclude<Dimension, 'date' | 'hour'>, string> = {
+  platform: `COALESCE(sp.raw_payload->>'providerId', 'unknown')`,
+  sentiment: `COALESCE(sp.enrichment->>'sentiment', 'neutral')`,
+  author: `sp.author_id`,
+  watchlist: `pwm.watchlist_id`,
+};
 
+const METRIC_EXPRESSIONS: Record<Metric, string> = {
+  post_count: `COUNT(DISTINCT sp.id)`,
+  positive_count: `COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'positive')`,
+  neutral_count: `COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'neutral')`,
+  negative_count: `COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'negative')`,
+  engagement_total: `COALESCE(SUM(sp.author_follower_count_at_publish), 0)`,
+};
+
+const TIME_GRAIN_EXPRESSIONS: Record<TimeGrain, string> = {
+  day: `DATE(sp.published_at)`,
+  hour: `date_trunc('hour', sp.published_at)`,
+  week: `date_trunc('week', sp.published_at)`,
+  month: `date_trunc('month', sp.published_at)`,
+};
+
+function freezeFilters(filters: QueryFilters): FrozenQueryFilters {
+  return Object.freeze({
+    ...filters,
+    platforms: filters.platforms ? Object.freeze([...filters.platforms]) : undefined,
+    sentiments: filters.sentiments ? Object.freeze([...filters.sentiments]) : undefined,
+    watchlists: filters.watchlists ? Object.freeze([...filters.watchlists]) : undefined,
+    authors: filters.authors ? Object.freeze([...filters.authors]) : undefined,
+  });
+}
+
+/**
+ * Compiles a request into an immutable AST template. $1 is always the
+ * tenantId tenant-isolation predicate; every other user value becomes a
+ * bound positional parameter in `params` ($2..$N). Throws on any dimension,
+ * metric, or grain outside the allowlists.
+ */
+export function compileAdHocQuery(
+  request: AdHocQueryRequest,
+  config: QueryGovernorConfig = getGovernorConfig()
+): CompiledAdHocQuery {
   const dimensions = request.dimensions || ['date'];
   const metrics = request.metrics || ['post_count'];
   const timeGrain = request.timeGrain || 'day';
-  const limit = Math.min(1000, Math.max(1, request.limit ?? 500));
-  const format = request.format || 'json';
+  const limit = Math.min(config.maxRowsReturned, Math.max(1, request.limit ?? 500));
 
-  // Validate dimensions
   for (const dim of dimensions) {
     if (!ALLOWED_DIMENSIONS.includes(dim)) {
       throw new Error(`Invalid dimension '${dim}'. Allowed: ${ALLOWED_DIMENSIONS.join(', ')}`);
     }
   }
-
-  // Validate metrics
   for (const metric of metrics) {
     if (!ALLOWED_METRICS.includes(metric)) {
       throw new Error(`Invalid metric '${metric}'. Allowed: ${ALLOWED_METRICS.join(', ')}`);
     }
   }
-
-  // Validate time grain
-  if (timeGrain && !ALLOWED_TIME_GRAINS.includes(timeGrain)) {
+  if (!ALLOWED_TIME_GRAINS.includes(timeGrain)) {
     throw new Error(`Invalid time grain '${timeGrain}'. Allowed: ${ALLOWED_TIME_GRAINS.join(', ')}`);
   }
 
-  // Build parameterized SQL
+  const filters = freezeFilters(request.filters || {});
+  const needsWatchlistJoin =
+    dimensions.includes('watchlist') || (filters.watchlists !== undefined && filters.watchlists.length > 0);
+
+  const ast: AdHocQueryAst = Object.freeze({
+    dimensions: Object.freeze([...dimensions]),
+    metrics: Object.freeze([...metrics]),
+    timeGrain,
+    filters,
+    limit,
+    needsWatchlistJoin,
+  });
+
+  // Emit SQL from fixed fragment tables keyed by the frozen AST. $1 = tenantId.
   const selectParts: string[] = [];
   const groupByParts: string[] = [];
   const whereClauses: string[] = ['sp.tenant_id = $1'];
-  const params: any[] = [tenantId];
+  const params: unknown[] = [];
   let paramIdx = 2;
 
-  // Time dimension expression
-  const dateExpr = timeGrain === 'hour'
-    ? `date_trunc('hour', sp.published_at)`
-    : timeGrain === 'week'
-    ? `date_trunc('week', sp.published_at)`
-    : timeGrain === 'month'
-    ? `date_trunc('month', sp.published_at)`
-    : `DATE(sp.published_at)`;
-
-  for (const dim of dimensions) {
+  for (const dim of ast.dimensions) {
     if (dim === 'date' || dim === 'hour') {
-      selectParts.push(`${dateExpr} AS ${dim}`);
-      groupByParts.push(dateExpr);
-    } else if (dim === 'platform') {
-      selectParts.push(`COALESCE(sp.raw_payload->>'providerId', 'unknown') AS platform`);
-      groupByParts.push(`COALESCE(sp.raw_payload->>'providerId', 'unknown')`);
-    } else if (dim === 'sentiment') {
-      selectParts.push(`COALESCE(sp.enrichment->>'sentiment', 'neutral') AS sentiment`);
-      groupByParts.push(`COALESCE(sp.enrichment->>'sentiment', 'neutral')`);
-    } else if (dim === 'author') {
-      selectParts.push(`sp.author_id AS author`);
-      groupByParts.push(`sp.author_id`);
-    } else if (dim === 'watchlist') {
-      selectParts.push(`pwm.watchlist_id AS watchlist`);
-      groupByParts.push(`pwm.watchlist_id`);
+      const expr = TIME_GRAIN_EXPRESSIONS[ast.timeGrain];
+      selectParts.push(`${expr} AS ${dim}`);
+      groupByParts.push(expr);
+    } else {
+      const expr = DIMENSION_EXPRESSIONS[dim];
+      selectParts.push(`${expr} AS ${dim}`);
+      groupByParts.push(expr);
     }
   }
-
-  // Metric expressions
-  for (const metric of metrics) {
-    if (metric === 'post_count') {
-      selectParts.push(`COUNT(DISTINCT sp.id) AS post_count`);
-    } else if (metric === 'positive_count') {
-      selectParts.push(`COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'positive') AS positive_count`);
-    } else if (metric === 'neutral_count') {
-      selectParts.push(`COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'neutral') AS neutral_count`);
-    } else if (metric === 'negative_count') {
-      selectParts.push(`COUNT(DISTINCT sp.id) FILTER (WHERE sp.enrichment->>'sentiment' = 'negative') AS negative_count`);
-    } else if (metric === 'engagement_total') {
-      selectParts.push(`COALESCE(SUM(sp.author_follower_count_at_publish), 0) AS engagement_total`);
-    }
+  for (const metric of ast.metrics) {
+    selectParts.push(`${METRIC_EXPRESSIONS[metric]} AS ${metric}`);
   }
 
-  // Filters
-  const filters = request.filters || {};
   if (filters.startDate) {
     whereClauses.push(`sp.published_at >= $${paramIdx++}::timestamptz`);
     params.push(filters.startDate);
@@ -147,11 +199,11 @@ export async function executeAdHocQuery(
     params.push(filters.endDate);
   }
   if (filters.platforms && filters.platforms.length > 0) {
-    whereClauses.push(`COALESCE(sp.raw_payload->>'providerId', 'unknown') = ANY($${paramIdx++})`);
+    whereClauses.push(`${DIMENSION_EXPRESSIONS.platform} = ANY($${paramIdx++})`);
     params.push(filters.platforms);
   }
   if (filters.sentiments && filters.sentiments.length > 0) {
-    whereClauses.push(`COALESCE(sp.enrichment->>'sentiment', 'neutral') = ANY($${paramIdx++})`);
+    whereClauses.push(`${DIMENSION_EXPRESSIONS.sentiment} = ANY($${paramIdx++})`);
     params.push(filters.sentiments);
   }
   if (filters.authors && filters.authors.length > 0) {
@@ -160,7 +212,7 @@ export async function executeAdHocQuery(
   }
 
   const joins: string[] = [];
-  if (dimensions.includes('watchlist') || (filters.watchlists && filters.watchlists.length > 0)) {
+  if (ast.needsWatchlistJoin) {
     joins.push(`LEFT JOIN post_watchlist_matches pwm ON pwm.post_id = sp.id`);
     if (filters.watchlists && filters.watchlists.length > 0) {
       whereClauses.push(`pwm.watchlist_id = ANY($${paramIdx++}::uuid[])`);
@@ -181,23 +233,41 @@ export async function executeAdHocQuery(
     LIMIT $${limitParamIdx}
   `;
 
-  const rows = await withTenant<Record<string, any>[]>(
+  return Object.freeze({ ast, sql, params: Object.freeze(params) });
+}
+
+export async function executeAdHocQuery(
+  tenantId: string,
+  userId: string,
+  request: AdHocQueryRequest,
+  governorOverrides: Partial<QueryGovernorConfig> = {}
+): Promise<AdHocQueryResponse> {
+  const startTime = Date.now();
+  const config = getGovernorConfig(governorOverrides);
+  const format = request.format || 'json';
+  const compiled = compileAdHocQuery(request, config);
+
+  const governed = await withTenant(
     tenantId,
-    async (client: PoolClient) => {
-      // Enforce 30s statement timeout
-      await client.query('SET LOCAL statement_timeout = 30000');
-      const { rows: result } = await client.query(sql, params);
-      return result;
-    },
+    async (client: PoolClient) =>
+      executeGovernedQuery(
+        client,
+        compiled.sql,
+        [tenantId, ...compiled.params],
+        compiled.ast,
+        config,
+        { tenantId }
+      ),
     getPool(),
     userId
   );
 
+  const { rows } = governed;
   const executionTimeMs = Date.now() - startTime;
 
   let csv: string | undefined;
   if (format === 'csv') {
-    const headers = [...dimensions, ...metrics];
+    const headers = [...compiled.ast.dimensions, ...compiled.ast.metrics];
     const csvRows = [headers.join(',')];
     for (const row of rows) {
       const line = headers.map(h => {
@@ -214,11 +284,16 @@ export async function executeAdHocQuery(
   }
 
   return {
-    dimensions,
-    metrics,
+    dimensions: [...compiled.ast.dimensions],
+    metrics: [...compiled.ast.metrics],
     rowCount: rows.length,
     executionTimeMs,
     data: rows,
     csv,
+    governor: {
+      estimatedCost: governed.estimatedCost,
+      rowCap: config.maxRowsReturned,
+      appliedSettings: governed.appliedSettings,
+    },
   };
 }
