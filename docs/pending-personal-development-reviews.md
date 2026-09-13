@@ -18,3 +18,9 @@
 - **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** Pending review
 
+## 2026-09-13 — 64b6263 — docs: scheduled review WIP - ideal manager pass complete, doc steward continuing
+
+- **Full commit:** `64b62637b78193a0d0d0d8c92fd0b37f5a70a27a`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md
+- **Status:** Pending review
+

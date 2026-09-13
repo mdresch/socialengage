@@ -2913,7 +2913,7 @@
 
 - **Full commit:** `de8657998cc3b8b09446a4f1ee945ba998e4efd1`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Business-Requirements/BRD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Business-Requirements/BRD-0089-Platform-Operations-Dashboard.md, docs/project docs/Business-Requirements/BRD-0090-Data-Export-Posts-CSV.md, docs/project docs/Business-Requirements/BRD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Business-Requirements/BRD-0092-Author-Initiated-Takedown.md, docs/project docs/Business-Requirements/BRD-0093-DSR-Self-Service-Portal.md, docs/project docs/Business-Requirements/BRD-0094-Compliance-Audit-Pack.md, docs/project docs/Functional-Design/FDD-0088-Ad-Hoc-Query-Allowlist.md, docs/project docs/Functional-Design/FDD-0089-Platform-Operations-Dashboard.md, docs/project docs/Functional-Design/FDD-0090-Data-Export-Posts-CSV.md, docs/project docs/Functional-Design/FDD-0091-Real-Time-Alert-Rules-And-Delivery.md, docs/project docs/Functional-Design/FDD-0092-Author-Initiated-Takedown.md, docs/project docs/Functional-Design/FDD-0093-DSR-Self-Service-Portal.md, docs/project docs/Functional-Design/FDD-0094-Compliance-Audit-Pack.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — this commit's own Status-line changes (Blocked → Ready for Stories 10.4–10.14, matching newly-Accepted ADR-0088–0094) are correct and consistent; BRD/FDD-0088–0094 spot-checked for scope match against their source ADRs, no drift found.** This commit predates and is unrelated to the separate, larger Built-field/story-10.11–10.14-mislabeling drift introduced by `fdb9bb8`/`086fcce` (both dated the same day, shortly after this commit) — already found and corrected, see the `fdb9bb8` entry above. `project-progress-dashboard/`'s own sync is out of scope (non-authoritative).
 
 ## 2026-08-27 — f7a93b1 — style(posts): polish post details drawer header, tabs, and reply buttons
 
@@ -7046,5 +7046,11 @@
 
 - **Full commit:** `709444b19e02797f0761264ebd66ba943a0e9d91`
 - **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+
+## 2026-09-13 — 64b6263 — docs: scheduled review WIP - ideal manager pass complete, doc steward continuing
+
+- **Full commit:** `64b62637b78193a0d0d0d8c92fd0b37f5a70a27a`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md
 - **Status:** Pending review
 
