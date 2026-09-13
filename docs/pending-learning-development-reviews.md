@@ -7864,3 +7864,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-13 — f731949 — feat(analytics): implement Story 18.2 — Preconfigured analytics view RLS table enforcement (ADR-0135)
+
+- **Full commit:** `f73194934d126802b858d76f835e05edfb7f9d23`
+- **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/contracts/epic-18/story-18.2.preconfigured-analytics-views-rls.contract.test.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
+- **Status:** Pending review
+

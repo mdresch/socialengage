@@ -77,6 +77,19 @@
 
 ---
 
+## 2026-09-13 — Story 18.2 — social-listening-core@f731949
+
+- **Full commit:** `f73194934d126802b858d76f835e05edfb7f9d23`
+- **Repo:** social-listening-core
+- **Story / ADR:** 18.2 / ADR-0135
+- **Contract:** `social-listening-core/contracts/epic-18/story-18.2.preconfigured-analytics-views-rls.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md`
+- **Files touched:** social-listening-core/contracts/epic-18/story-18.2.preconfigured-analytics-views-rls.contract.test.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/README.md, docs/adr/README.md, docs/implementation-plan.md
+- **Validation re-run:** new contract PASS (6/6); epic-18 suite PASS (14/14); baseline regression suite Story 10.3 PASS (4/4); `npm run typecheck` PASS with 0 errors.
+- **Notes:** Enforces ADR-0135's binding architectural rule requiring all five preconfigured analytics view entities (`source_daily_counts`, `author_daily_counts`, `sentiment_daily_counts`, `watchlist_daily_counts`, and `topic_daily_counts`) to be physical PostgreSQL tables (`relkind = 'r'`) with Row-Level Security enabled and enforced, prohibiting literal PostgreSQL materialized views (`relkind = 'm'`); verifies idempotent upsert updates in `dailyAggregatesWorker`; and wires `topics` query routing into `GET /v1/analytics/:view` with strict cross-tenant isolation enforcement.
+
+---
+
 ## 2026-09-12 — Story 18.1 — social-listening-core@e479a59, social-listening-admin@e479a59
 
 - **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
