@@ -7060,3 +7060,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/contracts/epic-18/story-18.2.preconfigured-analytics-views-rls.contract.test.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
 - **Status:** Pending review
 
+## 2026-09-13 — ee96777 — docs(telemetry): record Story 18.2 completion and sync dashboard
+
+- **Full commit:** `ee967778abf60cffdc5aa214638babcfe32ed41e`
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-18-adr-0134-to-0135.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
