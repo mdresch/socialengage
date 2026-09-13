@@ -132,7 +132,7 @@ analyticsViewsRouter.get('/overview', async (req, res) => {
   }
 });
 
-const VALID_VIEWS = ['sources', 'authors', 'sentiments', 'watchlists'] as const;
+const VALID_VIEWS = ['sources', 'authors', 'sentiments', 'watchlists', 'topics'] as const;
 type ViewName = typeof VALID_VIEWS[number];
 
 function parseDateRange(query: Record<string, any>): { startDate: string; endDate: string } {
@@ -142,7 +142,7 @@ function parseDateRange(query: Record<string, any>): { startDate: string; endDat
 }
 
 /**
- * Story 10.3 (ADR-0087) — GET /v1/analytics/:view
+ * Story 10.3 / Story 18.2 (ADR-0087, ADR-0135) — GET /v1/analytics/:view
  * Returns precomputed daily count aggregates for the requested dimension.
  */
 analyticsViewsRouter.get('/:view', async (req, res) => {
@@ -192,6 +192,13 @@ analyticsViewsRouter.get('/:view', async (req, res) => {
             query = `
               SELECT date, watchlist_id, post_count, positive_count, neutral_count, negative_count, updated_at
               FROM watchlist_daily_counts
+              WHERE tenant_id = $1 AND date >= $2::date AND date <= $3::date
+              ORDER BY date DESC, post_count DESC`;
+            break;
+          case 'topics':
+            query = `
+              SELECT date, topic, post_count, unique_authors, positive_count, neutral_count, negative_count, mixed_count, top_keywords, top_authors, updated_at
+              FROM topic_daily_counts
               WHERE tenant_id = $1 AND date >= $2::date AND date <= $3::date
               ORDER BY date DESC, post_count DESC`;
             break;
