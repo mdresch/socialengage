@@ -12,3 +12,9 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-09-13 (Personal Development Reviewer):** No skill-relevant change observed in this commit. This commit is the scaffolding commit that created the personal-development-reviewer role itself — the agent charter, the `developer-learning-plan.md` file (already seeded with its own initial 2026-09-09 skills inventory, learning goals, and first progress note), the queue file, and the `post-commit` wiring to feed it. No application code, contract, ADR, or new technology/architectural pattern shipped in `social-listening-core` or `social-listening-admin`. Per the charter's "do not count" guidance for routine governance commits (queue files, hook wiring, documentation scaffolding with no new code), and because documenting the creation of this very reviewer as a "skill observed" would not reflect shipped, contract-verified technical work, no Progress Notes entry or new Skills Inventory snapshot was added to `docs/ai-roles/developer-learning-plan.md`.
 
+## 2026-09-13 — 709444b — docs: scheduled review WIP - L&D writer pass complete, doc steward continuing
+
+- **Full commit:** `709444b19e02797f0761264ebd66ba943a0e9d91`
+- **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+

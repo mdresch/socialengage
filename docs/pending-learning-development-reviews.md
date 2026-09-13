@@ -7852,3 +7852,9 @@
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** Pending review
+## 2026-09-13 — 709444b — docs: scheduled review WIP - L&D writer pass complete, doc steward continuing
+
+- **Full commit:** `709444b19e02797f0761264ebd66ba943a0e9d91`
+- **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+

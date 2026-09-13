@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-13 | 05:12 | — | — | Review | — | docs: scheduled review WIP - L&D writer pass complete, doc steward continuing (709444b) |
 | 2026-09-13 | 05:04 | — | — | Review | — | docs: scheduled review WIP - personal dev reviewer resolved, doc steward in progress (6773b64) |
 | 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
 | 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
