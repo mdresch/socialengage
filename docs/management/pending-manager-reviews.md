@@ -8247,3 +8247,9 @@
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-13 — 92f685c — docs: Documentation Steward pass - fix Epic 10 Built-field mislabeling and related drift
+
+- **Full commit:** `92f685c836580224fe287cadd85cbdcaf1877a9d`
+- **Files touched:** docs/adr/README.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md
+- **Status:** Pending review
+
