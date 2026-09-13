@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   rootDir: '.',
-  testMatch: ['<rootDir>/contracts/**/*.contract.test.ts', '<rootDir>/src/**/*.test.ts'],
+  testMatch: ['**/contracts/**/*.contract.test.ts', '**/src/**/*.test.ts'],
   globalSetup: '<rootDir>/jest.global-setup.js',
   globalTeardown: '<rootDir>/jest.global-teardown.js',
   setupFiles: ['<rootDir>/jest.setup.js'],

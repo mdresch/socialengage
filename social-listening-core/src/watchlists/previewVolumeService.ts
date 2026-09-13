@@ -41,9 +41,17 @@ export interface ConnectorVolumeItem {
   errorMessage?: string;
 }
 
+export interface VolumeCostProjection {
+  storageGbPerMonth: number;
+  aiEnrichmentCallsPerMonth: number;
+  currency: 'USD';
+  confidence: VolumeConfidence;
+}
+
 export interface WatchlistVolumePreview {
   totalEstimatedPosts: number;
   breakdown: ConnectorVolumeItem[];
+  estimatedCost?: VolumeCostProjection;
 }
 
 export interface PreviewVolumeArgs {
@@ -224,10 +232,63 @@ async function previewOneConnector(
   );
 }
 
+/** Standard 30-day month in milliseconds for cost projections (ADR-0134 §4). */
+export const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+/** Average stored post size in bytes (raw payload + metadata + enrichment JSON) (ADR-0134 §4). */
+export const ESTIMATED_BYTES_PER_POST = 5 * 1024;
+const BYTES_PER_GB = 1024 * 1024 * 1024;
+
+/**
+ * Story 18.1 (ADR-0134 §4) — projects monthly downstream storage growth and AI
+ * enrichment calls from the preview post count and requested time window.
+ * Confidence inherits the least-confident connector in the breakdown:
+ * an 'unavailable' connector pulls the whole projection to 'unavailable';
+ * else an 'estimate' connector pulls the projection to 'estimate';
+ * otherwise 'exact'.
+ */
+export function computeEstimatedCost(
+  totalEstimatedPosts: number,
+  breakdown: ConnectorVolumeItem[],
+  timeWindow?: TimeWindow
+): VolumeCostProjection {
+  let confidence: VolumeConfidence = 'exact';
+  if (breakdown.some((item) => item.confidence === 'unavailable')) {
+    confidence = 'unavailable';
+  } else if (breakdown.some((item) => item.confidence === 'estimate')) {
+    confidence = 'estimate';
+  }
+
+  if (totalEstimatedPosts === 0 || breakdown.length === 0) {
+    return {
+      storageGbPerMonth: 0,
+      aiEnrichmentCallsPerMonth: 0,
+      currency: 'USD',
+      confidence,
+    };
+  }
+
+  const windowMs = resolveWindowMs(timeWindow);
+  const monthlyMultiplier = MONTH_MS / windowMs;
+  const projectedMonthlyPosts = Math.round(totalEstimatedPosts * monthlyMultiplier);
+
+  const storageGbPerMonth = Number(
+    ((projectedMonthlyPosts * ESTIMATED_BYTES_PER_POST) / BYTES_PER_GB).toFixed(4)
+  );
+  const aiEnrichmentCallsPerMonth = projectedMonthlyPosts;
+
+  return {
+    storageGbPerMonth,
+    aiEnrichmentCallsPerMonth,
+    currency: 'USD',
+    confidence,
+  };
+}
+
 /**
  * Runs per-connector volume previews concurrently (ADR-0077 §4). A single
  * connector failure is isolated into its breakdown item as
  * `confidence: 'unavailable'` — this function never rejects.
+ * Adds an additive `estimatedCost` block per ADR-0134 §4 (Story 18.1).
  */
 export async function previewWatchlistVolume(args: PreviewVolumeArgs): Promise<WatchlistVolumePreview> {
   const breakdown = await Promise.all(
@@ -236,7 +297,8 @@ export async function previewWatchlistVolume(args: PreviewVolumeArgs): Promise<W
     )
   );
   const totalEstimatedPosts = breakdown.reduce((sum, item) => sum + item.estimatedPosts, 0);
-  return { totalEstimatedPosts, breakdown };
+  const estimatedCost = computeEstimatedCost(totalEstimatedPosts, breakdown, args.timeWindow);
+  return { totalEstimatedPosts, breakdown, estimatedCost };
 }
 
 /**

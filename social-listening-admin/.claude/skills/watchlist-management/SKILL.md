@@ -29,7 +29,9 @@ Confirmed directly: `src/app/tenant/watchlists/page.tsx` rendered a hardcoded lo
 
 ## Cross-component behavior
 - Story 13.3 adds connector-aware warnings to `WatchlistForm` via `BooleanQueryBuilder` (see `.claude/skills/watchlist-builder/SKILL.md` and `.claude/skills/boolean-query-visual-builder/SKILL.md`). `WatchlistForm` disables the save button when the builder reports `hasErrors` (query-limit violations), not for unsupported-clause warnings.
+- Story 18.1 (ADR-0134) adds volume preview and cost projection to `WatchlistForm`: users can click "Preview volume" before saving to evaluate volume across selected platforms and projected monthly storage and AI enrichment costs. `VolumePreviewPanel` visually enforces the confidence-display contract: exact counts are rendered without tilde (e.g. `12,340`), while estimated counts are rendered with `~` prefix and `(estimated)` suffix (e.g. `~45,000 (estimated)`). An `estimatedCost` card surfaces projected monthly storage growth (GB/month), AI enrichment calls (calls/month), currency (USD), and inherited confidence.
 
 ## Contracts
 - `contracts/epic-6/story-6.4.watchlist-management-screen.contract.test.ts` (rewritten 2026-08-12 — real behavioral assertions: mocked-fetch core-client unit tests, Route Handler proxy tests, and structural source checks, per the same node-testEnvironment split Stories 6.3/6.8 already established; no jsdom in this repo).
 - `contracts/epic-13/story-13.3.query-capability-warnings-in-watchlist-builder.contract.test.ts` — query-capability warnings and save gating in `WatchlistForm`.
+- `contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts` (Story 18.1 / ADR-0134) — `previewWatchlistVolume` core-client export, same-origin proxy route, `VolumePreviewPanel` confidence-distinction contract, cost projection card, and `WatchlistForm` preview integration.

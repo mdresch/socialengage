@@ -923,6 +923,62 @@ export interface WatchlistActionOutcome {
   body: { code?: string; details?: string[]; offendingClause?: unknown; reason?: string; current_version?: number; [key: string]: unknown };
 }
 
+export type VolumeConfidence = 'exact' | 'estimate' | 'unavailable';
+export type VolumeWarning = 'none' | 'high_volume' | 'quota_risk' | 'unsupported_query';
+
+export interface ConnectorVolumeItem {
+  connectorId: string;
+  platformId: string;
+  estimatedPosts: number;
+  confidence: VolumeConfidence;
+  sampleSize?: number;
+  rateLimitCost: number;
+  warning: VolumeWarning;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export interface VolumeCostProjection {
+  storageGbPerMonth: number;
+  aiEnrichmentCallsPerMonth: number;
+  currency: 'USD';
+  confidence: VolumeConfidence;
+}
+
+export interface WatchlistVolumePreview {
+  totalEstimatedPosts: number;
+  breakdown: ConnectorVolumeItem[];
+  estimatedCost?: VolumeCostProjection;
+}
+
+export interface PreviewVolumeInput {
+  watchlistId?: string;
+  ast?: WatchlistAST | null;
+  connectorIds?: string[];
+  timeWindow?: { start?: string; end?: string };
+}
+
+export interface PreviewVolumeOutcome {
+  status: number;
+  body: WatchlistVolumePreview | { code?: string; error?: string };
+}
+
+/**
+ * Story 9.1 / Story 18.1 (ADR-0077, ADR-0134) — estimates per-connector post
+ * volume and projected monthly downstream storage/AI-enrichment costs for a watchlist.
+ */
+export async function previewWatchlistVolume(
+  input: PreviewVolumeInput
+): Promise<PreviewVolumeOutcome> {
+  const response = await authenticatedCoreFetch('/v1/watchlists/preview-volume', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = (await response.json().catch(() => ({}))) as WatchlistVolumePreview | { code?: string; error?: string };
+  return { status: response.status, body };
+}
+
 /**
  * Story 12.3 / 12.4 (ADR-0102) — fetch per-connector query capabilities.
  */

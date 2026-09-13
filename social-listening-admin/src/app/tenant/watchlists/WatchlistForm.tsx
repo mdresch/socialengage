@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useCallback, type FormEvent } from 'react';
-import type { Watchlist } from '@/lib/core-client';
+import type { Watchlist, WatchlistVolumePreview } from '@/lib/core-client';
 import { TagInput } from '@/components/ui';
 import { BooleanQueryBuilder } from '@/components/watchlists/BooleanQueryBuilder';
+import { VolumePreviewPanel } from '@/components/watchlists/VolumePreviewPanel';
 import {
   WatchlistAST,
+  WatchlistClause,
   parseBooleanQueryToAst,
   astToBooleanQuery,
 } from '@/lib/watchlist-ast';
@@ -99,10 +101,56 @@ export function WatchlistForm({
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
+  const [preview, setPreview] = useState<WatchlistVolumePreview | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   const handleValidationChange = useCallback((state: { hasErrors: boolean }) => {
     setHasErrors(state.hasErrors);
   }, []);
+
+  const handlePreview = async () => {
+    setPreviewError(null);
+    setPreviewing(true);
+    try {
+      let queryAst: WatchlistAST | undefined = ast;
+      if (!queryAst && matchType !== 'boolean' && terms.length > 0) {
+        const clauses: WatchlistClause[] = terms.map((t) => {
+          const val = t.replace(/^[#@]/, '');
+          if (matchType === 'hashtag') return { type: 'hashtag', value: val };
+          if (matchType === 'account') return { type: 'mention', value: val };
+          return { type: 'keyword', value: val };
+        });
+        queryAst = {
+          operator: 'OR',
+          clauses,
+        };
+      }
+
+      const res = await fetch('/api/watchlists/preview-volume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          watchlistId: watchlist?.id,
+          ast: queryAst,
+          connectorIds: platformIds,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setPreviewError(data.error || data.code || `Preview failed: ${res.status}`);
+        return;
+      }
+
+      const data = (await res.json()) as WatchlistVolumePreview;
+      setPreview(data);
+    } catch (err) {
+      setPreviewError((err as Error).message || 'Failed to fetch volume preview.');
+    } finally {
+      setPreviewing(false);
+    }
+  };
 
   function togglePlatform(id: string) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]));
@@ -304,6 +352,16 @@ export function WatchlistForm({
         </div>
       </div>
 
+      {previewError && (
+        <p role="alert" className="form-message form-message-error">
+          {previewError}
+        </p>
+      )}
+
+      {preview && (
+        <VolumePreviewPanel preview={preview} onClose={() => setPreview(null)} />
+      )}
+
       {message && (
         <p
           role={message.kind === 'error' ? 'alert' : 'status'}
@@ -313,9 +371,19 @@ export function WatchlistForm({
         </p>
       )}
 
-      {/* Inline cancel for edit mode when not in slideover */}
+      {/* Actions */}
       {mode === 'edit' && onCancel && (
-        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <button
+            type="button"
+            id="preview-volume-btn"
+            data-testid="preview-volume-btn"
+            className="btn btn-secondary btn-sm"
+            onClick={handlePreview}
+            disabled={submitting || previewing || hasErrors}
+          >
+            {previewing ? 'Calculating…' : '📊 Preview volume'}
+          </button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={submitting}>
             Cancel
           </button>
@@ -326,7 +394,17 @@ export function WatchlistForm({
       )}
 
       {mode === 'create' && !onCancel && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <button
+            type="button"
+            id="preview-volume-btn"
+            data-testid="preview-volume-btn"
+            className="btn btn-secondary btn-sm"
+            onClick={handlePreview}
+            disabled={submitting || previewing || hasErrors}
+          >
+            {previewing ? 'Calculating…' : '📊 Preview volume'}
+          </button>
           <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || hasErrors}>
             {submitting ? 'Creating…' : 'Create watchlist'}
           </button>
