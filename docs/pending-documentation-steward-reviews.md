@@ -7048,3 +7048,9 @@
 - **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/watchlists/preview-volume/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/VolumePreviewPanel.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts, social-listening-core/jest.config.js, social-listening-core/src/watchlists/previewVolumeService.ts
 - **Status:** Pending review
+## 2026-09-13 — ad6833f — Merge remote-tracking branch 'origin/main' into main
+
+- **Full commit:** `ad6833fd3798aa8d07b32ba2e655bf3fd09bf8df`
+- **Files touched:** 
+- **Status:** Pending review
+
