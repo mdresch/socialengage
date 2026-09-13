@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-09-12 — Story 18.1 — social-listening-core@e479a59, social-listening-admin@e479a59
+
+- **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
+- **Repo:** social-listening-core, social-listening-admin
+- **Story / ADR:** 18.1 / ADR-0134
+- **Contract:** `social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts`, `social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts`
+- **SKILL.md:** `social-listening-core/.claude/skills/watchlist-matching/SKILL.md`, `social-listening-admin/.claude/skills/watchlist-management/SKILL.md`
+- **Files touched:** social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts, social-listening-core/src/watchlists/previewVolumeService.ts, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/jest.config.js, social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts, social-listening-admin/src/lib/core-client.ts, social-listening-admin/src/app/api/watchlists/preview-volume/route.ts, social-listening-admin/src/components/watchlists/VolumePreviewPanel.tsx, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/jest.config.js, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/README.md, docs/adr/README.md, docs/implementation-plan.md
+- **Validation re-run:** core contract PASS (8/8); admin contract PASS (5/5); core regression suites (Story 9.1 preview volume) PASS (16/16); admin regression suites (Story 6.4 watchlist management, Story 13.3 query capability warnings) PASS (35/35); `npm run typecheck` in both repos PASS with 0 errors.
+- **Notes:** Implements ADR-0134's additive `estimatedCost` projection block on `WatchlistVolumePreview` (`storageGbPerMonth`, `aiEnrichmentCallsPerMonth`, `currency: 'USD'`, and inherited `confidence: 'exact' | 'estimate' | 'unavailable'`). In the admin UI, exposes `previewWatchlistVolume()` in `core-client.ts`, wires `/api/watchlists/preview-volume` same-origin BFF proxy, updates `VolumePreviewPanel` to visually distinguish exact vs. estimated counts with badges and renders the cost projection card, and integrates volume preview into `WatchlistForm`.
+
+---
+
 ## 2026-09-04 — Story 14.1 — social-listening-core@1d03403
 
 - **Full commit:** `1d03403524f6855863156ef054fe1cc50f4dff2c`

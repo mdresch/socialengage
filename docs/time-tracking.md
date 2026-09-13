@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-13 | 02:22 | — | — | Documentation | Story 18.1 | feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134) (e479a59) |
 | 2026-09-04 | 16:33 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (124a1cf) |
 | 2026-09-04 | 16:31 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (f53a870) |
 | 2026-09-04 | 16:18 | — | — | Documentation | Story 14.1 | docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1) (c68c1a1) |
