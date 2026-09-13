@@ -2829,25 +2829,25 @@
 
 - **Full commit:** `a57a0d5f29ff0faee0c4fcb272060e6269fe238b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** Pure DB-permissions bugfix migration (grants `app_user` rights on `rag_chunks`/`rag_chunks_sync`) plus routine dashboard-sync/queue-bookkeeping churn. Neither `rag-chunking-pipeline/SKILL.md` nor `semantic-drift/SKILL.md` names migration numbers or asserts a permissions state this commit would contradict; no ADR/story/traceability claim affected.
 
 ## 2026-08-27 — 57d4be3 — feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector
 
 - **Full commit:** `57d4be3df763b09f37aa28ea9d57b10ea28c361b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** Neither `rag-connector/SKILL.md` nor `rag-chunking-pipeline/SKILL.md` makes a status-computation claim this commit contradicts. This is an infra/ops utility (like the earlier `geo:backfill` script) with no accompanying story number and no `docs/implementation-log.md` entry expected or found — consistent with the project's existing no-story-utility pattern.
 
 ## 2026-08-27 — e2ba717 — feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline
 
 - **Full commit:** `e2ba717685c574c3626804cbb58d22aa9186eb16`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** Continuation of the `57d4be3` backfill/status work above; same reasoning applies — no SKILL.md claim contradicted, no story/log entry expected.
 
 ## 2026-08-27 — 13a38b0 — chore: remove ephemeral test db json
 
 - **Full commit:** `13a38b0662f0ecf3547a512fff810964cbe634cb`
 - **Files touched:** social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** Deletes a stray ephemeral per-run test-db marker file; no doc claim touched.
 
 ## 2026-08-27 — a4dbb66 — fix(rag): fetch live status on mount in RAGDiscoveryClient
 
