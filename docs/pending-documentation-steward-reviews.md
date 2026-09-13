@@ -2853,13 +2853,13 @@
 
 - **Full commit:** `a4dbb663a292007930d6d2632dfc3c67429a7832`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** `rag-discovery-ui/SKILL.md` and `rag-endpoints/SKILL.md` make no claim about status-fetch timing (mount vs. lazy) this bugfix would contradict.
 
 ## 2026-08-27 — 7cccf96 — feat(dashboard): update Phase Milestone Story Velocity curve and synchronized telemetry
 
 - **Full commit:** `7cccf966de164fad8553bd9a4f0ac025529ecd0f`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-13 — clean, no drift.** Touches only `project-progress-dashboard/`'s own non-authoritative telemetry snapshot (per `CLAUDE.md`'s own framing, that app's in-app numbers are periodic syncs, not a source of truth) plus routine queue/time-log bookkeeping. No `docs/**` traceability claim affected.
 
 ## 2026-08-27 — 6cc1089 — feat(story-10.1): prospecting list model and sharing backend (ADR-0086)
 
