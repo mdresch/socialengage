@@ -7078,3 +7078,9 @@
 - **Files touched:** docs/adr/0137-rag-post-chunking-and-embedding-namespace-routing.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Functional-Design/FDD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/contracts/epic-19/story-19.2.rag-chunking-embedding-namespace-routing.contract.test.ts, social-listening-core/migrations/0083_force_rls_rag_chunks_sync.sql, social-listening-core/src/rag/ragIndexingPipeline.ts
 - **Status:** Pending review
 
+## 2026-09-14 — 1f96685 — docs(epic-19): flesh out Story 19.1/19.2 with AC detail, backfill real commit hashes
+
+- **Full commit:** `1f96685ede338346b7f795e5a012cee31b858dfe`
+- **Files touched:** docs/user-stories/epic-19-adr-0136-to-0140.md
+- **Status:** Pending review
+
