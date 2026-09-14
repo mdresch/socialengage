@@ -8161,3 +8161,9 @@
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-14:** see docs/management/manager-register.md's matching "Decision Evaluator: Epics 14–17..." entry.
+## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
+
+- **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** Pending review
+
