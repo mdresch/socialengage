@@ -2828,38 +2828,38 @@
 ## 2026-08-27 — a57a0d5 — fix(rag): add migration 0047 granting app_user permissions on rag_chunks and rag_chunks_sync
 
 - **Full commit:** `a57a0d5f29ff0faee0c4fcb272060e6269fe238b`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql
-- **Status:** Pending review
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/next-env.d.ts, social-listening-core/migrations/0047_fix_rag_chunks_permissions_and_rls.sql — confirmed via `git diff-tree --no-commit-id --name-only -r a57a0d5`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** Pure permissions-migration fix, no doc-facing claim; neither `rag-connector/SKILL.md` nor `rag-vector-rls/SKILL.md` claims anything about `rag_chunks` grants that this touches.
 
 ## 2026-08-27 — 57d4be3 — feat(rag): add RAG backfill utility (npm run rag:backfill) and DB-backed status in PgvectorRAGConnector
 
 - **Full commit:** `57d4be3df763b09f37aa28ea9d57b10ea28c361b`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/package.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts — confirmed via `git diff-tree --no-commit-id --name-only -r 57d4be3`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** New `rag:backfill` script and DB-backed status are internal implementation detail of `PgvectorRAGConnector`; `rag-connector/SKILL.md`'s own contract-file list and invariants aren't touched by this, and it doesn't have a "Relations to other components" section to go stale (checked — none of the `rag-*` SKILL.md files do).
 
 ## 2026-08-27 — e2ba717 — feat(rag): enhance PgvectorRAGConnector and RAG backfill pipeline
 
 - **Full commit:** `e2ba717685c574c3626804cbb58d22aa9186eb16`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts
-- **Status:** Pending review
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/backfill.ts, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/ragIndexingPipeline.ts — confirmed via `git diff-tree --no-commit-id --name-only -r e2ba717`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** Same class as `57d4be3` above — internal RAG pipeline enhancement, no traceability-doc claim touched or made stale.
 
 ## 2026-08-27 — 13a38b0 — chore: remove ephemeral test db json
 
 - **Full commit:** `13a38b0662f0ecf3547a512fff810964cbe634cb`
-- **Files touched:** social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- **Files touched:** social-listening-core/.jest-test-db-40920.json — confirmed via `git diff-tree --no-commit-id --name-only -r 13a38b0`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** Ephemeral per-run test-DB tracking file removal only, no doc claim involved.
 
 ## 2026-08-27 — a4dbb66 — fix(rag): fetch live status on mount in RAGDiscoveryClient
 
 - **Full commit:** `a4dbb663a292007930d6d2632dfc3c67429a7832`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/src/app/tenant/discovery/RAGDiscoveryClient.tsx, social-listening-core/.jest-test-db-40920.json, social-listening-core/src/rag/pgvectorConnector.ts — confirmed via `git diff-tree --no-commit-id --name-only -r a4dbb66`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** Client-side status-fetch fix; no `SKILL.md`/ADR/story claim touched.
 
 ## 2026-08-27 — 7cccf96 — feat(dashboard): update Phase Milestone Story Velocity curve and synchronized telemetry
 
 - **Full commit:** `7cccf966de164fad8553bd9a4f0ac025529ecd0f`
-- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json
-- **Status:** Pending review
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/components/charts/VelocityAreaChart.tsx, project-progress-dashboard/src/components/project-progress/OverviewView.tsx, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.jest-test-db-40920.json — confirmed via `git diff-tree --no-commit-id --name-only -r 7cccf96`, exact match.
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-14 — clean, no drift.** `project-progress-dashboard/` telemetry-only change, explicitly out of mandatory scope per `CLAUDE.md`'s Map section and not itself a source of truth.
 
 ## 2026-08-27 — 6cc1089 — feat(story-10.1): prospecting list model and sharing backend (ADR-0086)
 
