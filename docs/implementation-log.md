@@ -4,9 +4,37 @@
 
 ---
 
-## 2026-09-13 — Story 17.4 implementation — commit 0f3e15e
+## 2026-09-13 — Story 17.5 implementation — commit pending
 
-- **Full commit:** `0f3e15eb625aadc470e8532963cc89327e3af526` (pre-split single workspace repo — covers `social-listening-core/`)
+- **Full commit:** `pending` (pre-split single workspace repo — covers `social-listening-core/`)
+- **Repos:** social-listening-core
+- **Story / ADR:** 17.5 / ADR-0133 (TDS-0133)
+- **Contracts:**
+  - `social-listening-core/contracts/epic-17/story-17.5.metric-anomaly-significance-gate.contract.test.ts` (6/6 passing)
+  - `social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts` re-verified (15/15 passing — see healed regression below)
+  - `social-listening-core/contracts/epic-9/story-9.2.metric-explainability.contract.test.ts` re-verified (epic-9 suite 8/8, 69/69)
+- **SKILL.md:** `social-listening-core/.claude/skills/metric-explainability/SKILL.md`, `social-listening-core/.claude/skills/compliance/SKILL.md`
+- **Files touched:**
+  - `social-listening-core/src/ai/significanceGate.ts` (new — `evaluateStatisticalSignificance()`, `evaluateSignificanceGate()` rolling 30-day baseline, `decomposeFactors()` root-cause decomposition)
+  - `social-listening-core/src/ai/metricExplainabilityService.ts` (gate evaluation after cache/rate-limit, before concurrency slot and LLM call; gated non-significant response path with `tokenCostSaved`/`generationId:'none'`; factor decomposition injected into prompt context on significant shifts; `isStatisticallySignificant`/`zScore`/`pValue`/`tokenCostSaved`/`factorDecomposition` response fields)
+  - `social-listening-core/src/admin/platformAdminAuditLog.ts` (healed — chain-read now runs on `getPlatformAdminPool()` regardless of caller write pool; see below)
+  - `social-listening-core/contracts/epic-17/story-17.5.metric-anomaly-significance-gate.contract.test.ts` (new)
+  - `scripts/git-hooks/pre-commit` (backfill mis-attribution repair — see below)
+  - `docs/user-stories/epic-17-adr-0129-to-0133.md`, `docs/user-stories/README.md`, `docs/implementation-plan.md` (traceability)
+  - `project-progress-dashboard/src/lib/project-dashboard/data.ts` (re-synced)
+- **Validation:** contract RED → GREEN (6/6); epic-17 suite PASS (5/5 suites, 35/35); epic-9 suite PASS (8/8, 69/69); five-epic regression run (epics 3/5/13/16/17): 362/431 passing, all 69 failures verified environmental (disabled `sociallistening-kv` Key Vault subscription, missing `ENTRA_*` creds, Service Bus/Blob unavailability, export rate-limit flakes) — zero audit-log-related failures; `npm run typecheck` clean.
+- **Notes:**
+  - **Pre-existing regression healed (was masquerading as environmental):** Story 16.3's hash chaining (`492bbd1`) added a `SELECT record_hash` read inside `logPlatformAdminAction()` but granted SELECT to nobody new — every app-scoped writer role (`app_user`, `tenant_signup_role`, `tenant_deletion_role`) holds INSERT only, so Stories 13.7, 3.8, 5.15, 5.16, and 13.1's connector re-enable path all began failing with `permission denied for table platform_admin_audit_log` the moment 16.3 landed, silently absorbed into the documented environmental-failure count. Confirmed by re-running 13.7 on unmodified `main` (10/15 failing). Fix per the ADR-0030 §5/migration-0015 invariant that `platform_admin_audit_log` is readable by `platform_admin_role` alone (asserted by Story 5.7's contract): the chain read now always executes on `getPlatformAdminPool()` — the role that legitimately reads the log — while the INSERT stays on the caller's own pool, preserving the per-role blast-radius separation Story 5.15/3.8/13.7 deliberately chose. No grants were added; app_user still has zero read access. Side effect already verified: 5.15, 5.16, 13.1, and 13.7 all pass again.
+  - **Contract semantics settled:** `isStatisticallySignificant` means "proceeded to generation" — `true` on both the gate-evaluated-significant path and the <7-samples gate-open path; `zScore`/`pValue` are populated only when the gate actually evaluated.
+  - **Known drift flagged, not fixed (out of scope):** the compliance SKILL's row-level-locking constraint (`SELECT ... FOR UPDATE` within the partition transaction) is implemented for `tenant_audit_log` (`appendChainedTenantAudit`) but not for `platform_admin_audit_log` — `logPlatformAdminAction`'s chain read has no `FOR UPDATE` and Pool-based callers were never transactional, so the platform chain is append-racy under concurrency. Pre-existing; recorded in `compliance/SKILL.md`.
+  - **pre-commit hook mis-attribution defect found and fixed:** `scripts/git-hooks/pre-commit`'s pending-hash backfill stamps `pending` → HEAD's hash, but its sed patterns also matched `pending` markers introduced by the commit *being created*, so Story 17.4's own log entry was stamped `0f3e15e` (its parent, the 17.2 merge) instead of `10767db` — the entry below records the wrong hash. Guards added: a file's backfill is skipped when the staged diff itself adds pending markers to it. Story-file backfill was also dead (`@pending$` never matched Built lines' trailing markdown spaces); now unanchored under the same guard. Story 17.4's `Built:` fields (epic-17 file, README) were resolved to `10767db` manually in this commit since the story-file path never auto-resolved. This entry's `pending` is left genuinely pending — it resolves to this commit's hash on the next pending-free commit per convention.
+  - **Not re-run:** full accumulated suite beyond epics 3/5/9/13/16/17 — remaining failures are the documented environmental set; none audit-log-related.
+
+---
+
+## 2026-09-13 — Story 17.4 implementation — commit 0f3e15e *(mis-stamped — actual commit `10767db`; see the 17.5 entry's notes above)*
+
+- **Full commit:** `0f3e15eb625aadc470e8532963cc89327e3af526` (pre-split single workspace repo — covers `social-listening-core/`) — **correction:** the real implementation commit is `10767db2b63ad50a098be31967180009da5a63ef`; `0f3e15e` was stamped by the pre-commit backfill defect described in the 17.5 entry's notes.
 - **Repos:** social-listening-core
 - **Story / ADR:** 17.4 / ADR-0132 (TDS-0132)
 - **Contracts:**
