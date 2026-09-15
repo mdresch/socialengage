@@ -7084,3 +7084,9 @@
 - **Files touched:** docs/user-stories/epic-19-adr-0136-to-0140.md
 - **Status:** Pending review
 
+## 2026-09-15 — 1e71d7e — feat(rag): implement Story 19.3 — RAG vector-store namespace isolation and pgvector RLS (ADR-0138)
+
+- **Full commit:** `1e71d7e43e23492c96ab1f0f2aae9e8203efa0b3`
+- **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0138-rag-vector-store-namespace-per-tenant-isolation.md, docs/adr/README.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Functional-Design/FDD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/contracts/epic-19/story-19.3.rag-vector-store-namespace-isolation.contract.test.ts, social-listening-core/src/rag/ragReconciliationService.ts
+- **Status:** Pending review
+

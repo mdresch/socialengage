@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-15 | 11:56 | — | — | Documentation | Story 19.3 | feat(rag): implement Story 19.3 — RAG vector-store namespace isolation and pgvector RLS (ADR-0138) (1e71d7e) |
 | 2026-09-14 | 11:35 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (0170db9) |
 | 2026-09-14 | 11:34 | — | — | Documentation | Story 19.1 | docs(epic-19): flesh out Story 19.1/19.2 with AC detail, backfill real commit hashes (1f96685) |
 | 2026-09-13 | 20:57 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (6939574) |
