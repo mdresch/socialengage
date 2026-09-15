@@ -170,3 +170,7 @@ The embedding vector dimension is specified in connector configuration (e.g. 153
 ### Pending supersession note (2026-08-28)
 
 If ADR-0136 (Proposed, 2026-08-28) is accepted, this ADR's decision would be superseded/refined by ADR-0136's own terms — specifically shifting vector store multi-tenancy from shared-index metadata filtering to physical namespace/shard-per-tenant isolation (Pinecone/Weaviate) and database-enforced Row-Level Security (pgvector). This is a pending note only: ADR-0136 is currently Proposed, not accepted.
+
+### Supersession update (2026-09-14, Story 19.3)
+
+ADR-0136 was Accepted 2026-08-28 and its Decision §11 supersession (noted above) is now real, not pending: Story 19.1 (`social-listening-core@8962e1d`) shipped `PgvectorRAGConnector`'s RLS-based tenant isolation exactly as ADR-0136 decided. This ADR's own Decision §11 (shared-index metadata filtering as the primary isolation mechanism) is superseded in full by ADR-0136 Decision §2, per that ADR's own "Relation to ADR-0081" section. Found and corrected while drafting ADR-0138 (Story 19.3), which cross-references this note.
