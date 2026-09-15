@@ -23,7 +23,7 @@ Both layers are non-blocking, dismissible guides — neither locks any existing 
 | BRD-0080 | Business requirements for self-service tenant onboarding | 9.6 |
 | FDD-0080 | Functional design for checklist progress, deep-linking, and dismissal | 9.6 |
 | ADR-0130 | Onboarding checklist state refinements — role-tailored step trees, automated verification probes | 17.2 (frontend/backend) |
-| ADR-0036 §2 | Bearer token attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 / 17.2 |
+| ADR-0036 §2 | Authorization header attachment via `authenticatedCoreFetch()` in `core-client.ts` | 6.1 / 9.6 / 17.2 |
 | ADR-0035 | Design system tokens and non-blocking dashboard cards | 6.2 / 9.6 |
 
 ## Contracts that constrain this component
@@ -57,3 +57,5 @@ Both layers are non-blocking, dismissible guides — neither locks any existing 
 
 - **`social-listening-core`'s `onboarding-checklist` skill** — the backend counterpart; `roleOnboardingService.ts` / `automatedVerificationProbeRunner.ts` / `onboardingRouter.ts` are what `getRoleOnboardingChecklist()` here calls into via `GET /v1/onboarding/checklist`.
 - **`role-routing.ts` / `session.ts`** — `resolveCallerTenantUser()` in both BFF routes resolves the caller's tenant identity from the session cookie; a non-`tenant_user` identity gets `401` before either route touches core.
+- **`src/components/ConnectorStatus.tsx`** — linked from the `connect_source` checklist step's deep-link; a user clicking that step is routed to `/tenant/connectors`.
+- **`src/components/WatchlistManager.tsx`** — linked from the `build_watchlist` step deep-link (`/tenant/watchlists`).

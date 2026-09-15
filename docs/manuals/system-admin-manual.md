@@ -2,7 +2,7 @@
 
 **Audience:** a `platform_admin` identity — the operator of the SocialEngage platform itself, not a member of any tenant.
 
-**Current coverage, as of 2026-08-13:** sign-in, plus the real, working Platform Admin console (Story 6.6, first built 2026-08-08, then substantially rebuilt for real 2026-08-12 after an internal review found the first build's controls were non-interactive placeholders — see "Honest history" at the end of the console section) — a database health indicator, the tenant registry, tenant provisioning, per-tenant editing (name, status, license seats), the two-phase break-glass credential reset flow, and a recent-activity audit log. Nothing below describes a screen that doesn't exist yet; a handful of specific gaps are called out in their own place, and summarized together in "What's not built yet" at the end. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how the console works changed because of it.
+**Learning & Development Writer addendum, 2026-09-10 (scheduled queue pass):** added the Platform Operations dashboard (Story 10.7, `/admin/operations`), a real-time infrastructure/cost/connector-health screen, confirmed built and contract-verified. Original note below, as of 2026-08-13: sign-in, plus the real, working Platform Admin console (Story 6.6, first built 2026-08-08, then substantially rebuilt for real 2026-08-12 after an internal review found the first build's controls were non-interactive placeholders — see "Honest history" at the end of the console section) — a database health indicator, the tenant registry, tenant provisioning, per-tenant editing (name, status, license seats), the two-phase break-glass credential reset flow, and a recent-activity audit log. Nothing below describes a screen that doesn't exist yet; a handful of specific gaps are called out in their own place, and summarized together in "What's not built yet" at the end. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how the console works changed because of it.
 
 ---
 
@@ -47,6 +47,10 @@ The Temporary Access Pass is shown **exactly once**, directly on the screen, wit
 The console shows your platform's 10 most recent audit log entries — timestamp, operation, and the identity that performed it. **Current limitation:** there is no way yet to see anything older than the 10 most recent entries, or to filter the log by tenant, actor, or date range, from this screen.
 
 **Honest history, not a currently-open caveat:** this console was first marked "Built" on 2026-08-08, but an internal review on 2026-08-12 found that three of its five sections — Provision tenant, Update tenant, and Break-glass — were each rendered as a single descriptive line of text with no actual form or button behind it, even though the backend functions they needed already existed and worked. All three were rebuilt for real the same day; the tenant registry and audit log were already genuine and needed no rework. Named here only so this manual's own history stays honest.
+
+## Platform operations dashboard (Story 10.7)
+
+A separate screen (`/admin/operations`, distinct from the Platform Admin console above) gives you a real-time read on platform infrastructure health: live ingestion rate and lag across all ingestion channels, an estimated 30-day AI cost figure, and a connector health/status panel (healthy / degraded / failing) across every tenant's active connectors. Platform-Admin only — a tenant identity is redirected away from this route.
 
 ## What's not built yet
 

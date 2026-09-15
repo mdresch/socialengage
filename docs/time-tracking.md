@@ -22,6 +22,11 @@
 | 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | chore(telemetry): sync dashboard telemetry for Story 17.2 (0a1fe76) |
 | 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | docs(epic-17): record Story 17.2 build in implementation log and user stories (62a4641) |
 | 2026-09-08 | 21:26 | — | — | Documentation | Story 17.2 | feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes (26d210f) |
+| 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
+| 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
+| 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
+| 2026-09-09 | 19:26 | — | — | Review | — | chore(tracking): post-commit hook sync for scheduled review pass commit (38c5f7d) |
+| 2026-09-09 | 19:25 | — | — | Review | — | docs(review): complete scheduled three-role documentation review pass (2026-09-09) (c11df84) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): log previous commit hash (31525e3) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for dc3958f (f83bf05) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md (dc3958f) |

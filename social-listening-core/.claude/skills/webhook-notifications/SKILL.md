@@ -22,3 +22,11 @@ Enables tenants to receive real-time webhook HTTP POST notifications on external
 - `GET /v1/webhooks/subscriptions`: List subscriptions
 - `DELETE /v1/webhooks/subscriptions/:id`: Delete subscription
 - `POST /v1/webhooks/subscriptions/:id/test`: Trigger test ping verification
+
+## Relations to other components
+
+- **`webhook_subscriptions` table** — stores subscription URL, event types, HMAC secret key, and `tenant_id` (RLS-scoped); each subscription is the target for delivery.
+- **`webhook_delivery_attempts` table** — immutable audit log of every delivery attempt (status code, latency, error); referenced by `POST /v1/webhooks/subscriptions/:id/test` to show recent delivery history.
+- **`real-time-alert-rules` skill** — the alert evaluation engine is the primary caller of the webhook dispatcher; when an alert fires, the dispatcher fans out HTTP POSTs to all active subscriptions for the tenant.
+- **`webhookDispatcher.ts` (src/webhooks/)** — the outbound HTTP fanout engine; signs each payload with HMAC-SHA256 and records a `webhook_delivery_attempts` row regardless of response code.
+- **`webhook-management-ui` admin SKILL.md** — the frontend `WebhookSubscriptionsView` component (Story 10.12) consuming CRUD endpoints and the test-ping route.

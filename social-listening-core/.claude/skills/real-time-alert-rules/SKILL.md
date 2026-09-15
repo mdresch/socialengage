@@ -31,3 +31,12 @@ Allows workspace administrators and analysts to define threshold-based alert rul
 - `POST /v1/alert-rules/preview` (alias `POST /v1/alerts/rules/preview`): Pre-save volume preview simulation
 - `GET /v1/alerts/inbox`: List inbox alerts (filterable by status)
 - `PATCH /v1/alerts/inbox/:alertId`: Update alert status (`acknowledged`, `resolved`, `snoozed`)
+
+## Relations to other components
+
+- **`alert_rules` table** — stores rule definitions (type, threshold, cooldown, watchlist scope); scoped by `tenant_id` with RLS.
+- **`tenant_alerts` table** — generated alert records (`active`, `acknowledged`, `resolved`, `snoozed`) written by the alert evaluation engine when a rule's threshold is crossed and its cooldown window has elapsed.
+- **`social_posts` table** — `volume_spike` and `keyword_burst` rule evaluations scan recent ingested posts filtered by `tenant_id` and optionally by watchlist.
+- **`watchlist_posts` join table** — when a rule targets a specific watchlist, the evaluation query joins through `watchlist_posts` to scope the threshold check.
+- **`webhook-notifications` skill** — when an alert fires, the alert engine can trigger webhook delivery to subscribed endpoints for external notification (Slack, PagerDuty, custom backends).
+- **`real-time-alert-ui` admin SKILL.md** — the frontend `AlertRulesView` and `AlertsInboxView` components (Story 10.10) consuming `GET/POST/PATCH/DELETE /v1/alerts/**`.
