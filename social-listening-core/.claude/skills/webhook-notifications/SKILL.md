@@ -5,6 +5,8 @@ description: Webhook subscriptions management, HMAC-SHA256 signature signing, an
 
 # Webhook Notifications (ADR-0092)
 
+**Documentation Steward note, 2026-09-15.** This skill's own ADR citation (ADR-0092) is almost certainly wrong — ADR-0092 is "Author-initiated takedown" (`docs/adr/0092-author-initiated-takedown.md`), unrelated to webhook subscriptions. See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own Story 10.11 dated note for the full account of how this content and that story's own numbering/ADR ended up entangled. Not corrected here — assigning the real governing ADR is a content/traceability decision for Menno, not a documentation-audit fix.
+
 ## Contracts that constrain this component
 
 - `social-listening-core/contracts/epic-10/story-10.11.webhook-notifications.contract.test.ts` — Story 10.11 contract test.

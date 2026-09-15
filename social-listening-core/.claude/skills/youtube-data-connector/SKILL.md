@@ -5,6 +5,8 @@ description: YouTube Data API v3 Ingestion Connector, channel subscriptions, and
 
 # YouTube Data API v3 Ingestion Connector (ADR-0093)
 
+**Documentation Steward note, 2026-09-15.** This skill's own ADR citation (ADR-0093) is almost certainly wrong — ADR-0093 is "DSR self-service portal" (`docs/adr/0093-dsr-self-service-portal.md`), unrelated to YouTube ingestion. No dedicated YouTube-ingestion ADR appears to exist anywhere in `docs/adr/` at all (grepped for "youtube" across every ADR file — the only real hits are incidental mentions in ADR-0042's footnote and ADR-0118's publishing roadmap, neither of which authorizes this connector's own design). See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own Story 10.11 dated note for the full account. Not corrected here — every other real connector in this project (Wikipedia, Facebook, Instagram, LinkedIn, Brave, Bing) went through this project's own "no story until ADR acceptance" discipline; this connector appears to be the first exception, and whether it needs a real ADR drafted after the fact is a decision for Menno, not resolved here.
+
 ## Contracts that constrain this component
 
 - `social-listening-core/contracts/epic-10/story-10.13.youtube-connector.contract.test.ts` — Story 10.13 contract test.

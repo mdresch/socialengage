@@ -5,6 +5,8 @@ description: AI-generated executive summaries, sentiment breakdowns, theme analy
 
 # AI Insights Digest (ADR-0094)
 
+**Documentation Steward note, 2026-09-15.** This skill's ADR-0094 citation is shared with the compliance-audit-pack engine (`social-listening-core/.claude/skills/compliance/SKILL.md`, which also correctly cites ADR-0127 for its own Story 16.3 refinement) — ADR-0094 itself is "Compliance audit pack" (`docs/adr/0094-compliance-audit-pack.md`), unrelated to AI-generated digests/summaries. See `docs/user-stories/epic-10-adr-0086-to-0094.md`'s own Story 10.11/10.13 dated notes for the full account. Not corrected here — assigning the real governing ADR (this content looks conceptually closer to ADR-0096's "Daily digest email," Epic 11, but that is not confirmed) is a content/traceability decision for Menno.
+
 ## Contracts that constrain this component
 
 - `social-listening-core/contracts/epic-10/story-10.14.ai-insights-digest.contract.test.ts` — Story 10.14 contract test.
