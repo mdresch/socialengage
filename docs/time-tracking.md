@@ -31,11 +31,15 @@
 | 2026-09-13 | 02:47 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (aea9cbe) |
 | 2026-09-13 | 02:47 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' into main (ad6833f) |
 | 2026-09-13 | 02:22 | — | — | Documentation | Story 18.1 | feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134) (e479a59) |
+| 2026-09-12 | 20:32 | — | — | Documentation | — | Merge branch 'main' into feat/story-17.2 (c47b7d3) |
 | 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
+| 2026-09-09 | 22:10 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for 36c84d6 (6bf00fe) |
+| 2026-09-09 | 22:10 | — | — | Documentation | ADR-0142 | docs: sync tracking docs and add ADR-0142/0143 drafts (36c84d6) |
 | 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
 | 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
 | 2026-09-09 | 19:26 | — | — | Review | — | chore(tracking): post-commit hook sync for scheduled review pass commit (38c5f7d) |
 | 2026-09-09 | 19:25 | — | — | Review | — | docs(review): complete scheduled three-role documentation review pass (2026-09-09) (c11df84) |
+| 2026-09-09 | 08:57 | — | — | Documentation | — | Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here (cd9257e) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): log previous commit hash (31525e3) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for dc3958f (f83bf05) |
 | 2026-09-09 | 00:35 | — | — | Documentation | — | fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md (dc3958f) |
@@ -53,6 +57,9 @@
 | 2026-09-09 | 05:24 | — | — | Infrastructure | — | chore(tracking): post-commit hook sync for 614e6e5 checkpoint (202dddf) |
 | 2026-09-09 | 05:23 | — | — | Review | — | docs(review): checkpoint — Documentation Steward pass complete (614e6e5) |
 | 2026-09-09 | 05:15 | — | — | Review | — | docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work (f15d9f1) |
+| 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | chore(telemetry): sync dashboard telemetry for Story 17.2 (0a1fe76) |
+| 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | docs(epic-17): record Story 17.2 build in implementation log and user stories (62a4641) |
+| 2026-09-08 | 21:26 | — | — | Documentation | Story 17.2 | feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes (26d210f) |
 | 2026-09-08 | 14:01 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (cbd4869) |
 | 2026-09-08 | 13:11 | — | — | Documentation | Story 17.1 | chore(telemetry): update user stories, implementation log, and sync dashboard for Story 17.1 (4faf6ee) |
 | 2026-09-08 | 13:06 | — | — | Documentation | Story 17.1 | feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129) (53e63ba) |

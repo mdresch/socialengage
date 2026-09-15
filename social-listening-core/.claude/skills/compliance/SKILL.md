@@ -24,7 +24,8 @@ The compliance engine maintains an unbroken cryptographic ledger across administ
 
 ## How to extend this safely
 
-- **Adding a new audit log action type:** Use `appendChainedTenantAudit` or `appendChainedPlatformAdminAudit` ensuring the payload is JSON-serializable. The canonical serializer sorts payload keys alphabetically before hashing.
+- **Adding a new audit log action type:** Tenant-ledger records go through `appendChainedTenantAudit`; platform-ledger records go through `logPlatformAdminAction` in `admin/platformAdminAuditLog.ts` (there is no `appendChainedPlatformAdminAudit` helper — `logPlatformAdminAction` performs the chain read and INSERT inline). Ensure the payload is JSON-serializable; the canonical serializer sorts payload keys alphabetically before hashing.
+- **App-scoped audit writers:** Callers under `app_user`, `tenant_signup_role`, or `tenant_deletion_role` pass their own pool/client to `logPlatformAdminAction` so the INSERT keeps per-role blast-radius separation. Those roles hold INSERT only — `platform_admin_audit_log` stays readable by `platform_admin_role` alone (migration 0015, asserted by Story 5.7's contract) — so the `SELECT record_hash` chain read inside `logPlatformAdminAction` always runs on `getPlatformAdminPool()` regardless of the write pool. Do not "fix" this by granting those roles SELECT.
 - **Adding an exported evidence file to audit packs:** Add the file to `buildAuditPackFiles(...)`, calculate its SHA-256 digest, byte size, and row count, and register it in `manifest.files`. The Merkle root calculator includes all enclosed record hashes automatically.
 - **Verification queries:** Always re-compute sequential hashes from `previous_record_hash` in chronological sequence (`ORDER BY created_at ASC, id ASC`) using `computeRecordHash(...)`.
 

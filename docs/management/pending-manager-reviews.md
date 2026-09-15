@@ -3778,79 +3778,92 @@
 
 - **Full commit:** `543eecfc8abe0b004cf4a9f43d2ee612c2f41d16`
 - **Files touched:** docs/user-stories/epic-13-adr-0109-to-0117.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the tail of the already-escalated Epic 12→13 marathon extends nearly 25 hours past its start" entry.**
 
 ## 2026-09-01 — fd66185 — docs: sync post-commit tracking and synthesis for Story 13.6
 
 - **Full commit:** `fd661859a18825f4f084c7c2859273ec5f0b3cbc`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the tail of the already-escalated Epic 12→13 marathon extends nearly 25 hours past its start" entry.**
 
 ## 2026-09-01 — 181249f — docs: sync post-commit tracking for Story 13.6
 
 - **Full commit:** `181249f61d6efb940e9aed7fb09f15b2aec7748d`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the tail of the already-escalated Epic 12→13 marathon extends nearly 25 hours past its start" entry.**
 
 ## 2026-09-01 — 05e1e43 — feat(social-listening-core): implement Story 13.7 — Metric explainability prompt and caching (ADR-0113)
 
 - **Full commit:** `05e1e43b1b08c4e90865d724c18d6012fdc47a46`
 - **Files touched:** social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-13/story-13.7.metric-explainability-prompt-and-caching.contract.test.ts, social-listening-core/migrations/0067_create_metric_explanation_cache.sql, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/metricExplanationCache.ts, social-listening-core/src/ai/prompts/metricExplainPromptV1.ts, social-listening-core/src/connectors/azureOpenAi/azureOpenAiConnector.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/explainRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the tail of the already-escalated Epic 12→13 marathon extends nearly 25 hours past its start" entry.**
 
 ## 2026-09-01 — be5702d — heal(contract): Story 6.27 multi-Page status assertion
 
 - **Full commit:** `be5702dadae2e902c423241e339104f176e8d4ba`
 - **Files touched:** docs/adr/0060-facebook-connector-multiple-pages-per-user.md, social-listening-core/contracts/epic-2/story-6.27.facebook-multi-page-support.contract.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — e493fb4 — heal(contract): Story 3.8 self-service tenant deletion
 
 - **Full commit:** `e493fb479930cddf4d094e33759b1d1f2cd7732c`
 - **Files touched:** social-listening-core/.claude/skills/self-service-tenant-deletion/SKILL.md, social-listening-core/contracts/epic-3/story-3.8.self-service-tenant-initiated-deletion.contract.test.ts, social-listening-core/migrations/0068_grant_tenant_deletion_role_watchlist_shares.sql, social-listening-core/src/http/versions/v1/selfServiceTenantDeletionRouter.ts, social-listening-core/src/tenants/tenantDeletion.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — bae4082 — docs(implementation-log): append Story 6.27 and Story 3.8 healing entries
 
 - **Full commit:** `bae408227c8c38d23f20e2e0b8f337b4aa286efb`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 8b99394 — chore(project-progress-dashboard): sync telemetry after Story 6.27 and 3.8 healing
 
 - **Full commit:** `8b993947e5455a2a179d6da993d19a026bb2b73b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-3.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 1648218 — chore: sync post-commit pending reviews and time tracking
 
 - **Full commit:** `1648218c5c84317a14d835c0ec98fb466a7293de`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-6.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 7850f1d — fix(feature-gating): avoid 500 from requireFeatureGate on synthetic test tenant ids
 
 - **Full commit:** `7850f1d9d27ba737ab32aae5387cef6ad475caf3`
 - **Files touched:** social-listening-core/.claude/skills/feature-gating/SKILL.md, social-listening-core/src/tenants/tenantStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 6ea71da — docs(implementation-log): append Story 12.3 healing entry
 
 - **Full commit:** `6ea71da6406261fc675bb1f22a05f89f6de774b5`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 1093eff — chore(project-progress-dashboard): sync telemetry after Story 12.3 healing
 
 - **Full commit:** `1093efff9560c7eb771a3feaf10f0f513ab1740d`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 4edf26f — fix(posts-csv-export): drain background export jobs before Jest teardown
 
 - **Full commit:** `4edf26fac3b84b3063200636f9e19f704c17c2e4`
 - **Files touched:** social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/contracts/epic-10/story-10.8.data-export-posts-csv.contract.test.ts, social-listening-core/src/posts/postExportEngine.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — ca98f53 — docs(implementation-log): append Story 10.8 async handle warning fix
 
@@ -3860,25 +3873,29 @@
 
 - **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
 - **Files touched:** social-listening-core/.claude/skills/media-assets/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/contracts/epic-13/story-13.9.publishing-media-upload-and-asset-targeting.contract.test.ts, social-listening-core/migrations/0070_create_media_assets.sql, social-listening-core/package-lock.json, social-listening-core/package.json, social-listening-core/src/connectors/facebook/facebookConnector.ts, social-listening-core/src/connectors/linkedin/linkedinConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/routes/publishingRoutes.ts, social-listening-core/src/ingestion/errorClassification.ts, social-listening-core/src/media/mediaAssetStore.ts, social-listening-core/src/media/mediaBlobClient.ts, social-listening-core/src/publishing/outboundPublishingService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — d84caf0 — docs: Story 13.9 traceability — mark Built and append Implementation Log
 
 - **Full commit:** `d84caf0526a3044ce0914863e8edde1069937a43`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — b4a32f2 — Merge branch 'feat/story-13.9'
 
 - **Full commit:** `b4a32f2b9016e21dfc34627b395153c7cc370865`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry.**
 
 ## 2026-09-01 — 5fcd0fd — chore: sync post-commit pending reviews, time tracking, and synthesis docs
 
 - **Full commit:** `5fcd0fde5c3892cf30e584e154d3d78e0f2012da`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Functional-Design/FDD-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Architecture.md, docs/synthesis/Self-Learning-Synthesis-Epic-10.md, docs/synthesis/Self-Learning-Synthesis-Epic-12.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the post-commit bookkeeping sync that closed the 2026-09-01 evening session" entry.**
 
 ## 2026-09-02 — 79b6ab9 — chore(skills): add contract test references to component SKILL.md files and sync post-commit tracking
 
@@ -3888,79 +3905,92 @@
 
 - **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
 - **Files touched:** social-listening-core/.claude/skills/semantic-drift/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/contracts/epic-13/story-13.11.semantic-drift-detection.contract.test.ts, social-listening-core/migrations/0071_create_semantic_drift_cache.sql, social-listening-core/src/http/versions/v1/topicsRouter.ts, social-listening-core/src/rag/semanticDriftService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — cfbb0ad — docs: Story 13.11 traceability — mark Built and append Implementation Log
 
 - **Full commit:** `cfbb0ad72f2f2c94196134fa32ad9b9d838665ad`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md, docs/user-stories/epic-13-adr-0109-to-0117.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — 0df7c14 — chore: sync post-commit pending reviews, time tracking, and Epic-13 synthesis
 
 - **Full commit:** `0df7c14c37f3ad2f7991b6d2a6de8987f52eb486`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — 4ad35ee — chore(dashboard): sync project progress dashboard data for Story 13.11
 
 - **Full commit:** `4ad35eea94159ffa816c6376fb64a8ad76163d8c`
 - **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — 07f8aa4 — chore: sync post-commit tracking and Epic-13 synthesis
 
 - **Full commit:** `07f8aa4df908fb7063e0ccf9164c2c4d17814fad`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-13.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — 1094f02 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `1094f0212e8948fb5ef58096cc738fa055a99528`
 - **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — 7f62800 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `7f62800943f69169d9202f5fc42e16f525745630`
 - **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — 11c8d8b — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `11c8d8b93237fdd9ef812524fc1af01d833f14e8`
 - **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — 0b6f9e7 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `0b6f9e77e4cfafdf1e3cc7f945146a841c1f8a58`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — 4ed1f66 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `4ed1f66c3b1216d3bcf57e4500a34fda1e45c476`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — d7bd36c — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `d7bd36c3dfabf7a8c042bbe2fe9636be01fb3636`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — closed as unresolvable-by-design (amended away, object no longer exists in git history); see docs/management/manager-register.md's matching Story 13.14 entry for the full finding.**
 
 ## 2026-09-02 — 39a2375 — Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)
 
 - **Full commit:** `39a23753cc48a3beccf80af016961937f6ef8831`
 - **Files touched:** docs/adr/README.md, docs/user-stories/epic-13-adr-0109-to-0117.md, social-listening-admin/.claude/skills/core-api-client/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/prospecting-list-ui/SKILL.md, social-listening-admin/contracts/epic-13/story-13.14.prospecting-export-and-crm-push-ui.contract.test.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/crm-handoff/route.ts, social-listening-admin/src/app/api/prospecting-lists/[id]/export.csv/route.ts, social-listening-admin/src/app/tenant/prospecting/ProspectingListCrmPushModal.tsx, social-listening-admin/src/app/tenant/prospecting/ProspectingListDetailView.tsx, social-listening-admin/src/app/tenant/prospecting/[id]/page.tsx, social-listening-admin/src/components/plan/FeatureToggleList.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-02 — 7683f31 — docs: append Story 13.14 to implementation log
 
 - **Full commit:** `7683f3119e09ab121916023dca2b1eba5007f6c1`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 # Pending Manager Reviews
 
@@ -7842,67 +7872,78 @@
 
 - **Full commit:** `95c62c9b77f05d00096145dc3272591628f12396`
 - **Files touched:** project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans" entry.**
 
 ## 2026-09-03 — cf425dd — fix(admin): heal contract failures and typecheck errors across admin and analytics
 
 - **Full commit:** `cf425ddc7bd4abd8265e5f07679d4c06eb0ecc7b`
 - **Files touched:** docs/implementation-log.md, social-listening-admin/contracts/epic-6/story-6.41.composer-deep-research-panel-ui.contract.test.ts, social-listening-admin/contracts/epic-8/story-8.6.sources-tab-sentiment-index-volume-history.contract.test.ts, social-listening-admin/next-env.d.ts, social-listening-admin/src/app/tenant/analytics/LocationTab.tsx, social-listening-admin/src/app/tenant/analytics/SourcesTab.tsx, social-listening-admin/src/app/tenant/analytics/analyticsData.ts, social-listening-admin/src/app/tenant/posts/PostDetailPanel.tsx, social-listening-admin/src/app/tenant/posts/page.tsx, social-listening-admin/src/app/tenant/posts/postDisplay.ts, social-listening-admin/src/app/tenant/settings/page.tsx, social-listening-admin/src/components/analytics/dashboard/FilterBar.tsx, social-listening-admin/src/lib/core-client.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — 9ed1f50 — chore(adr): standardize Open Questions syntax, formalize governance, and sync Second Brain telemetry
 
 - **Full commit:** `9ed1f5054b6d411f8f60fcb74b692326645361d0`
 - **Files touched:** docs/adr/0018-data-retention-and-archival-policy.md, docs/adr/0020-rate-limit-queue-bounds-and-distributed-gate-state.md, docs/adr/0021-watchlist-boolean-query-ast-and-capability-matrix.md, docs/adr/0022-derived-data-caching-and-refresh-strategy.md, docs/adr/0023-proportional-connector-failure-threshold.md, docs/adr/0024-newswire-connector-direct-wire-rss-issuer-as-author.md, docs/adr/0025-persistent-local-dev-database-separate-from-test-database.md, docs/adr/0026-rss-news-connector-gnews-api-publication-as-author.md, docs/adr/0027-connector-is-technical-intermediary-not-contracting-party.md, docs/adr/0028-credential-creation-authority-scoped-by-ownership-tier.md, docs/adr/0029-authentication-mechanism-entra-external-id.md, docs/adr/0030-admin-tier-design-platform-admin-rls-exception.md, docs/adr/0031-tenants-table-shape.md, docs/adr/0032-users-table-shape-and-rls.md, docs/adr/0033-retire-x-tenant-id-header-placeholder.md, docs/adr/0034-connector-connect-disconnect-crud-ownership-tier-aware.md, docs/adr/0035-admin-ui-shape-one-app-role-gated.md, docs/adr/0036-admin-ui-authentication-session-and-role-gating-mechanism.md, docs/adr/0037-self-service-tenant-signup-and-first-tenant-admin-provisioning.md, docs/adr/0038-ai-enrichment-provider-selection-azure-ai-language-first-llm-structured-extraction-named-second-candidate.md, docs/adr/0039-tenant-offboarding-data-lifecycle-export-and-deletion.md, docs/adr/0040-self-service-signup-rate-limiting-and-abuse-prevention-mechanism.md, docs/adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md, docs/adr/0042-wikipedia-connector-mediawiki-api-article-as-author.md, docs/adr/0043-self-service-tenant-initiated-deletion.md, docs/adr/0044-watchlist-api-design-and-database-schema-standardization.md, docs/adr/0047-standard-pattern-for-cross-story-references-and-supersession-language.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/0049-point-in-time-author-follower-count-on-social-post.md, docs/adr/0050-tenant-owned-domain-rss-content-feed-connector.md, docs/adr/0051-connector-activation-decoupled-from-credential.md, docs/adr/0052-live-ingestion-polling-scheduler.md, docs/adr/0053-canonical-markdown-post-body-normalization-at-ingestion.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/adr/0055-analytics-language-and-location-enrichment-feasibility.md, docs/adr/0056-ai-inferred-origin-location-newswire-dateline-extraction.md, docs/adr/0057-tenant-owned-feed-multi-feed-administration.md, docs/adr/0058-wire-ingestion-events-into-real-connector-pipeline.md, docs/adr/0059-facebook-connector-tenant-owned-page-scope-organization-as-author.md, docs/adr/0060-facebook-connector-multiple-pages-per-user.md, docs/adr/0061-tier-3-poll-scheduler-per-user-enumeration.md, docs/adr/0062-analytics-dashboard-overview-tab-enhancement.md, docs/adr/0063-post-watchlist-matches-junction-table-and-server-side-watchlist-filter.md, docs/adr/0064-location-and-geospatial-insights-from-posts-and-authors.md, docs/adr/0065-active-watchlist-sourcing-via-brave-search-api.md, docs/adr/0074-tenant-facing-workspace-and-posts-export.md, docs/adr/0075-outbound-social-post-publishing.md, docs/adr/0076-composer-deep-research-agent.md, docs/adr/0077-watchlist-connector-count-method.md, docs/adr/0078-metric-explainability-endpoint.md, docs/adr/0079-crisis-template-bundle-and-activation.md, docs/adr/0080-onboarding-checklist-state.md, docs/adr/0086-prospecting-list-model-and-sharing.md, docs/adr/0087-preconfigured-analytics-views.md, docs/adr/0088-ad-hoc-query-allowlist.md, docs/adr/0089-platform-operations-dashboard.md, docs/adr/0090-data-export-posts-csv.md, docs/adr/0091-real-time-alert-rules-and-delivery.md, docs/adr/0092-author-initiated-takedown.md, docs/adr/0093-dsr-self-service-portal.md, docs/adr/0094-compliance-audit-pack.md, docs/adr/0097-topic-evolution-timeline.md, docs/adr/0098-publishing-and-scheduling.md, docs/adr/0099-unified-social-inbox-and-reply.md, docs/adr/0100-composed-post-author-mention-suggestions.md, docs/adr/0101-multi-source-connector-capability-matrix.md, docs/adr/0102-boolean-query-ast-and-visual-builder.md, docs/adr/0103-ai-sentiment-analysis-aspect-schema.md, docs/adr/0104-ai-topic-clustering-post-topics-schema.md, docs/adr/0105-dashboards-and-analytics-widget-contracts.md, docs/adr/0106-api-and-integrations-versioning-and-webhooks.md, docs/adr/0107-multi-user-workspaces-and-rbac-permissions.md, docs/adr/0108-influencer-discovery-and-scoring.md, docs/adr/0109-connector-health-auto-disable-and-recovery.md, docs/adr/0110-per-connector-query-translation-and-validation.md, docs/adr/0111-export-bounding-streaming-and-size-caps.md, docs/adr/0112-feature-gating-and-seat-limit-enforcement.md, docs/adr/0113-metric-explainability-prompt-and-caching.md, docs/adr/0114-platform-metrics-table-and-azure-metrics.md, docs/adr/0115-publishing-media-upload-and-asset-targeting.md, docs/adr/0116-semantic-drift-detection.md, docs/adr/0117-prospecting-list-export-and-crm-push.md, docs/adr/0118-additional-social-platform-publishing.md, docs/adr/0119-editing-and-deleting-published-outbound-posts.md, docs/adr/0120-search-provider-connector.md, docs/adr/0121-composer-deep-research-caching-retrigger-cost.md, docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md, docs/adr/0124-data-export-posts-csv-sampling-and-bounded-lookback.md, docs/adr/0125-author-initiated-takedown-refinements.md, docs/adr/0135-preconfigured-analytics-views-refinements.md, docs/adr/0136-rag-connector-provider-abstraction-namespace-per-tenant.md, docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/templates/adr-template.md, docs/time-tracking.md, project-progress-dashboard/scripts/compile-obsidian-telemetry.mjs, project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs, scripts/query-vault.mjs, scripts/sync-open-questions.mjs
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — 421a4c1 — fix(core): heal story-13.8 contract test isolation and gate platform metrics worker
 
 - **Full commit:** `421a4c12e1525d431a2098b397f0478a214014fb`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/platform-metrics/SKILL.md, social-listening-core/contracts/epic-13/story-13.8.platform-metrics-table-and-azure-metrics.contract.test.ts, social-listening-core/src/http/server.ts, social-listening-core/src/platform/platformMetricsWorker.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — 1d15ea8 — chore(adr): resolve 14 open questions across 5 ADRs conforming to canonical Q-XXXX-N governance syntax (non-story code cleanup and doc comments)
 
 - **Full commit:** `1d15ea8428a3a02ac882c44f73504c0523f67d34`
 - **Files touched:** docs/adr/0025-persistent-local-dev-database-separate-from-test-database.md, docs/adr/0041-platform-admin-is-a-distinct-identity-kind-not-a-role-value.md, docs/adr/0043-self-service-tenant-initiated-deletion.md, docs/adr/0048-no-core-pipeline-change-verification-for-new-connector-registration.md, docs/adr/0110-per-connector-query-translation-and-validation.md, project-progress-dashboard/scripts/sync-data.js, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-admin/src/lib/role-routing.ts, social-listening-core/src/identity/identityResolution.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — f05336e — Merge branch 'origin/main' into main
 
 - **Full commit:** `f05336e4fd7abbedef65fe2c084177b3e2a08d74`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — 890d6f7 — chore(brain): normalize vaultRoot in ingest-raw.mjs and sync graph telemetry
 
 - **Full commit:** `890d6f788a07cc5af54b217e4dfe44afe42b388d`
 - **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/ingest-raw.mjs
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — 1d03403 — feat(publishing): implement Story 14.1 — Additional social platform publishing roadmap (ADR-0118)
 
 - **Full commit:** `1d03403524f6855863156ef054fe1cc50f4dff2c`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, social-listening-core/.claude/skills/additional-publishing-roadmap/SKILL.md, social-listening-core/contracts/epic-14/story-14.1.additional-social-platform-publishing-roadmap.contract.test.ts, social-listening-core/src/publishing/additionalPublishingRoadmap.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — c68c1a1 — docs(platform-library): build specifications for Mastodon, Bluesky, Instagram, Threads, and X publishing connectors (Story 14.1)
 
 - **Full commit:** `c68c1a13814e47e19627dd8ad8c6ee2540261673`
 - **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/platform-library/01-mastodon-publishing-connector.md, docs/platform-library/02-bluesky-publishing-connector.md, docs/platform-library/03-instagram-publishing-connector.md, docs/platform-library/04-threads-publishing-connector.md, docs/platform-library/05-x-twitter-publishing-connector.md, docs/platform-library/README.md, docs/user-stories/epic-14-adr-0118-to-0122.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — f53a870 — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `f53a870143c97aa723711eba3cf20dd2eec3a53e`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — c1ab9b2 — feat(publishing): implement Story 14.2 — Editing and deleting published outbound posts (ADR-0119)
 
 - **Full commit:** `c1ab9b297a5a7a279da99825432d27319e3ab69a`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/outbound-post-edit-and-delete/SKILL.md, social-listening-core/contracts/epic-14/story-14.2.editing-and-deleting-published-outbound-posts.contract.test.ts, social-listening-core/migrations/0074_create_outbound_activity_revisions_and_add_activity_audit_columns.sql, social-listening-core/src/connectors/types.ts, social-listening-core/src/http/versions/v1/outboundActivitiesRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/outbound/outboundActivityRevisionService.ts, social-listening-core/src/outbound/outboundActivityRevisionStore.ts, social-listening-core/src/outbound/outboundActivityStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14" entry.**
 
 ## 2026-09-04 — fdcf5d2 — docs(tds): author Batch 1 and Batch 2 technical design specifications (37 TDS)
 
@@ -7914,19 +7955,22 @@
 
 - **Full commit:** `c9037238ac90eaae565594f81b045e5a3123c578`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/search-provider-connector/SKILL.md, social-listening-core/contracts/epic-14/story-14.3.search-provider-connector-abstraction.contract.test.ts, social-listening-core/src/composer/composerResearchService.ts, social-listening-core/src/connectors/bingSearch/bingSearchConnector.ts, social-listening-core/src/connectors/bootstrapConnectors.ts, social-listening-core/src/connectors/braveSearch/braveSearchConnector.ts, social-listening-core/src/connectors/registry.ts, social-listening-core/src/connectors/requestGate.ts, social-listening-core/src/connectors/types.ts, social-listening-core/src/ingestion/errorClassification.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-05 — d2bd779 — feat(epic-14): implement Story 14.4 Composer Deep Research caching, re-trigger, caps, and telemetry
 
 - **Full commit:** `d2bd77979b88017746bf7f799d324687efc507f2`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/epic-14-adr-0118-to-0122.md, social-listening-core/.claude/skills/composer-research/SKILL.md, social-listening-core/contracts/epic-14/story-14.4.composer-deep-research-caching.contract.test.ts, social-listening-core/migrations/0075_create_research_cache_and_runs.sql, social-listening-core/src/composer/composerResearchService.ts, social-listening-core/src/composer/composerResearchStore.ts, social-listening-core/src/http/versions/v1/composerRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-05 — 82b276e — docs(epic-14): record Story 14.4 build in implementation log and user stories
 
 - **Full commit:** `82b276e8347850ebf485c2b30b3ec8cef8c3b685`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-14-adr-0118-to-0122.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-05 — 4b8bea8 — chore(telemetry): sync dashboard telemetry for Story 14.4
 
@@ -7936,140 +7980,191 @@
 
 - **Full commit:** `2cfae17e6381bfa9b5489855e97af4f6312a4177`
 - **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-05 — d9e5a6a — docs(tds): complete Batch 7 technical design specifications (17 TDS)
 
 - **Full commit:** `d9e5a6a29803e130e5892be5f0f98761cf92e2a1`
 - **Files touched:** docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0071-Human-In-The-Loop-Post-Enrichment-Overrides.md, docs/project docs/Technical-Design/TDS-0072-Cross-Platform-Polypost-Composer-And-Preview-Engine.md, docs/project docs/Technical-Design/TDS-0073-Outbound-Reply-To-Ingested-Posts.md, docs/project docs/Technical-Design/TDS-0075-Outbound-Social-Post-Publishing.md, docs/project docs/Technical-Design/TDS-0086-Prospecting-List-Model-And-Sharing.md, docs/project docs/Technical-Design/TDS-0095-Case-And-Lead-Handoff-To-CRM.md, docs/project docs/Technical-Design/TDS-0098-Publishing-And-Scheduling.md, docs/project docs/Technical-Design/TDS-0099-Unified-Social-Inbox-And-Reply.md, docs/project docs/Technical-Design/TDS-0100-Composed-Post-Author-Mention-Suggestions.md, docs/project docs/Technical-Design/TDS-0108-Influencer-Discovery-And-Scoring.md, docs/project docs/Technical-Design/TDS-0110-Per-Connector-Query-Translation-And-Validation.md, docs/project docs/Technical-Design/TDS-0115-Publishing-Media-Upload-And-Asset-Targeting.md, docs/project docs/Technical-Design/TDS-0117-Prospecting-List-Export-And-CRM-Push.md, docs/project docs/Technical-Design/TDS-0118-Additional-Social-Platform-Publishing.md, docs/project docs/Technical-Design/TDS-0119-Editing-And-Deleting-Published-Outbound-Posts.md, docs/project docs/Technical-Design/TDS-0129-Prospecting-List-Model-Refinements-Deduplicated-CRM-Sync.md, docs/project docs/Technical-Design/TDS-0131-Crisis-Template-Bundle-Refinements-Baseline-Escalation.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-05 — 0f6e0ab — docs(tds): complete all 139 TDS documents, wire ontology compiler to post-commit hook
 
 - **Full commit:** `0f6e0ab9ed0d509408560c83054eb1fc15b139cf`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0012-Thin-Events-With-REST-Fetch-On-Demand.md, docs/project docs/Technical-Design/TDS-0013-Per-Tenant-Event-Filtering-Via-Subscription-Rules.md, docs/project docs/Technical-Design/TDS-0021-Watchlist-Boolean-Query-AST-And-Capability-Matrix.md, docs/project docs/Technical-Design/TDS-0047-Standard-Pattern-For-Cross-Story-References-And-Supersession-Language.md, docs/project docs/Technical-Design/TDS-0077-Watchlist-Connector-Count-Method.md, docs/project docs/Technical-Design/TDS-0078-Metric-Explainability-Endpoint.md, docs/project docs/Technical-Design/TDS-0079-Crisis-Template-Bundle-And-Activation.md, docs/project docs/Technical-Design/TDS-0080-Onboarding-Checklist-State.md, docs/project docs/Technical-Design/TDS-0089-Platform-Operations-Dashboard.md, docs/project docs/Technical-Design/TDS-0096-Daily-Digest-Email.md, docs/project docs/Technical-Design/TDS-0101-Multi-Source-Connector-Capability-Matrix.md, docs/project docs/Technical-Design/TDS-0102-Boolean-Query-AST-And-Visual-Builder.md, docs/project docs/Technical-Design/TDS-0106-API-And-Integrations-Versioning-And-Webhooks.md, docs/project docs/Technical-Design/TDS-0109-Connector-Health-Auto-Disable-And-Recovery.md, docs/project docs/Technical-Design/TDS-0122-Continuous-Self-Learning-Synthesis-And-Telemetry-Feedback-Loop.md, docs/project docs/Technical-Design/TDS-0130-Onboarding-Checklist-State-Refinements-Role-Tailored-Trees.md, docs/project docs/Technical-Design/TDS-0134-Watchlist-Connector-Count-Method-Refinements.md, docs/time-tracking.md, docs/user-stories/README.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/export-to-obsidian.mjs, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes" entry.**
 
 ## 2026-09-07 — 02e27bb — feat(epic-14): implement Story 14.5 Continuous Self-Learning Synthesis and Telemetry Feedback Architecture
 
 - **Full commit:** `02e27bb1b1c01a210305f454a9da556d9c367e1f`
 - **Files touched:** docs/adr/0118-additional-social-platform-publishing.md, docs/adr/0119-editing-and-deleting-published-outbound-posts.md, docs/adr/0120-search-provider-connector.md, docs/adr/0121-composer-deep-research-caching-retrigger-cost.md, docs/environment-gotchas.md, docs/implementation-log.md, docs/project docs/Lessons-Learned-Register.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md, docs/user-stories/epic-14-adr-0118-to-0122.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/synthesize-telemetry.mjs, social-listening-core/contracts/epic-14/story-14.5.self-learning-telemetry.contract.test.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — ca0383e — chore(synthesis): refresh Epic 14 synthesis artifact with Story 14.5 merge telemetry
 
 - **Full commit:** `ca0383ea93028abd3eae38b4a47a5cda484e6ae0`
 - **Files touched:** docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — 84a92eb — docs(walkthrough): archive Story 14.5 empirical verification walkthrough
 
 - **Full commit:** `84a92eb3c2441e2facf4f18ee27f77482dea5cc9`
 - **Files touched:** docs/walkthroughs/walkthrough-story-14.5.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — 9dd1747 — docs(plan): archive Story 14.5 pre-execution implementation plan
 
 - **Full commit:** `9dd1747464b9538ccee14b25cfbefd5f7fb398ce`
 - **Files touched:** docs/implementation-plans/Plan-Story-14.5.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — f058536 — docs(rfc): add RFC for Antigravity team proposing persistent artifact knowledge integration
 
 - **Full commit:** `f05853647c4e28656275d196da1239c71c1ce1a7`
 - **Files touched:** docs/architecture/RFC-Antigravity-Cognitive-Artifact-Persistence-Architecture.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — 2035448 — feat(epic-15): implement Story 15.1 real-time alert rule exclusions, caps, and pre-save volume preview
 
 - **Full commit:** `2035448b25bd9ddfbe5717d74f331b71eb766114`
 - **Files touched:** docs/adr/0123-real-time-alert-rules-and-delivery-refinements.md, docs/implementation-plans/Plan-Story-15.1-Alert-Rules-Refinements.md, docs/project docs/Technical-Design/TDS-0123-Real-Time-Alert-Rules-And-Delivery-Refinements.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/walkthroughs/walkthrough-story-15.1.md, social-listening-core/contracts/epic-15/story-15.1.alert-rules-refinements.contract.test.ts, social-listening-core/migrations/0076_add_alert_rules_refinements.sql, social-listening-core/src/alerts/alertEvaluationWorker.ts, social-listening-core/src/alerts/alertRulesStore.ts, social-listening-core/src/http/versions/v1/alertRulesRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — 2f905ff — feat(epic-15): implement Story 15.2 data export lookback bounding and representative sampling
 
 - **Full commit:** `2f905ff68b41cf776f3e66a34d5609b5b8ac0cb4`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plans/Plan-Story-15.2-Data-Export-Sampling.md, docs/time-tracking.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/walkthroughs/walkthrough-story-15.2.md, scripts/git-hooks/post-commit, scripts/sync-committed-to-secondbrain.mjs, social-listening-core/contracts/epic-15/story-15.2.data-export-sampling.contract.test.ts, social-listening-core/src/http/versions/v1/postsExportRouter.ts, social-listening-core/src/posts/postExportEngine.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12" entry.**
 
 ## 2026-09-07 — 689357c — feat(epic-16): implement Story 16.1 — author-initiated takedown SLA tracking and enrichment cascade (ADR-0125)
 
 - **Full commit:** `689357c9fb3fecf536accf47375787a0767cd222`
 - **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.1-Takedown-SLA-Enrichment-Cascade.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/walkthroughs/walkthrough-story-16.1.md, social-listening-core/.claude/skills/data-governance/SKILL.md, social-listening-core/contracts/epic-16/story-16.1.takedown-sla-and-enrichment-cascade.contract.test.ts, social-listening-core/migrations/0077_create_data_subject_requests_and_refinements.sql, social-listening-core/src/governance/captchaValidator.ts, social-listening-core/src/governance/takedownStore.ts, social-listening-core/src/governance/types.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/takedownsPublicRouter.ts, social-listening-core/src/http/versions/v1/takedownsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-07 — 613f28d — chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.1
 
 - **Full commit:** `613f28d82f66258d3da7a0cf3af8ca6637e265f6`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-16-adr-0125-to-0128.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-07 — 03cf03f — chore(tracking): record post-commit review entries and Epic 16 synthesis for Story 16.1
 
 - **Full commit:** `03cf03f01155fe5c0d7f2bda60754cf3f5e6e082`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 7336ec5 — feat(epic-16): implement Story 16.2 — DSR Article 18 restriction quarantining and verified receipts (ADR-0126)
 
 - **Full commit:** `7336ec53dbf32f82aebfe46d4245e1529c1465e0`
 - **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.2-DSR-Article-18-Quarantining.md, docs/walkthroughs/walkthrough-story-16.2.md, social-listening-core/.claude/skills/data-governance/SKILL.md, social-listening-core/contracts/epic-16/story-16.2.dsr-article-18-restriction.contract.test.ts, social-listening-core/migrations/0078_add_dsr_article_18_and_receipts.sql, social-listening-core/src/governance/captchaValidator.ts, social-listening-core/src/governance/dsrQuarantineStore.ts, social-listening-core/src/governance/dsrReceipt.ts, social-listening-core/src/http/app.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts, social-listening-core/src/http/versions/v1/dsrPublicRouter.ts, social-listening-core/src/http/versions/v1/dsrRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/posts/postExportEngine.ts, social-listening-core/src/posts/socialPostStore.ts, social-listening-core/src/rag/pgvectorConnector.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — aa24542 — chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.2
 
 - **Full commit:** `aa24542f5e7d81a215508589d8324eccae5d333d`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/time-tracking.md, docs/user-stories/epic-16-adr-0125-to-0128.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 492bbd1 — feat(epic-16): implement Story 16.3 — cryptographic audit log hash chaining and manifest export (ADR-0127)
 
 - **Full commit:** `492bbd166e4788f9037f758fae73b4e38465a2bd`
 - **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.3-Audit-Hash-Chaining-Manifest.md, docs/walkthroughs/walkthrough-story-16.3.md, social-listening-core/.claude/skills/compliance/SKILL.md, social-listening-core/contracts/epic-16/story-16.3.audit-hash-chaining-manifest.contract.test.ts, social-listening-core/migrations/0079_add_audit_log_hash_chaining_and_compliance_packs.sql, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/compliance/auditHashChaining.ts, social-listening-core/src/compliance/auditPackService.ts, social-listening-core/src/compliance/types.ts, social-listening-core/src/compliance/zipArchive.ts, social-listening-core/src/http/versions/v1/complianceRouter.ts, social-listening-core/src/http/versions/v1/router.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 6eb57b1 — chore(telemetry): update implementation log, user stories, and dashboard sync for Story 16.3
 
 - **Full commit:** `6eb57b145b01d3c431ec69961e8e78c2f7e0c3b9`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/time-tracking.md, docs/user-stories/epic-16-adr-0125-to-0128.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 48d2f8f — feat(ops): platform ops quota burn-rate forecasting and guided connector remediation (Story 16.4, ADR-0128)
 
 - **Full commit:** `48d2f8f3e05a3c2ab7b2e5414b33093ad750646b`
 - **Files touched:** docs/implementation-plan.md, docs/implementation-plans/Plan-Story-16.4-Platform-Ops-Quota-Burn-Rate.md, docs/walkthroughs/walkthrough-story-16.4.md, social-listening-admin/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-admin/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate-ui.contract.test.ts, social-listening-admin/src/app/api/admin/connectors/[id]/remediate/route.ts, social-listening-admin/src/app/api/admin/connectors/remediate/route.ts, social-listening-admin/src/components/operations/ConnectorRemediationDrawer.tsx, social-listening-admin/src/components/operations/PlatformOperationsDashboard.tsx, social-listening-admin/src/components/operations/QuotaBurnRateForecast.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/contracts/epic-16/story-16.4.platform-ops-quota-burn-rate.contract.test.ts, social-listening-core/src/http/versions/v1/platformDashboardRouter.ts, social-listening-core/src/platform/connectorRemediationService.ts, social-listening-core/src/platform/platformMetricsStore.ts, social-listening-core/src/platform/quotaBurnRatePredictor.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 91bb7b1 — docs: align status to Built for completed stories 16.1-16.3
 
 - **Full commit:** `91bb7b1f91d70d61a118f7cbfee464adbd2bef91`
 - **Files touched:** docs/user-stories/epic-16-adr-0125-to-0128.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — c4d9bdd — docs: expand Epic 17 user stories to full explainable specification
 
 - **Full commit:** `c4d9bddae931da6532de166818b261051585dfe3`
 - **Files touched:** docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 53e63ba — feat(prospecting): deduplicated prospecting list export and sharing ACLs (Story 17.1, ADR-0129)
 
 - **Full commit:** `53e63ba0ce01745ff429f24ca798ec4c823c2d3e`
 - **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/walkthroughs/walkthrough-story-17.1.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/contracts/epic-17/story-17.1.prospecting-list-refinements.contract.test.ts, social-listening-core/migrations/0080_refine_prospecting_list_sharing_and_dedup.sql, social-listening-core/src/connectors/crm/types.ts, social-listening-core/src/crm/prospectingCRMHandoffService.ts, social-listening-core/src/http/versions/v1/prospectingListsRouter.ts, social-listening-core/src/prospecting/prospectingDeduplicationEngine.ts, social-listening-core/src/prospecting/prospectingListStore.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — 4faf6ee — chore(telemetry): update user stories, implementation log, and sync dashboard for Story 17.1
 
 - **Full commit:** `4faf6ee2afe41bef75ef8cdac742446587239d2c`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
 
 ## 2026-09-08 — cbd4869 — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `cbd4869360bd7244f0db55002924e287b432b82c`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night" entry (escalated).**
+
+## 2026-09-08 — 26d210f — feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes
+
+- **Full commit:** `26d210fcb26f2a02040593fd2338f89058eef8d7`
+- **Files touched:** docs/environment-gotchas.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-17/story-17.2.onboarding-journeys-ui.contract.test.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/onboarding-checklist/SKILL.md, social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts, social-listening-core/migrations/0081_create_tenant_onboarding_state.sql, social-listening-core/src/http/versions/v1/onboardingRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/onboarding/automatedVerificationProbeRunner.ts, social-listening-core/src/onboarding/roleOnboardingService.ts
 - **Status:** Pending review
 
+## 2026-09-08 — 62a4641 — docs(epic-17): record Story 17.2 build in implementation log and user stories
+
+- **Full commit:** `62a4641763cfaee702ea16cc63a371b2e5eca818`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-17-adr-0129-to-0133.md
+- **Status:** Pending review
+
+## 2026-09-08 — 0a1fe76 — chore(telemetry): sync dashboard telemetry for Story 17.2
+
+- **Full commit:** `0a1fe76696ff3f0a43e575cbe861945a22557e0d`
+- **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+
+## 2026-09-09 — cd9257e — Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here
+
+- **Full commit:** `cd9257e4f02f96fcdaf4abe85d5b1e927951f0a0`
+- **Files touched:** docs/design/Gemini Designs/.env.example, docs/design/Gemini Designs/.gitignore, docs/design/Gemini Designs/README.md, docs/design/Gemini Designs/index.html, docs/design/Gemini Designs/metadata.json, docs/design/Gemini Designs/package-lock.json, docs/design/Gemini Designs/package.json, docs/design/Gemini Designs/src/App.tsx, docs/design/Gemini Designs/src/components/ExportModal.tsx, docs/design/Gemini Designs/src/components/FilterBar.tsx, docs/design/Gemini Designs/src/components/FlyoutNav.tsx, docs/design/Gemini Designs/src/components/PostsPane.tsx, docs/design/Gemini Designs/src/components/SubTabs.tsx, docs/design/Gemini Designs/src/components/TopBar.tsx, docs/design/Gemini Designs/src/components/views/ActivityMapView.tsx, docs/design/Gemini Designs/src/components/views/AlertsView.tsx, docs/design/Gemini Designs/src/components/views/AuthViews.tsx, docs/design/Gemini Designs/src/components/views/ConversationsView.tsx, docs/design/Gemini Designs/src/components/views/LocationView.tsx, docs/design/Gemini Designs/src/components/views/OverviewView.tsx, docs/design/Gemini Designs/src/components/views/PostDetailView.tsx, docs/design/Gemini Designs/src/components/views/SearchSetupView.tsx, docs/design/Gemini Designs/src/components/views/SentimentView.tsx, docs/design/Gemini Designs/src/components/views/SettingsView.tsx, docs/design/Gemini Designs/src/components/views/SocialCenterView.tsx, docs/design/Gemini Designs/src/components/views/SourcesView.tsx, docs/design/Gemini Designs/src/data/mockData.ts, docs/design/Gemini Designs/src/index.css, docs/design/Gemini Designs/src/main.tsx, docs/design/Gemini Designs/src/types.ts, docs/design/Gemini Designs/tsconfig.json, docs/design/Gemini Designs/vite.config.ts, docs/design/Google AI Studio/.env.example, docs/design/Google AI Studio/.gitignore, docs/design/Google AI Studio/README.md, docs/design/Google AI Studio/bun.lock, docs/design/Google AI Studio/index.html, docs/design/Google AI Studio/metadata.json, docs/design/Google AI Studio/package-lock.json, docs/design/Google AI Studio/package.json, docs/design/Google AI Studio/server.ts, docs/design/Google AI Studio/src/App.tsx, docs/design/Google AI Studio/src/components/ActivateDeactivateButton.tsx, docs/design/Google AI Studio/src/components/AnimatedChartTooltip.tsx, docs/design/Google AI Studio/src/components/ConfirmModal.tsx, docs/design/Google AI Studio/src/components/ConversationsDashboardTab.tsx, docs/design/Google AI Studio/src/components/D3SentimentGauge.tsx, docs/design/Google AI Studio/src/components/D3Sparkline.tsx, docs/design/Google AI Studio/src/components/D3TrendingTopicsChart.tsx, docs/design/Google AI Studio/src/components/EmptyState.tsx, docs/design/Google AI Studio/src/components/GlobalDateRangePicker.tsx, docs/design/Google AI Studio/src/components/InlineError.tsx, docs/design/Google AI Studio/src/components/LocationDashboardTab.tsx, docs/design/Google AI Studio/src/components/RelativeTime.tsx, docs/design/Google AI Studio/src/components/RunEnrichmentButton.tsx, docs/design/Google AI Studio/src/components/SentimentDashboardTab.tsx, docs/design/Google AI Studio/src/components/Sidebar.tsx, docs/design/Google AI Studio/src/components/Slideover.tsx, docs/design/Google AI Studio/src/components/SourcesDashboardTab.tsx, docs/design/Google AI Studio/src/components/StatusBadge.tsx, docs/design/Google AI Studio/src/components/TagInput.tsx, docs/design/Google AI Studio/src/components/TopBar.tsx, docs/design/Google AI Studio/src/context/AppContext.tsx, docs/design/Google AI Studio/src/index.css, docs/design/Google AI Studio/src/lib/store.ts, docs/design/Google AI Studio/src/main.tsx, docs/design/Google AI Studio/src/types/index.ts, docs/design/Google AI Studio/src/views/AdminConnectorsView.tsx, docs/design/Google AI Studio/src/views/AdminOverviewView.tsx, docs/design/Google AI Studio/src/views/AdminTenantsView.tsx, docs/design/Google AI Studio/src/views/AnalyticsDashboardView.tsx, docs/design/Google AI Studio/src/views/ConnectorStatusView.tsx, docs/design/Google AI Studio/src/views/ConnectorsView.tsx, docs/design/Google AI Studio/src/views/InviteAssistView.tsx, docs/design/Google AI Studio/src/views/PostsFeedView.tsx, docs/design/Google AI Studio/src/views/SignInView.tsx, docs/design/Google AI Studio/src/views/SignUpView.tsx, docs/design/Google AI Studio/src/views/SignedOutView.tsx, docs/design/Google AI Studio/src/views/SocialConnectorDetailsView.tsx, docs/design/Google AI Studio/src/views/TeamAccessView.tsx, docs/design/Google AI Studio/src/views/TenantDashboardView.tsx, docs/design/Google AI Studio/src/views/TenantDeleteView.tsx, docs/design/Google AI Studio/src/views/TenantOwnedFeedView.tsx, docs/design/Google AI Studio/src/views/TenantSettingsView.tsx, docs/design/Google AI Studio/src/views/WatchlistsView.tsx, docs/design/Google AI Studio/tsconfig.json, docs/design/Google AI Studio/vite.config.ts, docs/design/MSE ui Mockup/.env.example, docs/design/MSE ui Mockup/.gitignore, docs/design/MSE ui Mockup/README.md, docs/design/MSE ui Mockup/index.html, docs/design/MSE ui Mockup/metadata.json, docs/design/MSE ui Mockup/package.json, docs/design/MSE ui Mockup/src/App.tsx, docs/design/MSE ui Mockup/src/components/ExportModal.tsx, docs/design/MSE ui Mockup/src/components/FilterBar.tsx, docs/design/MSE ui Mockup/src/components/FlyoutNav.tsx, docs/design/MSE ui Mockup/src/components/PostsPane.tsx, docs/design/MSE ui Mockup/src/components/SubTabs.tsx, docs/design/MSE ui Mockup/src/components/TopBar.tsx, docs/design/MSE ui Mockup/src/components/views/ActivityMapView.tsx, docs/design/MSE ui Mockup/src/components/views/AlertsView.tsx, docs/design/MSE ui Mockup/src/components/views/AuthViews.tsx, docs/design/MSE ui Mockup/src/components/views/ConversationsView.tsx, docs/design/MSE ui Mockup/src/components/views/LocationView.tsx, docs/design/MSE ui Mockup/src/components/views/OverviewView.tsx, docs/design/MSE ui Mockup/src/components/views/PostDetailView.tsx, docs/design/MSE ui Mockup/src/components/views/SearchSetupView.tsx, docs/design/MSE ui Mockup/src/components/views/SentimentView.tsx, docs/design/MSE ui Mockup/src/components/views/SettingsView.tsx, docs/design/MSE ui Mockup/src/components/views/SocialCenterView.tsx, docs/design/MSE ui Mockup/src/components/views/SourcesView.tsx, docs/design/MSE ui Mockup/src/data/mockData.ts, docs/design/MSE ui Mockup/src/index.css, docs/design/MSE ui Mockup/src/main.tsx, docs/design/MSE ui Mockup/src/types.ts, docs/design/MSE ui Mockup/tsconfig.json, docs/design/MSE ui Mockup/vite.config.ts, docs/design/Social Ingest and Command Center Design/.env.example, docs/design/Social Ingest and Command Center Design/.gitignore, docs/design/Social Ingest and Command Center Design/Data Engineering and backend specification.md, docs/design/Social Ingest and Command Center Design/README.md, docs/design/Social Ingest and Command Center Design/bun.lock, docs/design/Social Ingest and Command Center Design/index.html, docs/design/Social Ingest and Command Center Design/metadata.json, docs/design/Social Ingest and Command Center Design/package.json, docs/design/Social Ingest and Command Center Design/server.ts, docs/design/Social Ingest and Command Center Design/src/App.tsx, docs/design/Social Ingest and Command Center Design/src/components/AnimatedChartTooltip.tsx, docs/design/Social Ingest and Command Center Design/src/components/ContentIntelligencePanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/GeminiChatbotPanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/LocationDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SentimentDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SourcesDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/index.css, docs/design/Social Ingest and Command Center Design/src/main.tsx, docs/design/Social Ingest and Command Center Design/src/types.ts, docs/design/Social Ingest and Command Center Design/tsconfig.json, docs/design/Social Ingest and Command Center Design/vite.config.ts, docs/design/admin-ui-mockup-2026-08-03.html, docs/design/microsoft-social-engagement-ui-mockup/README.md, docs/design/microsoft-social-engagement-ui-mockup/project/.thumbnail, docs/design/microsoft-social-engagement-ui-mockup/project/SocialEngage.dc.html, docs/design/microsoft-social-engagement-ui-mockup/project/support.js, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/1520200669292.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/FutureDecoded-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/Microsoft Social Engagement (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/0702.activitymap (1).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/0702.activitymap.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/11-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/12-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1229302.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1229329.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/15.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1520110736520.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1520200669292.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/2- Go to settings,  Social Profiles then add profile.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/22.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/24.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/4-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1 (1).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1 (2).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/6-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/645596c34886ff29ecebfa63d1016d4e.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Dashboard.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Location-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/MSE01.PNG, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft Social Engagement (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft Social Engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-2.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-Screenshot-WinBuzzer (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-Screenshot-WinBuzzer.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft_Social_Engagement_2_small.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R (2).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement (1).webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/blog-crm-social-engagement-1024x604.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/dashboard001.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/hqdefault.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/lead.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (2).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (3).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (4).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (5).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (6).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (7).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/microsoft-social-engagement-location-view.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/microsoft-social-listening-example.gif, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/ms.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/ms1.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center-1-625x343.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center-1.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/msei-04-625x431.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/setup01.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/setupd365.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/social-engagement-ga (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/social-engagement-ga.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/socialcentar001.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/socialengagement-filtering.gif, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/timeline.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/topic-e-sentimennt.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement (1).webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/maxresdefault (2)-d2afcdfa.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/maxresdefault (2).jpg, docs/design/platform-admin-console-mockup-2026-08-03.html
+- **Status:** Pending review
+
+## 2026-09-09 — 36c84d6 — docs: sync tracking docs and add ADR-0142/0143 drafts
+
+- **Full commit:** `36c84d6f215b15e740e6391fdb9d6febd6f94e54`
+- **Files touched:** docs/adr/0142-vault-ontological-topic-enrichment-and-web-research-pipeline.md, docs/adr/0143-ontology-v1-1-0-normalization-and-metamodel-evolution.md, docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/epic-19-adr-0136-to-0140.md
 ## 2026-09-09 — efaa197 — feat(process): collapse implement-story's 2-3 commits per story into one, via self-healing pending-hash backfill
 
 - **Full commit:** `efaa1977ea902d0cfaa21ca91681cfe4898ee097`
@@ -8078,54 +8173,69 @@
 
 - **Full commit:** `f15d9f1446b01a2995c1f0edad2fa685f19441ca`
 - **Files touched:** CLAUDE.md, docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/user-stories/epic-2-ingestion-connectors-and-rate-limits.md, docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — 614e6e5 — docs(review): checkpoint — Documentation Steward pass complete
 
 - **Full commit:** `614e6e5b9c3ec9efb8432a4d01a21942fdcaef5c`
 - **Files touched:** CLAUDE.md, docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-1-repository-and-api-foundation.md, docs/user-stories/epic-6-tenant-admin-ui.md, social-listening-admin/.claude/skills/polypost-composer/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — e4f4826 — docs(epic-9): standardize Story 9.5's Built field to the em-dash convention
 
 - **Full commit:** `e4f4826685f3d9d3fb533a26672be1bf1d909f7a`
 - **Files touched:** docs/user-stories/epic-9-adr-0077-to-0085.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — eeacc20 — chore(tracking): post-commit hook sync for e4f4826 nit fix
 
 - **Full commit:** `eeacc20dd54df05f5f7190b7f933f02601fed454`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-9.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — b704784 — Merge origin/main into docs-review/2026-08-28, resolve conflicts
 
 - **Full commit:** `b704784cefec46990bda9694757592fbdf8dae2f`
 - **Files touched:** —
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — f845ac9 — Address Copilot review: fix stale reply-support claim, blank queue metadata
 
 - **Full commit:** `f845ac9dbe171e2c16ec96014504f8ff48feb6fd`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-core/.claude/skills/outbound-engagement/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits" entry.**
 
 ## 2026-09-09 — 9c1138f — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `9c1138ff85b9414583583684d5f33353d96578e2`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
 
 ## 2026-09-09 — dc3958f — fix(docs): resolve unresolved merge-conflict markers left in onboarding-checklist-ui SKILL.md
 
 - **Full commit:** `dc3958f4b9bbdce2945826c668c5ce4d73107d59`
 - **Files touched:** social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
 
 ## 2026-09-09 — f83bf05 — chore(tracking): sync post-commit tracking for dc3958f
 
 - **Full commit:** `f83bf05940a2cf307d0e6c92c92bf12bc0c5155b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, scripts/backfill-obsidian-frontmatter.mjs, scripts/export-to-obsidian.mjs, scripts/heal-obsidian-brain.mjs
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
+
+## 2026-09-12 — c47b7d3 — Merge branch 'main' into feat/story-17.2
+
+- **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
+- **Files touched:** 
 - **Status:** Pending review
 
 
@@ -8133,13 +8243,15 @@
 
 - **Full commit:** `c11df84c824aacc832441158d8966ad757f77eea`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/data-retention-and-archival/SKILL.md, social-listening-core/.claude/skills/export-jobs/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
 
 ## 2026-09-09 — 9a796f5 — feat(ai-roles): add personal-development-reviewer agent and developer learning plan
 
 - **Full commit:** `9a796f5f9320d3bf8a0f327304756d6554245fd8`
 - **Files touched:** .claude/agents/personal-development-reviewer.md, docs/ai-roles/developer-learning-plan.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
 
 
 
@@ -8155,6 +8267,24 @@
 
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-13 — see docs/management/manager-register.md's matching "Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10" entry.**
+## 2026-09-13 — 709444b — docs: scheduled review WIP - L&D writer pass complete, doc steward continuing
+
+- **Full commit:** `709444b19e02797f0761264ebd66ba943a0e9d91`
+- **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
+- **Status:** Pending review
+
+## 2026-09-13 — 64b6263 — docs: scheduled review WIP - ideal manager pass complete, doc steward continuing
+
+- **Full commit:** `64b62637b78193a0d0d0d8c92fd0b37f5a70a27a`
+- **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-13 — 92f685c — docs: Documentation Steward pass - fix Epic 10 Built-field mislabeling and related drift
+
+- **Full commit:** `92f685c836580224fe287cadd85cbdcaf1877a9d`
+- **Files touched:** docs/adr/README.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md
 - **Status:** Pending review
 
 ## 2026-09-13 — e479a59 — feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134)
@@ -8162,6 +8292,7 @@
 - **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/watchlists/preview-volume/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/VolumePreviewPanel.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts, social-listening-core/jest.config.js, social-listening-core/src/watchlists/previewVolumeService.ts
 - **Status:** Pending review
+
 ## 2026-09-13 — ad6833f — Merge remote-tracking branch 'origin/main' into main
 
 - **Full commit:** `ad6833fd3798aa8d07b32ba2e655bf3fd09bf8df`

@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import type { OnboardingChecklistResponse } from '@/lib/core-client';
+import React, { useState, useEffect, useCallback } from 'react';
+import type {
+  OnboardingChecklistResponse,
+  RoleJourneyResponse,
+  RoleOnboardingStep,
+  OnboardingRoleKind,
+} from '@/lib/core-client';
 
 interface OnboardingChecklistProps {
   tenantId: string;
@@ -51,6 +56,13 @@ const STEP_METADATA: Record<
   },
 };
 
+const ROLE_TABS: { id: OnboardingRoleKind; label: string; icon: string }[] = [
+  { id: 'admin', label: 'Admin', icon: '🛡️' },
+  { id: 'care_agent', label: 'Care Agent', icon: '💬' },
+  { id: 'social_seller', label: 'Social Seller', icon: '🤝' },
+  { id: 'brand_manager', label: 'Brand Manager', icon: '📈' },
+];
+
 function normalizeDeepLink(deepLink?: string, fallback: string = '/tenant'): string {
   if (!deepLink) return fallback;
   if (deepLink.startsWith('/settings/connectors')) return '/tenant/connectors';
@@ -72,6 +84,31 @@ export function OnboardingChecklist({
   const [isDismissed, setIsDismissed] = useState<boolean>(initialChecklist?.dismissed ?? false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | OnboardingRoleKind>('overview');
+  const [roleJourney, setRoleJourney] = useState<RoleJourneyResponse | null>(null);
+  const [loadingRole, setLoadingRole] = useState(false);
+
+  const fetchRoleJourney = useCallback(async (role: OnboardingRoleKind) => {
+    try {
+      setLoadingRole(true);
+      const res = await fetch(`/api/onboarding-checklist?role=${role}`);
+      if (res.ok) {
+        const data = (await res.json()) as RoleJourneyResponse;
+        setRoleJourney(data);
+      }
+    } catch {
+      // Degrade gracefully without blocking the rest of the UI
+    } finally {
+      setLoadingRole(false);
+    }
+  }, []);
+
+  const handleTabChange = (tab: 'overview' | OnboardingRoleKind) => {
+    setActiveTab(tab);
+    if (tab !== 'overview') {
+      fetchRoleJourney(tab);
+    }
+  };
 
   if (!checklist) return null;
   if (isDismissed) {
@@ -119,6 +156,14 @@ export function OnboardingChecklist({
     }
   };
 
+  const currentPercentage = activeTab !== 'overview' && roleJourney
+    ? roleJourney.completionPercentage
+    : checklist.progressPercentage;
+
+  const currentIsComplete = activeTab !== 'overview' && roleJourney
+    ? roleJourney.isComplete
+    : checklist.isComplete;
+
   return (
     <div
       data-testid="onboarding-checklist-container"
@@ -147,13 +192,13 @@ export function OnboardingChecklist({
             <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Get Started with SocialEngage</h2>
           </div>
           <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
-            Complete these core steps to start monitoring social discussions and news feeds.
+            Complete these role-tailored and core operational steps to start monitoring social discussions and news feeds.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-primary)' }}>
-            {checklist.progressPercentage}% Completed
+            {currentPercentage}% Completed
           </span>
           <button
             type="button"
@@ -169,116 +214,164 @@ export function OnboardingChecklist({
         </div>
       </div>
 
+      {/* Role Navigation Tabs */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.5rem 1.25rem',
+          backgroundColor: '#f1f5f9',
+          borderBottom: '1px solid #e2e8f0',
+          overflowX: 'auto',
+        }}
+        data-testid="onboarding-role-tabs"
+      >
+        <button
+          type="button"
+          onClick={() => handleTabChange('overview')}
+          style={{
+            padding: '0.35rem 0.75rem',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            backgroundColor: activeTab === 'overview' ? '#ffffff' : 'transparent',
+            color: activeTab === 'overview' ? '#0f172a' : '#64748b',
+            boxShadow: activeTab === 'overview' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+          }}
+        >
+          🌐 Tenant Overview
+        </button>
+        {ROLE_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => handleTabChange(tab.id)}
+            data-testid={`role-tab-${tab.id}`}
+            style={{
+              padding: '0.35rem 0.75rem',
+              borderRadius: '4px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              backgroundColor: activeTab === tab.id ? '#ffffff' : 'transparent',
+              color: activeTab === tab.id ? '#0f172a' : '#64748b',
+              boxShadow: activeTab === tab.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+            }}
+          >
+            <span>{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Progress Bar */}
       <div style={{ height: '4px', width: '100%', backgroundColor: '#e2e8f0' }}>
         <div
           style={{
             height: '100%',
-            width: `${checklist.progressPercentage}%`,
-            backgroundColor: checklist.isComplete ? '#10b981' : '#3b82f6',
+            width: `${currentPercentage}%`,
+            backgroundColor: currentIsComplete ? '#10b981' : '#3b82f6',
             transition: 'width 0.3s ease',
           }}
         />
       </div>
 
-      {/* Checklist Core Steps Grid */}
+      {/* Checklist Steps Body */}
       <div className="card-body" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
-          {coreStepKeys.map((key) => {
-            const step = (checklist.steps as Record<string, any>)?.[key] || { completed: false, completedAt: null };
-            const meta = STEP_METADATA[key] || {
-              title: key,
-              description: '',
-              defaultLink: '/tenant',
-              icon: '📌',
-            };
-            const link = normalizeDeepLink(step.deepLink, meta.defaultLink);
+        {activeTab !== 'overview' && roleJourney ? (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.85rem' }}>
+              {roleJourney.steps.map((step) => {
+                const link = normalizeDeepLink(step.actionUrl, '/tenant');
+                return (
+                  <a
+                    key={step.id}
+                    href={link}
+                    data-testid={`role-step-${step.id}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                      padding: '0.85rem',
+                      borderRadius: '6px',
+                      border: step.completed ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                      backgroundColor: step.completed ? '#f0fdf4' : '#ffffff',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: step.completed ? '#22c55e' : '#e2e8f0',
+                        color: step.completed ? '#ffffff' : '#64748b',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        marginTop: '2px',
+                      }}
+                    >
+                      {step.completed ? '✓' : '•'}
+                    </div>
 
-            return (
-              <a
-                key={key}
-                href={link}
-                data-testid={`checklist-step-${key}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.75rem',
-                  padding: '0.85rem',
-                  borderRadius: '6px',
-                  border: step.completed ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
-                  backgroundColor: step.completed ? '#f0fdf4' : '#ffffff',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    backgroundColor: step.completed ? '#22c55e' : '#e2e8f0',
-                    color: step.completed ? '#ffffff' : '#64748b',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    marginTop: '2px',
-                  }}
-                >
-                  {step.completed ? '✓' : meta.icon}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 600, textDecoration: step.completed ? 'line-through' : 'none' }}>
-                      {meta.title}
-                    </span>
-                    {step.completed && (
-                      <span style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 600 }}>Done</span>
-                    )}
-                  </div>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.35 }}>
-                    {meta.description}
-                  </p>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-
-        {/* Advanced Steps Section */}
-        <div style={{ marginTop: '1rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.75rem' }}>
-          <button
-            type="button"
-            onClick={() => setShowAdvanced((prev) => !prev)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--color-text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-            }}
-          >
-            <span>{showAdvanced ? '▼ Hide Advanced Steps' : '▶ Show Advanced Setup Steps'}</span>
-          </button>
-
-          {showAdvanced && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem', marginTop: '0.75rem' }}>
-              {advancedStepKeys.map((key) => {
-                const step = (checklist.advancedSteps as Record<string, any>)?.[key] || { completed: false, completedAt: null };
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            textDecoration: step.completed ? 'line-through' : 'none',
+                          }}
+                        >
+                          {step.title}
+                        </span>
+                        {step.completed ? (
+                          <span style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 600 }}>Done</span>
+                        ) : (
+                          <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 600 }}>
+                            {step.actionLabel}
+                          </span>
+                        )}
+                      </div>
+                      <p
+                        style={{
+                          margin: '0.2rem 0 0',
+                          fontSize: '0.75rem',
+                          color: 'var(--color-text-secondary)',
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {step.description}
+                      </p>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+              {coreStepKeys.map((key) => {
+                const step = (checklist.steps as Record<string, any>)?.[key] || { completed: false, completedAt: null };
                 const meta = STEP_METADATA[key] || {
                   title: key,
                   description: '',
                   defaultLink: '/tenant',
-                  icon: '⚙️',
+                  icon: '📌',
                 };
                 const link = normalizeDeepLink(step.deepLink, meta.defaultLink);
 
@@ -297,6 +390,7 @@ export function OnboardingChecklist({
                       backgroundColor: step.completed ? '#f0fdf4' : '#ffffff',
                       textDecoration: 'none',
                       color: 'inherit',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     <div
@@ -319,15 +413,28 @@ export function OnboardingChecklist({
                     </div>
 
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 600, textDecoration: step.completed ? 'line-through' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            textDecoration: step.completed ? 'line-through' : 'none',
+                          }}
+                        >
                           {meta.title}
                         </span>
                         {step.completed && (
                           <span style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 600 }}>Done</span>
                         )}
                       </div>
-                      <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.35 }}>
+                      <p
+                        style={{
+                          margin: '0.2rem 0 0',
+                          fontSize: '0.75rem',
+                          color: 'var(--color-text-secondary)',
+                          lineHeight: 1.35,
+                        }}
+                      >
                         {meta.description}
                       </p>
                     </div>
@@ -335,8 +442,120 @@ export function OnboardingChecklist({
                 );
               })}
             </div>
-          )}
-        </div>
+
+            {/* Advanced Steps Section */}
+            <div style={{ marginTop: '1rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((prev) => !prev)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <span>{showAdvanced ? '▼ Hide Advanced Steps' : '▶ Show Advanced Setup Steps'}</span>
+              </button>
+
+              {showAdvanced && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                    gap: '0.85rem',
+                    marginTop: '0.75rem',
+                  }}
+                >
+                  {advancedStepKeys.map((key) => {
+                    const step = (checklist.advancedSteps as Record<string, any>)?.[key] || {
+                      completed: false,
+                      completedAt: null,
+                    };
+                    const meta = STEP_METADATA[key] || {
+                      title: key,
+                      description: '',
+                      defaultLink: '/tenant',
+                      icon: '⚙️',
+                    };
+                    const link = normalizeDeepLink(step.deepLink, meta.defaultLink);
+
+                    return (
+                      <a
+                        key={key}
+                        href={link}
+                        data-testid={`checklist-step-${key}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '0.75rem',
+                          padding: '0.85rem',
+                          borderRadius: '6px',
+                          border: step.completed ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                          backgroundColor: step.completed ? '#f0fdf4' : '#ffffff',
+                          textDecoration: 'none',
+                          color: 'inherit',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: step.completed ? '#22c55e' : '#e2e8f0',
+                            color: step.completed ? '#ffffff' : '#64748b',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            flexShrink: 0,
+                            marginTop: '2px',
+                          }}
+                        >
+                          {step.completed ? '✓' : meta.icon}
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span
+                              style={{
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                textDecoration: step.completed ? 'line-through' : 'none',
+                              }}
+                            >
+                              {meta.title}
+                            </span>
+                            {step.completed && (
+                              <span style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 600 }}>Done</span>
+                            )}
+                          </div>
+                          <p
+                            style={{
+                              margin: '0.2rem 0 0',
+                              fontSize: '0.75rem',
+                              color: 'var(--color-text-secondary)',
+                              lineHeight: 1.35,
+                            }}
+                          >
+                            {meta.description}
+                          </p>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

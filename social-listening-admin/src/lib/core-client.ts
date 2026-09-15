@@ -1696,6 +1696,40 @@ export async function patchOnboardingChecklist(
   return { status: response.status, body };
 }
 
+export type OnboardingRoleKind = 'admin' | 'care_agent' | 'social_seller' | 'brand_manager';
+
+export interface RoleOnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completedAt: string | null;
+  probeKey: string;
+  actionUrl: string;
+  actionLabel: string;
+}
+
+export interface RoleJourneyResponse {
+  role: OnboardingRoleKind;
+  isComplete: boolean;
+  completionPercentage: number;
+  steps: RoleOnboardingStep[];
+  roleJourneys?: Record<string, any>;
+}
+
+/**
+ * Story 17.2 (ADR-0130) — reads the role-tailored onboarding checklist journey
+ * (GET /v1/onboarding/checklist?role=...). Executes active verification probes.
+ */
+export async function getRoleOnboardingChecklist(role?: string): Promise<RoleJourneyResponse> {
+  const query = role ? `?role=${encodeURIComponent(role)}` : '';
+  const response = await authenticatedCoreFetch(`/v1/onboarding/checklist${query}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load role onboarding checklist: ${response.status}`);
+  }
+  return (await response.json()) as RoleJourneyResponse;
+}
+
 export interface CrisisTemplateParameter {
   name: string;
   label: string;
