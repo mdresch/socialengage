@@ -7042,3 +7042,9 @@
 - **Full commit:** `08054d4fdf1d45cbaa94dcb2c02cb24fecef1c82`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/epic-10-adr-0086-to-0094.md
 - **Status:** Pending review
+## 2026-09-15 — be06dce — docs: partial progress from scheduled doc-review pass (2026-09-15)
+
+- **Full commit:** `be06dcece56b74e05a9c6af292675f72e94626b9`
+- **Files touched:** docs/pending-personal-development-reviews.md, docs/user-stories/epic-15-adr-0123-to-0124.md
+- **Status:** Pending review
+
