@@ -17,6 +17,11 @@ import {
   getCachedMetricExplanation,
   storeMetricExplanationCache,
 } from './metricExplanationCache';
+import {
+  evaluateSignificanceGate,
+  decomposeFactors,
+  FactorDecomposition,
+} from './significanceGate';
 
 export const ALLOWED_METRIC_KEYS: Record<string, string> = {
   'volume-spike': 'Volume Spike',
@@ -53,6 +58,13 @@ export interface MetricExplainResponse {
   promptVersion: number;
   cacheHit: boolean;
   fallbackReason?: 'content_filtered' | 'insufficient_data' | 'rate_limited' | 'model_error' | 'disabled';
+  // Story 17.5 (ADR-0133) significance-gate fields — present on every
+  // non-cached explain response; zScore/pValue only when the gate evaluated.
+  isStatisticallySignificant?: boolean;
+  zScore?: number;
+  pValue?: number;
+  tokenCostSaved?: boolean;
+  factorDecomposition?: FactorDecomposition;
 }
 
 export class MetricExplainError extends Error {
@@ -276,7 +288,7 @@ export async function explainMetric(
   }
 
   // 5. Build cache key and check cache (unless no-cache requested)
-  const promptContext = await buildPromptContextString(tenantId, context, locale);
+  let promptContext = await buildPromptContextString(tenantId, context, locale);
   const cacheFilters = buildCacheFilters(request);
   const cacheKey = buildMetricExplanationCacheKey({
     tenantId,
@@ -314,6 +326,32 @@ export async function explainMetric(
     throw new MetricExplainError(429, 'TOO_MANY_REQUESTS', 'Rate limit exceeded: max 20 explanation requests per minute per user.');
   }
 
+  // 6.5 Story 17.5 (ADR-0133): statistical significance gate — after the cache
+  // and rate limiter, before the concurrency slot and any LLM call. A
+  // non-significant shift returns a deterministic gated response with
+  // tokenCostSaved and never reaches Azure OpenAI.
+  const gate = await evaluateSignificanceGate(
+    tenantId,
+    value,
+    context.previousValue,
+    context.timeRange.start
+  );
+  if (gate.evaluated && !gate.isSignificant) {
+    const gatedResponse: MetricExplainResponse = {
+      explanation: `The change in ${metricName} from ${context.previousValue} to ${value} is within standard historical variance. No operational action is required.`,
+      confidence: 'low',
+      generationId: 'none',
+      promptVersion: METRIC_EXPLAIN_PROMPT_VERSION,
+      cacheHit: false,
+      isStatisticallySignificant: false,
+      zScore: gate.zScore,
+      pValue: gate.pValue,
+      tokenCostSaved: true,
+    };
+    await logMetricExplainCall(tenantId, userId, metricKey, false, METRIC_EXPLAIN_PROMPT_VERSION, 'none');
+    return gatedResponse;
+  }
+
   // 7. Tenant concurrency limit
   const currentInFlight = tenantInFlight.get(tenantId) || 0;
   if (currentInFlight >= MAX_CONCURRENT_PER_TENANT) {
@@ -327,6 +365,19 @@ export async function explainMetric(
   let modelConfidence: 'high' | 'medium' | 'low' | undefined;
 
   try {
+    // Story 17.5: on a significant shift, decompose root-cause factors from the
+    // tenant's real window data and inject them into the prompt context.
+    let factorDecomposition: FactorDecomposition | undefined;
+    if (gate.evaluated && gate.isSignificant && typeof value === 'number') {
+      factorDecomposition = await decomposeFactors(
+        tenantId,
+        value,
+        typeof context.previousValue === 'number' ? context.previousValue : undefined,
+        context.timeRange
+      );
+      promptContext = `${promptContext === 'none' ? '' : `${promptContext}; `}factors: ${JSON.stringify(factorDecomposition)}`;
+    }
+
     const prompt = renderMetricExplainPrompt({
       metricName,
       value,
@@ -392,6 +443,13 @@ export async function explainMetric(
       promptVersion: METRIC_EXPLAIN_PROMPT_VERSION,
       cacheHit: false,
       fallbackReason,
+      // Reaching generation means the shift is significant — either the gate
+      // evaluated it so, or the gate defaulted open on <7 baseline samples.
+      isStatisticallySignificant: true,
+      zScore: gate.zScore,
+      pValue: gate.pValue,
+      tokenCostSaved: false,
+      factorDecomposition,
     };
 
     // 10. Store in cache unless no-cache requested

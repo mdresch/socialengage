@@ -6,6 +6,8 @@ import { getPool } from '../../../db/pool';
 import { PoolClient } from 'pg';
 
 import { executeAdHocQuery, AdHocQueryRequest } from '../../../analytics/adHocQueryEngine';
+import { QueryCostExceededError } from '../../../analytics/queryGovernor';
+import { requirePermission } from '../../../auth/permissionMatrix';
 import { generateAiInsightsDigest } from '../../../analytics/aiDigestGenerator';
 import { getDashboardData } from '../../../analytics/dashboard/dashboardService';
 import { DashboardQueryParams } from '../../../analytics/dashboard/widgetRegistry';
@@ -62,8 +64,9 @@ analyticsViewsRouter.get('/digest', async (req, res) => {
   }
 });
 
-// POST /v1/analytics/query (Story 10.4, ADR-0088)
-analyticsViewsRouter.post('/query', async (req, res) => {
+// POST /v1/analytics/query (Story 10.4, ADR-0088; Story 17.4, ADR-0132 — RBAC
+// analytics gate + QUERY_COST_EXCEEDED 422 mapping)
+analyticsViewsRouter.post('/query', requirePermission('analytics', 'read'), async (req, res) => {
   const identity = requireTenantUserIdentity(req as RequestWithIdentity, res);
   if (!identity) return;
 
@@ -81,6 +84,16 @@ analyticsViewsRouter.post('/query', async (req, res) => {
 
     res.json(result);
   } catch (err: any) {
+    if (err instanceof QueryCostExceededError) {
+      res.status(422).json({
+        error: 'QUERY_COST_EXCEEDED',
+        message: err.message,
+        estimatedCost: err.estimatedCost,
+        budgetLimit: err.budgetLimit,
+        suggestedAdjustments: err.suggestedAdjustments,
+      });
+      return;
+    }
     if (
       err.message?.includes('Invalid dimension') ||
       err.message?.includes('Invalid metric') ||

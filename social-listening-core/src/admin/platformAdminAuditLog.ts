@@ -29,6 +29,17 @@ export interface PlatformAdminAuditEntry {
  * reasoning, one level narrower: that write must run under `app_user`'s own
  * RLS-scoped connection so it can never be confused with either role's own
  * bypass.
+ *
+ * Story 16.3's hash chaining (ADR-0127) added a `SELECT record_hash` read
+ * ahead of every INSERT — but the app-scoped writer roles above hold only
+ * `INSERT` on this table, and `platform_admin_audit_log` is deliberately
+ * readable by `platform_admin_role` alone (migrations/0015, asserted by
+ * Story 5.7's contract). The chain-read therefore always runs on
+ * `getPlatformAdminPool()` regardless of the caller's write pool: it is
+ * platform-side metadata (the previous row's digest for this tenant
+ * partition), never tenant content, and the caller's `targetTenantId` is
+ * the only filter input. The INSERT itself still runs under whichever role
+ * the caller passed, preserving the per-role blast-radius separation.
  */
 import { randomUUID } from 'crypto';
 import { computeRecordHash, GENESIS_HASH } from '../compliance/auditHashChaining';
@@ -37,7 +48,7 @@ export async function logPlatformAdminAction(
   entry: PlatformAdminAuditEntry,
   pool: Pool | PoolClient = getPlatformAdminPool()
 ): Promise<void> {
-  const lastRow = await pool.query<{ record_hash: string }>(
+  const lastRow = await getPlatformAdminPool().query<{ record_hash: string }>(
     `SELECT record_hash FROM platform_admin_audit_log
      WHERE (target_tenant_id = $1 OR ($1 IS NULL AND target_tenant_id IS NULL))
      ORDER BY created_at DESC, id DESC

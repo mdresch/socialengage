@@ -15,12 +15,13 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
-| 2026-09-13 | 05:49 | — | — | Infrastructure | — | docs: queue housekeeping - post-commit hook entries for final doc steward commit (333ba47) |
-| 2026-09-13 | 05:48 | — | — | Documentation | — | docs: Documentation Steward pass - fix Epic 10 Built-field mislabeling and related drift (92f685c) |
-| 2026-09-13 | 05:16 | — | — | Infrastructure | — | docs: queue housekeeping - post-commit hook entries for prior WIP commit (eec4601) |
-| 2026-09-13 | 05:16 | — | — | Review | — | docs: scheduled review WIP - ideal manager pass complete, doc steward continuing (64b6263) |
-| 2026-09-13 | 05:12 | — | — | Review | — | docs: scheduled review WIP - L&D writer pass complete, doc steward continuing (709444b) |
-| 2026-09-13 | 05:04 | — | — | Review | — | docs: scheduled review WIP - personal dev reviewer resolved, doc steward in progress (6773b64) |
+| 2026-09-12 | 20:32 | — | — | Documentation | — | Merge branch 'main' into feat/story-17.2 (c47b7d3) |
+| 2026-09-09 | 22:10 | — | — | Documentation | — | chore(tracking): sync post-commit tracking for 36c84d6 (6bf00fe) |
+| 2026-09-09 | 22:10 | — | — | Documentation | ADR-0142 | docs: sync tracking docs and add ADR-0142/0143 drafts (36c84d6) |
+| 2026-09-09 | 08:57 | — | — | Documentation | — | Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here (cd9257e) |
+| 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | chore(telemetry): sync dashboard telemetry for Story 17.2 (0a1fe76) |
+| 2026-09-08 | 21:28 | — | — | Documentation | Story 17.2 | docs(epic-17): record Story 17.2 build in implementation log and user stories (62a4641) |
+| 2026-09-08 | 21:26 | — | — | Documentation | Story 17.2 | feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes (26d210f) |
 | 2026-09-10 | 03:25 | — | — | Review | — | docs(review): scheduled doc review 2026-09-10 — queue de-dup root cause, ADR staleness fixes, 3 new manual sections, Epic 10/11/12 management review (08054d4) |
 | 2026-09-09 | 20:01 | — | — | Review | — | chore(tracking): post-commit hook sync for personal-development-reviewer commit (31160b6) |
 | 2026-09-09 | 20:00 | — | — | Review | — | feat(ai-roles): add personal-development-reviewer agent and developer learning plan (9a796f5) |
