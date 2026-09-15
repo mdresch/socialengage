@@ -4,9 +4,9 @@
 
 ---
 
-## 2026-09-13 — Story 17.5 implementation — commit pending
+## 2026-09-13 — Story 17.5 implementation — commit 1df559b
 
-- **Full commit:** `pending` (pre-split single workspace repo — covers `social-listening-core/`)
+- **Full commit:** `1df559b701d90ca65fa073c150905059294d8c53` (pre-split single workspace repo — covers `social-listening-core/`)
 - **Repos:** social-listening-core
 - **Story / ADR:** 17.5 / ADR-0133 (TDS-0133)
 - **Contracts:**
