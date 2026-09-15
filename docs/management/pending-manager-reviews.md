@@ -8204,3 +8204,9 @@
 - **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0138-rag-vector-store-namespace-per-tenant-isolation.md, docs/adr/README.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Functional-Design/FDD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/contracts/epic-19/story-19.3.rag-vector-store-namespace-isolation.contract.test.ts, social-listening-core/src/rag/ragReconciliationService.ts
 - **Status:** Pending review
 
+## 2026-09-15 — 8ab0030 — docs(epic-19): backfill Story 19.3 commit hash
+
+- **Full commit:** `8ab00300a1f126087703b40e81b4146a0cc3e61c`
+- **Files touched:** docs/user-stories/epic-19-adr-0136-to-0140.md
+- **Status:** Pending review
+
