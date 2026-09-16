@@ -2,6 +2,8 @@
 
 **Audience:** a `platform_admin` identity — the operator of the SocialEngage platform itself, not a member of any tenant.
 
+**Learning & Development Writer addendum, 2026-09-14 (scheduled queue pass, covering commits through `08054d4`):** extended the Platform Operations dashboard entry with two real additions confirmed by reading source — a quota burn-rate forecast and a guided connector remediation drawer (Story 16.4). No other new Platform-Admin-tier screen was found reachable this pass; a review of several dozen Epic 11–17 commits touching `social-listening-core`/`social-listening-admin` (CRM handoff, daily digest, topic evolution, social inbox, prospecting export, RBAC/workspace settings, influencer discovery, governance/compliance backend, etc.) found none of it gated to `platform_admin` — all of it is tenant-tier or has no reachable screen at all, and is documented (or explicitly named as unreachable) in the Tenant Admin and User manuals instead.
+
 **Learning & Development Writer addendum, 2026-09-10 (scheduled queue pass):** added the Platform Operations dashboard (Story 10.7, `/admin/operations`), a real-time infrastructure/cost/connector-health screen, confirmed built and contract-verified. Original note below, as of 2026-08-13: sign-in, plus the real, working Platform Admin console (Story 6.6, first built 2026-08-08, then substantially rebuilt for real 2026-08-12 after an internal review found the first build's controls were non-interactive placeholders — see "Honest history" at the end of the console section) — a database health indicator, the tenant registry, tenant provisioning, per-tenant editing (name, status, license seats), the two-phase break-glass credential reset flow, and a recent-activity audit log. Nothing below describes a screen that doesn't exist yet; a handful of specific gaps are called out in their own place, and summarized together in "What's not built yet" at the end. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how the console works changed because of it.
 
 ---
@@ -48,9 +50,13 @@ The console shows your platform's 10 most recent audit log entries — timestamp
 
 **Honest history, not a currently-open caveat:** this console was first marked "Built" on 2026-08-08, but an internal review on 2026-08-12 found that three of its five sections — Provision tenant, Update tenant, and Break-glass — were each rendered as a single descriptive line of text with no actual form or button behind it, even though the backend functions they needed already existed and worked. All three were rebuilt for real the same day; the tenant registry and audit log were already genuine and needed no rework. Named here only so this manual's own history stays honest.
 
-## Platform operations dashboard (Story 10.7)
+## Platform operations dashboard (Story 10.7, extended by Story 16.4)
 
 A separate screen (`/admin/operations`, distinct from the Platform Admin console above) gives you a real-time read on platform infrastructure health: live ingestion rate and lag across all ingestion channels, an estimated 30-day AI cost figure, and a connector health/status panel (healthy / degraded / failing) across every tenant's active connectors. Platform-Admin only — a tenant identity is redirected away from this route.
+
+**As of Story 16.4 (found by reading real source; confirmed by checking `PlatformOperationsDashboard.tsx`'s own imports), this screen also has:**
+- **A quota burn-rate forecast** — a projection of when a connector or provider is likely to exhaust its own rate/quota limit at its current pace, rather than only showing today's usage.
+- **A guided connector remediation drawer** — for a degraded or failing connector, a drawer that walks through a suggested fix rather than only reporting the problem.
 
 ## What's not built yet
 

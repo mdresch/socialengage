@@ -10,7 +10,7 @@
 - **Full commit:** `9a796f5f9320d3bf8a0f327304756d6554245fd8`
 - **Files touched:** .claude/agents/personal-development-reviewer.md, docs/ai-roles/developer-learning-plan.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, scripts/git-hooks/post-commit
 - ~~**Status:** Pending review~~
-- **Resolved 2026-09-13 (Personal Development Reviewer):** No skill-relevant change observed in this commit. This commit is the scaffolding commit that created the personal-development-reviewer role itself — the agent charter, the `developer-learning-plan.md` file (already seeded with its own initial 2026-09-09 skills inventory, learning goals, and first progress note), the queue file, and the `post-commit` wiring to feed it. No application code, contract, ADR, or new technology/architectural pattern shipped in `social-listening-core` or `social-listening-admin`. Per the charter's "do not count" guidance for routine governance commits (queue files, hook wiring, documentation scaffolding with no new code), and because documenting the creation of this very reviewer as a "skill observed" would not reflect shipped, contract-verified technical work, no Progress Notes entry or new Skills Inventory snapshot was added to `docs/ai-roles/developer-learning-plan.md`.
+- **Resolved 2026-09-14 (Personal Development Reviewer):** Reviewed `git show 9a796f5` in full. Concluded no skill-relevant change to record. Reasoning: this commit is the fourth in an already-established queue-file pattern (`scripts/git-hooks/post-commit`'s `BOOKKEEPING_FILES`/`queue_commit` mechanism, explicitly following "the same self-referential-loop guard as the other three queue files" per the commit's own message) and the Nth AI-role subagent charter authored against the same template already used for `documentation-steward.md`, `learning-development-writer.md`, and `ideal-manager.md` — the general skill of authoring AI-role charters and queue-file governance scaffolding is already captured in the existing inventory ("Solo-project governance — ... AI-role roster across eleven domain-pull reviewers," Tooling & Process section). Neither the new agent charter nor the seeded `developer-learning-plan.md` is contract-verified application code (no `src/` change in either repo, no Jest contract touched, `enforce-contract-first.cjs` never in scope for markdown/shell governance files) — per the charter's own hard rule, a skill isn't documented unless it shipped in real, contract-verified code. The charter also explicitly excludes "routine governance commits (queue files, ...)" from counting as skill signal, and this commit is structurally that, even though it happens to be the commit that stood up this reviewer's own charter. The learning plan's own seeded Progress Notes entry (2026-09-09, "Initial snapshot") already states "No action required from this snapshot beyond committing it as a baseline" — consistent with this conclusion. No Skills Inventory, Learning Goals, or Progress Notes changes proposed for this entry.
 
 ## 2026-09-13 — 709444b — docs: scheduled review WIP - L&D writer pass complete, doc steward continuing
 
@@ -28,5 +28,35 @@
 
 - **Full commit:** `92f685c836580224fe287cadd85cbdcaf1877a9d`
 - **Files touched:** docs/adr/README.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md
+- **Status:** Pending review
+
+## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
+
+- **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** Pending review
+
+## 2026-09-14 — 4eb5d5b — docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims
+
+- **Full commit:** `4eb5d5bdfe580d6602d045bd7e64356d92ead988`
+- **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-14 — 8f538f4 — docs(review): Learning & Development Writer pass — clear full 191-entry backlog
+
+- **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
+
+- **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
+
+- **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
+- **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
 - **Status:** Pending review
 

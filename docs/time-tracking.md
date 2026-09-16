@@ -23,6 +23,13 @@
 | 2026-09-15 | 11:56 | — | — | Documentation | Story 19.3 | feat(rag): implement Story 19.3 — RAG vector-store namespace isolation and pgvector RLS (ADR-0138) (1e71d7e) |
 | 2026-09-14 | 11:35 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (0170db9) |
 | 2026-09-14 | 11:34 | — | — | Documentation | Story 19.1 | docs(epic-19): flesh out Story 19.1/19.2 with AC detail, backfill real commit hashes (1f96685) |
+| 2026-09-14 | 05:30 | — | — | Review | ADR-0054 | docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete (c1f1e1d) |
+| 2026-09-14 | 05:20 | — | — | Review | — | docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims (528df23) |
+| 2026-09-14 | 05:20 | — | — | Review | — | docs(review): Learning & Development Writer pass — clear full 191-entry backlog (8f538f4) |
+| 2026-09-14 | 05:15 | — | — | Review | — | docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims (4eb5d5b) |
+| 2026-09-14 | 05:15 | — | — | Review | — | docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings (c274be3) |
+| 2026-09-14 | 05:06 | — | — | Review | — | docs(review): Personal Development Reviewer pass — resolve sole queue entry (f6c8dfe) |
+| 2026-09-14 | 05:05 | — | — | Review | — | docs(review): Documentation Steward checkpoint — resolve early 2026-08-27 backlog entries (c65a06f) |
 | 2026-09-13 | 20:57 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (6939574) |
 | 2026-09-13 | 20:56 | — | — | Documentation | Story 19.2 | feat(rag): implement Story 19.2 — RAG chunking/embedding namespace routing (ADR-0137) (a12b947) |
 | 2026-09-13 | 20:36 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (558f036) |
