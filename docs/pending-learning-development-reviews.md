@@ -8203,3 +8203,9 @@
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-16 — aadb1795 — Merge remote-tracking branch 'origin/main'
+
+- **Full commit:** `aadb179525967e50bdaf2e8499c2ee93db82297f`
+- **Files touched:** 
+- **Status:** Pending review
+
