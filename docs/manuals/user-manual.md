@@ -35,12 +35,13 @@ Signing in takes you to a "Workspace Overview" landing page — this section nam
 3. A "Recent Ingestion Stream" shows your tenant's most recently ingested posts, newest first, and an "Active Connectors" list on the side shows which platforms are currently active.
 4. The quick-action buttons here ("+ New Watchlist," "Tenant-wide connect") are Tenant-Admin only; you won't see them.
 
-## Getting-started checklist (Story 9.6)
+## Getting-started checklist (Story 9.6, role-tailored journeys added by Story 17.2)
 
 The Workspace Overview page (see above) also shows a "Get Started with SocialEngage" checklist card whenever your tenant has one.
 
 1. Four core steps — Connect an Ingestion Source, Create a Brand Watchlist, Invite a Team Member, Verify Ingested Posts — each shown with a checkmark once genuinely completed, a plain description, and a link straight to the screen where you'd do it. A "Show Advanced Setup Steps" toggle reveals two more: Enable AI Enrichment and Configure Crisis Monitoring. A progress percentage and a filled bar reflect your tenant's real, computed completion state.
-2. You can click "Dismiss ✕" to hide the card, with a "Show Setup Checklist" button appearing in its place if you want it back. **As an ordinary Tenant User (not a Tenant-Admin), this dismissal is only remembered for your own current browser session** — it isn't saved to your tenant's record, so the checklist reappears the next time you load the page. Only a Tenant-Admin's dismissal is saved for everyone.
+2. **As of Story 17.2, the card also offers four role tabs — Admin, Care Agent, Social Seller, and Brand Manager** — pick whichever matches how you actually use SocialEngage to see its own tailored set of steps and links, with the same real completion checkmarks, alongside the original core checklist under "Overview."
+3. You can click "Dismiss ✕" to hide the card, with a "Show Setup Checklist" button appearing in its place if you want it back. **As an ordinary Tenant User (not a Tenant-Admin), this dismissal is only remembered for your own current browser session** — it isn't saved to your tenant's record, so the checklist reappears the next time you load the page. Only a Tenant-Admin's dismissal is saved for everyone.
 
 ## Semantic search and an AI assistant over your posts — Discovery (Stories 9.7–9.11)
 
@@ -75,13 +76,15 @@ Facebook, Instagram, and LinkedIn work differently from every other platform on 
 5. Turning any of the three on or off uses the same Activate/Deactivate control every other platform has.
 6. If a provider ever revokes your connection, the affected card shows a distinct "Reconnect required" status — click "Reconnect" to sign in again.
 
-## Managing watchlists (Story 6.4)
+## Managing watchlists (Story 6.4, boolean query builder added by Stories 12.3/12.4, volume/cost preview added by Story 18.1)
 
 1. From your tenant's screens, open "Manage watchlists."
 2. You'll see your own watchlists — name, match type (keyword, hashtag, account, or boolean), whether each is active, and which connected platforms it covers. **Watchlists are private to you** — even your Tenant-Admin can't see or manage your watchlists from this screen, and you can't see anyone else's.
-3. Below the list, a form lets you create a new watchlist: a name, a match type, either search terms (one per line) or — for a boolean watchlist — a boolean query, and which of your connected platforms it should cover. Only platforms you've actually connected are offered here (GNews, Newswire, Wikipedia, Brave Search, and/or Bing Search, since Stories 6.22, 6.30, and 6.32).
-4. Each watchlist can be edited the same way it was created, switched active/inactive with its own dedicated toggle, and deleted. Deleting asks for a separate confirm step before anything is actually removed, and it's permanent.
-5. If a watchlist has changed elsewhere since you loaded the page, saving your own change won't silently overwrite the other one — you'll see a message asking you to reload before retrying.
+3. Below the list, a form lets you create a new watchlist: a name, a match type, either search terms (one per line) or — for a boolean watchlist — a query built with a visual query builder, and which of your connected platforms it should cover. Only platforms you've actually connected are offered here (GNews, Newswire, Wikipedia, Brave Search, and/or Bing Search, since Stories 6.22, 6.30, and 6.32).
+4. **The boolean query builder (Stories 12.3/12.4)** lets you build a query as guided blocks (keyword, phrase, hashtag, mention, author, source, sentiment, or date clauses joined with AND/OR/NOT and groups), with a toggle to switch to a plain text editor for the same query — and it warns you before you save if a clause isn't supported by every platform you've selected.
+5. Each watchlist can be edited the same way it was created, switched active/inactive with its own dedicated toggle, and deleted. Deleting asks for a separate confirm step before anything is actually removed, and it's permanent.
+6. **When editing an existing watchlist, a "📊 Preview volume" button (Story 18.1)** estimates how many posts your current query would actually match, plus a rough cost/quota indicator, flagging unusually high volume or heavy quota use. This isn't offered yet while first creating a new watchlist.
+7. If a watchlist has changed elsewhere since you loaded the page, saving your own change won't silently overwrite the other one — you'll see a message asking you to reload before retrying.
 
 ### Crisis Threshold Wizard (Story 9.4)
 
@@ -116,7 +119,7 @@ From your tenant's screens, open "Team & access." You can see every user in your
 2. You'll see your tenant's real name, status, domain, how many of its licensed seats are currently used out of the total, and when the tenant was created. This is a read-only view — there's no form and no way to change anything from here.
 3. You see the identical screen your Tenant-Admin does; there's no role difference on this one.
 
-## Browsing your tenant's posts (Story 6.11, updated by Stories 6.18, 6.19, 6.25, 6.26, 6.33, 6.37)
+## Browsing your tenant's posts (Story 6.11, updated by Stories 6.18, 6.19, 6.25, 6.26, 6.33, 6.37, 12.5/12.6)
 
 Once your tenant has connected and activated a platform, SocialEngage polls it automatically in the background — GNews, Newswire, and Wikipedia every 15–30 minutes, your own domain's content feed every 30 minutes (Story 1.13), and your own connected Facebook Page every 30 minutes (Story 1.15) — so posts appear here on their own, with nothing anyone needs to click to make ingestion happen.
 
@@ -125,6 +128,7 @@ Once your tenant has connected and activated a platform, SocialEngage polls it a
 3. A "Show more" button reveals more of your already-filtered result set in batches; there's no page-number picker or server round trip for paging.
 4. Click any post to open a detail panel on the same screen (a slide-over, not a separate page) showing the same information plus the full article body rendered as real, formatted Markdown (Story 6.19), the author (currently shown as a raw internal identifier — there's no lookup yet to turn it into a friendlier name) and which ingestion run brought it in (also a raw identifier, for the same reason).
 5. **A post from Facebook shows which of your connected Pages it came from** (Story 6.33), plus a separate "By: <author>" line whenever Facebook reports a real author distinct from the Page itself. **Any post matched by one of your watchlists shows that watchlist's name** in the card and detail view too (Stories 6.37, 3.11–3.12). An Instagram post shows its own media type and a thumbnail, with a gallery for a multi-image carousel; a LinkedIn post shows its own reaction/comment/share counts.
+6. **When a post's AI analysis breaks sentiment down by aspect (Story 12.5/12.6)** — for example, "service: negative, price: positive" — the detail panel shows an "Aspect-Level Sentiment Breakdown" list underneath the overall sentiment badge. Not every post has this; it only appears when the enrichment provider actually detected distinct aspects.
 
 ## Replying to a post (Stories 2.26, 2.27, 3.14, 6.38)
 
@@ -162,7 +166,7 @@ Open "Analytics" from your tenant's screens to see aggregated, dashboard-style v
 
 **Current limitations:** the "Compare to previous period" checkbox doesn't visibly change anything on the current Overview tab. Location coverage only reflects GNews, Newswire, tenant-owned-feed, and Instagram posts today — every other platform's posts land in "Unknown / Unmapped." No per-widget export exists, and period-over-period comparison, where shown, only ever appears on the Overview tab's own totals.
 
-## Drafting a cross-platform post (Story 6.36, publishing made real by Story 6.39)
+## Drafting a cross-platform post (Story 6.36, publishing made real by Story 6.39, Deep Research added by Stories 14.3/14.4)
 
 Open "Compose" from your tenant's screens (or the "Compose Post" button on the Posts screen) to draft a single message and preview how it would look on up to seven different networks (Facebook, Instagram, LinkedIn, X/Twitter, Bluesky, Mastodon, and Threads) side by side.
 
@@ -170,14 +174,15 @@ Open "Compose" from your tenant's screens (or the "Compose Post" button on the P
 2. Drafts save automatically to your own browser as you work — not to shared tenant storage, so a draft made on one device isn't visible from another.
 3. **As of Story 6.39, publishing to Facebook is genuinely real, not simulated.** The "Publish" button opens a dialog listing your active, connected Facebook Pages; select which ones to send to and confirm, and SocialEngage actually posts your message to each one through Facebook's own API — you'll see a real link to the published post on success, or a plain per-Page error on failure.
 4. **Every other network — Instagram, LinkedIn, X/Twitter, Bluesky, Mastodon, Threads — still can't actually be published to.** The same dialog shows each of them as "not yet available for publishing." You can still draft and preview a message for them; only Facebook can actually be sent to today.
+5. **A "🔬 Deep Research" button (Stories 14.3/14.4, building on Story 3.17's endpoint)** searches the public web for conversation around your current draft (once it's at least 10 characters) and shows the results — sources and key phrases — in a panel under the compose box, so you can ground your post in what's actually being said before you publish it. Results are ephemeral: they're not saved with your draft.
 
-## Prospecting lists (Story 10.2)
+## Prospecting lists (Story 10.2, export and CRM push added by Story 13.14)
 
 Open "Prospecting" from your tenant's screens to manage lists of authors you're tracking as potential leads.
 
 1. Create a list by giving it a name and an optional description, and choosing whether it's shared with the rest of your tenant or private to you.
 2. Inside a list, each author entry has a relationship stage — New, Contacted, Engaged, Converted, or Passed — and an optional free-text note; both can be edited at any time.
-3. **Export CSV** and **Push to CRM** (sending the list's entries to a connected CRM system such as Dynamics 365) are both available from a list's own page, but only to the list's owner — not to anyone it's merely shared with.
+3. **Export CSV** and **Push to CRM** (sending the list's entries to a connected CRM system such as Dynamics 365) are both available from a list's own page, but only to the list's owner — not to anyone it's merely shared with (Story 13.14).
 
 ## Ad-hoc analytics query (Story 10.5)
 
@@ -198,9 +203,11 @@ First, connect a CRM: open Tenant settings, then "Manage CRM Connectors," and en
 
 Open Tenant settings, then "Manage Daily Digest Email," to subscribe to a daily summary email of your tenant's last 24 hours — sentiment breakdown, top platforms and topics, and notable posts. Choose a delivery time and your timezone, which watchlists to include, and whether to include an AI-written summary, top posts, and a topic breakdown. A live preview shows exactly what the email will look like before you save, and every email carries a one-click unsubscribe link.
 
-## Topic evolution timeline (Stories 11.5, 11.6)
+## Topic evolution timeline (Stories 11.5, 11.6, semantic drift explanation added by Stories 13.11/13.12)
 
 A dedicated Topic Evolution page charts how a topic's mention volume and sentiment split have moved over time, with a trend badge (rising, falling, or stable), a comparison overlay against the prior period, and supporting widgets showing the authors driving the topic and its most frequent keywords. As of this writing there is no menu link to this screen anywhere in the app — reach it directly at `/tenant/analytics/topics`.
+
+The same page also lets you pick a "then" and "now" date range and run a semantic drift analysis for the topic, which scores how much its meaning has actually shifted between the two windows (flagging a "significant drift" warning badge when it has) and lists the top clusters of related posts from each window side by side. An "Ask AI" button on this card generates a plain-language explanation of the shift, grounded in real sample posts from both windows rather than invented.
 
 ## A dedicated queue for scheduled and published outbound posts (Stories 11.7, 11.8)
 
@@ -231,3 +238,5 @@ While drafting a post in the outbound-posts composer described above, SocialEnga
 - **A backend endpoint for a plain-language explanation of any dashboard metric now exists** (Story 9.2) but no screen calls it yet — separate from the real Discovery "Ask AI Assistant" feature described above.
 - **Automated alert dispatch for a Crisis Threshold Wizard template is not built yet** (Story 9.4) — activating a template creates a real watchlist immediately, but nothing is sent yet when a threshold is actually crossed, exactly as the wizard's own banner discloses.
 - **Discovery's semantic search/Ask index (Stories 9.7–9.11) is not kept current with live ingestion** — a post only becomes searchable or citable there once an operator has run a backend indexing process, which can lag behind what's already visible in your ordinary Posts feed.
+- **Several Epic 12/16 admin-UI stories built real, contract-tested components that aren't wired into any reachable page yet** — topic curation (Story 12.8), a dashboard widget renderer (Story 12.10), webhook management (Story 12.12), workspace/RBAC settings (Story 12.14), and influencer discovery (Story 12.16). Nothing to click through to for any of these today.
+- **Editing or deleting an already-published outbound post has a working backend endpoint** (Story 14.2) but no screen offers it — the outbound-posts queue above can cancel or reschedule a still-pending post, but not change or remove one that already went out.
