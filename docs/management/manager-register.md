@@ -1074,45 +1074,292 @@
 
 ---
 
-## 2026-09-14 — reviewed 543eecf/fd66185/181249f/05e1e43/be5702d/e493fb4/bae4082/8b99394/1648218/7850f1d/6ea71da/1093eff/4edf26f/ca98f53/28340a3/d84caf0/b4a32f2/5fcd0fd/79b6ab9/bb0545a/cfbb0ad/0df7c14/4ad35ee/07f8aa4/39a2375/7683f31 — Decision Evaluator: Epic 13's tail (Stories 13.5–13.14) plus five same-day healing passes, across two ordinary workdays, closing with a sixth attempt to land Story 13.14
+## 2026-09-13 — reviewed 543eecf/fd66185/181249f/05e1e43 — Decision Evaluator: the tail of the already-escalated Epic 12→13 marathon extends nearly 25 hours past its start, undiscovered until now
 
-**Housekeeping note before the substance.** This is a scheduled documentation-maintenance pass, not a same-day commit review — the queue backlog it works through is real but much smaller than the raw "still marked pending" line count in `docs/management/pending-manager-reviews.md` suggests. That file was concatenated onto itself at least twice by off-process reconciliation commits (the `2a8e212` root cause a prior 2026-09-10 pass already found and fixed for one duplication round), so a naive count of unstruck "Pending review" lines overstates the true backlog by roughly an order of magnitude: the great majority of lines matching that pattern are already-resolved entries sitting inside a duplicated block whose own resolution text was carried along with them. The real, previously-untouched backlog starts at commit `543eecf` (2026-09-01) — immediately after this register's last entry — and this pass works it forward from there.
-
-**Decision as understood.** Thirty-two queued commits (two lack an explicit `Status:` line in the queue file at all — `ca98f53` and `79b6ab9` — a small, separate formatting gap in the queue file itself, treated as pending regardless since neither carries any resolution text). Twenty-six resolve to real, reachable commits; six (`1094f02`, `7f62800`, `11c8d8b`, `0b6f9e7`, `4ed1f66`, `d7bd36c`) do not exist in git history at all — the same amend-during-a-still-firing-post-commit-hook pattern this register has named four times before, but concentrated on a single story here for the first time: all six share the identical commit message "Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)," meaning Story 13.14 alone took six landed-then-amended-away attempts before `39a2375` actually stuck. The real work, in order: three bookkeeping/traceability-sync commits for Stories 13.5/13.6 (04:57–06:53, 2026-09-01); Story 13.7 implementation (`05e1e43`, 08:08); an evening cluster (17:16–18:05) of two healing passes (Story 6.27's multi-Page status assertion, Story 3.8's self-service tenant deletion) plus their log/telemetry sync, then a third healing pass (Story 12.3, `7850f1d`/`6ea71da`/`1093eff`) and a fourth (`4edf26f`/`ca98f53`, draining background export jobs before Jest teardown for Story 10.8), interleaved with Story 13.9 (publishing media upload/asset targeting, ADR-0115) landing and merging in the same window; the next morning (2026-09-02, 08:43–08:59) Story 13.11 (semantic drift detection, ADR-0116) ships and syncs; and the evening of 2026-09-02 (19:53–19:54, continuing to `95c62c9` at 21:31, reviewed in the entry immediately below) Story 13.14 finally lands after its six-attempt amend history.
+**Decision as understood.** Four queued commits: a traceability sync (`543eecf`, 04:57 CEST), two Story 13.6 doc syncs (`fd66185` 06:43, `181249f` 06:53), and Story 13.7's real implementation (`05e1e43`, 08:08, Metric explainability prompt/caching, ADR-0113, 9 files/1187 insertions) — all 2026-09-01. `git log` back through this session's own unbroken history (`395ae6c`, `4dc7472`, `3241ecc` ... back through `bbfbb04`/`ee9ffe5` to `6948420` at 2026-08-31 17:57) shows this is not a fresh morning start but the direct continuation of the same session this register's own 2026-09-10 "Epic 12" entry already escalated — that entry's diff window stopped at `02ddfd3` (2026-09-01 00:49). These four commits are the next ~7h20m of the identical session, extending total continuous activity to roughly 07:28 (2026-08-31) through 08:08 (2026-09-01) — near 24h40m of one calendar-crossing push, materially longer than what the prior entry captured.
 
 **Fourteen-section check.**
+- Protection & Boundaries — violated, and worse than previously recorded. The prior escalation described "a long single-day push, plus a return trip past midnight." The full extent, now visible with these four commits, is a session running from one morning through breakfast time the next day — not a return trip past midnight but a continuation straight through it. This doesn't reopen the prior verdict (already escalated) but corrects the record: the marathon this register flagged was itself an undercount of its own true length.
+- Outcome Stewardship — at risk for the same reason already given: a real ADR-backed feature (Story 13.7) implemented at 08:08 AM, ~24 hours into a continuous session, is late-marathon work, not fresh-morning work.
+- No new veto beyond the one already applied by the prior entry; this finding supplements rather than reopens it.
 
-- Capacity & Workload / Protection & Boundaries — satisfied, with one thing worth naming rather than passing over silently. 2026-09-01 splits into a ~3-hour morning session (04:57–08:08) and a ~50-minute evening session (17:16–18:05) with an ordinary daytime gap between; 2026-09-02's morning session is a brisk 16 minutes. No overnight bleed, no midnight crossing — the pattern this register keeps asking for. The 04:57 start itself is unusually early (this register's prior "ordinary daytime hours" framing has meant roughly 08:00–21:00 CEST); a single early start isn't a violation on its own, but it's the kind of data point worth tracking if it becomes a habit rather than a one-off.
-- Outcome Stewardship — satisfied. Five separate healing passes (Story 6.27, 3.8, 12.3, feature-gating, posts-csv-export) all land same-day as real, scoped contract fixes rather than accumulating as unaddressed debt, alongside three feature stories (13.7, 13.9, 13.11) closing out named ADRs. This is proportionate maintenance interleaved with delivery, not maintenance being deferred in favor of throughput.
-- Organizational Influence / Learning from Failure — at risk, and worth flagging precisely rather than folding into the standing note. This register has now found amend-orphaned queue entries five separate times (2026-08-26's healing pass, 2026-08-27/28's `1f581dd`, 2026-08-29–09-01's twelve-hash Epic 12 batch, and now this one) — but this is the first time all the orphans trace to a *single* story rather than being spread across a batch. Six failed landings for one story (Story 13.14) is a materially worse concentration than anything found before, even though the eventual total orphan count here (6) is lower than Epic 12's (12). Worth naming as its own data point: the root cause (amend during a still-firing post-commit hook) doesn't appear to be getting rarer as this project's pace continues, even as the *process* fix for a related, adjacent problem (collapsing per-story commit count from 2–3 down to 1, `efaa197`, reviewed in the entry directly below) lands about a week later. That commit reduces the number of commits-per-story a retry cycle can amend across, which should help, but doesn't specifically target amend-during-heal itself — worth Menno re-checking after a few more stories whether the orphan rate actually drops, rather than assuming it will from this fix alone.
-- No safety/legal veto.
+**Observable signals used.** `git log` timestamps for `6948420` (2026-08-31 17:57) through `05e1e43` (2026-09-01 08:08) show no gap exceeding ~1h46m across that entire span.
 
-**Observable signals used.** `git log` timestamps for all twenty-six reachable hashes; `git cat-file -e` confirming the six orphans are unreachable from HEAD; each orphan's identical commit-message text (from the queue file's own preserved headers, since the commits themselves no longer exist) as the basis for the single-story concentration finding.
+**Verdict: escalate** (supplementary to the already-escalated prior entry — same underlying session, no new independent action needed beyond the stopping-time-ceiling recommendation already on record, but that record understated this session's real length and is corrected here).
 
-**Verdict: proceed** on the twenty-six real hashes — nothing here needs undoing. The six orphaned Story 13.14 attempts are closed below as **unresolvable-by-design** (no diff exists to review), consistent with this register's established disposition for this failure mode. No escalation: the underlying pace this pass covers is genuinely sustainable (see Capacity & Workload above) — this is a process-tooling observation, not a workload one.
-
-**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01/2026-09-02 entries for 543eecf, fd66185, 181249f, 05e1e43, be5702d, e493fb4, bae4082, 8b99394, 1648218, 7850f1d, 6ea71da, 1093eff, 4edf26f, ca98f53, 28340a3, d84caf0, b4a32f2, 5fcd0fd, 79b6ab9, bb0545a, cfbb0ad, 0df7c14, 4ad35ee, 07f8aa4, 39a2375, 7683f31 (reviewed normally), and 1094f02, 7f62800, 11c8d8b, 0b6f9e7, 4ed1f66, d7bd36c (closed as unresolvable-by-design — amended away, six attempts for the same story, per the finding above). Note: `5fcd0fd` was previously claimed "closed as unresolvable-by-design" in this register's 2026-09-09 entry reviewing 123 commits — that was checked directly this pass and found to be an error in that prior entry (`5fcd0fd` is a real, reachable commit; `git cat-file -e` confirms it). Per this charter's append-only rule that prior entry is not edited; this note and the real review above supersede it for practical purposes.
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entries for 543eecf, fd66185, 181249f, 05e1e43.
 
 ---
 
-## 2026-09-14 — reviewed 95c62c9/cf425dd/9ed1f50/421a4c1/1d15ea8/f05336e/890d6f7/1d03403/c68c1a1/f53a870/c1ab9b2/fdcf5d2/c903723/d2bd779/82b276e/4b8bea8/2cfae17/d9e5a6a/0f6e0ab/02e27bb/ca0383e/84a92eb/9dd1747/f058536/2035448/2f905ff/689357c/613f28d/03cf03f/7336ec5/aa24542/492bbd1/6eb57b1/48d2f8f/91bb7b1/c4d9bdd/53e63ba/4faf6ee/cbd4869/efaa197/f15d9f1/614e6e5/e4f4826/eeacc20/b704784/f845ac9/9c1138f/dc3958f/f83bf05/c11df84/9a796f5/08054d4 — Decision Evaluator: Epics 14–17 (12 stories, 139 TDS documents) across eight days, with a recurring overnight-crossing pattern this register has flagged before now recurring three more times — including one twelve-hour overnight stretch shipping six stories — and a real defect from an earlier-escalated marathon session surfacing here as direct evidence
+## 2026-09-13 — reviewed be5702d/e493fb4/bae4082/8b99394/1648218/7850f1d/6ea71da/1093eff/4edf26f/28340a3/d84caf0/b4a32f2 — Decision Evaluator: a healthy ~9-hour daytime gap, then a tight 48-minute evening session mixing three healing passes with Story 13.9
 
-**Process-integrity note, checked directly rather than assumed.** A subset of this batch's hashes (`cf425dd` through `f845ac9`) were named in this register's 2026-09-09 entry's own "Resolves:" list (the 123-commit Epic 11–13 entry), but `docs/management/pending-manager-reviews.md` still showed every one of them as literally, unambiguously "Pending review" — no strikethrough, no resolution note — when this pass began. That prior entry's own "Decision as understood" narrative describes Epic 11–13 work running 2026-08-28 through 2026-09-02, yet its "Resolves:" line also lists hashes dated as late as 2026-09-09 (`f845ac9`) that have nothing to do with Epic 11–13 — an internal mismatch in that entry, not just a missed queue-file edit. This is not re-litigated or corrected in place (append-only), but it means the queue-file marking for these hashes was never actually done despite the register claiming it — this pass is the first real review these commits have received, and treats them as such rather than as a formality.
-
-**Decision as understood.** Fifty-two commits, 2026-09-02 21:31 (continuing the same evening session that closed the entry directly above) through 2026-09-10 03:25. In chronological order: `95c62c9` (21:31, an Obsidian "second brain" telemetry tool, tail of 09-02's evening); a gap of a full rest day (09-03, zero commits); `cf425dd` (09-04 01:35, an isolated early-hour healing fix) followed by an ordinary 11:49–17:45 daytime session shipping Story 14.1 (additional publishing platforms roadmap, ADR-0118), Story 14.2 (editing/deleting published posts, ADR-0119), an ADR-governance cleanup, and the first batch (37) of Technical Design Spec documents; a gap of over a day (09-05 daytime empty) then a late-evening session 22:04–22:27 shipping Story 14.3 and a TDS batch, continuing past midnight to 09-06 00:17–00:25 for Story 14.4 and a "complete all 139 TDS documents" commit; a rest gap of roughly a day and a half; 09-07 11:09–13:35 shipping Story 14.5 (closing Epic 14) and an RFC document, then a second session that evening 19:27–23:12 shipping Story 15.1 and 15.2 (Epic 15, both stories), continuing directly past midnight into 09-08 01:37–07:19 — a single unbroken overnight stretch shipping Story 16.1, 16.2, 16.3, and 16.4 (all of Epic 16's alert/takedown/audit/quota work) — then, after a 5-hour gap, resuming the same calendar day 09-08 12:20–14:01 for Story 17.1 and an Epic 17 doc-expansion commit; a ~15-hour rest gap into 09-09 05:15–06:31 (checkpoint/review commits, a merge-conflict resolution, a GitHub Copilot-review fix), a large daytime gap, then 19:25–23:48 (a completed three-role scheduled review pass, a new AI role added — `personal-development-reviewer` — and `efaa197`, the process change collapsing implement-story's 2–3 commits per story into one); and finally, continuing directly past midnight again, 09-10 00:18–03:25 (a merge, a real defect fix (`dc3958f`, below), and the scheduled 2026-09-10 doc-review commit `08054d4` that itself wrote this register's own 2026-09-09/09-10 entries and part of the duplicate-queue cleanup referenced above).
+**Decision as understood.** Twelve commits, all 2026-09-01, 17:16–18:05 CEST, following a genuine ~9h08m gap after the marathon tail reviewed immediately above (`05e1e43` at 08:08). Two contract healing passes land almost simultaneously (`be5702d`, Story 6.27 multi-Page status assertion; `e493fb4`, Story 3.8 self-service tenant deletion), each with its own Implementation Log entry and dashboard sync (`bae4082`, `8b99394`), plus a third healing pass logged further down (`6ea71da`, `1093eff`, Story 12.3), a queue/time-tracking sync (`1648218`), a standalone bug fix (`7850f1d`, feature-gating 500 on synthetic tenant ids), another fix (`4edf26f`, drain background export jobs before Jest teardown), and Story 13.9 (`28340a3`, publishing media upload/asset targeting, ADR-0115, 15 files/1108 insertions), closed with its traceability commit and merge (`d84caf0`, `b4a32f2`).
 
 **Fourteen-section check.**
+- Protection & Boundaries / Capacity & Workload — satisfied, worth naming as a positive contrast to the group immediately above: a real ~9-hour break separates this session from the prior marathon, the session itself is short (48 minutes), and it's followed by a healthy ~14h38m overnight gap before the next commit (2026-09-02, 08:43).
+- Outcome Stewardship — satisfied. Three separate healing passes (6.27, 3.8, 12.3) landing in one sitting is a legitimate "catch up on the healing backlog" pattern, not scope creep — each is a targeted, logged contract fix, not new feature surface.
+- Learning from Failure — satisfied. Batching healing passes for three unrelated stories, each with its own Implementation Log entry, is exactly the systemic, non-blaming fix pattern this section rewards.
+- No safety/legal veto.
 
-- Protection & Boundaries / Capacity & Workload — violated. This register's two prior escalations (the 17-hour Epic 10 all-nighter and the Epic 12 day running to 00:49) were each treated as a single notable incident with a recommended fix. This batch shows the pattern recurring not once but effectively three times in eight days: a short midnight-crossing on 09-05/09-06 (~2.5 hours), a second on 09-07 evening into 09-08 (23:12 to 01:37, folding directly into the twelve-hour 19:27–07:19 overnight stretch that ships four full stories), and a third on 09-09/09-10 (23:48–03:25). The 09-07/09-08 stretch is the most serious: nineteen-plus hours elapsed from 19:27 the evening before to 14:01 the next afternoon, with only a five-hour gap (07:19–12:20) that may or may not represent real rest. This is not a one-off anymore — it is a settled operating pattern this register has now documented at least five separate times across three different epics (10, 12, 14–16), despite two prior explicit recommendations to set a stated stopping-time ceiling.
-- Learning from Failure — violated, with the clearest piece of direct evidence this register has had yet. `dc3958f` (09-10 00:35) fixes literal unresolved `<<<<<<</=======/>>>>>>>` merge-conflict markers committed straight to `main` inside `onboarding-checklist-ui/SKILL.md` — traced by its own commit message back to `6fe3b5d`, the "Epic 9 completed" merge that landed during the 17-hour all-nighter this register escalated on 2026-09-09. That entry's own verdict said "this pass found no evidence anything landed broken" — true at the time, on the evidence then available, but incomplete: something *did* land broken, and it sat undetected in `main` for thirteen days before this session's own scheduled review caught it. This doesn't retroactively invalidate the earlier "escalate, not don't-proceed" call (the defect was a docs/SKILL.md file, not production code, and was caught and fixed cheaply), but it is concrete confirmation that the marathon-session pattern has a real, non-hypothetical correctness cost, not just a theoretical one — worth citing the next time this register or Menno weighs whether the ceiling recommendation is worth actually enforcing.
-- Outcome Stewardship — satisfied on substance despite the pacing concern above. Twelve stories across four epics (14 closed out entirely, 15 closed out entirely, 16 substantially built, 17 started) plus 139 Technical Design Spec documents is real, verifiable throughput (each story commit carries a genuine multi-hundred-line contract-plus-implementation diff, spot-checked this pass), not padding.
-- Team-Level Optimization / Decision Rights & Autonomy — satisfied, positive note. `9a796f5` adds a twelfth chartered AI role (`personal-development-reviewer`) with an explicit append-only scope boundary (never commits its own changes, only edits its own designated files) — consistent with how every other role on this roster is scoped, no sign of quiet charter creep here.
-- Strategic Direction / Process Optimization — positive note. `efaa197` is a real, well-reasoned process fix: Menno directly noticed commit-count-per-story bloat in `git log` and the fix (write the Implementation Log entry and `Built:` line in the same commit as the implementation, via a self-healing pending-hash backfill) addresses the root cause rather than papering over it. This is the kind of "remove low-value work" this framework asks for, and is worth watching over the next batch of stories to see whether it also reduces the amend-orphan rate as a side effect (noted, not assumed, in the entry above).
-- Organizational Influence — the process-integrity note at the top of this entry is this section's own material: a second, independent instance of a register claim not matching the queue file's actual state, on top of the two rounds of file self-duplication already found. Recommend treating `docs/management/pending-manager-reviews.md`'s literal strikethrough state, not any register entry's "Resolves:" prose, as the sole source of truth for what has and hasn't actually been marked reviewed, going forward.
-- No safety/legal veto — but Protection & Boundaries' now-repeated violation, reinforced by Learning from Failure's concrete evidence, settles this without needing the priority-order tie-break.
+**Verdict: proceed.** No adjustment needed — this is exactly the pace this register has repeatedly asked for.
 
-**Observable signals used.** `git log` timestamps for all fifty-two hashes (all reachable, no orphans in this batch); `git show --stat` spot-checks on twelve of the story-implementation commits confirming substantive (500–1,500+ line) real diffs; `dc3958f`'s own commit message tracing its root cause back to `6fe3b5d`, cross-referenced against this register's 2026-09-09 entry for that commit.
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entries for be5702d, e493fb4, bae4082, 8b99394, 1648218, 7850f1d, 6ea71da, 1093eff, 4edf26f, 28340a3, d84caf0, b4a32f2.
 
-**Verdict: escalate.** Stronger language than the prior two escalations, because this is the third recurrence of the same pattern despite two prior recommendations, and because this pass found direct, dated evidence (not speculation) that the pattern has already produced a real defect. Recommend Menno treat this as more than a "watch item": either adopt a concrete, enforced stopping-time rule (not just a recommendation this register keeps repeating), or, if the pace itself is a deliberate choice Menno is making with eyes open, say so explicitly somewhere in the project's own governance record (e.g. Business Case or Charter) so this register stops re-discovering the same unacknowledged trade-off every few days. Either is a legitimate answer; the current state — a repeated recommendation with no visible response — is not.
+---
 
-**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-02 through 2026-09-10 entries for 95c62c9, cf425dd, 9ed1f50, 421a4c1, 1d15ea8, f05336e, 890d6f7, 1d03403, c68c1a1, f53a870, c1ab9b2, fdcf5d2, c903723, d2bd779, 82b276e, 4b8bea8, 2cfae17, d9e5a6a, 0f6e0ab, 02e27bb, ca0383e, 84a92eb, 9dd1747, f058536, 2035448, 2f905ff, 689357c, 613f28d, 03cf03f, 7336ec5, aa24542, 492bbd1, 6eb57b1, 48d2f8f, 91bb7b1, c4d9bdd, 53e63ba, 4faf6ee, cbd4869, efaa197, f15d9f1, 614e6e5, e4f4826, eeacc20, b704784, f845ac9, 9c1138f, dc3958f, f83bf05, c11df84, 9a796f5, 08054d4 — all reviewed normally, no orphans in this batch.
+## 2026-09-13 — reviewed bb0545a/cfbb0ad/0df7c14/4ad35ee/07f8aa4/1094f02/7f62800/11c8d8b/0b6f9e7/4ed1f66/d7bd36c/39a2375/7683f31/95c62c9 — Decision Evaluator: Story 13.11 in a tight morning session, then six same-message amend-orphans before Story 13.14's UI lands that evening
+
+**Decision as understood.** 2026-09-02 morning (08:43–08:52, ~9 minutes): Story 13.11 semantic drift detection (`bb0545a`, ADR-0116, 6 files/1079 insertions) plus its traceability/dashboard/queue sync (`cfbb0ad`, `0df7c14`, `4ad35ee`, `07f8aa4`). Then, ~11 hours later that evening (19:53–21:31): Story 13.14's frontend (Prospecting export/CRM push UI, ADR-0117) lands as `39a2375`, but only after six queued commits carrying the byte-identical message "Story 13.14 (ADR-0117): Prospecting export and CRM push UI (frontend)" — `1094f02`, `7f62800`, `11c8d8b`, `0b6f9e7`, `4ed1f66`, `d7bd36c` — none of which exist in git history (`git cat-file -e` fails for all six). `39a2375` is followed by its Implementation Log entry (`7683f31`) and an unrelated infra chore (`95c62c9`, Obsidian-brain heal orchestrator).
+
+**Fourteen-section check.**
+- Organizational Influence — this register's now-familiar amend-orphaning finding (previously: 1 hash on 2026-08-27/28, 12 hashes on 2026-08-29–31, 1 hash on 2026-09-09), recurring here at comparable scale (6 hashes, one story). Disposed the same way as every prior instance: closed as unresolvable-by-design, not independently reviewed, since each is a byte-identical-message amend of the same still-in-progress commit.
+- Capacity & Workload — a light note, not a violation: six retry-amend cycles for one UI commit is consistent with iterative healing during development rather than six separate incidents, and the final commit's size (866 insertions) is unremarkable for a UI story of this kind.
+- Protection & Boundaries — satisfied: the ~11-hour gap between the morning cluster and the evening cluster is real daytime rest, and the evening session itself is contained (under 2 hours) with no post-midnight bleed.
+- No safety/legal veto.
+
+**Verdict: proceed.** The orphan hashes are closed as unresolvable-by-design per established precedent; the substantive pace (two well-separated sessions, no marathon) satisfies this framework.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-02 entries for bb0545a, cfbb0ad, 0df7c14, 4ad35ee, 07f8aa4, 39a2375, 7683f31, 95c62c9 (reviewed normally), and 1094f02, 7f62800, 11c8d8b, 0b6f9e7, 4ed1f66, d7bd36c (closed as unresolvable-by-design — amended away, not reachable from HEAD).
+
+---
+
+## 2026-09-13 — reviewed cf425dd/9ed1f50/421a4c1/1d15ea8/f05336e/890d6f7/1d03403/c68c1a1/f53a870/c1ab9b2 — Decision Evaluator: a lone 01:35 AM healing fix, then a clean daytime session opening Epic 14
+
+**Decision as understood.** `cf425dd` (2026-09-04 01:35, admin/analytics contract healing, 156 lines) lands roughly 3.5 hours after the prior evening's ADR-0141 work (`3cf107e`, 22:00 the previous night, not itself queued here) and ~10 hours before the next commit. The 2026-09-04 daytime session (11:49–17:06, ~5h17m) covers ADR governance cleanup (`9ed1f50`, standardizing Open Questions syntax; `1d15ea8`, resolving 14 open questions across 5 ADRs — both non-story doc/comment work), a contract healing pass (`421a4c1`, Story 13.8 test isolation), a routine merge (`f05336e`), an Obsidian-brain telemetry fix (`890d6f7`), and Epic 14's opening two stories: 14.1 (`1d03403`, additional social-platform publishing roadmap, ADR-0118, 698 insertions) and 14.2 (`c1ab9b2`, editing/deleting published outbound posts, ADR-0119, 1353 insertions), with a supporting platform-library spec commit (`c68c1a1`) and a second routine merge (`f53a870`) interleaved.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied overall, with `cf425dd` as a minor, isolated exception (a single healing commit drifting to 01:35 AM) rather than a pattern — real rest brackets it on both sides. Not escalation-worthy alone; noted as a "watch, don't ignore" data point since this is at least the third instance in this backlog of an otherwise-reasonable day quietly extending 1-3 hours past midnight.
+- Strategic Direction — satisfied. Closing out Epic 13's healing backlog and ADR governance debt immediately before opening Epic 14 is coherent sequencing, not scope-jumping.
+- Scope & Expectations — worth noting, not flagging: the ADR governance commits are discretionary hygiene work layered onto a feature-delivery day, consistent with how this register has treated similar commits elsewhere without objection.
+- No safety/legal veto.
+
+**Verdict: proceed.** The isolated 01:35 AM commit is noted but doesn't rise to escalate; the daytime session that follows is well-paced.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-04 entries for cf425dd, 9ed1f50, 421a4c1, 1d15ea8, f05336e, 890d6f7, 1d03403, c68c1a1, f53a870, c1ab9b2.
+
+---
+
+## 2026-09-13 — reviewed c903723/d2bd779/82b276e/2cfae17/d9e5a6a/0f6e0ab — Decision Evaluator: Epic 14 continues in a late-evening session that straddles midnight by 25 minutes, bracketed by real rest on both sides
+
+**Decision as understood.** Six commits, 2026-09-05 22:04 through 2026-09-06 00:25 (~2h21m). Story 14.3 (`c903723`, SearchProviderConnector abstraction, 760 insertions) lands at 22:04 following a ~4-hour daytime gap since the prior commit. Its dashboard sync (`2cfae17`, 22:10) and a TDS documentation batch (`d9e5a6a`, 22:27) follow, then Story 14.4 (`d2bd779`, 00:17 the next calendar day, Composer Deep Research caching/re-trigger/caps/telemetry, 801 insertions) and its log entry (`82b276e`, 00:18), closing with a TDS-completion commit (`0f6e0ab`, 00:25, "complete all 139 TDS documents"). The next commit after this group lands over 34 hours later (2026-09-07 11:09) — a genuine multi-day gap.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Crossing midnight by 25 minutes is a materially different pattern from the marathons flagged elsewhere in this backlog (multi-hour post-midnight pushes) — a short, contained session that happens to straddle the calendar boundary is not the same risk, and treating every midnight-crossing identically would flatten a distinction this framework should preserve.
+- Outcome Stewardship — satisfied. Two substantive, appropriately-sized stories (14.3, 14.4) land with real breaks before and after.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-05/2026-09-06 entries for c903723, d2bd779, 82b276e, 2cfae17, d9e5a6a, 0f6e0ab.
+
+---
+
+## 2026-09-13 — reviewed 02e27bb/ca0383e/84a92eb/9dd1747/f058536/2035448/2f905ff — Decision Evaluator: Story 14.5 and Epic 15's opening two stories across a gapped day ending at 23:12 — the last quiet evening before the all-nighter reviewed next
+
+**Decision as understood.** Seven commits, 2026-09-07, 11:09–23:12, with two real daytime breaks inside: `02e27bb` (11:09, Story 14.5, Continuous Self-Learning Synthesis and Telemetry Feedback Architecture, closing Epic 14) and `ca0383e` (11:10, synthesis-artifact refresh) land first; a ~2-hour gap precedes `84a92eb`/`9dd1747` (13:08/13:10, archiving Story 14.5's verification walkthrough and pre-execution plan); a ~25-minute gap to `f058536` (13:35, an RFC document, not a story); then a genuine ~5h52m daytime gap before `2035448` (19:27, Story 15.1, Epic 15's opening story, real-time alert rule exclusions/caps/preview, 1414 insertions) and a further ~3h45m gap before `2f905ff` (23:12, Story 15.2, data export lookback bounding, 902 insertions).
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied for this day taken alone: two real multi-hour daytime gaps are visible rest, not just tight batching. Flagged only because — as the next entry shows — this day's 23:12 close turns out to be the opening of a session that does not end until 14:01 the next day; that continuation is this day's own responsibility to disclose, not a separate violation of this day's own pace.
+- Strategic Direction — satisfied. Closing Epic 14 with its own capstone story before opening Epic 15, and archiving Story 14.5's planning/verification artifacts, is coherent sequencing and real process hygiene.
+- No safety/legal veto within this day's own boundaries.
+
+**Verdict: proceed**, with the continuation into the next entry noted explicitly rather than treated as this day's own clean ending.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-07 entries for 02e27bb, ca0383e, 84a92eb, 9dd1747, f058536, 2035448, 2f905ff.
+
+---
+
+## 2026-09-13 — reviewed 689357c/613f28d/03cf03f/7336ec5/aa24542/492bbd1/6eb57b1/48d2f8f/91bb7b1/c4d9bdd/53e63ba/4faf6ee/cbd4869 — Decision Evaluator: an all-nighter shipping four Epic 16 stories through the night (01:37-07:19) plus Story 17.1 that afternoon — a third/fourth instance of an already-escalated pattern, discovered only now because this backlog itself sat unreviewed for five weeks
+
+**Decision as understood.** Thirteen commits spanning 2026-09-07 23:12 (the close of the group reviewed immediately above) through 2026-09-08 14:01 (nearly 15 hours). Story 16.1 (`689357c`, author-initiated takedown SLA tracking, ADR-0125, 1330 insertions) lands at 01:37 AM — 2h25m after the prior group's own close — with its telemetry/tracking commits (`613f28d`, `03cf03f`) within 2 minutes. Story 16.2 (`7336ec5`, DSR Article 18 restriction quarantining, ADR-0126, 1201 insertions) lands at 04:21 (2h42m later), telemetry (`aa24542`) 2 minutes after. Story 16.3 (`492bbd1`, cryptographic audit log hash chaining, ADR-0127, 1548 insertions) lands at 05:49 (1h26m later), telemetry (`6eb57b1`) 1 minute after. Story 16.4 (`48d2f8f`, platform ops quota burn-rate forecasting, ADR-0128, 1347 insertions) lands at 07:19 (1h29m later) — closing all of Epic 16, four stories deep, with no break longer than ~2h45m across nearly 6 hours of continuous overnight work. A genuine ~5-hour gap follows (07:19→12:20), then the day resumes with a status-sync commit (`91bb7b1`), Epic 17's story-file expansion (`c4d9bdd`), Story 17.1 (`53e63ba`, deduplicated prospecting list export/sharing ACLs, ADR-0129, 960 insertions) at 13:06, its telemetry sync (`4faf6ee`), and a routine merge (`cbd4869`) closing the day at 14:01 — 14h49m after the session's own start.
+
+**Fourteen-section check.**
+- Protection & Boundaries / Capacity & Workload — violated, matching this register's own already-established pattern for the Epic 10 all-nighter (escalated 2026-09-09) and the Epic 12 marathon-plus-return-trip (escalated 2026-09-10): four entire stories, each with its own ADR, shipped back-to-back through the small hours with no break exceeding ~2h45m, is the identical shape this register has already twice named as the pattern this framework exists to catch. This instance happened 2026-09-07/08 — chronologically *before* either prior escalation was written (2026-09-09/10) even though it is the third occurrence in build order. Plainly: by the time either prior escalation could have prompted a change, this all-nighter had already happened.
+- Outcome Stewardship / Performance Accountability — at risk, same reasoning as the two prior escalations: four stories at ~1300-1550 insertions apiece landing within single-digit-hour spacing overnight is either extraordinary throughput or less real scrutiny per story than this project's own ordinary daytime pace shows elsewhere in this same backlog (compare the 48-minute, three-healing-pass session reviewed two entries above). Not this pass's place to verify correctness — that belongs to the Documentation Steward's traceability work and whatever contract-test evidence exists — but the pace alone is the same legitimate signal already twice treated as escalation-worthy here.
+- Organizational Influence — the recurrence itself is the finding. A pattern serious enough to escalate twice already was still sitting, unreviewed, in this exact backlog the whole time — not a new failure, but the same failure, surfaced late because the review pipeline itself was the bottleneck, not because the underlying behavior changed.
+- No safety/legal veto — but as with the two prior escalations, Protection & Boundaries' violation is severe enough that the priority order (Team sustainability over Process optimization) settles this without needing a tiebreak.
+
+**Observable signals used.** `git log` timestamps for all thirteen hashes plus surrounding context (`2f905ff` at 23:12 the prior evening; `9ad8286` closing the day at 14:02); `git diff --shortstat` for all four Epic 16 stories and Story 17.1 confirming consistent ~700-1550-line implementation sizes — not itself evidence of thinness, just the scope this pace was applied to.
+
+**Verdict: escalate.** Same recommendation given twice already in this register — a stated stopping-time ceiling — plus a new, structural one this discovery makes concrete: the gap between when a marathon happens and when this review pipeline actually catches it (here, roughly five weeks: 2026-09-07/08 build, 2026-09-13 review) is itself a Protection & Boundaries failure mode independent of any single session's length. A queue this deep defeats the purpose of prompt review; whatever triggers this pass's own invocation should be tightened, not just the stopping-time recommendation repeated a third time into a backlog that isn't being read soon enough to act on it.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-07/2026-09-08 entries for 689357c, 613f28d, 03cf03f, 7336ec5, aa24542, 492bbd1, 6eb57b1, 48d2f8f, 91bb7b1, c4d9bdd, 53e63ba, 4faf6ee, cbd4869.
+
+---
+
+## 2026-09-13 — reviewed f15d9f1/614e6e5/e4f4826/eeacc20/b704784/f845ac9 — Decision Evaluator: the 2026-09-09 scheduled review pass's own checkpoint commits, plus a merge and a Copilot-review fix
+
+**Decision as understood.** Six commits, all 2026-09-09, 05:15-06:31 UTC (07:15-08:31 CEST) — a genuine ~17-hour gap after the all-nighter reviewed above closed the previous afternoon (`cbd4869`/`9ad8286`, 14:01/14:02 CEST, 2026-09-08). `f15d9f1` and `614e6e5` are this same scheduled three-role review cycle's own checkpoint commits (Ideal Manager batch in progress, then Documentation Steward pass complete) — the mechanism this charter's own "Pending commit reviews" section assumes. `e4f4826` is a one-line Story 9.5 formatting standardization; `eeacc20` its tracking sync. `b704784` is a routine branch merge. `f845ac9` addresses a GitHub Copilot code-review comment (a stale reply-support claim, blank queue metadata) — a real, small correctness fix responding to external review tooling, landed same-day.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Real overnight rest (~17 hours) separates this from the all-nighter reviewed above; the session itself is a tight ~76 minutes of routine process/review work, not implementation.
+- Learning from Failure — satisfied, a positive note: acting on an external Copilot review comment same-day is exactly the responsiveness this framework rewards, complementary to this project's own internal review passes.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09 entries for f15d9f1, 614e6e5, e4f4826, eeacc20, b704784, f845ac9.
+
+---
+
+## 2026-09-13 — reviewed 9c1138f/dc3958f/f83bf05/c11df84/9a796f5/08054d4 — Decision Evaluator: closing 2026-09-09's review pass and opening 2026-09-10 with a fourth review-adjacent AI role and the queue-integrity fix this very pass built on
+
+**Decision as understood.** Six commits closing this pending-review file's own backlog. `9c1138f` (2026-09-10 00:18 CEST) is a routine merge. `dc3958f` (00:35) fixes literal unresolved merge-conflict markers left in an admin SKILL.md by an earlier merge — a real, minor defect caught and fixed same-session. `f83bf05` (00:35) is its tracking sync. `c11df84` (2026-09-09 19:25 UTC = 21:25 CEST — chronologically before the three commits above despite appearing after them in this queue's own append order, itself a small illustration of the append-only queue not always tracking wall-clock order across a merge) completed the scheduled three-role documentation review pass for 2026-09-09. `9a796f5` (20:00 UTC) adds a fourth AI role, the Personal Development Reviewer, plus its own charter, pending-review queue, and a developer learning plan. `08054d4` (2026-09-10 03:25 UTC) is the scheduled 2026-09-10 doc-review pass — the same pass that produced the "65 duplicate pending entries" queue-integrity finding and the Epic 11/Epic 12 register entries this pass built directly on.
+
+**Fourteen-section check.**
+- Decision Rights & Autonomy — at risk, narrowly: `9a796f5` adds a new AI role via a single feature commit rather than through this project's own ADR-first convention used for every structural/governance decision elsewhere in this backlog (e.g., ADR-0125 through ADR-0129 for Epic 16's own features). Not serious enough to unwind — the role is documentation-adjacent and low-risk — but worth flagging for consistency: if the existing AI roster each has an ADR, an eleventh/twelfth role arriving without one is a precedent gap, not a one-off.
+- Organizational Influence / Learning from Failure — satisfied. `dc3958f` (fixing leftover merge-conflict markers) and `08054d4`'s own queue-integrity finding are both the self-correcting discipline this framework rewards — catching a real defect and a systemic queue-corruption root cause in the same short window.
+- Protection & Boundaries — satisfied. This is fragmented but each piece is short; no evidence of a sustained overnight push comparable to the all-nighter reviewed above. `08054d4`'s 05:25 CEST timestamp reflects a scheduled/automated pass running at that hour, a materially different risk profile than a person staying up, and is not scored the same way.
+- No safety/legal veto.
+
+**Verdict: proceed**, with the Decision Rights & Autonomy note above as a proceed-with-adjustment-flavored recommendation: give the next new AI role addition its own ADR, matching the convention already used for every feature-level decision in this backlog.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09/2026-09-10 entries for 9c1138f, dc3958f, f83bf05, c11df84, 9a796f5, 08054d4. This closes every entry in docs/management/pending-manager-reviews.md as of this pass — 08054d4 was the file's own last queued entry.
+
+---
+
+## 2026-09-13 — reviewed 5fcd0fd — Decision Evaluator: the post-commit bookkeeping sync that closed the 2026-09-01 evening session
+
+**Decision as understood.** `5fcd0fd` (2026-09-01, 18:05:42 CEST) is a routine queue/time-tracking/synthesis sync, landing one minute after `b4a32f2` (18:04:56) — the merge commit that closed the healthy 48-minute evening session already reviewed in this register's "a healthy ~9-hour daytime gap, then a tight 48-minute evening session" entry above. This entry was missed from that batch due to a scrape gap in this pass's own initial queue parse, caught on the follow-up verification sweep.
+
+**Fourteen-section check.** No new information beyond the entry it belongs to: this is the bookkeeping tail-end of that same already-reviewed session, not separate work. Protection & Boundaries / Outcome Stewardship findings carry over unchanged from that entry.
+
+**Verdict: proceed** (same verdict as the session it closes out).
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entry for 5fcd0fd.
+
+---
+
+## 2026-09-16 — reviewed fdcf5d2 — Decision Evaluator: a 37-document TDS batch closes out an evening session before three genuine days of rest
+
+**Decision as understood.** `fdcf5d2` (2026-09-04, 17:45:26 CEST) authors 37 Technical Design Specification documents (Batch 1 and Batch 2, covering already-Accepted ADRs from the 0001-0070 range) in one commit, landing 47 minutes after `8bc3e29` (16:58:24), itself the tail of an afternoon session that also shipped Story 14.1 (`1d03403`/`c68c1a1`, 16:17-16:18). No commit follows until `e2df874` at 2026-09-07 11:09 — a genuine ~66-hour gap.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. A pure-documentation catch-up appended to the end of an already-reasonable afternoon session, followed by nearly three full days of no activity at all — exactly the "model stopping" this framework asks for, not a marathon extension.
+- Strategic Direction / Learning from Failure — satisfied. Writing technical design specs for already-built, already-Accepted ADRs is real process-debt paydown (traceability catching up to implementation), not new scope — a documentation investment rather than documentation-as-busywork.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-04 entry for fdcf5d2.
+
+---
+
+## 2026-09-16 — reviewed 26d210f/62a4641/0a1fe76 — Decision Evaluator: Story 17.2 lands as a calendar day's sixth story, on a branch that would not reach main for another five days
+
+**Decision as understood.** `26d210f` (2026-09-08, 21:26:42 CEST, Story 17.2 backend/UI onboarding-probe work, 1220 insertions), `62a4641` (21:28:13, log/story-file sync), and `0a1fe76` (21:28:43, dashboard telemetry sync) land in a tight ~2-minute window, 7h25m after `cbd4869`/`9ad8286` (14:01-14:02) closed the all-nighter this register already escalated (Stories 16.1-16.4 plus 17.1, reviewed 2026-09-13 as "an all-nighter shipping four Epic 16 stories through the night"). This session was built on a separate branch, `feat/story-17.2` — it does not merge into `main` until `c47b7d3`/`0f3e15e` on 2026-09-12/13, reviewed separately below.
+
+**Fourteen-section check.**
+- Capacity & Workload — at risk, as a cumulative-volume signal distinct from the continuous-hours lens this register has used so far. Counting this session, 2026-09-08 shipped six stories in total (16.1-16.4, 17.1, 17.2) across two sessions separated by a real 7h25m break. The break makes this second session's own pace unobjectionable on its own terms, but a six-story calendar day is a data point this register hasn't explicitly tracked as its own signal before — daily story-count, not just longest-unbroken-stretch, is worth adding to the observable-signals this project already uses.
+- Protection & Boundaries — satisfied for this specific session (real rest preceded it, short session, ordinary evening hour) — the concern above is additive, not a restatement of the already-escalated marathon.
+- Team-Level Optimization — flagged forward, not resolved here: building Story 17.2 on its own branch rather than landing same-session is a deviation from the worktree-per-story lifecycle CLAUDE.md documents ("merged back into main and torn down at the end of the skill"); see the `c47b7d3` entry below for the consequence.
+- No safety/legal veto.
+
+**Verdict: proceed**, with the daily-total-story-count observation carried forward as an addition to this project's own observable-signals practice, not an objection to this specific commit.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-08 entries for 26d210f, 62a4641, 0a1fe76.
+
+---
+
+## 2026-09-16 — reviewed cd9257e — Decision Evaluator: removing four stale design-mockup import trees from the repository
+
+**Decision as understood.** `cd9257e` (2026-09-09, 08:57:15 CEST, "Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here") deletes four previously-imported UI-mockup/design-prototype trees (`docs/design/Gemini Designs/`, `docs/design/Google AI Studio/`, `docs/design/MSE ui Mockup/`, `docs/design/Social Ingest and Command Center Design/` — thousands of lines, mostly vendored `package-lock.json`/generated assets), a follow-on to the "legacy Microsoft Social Engagement UI mockup import" session this register already reviewed on 2026-08-10. A standalone morning commit, ~26 minutes after the prior evening's Copilot-review fix (`f845ac9`, 06:31 UTC = 08:31 CEST).
+
+**Fourteen-section check.**
+- Strategic Direction — satisfied, a positive note: "actively remove low-value work" is this framework's own language, and deleting scaffolding that already served its purpose (reference mockups, now superseded by real shipped UI) is that discipline applied to the repository itself, not just task assignments.
+- Protection & Boundaries — satisfied, ordinary morning hour, brief single-commit session.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09 entry for cd9257e.
+
+---
+
+## 2026-09-16 — reviewed c47b7d3 — Decision Evaluator: a ~4.5-day-stale story branch requires a full main-catch-up merge before it can land
+
+**Decision as understood.** `c47b7d3` (2026-09-12, 20:32:53 CEST, "Merge branch 'main' into feat/story-17.2") merges roughly 4.5 days of intervening `main`-branch history (Epic 17's crisis-template-bundle refinements, ADR-0131 fleshing, CLAUDE.md and skill-file updates, and more) into the `feat/story-17.2` branch first opened by `26d210f` on 2026-09-08 evening — a branch this project's own worktree-per-story convention (CLAUDE.md's "Concurrent agents" section) describes as normally merged back into `main` and torn down at the end of the same skill invocation, not carried across multiple days of unrelated work landing directly on `main` in the meantime. The branch is not actually landed on `main` until `0f3e15e` the following night (2026-09-13, 02:23:57 — itself never queued into this review file at all; see the 2026-09-16 queue-integrity finding filed alongside this batch). Real rest precedes this commit: the prior `main` activity was 2026-09-10 20:08, roughly two full days earlier.
+
+**Fourteen-section check.**
+- Team-Level Optimization / Decision Rights & Autonomy — at risk. The documented lifecycle for a story branch is same-session merge-and-teardown; a branch surviving five calendar days, requiring a dedicated catch-up merge plus a same-session "resolve conflicts, rename migration 0081->0082" fix to land, is a real deviation from what CLAUDE.md itself specifies, not a new invention of a better process. Low severity here (the catch-up succeeded, nothing was lost) but worth naming so it isn't quietly normalized as the actual practice.
+- Protection & Boundaries — satisfied. Two genuine days of rest precede this commit; the catch-up itself is a single merge commit, not a marathon.
+- No safety/legal veto.
+
+**Verdict: proceed with adjustment.** No rework needed — the merge succeeded — but the next long-running story branch should either merge sooner (matching the documented lifecycle) or the lifecycle documentation itself should be revised to explicitly allow multi-day branches, rather than leaving the gap between stated process and actual practice implicit.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-12 entry for c47b7d3.
+
+---
+
+## 2026-09-16 — reviewed e479a59/ad6833f/f731949/ee96777 — Decision Evaluator: two Epic 18 stories land in a 34-minute window starting at 02:22 AM
+
+**Decision as understood.** `e479a59` (2026-09-13, 02:22:34 CEST, Story 18.1, watchlist volume confidence UI and cost projection, ADR-0134), `ad6833f` (02:47:05, an origin/main merge that also carries the delayed `feat/story-17.2` landing alongside it via `0f3e15e` at 02:23:57), `f731949` (02:55:40, Story 18.2, preconfigured analytics view RLS table enforcement, ADR-0135), and `ee96777` (02:56:28, telemetry sync) land within a 34-minute early-morning window. The prior evening's activity (`c47b7d3`, reviewed above) ended at 20:32 CEST; the ~5h50m gap is consistent with a sleep-then-wake pattern rather than continuous work, but the resumption itself falls at 02:22-02:57 AM — inside the same low-alertness window this register has repeatedly flagged (most recently the "01:35 AM healing fix" entry and multiple all-nighter entries).
+
+**Fourteen-section check.**
+- Protection & Boundaries — at risk, but narrowly. The session itself is short (34 minutes) and not a marathon — materially different from the four-hour-plus continuous stretches this register has escalated elsewhere — but real story implementation work (not just bookkeeping) at 2-3 AM is itself a recurring pattern in this backlog regardless of session length. This is at least the fourth distinct instance this register has now named of work landing in these hours.
+- Outcome Stewardship — satisfied on its own terms: two substantive, appropriately-sized stories (consistent with this project's typical ~700-1500-line implementation size) shipped, not thin work.
+- No safety/legal veto — but the recurrence is now frequent enough that the standing recommendation (a stated stopping-time/start-time ceiling) is repeated rather than re-escalated, since duration here doesn't meet the bar this register has used for actual escalation.
+
+**Verdict: proceed**, with the same stopping-time-ceiling recommendation this register has now made multiple times — worth Menno actually adopting rather than this framework restating it each time it recurs.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for e479a59, ad6833f, f731949, ee96777.
+
+---
+
+## 2026-09-16 — reviewed 709444b/64b6263/92f685c — Decision Evaluator: the prior scheduled review pass's own WIP checkpoint commits
+
+**Decision as understood.** `709444b` (2026-09-13, 05:12:38 UTC = 07:12 CEST, "L&D writer pass complete, doc steward continuing"), `64b6263` (05:16:02 UTC, "ideal manager pass complete, doc steward continuing" — the commit that appended this register's own 2026-09-13 entries through `5fcd0fd` and marked their matching queue entries resolved), and `92f685c` (05:48:51 UTC, Documentation Steward fixing an Epic 10 Built-field mislabeling) are the immediately-prior instance of this exact scheduled three-role review mechanism running on this same branch pattern this pass is itself an instance of.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. These are scheduled/automated review-pass timestamps (07:12-07:48 CEST), the same category this register has already distinguished from a person actively coding at that hour — not scored the same way.
+- Organizational Influence — satisfied, a positive note: this is the review pipeline actually doing its job, catching up a backlog and correcting a real drift (the Epic 10 Built-field mislabeling) in the same pass.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for 709444b, 64b6263, 92f685c.
+
+---
+
+## 2026-09-16 — reviewed 8962e1d/a12b947 — Decision Evaluator: two RAG-namespace-isolation stories land at ordinary evening hours, 21 minutes apart
+
+**Decision as understood.** `8962e1d` (2026-09-13, 20:35:26 CEST, Story 19.1, RAGConnector namespace-per-tenant isolation, ADR-0136, ~1500 insertions) and `a12b947` (20:56:46, Story 19.2, RAG chunking/embedding namespace routing, ADR-0137, ~1550 insertions) land 21 minutes apart, roughly 12h47m after the morning's review-pass checkpoint (`92f685c`, reviewed above) closed at 05:48 UTC / 07:48 CEST.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Ordinary evening hours (8:35-8:56 PM), a real 12h47m gap beforehand, no evidence of a continuing marathon.
+- Outcome Stewardship — satisfied. Two substantive stories at this project's typical implementation size, sequenced coherently (namespace isolation first, then the chunking pipeline that routes through it) rather than arbitrary ordering.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for 8962e1d, a12b947.
+
+---
+
+## 2026-09-16 — reviewed 1f96685 — Decision Evaluator: a next-day morning documentation catch-up, backfilling AC detail and real commit hashes for Stories 19.1/19.2
+
+**Decision as understood.** `1f96685` (2026-09-14, 11:34:55 CEST) fleshes out Stories 19.1/19.2's user-story entries with acceptance-criteria detail and backfills their real commit hashes, ~14h38m after the prior evening's `a12b947` (20:56:46) — a genuine overnight gap.
+
+**Fourteen-section check.**
+- Learning from Failure / Communication & Feedback — satisfied, a positive note: backfilling real commit hashes into story records rather than leaving placeholder or stale references is exactly the self-correcting documentation discipline this register has praised elsewhere (e.g., the `a4790bd` Story 17.3 parser-bug note referenced in this pass's queue-integrity finding, or the hash-integrity gap fixes reviewed 2026-08-24).
+- Protection & Boundaries — satisfied. Ordinary morning hour, single commit, real rest precedes it.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-14 entry for 1f96685.
+
+---
+
+## 2026-09-16 — reviewed 1e71d7e/8ab0030/97a52d4e — Decision Evaluator: Story 19.3 closes Epic 19's RAG-isolation arc at ordinary daytime hours, followed by a routine evening sync
+
+**Decision as understood.** `1e71d7e` (2026-09-15, 11:56:02 CEST, Story 19.3, RAG vector-store namespace isolation and pgvector RLS, ADR-0138, ~1900 insertions) and `8ab0030` (12:31:44, backfilling its own commit hash into the epic-19 story file) land at ordinary daytime hours, ~22h21m after `1f96685` the prior morning closed (with an unqueued Story 17.5 landing in between at 09:42, part of the queue-integrity finding filed alongside this batch). `97a52d4e` (22:13:57, "Merge branch 'main' of ...socialengage") is a routine end-of-day branch sync, ~9h42m after `8ab0030`, carrying no new work of its own.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Ordinary daytime hours for the substantive work; the evening merge is a low-signal sync, not a new work session.
+- Strategic Direction — satisfied. Story 19.3 completing the namespace-isolation arc opened by 19.1/19.2 is coherent sequencing, closing out Epic 19 as scoped.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-15 entries for 1e71d7e, 8ab0030, 97a52d4e.
