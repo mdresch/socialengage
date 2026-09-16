@@ -57,6 +57,7 @@ A separate screen (`/admin/operations`, distinct from the Platform Admin console
 - **Infrastructure and cost metrics** are explicitly out of scope for this console — it covers tenant provisioning, break-glass support, and audit review only.
 - **Older audit log history, or filtering it** by tenant, actor, or date — the console only ever shows the 10 most recent entries.
 - **Changing a tenant's domain after it's been provisioned** — there's no form field for it anywhere in this console.
+- **Per-tenant quota burn-rate forecasting and a guided "remediate this connector" action (Story 16.4)** have a real backend API and a real, contract-tested `QuotaBurnRateForecast` component, but the component isn't placed on the Platform Operations dashboard or anywhere else reachable — there's nothing to click through to today.
 
 ## Infrastructure & credential operations (not app usage — the underlying platform)
 
