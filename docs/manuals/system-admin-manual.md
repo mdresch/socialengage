@@ -2,6 +2,8 @@
 
 **Audience:** a `platform_admin` identity — the operator of the SocialEngage platform itself, not a member of any tenant.
 
+**Learning & Development Writer addendum, 2026-09-16 (scheduled queue pass, continuing oldest-first from `be3807d` through `97a52d4e`, 2026-08-18 through 2026-09-15 by commit date):** one genuinely new, reachable capability confirmed and added: Story 16.4's quota burn-rate forecast panel and guided per-connector remediation drawer, both real and wired into the already-documented Platform Operations dashboard (`PlatformOperationsDashboard.tsx` genuinely imports and renders `QuotaBurnRateForecast` and `ConnectorRemediationDrawer` — confirmed by reading the actual component tree, not just grepping `src/app` for the leaf component names, which is what this addendum's own first draft got wrong before being corrected in the same pass). Documented under "Platform operations dashboard" above. Everything else in this range touching this manual's own tier (audit hash-chaining, takedown/DSR compliance routes) is real, contract-verified `social-listening-core` backend gated to a `tenant_admin` role, not `platform_admin` — tenant-scoped, with no UI anywhere, so it belongs to neither this manual's tier nor an existing section of the Tenant Admin Manual to attach a gap note to. This pass cleared the full 193-entry backlog it started with. See `docs/pending-learning-development-reviews.md` for the per-commit resolution notes.
+
 **Learning & Development Writer addendum, 2026-09-10 (scheduled queue pass):** added the Platform Operations dashboard (Story 10.7, `/admin/operations`), a real-time infrastructure/cost/connector-health screen, confirmed built and contract-verified. Original note below, as of 2026-08-13: sign-in, plus the real, working Platform Admin console (Story 6.6, first built 2026-08-08, then substantially rebuilt for real 2026-08-12 after an internal review found the first build's controls were non-interactive placeholders — see "Honest history" at the end of the console section) — a database health indicator, the tenant registry, tenant provisioning, per-tenant editing (name, status, license seats), the two-phase break-glass credential reset flow, and a recent-activity audit log. Nothing below describes a screen that doesn't exist yet; a handful of specific gaps are called out in their own place, and summarized together in "What's not built yet" at the end. The app also gained its first real stylesheet on 2026-08-12 — a visual change only, nothing about how the console works changed because of it.
 
 ---
@@ -48,16 +50,18 @@ The console shows your platform's 10 most recent audit log entries — timestamp
 
 **Honest history, not a currently-open caveat:** this console was first marked "Built" on 2026-08-08, but an internal review on 2026-08-12 found that three of its five sections — Provision tenant, Update tenant, and Break-glass — were each rendered as a single descriptive line of text with no actual form or button behind it, even though the backend functions they needed already existed and worked. All three were rebuilt for real the same day; the tenant registry and audit log were already genuine and needed no rework. Named here only so this manual's own history stays honest.
 
-## Platform operations dashboard (Story 10.7)
+## Platform operations dashboard (Story 10.7, quota forecasting and guided remediation added by Story 16.4)
 
 A separate screen (`/admin/operations`, distinct from the Platform Admin console above) gives you a real-time read on platform infrastructure health: live ingestion rate and lag across all ingestion channels, an estimated 30-day AI cost figure, and a connector health/status panel (healthy / degraded / failing) across every tenant's active connectors. Platform-Admin only — a tenant identity is redirected away from this route.
+
+1. **A "Tenant Quota Velocity & Burn-Rate Forecast" panel (Story 16.4)** shows every tenant's trailing 7-day ingestion velocity and a linear projection of when it will exhaust its quota, with a count of how many tenants are Critical (≤7 days out), Warning (8–30 days out), or Healthy, and a table listing each one individually.
+2. **A "🛠 Remediate" button next to each connector** on this screen's connector list opens a guided remediation drawer with a small set of playbook actions you can execute directly — retrying it now, overriding its current backoff wait by a number of minutes you choose, clearing its error state, or asking it to re-prompt for credentials — each with a live success/failure result shown in the drawer itself.
 
 ## What's not built yet
 
 - **Infrastructure and cost metrics** are explicitly out of scope for this console — it covers tenant provisioning, break-glass support, and audit review only.
 - **Older audit log history, or filtering it** by tenant, actor, or date — the console only ever shows the 10 most recent entries.
 - **Changing a tenant's domain after it's been provisioned** — there's no form field for it anywhere in this console.
-- **Per-tenant quota burn-rate forecasting and a guided "remediate this connector" action (Story 16.4)** have a real backend API and a real, contract-tested `QuotaBurnRateForecast` component, but the component isn't placed on the Platform Operations dashboard or anywhere else reachable — there's nothing to click through to today.
 
 ## Infrastructure & credential operations (not app usage — the underlying platform)
 
