@@ -7105,11 +7105,11 @@
 - **Files touched:** docs/adr/README.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-16 (Documentation Steward): file list matches `git diff-tree` exactly; this is a prior Documentation Steward pass's own substantive, well-executed work — spot-checked and confirmed intact in the current working tree, not silently reverted.** This is the same pass already cross-referenced by several other resolved entries above (`689357c`/`7336ec5`/`492bbd1`/`c11df84`/`08054d4`/`f15d9f1`). Verified directly: `docs/user-stories/epic-10-adr-0086-to-0094.md`'s file-header note and Stories 10.11–10.14's individual "not built by the previously-cited commit" corrections are present and unchanged; `epic-16-adr-0125-to-0128.md`'s Story 16.1/16.2/16.3 cross-reference corrections (10.11/10.12/10.13, not the original wrong 10.11/10.13/"10.14 and 10.15") are present and consistent with epic-10's own note. ADR-0116/0117 date corrections in `docs/adr/README.md` (2026-09-05 → 2026-09-02, matching real commit dates `72e5067`/`39a2375`) also confirmed still in place. No further drift found on top of this pass's own work.
 
-## 2026-09-13 — e479a59 — feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134)
+## ~~2026-09-13 — e479a59 — feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134)~~
 
 - **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/watchlists/preview-volume/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/VolumePreviewPanel.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts, social-listening-core/jest.config.js, social-listening-core/src/watchlists/previewVolumeService.ts
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-16 (Documentation Steward): file list matches `git diff-tree` exactly; one real Ready/Built mismatch found and fixed, SKILL.md relationship claims verified backed.** `docs/user-stories/epic-18-adr-0134-to-0135.md`'s Story 18.1 header read "Status: Ready" beside an already-populated Built field — same recurring drift class as `26d210f`/`53e63ba` above. Corrected to "Built" with a dated note. Both this commit's SKILL.md additions (`watchlist-management`/`watchlist-matching`) are governing-ADR/contract citations, not "Relations to other components" cross-service call claims, so the 2026-08-13 real-call-site convention doesn't apply to them; `docs/adr/README.md`, `docs/user-stories/README.md`, and `docs/implementation-plan.md`'s own entries for ADR-0134/Story 18.1 are all accurate and consistent.
 ## 2026-09-13 — ad6833f — Merge remote-tracking branch 'origin/main' into main
 
 - **Full commit:** `ad6833fd3798aa8d07b32ba2e655bf3fd09bf8df`
@@ -7161,5 +7161,11 @@
 
 - **Full commit:** `97a52d4e1543295da288bded86545da103e5e6f5`
 - **Files touched:** 
+- **Status:** Pending review
+
+## 2026-09-16 — faed543 — docs(review): Ideal Manager pass complete; Documentation Steward in progress (2026-09-16)
+
+- **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
 - **Status:** Pending review
 

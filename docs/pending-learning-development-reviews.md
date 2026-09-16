@@ -7964,3 +7964,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-16 — faed543 — docs(review): Ideal Manager pass complete; Documentation Steward in progress (2026-09-16)
+
+- **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
+- **Status:** Pending review
+
