@@ -1227,3 +1227,139 @@
 **Verdict: proceed** (same verdict as the session it closes out).
 
 **Resolves:** docs/management/pending-manager-reviews.md's 2026-09-01 entry for 5fcd0fd.
+
+---
+
+## 2026-09-16 — reviewed fdcf5d2 — Decision Evaluator: a 37-document TDS batch closes out an evening session before three genuine days of rest
+
+**Decision as understood.** `fdcf5d2` (2026-09-04, 17:45:26 CEST) authors 37 Technical Design Specification documents (Batch 1 and Batch 2, covering already-Accepted ADRs from the 0001-0070 range) in one commit, landing 47 minutes after `8bc3e29` (16:58:24), itself the tail of an afternoon session that also shipped Story 14.1 (`1d03403`/`c68c1a1`, 16:17-16:18). No commit follows until `e2df874` at 2026-09-07 11:09 — a genuine ~66-hour gap.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. A pure-documentation catch-up appended to the end of an already-reasonable afternoon session, followed by nearly three full days of no activity at all — exactly the "model stopping" this framework asks for, not a marathon extension.
+- Strategic Direction / Learning from Failure — satisfied. Writing technical design specs for already-built, already-Accepted ADRs is real process-debt paydown (traceability catching up to implementation), not new scope — a documentation investment rather than documentation-as-busywork.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-04 entry for fdcf5d2.
+
+---
+
+## 2026-09-16 — reviewed 26d210f/62a4641/0a1fe76 — Decision Evaluator: Story 17.2 lands as a calendar day's sixth story, on a branch that would not reach main for another five days
+
+**Decision as understood.** `26d210f` (2026-09-08, 21:26:42 CEST, Story 17.2 backend/UI onboarding-probe work, 1220 insertions), `62a4641` (21:28:13, log/story-file sync), and `0a1fe76` (21:28:43, dashboard telemetry sync) land in a tight ~2-minute window, 7h25m after `cbd4869`/`9ad8286` (14:01-14:02) closed the all-nighter this register already escalated (Stories 16.1-16.4 plus 17.1, reviewed 2026-09-13 as "an all-nighter shipping four Epic 16 stories through the night"). This session was built on a separate branch, `feat/story-17.2` — it does not merge into `main` until `c47b7d3`/`0f3e15e` on 2026-09-12/13, reviewed separately below.
+
+**Fourteen-section check.**
+- Capacity & Workload — at risk, as a cumulative-volume signal distinct from the continuous-hours lens this register has used so far. Counting this session, 2026-09-08 shipped six stories in total (16.1-16.4, 17.1, 17.2) across two sessions separated by a real 7h25m break. The break makes this second session's own pace unobjectionable on its own terms, but a six-story calendar day is a data point this register hasn't explicitly tracked as its own signal before — daily story-count, not just longest-unbroken-stretch, is worth adding to the observable-signals this project already uses.
+- Protection & Boundaries — satisfied for this specific session (real rest preceded it, short session, ordinary evening hour) — the concern above is additive, not a restatement of the already-escalated marathon.
+- Team-Level Optimization — flagged forward, not resolved here: building Story 17.2 on its own branch rather than landing same-session is a deviation from the worktree-per-story lifecycle CLAUDE.md documents ("merged back into main and torn down at the end of the skill"); see the `c47b7d3` entry below for the consequence.
+- No safety/legal veto.
+
+**Verdict: proceed**, with the daily-total-story-count observation carried forward as an addition to this project's own observable-signals practice, not an objection to this specific commit.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-08 entries for 26d210f, 62a4641, 0a1fe76.
+
+---
+
+## 2026-09-16 — reviewed cd9257e — Decision Evaluator: removing four stale design-mockup import trees from the repository
+
+**Decision as understood.** `cd9257e` (2026-09-09, 08:57:15 CEST, "Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here") deletes four previously-imported UI-mockup/design-prototype trees (`docs/design/Gemini Designs/`, `docs/design/Google AI Studio/`, `docs/design/MSE ui Mockup/`, `docs/design/Social Ingest and Command Center Design/` — thousands of lines, mostly vendored `package-lock.json`/generated assets), a follow-on to the "legacy Microsoft Social Engagement UI mockup import" session this register already reviewed on 2026-08-10. A standalone morning commit, ~26 minutes after the prior evening's Copilot-review fix (`f845ac9`, 06:31 UTC = 08:31 CEST).
+
+**Fourteen-section check.**
+- Strategic Direction — satisfied, a positive note: "actively remove low-value work" is this framework's own language, and deleting scaffolding that already served its purpose (reference mockups, now superseded by real shipped UI) is that discipline applied to the repository itself, not just task assignments.
+- Protection & Boundaries — satisfied, ordinary morning hour, brief single-commit session.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-09 entry for cd9257e.
+
+---
+
+## 2026-09-16 — reviewed c47b7d3 — Decision Evaluator: a ~4.5-day-stale story branch requires a full main-catch-up merge before it can land
+
+**Decision as understood.** `c47b7d3` (2026-09-12, 20:32:53 CEST, "Merge branch 'main' into feat/story-17.2") merges roughly 4.5 days of intervening `main`-branch history (Epic 17's crisis-template-bundle refinements, ADR-0131 fleshing, CLAUDE.md and skill-file updates, and more) into the `feat/story-17.2` branch first opened by `26d210f` on 2026-09-08 evening — a branch this project's own worktree-per-story convention (CLAUDE.md's "Concurrent agents" section) describes as normally merged back into `main` and torn down at the end of the same skill invocation, not carried across multiple days of unrelated work landing directly on `main` in the meantime. The branch is not actually landed on `main` until `0f3e15e` the following night (2026-09-13, 02:23:57 — itself never queued into this review file at all; see the 2026-09-16 queue-integrity finding filed alongside this batch). Real rest precedes this commit: the prior `main` activity was 2026-09-10 20:08, roughly two full days earlier.
+
+**Fourteen-section check.**
+- Team-Level Optimization / Decision Rights & Autonomy — at risk. The documented lifecycle for a story branch is same-session merge-and-teardown; a branch surviving five calendar days, requiring a dedicated catch-up merge plus a same-session "resolve conflicts, rename migration 0081->0082" fix to land, is a real deviation from what CLAUDE.md itself specifies, not a new invention of a better process. Low severity here (the catch-up succeeded, nothing was lost) but worth naming so it isn't quietly normalized as the actual practice.
+- Protection & Boundaries — satisfied. Two genuine days of rest precede this commit; the catch-up itself is a single merge commit, not a marathon.
+- No safety/legal veto.
+
+**Verdict: proceed with adjustment.** No rework needed — the merge succeeded — but the next long-running story branch should either merge sooner (matching the documented lifecycle) or the lifecycle documentation itself should be revised to explicitly allow multi-day branches, rather than leaving the gap between stated process and actual practice implicit.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-12 entry for c47b7d3.
+
+---
+
+## 2026-09-16 — reviewed e479a59/ad6833f/f731949/ee96777 — Decision Evaluator: two Epic 18 stories land in a 34-minute window starting at 02:22 AM
+
+**Decision as understood.** `e479a59` (2026-09-13, 02:22:34 CEST, Story 18.1, watchlist volume confidence UI and cost projection, ADR-0134), `ad6833f` (02:47:05, an origin/main merge that also carries the delayed `feat/story-17.2` landing alongside it via `0f3e15e` at 02:23:57), `f731949` (02:55:40, Story 18.2, preconfigured analytics view RLS table enforcement, ADR-0135), and `ee96777` (02:56:28, telemetry sync) land within a 34-minute early-morning window. The prior evening's activity (`c47b7d3`, reviewed above) ended at 20:32 CEST; the ~5h50m gap is consistent with a sleep-then-wake pattern rather than continuous work, but the resumption itself falls at 02:22-02:57 AM — inside the same low-alertness window this register has repeatedly flagged (most recently the "01:35 AM healing fix" entry and multiple all-nighter entries).
+
+**Fourteen-section check.**
+- Protection & Boundaries — at risk, but narrowly. The session itself is short (34 minutes) and not a marathon — materially different from the four-hour-plus continuous stretches this register has escalated elsewhere — but real story implementation work (not just bookkeeping) at 2-3 AM is itself a recurring pattern in this backlog regardless of session length. This is at least the fourth distinct instance this register has now named of work landing in these hours.
+- Outcome Stewardship — satisfied on its own terms: two substantive, appropriately-sized stories (consistent with this project's typical ~700-1500-line implementation size) shipped, not thin work.
+- No safety/legal veto — but the recurrence is now frequent enough that the standing recommendation (a stated stopping-time/start-time ceiling) is repeated rather than re-escalated, since duration here doesn't meet the bar this register has used for actual escalation.
+
+**Verdict: proceed**, with the same stopping-time-ceiling recommendation this register has now made multiple times — worth Menno actually adopting rather than this framework restating it each time it recurs.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for e479a59, ad6833f, f731949, ee96777.
+
+---
+
+## 2026-09-16 — reviewed 709444b/64b6263/92f685c — Decision Evaluator: the prior scheduled review pass's own WIP checkpoint commits
+
+**Decision as understood.** `709444b` (2026-09-13, 05:12:38 UTC = 07:12 CEST, "L&D writer pass complete, doc steward continuing"), `64b6263` (05:16:02 UTC, "ideal manager pass complete, doc steward continuing" — the commit that appended this register's own 2026-09-13 entries through `5fcd0fd` and marked their matching queue entries resolved), and `92f685c` (05:48:51 UTC, Documentation Steward fixing an Epic 10 Built-field mislabeling) are the immediately-prior instance of this exact scheduled three-role review mechanism running on this same branch pattern this pass is itself an instance of.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. These are scheduled/automated review-pass timestamps (07:12-07:48 CEST), the same category this register has already distinguished from a person actively coding at that hour — not scored the same way.
+- Organizational Influence — satisfied, a positive note: this is the review pipeline actually doing its job, catching up a backlog and correcting a real drift (the Epic 10 Built-field mislabeling) in the same pass.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for 709444b, 64b6263, 92f685c.
+
+---
+
+## 2026-09-16 — reviewed 8962e1d/a12b947 — Decision Evaluator: two RAG-namespace-isolation stories land at ordinary evening hours, 21 minutes apart
+
+**Decision as understood.** `8962e1d` (2026-09-13, 20:35:26 CEST, Story 19.1, RAGConnector namespace-per-tenant isolation, ADR-0136, ~1500 insertions) and `a12b947` (20:56:46, Story 19.2, RAG chunking/embedding namespace routing, ADR-0137, ~1550 insertions) land 21 minutes apart, roughly 12h47m after the morning's review-pass checkpoint (`92f685c`, reviewed above) closed at 05:48 UTC / 07:48 CEST.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Ordinary evening hours (8:35-8:56 PM), a real 12h47m gap beforehand, no evidence of a continuing marathon.
+- Outcome Stewardship — satisfied. Two substantive stories at this project's typical implementation size, sequenced coherently (namespace isolation first, then the chunking pipeline that routes through it) rather than arbitrary ordering.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-13 entries for 8962e1d, a12b947.
+
+---
+
+## 2026-09-16 — reviewed 1f96685 — Decision Evaluator: a next-day morning documentation catch-up, backfilling AC detail and real commit hashes for Stories 19.1/19.2
+
+**Decision as understood.** `1f96685` (2026-09-14, 11:34:55 CEST) fleshes out Stories 19.1/19.2's user-story entries with acceptance-criteria detail and backfills their real commit hashes, ~14h38m after the prior evening's `a12b947` (20:56:46) — a genuine overnight gap.
+
+**Fourteen-section check.**
+- Learning from Failure / Communication & Feedback — satisfied, a positive note: backfilling real commit hashes into story records rather than leaving placeholder or stale references is exactly the self-correcting documentation discipline this register has praised elsewhere (e.g., the `a4790bd` Story 17.3 parser-bug note referenced in this pass's queue-integrity finding, or the hash-integrity gap fixes reviewed 2026-08-24).
+- Protection & Boundaries — satisfied. Ordinary morning hour, single commit, real rest precedes it.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-14 entry for 1f96685.
+
+---
+
+## 2026-09-16 — reviewed 1e71d7e/8ab0030/97a52d4e — Decision Evaluator: Story 19.3 closes Epic 19's RAG-isolation arc at ordinary daytime hours, followed by a routine evening sync
+
+**Decision as understood.** `1e71d7e` (2026-09-15, 11:56:02 CEST, Story 19.3, RAG vector-store namespace isolation and pgvector RLS, ADR-0138, ~1900 insertions) and `8ab0030` (12:31:44, backfilling its own commit hash into the epic-19 story file) land at ordinary daytime hours, ~22h21m after `1f96685` the prior morning closed (with an unqueued Story 17.5 landing in between at 09:42, part of the queue-integrity finding filed alongside this batch). `97a52d4e` (22:13:57, "Merge branch 'main' of ...socialengage") is a routine end-of-day branch sync, ~9h42m after `8ab0030`, carrying no new work of its own.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. Ordinary daytime hours for the substantive work; the evening merge is a low-signal sync, not a new work session.
+- Strategic Direction — satisfied. Story 19.3 completing the namespace-isolation arc opened by 19.1/19.2 is coherent sequencing, closing out Epic 19 as scoped.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-15 entries for 1e71d7e, 8ab0030, 97a52d4e.
