@@ -7223,3 +7223,9 @@
 - **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): a mid-pass checkpoint commit, not separate work to independently audit — same treatment as `709444b`/`64b6263`/`faed543` elsewhere in this file.** Confirmed via `git diff-tree --no-commit-id --name-only -r aa9a46c`, file list matches exactly. `docs/pending-documentation-steward-reviews.md`'s own diff is this same session's in-flight resolutions of the c274be3/4eb5d5b/8f538f4/528df23/c1f1e1d/e170aeb7 entries above (captured mid-flight to avoid losing work, per its own commit message), already complete as of this pass's own final edits. `docs/manuals/user-manual.md` and `docs/pending-personal-development-reviews.md` are the concurrently-running Personal Development Reviewer's own commit and own queue, not this role's to account for.
 
+## 2026-09-17 — 7692896 — docs: scheduled review pass complete - Ideal Manager pass resolves final queue
+
+- **Full commit:** `7692896dd2807435ad6459c6d84398cffbd41d2d`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
