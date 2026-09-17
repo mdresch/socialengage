@@ -8238,11 +8238,11 @@
 
 - **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
 - **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Learning & Development Writer, scheduled queue pass):** already accounted for — this commit's `docs/manuals/user-manual.md` diff *is* this same pass's own "Learning & Development Writer addendum, 2026-09-17" note (see that file, closing the gap `b9e5215` left), captured here mid-flight by the orchestrating session's WIP commit rather than a dedicated commit of this role's own. `docs/pending-documentation-steward-reviews.md`/`docs/pending-personal-development-reviews.md` are other roles' own queues, not this role's to account for.
 
 ## 2026-09-17 — 7692896 — docs: scheduled review pass complete - Ideal Manager pass resolves final queue
 
 - **Full commit:** `7692896dd2807435ad6459c6d84398cffbd41d2d`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope. This is the concurrently-running Ideal Manager's own register/queue completion commit.
 

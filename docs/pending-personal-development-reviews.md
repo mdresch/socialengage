@@ -86,11 +86,11 @@
 
 - **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
 - **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. This is this same pass's own completion commit (the queue resolutions for the 7 entries reviewed immediately above) plus an incidentally-captured, concurrently-running Learning & Development Writer manual edit — not new engineering work, nothing to add to `docs/ai-roles/developer-learning-plan.md`.
 
 ## 2026-09-17 — 7692896 — docs: scheduled review pass complete - Ideal Manager pass resolves final queue
 
 - **Full commit:** `7692896dd2807435ad6459c6d84398cffbd41d2d`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — the concurrently-running Ideal Manager's own register/queue bookkeeping only, no `social-listening-core/src`, `social-listening-admin/src`, or contract-file changes.
 
