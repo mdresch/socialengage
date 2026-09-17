@@ -8422,11 +8422,11 @@
 
 - **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
 - **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
-- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Ideal Manager):** no management-relevant observation. Touches only the Personal Development Reviewer's own queue, an incidentally-captured Learning & Development Writer manual edit, and the Documentation Steward's queue — none of `docs/management/**`, and no pace/scope/sequencing signal beyond what the matching `docs/management/manager-register.md` entry for this session's own review-branch findings already covers.
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry.**
 
 ## 2026-09-17 — 7692896 — docs: scheduled review pass complete - Ideal Manager pass resolves final queue
 
 - **Full commit:** `7692896dd2807435ad6459c6d84398cffbd41d2d`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
-- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Ideal Manager):** this pass's own completion commit — not separate work to independently audit. Its content is exactly this session's own register finding and queue resolutions, already recorded above; nothing further to assess.
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry.**
 
