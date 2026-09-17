@@ -8059,43 +8059,50 @@
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** This role's own prior scheduled-queue pass (dated 2026-09-14). Its manual edits are already present in the current files, and have since been superseded/extended by the later 2026-09-16 (`b9e5215`) and 2026-09-17 addenda in each manual — no separate action needed against this commit specifically.
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. The Documentation Steward's own scheduled-review commit, touching only ADR/story/SKILL.md governance files and its own queue, none of it `docs/manuals/*.md`.
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. The Documentation Steward's own scheduled-review commit (Location tab / ADR-0054 conflict write-up), touching CLAUDE.md/ADR/story/queue files only, none of it `docs/manuals/*.md`.
 
 ## 2026-09-08 — 26d210f — feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes
 
 - **Full commit:** `26d210fcb26f2a02040593fd2338f89058eef8d7`
 - **Files touched:** docs/environment-gotchas.md, social-listening-admin/.claude/skills/onboarding-checklist-ui/SKILL.md, social-listening-admin/contracts/epic-17/story-17.2.onboarding-journeys-ui.contract.test.ts, social-listening-admin/src/app/api/onboarding-checklist/route.ts, social-listening-admin/src/app/tenant/OnboardingChecklist.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/onboarding-checklist/SKILL.md, social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts, social-listening-core/migrations/0081_create_tenant_onboarding_state.sql, social-listening-core/src/http/versions/v1/onboardingRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/onboarding/automatedVerificationProbeRunner.ts, social-listening-core/src/onboarding/roleOnboardingService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed real, contract-verified `social-listening-admin` UI (`OnboardingChecklist.tsx`, its own `onboarding-checklist` API route, `roleOnboardingService.ts` backing role-tailored steps) — tenant-tier, gated to the getting-started checklist any tenant identity sees. Already documented in both `docs/manuals/user-manual.md` and `docs/manuals/tenant-admin-manual.md`'s "Getting-started checklist" sections ("As of Story 17.2, the card also offers four role tabs — Admin, Care Agent, Social Seller, and Brand Manager"). This pass's own `user-manual.md` addendum (2026-09-17) closes out the one gap found — that manual's top addendum note had never actually named this addition, even though the section body already had it.
 
 ## 2026-09-08 — 62a4641 — docs(epic-17): record Story 17.2 build in implementation log and user stories
 
 - **Full commit:** `62a4641763cfaee702ea16cc63a371b2e5eca818`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-17-adr-0129-to-0133.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Docs-only commit recording Story 17.2's build in the implementation log and its own story file; the capability itself is documented against `26d210f` above.
 
 ## 2026-09-08 — 0a1fe76 — chore(telemetry): sync dashboard telemetry for Story 17.2
 
 - **Full commit:** `0a1fe76696ff3f0a43e575cbe861945a22557e0d`
 - **Files touched:** project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Touches only the standalone `project-progress-dashboard/` telemetry app's synced data file, not a SocialEngage manual-scoped surface.
 
 ## 2026-09-09 — cd9257e — Frontend Designs Removed will sketch UI in own repos to maintain clean Admin Core here
 
 - **Full commit:** `cd9257e4f02f96fcdaf4abe85d5b1e927951f0a0`
 - **Files touched:** docs/design/Gemini Designs/.env.example, docs/design/Gemini Designs/.gitignore, docs/design/Gemini Designs/README.md, docs/design/Gemini Designs/index.html, docs/design/Gemini Designs/metadata.json, docs/design/Gemini Designs/package-lock.json, docs/design/Gemini Designs/package.json, docs/design/Gemini Designs/src/App.tsx, docs/design/Gemini Designs/src/components/ExportModal.tsx, docs/design/Gemini Designs/src/components/FilterBar.tsx, docs/design/Gemini Designs/src/components/FlyoutNav.tsx, docs/design/Gemini Designs/src/components/PostsPane.tsx, docs/design/Gemini Designs/src/components/SubTabs.tsx, docs/design/Gemini Designs/src/components/TopBar.tsx, docs/design/Gemini Designs/src/components/views/ActivityMapView.tsx, docs/design/Gemini Designs/src/components/views/AlertsView.tsx, docs/design/Gemini Designs/src/components/views/AuthViews.tsx, docs/design/Gemini Designs/src/components/views/ConversationsView.tsx, docs/design/Gemini Designs/src/components/views/LocationView.tsx, docs/design/Gemini Designs/src/components/views/OverviewView.tsx, docs/design/Gemini Designs/src/components/views/PostDetailView.tsx, docs/design/Gemini Designs/src/components/views/SearchSetupView.tsx, docs/design/Gemini Designs/src/components/views/SentimentView.tsx, docs/design/Gemini Designs/src/components/views/SettingsView.tsx, docs/design/Gemini Designs/src/components/views/SocialCenterView.tsx, docs/design/Gemini Designs/src/components/views/SourcesView.tsx, docs/design/Gemini Designs/src/data/mockData.ts, docs/design/Gemini Designs/src/index.css, docs/design/Gemini Designs/src/main.tsx, docs/design/Gemini Designs/src/types.ts, docs/design/Gemini Designs/tsconfig.json, docs/design/Gemini Designs/vite.config.ts, docs/design/Google AI Studio/.env.example, docs/design/Google AI Studio/.gitignore, docs/design/Google AI Studio/README.md, docs/design/Google AI Studio/bun.lock, docs/design/Google AI Studio/index.html, docs/design/Google AI Studio/metadata.json, docs/design/Google AI Studio/package-lock.json, docs/design/Google AI Studio/package.json, docs/design/Google AI Studio/server.ts, docs/design/Google AI Studio/src/App.tsx, docs/design/Google AI Studio/src/components/ActivateDeactivateButton.tsx, docs/design/Google AI Studio/src/components/AnimatedChartTooltip.tsx, docs/design/Google AI Studio/src/components/ConfirmModal.tsx, docs/design/Google AI Studio/src/components/ConversationsDashboardTab.tsx, docs/design/Google AI Studio/src/components/D3SentimentGauge.tsx, docs/design/Google AI Studio/src/components/D3Sparkline.tsx, docs/design/Google AI Studio/src/components/D3TrendingTopicsChart.tsx, docs/design/Google AI Studio/src/components/EmptyState.tsx, docs/design/Google AI Studio/src/components/GlobalDateRangePicker.tsx, docs/design/Google AI Studio/src/components/InlineError.tsx, docs/design/Google AI Studio/src/components/LocationDashboardTab.tsx, docs/design/Google AI Studio/src/components/RelativeTime.tsx, docs/design/Google AI Studio/src/components/RunEnrichmentButton.tsx, docs/design/Google AI Studio/src/components/SentimentDashboardTab.tsx, docs/design/Google AI Studio/src/components/Sidebar.tsx, docs/design/Google AI Studio/src/components/Slideover.tsx, docs/design/Google AI Studio/src/components/SourcesDashboardTab.tsx, docs/design/Google AI Studio/src/components/StatusBadge.tsx, docs/design/Google AI Studio/src/components/TagInput.tsx, docs/design/Google AI Studio/src/components/TopBar.tsx, docs/design/Google AI Studio/src/context/AppContext.tsx, docs/design/Google AI Studio/src/index.css, docs/design/Google AI Studio/src/lib/store.ts, docs/design/Google AI Studio/src/main.tsx, docs/design/Google AI Studio/src/types/index.ts, docs/design/Google AI Studio/src/views/AdminConnectorsView.tsx, docs/design/Google AI Studio/src/views/AdminOverviewView.tsx, docs/design/Google AI Studio/src/views/AdminTenantsView.tsx, docs/design/Google AI Studio/src/views/AnalyticsDashboardView.tsx, docs/design/Google AI Studio/src/views/ConnectorStatusView.tsx, docs/design/Google AI Studio/src/views/ConnectorsView.tsx, docs/design/Google AI Studio/src/views/InviteAssistView.tsx, docs/design/Google AI Studio/src/views/PostsFeedView.tsx, docs/design/Google AI Studio/src/views/SignInView.tsx, docs/design/Google AI Studio/src/views/SignUpView.tsx, docs/design/Google AI Studio/src/views/SignedOutView.tsx, docs/design/Google AI Studio/src/views/SocialConnectorDetailsView.tsx, docs/design/Google AI Studio/src/views/TeamAccessView.tsx, docs/design/Google AI Studio/src/views/TenantDashboardView.tsx, docs/design/Google AI Studio/src/views/TenantDeleteView.tsx, docs/design/Google AI Studio/src/views/TenantOwnedFeedView.tsx, docs/design/Google AI Studio/src/views/TenantSettingsView.tsx, docs/design/Google AI Studio/src/views/WatchlistsView.tsx, docs/design/Google AI Studio/tsconfig.json, docs/design/Google AI Studio/vite.config.ts, docs/design/MSE ui Mockup/.env.example, docs/design/MSE ui Mockup/.gitignore, docs/design/MSE ui Mockup/README.md, docs/design/MSE ui Mockup/index.html, docs/design/MSE ui Mockup/metadata.json, docs/design/MSE ui Mockup/package.json, docs/design/MSE ui Mockup/src/App.tsx, docs/design/MSE ui Mockup/src/components/ExportModal.tsx, docs/design/MSE ui Mockup/src/components/FilterBar.tsx, docs/design/MSE ui Mockup/src/components/FlyoutNav.tsx, docs/design/MSE ui Mockup/src/components/PostsPane.tsx, docs/design/MSE ui Mockup/src/components/SubTabs.tsx, docs/design/MSE ui Mockup/src/components/TopBar.tsx, docs/design/MSE ui Mockup/src/components/views/ActivityMapView.tsx, docs/design/MSE ui Mockup/src/components/views/AlertsView.tsx, docs/design/MSE ui Mockup/src/components/views/AuthViews.tsx, docs/design/MSE ui Mockup/src/components/views/ConversationsView.tsx, docs/design/MSE ui Mockup/src/components/views/LocationView.tsx, docs/design/MSE ui Mockup/src/components/views/OverviewView.tsx, docs/design/MSE ui Mockup/src/components/views/PostDetailView.tsx, docs/design/MSE ui Mockup/src/components/views/SearchSetupView.tsx, docs/design/MSE ui Mockup/src/components/views/SentimentView.tsx, docs/design/MSE ui Mockup/src/components/views/SettingsView.tsx, docs/design/MSE ui Mockup/src/components/views/SocialCenterView.tsx, docs/design/MSE ui Mockup/src/components/views/SourcesView.tsx, docs/design/MSE ui Mockup/src/data/mockData.ts, docs/design/MSE ui Mockup/src/index.css, docs/design/MSE ui Mockup/src/main.tsx, docs/design/MSE ui Mockup/src/types.ts, docs/design/MSE ui Mockup/tsconfig.json, docs/design/MSE ui Mockup/vite.config.ts, docs/design/Social Ingest and Command Center Design/.env.example, docs/design/Social Ingest and Command Center Design/.gitignore, docs/design/Social Ingest and Command Center Design/Data Engineering and backend specification.md, docs/design/Social Ingest and Command Center Design/README.md, docs/design/Social Ingest and Command Center Design/bun.lock, docs/design/Social Ingest and Command Center Design/index.html, docs/design/Social Ingest and Command Center Design/metadata.json, docs/design/Social Ingest and Command Center Design/package.json, docs/design/Social Ingest and Command Center Design/server.ts, docs/design/Social Ingest and Command Center Design/src/App.tsx, docs/design/Social Ingest and Command Center Design/src/components/AnimatedChartTooltip.tsx, docs/design/Social Ingest and Command Center Design/src/components/ContentIntelligencePanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/GeminiChatbotPanel.tsx, docs/design/Social Ingest and Command Center Design/src/components/LocationDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SentimentDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/components/SourcesDashboardTab.tsx, docs/design/Social Ingest and Command Center Design/src/index.css, docs/design/Social Ingest and Command Center Design/src/main.tsx, docs/design/Social Ingest and Command Center Design/src/types.ts, docs/design/Social Ingest and Command Center Design/tsconfig.json, docs/design/Social Ingest and Command Center Design/vite.config.ts, docs/design/admin-ui-mockup-2026-08-03.html, docs/design/microsoft-social-engagement-ui-mockup/README.md, docs/design/microsoft-social-engagement-ui-mockup/project/.thumbnail, docs/design/microsoft-social-engagement-ui-mockup/project/SocialEngage.dc.html, docs/design/microsoft-social-engagement-ui-mockup/project/support.js, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/1520200669292.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/FutureDecoded-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/Microsoft Social Engagement (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/0702.activitymap (1).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/0702.activitymap.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/11-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/12-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1229302.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1229329.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/15.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1520110736520.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/1520200669292.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/2- Go to settings,  Social Profiles then add profile.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/22.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/24.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/4-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1 (1).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1 (2).png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/5706.mse1_.2_1.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/6-2.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/645596c34886ff29ecebfa63d1016d4e.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Dashboard.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/FutureDecoded-Location-Analytics.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/MSE01.PNG, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft Social Engagement (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft Social Engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-2.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-Screenshot-WinBuzzer (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement-Screenshot-WinBuzzer.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft-Social-Engagement.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/Microsoft_Social_Engagement_2_small.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R (2).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/R.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement (1).webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/analytics-conversation-view-social-engagement.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/blog-crm-social-engagement-1024x604.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/dashboard001.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/hqdefault.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/lead.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (2).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (3).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (4).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (5).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (6).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault (7).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/maxresdefault.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/microsoft-social-engagement-location-view.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/microsoft-social-listening-example.gif, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/ms.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/ms1.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center-1-625x343.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center-1.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/mse-social-center.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/msei-04-625x431.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/setup01.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/setupd365.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/social-engagement-ga (1).jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/social-engagement-ga.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/socialcentar001.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/socialengagement-filtering.gif, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/timeline.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/SocialEngage/topic-e-sentimennt.png, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement (1).webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/analytics-conversation-view-social-engagement.webp, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/maxresdefault (2)-d2afcdfa.jpg, docs/design/microsoft-social-engagement-ui-mockup/project/uploads/maxresdefault (2).jpg, docs/design/platform-admin-console-mockup-2026-08-03.html
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Deletes only standalone design-mockup repos under `docs/design/` (Gemini Designs, Google AI Studio, MSE ui Mockup, Social Ingest and Command Center Design, and the old Microsoft Social Engagement UI screenshots) — never real, shipped `social-listening-admin` source, per this commit's own message ("will sketch UI in own repos to maintain clean Admin Core here").
 
 ## 2026-09-09 — 36c84d6 — docs: sync tracking docs and add ADR-0142/0143 drafts
 
@@ -8106,106 +8113,130 @@
 
 - **Full commit:** `c47b7d37c5a06feee7135f577ef402f591308d79`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit (`main` into `feat/story-17.2`); no independent content of its own — the real Story 17.2 work is reviewed against `26d210f` above.
 
 ## 2026-09-13 — 709444b — docs: scheduled review WIP - L&D writer pass complete, doc steward continuing
 
 - **Full commit:** `709444b19e02797f0761264ebd66ba943a0e9d91`
 - **Files touched:** docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** This role's own prior scheduled-queue pass (2026-09-13, Epic 11 batch). Its addendum and section edits are the same content still present in both manuals today, since superseded/extended by later passes — no further action needed against this commit specifically.
 
 ## 2026-09-13 — 64b6263 — docs: scheduled review WIP - ideal manager pass complete, doc steward continuing
 
 - **Full commit:** `64b62637b78193a0d0d0d8c92fd0b37f5a70a27a`
 - **Files touched:** docs/adr/README.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. The Ideal Manager's own scheduled-review commit, touching only its own register/queue files and unrelated backend SKILL.md files, none of it `docs/manuals/*.md`.
 
 ## 2026-09-13 — 92f685c — docs: Documentation Steward pass - fix Epic 10 Built-field mislabeling and related drift
 
 - **Full commit:** `92f685c836580224fe287cadd85cbdcaf1877a9d`
 - **Files touched:** docs/adr/README.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-12-adr-0101-to-0108.md, docs/user-stories/epic-13-adr-0109-to-0117.md, docs/user-stories/epic-14-adr-0118-to-0122.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-16-adr-0125-to-0128.md, docs/user-stories/epic-17-adr-0129-to-0133.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. The Documentation Steward's own Built-field/status-drift correction across several epic story files, none of it `docs/manuals/*.md`.
 
 ## 2026-09-13 — e479a59 — feat(watchlists): implement Story 18.1 — Watchlist volume confidence UI and cost projection (ADR-0134)
 
 - **Full commit:** `e479a5985bb0c0f0e5e3bfc5a83f454268b41d8d`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-admin/.claude/skills/watchlist-management/SKILL.md, social-listening-admin/contracts/epic-18/story-18.1.watchlist-volume-confidence-ui.contract.test.ts, social-listening-admin/jest.config.js, social-listening-admin/src/app/api/watchlists/preview-volume/route.ts, social-listening-admin/src/app/tenant/watchlists/WatchlistForm.tsx, social-listening-admin/src/components/watchlists/VolumePreviewPanel.tsx, social-listening-admin/src/lib/core-client.ts, social-listening-core/.claude/skills/watchlist-matching/SKILL.md, social-listening-core/contracts/epic-18/story-18.1.watchlist-cost-projection.contract.test.ts, social-listening-core/jest.config.js, social-listening-core/src/watchlists/previewVolumeService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed real, contract-verified `social-listening-admin` UI (`WatchlistForm.tsx`, `VolumePreviewPanel.tsx`, the `preview-volume` API route) — tenant-tier, reachable from the Manage watchlists screen for any tenant identity. Already documented in both `docs/manuals/user-manual.md` and `docs/manuals/tenant-admin-manual.md`'s "Managing watchlists" sections as the "📊 Preview volume" button (Story 18.1). This pass verified the citation against the real component files; nothing further to add.
 
 ## 2026-09-13 — ad6833f — Merge remote-tracking branch 'origin/main' into main
 
 - **Full commit:** `ad6833fd3798aa8d07b32ba2e655bf3fd09bf8df`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit; no independent content of its own.
 
 ## 2026-09-13 — f731949 — feat(analytics): implement Story 18.2 — Preconfigured analytics view RLS table enforcement (ADR-0135)
 
 - **Full commit:** `f73194934d126802b858d76f835e05edfb7f9d23`
 - **Files touched:** docs/adr/README.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/contracts/epic-18/story-18.2.preconfigured-analytics-views-rls.contract.test.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed backend-only — every file this commit touches is `social-listening-core` (a new router, its contract test, ADR/story docs) or a SKILL.md; grep against `social-listening-admin/src` found no route or component calling it. Already named as a no-admin-UI-contract backend item in `docs/manuals/tenant-admin-manual.md`'s 2026-09-16 addendum, and confirmed again in this pass's own 2026-09-17 addendum to `docs/manuals/user-manual.md`. Nothing to add to any manual's usable-capability sections.
 
 ## 2026-09-13 — ee96777 — docs(telemetry): record Story 18.2 completion and sync dashboard
 
 - **Full commit:** `ee967778abf60cffdc5aa214638babcfe32ed41e`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-18-adr-0134-to-0135.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Docs/telemetry-only commit recording Story 18.2's completion; the underlying capability is reviewed as backend-only against `f731949` above.
 
 ## 2026-09-13 — 8962e1d — feat(rag): implement Story 19.1 — RAGConnector namespace-per-tenant isolation (ADR-0136)
 
 - **Full commit:** `8962e1da22be233713a1ba424cf39dc75d0b30e7`
 - **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/project docs/Functional-Design/FDD-0136-RAG-Connector-Provider-Abstraction-Namespace-Per-Tenant.md, docs/user-stories/README.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/contracts/epic-19/story-19.1.rag-connector-namespace-isolation.contract.test.ts, social-listening-core/migrations/0082_force_rls_rag_chunks.sql, social-listening-core/src/rag/pgvectorConnector.ts, social-listening-core/src/rag/types.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed backend-only — every source file this commit touches is `social-listening-core` (`pgvectorConnector.ts`, `types.ts`, an RLS migration); grep against `social-listening-admin/src` found no `RAGConnector`/namespace-aware route or component anywhere. Named as a no-admin-UI-contract backend item in this pass's own 2026-09-17 addendum to `docs/manuals/user-manual.md` (already named for Epic 19 generally in `docs/manuals/tenant-admin-manual.md`'s 2026-09-16 addendum). No manual capability to add.
 
 ## 2026-09-13 — a12b947 — feat(rag): implement Story 19.2 — RAG chunking/embedding namespace routing (ADR-0137)
 
 - **Full commit:** `a12b947bac99d8ab6f68f605bff0681f0b20e2e6`
 - **Files touched:** docs/adr/0137-rag-post-chunking-and-embedding-namespace-routing.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/project docs/Functional-Design/FDD-0137-RAG-Post-Chunking-And-Embedding-Namespace-Routing.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/contracts/epic-19/story-19.2.rag-chunking-embedding-namespace-routing.contract.test.ts, social-listening-core/migrations/0083_force_rls_rag_chunks_sync.sql, social-listening-core/src/rag/ragIndexingPipeline.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed backend-only — the only source file touched is `social-listening-core/src/rag/ragIndexingPipeline.ts`, plus its own contract test and an RLS migration; grep against `social-listening-admin/src` found nothing. Same treatment as `8962e1d` above — named in this pass's `docs/manuals/user-manual.md` addendum, no manual capability to add.
 
 ## 2026-09-14 — 1f96685 — docs(epic-19): flesh out Story 19.1/19.2 with AC detail, backfill real commit hashes
 
 - **Full commit:** `1f96685ede338346b7f795e5a012cee31b858dfe`
 - **Files touched:** docs/user-stories/epic-19-adr-0136-to-0140.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Docs-only, touching only the epic-19 story file's own AC detail/hash backfill.
 
 ## 2026-09-15 — 1e71d7e — feat(rag): implement Story 19.3 — RAG vector-store namespace isolation and pgvector RLS (ADR-0138)
 
 - **Full commit:** `1e71d7e43e23492c96ab1f0f2aae9e8203efa0b3`
 - **Files touched:** docs/adr/0081-rag-connector-provider-abstraction.md, docs/adr/0083-rag-vector-store-rls-and-metadata.md, docs/adr/0138-rag-vector-store-namespace-per-tenant-isolation.md, docs/adr/README.md, docs/implementation-log.md, docs/implementation-plan.md, docs/project docs/Business-Requirements/BRD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/project docs/Functional-Design/FDD-0138-RAG-Vector-Store-Namespace-Per-Tenant-Isolation.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-19-adr-0136-to-0140.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/contracts/epic-19/story-19.3.rag-vector-store-namespace-isolation.contract.test.ts, social-listening-core/src/rag/ragReconciliationService.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** Confirmed backend-only — the only source file touched is `social-listening-core/src/rag/ragReconciliationService.ts`, plus its own contract test, ADR/BRD/FDD docs, and migration-adjacent RLS work; grep against `social-listening-admin/src` found nothing. Same treatment as `8962e1d`/`a12b947` above — no manual capability to add.
 
 ## 2026-09-15 — 8ab0030 — docs(epic-19): backfill Story 19.3 commit hash
 
 - **Full commit:** `8ab00300a1f126087703b40e81b4146a0cc3e61c`
 - **Files touched:** docs/user-stories/epic-19-adr-0136-to-0140.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Docs-only hash backfill in the epic-19 story file.
 
 ## 2026-09-15 — 97a52d4e — Merge branch 'main' of https://github.com/mdresch/socialengage
 
 - **Full commit:** `97a52d4e1543295da288bded86545da103e5e6f5`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit; no independent content of its own.
 ## 2026-09-16 — e170aeb7 — Merge remote-tracking branch 'origin/docs-review/2026-09-14'
 
 - **Full commit:** `e170aeb7a35914a1af5fb11f79a5e63ea6790795`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit reconciling `docs-review/2026-09-14` back into this branch; no independent content of its own beyond commits already reviewed above and below.
 
 ## 2026-09-16 — faed543 — docs(review): Ideal Manager pass complete; Documentation Steward in progress (2026-09-16)
 
 - **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. The Ideal Manager's own scheduled-review commit, touching only its own register/queue files, an epic-17/18 story file, and one backend SKILL.md — none of it `docs/manuals/*.md`.
 
 ## 2026-09-16 — b9e5215 — docs(review): Documentation Steward pass complete; L&D Writer in progress (2026-09-16)
 
 - **Full commit:** `b9e52155716f6bd92d5cdd77209e6e1d66cf445c`
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** This is the interrupted L&D Writer pass this session completes. Its in-flight edits are already present: a full addendum plus body sections in `docs/manuals/tenant-admin-manual.md` (Stories 12.3/12.4, 12.5/12.6, 13.11/13.12, 13.14, 14.3/14.4, 17.2, 18.1), and matching body-only sections in `docs/manuals/user-manual.md` — but that commit never added `user-manual.md`'s own addendum note before the session that made it was cut off. This session (2026-09-17) added the missing addendum to `user-manual.md` to close out that gap; `docs/manuals/system-admin-manual.md` needed no change, since none of the Epic 17–19 batch is `platform_admin`-scoped (confirmed by grep — no RAG/onboarding/watchlist-preview route or component exists under any admin-console path). See `user-manual.md`'s new 2026-09-17 addendum for the full account.
 
 ## 2026-09-16 — aadb1795 — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `aadb179525967e50bdaf2e8499c2ee93db82297f`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit; no independent content of its own beyond commits already reviewed above.
+
+## 2026-09-17 — aa9a46c — docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing
+
+- **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
+- **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
