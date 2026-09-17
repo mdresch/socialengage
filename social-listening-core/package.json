@@ -11,6 +11,7 @@
     "test": "jest",
     "test:contracts": "jest contracts",
     "typecheck": "tsc --noEmit",
+    "openapi:generate": "ts-node scripts/generateOpenApiSpec.ts",
     "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker-compose.test.yml down -v",
     "db:migrate": "ts-node src/db/migrate.ts",

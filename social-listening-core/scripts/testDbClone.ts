@@ -16,7 +16,7 @@ import { Client } from 'pg';
  */
 
 const PG_CONNECTION = {
-  host: 'localhost',
+  host: '127.0.0.1',
   port: 5434,
   database: 'postgres',
   user: 'postgres',

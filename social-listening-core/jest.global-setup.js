@@ -12,7 +12,13 @@ const DB_CONTEXT_FILE = path.join(__dirname, `.jest-test-db-${process.pid}.json`
  * physically-isolated database for this test session in < 50ms.
  */
 module.exports = async function globalSetup() {
-  process.env.PGHOST = 'localhost';
+  // 127.0.0.1, not 'localhost' — on this project's Windows dev machines, Node
+  // resolves 'localhost' to the IPv6 loopback (::1) first, but Docker
+  // Desktop only publishes this port on IPv4. `client.connect()` below has no
+  // connectionTimeoutMillis, so hitting ::1 doesn't fail fast, it hangs
+  // indefinitely — every test run, not just this one. See
+  // docs/environment-gotchas.md.
+  process.env.PGHOST = '127.0.0.1';
   process.env.PGPORT = '5434';
   process.env.PGUSER = 'postgres';
   process.env.PGPASSWORD = 'postgres';
@@ -29,7 +35,7 @@ module.exports = async function globalSetup() {
   let containerRunning = false;
   try {
     const client = new Client({
-      host: 'localhost',
+      host: '127.0.0.1',
       port: 5434,
       database: 'postgres',
       user: 'postgres',
@@ -52,7 +58,7 @@ module.exports = async function globalSetup() {
   }
 
   const maintClient = new Client({
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 5434,
     database: 'postgres',
     user: 'postgres',

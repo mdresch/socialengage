@@ -50,6 +50,21 @@ import { takedownsPublicRouter } from './takedownsPublicRouter';
 import { dsrRouter } from './dsrRouter';
 import { dsrPublicRouter } from './dsrPublicRouter';
 import { complianceRouter } from './complianceRouter';
+import { registerOpenApiOperation } from '../../openapi/registry';
+
+/**
+ * Story 20.1 (ADR-0144): registered at module load, not inside
+ * createV1Router()'s body, so the OpenAPI document reflects this route
+ * regardless of how many times (or whether) the factory itself runs — see
+ * .claude/skills/openapi-spec-generation/SKILL.md.
+ */
+registerOpenApiOperation('get', '/v1/health', {
+  summary: 'Liveness/readiness check — public, unauthenticated (Story 1.3/1.10).',
+  responses: {
+    '200': { description: 'Postgres is reachable.' },
+    '503': { description: 'Postgres is not reachable.' },
+  },
+});
 
 /**
  * Story 5.10 (ADR-0033): a factory, not a static router, so app.ts can pass

@@ -23,7 +23,31 @@ import {
   parseBooleanQueryToAst,
 } from '../../../watchlists/ast';
 import { validateAstForConnector } from '../../../connectors/queryCapabilities';
+import { registerOpenApiOperation } from '../../openapi/registry';
 import { requireFeatureGate } from '../../auth/featureGates';
+
+/**
+ * Story 20.1 (ADR-0144): the two read operations FDD-0144's watchlist
+ * reference screen (Stories 20.3-20.5) actually needs, registered at module
+ * load so they show up in the generated OpenAPI document regardless of
+ * whether this router is ever mounted — see
+ * .claude/skills/openapi-spec-generation/SKILL.md.
+ */
+registerOpenApiOperation('get', '/v1/watchlists', {
+  summary: "List the caller's own watchlists, optionally filtered by matchType.",
+  responses: {
+    '200': { description: "The caller's watchlists." },
+    '500': { description: 'Internal error.' },
+  },
+});
+registerOpenApiOperation('get', '/v1/watchlists/{id}', {
+  summary: 'Fetch a single watchlist the caller owns.',
+  responses: {
+    '200': { description: 'The watchlist.' },
+    '404': { description: "Not found, not the caller's, or belongs to another tenant." },
+    '500': { description: 'Internal error.' },
+  },
+});
 
 export const watchlistsRouter = Router();
 

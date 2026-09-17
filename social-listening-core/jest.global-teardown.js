@@ -24,7 +24,7 @@ module.exports = async function globalTeardown() {
 
   try {
     const client = new Client({
-      host: 'localhost',
+      host: '127.0.0.1',
       port: 5434,
       database: 'postgres',
       user: 'postgres',

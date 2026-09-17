@@ -9,8 +9,10 @@ Evaluate Next.js, Angular, and Blazor as candidate frontends for SocialEngage's 
 ---
 
 ## Story 20.1 — Separate backend and frontend repositories
-**Source:** ADR-0144 (Accepted 2026-09-17) · **Status:** Ready  
-**Built:** not yet
+**Source:** ADR-0144 (Accepted 2026-09-17) · **Status:** Built (partial — see Notes)  
+**Built:** 2026-09-17 — social-listening-core@pending
+
+**Notes:** Of this story's three acceptance criteria, only the second ("backend publishes its OpenAPI spec as a CI artifact on every build") is a testable code behavior, and is what this pass builds and contract-tests: a route-owned OpenAPI-operation registry (`src/http/openapi/registry.ts`), a document generator sourced from it (`src/http/openapi/generateOpenApiDocument.ts`), and a generation script (`npm run openapi:generate`) wired to produce `openapi.json` from the real, live-registered routes. The first AC ("repo builds and passes CI with no frontend code present") is already true today — `social-listening-core` has zero frontend dependencies and lives in its own subdirectory — no code change was needed to satisfy it. The third AC (preserving/clean-cutting repo history via `git filter-repo` into an actual standalone repository) is a one-time manual git-and-new-remote operation that ADR-0144's own Open Items explicitly leaves to Menno's call, not something to perform autonomously; it remains not yet done. See `.claude/skills/openapi-spec-generation/SKILL.md` and `docs/implementation-log.md`'s Story 20.1 entry.
 
 **As the** maintainer,  
 **I want** `social-listening-core` split into its own repository, independent of any frontend,  

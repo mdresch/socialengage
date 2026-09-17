@@ -12,7 +12,7 @@ for (const file of possibleFiles) {
     try {
       const ctx = JSON.parse(fs.readFileSync(file, 'utf8'));
       if (ctx.testDbName) {
-        process.env.PGHOST = 'localhost';
+        process.env.PGHOST = '127.0.0.1';
         process.env.PGPORT = '5434';
         process.env.PGDATABASE = ctx.testDbName;
         process.env.PGUSER = 'postgres';
