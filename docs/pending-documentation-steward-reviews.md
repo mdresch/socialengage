@@ -7217,3 +7217,21 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-17 — 8e77ceb8 — docs: accept ADR-0144 (frontend platform evaluation, repo topology, API gateway)
+
+- **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
+- **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
+- **Status:** Pending review
+
+## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
+
+- **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
+- **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
+- **Status:** Pending review
+
+## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
+
+- **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** Pending review
+

@@ -15,6 +15,9 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-17 | 20:38 | — | — | Documentation | — | docs(story-20.1): record social-listening-core repo-split completion (4c9db6f2) |
+| 2026-09-17 | 18:20 | — | — | Documentation | ADR-0144 | feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144) (fc5a6856) |
+| 2026-09-17 | 13:37 | — | — | Documentation | ADR-0144 | docs: accept ADR-0144 (frontend platform evaluation, repo topology, API gateway) (8e77ceb8) |
 | 2026-09-16 | 07:38 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (464bde29) |
 | 2026-09-16 | 07:38 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (aadb1795) |
 | 2026-09-16 | 07:24 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (f67c0c13) |
