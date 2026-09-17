@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-17 | 05:11 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (d5500e5) |
 | 2026-09-17 | 05:08 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer/Ideal Manager continuing (94c27ba) |
 | 2026-09-17 | 05:07 | — | — | Review | — | docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing (aa9a46c) |
 | 2026-09-16 | 07:38 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (464bde29) |

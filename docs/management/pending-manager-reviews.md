@@ -8360,52 +8360,67 @@
 
 - **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-16 — b9e5215 — docs(review): Documentation Steward pass complete; L&D Writer in progress (2026-09-16)
 
 - **Full commit:** `b9e52155716f6bd92d5cdd77209e6e1d66cf445c`
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
 
 - **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-14 — 4eb5d5b — docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims
 
 - **Full commit:** `4eb5d5bdfe580d6602d045bd7e64356d92ead988`
 - **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-14 — 8f538f4 — docs(review): Learning & Development Writer pass — clear full 191-entry backlog
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 
 ## 2026-09-16 — e170aeb7 — Merge remote-tracking branch 'origin/docs-review/2026-09-14'
 
 - **Full commit:** `e170aeb7a35914a1af5fb11f79a5e63ea6790795`
 - **Files touched:** 
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
 ## 2026-09-16 — aadb1795 — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `aadb179525967e50bdaf2e8499c2ee93db82297f`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "this recurring review pipeline runs two unsynchronized docs-review branches against its own append-only bookkeeping files, producing duplicate review effort and a real, if narrow, loss from this very register" entry.**
+
+## 2026-09-17 — aa9a46c — docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing
+
+- **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
+- **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
