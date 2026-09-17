@@ -7235,3 +7235,9 @@
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** Pending review
 
+## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
+
+- **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
