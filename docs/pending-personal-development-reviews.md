@@ -94,3 +94,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — the concurrently-running Ideal Manager's own register/queue bookkeeping only, no `social-listening-core/src`, `social-listening-admin/src`, or contract-file changes.
 
+## 2026-09-17 — 123cff4 — docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review)
+
+- **Full commit:** `123cff466b3f2293b1f0d3db1f9f1c113711b503`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — same treatment as `7692896` above (Ideal Manager register/queue bookkeeping only).
+

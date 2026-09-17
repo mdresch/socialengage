@@ -8430,3 +8430,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry.**
 
+## 2026-09-17 — 123cff4 — docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review)
+
+- **Full commit:** `123cff466b3f2293b1f0d3db1f9f1c113711b503`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry** — this is that same finding's own corrective commit (adding the register entry that finding required), not separate work needing a second entry.
+
