@@ -7174,46 +7174,46 @@
 
 - **Full commit:** `b9e52155716f6bd92d5cdd77209e6e1d66cf445c`
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): this role's own prior checkpoint — verified as substantive and intact.** File list matches `git diff-tree` exactly (manuals are the concurrently-running L&D Writer's own in-flight work, not this role's to audit). Confirmed each correction still stands in the current working tree: Stories 19.1/19.2/19.3 in `docs/user-stories/epic-19-adr-0136-to-0140.md` correctly read "Status: Built" (not "Ready") beside their populated `Built` fields; `docs/implementation-plan.md`'s Story 19.2 build-journal paragraph and `rag-connector/SKILL.md`'s Invariants 5 and 9 all correctly note that Story 19.3 shipped without implementing `ensureTenantNamespace?` or adding a second connector, per that story's own AC6. No further drift found on top of this pass's own work.
 
 ## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
 
 - **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): confirmed via `git diff-tree --no-commit-id --name-only -r c274be3` — file list matches exactly, both files entirely outside this role's charter scope (no ADR, story, SKILL.md, `docs/implementation-plan.md`, or `docs/project docs/**` file touched).** This is the Ideal Manager's own queue and its own commit to account for, not this role's — same treatment this file already gives concurrent-role commits elsewhere (e.g. the `64b6263`/`faed543` entries above).
 
 ## 2026-09-14 — 4eb5d5b — docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims
 
 - **Full commit:** `4eb5d5bdfe580d6602d045bd7e64356d92ead988`
 - **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): this role's own prior checkpoint — verified as substantive and intact, not silently reverted by any later merge.** File list matches `git diff-tree` exactly. Confirmed each correction still stands in the current working tree: `docs/adr/README.md`'s ADR-0092/0093/0094 rows correctly cite the real Story 16.1/16.2/16.3 implementation commits (not the colliding `fdb9bb8` batch); `docs/user-stories/epic-10-adr-0086-to-0094.md`'s Stories 10.1/10.3–10.10 carry restored real per-story hashes and 10.11–10.14 carry the honest story-number-collision note; and all four flagged "Relations to other components" corrections (`ai-insights-digest`↔Azure OpenAI, `platform-operations-dashboard`↔Azure OpenAI cost telemetry, `real-time-alert-rules`↔`webhook-notifications` both directions) are present verbatim in their respective `SKILL.md` files today. No further drift found on top of this pass's own work.
 
 ## 2026-09-14 — 8f538f4 — docs(review): Learning & Development Writer pass — clear full 191-entry backlog
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): confirmed via `git diff-tree --no-commit-id --name-only -r 8f538f4` — file list matches exactly; every file is out of this role's charter scope (manuals, other roles' own queues, time-tracking) — no ADR, story, SKILL.md, `implementation-plan.md`, or `docs/project docs/**` file touched.** This commit's own diff to this queue file is not new content — it is this same branch's linear history carrying forward the `4eb5d5b` checkpoint's already-reviewed edits (05:15:49 vs. this commit's 05:20:00 timestamp, both same day, same branch), confirmed by inspection. Its narrative cross-role finding about the Analytics dashboard's real fifth (Location) tab is the same conflict independently found and fully written up on the `c1f1e1d` entry below — not a new item.
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): this role's own prior checkpoint — verified as substantive and intact.** File list matches `git diff-tree` exactly. Confirmed each correction still stands in the current working tree: Stories 11.1/11.2 in `docs/user-stories/epic-11-adr-0095-to-0100.md` carry the real `264c4fd`/`a76b564` hashes (previously bare, no hash at all); the three flagged "Relations to other components" corrections (`daily-digest-email`'s Azure OpenAI summary claim, `mention-suggestions`' RAG-semantic-relevance claim, `social-inbox`'s alert-fan-out claim) are all present verbatim in their respective `SKILL.md` files today. No further drift found on top of this pass's own work.
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): this role's own prior checkpoint — verified as substantive, correctly bounded, and intact.** File list matches `git diff-tree` exactly. Confirmed the real, unresolved `LocationTab.tsx`/ADR-0054/ADR-0064 conflict this checkpoint surfaced is still accurately described, verbatim, in all three places it touched: `CLAUDE.md`'s status paragraph, ADR-0054's own Open Question 1 Clarification (Decision/Consequences text correctly left untouched, per this role's hard rule), and `docs/user-stories/epic-8-analytics-dashboard.md`'s "Location tab status" section. Correctly flagged as a real product decision for Menno (retroactively authorize the standalone tab or revert it) rather than silently reconciled. No further drift found on top of this pass's own work.
 
 ## 2026-09-16 — e170aeb7 — Merge remote-tracking branch 'origin/docs-review/2026-09-14'
 
 - **Full commit:** `e170aeb7a35914a1af5fb11f79a5e63ea6790795`
 - **Files touched:** 
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): not an empty-diff merge — same treatment as `c47b7d3`/`ad6833f`/`97a52d4e` elsewhere in this file.** `git diff-tree -c --no-commit-id --name-only e170aeb7` (combined diff, real hand-resolved hunks only) surfaces 9 files, of which 2 are in this role's scope: `docs/adr/README.md` and `social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md` (the rest — manuals, management/L&D/personal-dev queues, time-tracking — belong to other roles). Diffed both merge parents (`956a9bb`, `c1eaf0d`) directly against each other and against the current tree for both files: in each case the merge correctly kept whichever side carried the more complete/later-dated content (e.g. `README.md`'s ADR-0092/93/94 rows kept the richer 2026-09-14 Story 16.1/16.2/16.3 hash citations over an older 2026-09-13 phrasing; the "Recently Accepted ADRs not yet reconciled" section was not dropped; `real-time-alert-rules/SKILL.md` kept the fuller ADR-0123/Story 15.1 content — noise exclusions, rolling daily cap, pre-save preview — over a stale pre-Story-15.1 version) with nothing silently lost from either side. No leftover conflict markers found anywhere in this role's scope (`grep`-checked across `docs/adr/`, `docs/user-stories/`, `docs/implementation-plan.md`, `docs/project docs/**`, and both repos' `SKILL.md` files). No drift found.
 ## 2026-09-16 — aadb1795 — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `aadb179525967e50bdaf2e8499c2ee93db82297f`
 - **Files touched:** 
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): not an empty-diff merge — same treatment as `e170aeb7` above.** `git diff-tree -c --no-commit-id --name-only aadb1795` (combined diff, real hand-resolved hunks only) surfaces 8 files, all outside this role's scope (`docs/management/**`, `docs/manuals/**`, the three other roles' own `pending-*-reviews.md` queues, `docs/time-tracking.md`) — nothing in `docs/adr/`, `docs/user-stories/`, `docs/implementation-plan.md`, `docs/project docs/**`, or either repo's `SKILL.md` files required an actual hand-resolved merge here. The wider plain `git show --stat` list for this commit (`docs/implementation-plan.md`, `docs/user-stories/epic-17/18/19-*.md`, `precomputed-analytics-views/SKILL.md`, `rag-connector/SKILL.md`) reflects clean, non-conflicting fast-forward-style merges of content already independently verified intact on the `b9e5215`/`e170aeb7`/`f731949` entries elsewhere in this file. No leftover conflict markers found anywhere in this role's scope. No drift found.
 
