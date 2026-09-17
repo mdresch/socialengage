@@ -5342,9 +5342,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-17 — Story 20.1 (repo-split follow-up) — social-listening-core@pending
+## 2026-09-17 — Story 20.1 (repo-split follow-up) — socialengage@4c9db6f2
 
-- **Full commit:** `pending`
+- **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Repo:** socialengage (this workspace repo) — the actual work product is a new, separate repository; see Notes
 - **Story / ADR:** 20.1 / ADR-0144
 - **Contract:** none — this pass is the repository-topology/infrastructure AC (AC1/AC3), not application code; no new Jest contract in this repo
