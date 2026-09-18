@@ -37,41 +37,74 @@
 
 - **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show faed543` in full. No skill-relevant change observed in this commit. This is the Ideal Manager's scheduled-review checkpoint (clears `docs/management/pending-manager-reviews.md`, appends pace/scope/sequencing findings to `docs/management/manager-register.md` covering the Story 17.2/18.x/19.x work) with a Documentation Steward pass left mid-flight (partial epic-17/epic-18 story-file corrections, one SKILL.md drift fix). No `src/` or `contracts/` change in either repo — confirmed via `git show --name-only`. Worth naming for awareness: the Ideal Manager's own findings in this commit flag "7 story/doc commits that never entered the manager queue at all" — a sibling-queue integrity gap of the same shape as the one this reviewer independently confirms below (see the c1f1e1d entry's closing note). No Progress Notes or Skills Inventory change proposed.
 
 ## 2026-09-16 — b9e5215 — docs(review): Documentation Steward pass complete; L&D Writer in progress (2026-09-16)
 
 - **Full commit:** `b9e52155716f6bd92d5cdd77209e6e1d66cf445c`
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show b9e5215` in full. No skill-relevant change observed in this commit. This is the Documentation Steward's checkpoint clearing `docs/pending-documentation-steward-reviews.md` (Ready/Built status corrections for Stories 17.2, 18.1, 18.2, 19.1–19.3 in their epic files; two stale forward-references removed from `rag-connector/SKILL.md` and `implementation-plan.md`) plus an L&D Writer pass left in progress (manual prose only). No `src/` or `contracts/` change in either repo. The commit's own corrections are cross-reference repair against already-shipped stories, not new application code authored by Menno — per the charter's "do not count... documentation corrections with no new code" rule. No Progress Notes or Skills Inventory change proposed. Note for awareness: this commit is itself evidence that Stories 17.2/18.1/18.2/19.1–19.3 shipped real code (that's what the Steward is correcting status fields *against*) — but this queue file (`docs/pending-personal-development-reviews.md`) never received its own entries for those underlying commits; see the queue-integrity gap noted in the c1f1e1d entry below.
 
 ## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
 
 - **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show c274be3` in full. No skill-relevant change observed in this commit. Only two files touched, both governance: the Ideal Manager clears its own 80-entry `pending-manager-reviews.md` backlog and appends two dated findings to `manager-register.md` — a "proceed" verdict on Epic 13's tail plus five healing passes, and an "escalate" verdict on the Epics 14–17 batch (a third recurrence of a worsening all-nighter pattern, ~19 hours on 2026-09-07/08, plus unresolved git merge-conflict markers committed straight to `main` at `dc3958f`, undetected for 13 days). These are pace/sustainability and process-integrity findings at the management level, not developer skill signals — consistent with this reviewer's own precedent on the `64b6263` entry above for the same kind of Ideal Manager checkpoint. No `src/` or `contracts/` change in either repo. Worth naming for awareness (not a Skills Inventory item, but a hard-won-debugging-adjacent fact Menno should know): a merge-conflict-marker commit reaching `main` undetected for 13 days is exactly the kind of environment/process gotcha `docs/environment-gotchas.md` exists to catch — this reviewer flags it here for visibility but leaves the fix and any gotchas-doc entry to Menno/Documentation Steward, per charter scope. No Progress Notes or Skills Inventory change proposed.
 
 ## 2026-09-14 — 4eb5d5b — docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims
 
 - **Full commit:** `4eb5d5bdfe580d6602d045bd7e64356d92ead988`
 - **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show 4eb5d5b` in full. No skill-relevant change observed in this commit. This is a Documentation Steward traceability pass: it corrects a blanket-stamp Built-hash error affecting ADR-0092/93/94 and Stories 10.1/10.3–10.14 (all wrongly citing `fdb9bb8`, an unrelated webhook/YouTube/AI-digest batch), identifies a genuine story-number collision between Epic 10's 10.11–10.14 and Epic 16's 16.1–16.3 (left for Menno to decide, not fixed here), and flags four SKILL.md "Relations to other components" claims as unbacked by real code. All of this is cross-reference forensics against already-shipped commits, not new application code or contract work — same pattern as this reviewer's own precedent on the `92f685c` entry above. No `src/` or `contracts/` change in either repo. No Progress Notes or Skills Inventory change proposed.
 
 ## 2026-09-14 — 8f538f4 — docs(review): Learning & Development Writer pass — clear full 191-entry backlog
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show 8f538f4` in full. No skill-relevant change observed in this commit. This is the Learning & Development Writer clearing its own 191-entry backlog: new end-user manual sections (Social Care Inbox, daily digest email, topic evolution timeline, outbound publishing & scheduling, webhook notifications, plan & seats) plus extensions to existing sections, all documenting already-shipped, already-reviewed features. The diff is entirely `docs/manuals/*` prose and queue-file bookkeeping — no `src/` or `contracts/` change in either repo. The underlying features these manual sections describe were shipped in earlier commits that have their own (or will have their own) entries in this queue; this checkpoint itself is end-user documentation work, not developer output. Per the charter's "do not count" guidance for documentation-correction commits with no new code, no Progress Notes entry or Skills Inventory change was added — consistent with this reviewer's own precedent on the `709444b` entry above for an earlier L&D Writer checkpoint of the same shape.
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show 528df23` in full. No skill-relevant change observed in this commit. This is a Documentation Steward checkpoint: it adds two missing Built-field commit hashes for Stories 11.1/11.2 (cross-checked against `docs/implementation-log.md`), and flags — but does not fix — three more unbacked SKILL.md "Relations to other components" claims (`daily-digest-email` claiming `AIProviderConnector.research()` when the actual implementation is template-string interpolation; `mention-suggestions` claiming RAG semantic relevance when it's actually a follower-count heuristic with no vector lookup; `social-inbox`'s alert-to-inbox-item fan-out having no real caller). These are useful findings about documentation accuracy — notably, they identify places where claimed AI/RAG capability does *not* match shipped code, which is the inverse of a skill signal, not a positive one. No `src/` or `contracts/` change in either repo; the flagged discrepancies are left for Menno/contract-authoring per the Steward's own stated boundary. No Progress Notes or Skills Inventory change proposed.
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Personal Development Reviewer):** Reviewed `git show c1f1e1d` in full. No skill-relevant change observed in this commit. This is the Documentation Steward's final checkpoint of the 2026-09-14 pass: it surfaces (does not fix) a real, unresolved architectural conflict — commit `d78c55c` (2026-08-31, no story/ADR cited) shipped a standalone, fully-wired `LocationTab.tsx` as a real fifth Analytics tab, contradicting both ADR-0054 Decision §4 and ADR-0064's explicit "widget on Overview, not a separate tab" resolution — and adds a dated Clarification to ADR-0054's Open Question 1, corrects `epic-8-analytics-dashboard.md`'s Location-tab-status section, and corrects `CLAUDE.md`'s status line. All traceability repair against an already-shipped commit; no new `src/` or `contracts/` change in this commit itself. No Progress Notes or Skills Inventory change proposed.
+
+  **Queue-integrity gap confirmed (awareness note, not actioned — out of this role's chartered scope, per the Ideal Manager's own precedent for naming this exact kind of finding in `docs/management/manager-register.md`):** this queue file (`docs/pending-personal-development-reviews.md`) never received entries for the real feature-shipping commits between 2026-09-08 and 2026-09-16 that the sibling Documentation Steward and L&D Writer queues *did* pick up and that this same review pass's own `faed543`/`b9e5215` entries above reference by name — specifically `26d210f` (Story 17.2, role-tailored onboarding journeys with automated probes), `e479a59` (Story 18.1, watchlist volume confidence UI/cost projection, ADR-0134), `f731949` (Story 18.2, preconfigured analytics view RLS table enforcement, ADR-0135), `8962e1d` (Story 19.1, RAGConnector namespace-per-tenant isolation, ADR-0136), `a12b947` (Story 19.2, RAG chunking/embedding namespace routing, ADR-0137), and `1e71d7e` (Story 19.3, RAG vector-store namespace isolation and pgvector RLS, ADR-0138). Confirmed by `git log` that all six commits exist on `main` with real `feat(...)` messages and by grep that none of their hashes appear anywhere in this queue file. Several of these (RAGConnector namespace isolation, pgvector RLS enforcement, RLS-scoped analytics-view table enforcement) look, from their commit messages alone, like exactly the kind of "architectural pattern first use" / "contract rigor" skill signal this role exists to capture — but per charter this role reviews entries the post-commit hook actually queues, and does not add its own queue entries or investigate un-queued commits proactively. Flagged here for Menno/a future pass to queue and review; not investigated further or added to the Skills Inventory in this pass.
+
+## 2026-09-18 — 5257a9f — docs: scheduled review WIP - documentation steward pass complete, L&D writer in progress
+
+- **Full commit:** `5257a9fa0ecdb53a5b7e213afef210a5eb1a7253`
+- **Files touched:** docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-18 — cc065bc — docs: scheduled review WIP - queue sync for prior checkpoints, L&D writer continuing
+
+- **Full commit:** `cc065bce9df920154022d178fdbe3450042d0cf4`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-18 — 13cad2a — docs: scheduled review WIP - L&D writer pass complete, ideal manager continuing
+
+- **Full commit:** `13cad2ae0948d5810eb79e9a92c3e1e253289d02`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
+## 2026-09-18 — 17d08f8 — docs: scheduled review WIP - ideal manager pass complete, all four roles done
+
+- **Full commit:** `17d08f86b2d81a39ab36ceb5446ddeddaf4c4832`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
