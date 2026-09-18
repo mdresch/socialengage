@@ -8409,3 +8409,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-18 — 5257a9f — docs: scheduled review WIP - documentation steward pass complete, L&D writer in progress
+
+- **Full commit:** `5257a9fa0ecdb53a5b7e213afef210a5eb1a7253`
+- **Files touched:** docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
