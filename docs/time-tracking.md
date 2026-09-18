@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-18 | 05:12 | — | — | Review | — | docs: scheduled review WIP - L&D writer pass complete, ideal manager continuing (13cad2a) |
 | 2026-09-18 | 05:08 | — | — | Review | — | docs: scheduled review WIP - queue sync for prior checkpoints, L&D writer continuing (cc065bc) |
 | 2026-09-18 | 05:08 | — | — | Review | — | docs: scheduled review WIP - documentation steward pass complete, L&D writer in progress (5257a9f) |
 | 2026-09-18 | 05:05 | — | — | Review | — | docs: scheduled review WIP - personal dev reviewer pass complete, others in progress (fa7bb0e) |
