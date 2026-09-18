@@ -7235,3 +7235,9 @@
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
+## 2026-09-18 — 17d08f8 — docs: scheduled review WIP - ideal manager pass complete, all four roles done
+
+- **Full commit:** `17d08f86b2d81a39ab36ceb5446ddeddaf4c4832`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+

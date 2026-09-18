@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-18 | 05:15 | — | — | Review | — | docs: scheduled review WIP - ideal manager pass complete, all four roles done (17d08f8) |
 | 2026-09-18 | 05:12 | — | — | Review | — | docs: scheduled review WIP - queue sync for prior checkpoints (b57c9c3) |
 | 2026-09-18 | 05:12 | — | — | Review | — | docs: scheduled review WIP - L&D writer pass complete, ideal manager continuing (13cad2a) |
 | 2026-09-18 | 05:08 | — | — | Review | — | docs: scheduled review WIP - queue sync for prior checkpoints, L&D writer continuing (cc065bc) |
