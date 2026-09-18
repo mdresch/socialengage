@@ -37,41 +37,66 @@
 
 - **Full commit:** `faed543426812e6a12142d8ff2842af3a0c94857`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-17-adr-0129-to-0133.md, docs/user-stories/epic-18-adr-0134-to-0135.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. Grouped with b9e5215 (same 2026-09-16 four-role scheduled review session) — see the single dated note below covering both. Full reasoning recorded once, on the b9e5215 entry, to avoid duplication.
 
 ## 2026-09-16 — b9e5215 — docs(review): Documentation Steward pass complete; L&D Writer in progress (2026-09-16)
 
 - **Full commit:** `b9e52155716f6bd92d5cdd77209e6e1d66cf445c`
 - **Files touched:** docs/implementation-plan.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/time-tracking.md, docs/user-stories/epic-19-adr-0136-to-0140.md, social-listening-core/.claude/skills/rag-connector/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit or its paired faed543 (both reviewed together as one 2026-09-16 four-role scheduled review session). `git show` on both confirms every changed file is governance/documentation: `docs/management/manager-register.md` (Ideal Manager pace/sequencing Decision-Evaluator entries — nine dated findings plus a queue-integrity note, none of it Menno's shipped code), `docs/pending-*-reviews.md` queue bookkeeping, `docs/implementation-plan.md`/epic story-file Built-field corrections, two SKILL.md drift fixes (`precomputed-analytics-views`, `rag-connector` — removing a stale "future Story 19.3 connector" forward-reference now that 19.3 shipped without a new connector per its own AC6), and end-user manual prose (`system-admin-manual.md`, `tenant-admin-manual.md`, `user-manual.md`) documenting already-shipped Epic 12–14/16/18 capabilities (boolean query builder, aspect-sentiment breakdown, semantic drift explanation, Deep Research composer button, volume/cost preview). No `src/` change in either repo, no contract authored or modified, no ADR Decision/Consequences text touched. Per the charter's explicit "do not count: routine governance commits... documentation corrections with no new code" rule and the established precedent for this exact pattern (see this file's already-resolved 709444b/64b6263/92f685c entries), no Skills Inventory, Learning Goals, or Progress Notes change was made to `docs/ai-roles/developer-learning-plan.md`. For awareness only (Documentation Steward/Ideal Manager scope, not actioned here): the register documents a repeated late-night/early-morning work pattern and a 4.5-day-open story branch (`feat/story-17.2`) that deviated from CLAUDE.md's documented same-session worktree-merge-and-teardown lifecycle — a process-adherence observation, not a technical skill signal, so it is named here but not added to the learning plan, consistent with how the already-resolved 64b6263 entry treated the equivalent 2026-09-07/08 all-nighter finding.
 
 ## 2026-09-14 — c274be3 — docs(review): Ideal Manager pass — clear full 80-entry backlog, 2 register findings
 
 - **Full commit:** `c274be319a4223089af46c90f58524acb8364d81`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. Grouped with 4eb5d5b, 8f538f4, 528df23, and c1f1e1d (same 2026-09-14 Ideal Manager/Documentation Steward/L&D Writer scheduled-review checkpoint session, five sequential commits) — see the single dated note on the c1f1e1d entry below covering all five.
 
 ## 2026-09-14 — 4eb5d5b — docs(review): Documentation Steward checkpoint 2 — story-number collision, unbacked relationship claims
 
 - **Full commit:** `4eb5d5bdfe580d6602d045bd7e64356d92ead988`
 - **Files touched:** docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-10-adr-0086-to-0094.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/platform-operations-dashboard/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. Grouped with c274be3, 8f538f4, 528df23, c1f1e1d — see the single dated note on the c1f1e1d entry below covering all five.
 
 ## 2026-09-14 — 8f538f4 — docs(review): Learning & Development Writer pass — clear full 191-entry backlog
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. Grouped with c274be3, 4eb5d5b, 528df23, c1f1e1d — see the single dated note on the c1f1e1d entry below covering all five.
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. Grouped with c274be3, 4eb5d5b, 8f538f4, c1f1e1d — see the single dated note on the c1f1e1d entry below covering all five.
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit, nor in its four companions from the same 2026-09-14 scheduled-review session (c274be3, 4eb5d5b, 8f538f4, 528df23), reviewed together here. `git show` on all five confirms the changed files are exclusively: the manager register (c274be3 — an 80-entry backlog clear, escalating a third recurrence of an all-nighter pattern and naming an unresolved merge-conflict-marker defect that reached `main` undetected for 13 days), ADR/story Built-field hash corrections and SKILL.md "Relations to other components" drift fixes (4eb5d5b, 528df23 — e.g. flagging that `mention-suggestions`' documented "RAG semantic relevance (0.30 weight)" is actually a follower-count heuristic with no vector/RAG lookup, and that `daily-digest-email`'s "AI summary" claim is template-string interpolation, not a real `AIProviderConnector.research()` call), end-user manual prose (8f538f4 — a 191-entry L&D Writer backlog clear, all already-shipped-capability documentation), and a genuine but purely-documentary architecture-conflict flag (c1f1e1d — `LocationTab.tsx` shipping as a real fifth Analytics tab in `d78c55c` with no story/ADR cited, contradicting ADR-0054 Decision §4 and ADR-0064's "widget not a tab" resolution; recorded as a dated Clarification on ADR-0054's Open Question 1, ADR Decision/Consequences text itself left untouched per that role's own hard rule). None of these five commits touches `social-listening-core/src`, `social-listening-admin/src`, a contract file, or an ADR's own Decision/Consequences section — all are the review pipeline's own governance output, not Menno's shipped, contract-verified code. Per the charter's "do not count: routine governance commits... documentation corrections with no new code" rule and "never document a skill that hasn't shipped in real, contract-verified code" hard rule, no Skills Inventory, Learning Goals, or Progress Notes change was made to `docs/ai-roles/developer-learning-plan.md`. Two items are named here for awareness only, both squarely Documentation Steward/Ideal Manager territory and left there, not actioned or reflected in the learning plan: (1) the unresolved Epic 10/Epic 16 story-number collision (Stories 10.11–10.14 vs. 16.1–16.3) still awaiting Menno's decision on whether to retire/re-point the old story entries; (2) the unresolved Location-tab/ADR-0054 conflict and the `story-8.1` contract test's own internal inconsistency (one describe block still asserts a 4-tab shell, another asserts five real tabs) — a real contract-authorship gap, but not one this role fixes.
+
+## 2026-09-17 — aa9a46c — docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing
+
+- **Full commit:** `aa9a46c266b04b8628f643d9d1df1c131229a188`
+- **Files touched:** docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit. This is this same pass's own completion commit (the queue resolutions for the 7 entries reviewed immediately above) plus an incidentally-captured, concurrently-running Learning & Development Writer manual edit — not new engineering work, nothing to add to `docs/ai-roles/developer-learning-plan.md`.
+
+## 2026-09-17 — 7692896 — docs: scheduled review pass complete - Ideal Manager pass resolves final queue
+
+- **Full commit:** `7692896dd2807435ad6459c6d84398cffbd41d2d`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — the concurrently-running Ideal Manager's own register/queue bookkeeping only, no `social-listening-core/src`, `social-listening-admin/src`, or contract-file changes.
+
+## 2026-09-17 — 123cff4 — docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review)
+
+- **Full commit:** `123cff466b3f2293b1f0d3db1f9f1c113711b503`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — same treatment as `7692896` above (Ideal Manager register/queue bookkeeping only).
 

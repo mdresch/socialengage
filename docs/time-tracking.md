@@ -15,6 +15,14 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-17 | 05:28 | — | — | Documentation | — | docs: resolve trailing 123cff4 queue entries (cites existing register entry, no new one) (fb9d9fa) |
+| 2026-09-17 | 05:27 | — | — | Review | — | docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review) (123cff4) |
+| 2026-09-17 | 05:22 | — | — | Review | — | docs: resolve trailing 7692896/aa9a46c queue entries flagged by Devin Review (0bc5971) |
+| 2026-09-17 | 05:16 | — | — | Review | — | chore: sync pending reviews and time tracking for 94c27ba/d5500e5/7692896 (2b80625) |
+| 2026-09-17 | 05:15 | — | — | Review | — | docs: scheduled review pass complete - Ideal Manager pass resolves final queue (7692896) |
+| 2026-09-17 | 05:11 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (d5500e5) |
+| 2026-09-17 | 05:08 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer/Ideal Manager continuing (94c27ba) |
+| 2026-09-17 | 05:07 | — | — | Review | — | docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing (aa9a46c) |
 | 2026-09-16 | 07:38 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (464bde29) |
 | 2026-09-16 | 07:38 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (aadb1795) |
 | 2026-09-16 | 07:24 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (f67c0c13) |
