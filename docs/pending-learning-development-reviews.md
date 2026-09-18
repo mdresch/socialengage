@@ -8059,19 +8059,22 @@
 
 - **Full commit:** `8f538f47655cffbb56c26e7557c933b5b067b0c0`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/manuals/system-admin-manual.md, docs/manuals/tenant-admin-manual.md, docs/manuals/user-manual.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Learning & Development Writer, scheduled queue pass):** This is this role's own prior scheduled-review commit (the "191-entry backlog" pass) — its own queue entry was never self-resolved because the post-commit hook only queues a commit after it lands. All of its manual additions (Social Care Inbox, Daily digest email, Topic evolution timeline, Outbound publishing & scheduling, Webhook notifications, Plan & seats, plus extensions to several existing sections) are confirmed still present and were re-verified/superseded by later dated addenda in each of the three manuals. No further action.
 
 ## 2026-09-14 — 528df23 — docs(review): Documentation Steward checkpoint 3 — missing Built hashes, more unbacked AI/RAG relationship claims
 
 - **Full commit:** `528df234e9bd25ee8c4110d3a46fa1f5c66178c5`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-11-adr-0095-to-0100.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Learning & Development Writer, scheduled queue pass):** The Documentation Steward's own scheduled-review checkpoint commit (Story-document Built-hash fixes and SKILL.md corrections) — no `docs/manuals/*.md` files touched, outside this role's file scope. No manual action.
 
 ## 2026-09-14 — c1f1e1d — docs(review): Documentation Steward checkpoint 4 — Location tab / ADR-0054 conflict, pass complete
 
 - **Full commit:** `c1f1e1de66cae338c4275e2e09af648df1ad8253`
 - **Files touched:** CLAUDE.md, docs/adr/0054-tenant-facing-analytics-dashboard-scope-and-data-source-strategy.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/epic-8-analytics-dashboard.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-18 (Learning & Development Writer, scheduled queue pass):** The Documentation Steward's own scheduled-review checkpoint commit flagging the ADR-0054/Location-tab conflict — `CLAUDE.md`, `docs/adr/`, and story files, none of this role's manuals. The user-facing side of this (the Analytics dashboard's real tabs) is already documented in the "Analytics dashboard" section of the Tenant Admin and User manuals as they actually exist today; the underlying ADR-vs-shipped-scope conflict itself is that role's own finding to track, not restated here. No manual action.
 
 ## 2026-09-08 — 26d210f — feat(onboarding): implement Story 17.2 role-tailored onboarding journeys with automated probes
 
