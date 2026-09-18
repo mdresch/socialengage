@@ -7247,3 +7247,9 @@
 - **Files touched:** CLAUDE.md
 - **Status:** Pending review
 
+## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
+
+- **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
+- **Files touched:** docs/implementation-log.md
+- **Status:** Pending review
+
