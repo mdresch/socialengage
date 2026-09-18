@@ -5362,3 +5362,23 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
   - **The already-known Key Vault/Azure-credential gap reproduces in the new repo's CI too, in a related but distinct form:** locally (this machine) the real Key Vault's subscription is disabled (`RestError: The subscription associated with this vault has been disabled`, logged in the prior Story 20.1 entry above); in GitHub Actions, no Azure credentials exist at all yet (`AggregateAuthenticationError: ChainedTokenCredential authentication failed` — every credential type in the chain unavailable, an entirely fresh, unconfigured environment). Same root class (no working Key Vault access), different specific symptom depending on which environment is asking. Configuring real Azure secrets for the new repo's own GitHub Actions is a deliberate, separate setup step for whoever owns it — not attempted here, since it would mean placing live credential material into a new system on Menno's behalf without him doing that step himself.
   - **The combined `socialengage` repo is explicitly not being retired.** `social-listening-admin`, every ADR/BRD/FDD/user-story, this Implementation Log, `docs/environment-gotchas.md`, and the mandatory `implement-story`/`heal-contract-failure` skills all continue to live and operate here — per ADR-0144's own Open Items, full topology retirement is a later step, after the frontend candidates (Stories 20.2–20.6) exist. Nothing about the existing worktree-per-story workflow changes as a result of this pass.
   - **Story 20.1's `**Status:**` updated from "Built (partial — see Notes)" to plain "Built"** in `docs/user-stories/epic-20-adr-0144.md`, now that all three ACs are satisfied — see that file's own updated Notes for the full per-AC accounting.
+
+---
+
+## 2026-09-18 — Story 20.1 (guardrail follow-up) — socialengage@6ac96109
+
+- **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
+- **Repo:** socialengage (this workspace repo) — docs-only, both here and in the new standalone repo
+- **Story / ADR:** 20.1 / ADR-0144
+- **Contract:** none — docs/process only
+- **SKILL.md:** none
+- **Suite:** N/A
+- **Files touched:**
+  - `CLAUDE.md` (this repo)
+  - `social-listening-core` (the new standalone repo) — `CLAUDE.md` (new file, commit `127bf5c`)
+- **Notes:**
+  - **Real gap identified by Menno, verified directly rather than assumed:** after the prior repo-split pass, Menno asked what happens if `implement-story`/`heal-contract-failure` are run and Intent (ADR/BRD/FDD/Story) needs verifying — pointing at exactly the boundary the prior entry's Notes had flagged only in prose. Checked directly: the new `social-listening-core` repo has **none** of `.claude/skills/implement-story/`, `.claude/skills/heal-contract-failure/`, `.claude/hooks/enforce-contract-first.cjs`, `.claude/settings.json`, or any `docs/` tree at all (`git archive HEAD -- social-listening-core` only ever exported paths *under* that directory in this repo — the mandatory-workflow skills/hook live at this workspace's own top level, one directory up, so they were never going to be included). The 86 component `SKILL.md` files under `social-listening-core/.claude/skills/*/` (describing individual pieces of the codebase) did carry over correctly and remain accurate.
+  - **Real failure mode this closes:** without any local signal, an agent (or person) opened directly in the standalone repo and asked to "implement story X" or "fix this failing test" in plain English — not via the (unavailable) skill — would have no indication a mandatory, contract-first process exists at all, and would freelance exactly what this project's own top-level `CLAUDE.md` explicitly disallows.
+  - **Fix:** a new root `CLAUDE.md` in the standalone repo (commit `127bf5c`) states plainly what's missing and why, and instructs that any real implementation/healing work should be redirected to this `socialengage` repo rather than attempted ungated in the standalone one — with an explicit exception path (user confirms they want a direct, ungated change) rather than a hard block, since the standalone repo is a real, legitimate place for CI-only or genuinely trivial changes.
+  - **Reciprocal pointer added here too** (this commit): the Map section's `social-listening-core/` entry and the "Facts worth not re-deriving" section both previously read as if no repo split had happened yet — corrected in place, following this file's own established dated-note convention, rather than silently rewritten.
+  - **Scope check:** no code, contracts, or SKILL.md content changed in either repo — this pass is exclusively the redirect/guardrail documentation described above.
