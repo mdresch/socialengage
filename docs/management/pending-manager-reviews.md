@@ -8433,3 +8433,9 @@
 - **Files touched:** docs/implementation-log.md
 - **Status:** Pending review
 
+## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
+
+- **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
+- **Files touched:** CLAUDE.md
+- **Status:** Pending review
+

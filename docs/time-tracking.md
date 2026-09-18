@@ -15,6 +15,8 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-18 | 09:57 | — | — | Documentation | — | docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo (6ac96109) |
+| 2026-09-17 | 20:40 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (a8d115ee) |
 | 2026-09-17 | 20:40 | — | — | Documentation | Story 20.1 | docs: backfill commit hash for Story 20.1 repo-split log entry (c23bc4ca) |
 | 2026-09-17 | 20:39 | — | — | Review | — | chore: sync time tracking and pending reviews for fc5a6856, 4c9db6f2 (7a939b23) |
 | 2026-09-17 | 20:38 | — | — | Documentation | — | docs(story-20.1): record social-listening-core repo-split completion (4c9db6f2) |
