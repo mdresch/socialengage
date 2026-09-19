@@ -2639,6 +2639,7 @@
 
 - **Session:** feature-design and ADR drafting pass (no single commit; see `658b392` for the roadmap documentation batch and `5c1e521` for the supporting `.devin` research skills).
 - **Note for review:** This session intentionally expanded the ADR count far beyond the prior `0059` ceiling through a focused brainstorm of the full v1.5/v2 feature set. The volume of new ADRs (`0077–0117`, 41 records) and supporting user stories (`Epics 9–13`) was a deliberate investment: the clarity, traceability, and implementation-ready backlog produced is judged to be far more valuable than a hard limit on ADR count. No code or contracts were changed; both `social-listening-core` and `social-listening-admin` contract suites remain green (1.10 timeout isolated to full-suite environmental contention; passes in isolation).
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19 (Ideal Manager): already reviewed, just never marked (this heading appears twice in this file, both instances identical — this note covers both).** This session note (authored by an unchartered `.devin`-affiliated agent, per `bae4adf`) was explicitly addressed by this register's own 2026-08-24 entry (reviewing `f459114`/`ef24e9d`/.../`5c1e521`), which named it directly and ruled: "treat `bae4adf`'s 'session note' as informational context for this review, not as this review's own verdict — it is not." Nothing further to add; this entry had simply never had a `Status:` line pointing back to that resolution.
 
 ## 2026-08-23 — eb319d6 — docs: add BRD-Template and one BRD for every ADR 0001-0121
 
@@ -3869,6 +3870,8 @@
 
 - **Full commit:** `ca98f5319eeedb97036a8af2705d1d08695f16ad`
 - **Files touched:** docs/implementation-log.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19:** see docs/management/manager-register.md's matching "reviewed ca98f53/79b6ab9/4b8bea8" entry.
+
 ## 2026-09-01 — 28340a3 — feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115)
 
 - **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
@@ -3901,6 +3904,8 @@
 
 - **Full commit:** `79b6ab980ee886dda695c961ef75dbfda7ec9cf9`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/.claude/skills/crisis-threshold-wizard/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/.claude/skills/rag-endpoints/SKILL.md, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19:** see docs/management/manager-register.md's matching "reviewed ca98f53/79b6ab9/4b8bea8" entry.
+
 ## 2026-09-02 — bb0545a — feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116)
 
 - **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
@@ -6633,6 +6638,7 @@
 
 - **Session:** feature-design and ADR drafting pass (no single commit; see `658b392` for the roadmap documentation batch and `5c1e521` for the supporting `.devin` research skills).
 - **Note for review:** This session intentionally expanded the ADR count far beyond the prior `0059` ceiling through a focused brainstorm of the full v1.5/v2 feature set. The volume of new ADRs (`0077–0117`, 41 records) and supporting user stories (`Epics 9–13`) was a deliberate investment: the clarity, traceability, and implementation-ready backlog produced is judged to be far more valuable than a hard limit on ADR count. No code or contracts were changed; both `social-listening-core` and `social-listening-admin` contract suites remain green (1.10 timeout isolated to full-suite environmental contention; passes in isolation).
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19 (Ideal Manager): already reviewed, just never marked (this heading appears twice in this file, both instances identical — this note covers both).** This session note (authored by an unchartered `.devin`-affiliated agent, per `bae4adf`) was explicitly addressed by this register's own 2026-08-24 entry (reviewing `f459114`/`ef24e9d`/.../`5c1e521`), which named it directly and ruled: "treat `bae4adf`'s 'session note' as informational context for this review, not as this review's own verdict — it is not." Nothing further to add; this entry had simply never had a `Status:` line pointing back to that resolution.
 
 ## 2026-08-23 — eb319d6 — docs: add BRD-Template and one BRD for every ADR 0001-0121
 
@@ -7850,6 +7856,8 @@
 
 - **Full commit:** `ca98f5319eeedb97036a8af2705d1d08695f16ad`
 - **Files touched:** docs/implementation-log.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19: duplicate queue entry, not independently re-reviewed.** Byte-for-byte duplicate of the earlier `ca98f53` entry above. See docs/management/manager-register.md's matching "reviewed ca98f53/79b6ab9/4b8bea8" entry.
+
 ## ~~2026-09-01 — 28340a3 — feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115)~~
 
 - **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
@@ -7976,6 +7984,7 @@
 
 - **Full commit:** `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19:** see docs/management/manager-register.md's matching "reviewed ca98f53/79b6ab9/4b8bea8" entry.
 ## 2026-09-05 — 2cfae17 — chore: sync dashboard on main for story 14.3
 
 - **Full commit:** `2cfae17e6381bfa9b5489855e97af4f6312a4177`
@@ -8165,10 +8174,14 @@
 
 - **Full commit:** `36c84d6f215b15e740e6391fdb9d6febd6f94e54`
 - **Files touched:** docs/adr/0142-vault-ontological-topic-enrichment-and-web-research-pipeline.md, docs/adr/0143-ontology-v1-1-0-normalization-and-metamodel-evolution.md, docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/epic-19-adr-0136-to-0140.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19:** see docs/management/manager-register.md's matching "reviewed 36c84d6/efaa197" entry, which closes this file's own 2026-09-16 "queued but never statused" finding below.
+
 ## 2026-09-09 — efaa197 — feat(process): collapse implement-story's 2-3 commits per story into one, via self-healing pending-hash backfill
 
 - **Full commit:** `efaa1977ea902d0cfaa21ca91681cfe4898ee097`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, docs/implementation-log.md, docs/implementation-methodology.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/templates/check-implementation-log.cjs, scripts/git-hooks/README.md, scripts/git-hooks/pre-commit
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19:** see docs/management/manager-register.md's matching "reviewed 36c84d6/efaa197" entry, which closes this file's own 2026-09-16 "queued but never statused" finding below.
+
 ## 2026-09-09 — f15d9f1 — docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work
 
 - **Full commit:** `f15d9f1446b01a2995c1f0edad2fa685f19441ca`
@@ -8435,4 +8448,10 @@
 - **Full commit:** `123cff466b3f2293b1f0d3db1f9f1c113711b503`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry** — this is that same finding's own corrective commit (adding the register entry that finding required), not separate work needing a second entry.
+
+## 2026-09-19 — 067f5f1 — docs: scheduled review pass - resolve orphaned statusless queue entries across three roles
+
+- **Full commit:** `067f5f124a949367aaadc729bad89bb361f91ffe`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19: this session's own pass-complete checkpoint commit — cites the existing "reviewed ca98f53/79b6ab9/4b8bea8" and "reviewed 36c84d6/efaa197" register entries above, no new register entry needed.** Re-queued for the same already-diagnosed reason those two entries name: `scripts/git-hooks/post-commit`'s bookkeeping exemption list still doesn't cover `docs/management/manager-register.md` (flagged first on 2026-09-17, still open). Not fixed here — a hook-script change, outside this docs-only pass's authorized scope.
 

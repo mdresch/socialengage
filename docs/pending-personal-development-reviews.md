@@ -100,3 +100,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Personal Development Reviewer):** No skill-relevant change observed in this commit — same treatment as `7692896` above (Ideal Manager register/queue bookkeeping only).
 
+## 2026-09-19 — 067f5f1 — docs: scheduled review pass - resolve orphaned statusless queue entries across three roles
+
+- **Full commit:** `067f5f124a949367aaadc729bad89bb361f91ffe`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19 (Personal Development Reviewer): not this role's queue. No skill-relevant change observed in this commit.** Touches only the Documentation Steward's and Ideal Manager's own queue/register files, not `docs/ai-roles/developer-learning-plan.md` or any application code exercising a new skill.
+
