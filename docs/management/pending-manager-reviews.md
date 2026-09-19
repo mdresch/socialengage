@@ -8449,3 +8449,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry** — this is that same finding's own corrective commit (adding the register entry that finding required), not separate work needing a second entry.
 
+## 2026-09-19 — 067f5f1 — docs: scheduled review pass - resolve orphaned statusless queue entries across three roles
+
+- **Full commit:** `067f5f124a949367aaadc729bad89bb361f91ffe`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19: this session's own pass-complete checkpoint commit — cites the existing "reviewed ca98f53/79b6ab9/4b8bea8" and "reviewed 36c84d6/efaa197" register entries above, no new register entry needed.** Re-queued for the same already-diagnosed reason those two entries name: `scripts/git-hooks/post-commit`'s bookkeeping exemption list still doesn't cover `docs/management/manager-register.md` (flagged first on 2026-09-17, still open). Not fixed here — a hook-script change, outside this docs-only pass's authorized scope.
+

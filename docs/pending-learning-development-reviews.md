@@ -8263,3 +8263,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope, same treatment as `7692896` above.
 
+## 2026-09-19 — 067f5f1 — docs: scheduled review pass - resolve orphaned statusless queue entries across three roles
+
+- **Full commit:** `067f5f124a949367aaadc729bad89bb361f91ffe`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19 (Learning & Development Writer): not this role's queue. No user-facing change — nothing to document.** Touches only the Documentation Steward's and Ideal Manager's own queue/register files, not any of the three manuals.
+

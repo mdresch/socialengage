@@ -7256,3 +7256,9 @@
 - **Left open, not fixed here**, same as the original finding: root cause (worktree squash-merge mishandling, an automated reconciliation script, or something else) is a git-workflow/process question outside this role's `docs/**` content-drift scope. Flagged for Menno directly — a third recurrence of history going missing under this project's hands is worth investigating the mechanism itself (e.g., whether `implement-story`/`heal-contract-failure`'s worktree merge-back, `CLAUDE.md`'s own Step 0, is squashing rather than merging, or whether a reconciliation script is force-pushing over `main`) rather than a fourth documentation-side patch-up.
 - **What was corrected here:** nothing mechanical, same reasoning as the original finding — recording a fourth instance retroactively into other files' queues is not this entry's job. Named here so a future pass doesn't rediscover it from scratch.
 
+## 2026-09-19 — 067f5f1 — docs: scheduled review pass - resolve orphaned statusless queue entries across three roles
+
+- **Full commit:** `067f5f124a949367aaadc729bad89bb361f91ffe`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-19 (Documentation Steward): this session's own pass-complete checkpoint commit, not separate work to independently audit — same treatment as the `aa9a46c`/`7692896` precedent.** Queued because it touches `docs/management/manager-register.md`, which `scripts/git-hooks/post-commit`'s bookkeeping exemption list still doesn't cover (a known, already-flagged gap — see this register's own 2026-09-17 entry). Its diff is this same pass's own resolution work on the entries reviewed above; nothing new to audit.
+
