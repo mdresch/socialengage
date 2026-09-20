@@ -7235,3 +7235,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Documentation Steward): not this role's queue.** Same treatment as the `7692896` entry above — the concurrently-running Ideal Manager's own register/queue content only, nothing in this role's scope.
 
+## 2026-09-20 — 3b01be2 — docs(review): scheduled four-role doc review 2026-09-20 — Ideal Manager clears queue-integrity gap
+
+- **Full commit:** `3b01be278db1cc9a6165d1683d8b723e04da8149`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-20 (Documentation Steward): not this role's queue.** Same treatment as the `7692896`/`123cff4` entries above — the concurrently-running Ideal Manager's own register/queue content only, nothing in `docs/adr/`, `docs/user-stories/`, `docs/implementation-plan.md`, SKILL.md, or PM-doc scope to check.
+
