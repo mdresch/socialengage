@@ -8252,3 +8252,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-17 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope, same treatment as `7692896` above.
 
+## 2026-09-20 — 3b01be2 — docs(review): scheduled four-role doc review 2026-09-20 — Ideal Manager clears queue-integrity gap
+
+- **Full commit:** `3b01be278db1cc9a6165d1683d8b723e04da8149`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-20 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope, same treatment as `7692896`/`123cff4` above.
+
