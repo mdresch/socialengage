@@ -8165,10 +8165,16 @@
 
 - **Full commit:** `36c84d6f215b15e740e6391fdb9d6febd6f94e54`
 - **Files touched:** docs/adr/0142-vault-ontological-topic-enrichment-and-web-research-pipeline.md, docs/adr/0143-ontology-v1-1-0-normalization-and-metamodel-evolution.md, docs/adr/README.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/time-tracking.md, docs/user-stories/README.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-18-adr-0134-to-0135.md, docs/user-stories/epic-19-adr-0136-to-0140.md
+- **Status:** ~~Pending review~~ *(this entry was appended with no `Status:` line at all — see the 2026-09-16 "queued but never statused" finding above; a `Status:` line is added here as part of resolving it.)*
+**Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "two commits sat entirely outside this queue's own resolution flow for eleven days because they were queued with no `Status:` line at all" entry.**
+
 ## 2026-09-09 — efaa197 — feat(process): collapse implement-story's 2-3 commits per story into one, via self-healing pending-hash backfill
 
 - **Full commit:** `efaa1977ea902d0cfaa21ca91681cfe4898ee097`
 - **Files touched:** .claude/skills/heal-contract-failure/SKILL.md, .claude/skills/implement-story/SKILL.md, docs/implementation-log.md, docs/implementation-methodology.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/synthesis/Self-Learning-Synthesis-Epic-16.md, docs/synthesis/Self-Learning-Synthesis-Epic-17.md, docs/templates/check-implementation-log.cjs, scripts/git-hooks/README.md, scripts/git-hooks/pre-commit
+- **Status:** ~~Pending review~~ *(this entry was appended with no `Status:` line at all — see the 2026-09-16 "queued but never statused" finding above; a `Status:` line is added here as part of resolving it.)*
+**Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "two commits sat entirely outside this queue's own resolution flow for eleven days because they were queued with no `Status:` line at all" entry.**
+
 ## 2026-09-09 — f15d9f1 — docs(review): checkpoint scheduled review pass — Ideal Manager batch + in-progress Steward/L&D work
 
 - **Full commit:** `f15d9f1446b01a2995c1f0edad2fa685f19441ca`
@@ -8435,4 +8441,46 @@
 - **Full commit:** `123cff466b3f2293b1f0d3db1f9f1c113711b503`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-17 (Ideal Manager): see docs/management/manager-register.md's matching "the same session that just recommended a rebase-before-appending discipline immediately reproduced a smaller instance of the problem it was diagnosing" entry** — this is that same finding's own corrective commit (adding the register entry that finding required), not separate work needing a second entry.
+
+## 2026-09-09 — 788aeac — docs(adr-0131): flesh out stub ADR/BRD/FDD-0131 with real Decision content
+
+- **Full commit:** `788aeac034936a8f5f3a342c84b68055e7bd07f5` *(never queued by the post-commit hook — see this file's own 2026-09-16 "never queued at all" finding above, Category 1)*
+- **Files touched:** docs/adr/0131-crisis-template-bundle-and-activation-refinements.md, docs/project docs/Business-Requirements/BRD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md, docs/project docs/Functional-Design/FDD-0131-Crisis-Template-Bundle-And-Activation-Refinements.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry.**
+
+## 2026-09-09 — 5284e80 — feat(crisis): implement Story 17.3 — crisis baseline calibration and escalation matrix (ADR-0131)
+
+- **Full commit:** `5284e8046e5e0dd96224e6c0d1fff5a6f931d068` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-plan.md, docs/user-stories/epic-17-adr-0129-to-0133.md, social-listening-core/.claude/skills/crisis-baseline-escalation/SKILL.md, social-listening-core/contracts/epic-17/story-17.3.crisis-baseline-escalation.contract.test.ts, social-listening-core/migrations/0081_create_crisis_baseline_calibration_and_escalation.sql, social-listening-core/src/crisis/crisisBaselineStore.ts, social-listening-core/src/crisis/crisisEscalationEngine.ts, social-listening-core/src/crisis/crisisIncidentStore.ts, social-listening-core/src/http/versions/v1/crisisIncidentsRouter.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/identity/identityResolution.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry.**
+
+## 2026-09-09 — cf41fd6 — docs(epic-17): record Story 17.3 build in implementation log and user stories
+
+- **Full commit:** `cf41fd63c8373353b99722ca71f21ace07a6a77f` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-log.md, docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry.**
+
+## 2026-09-09 — a4790bd — docs(implementation-log): fix Story 17.3 entry's Files-touched list and note a real check-implementation-log.cjs parser bug
+
+- **Full commit:** `a4790bda32e73caca1e6ba20bed7fcc507a61fa6` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-log.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry.**
+
+## 2026-09-13 — 0f3e15e — fix(epic-17): land Story 17.2 on main — merge branch, resolve conflicts, rename migration 0081->0082
+
+- **Full commit:** `0f3e15eb625aadc470e8532963cc89327e3af526` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/onboarding-checklist/SKILL.md, social-listening-core/contracts/epic-17/story-17.2.onboarding-probes.contract.test.ts, social-listening-core/migrations/0081_create_tenant_onboarding_state.sql, social-listening-core/migrations/0082_create_tenant_onboarding_state.sql
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry** — already separately covered for merge/pace purposes by this file's own `c47b7d3` entry above; this entry closes the direct-commit review gap only.
+
+## 2026-09-13 — 10767db — Story 17.4: Parameterized AST query templates with budget governor (ADR-0132)
+
+- **Full commit:** `10767db2b63ad50a098be31967180009da5a63ef` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/contracts/epic-17/story-17.4.ast-query-governor.contract.test.ts, social-listening-core/src/analytics/adHocQueryEngine.ts, social-listening-core/src/analytics/queryGovernor.ts, social-listening-core/src/http/versions/v1/analyticsViewsRouter.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry.**
+
+## 2026-09-15 — 1df559b — Story 17.5: Metric anomaly statistical significance gate (ADR-0133)
+
+- **Full commit:** `1df559b701d90ca65fa073c150905059294d8c53` *(never queued by the post-commit hook — same 2026-09-16 finding, Category 1)*
+- **Files touched:** docs/implementation-log.md, docs/implementation-plan.md, docs/user-stories/README.md, docs/user-stories/epic-17-adr-0129-to-0133.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, scripts/git-hooks/pre-commit, social-listening-core/.claude/skills/compliance/SKILL.md, social-listening-core/.claude/skills/metric-explainability/SKILL.md, social-listening-core/contracts/epic-17/story-17.5.metric-anomaly-significance-gate.contract.test.ts, social-listening-core/src/admin/platformAdminAuditLog.ts, social-listening-core/src/ai/metricExplainabilityService.ts, social-listening-core/src/ai/significanceGate.ts
+- **Status:** ~~Pending review~~ **Resolved 2026-09-20 (Ideal Manager): see docs/management/manager-register.md's matching "the seven commits this register's own 2026-09-16 'never queued at all' finding named" entry** — already referenced in passing by this file's own `1e71d7e`/`8ab0030` entry above; this entry gives it its own dedicated verdict.
 
