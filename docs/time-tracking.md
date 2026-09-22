@@ -15,6 +15,7 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-22 | 05:17 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing (1a77209) |
 | 2026-09-17 | 05:28 | — | — | Documentation | — | docs: resolve trailing 123cff4 queue entries (cites existing register entry, no new one) (fb9d9fa) |
 | 2026-09-17 | 05:27 | — | — | Review | — | docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review) (123cff4) |
 | 2026-09-17 | 05:22 | — | — | Review | — | docs: resolve trailing 7692896/aa9a46c queue entries flagged by Devin Review (0bc5971) |
