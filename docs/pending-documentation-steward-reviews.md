@@ -7251,5 +7251,11 @@
 
 - **Full commit:** `1a77209cba1decf2ef98d6c1cd6634dd805f22f3`
 - **Files touched:** docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/user-stories/README.md, docs/user-stories/epic-15-adr-0123-to-0124.md, docs/user-stories/epic-17-adr-0129-to-0133.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-22 (Documentation Steward): own checkpoint commit from this pass, not separate work to independently re-audit.** This is this same session's own mid-pass commit capturing the corrections already made to `docs/user-stories/README.md` (Story 17.5 hash) and the two epic files (Story 15.1, 17.4/17.5 Ready/Built mismatches) earlier in this same invocation — nothing further to check.
+
+## 2026-09-22 — 9dd929e — docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing
+
+- **Full commit:** `9dd929e7c63e6500da2ecc40f3133b16de1899cc`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~ **Reviewed 2026-09-22 (Documentation Steward): not this role's queue.** File list matches `git diff-tree` exactly; every file is the concurrently-running Ideal Manager's own register and queue — no `docs/adr/**`, `docs/user-stories/**`, `docs/implementation-plan.md`, SKILL.md, or PM-doc content to check. Nothing for this role to act on.
 

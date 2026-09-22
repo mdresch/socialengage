@@ -8275,3 +8275,10 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-09-22 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope. This is the concurrently-running Documentation Steward's own scheduled-review commit, clearing its own backlog (`docs/pending-documentation-steward-reviews.md`) and fixing Ready/Built/hash drift in `docs/user-stories/README.md` and two epic story files — no `docs/manuals/*.md` change.
 
+## 2026-09-22 — 9dd929e — docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing
+
+- **Full commit:** `9dd929e7c63e6500da2ecc40f3133b16de1899cc`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-22 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope. This is the concurrently-running Ideal Manager's own scheduled-review commit, clearing its own backlog and appending register findings — no `docs/manuals/*.md` change.
+

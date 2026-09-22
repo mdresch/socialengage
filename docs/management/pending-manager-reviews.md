@@ -8459,3 +8459,10 @@
 - **Status:** ~~Pending review~~
 **Resolved 2026-09-22 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 1a77209" entry.
 
+## 2026-09-22 — 9dd929e — docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing
+
+- **Full commit:** `9dd929e7c63e6500da2ecc40f3133b16de1899cc`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-22 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** This is this same session's own commit capturing the two register findings and nine backlog resolutions already made earlier in this same invocation (`ca98f53`/`79b6ab9`/`36c84d6`/`efaa197` batch, `1a77209`, plus the two duplicate roadmap-note entries and the `4b8bea8` phantom-hash flag) — self-reviewing it would only re-queue itself again via the post-commit hook's `docs/management/**` trigger. No new register entry needed.
+
