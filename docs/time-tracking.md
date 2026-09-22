@@ -15,6 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-22 | 05:29 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (cab4f0f) |
+| 2026-09-22 | 05:26 | — | — | Review | — | docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing (9dd929e) |
+| 2026-09-22 | 05:18 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (8c8aaab) |
+| 2026-09-22 | 05:17 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing (1a77209) |
 | 2026-09-17 | 05:28 | — | — | Documentation | — | docs: resolve trailing 123cff4 queue entries (cites existing register entry, no new one) (fb9d9fa) |
 | 2026-09-17 | 05:27 | — | — | Review | — | docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review) (123cff4) |
 | 2026-09-17 | 05:22 | — | — | Review | — | docs: resolve trailing 7692896/aa9a46c queue entries flagged by Devin Review (0bc5971) |
