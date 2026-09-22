@@ -3794,6 +3794,9 @@
 
 - **Full commit:** `ca98f5319eeedb97036a8af2705d1d08695f16ad`
 - **Files touched:** docs/implementation-log.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-22 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Docs-only: appends the Implementation Log entry for the Story 10.8 Jest-teardown fix (`4edf26f`, already reviewed above as an internal test-harness fix with no user-visible behavior change).
+
 ## 2026-09-01 — 28340a3 — feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115)
 
 - **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
@@ -3826,6 +3829,9 @@
 
 - **Full commit:** `79b6ab980ee886dda695c961ef75dbfda7ec9cf9`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, social-listening-admin/.claude/skills/ai-sentiment-aspect-ui/SKILL.md, social-listening-admin/.claude/skills/boolean-query-visual-builder/SKILL.md, social-listening-admin/.claude/skills/connector-capability-matrix-ui/SKILL.md, social-listening-admin/.claude/skills/crisis-threshold-wizard/SKILL.md, social-listening-admin/.claude/skills/crm-handoff-ui/SKILL.md, social-listening-admin/.claude/skills/daily-digest-ui/SKILL.md, social-listening-admin/.claude/skills/influencer-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/mention-suggestions-ui/SKILL.md, social-listening-admin/.claude/skills/publishing-ui/SKILL.md, social-listening-admin/.claude/skills/rag-discovery-ui/SKILL.md, social-listening-admin/.claude/skills/social-inbox-ui/SKILL.md, social-listening-admin/.claude/skills/topic-evolution-ui/SKILL.md, social-listening-admin/.claude/skills/webhook-management-ui/SKILL.md, social-listening-admin/.claude/skills/workspace-settings-ui/SKILL.md, social-listening-core/.claude/skills/ad-hoc-query-engine/SKILL.md, social-listening-core/.claude/skills/ai-insights-digest/SKILL.md, social-listening-core/.claude/skills/ai-sentiment-aspect-schema/SKILL.md, social-listening-core/.claude/skills/ai-topic-clustering-post-topics-schema/SKILL.md, social-listening-core/.claude/skills/boolean-query-ast/SKILL.md, social-listening-core/.claude/skills/connector-capability-matrix/SKILL.md, social-listening-core/.claude/skills/crm-connector/SKILL.md, social-listening-core/.claude/skills/daily-digest-email/SKILL.md, social-listening-core/.claude/skills/dashboard-widget-contracts/SKILL.md, social-listening-core/.claude/skills/influencer-discovery-and-scoring/SKILL.md, social-listening-core/.claude/skills/mention-suggestions/SKILL.md, social-listening-core/.claude/skills/multi-user-workspaces-rbac/SKILL.md, social-listening-core/.claude/skills/outbound-publishing/SKILL.md, social-listening-core/.claude/skills/posts-csv-export/SKILL.md, social-listening-core/.claude/skills/precomputed-analytics-views/SKILL.md, social-listening-core/.claude/skills/prospecting-lists/SKILL.md, social-listening-core/.claude/skills/public-api-and-webhooks/SKILL.md, social-listening-core/.claude/skills/rag-chunking-pipeline/SKILL.md, social-listening-core/.claude/skills/rag-connector/SKILL.md, social-listening-core/.claude/skills/rag-endpoints/SKILL.md, social-listening-core/.claude/skills/rag-vector-rls/SKILL.md, social-listening-core/.claude/skills/real-time-alert-rules/SKILL.md, social-listening-core/.claude/skills/social-inbox/SKILL.md, social-listening-core/.claude/skills/topic-evolution/SKILL.md, social-listening-core/.claude/skills/webhook-notifications/SKILL.md, social-listening-core/.claude/skills/youtube-data-connector/SKILL.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-22 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Adds contract-test cross-references to a batch of component `SKILL.md` files (internal build documentation) and syncs the routine post-commit tracking queues; no manual-scoped code touched.
+
 ## 2026-09-02 — bb0545a — feat(social-listening-core): Story 13.11 semantic drift detection (ADR-0116)
 
 - **Full commit:** `bb0545a3f5760146ef3fc0cf4875f728b4c11afa`
@@ -7650,6 +7656,8 @@
 
 - **Full commit:** `ca98f5319eeedb97036a8af2705d1d08695f16ad`
 - **Files touched:** docs/implementation-log.md
+- **Status:** ~~Pending review~~ **Resolved 2026-09-22 — duplicate queue entry, not independently re-reviewed.** This entry is a byte-for-byte duplicate of the earlier entry above for the same commit (`ca98f5319eeedb97036a8af2705d1d08695f16ad`), part of the same 2026-09-02 reconciliation-commit duplication described in the 2026-09-10 root-cause note appended at the end of this file's entries. The earlier occurrence of this commit above is the authoritative one (resolved 2026-09-22, no user-facing change); no separate audit performed here.
+
 ## ~~2026-09-01 — 28340a3 — feat(social-listening-core): Story 13.9 publishing media upload and asset targeting (ADR-0115)~~
 
 - **Full commit:** `28340a36021fa04da9d2e255d2c642ec004e2172`
@@ -7777,6 +7785,9 @@
 
 - **Full commit:** `4b8bea8bca3b07e0a8b7ab4ff026762969a00b2b`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/time-tracking.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-22 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Note: this hash is not reachable in this workspace's git history (`git show`/`git cat-file` both fail against it, on any branch) so the diff itself could not be inspected directly; judged instead from the commit message and its own "Files touched" list, which is the identical pattern (queue-sync files plus only `project-progress-dashboard/src/lib/project-dashboard/data.ts`) already resolved the same way for every other "sync dashboard telemetry" commit in this file (e.g. `2cfae17`, `0a1fe76` below/above) — the standalone internal telemetry app, never a SocialEngage manual-scoped surface.
+
 ## 2026-09-05 — 2cfae17 — chore: sync dashboard on main for story 14.3
 
 - **Full commit:** `2cfae17e6381bfa9b5489855e97af4f6312a4177`
