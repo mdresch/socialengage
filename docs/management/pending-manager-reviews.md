@@ -8521,3 +8521,9 @@
 - **Files touched:** docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/project docs/Project Management Plans/Cost-Management-Plan.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-23 — 9e09075 — docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing
+
+- **Full commit:** `9e090755e0826bf2dc80d3e2f1789b79f3372834`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** Pending review
+
