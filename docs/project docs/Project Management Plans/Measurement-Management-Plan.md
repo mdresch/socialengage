@@ -196,7 +196,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 
 **Milestone Status (current interpretation):** M1 is met against all 35 accepted ADRs. The historical bullets below retain the original 2026-07-29 checkpoint for audit context; they are not the current ADR count.
 - **M1 (Architecture Locked):** ✅ Met (2026-07-29) — All 23 original ADRs accepted
-- **M2 (Repo Split):** ⚠️ Deferred — Not blocking (pre-split acceptable)
+- **M2 (Repo Split):** ✅ Met, partially (2026-09-17) — **Documentation Steward correction, 2026-09-23:** this row previously read "⚠️ Deferred — Not blocking (pre-split acceptable)," stale since Story 20.1/ADR-0144 (2026-09-17): `social-listening-core` was clean-cut extracted into its own standalone, independently-buildable/CI'd private GitHub repository (`https://github.com/mdresch/social-listening-core`), confirmed against `docs/implementation-log.md`'s two Story 20.1 entries. `social-listening-admin` has not been split out — it, and all process docs/the mandatory workflow, remain in this combined `socialengage` repo (see `CLAUDE.md`'s own "Facts worth not re-deriving" section, corrected the same day). Marked partially met, not fully, for that reason.
 - **M3 (Tenant Isolation):** ✅ Met — RLS on all tenant tables (Story 5.4)
 - **M4 (First Connector):** ✅ Met (2026-07-30 Newswire, 2026-08-01 GNews)
 - **M5 (AI Enrichment):** ⏳ Not Started — Phase 2 work
@@ -263,7 +263,7 @@ Each level provides **objective, verifiable evidence** of progress and quality.
 | Criterion | Category | Status | Evidence | Target |
 |-----------|----------|--------|----------|--------|
 | Architecture locked (ADRs) | Architecture | ✅ Met | All 23 original ADRs accepted | 2026-07-29 |
-| Repo split completed | Infrastructure | ⚠️ Deferred | Pre-split acceptable for now | TBD |
+| Repo split completed | Infrastructure | ⚠️ Partially met (2026-09-17) — **Documentation Steward correction, 2026-09-23:** previously "⚠️ Deferred," stale since Story 20.1/ADR-0144 clean-cut extracted `social-listening-core` into its own standalone repo (`https://github.com/mdresch/social-listening-core`); `social-listening-admin` remains combined here, so not fully met | `social-listening-core@fc5a6856`/`socialengage@4c9db6f2`, `docs/implementation-log.md`'s Story 20.1 entries | 2026-09-17 (core only) |
 | Tenant isolation via RLS | Data | ✅ Met | Story 5.4, contracts pass | 2026-07-29 |
 | Credential storage via Key Vault | Security | ✅ Met | Story 5.3, contracts pass | 2026-07-29 |
 | At least one connector ingesting | Data | ✅ Met | Stories 2.6, 2.7, contracts pass | 2026-07-30, 2026-08-01 |

@@ -15,6 +15,11 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-23 | 05:28 | — | — | Review | — | docs: scheduled review pass complete - Personal Development Reviewer resolves final queue (4a383c8) |
+| 2026-09-23 | 05:27 | — | — | Documentation | — | chore: sync post-commit queue bookkeeping and time tracking for 9e09075 (b70d0ab) |
+| 2026-09-23 | 05:27 | — | — | Review | — | docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing (9e09075) |
+| 2026-09-23 | 05:23 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (6b8332a) |
+| 2026-09-23 | 05:22 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing (2a06360) |
 | 2026-09-23 | 02:50 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (cf318545) |
 | 2026-09-23 | 02:50 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (0cce48da) |
 | 2026-09-22 | 05:29 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (cab4f0f) |
