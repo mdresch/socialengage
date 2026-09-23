@@ -15,10 +15,12 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-23 | 02:50 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (0cce48da) |
 | 2026-09-22 | 05:29 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (cab4f0f) |
 | 2026-09-22 | 05:26 | — | — | Review | — | docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing (9dd929e) |
 | 2026-09-22 | 05:18 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (8c8aaab) |
 | 2026-09-22 | 05:17 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing (1a77209) |
+| 2026-09-18 | 09:57 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (6b713016) |
 | 2026-09-18 | 09:57 | — | — | Documentation | — | docs(story-20.1): log the CLAUDE.md guardrail follow-up (648faeb3) |
 | 2026-09-18 | 09:57 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (b2091bc2) |
 | 2026-09-18 | 09:57 | — | — | Documentation | — | docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo (6ac96109) |
