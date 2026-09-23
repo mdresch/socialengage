@@ -15,6 +15,10 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-22 | 05:29 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (cab4f0f) |
+| 2026-09-22 | 05:26 | — | — | Review | — | docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing (9dd929e) |
+| 2026-09-22 | 05:18 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (8c8aaab) |
+| 2026-09-22 | 05:17 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing (1a77209) |
 | 2026-09-18 | 09:57 | — | — | Documentation | — | docs(story-20.1): log the CLAUDE.md guardrail follow-up (648faeb3) |
 | 2026-09-18 | 09:57 | — | — | Review | — | chore: sync post-commit pending reviews and time tracking (b2091bc2) |
 | 2026-09-18 | 09:57 | — | — | Documentation | — | docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo (6ac96109) |
@@ -24,6 +28,14 @@
 | 2026-09-17 | 20:38 | — | — | Documentation | — | docs(story-20.1): record social-listening-core repo-split completion (4c9db6f2) |
 | 2026-09-17 | 18:20 | — | — | Documentation | ADR-0144 | feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144) (fc5a6856) |
 | 2026-09-17 | 13:37 | — | — | Documentation | ADR-0144 | docs: accept ADR-0144 (frontend platform evaluation, repo topology, API gateway) (8e77ceb8) |
+| 2026-09-17 | 05:28 | — | — | Documentation | — | docs: resolve trailing 123cff4 queue entries (cites existing register entry, no new one) (fb9d9fa) |
+| 2026-09-17 | 05:27 | — | — | Review | — | docs: add missing manager-register entry for aa9a46c/7692896 (Devin Review) (123cff4) |
+| 2026-09-17 | 05:22 | — | — | Review | — | docs: resolve trailing 7692896/aa9a46c queue entries flagged by Devin Review (0bc5971) |
+| 2026-09-17 | 05:16 | — | — | Review | — | chore: sync pending reviews and time tracking for 94c27ba/d5500e5/7692896 (2b80625) |
+| 2026-09-17 | 05:15 | — | — | Review | — | docs: scheduled review pass complete - Ideal Manager pass resolves final queue (7692896) |
+| 2026-09-17 | 05:11 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Ideal Manager continuing (d5500e5) |
+| 2026-09-17 | 05:08 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer/Ideal Manager continuing (94c27ba) |
+| 2026-09-17 | 05:07 | — | — | Review | — | docs: scheduled review WIP - Personal Development Reviewer pass complete, others continuing (aa9a46c) |
 | 2026-09-16 | 07:38 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (464bde29) |
 | 2026-09-16 | 07:38 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (aadb1795) |
 | 2026-09-16 | 07:24 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (f67c0c13) |
