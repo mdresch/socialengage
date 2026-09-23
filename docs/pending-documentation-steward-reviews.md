@@ -7301,3 +7301,9 @@
 - **Files touched:** 
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-23 (Documentation Steward): not an empty-diff merge — same treatment as `c47b7d3`/`ad6833f`/`97a52d4e`/`e170aeb7`/`aadb1795` elsewhere in this file.** `git diff-tree -c --no-commit-id --name-only 0cce48da` (combined diff, real hand-resolved hunks only) surfaces 5 files, of which 2 are in this role's scope: `docs/pending-documentation-steward-reviews.md` (this file, this role's own queue) and `docs/user-stories/README.md` (the rest — `docs/management/pending-manager-reviews.md`, `docs/pending-learning-development-reviews.md`, `docs/time-tracking.md` — belong to other roles or shared logs). Diffed both merge parents (`6b71301`, `921ed32`) directly against `docs/user-stories/README.md`: the merge correctly kept the fuller, later-dated side (Epic 20's row and the 2026-09-17 ADR-0144-acceptance note, both present only on the `921ed32` side, both preserved) with nothing silently dropped from either parent. No leftover conflict markers found anywhere in this role's scope (`docs/adr/`, `docs/user-stories/`, `docs/implementation-plan.md`, `docs/project docs/**`, both repos' `SKILL.md` files). No drift introduced by the merge itself — the Epic 20 row's own Ready/Built staleness (fixed on the `8e77ceb8` entry above) predates and is independent of this merge.
 
+## 2026-09-23 — 2a06360 — docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing
+
+- **Full commit:** `2a06360f3d246e1209228e5124297222513e8265`
+- **Files touched:** docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/project docs/Project Management Plans/Cost-Management-Plan.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
+
