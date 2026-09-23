@@ -1440,3 +1440,50 @@
 **Verdict: proceed.**
 
 **Resolves:** docs/management/pending-manager-reviews.md's 2026-09-22 entry for `1a77209`.
+
+---
+
+## 2026-09-23 — reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3 — Decision Evaluator: Story 20.1's real repo-split, executed across two ordinary daytime sessions with ADR-0144's own reserved decision deferred to Menno until he actually made it
+
+**Decision as understood.** These six commits are Story 20.1 (ADR-0144, "Frontend Platform Evaluation, Repository Topology, and API Gateway Selection") landing end-to-end: ADR/BRD/FDD/TDS-0144 acceptance and Epic 20 creation (`8e77ceb8`, 2026-09-17 13:37:40 CEST), a healing pass resuming a prior session's uncommitted OpenAPI-generation work and fixing a real environment-specific Postgres IPv6 hang along the way (`fc5a6856`, 18:20:16, ~4h43m later), the actual repo-split execution into a new standalone `social-listening-core` GitHub repo (`4c9db6f2`, 20:38:49, ~2h18m later), a 2-minute placeholder-hash backfill via the self-healing `pending`-hash mechanism reviewed and approved in this register's 2026-09-22 `ca98f53`/`efaa197` entry (`c23bc4ca`, 20:40:14), and — the next morning — a reciprocal `CLAUDE.md` guardrail pointer plus its own log entry (`6ac96109`/`648faeb3`, both 2026-09-18 09:57, 36 seconds apart).
+
+**Pace, checked against actual timestamps, not assumed.** Day one spans 13:37 to 20:40 CEST — roughly seven hours across an ordinary afternoon-into-evening workday, not a marathon session; nothing here resembles the all-nighter/17-hour-day pattern this register has repeatedly escalated (see e.g. the entries covering `6fe3b5d` and the Epic 16 "all-nighter" above). Day two's pair of commits is a brief same-minute-scale tidy-up the next morning, not a continuation of the prior day's session. This is a genuinely well-paced two-day arc for a story whose own ADR explicitly flagged a hard-to-reverse, high-blast-radius step (creating and pushing to a new GitHub repo, cutting/rewriting history) inside it.
+
+**Sequencing followed the ADR's own logic, not a shortcut.** ADR-0144's Context states the backend must "stop being coupled to any single frontend... before evaluation can proceed cleanly" — and the work landed in exactly that dependency order: the one testable, automatable AC (OpenAPI-spec-as-CI-artifact) first and alone (`fc5a6856`), with the two infrastructure/manual-git ACs explicitly left undone and the story's own status recorded as "Built (partial — see Notes)" rather than overclaimed. Only after that did the repo-split itself proceed (`4c9db6f2`) — and only once, per the Implementation Log's own account, "confirmed with [Menno] directly before any git-history or GitHub-repo action was taken" on the two decisions ADR-0144's own Open Items reserved for him (clean-cut vs. `git filter-repo`; new repo created and pushed immediately vs. left local). Stories 20.2–20.6 (the APIM gateway and the three frontend prototypes) were correctly left untouched at Ready — this batch did not creep past what Story 20.1 alone commits to.
+
+**Fourteen-section check.**
+- Decision Rights & Autonomy — satisfied, and the strongest signal in this batch. A step ADR-0144 itself flagged as needing "the maintainer's own hand" was not attempted autonomously in the first pass (`fc5a6856` explicitly scoped it out, with the reasoning stated in both the commit and the log), and only executed in the second pass after Menno's own confirmation on both open decisions. Configuring live Azure credentials into the new repo's GitHub Actions was declined for the same reason — it "would mean placing live credential material into a new system on Menno's behalf without him doing that step himself" — and left as his own follow-up rather than done for him.
+- Organizational Influence — satisfied. A real, external infrastructure problem (the Azure Key Vault subscription itself disabled, `RestError: The subscription associated with this vault has been disabled`, reproducing in a related but distinct form in the new repo's own CI) was surfaced directly to Menno as an issue needing his attention, not silently worked around, hidden, or deferred without comment to a future session.
+- Communication & Feedback — satisfied. Interim status was recorded honestly ("Built (partial — see Notes)") rather than claiming full completion once only one of three ACs was done, then corrected to plain "Built" only after all three were actually verified — including a real, independent CI confirmation in the new repo, not just local success.
+- Strategic Direction — satisfied. Landed in the ADR's own stated dependency order (backend independence before frontend evaluation can proceed), with the six-story epic's remaining stories left correctly at Ready, not built ahead of their own sequencing.
+- Learning from Failure — satisfied, a genuine positive. The IPv6/localhost Postgres hang was root-caused directly against a known-good baseline suite (not assumed), fixed at the harness level (benefiting every other contract, not just this one), and documented in `docs/environment-gotchas.md` for reuse.
+- Protection & Boundaries — satisfied. No late-night or extended-session signal in the available timestamps; the one real overnight gap between day one and day two is an actual break, not a continuation.
+- No safety/legal veto.
+
+**Observable signals used.** Commit timestamps (`git log --format='%ai'`) for pace; `docs/implementation-log.md`'s three matching entries for the AC-by-AC accounting, the explicit Menno-confirmation note, and the Key Vault root-cause; `docs/user-stories/epic-20-adr-0144.md` for the interim-vs-final status correction and confirmation that Stories 20.2–20.6 remain untouched at Ready.
+
+**Priority order applied.** No safety/legal issue; the "no live credentials placed on Menno's behalf" restraint is itself the safety-adjacent judgment call here, and it was honored rather than overridden for speed. Strategic objectives (ADR-0144's own sequencing) and business commitments (an actual, working standalone repo with real CI, not a stub) both landed intact.
+
+**Verdict: proceed.** No adjustment needed — this is close to the sustainable-pace, decision-rights-respecting execution this framework asks for, worth naming as a positive contrast to the marathon-session pattern flagged repeatedly elsewhere in this register.
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-17 entries for `8e77ceb8`, `fc5a6856`, `4c9db6f2`, `c23bc4ca`, and its 2026-09-18 entries for `6ac96109`, `648faeb3`.
+
+---
+
+## 2026-09-23 — reviewed 0cce48da — Advisor: this session's own opening branch-sync merge, not a human working at 00:50 UTC
+
+**Decision as understood.** `0cce48da` (2026-09-23, 02:50:11 CEST = 00:50:11 UTC) merges `origin/main` — which by then already included the prior 2026-09-22 scheduled review pass, landed via PR #37 at 14:50:18 CEST the day before — into this session's own local branch, with one real conflict in `docs/time-tracking.md` (both sides had appended rows to the same table). Two immediate follow-up sync commits (`cf318545`, `e3b2b79`) land within the next minute, then a ~2h32m gap before this session's actual scheduled-review work begins at 05:22:13 UTC (`2a06360`, correctly left pending per this pass's own instructions — a later/future pass's own work, not this one's).
+
+**What actually happened, checked directly rather than assumed from the clock time.** This is not a human resolving a merge conflict at 00:50 UTC — it is this pipeline's own routine per-session branch-initialization step, structurally the same kind of action as the `97a52d4e`/`e170aeb7`/`aadb1795` branch-sync merges this register has already reviewed, just running earlier in this session's own cycle than the usual ~05:xx UTC scheduled-work slot. The ~2.5-hour gap to the actual work start confirms this reading: whatever ran this merge did so well before the scheduled-review agents themselves began, consistent with an automated fetch/merge-latest-main step rather than a work session.
+
+**Unlike the `e170aeb7`/`aadb1795` incident this register previously found and partially restored a lost finding from, this conflict resolved cleanly with no loss.** `git show 0cce48da -- docs/time-tracking.md` shows both sides' rows preserved and correctly interleaved in descending date order — the 2026-09-22 batch from `origin/main` placed above the 2026-09-17/09-18 rows already on this branch, nothing dropped. Worth recording as a positive data point on the same mechanism flagged before: this was a single incoming branch merged cleanly, not two independently-cut branches colliding, and it shows no regression of the earlier-named risk.
+
+**Fourteen-section check.**
+- Protection & Boundaries — satisfied. The 00:50 UTC timestamp is pipeline-automation timing, not a person coding at that hour; the actual work (`2a06360` onward, left pending for a future pass per this pass's own instructions) starts at the pipeline's ordinary ~05:xx UTC slot.
+- Team-Level Optimization / Organizational Influence (this role's charter: the review pipeline's own integrity) — satisfied here, in contrast to the earlier `e170aeb7`/`aadb1795` finding on this exact class of mechanism. No duplicate or dropped bookkeeping content resulted from this merge.
+- Learning from Failure — satisfied, narrowly: no new lesson is needed here since the prior recommendation on this register (sync before appending) is precisely what a clean single-branch-in merge like this one demonstrates working as intended.
+- No safety/legal veto.
+
+**Verdict: proceed.**
+
+**Resolves:** docs/management/pending-manager-reviews.md's 2026-09-23 entry for `0cce48da`.
