@@ -45,6 +45,6 @@
 
 ## Open items
 
-- Git history split method for separating the combined repo (preserve history via `git filter-repo`, or clean cut) — Menno's call, not a technical blocker either way
+- ~~Git history split method for separating the combined repo (preserve history via `git filter-repo`, or clean cut) — Menno's call, not a technical blocker either way~~ — **Resolved 2026-09-17 (Documentation Steward correction, 2026-09-24, backfilling this ADR's own record of a decision already made and executed):** clean cut, per Menno's own choice (TDS-0144's documented alternative to `git filter-repo`) — a single fresh initial commit (`3c1e636`) rather than a history-preserving rewrite. `social-listening-core` is now a real, standalone repository (`https://github.com/mdresch/social-listening-core`, private); this workspace's own git log retains full prior history, with the split point tagged `pre-story-20.1-repo-split`. See Story 20.1's own entry in `docs/user-stories/epic-20-adr-0144.md` and `docs/implementation-log.md` for the full record.
 - Which APIM tier to migrate to at production, and when
 - Phase/epic assignment for the resulting stories — deferred to Menno's canonical story-to-phase mapping table rather than assigned here
