@@ -8335,17 +8335,17 @@
 
 - **Full commit:** `981697f5ec7baa1a51c646b6eca840a4728894bf`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope. This is the concurrently-running Documentation Steward's own mid-pass checkpoint commit from this same 2026-09-24 session.
 
 ## 2026-09-24 — 0fdedec — docs: scheduled review WIP - L&D Writer pass complete, Documentation Steward continuing
 
 - **Full commit:** `0fdedec5ad29d8b2f26a4952f41712861e20e8fd`
 - **Files touched:** docs/implementation-log.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** own checkpoint commit from this same pass, not separate work to independently re-audit — this is the orchestrating session's own WIP commit capturing this role's just-completed resolutions (all 7 entries above) plus queue bookkeeping. No manuals touched.
 
 ## 2026-09-24 — 56d506f — docs: scheduled review WIP - Ideal Manager pass complete, Documentation Steward continuing
 
 - **Full commit:** `56d506fc410b5683b7c72dbc359536aed9d02340`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~ **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No manuals touched — outside this role's scope. This is the concurrently-running Ideal Manager's own scheduled-review checkpoint commit.
 
