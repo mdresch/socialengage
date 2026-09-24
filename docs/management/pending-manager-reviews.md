@@ -8508,3 +8508,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-24 — 981697f — docs: scheduled review WIP - Documentation Steward pass in progress
+
+- **Full commit:** `981697f5ec7baa1a51c646b6eca840a4728894bf`
+- **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md
+- **Status:** Pending review
+

@@ -8286,41 +8286,54 @@
 
 - **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is ADR/BRD/FDD/TDS/story-doc acceptance only (frontend platform evaluation, repository topology, API gateway selection as a *decision*) — no screen, endpoint, or capability shipped by this commit for any of the three identity tiers to actually use.
 
 ## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
 
 - **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document, checked closely per this pass's own instruction. Read `scripts/generateOpenApiSpec.ts`, `src/http/openapi/registry.ts`, `src/http/openapi/generateOpenApiDocument.ts`, and the `router.ts`/`watchlistsRouter.ts` diffs directly: this adds a route-owned operation registry (routes call `registerOpenApiOperation()` at module load) and a `npm run openapi:generate` build-time script that writes `openapi.json` to disk as a CI artifact (TDS-0144). It describes already-existing routes (e.g. `GET /v1/health`, itself already shipped under Story 1.3/1.10) for documentation purposes — it does not add any new runtime HTTP endpoint, does not serve the spec over HTTP, and adds no new admin-facing screen or capability. Confirmed out of scope.
 
 ## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
 
 - **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Records completion of the `social-listening-core` repo-split (Story 20.1) in the implementation log and dashboard data only; the split itself is an internal repo-topology move (see `git@6ac96109` above), not an end-user capability.
 
 ## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
 
 - **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. A backfilled commit-hash correction inside an existing Implementation Log entry, no manual-relevant content.
 
 ## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
 
 - **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
 - **Files touched:** CLAUDE.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Read the diff directly: adds a reciprocal pointer in CLAUDE.md's Map section and corrects a stale "repo split hasn't happened" line in the Facts section, both purely internal project-navigation prose about the new standalone `social-listening-core` GitHub repo — no screen, endpoint, or capability a `platform_admin`/`tenant_admin`/`tenant_user` identity interacts with.
 
 ## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
 
 - **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Logs a CLAUDE.md guardrail follow-up (internal process note) in the Implementation Log only.
 
 ## 2026-09-23 — 0cce48da — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `0cce48daabc85fe27b5b23bcf9bb14bde1bcdf1e`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-24 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document, same treatment as `aadb1795` above. A merge of `origin/main` (hand-resolving one real conflict in `docs/time-tracking.md`, per the commit's own trailer) that brings in a run of already-reviewed scheduled-review commits (`1a77209`, `8c8aaab`, `9dd929e`, `cab4f0f`, etc., through PR #37); the `docs/manuals/user-manual.md` lines in this merge's diff stat originate from the L&D Writer's own prior `8c8aaab` pass, not new content introduced by the merge itself. No independent content of its own beyond commits already reviewed elsewhere in this queue.
+
+## 2026-09-24 — 981697f — docs: scheduled review WIP - Documentation Steward pass in progress
+
+- **Full commit:** `981697f5ec7baa1a51c646b6eca840a4728894bf`
+- **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md
 - **Status:** Pending review
 
