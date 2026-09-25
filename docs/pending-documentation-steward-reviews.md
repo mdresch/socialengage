@@ -7314,3 +7314,9 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-09-25 (Documentation Steward):** No content of its own — a merge commit reconciling a previous `docs-review/*` branch back into `main`, with zero file changes in its own diff. Nothing to check.
 
+## 2026-09-25 — 533c36d — docs: scheduled review pass complete - all four queues resolved (2026-09-25)
+
+- **Full commit:** `533c36dcb19671aaba3d8ba3ed48a8f8279790fa`
+- **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
+
