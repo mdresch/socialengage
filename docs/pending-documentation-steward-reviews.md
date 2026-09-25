@@ -7263,41 +7263,54 @@
 
 - **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree` exactly. This commit's own additions (ADR-0144 acceptance, Epic 20, the `docs/adr/README.md`/`docs/user-stories/README.md`/`Technical-Design/README.md` index rows) were all accurate *at the time*, but this commit is the oldest of a same-week batch (through `648faeb3` below) recording ADR-0144/Epic 20/Story 20.1's repo-split work — reviewing it surfaced real drift accumulated by later commits in that same batch never being reflected back into these index files. Found and fixed, four items:
+  1. **`docs/user-stories/README.md`'s Epics master table (row 20)** still listed all of Stories 20.1–20.6 under "(Ready)" — stale since 2026-09-17, when Story 20.1 shipped (`**Status:** Built`, per `epic-20-adr-0144.md`'s own Story 20.1 and `docs/implementation-log.md`'s two Story 20.1 entries, `fc5a6856`/`4c9db6f2`). Corrected the row with a dated note.
+  2. **`docs/user-stories/epic-20-adr-0144.md`'s own epic-level `**Status:** Ready` header line** gave no hint that Story 20.1 below it has since shipped. Added a dated clarifying note (left as "Ready" at the epic level, since 5 of 6 stories remain unbuilt — the per-story Status lines are the authoritative source, unchanged).
+  3. **`docs/project docs/Technical-Design/README.md`'s TDS-0144 row** still read "Pending (Story 20.1 / 20.2 contract)" — stale since Story 20.1's real contract shipped the same day (`social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts`, confirmed on disk). Corrected with a dated note.
+  4. **`social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md`'s own "Known gaps" section** (added by the next commit in this batch, `fc5a6856`, reviewed together here since the drift is the same class) claimed "the actual standalone-repository split has not been performed" — stale since `4c9db6f2` the same day actually performed it. Struck through with a dated correction note.
+  - **ADR-0144's own "Open items" list** also had a real, resolved-but-unrecorded item: the git-history-split-method question (Menno's call, per the ADR's own text) was decided (clean-cut) by Story 20.1. Resolved it in place, strikethrough-plus-dated-note per the Open Questions convention (this ADR uses a plain "Open items" list rather than the canonical `[Q-XXXX-N]` format, but the same historical-preservation discipline applies). **While resolving it, one unverifiable claim surfaced and is flagged, not asserted as an error:** both `docs/implementation-log.md`'s Story 20.1 entry and `epic-20-adr-0144.md`'s own Story 20.1 Notes state the repo-split point was tagged `pre-story-20.1-repo-split` on this repo's `main` — `git tag -l` and `git ls-remote --tags origin` both return zero tags from this session's checkout, even after an explicit `git fetch origin --tags`. Most likely explanation: the tag was created only on Menno's own local machine and never pushed (an ordinary `git push` doesn't push tags) — noted in the ADR itself for Menno's awareness, not treated as proven drift.
+  - No drift found in `docs/adr/README.md`, the BRD-0144/FDD-0144/TDS-0144 files themselves, or the PM-side docs checked this pass (`Integration-Management-Plan.md`'s internal component-dependency diagram still shows `social-listening-core` as a labeled box — this describes internal component layout, not repo topology, and is unaffected by the later standalone-repo split; no other PM plan references ADR-0144/Epic 20/the repo split by name).
 
 ## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
 
 - **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree`. Reviewed together with `8e77ceb8` above — the one drift this commit introduced (the `openapi-spec-generation/SKILL.md` "Known gaps" claim later overtaken by `4c9db6f2`) is already fixed and accounted for there, not repeated here. `docs/environment-gotchas.md`'s new entries (the disabled-Key-Vault-subscription finding, the IPv6/`localhost` Postgres-connection-hang fix) are accurately dated, cite real commits, and match the code changes in this same diff (`jest.global-setup.js`/`jest.global-teardown.js`/`jest.setup.js`/`scripts/testDbClone.ts` hardcoding `127.0.0.1`) — no drift. `docs/implementation-log.md`'s new Story 20.1 entry matches this commit's own file list via `git diff-tree`.
 
 ## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
 
 - **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree`. This is the commit that actually resolved most of the drift found and fixed under `8e77ceb8` above (Story 20.1's own Status/Built/Notes fields in `epic-20-adr-0144.md` are updated correctly here — confirmed matching the current on-disk text) — the surviving gap was that the *index* files one level up (`docs/user-stories/README.md`'s Epics table, the SKILL.md) never got the same update, which is what this pass closed. No further drift found in this commit's own diff.
 
 ## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
 
 - **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree`. Mechanical hash backfill (`@pending` → `@4c9db6f2`) — verified the hash is correct (`4c9db6f24caac025a2a588e85e68d4d57541f3e8` really is the repo-split-completion commit reviewed above). No drift.
 
 ## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
 
 - **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
 - **Files touched:** CLAUDE.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree`. Corrects CLAUDE.md's own Map/Facts sections to reflect the repo split — verified against real state: the standalone repo's existence, private visibility, and lack of the mandatory-workflow files (skills/hook/docs) all check out (see `648faeb3`'s own Notes, reviewed below, for how that was verified). The claim this commit repeats — a `pre-story-20.1-repo-split` tag — carries the same unverifiable-from-this-checkout caveat already flagged on ADR-0144 under `8e77ceb8` above; not re-flagged per-occurrence, since it's the same single underlying claim.
 
 ## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
 
 - **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** File list matches `git diff-tree`. Records the new standalone repo's own guardrail `CLAUDE.md` (commit `127bf5c`, in the *other* repo — out of this role's scope to verify directly, since `social-listening-core` is no longer checked out here, but the reasoning given (no mandatory-workflow files survive a `git archive` of a subdirectory) is sound and matches how the extraction was performed per `4c9db6f2`'s own Notes). No drift in this repo's own docs.
 
 ## 2026-09-23 — 0cce48da — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `0cce48daabc85fe27b5b23bcf9bb14bde1bcdf1e`
-- **Files touched:** 
-- **Status:** Pending review
+- **Files touched:** (none — empty merge commit, confirmed via `git diff-tree --no-commit-id --name-only -r 0cce48da`)
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-25 (Documentation Steward):** No content of its own — a merge commit reconciling a previous `docs-review/*` branch back into `main`, with zero file changes in its own diff. Nothing to check.
 
