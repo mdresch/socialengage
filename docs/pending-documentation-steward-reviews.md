@@ -7327,3 +7327,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-26 (Documentation Steward): own checkpoint commit from this pass, not separate work to independently re-audit.** The `openapi-spec-generation/SKILL.md` change is this role's own "Known gaps" staleness fix already made and reported under the `8e77ceb8` entry above; `docs/management/manager-register.md`/`pending-manager-reviews.md` are the concurrently-running Ideal Manager's own register/queue content, outside this role's scope.
 
+## 2026-09-26 — 7491f68 — docs: scheduled review 2026-09-26 - all four queues cleared
+
+- **Full commit:** `7491f68d1381721efc0ad7f241862c926fe9ab49`
+- **Files touched:** docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
+- **Status:** Pending review
+
