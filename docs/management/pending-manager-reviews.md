@@ -8519,11 +8519,20 @@
 
 - **Full commit:** `9be2f438a695447a42d27b68d538d10b636a9904`
 - **Files touched:** docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** This is the orchestrating session's own mid-pass snapshot of the concurrently-running Documentation Steward's and L&D Writer's in-progress work — no independent management decision to evaluate. No new register entry needed.
 
 ## 2026-09-26 — adfe791 — docs: scheduled review WIP - Documentation Steward pass continuing
 
 - **Full commit:** `adfe7919fbdc019f84e4a71604220c50c5be1ca6`
 - **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** Same treatment as `9be2f43` above — queue bookkeeping plus a Documentation Steward correction, no new management decision. No new register entry needed.
+
+## 2026-09-26 — 77a222d — docs: scheduled review WIP - Ideal Manager pass complete, Documentation Steward continuing
+
+- **Full commit:** `77a222d93aa5653d49f25e13ac0efb7584a57c29`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** This is this same invocation's own commit capturing the two register findings already made earlier in this pass — self-reviewing it would only re-queue itself again via the post-commit hook's `docs/management/**` trigger. No new register entry needed.
 
