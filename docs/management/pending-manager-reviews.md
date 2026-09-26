@@ -8508,3 +8508,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-09-26 — 9be2f43 — docs: scheduled review WIP - Documentation Steward and L&D Writer passes in progress
+
+- **Full commit:** `9be2f438a695447a42d27b68d538d10b636a9904`
+- **Files touched:** docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md
+- **Status:** Pending review
+

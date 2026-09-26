@@ -8300,29 +8300,40 @@
 
 - **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Records that `social-listening-core` was clean-cut extracted into its own standalone GitHub repo and updates Story 20.1's status/log entries accordingly — a repo-topology and process-tracking change (docs/log/telemetry-mirror only), not a shipped screen or endpoint any identity tier interacts with.
 
 ## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
 
 - **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. A two-line `implementation-log.md` fix, replacing a placeholder `pending` commit hash with the real one for the entry reviewed as `4c9db6f2` above. No manual-relevant content.
 
 ## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
 
 - **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
 - **Files touched:** CLAUDE.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. A `CLAUDE.md` cross-reference update (pointing at the new standalone `social-listening-core` repo and correcting a stale "repo split hasn't happened" line) — internal process documentation for whoever develops this codebase, not anything a `platform_admin`, `tenant_admin`, or `tenant_user` sees or uses.
 
 ## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
 
 - **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Logs a new root `CLAUDE.md` guardrail added to the standalone `social-listening-core` repo (redirecting any implementation/healing work back to this workspace rather than freelancing ungated in the new repo) — process/workflow documentation only, no shipped screen or endpoint.
 
 ## 2026-09-23 — 0cce48da — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `0cce48daabc85fe27b5b23bcf9bb14bde1bcdf1e`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. A merge commit bringing in other roles' own register/queue commits (manager-register, pending-manager-reviews, pending-documentation-steward-reviews, pending-personal-development-reviews, time-tracking, plus two epic-story status fixes); the one manuals-adjacent file it touches, `docs/manuals/user-manual.md`, carries no diff of its own in this merge (`git show 0cce48da -- docs/manuals/user-manual.md` is empty — that content arrived via an already-reviewed commit on the other branch). Nothing new for this role to act on.
+
+## 2026-09-26 — 9be2f43 — docs: scheduled review WIP - Documentation Steward and L&D Writer passes in progress
+
+- **Full commit:** `9be2f438a695447a42d27b68d538d10b636a9904`
+- **Files touched:** docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md
 - **Status:** Pending review
 
