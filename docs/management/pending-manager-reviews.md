@@ -8470,41 +8470,75 @@
 
 - **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
 
 - **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
 
 - **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
 
 - **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
 
 - **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
 - **Files touched:** CLAUDE.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
 
 - **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
 - **Files touched:** docs/implementation-log.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: ADR-0144 acceptance and Story 20.1's real repo split lands in a single ~7-hour daytime session, with a genuine guardrail gap caught and fixed the next morning" entry.
 
 ## 2026-09-23 — 0cce48da — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `0cce48daabc85fe27b5b23bcf9bb14bde1bcdf1e`
 - **Files touched:** 
+- ~~**Status:** Pending review~~
+**Resolved 2026-09-26 (Ideal Manager):** see docs/management/manager-register.md's matching "Decision Evaluator: a five-day-stale docs-review branch requires a conflict-bearing catch-up merge, a third recurrence of this pipeline's own already-diagnosed branch-desynchronization gap" entry.
+
+## 2026-09-26 — 9be2f43 — docs: scheduled review WIP - Documentation Steward and L&D Writer passes in progress
+
+- **Full commit:** `9be2f438a695447a42d27b68d538d10b636a9904`
+- **Files touched:** docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** This is the orchestrating session's own mid-pass snapshot of the concurrently-running Documentation Steward's and L&D Writer's in-progress work — no independent management decision to evaluate. No new register entry needed.
+
+## 2026-09-26 — adfe791 — docs: scheduled review WIP - Documentation Steward pass continuing
+
+- **Full commit:** `adfe7919fbdc019f84e4a71604220c50c5be1ca6`
+- **Files touched:** docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, docs/user-stories/README.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** Same treatment as `9be2f43` above — queue bookkeeping plus a Documentation Steward correction, no new management decision. No new register entry needed.
+
+## 2026-09-26 — 77a222d — docs: scheduled review WIP - Ideal Manager pass complete, Documentation Steward continuing
+
+- **Full commit:** `77a222d93aa5653d49f25e13ac0efb7584a57c29`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-09-26 (Ideal Manager): own checkpoint commit from this pass, not separate work to independently re-review.** This is this same invocation's own commit capturing the two register findings already made earlier in this pass — self-reviewing it would only re-queue itself again via the post-commit hook's `docs/management/**` trigger. No new register entry needed.
+
+## 2026-09-26 — 7491f68 — docs: scheduled review 2026-09-26 - all four queues cleared
+
+- **Full commit:** `7491f68d1381721efc0ad7f241862c926fe9ab49`
+- **Files touched:** docs/implementation-plan.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/time-tracking.md
 - **Status:** Pending review
 
