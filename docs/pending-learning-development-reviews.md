@@ -8286,13 +8286,15 @@
 
 - **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This commit only accepts ADR-0144/BRD-0144/FDD-0144/TDS-0144 and adds Epic 20's story shells (all Ready, none Built at this point) — a decision record and a roadmap of six stories to evaluate frontend candidates and split the backend repo. No shipped screen, endpoint, or capability a `platform_admin`, `tenant_admin`, or `tenant_user` could touch.
 
 ## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
 
 - **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-26 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Checked this one carefully per the queue instructions, since it's the one commit in this batch that could plausibly expose something a real identity tier interacts with. It doesn't: `generateOpenApiSpec.ts` is a `npm run openapi:generate` build-time script (wired into CI, per `docs/implementation-log.md`'s Story 20.1 entry) that writes `openapi.json` to the repo root as a CI artifact — there is no new HTTP route serving the spec, and `src/http/openapi/registry.ts`/`generateOpenApiDocument.ts` only assemble a document from operations routes register at module load (`router.ts`'s `/v1/health`, `watchlistsRouter.ts`'s `/v1/watchlists` and `/v1/watchlists/{id}`) — none of those are new endpoints, they're metadata registered against endpoints that already existed. No admin-UI screen surfaces this artifact either (checked `social-listening-admin/` for any reference — none). Pure backend/CI tooling, not something a `platform_admin`, `tenant_admin`, or `tenant_user` can reach.
 
 ## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
 
