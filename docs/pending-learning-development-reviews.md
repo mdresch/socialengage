@@ -8324,3 +8324,9 @@
 - **Files touched:** 
 - **Status:** ~~Pending review~~ **Reviewed 2026-09-27 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. Plain merge commit resolving a `docs/time-tracking.md` conflict; no manual (`docs/manuals/*.md`) touched, no independent content of its own beyond commits already reviewed above.
 
+## 2026-09-27 — de6ba57 — docs(review): scheduled four-role review — clears Doc Steward/L&D/Ideal Manager 7-entry backlog
+
+- **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
+
