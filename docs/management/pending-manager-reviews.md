@@ -8522,3 +8522,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-09-28 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed de6ba57" entry.
 
+## 2026-09-28 — f4b0a61 — docs(review): scheduled four-role review — clears de6ba57 across all four queues
+
+- **Full commit:** `f4b0a6106d168cb092244e5af3fc592bbb6c71d0`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md, docs/user-stories/epic-20-adr-0144.md
+- **Status:** Pending review
+
