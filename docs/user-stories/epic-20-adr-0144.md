@@ -1,6 +1,6 @@
 # Epic 20: Frontend Platform Evaluation (ADR-0144)
 
-**Status:** Ready (ADR-0144 Accepted 2026-09-17)  
+**Status:** Ready (ADR-0144 Accepted 2026-09-17) — *Documentation Steward correction, 2026-09-29: this line described the whole epic as "Ready" and was never revisited once Story 20.1 shipped below, the same Built-vs-Ready staleness class already caught for this epic's own row in `docs/user-stories/README.md`'s master table (2026-09-27 note). Story 20.1 is Built (see below); Stories 20.2–20.6 remain Ready, not yet built. ADR-0144 itself remains Accepted, unchanged.*  
 **Phase:** Unassigned — defer to Menno's canonical story-to-phase mapping table rather than assigning here  
 **Related:** ADR-0144, BRD-0144 (Frontend Platform Selection), FDD-0144 (Frontend Prototype Reference Scope), TDS-0144 (Repository Segregation and API Gateway Implementation)
 
