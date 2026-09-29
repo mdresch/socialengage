@@ -5208,9 +5208,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-13 — Story 19.1 — social-listening-core@pending
+## 2026-09-13 — Story 19.1 — social-listening-core@8962e1d
 
-- **Full commit:** `pending`
+- **Full commit:** `8962e1da22be233713a1ba424cf39dc75d0b30e7`
 - **Repo:** social-listening-core
 - **Story / ADR:** 19.1 / ADR-0136
 - **Contract:** `social-listening-core/contracts/epic-19/story-19.1.rag-connector-namespace-isolation.contract.test.ts`
@@ -5242,9 +5242,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-13 — Story 19.2 — social-listening-core@pending
+## 2026-09-13 — Story 19.2 — social-listening-core@a12b947
 
-- **Full commit:** `pending`
+- **Full commit:** `a12b947bac99d8ab6f68f605bff0681f0b20e2e6`
 - **Repo:** social-listening-core
 - **Story / ADR:** 19.2 / ADR-0137
 - **Contract:** `social-listening-core/contracts/epic-19/story-19.2.rag-chunking-embedding-namespace-routing.contract.test.ts`
@@ -5273,9 +5273,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-14 — Story 19.3 — social-listening-core@pending
+## 2026-09-14 — Story 19.3 — social-listening-core@1e71d7e
 
-- **Full commit:** `pending`
+- **Full commit:** `1e71d7e43e23492c96ab1f0f2aae9e8203efa0b3`
 - **Repo:** social-listening-core
 - **Story / ADR:** 19.3 / ADR-0138
 - **Contract:** `social-listening-core/contracts/epic-19/story-19.3.rag-vector-store-namespace-isolation.contract.test.ts`
@@ -5304,9 +5304,9 @@ Tracked as a new, separate candidate ADR (named in ADR-0055's own new Amendment 
 
 ---
 
-## 2026-09-17 — Story 20.1 — social-listening-core@pending
+## 2026-09-17 — Story 20.1 — social-listening-core@fc5a6856
 
-- **Full commit:** `pending`
+- **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Repo:** social-listening-core
 - **Story / ADR:** 20.1 / ADR-0144
 - **Contract:** `social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts`

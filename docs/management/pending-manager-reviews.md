@@ -8471,49 +8471,56 @@
 - **Full commit:** `8e77ceb8e5b00c0d16b16bf61f20b1a3c2f37408`
 - **Files touched:** docs/adr/0144-frontend-platform-evaluation-repository-topology-and-api-gateway-selection.md, docs/adr/README.md, docs/project docs/Business-Requirements/BRD-0144-Frontend-Platform-Selection.md, docs/project docs/Functional-Design/FDD-0144-Frontend-Prototype-Reference-Scope.md, docs/project docs/Technical-Design/README.md, docs/project docs/Technical-Design/TDS-0144-Repository-Segregation-And-API-Gateway-Implementation.md, docs/user-stories/README.md, docs/user-stories/epic-20-adr-0144.md
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-17 — fc5a6856 — feat(story-20.1): generate real OpenAPI spec from live routes (ADR-0144)
 
 - **Full commit:** `fc5a685646e303b792fd0a4263b887a757b26d54`
 - **Files touched:** docs/environment-gotchas.md, docs/implementation-log.md, docs/synthesis/Self-Learning-Synthesis-Epic-14.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md, social-listening-core/.gitignore, social-listening-core/contracts/epic-20/story-20.1.openapi-spec-generation.contract.test.ts, social-listening-core/jest.global-setup.js, social-listening-core/jest.global-teardown.js, social-listening-core/jest.setup.js, social-listening-core/package.json, social-listening-core/scripts/generateOpenApiSpec.ts, social-listening-core/scripts/testDbClone.ts, social-listening-core/src/http/openapi/generateOpenApiDocument.ts, social-listening-core/src/http/openapi/registry.ts, social-listening-core/src/http/versions/v1/router.ts, social-listening-core/src/http/versions/v1/watchlistsRouter.ts
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-17 — 4c9db6f2 — docs(story-20.1): record social-listening-core repo-split completion
 
 - **Full commit:** `4c9db6f24caac025a2a588e85e68d4d57541f3e8`
 - **Files touched:** docs/implementation-log.md, docs/user-stories/epic-20-adr-0144.md, project-progress-dashboard/src/lib/project-dashboard/data.ts
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-17 — c23bc4ca — docs: backfill commit hash for Story 20.1 repo-split log entry
 
 - **Full commit:** `c23bc4cadef65c2662d2f3a27f6821bb48dac0c8`
 - **Files touched:** docs/implementation-log.md
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-18 — 6ac96109 — docs: CLAUDE.md reciprocal pointer to the new social-listening-core repo
 
 - **Full commit:** `6ac961090d4b3343435487fe217546c1683de9ff`
 - **Files touched:** CLAUDE.md
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-18 — 648faeb3 — docs(story-20.1): log the CLAUDE.md guardrail follow-up
 
 - **Full commit:** `648faeb360250ceb1847e1dd57e4d87d49f5b611`
 - **Files touched:** docs/implementation-log.md
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit batch.
 
 ## 2026-09-23 — 0cce48da — Merge remote-tracking branch 'origin/main'
 
 - **Full commit:** `0cce48daabc85fe27b5b23bcf9bb14bde1bcdf1e`
 - **Files touched:** 
 - **Status:** ~~Pending review~~
-**Resolved 2026-09-24:** see docs/management/manager-register.md's matching entry.
+- **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
+- **Merge note (2026-09-29):** superseded a same-day independent resolution of this identical entry from the `docs-review/2026-09-24` fork, which cross-referenced its own separate manager-register.md entry for the same commit.
 
 ## 2026-09-24 — 981697f — docs: scheduled review WIP - Documentation Steward pass in progress
 
@@ -8532,4 +8539,10 @@
 - **Full commit:** `56d506fc410b5683b7c72dbc359536aed9d02340`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/time-tracking.md
 - **Status:** ~~Pending review~~ **Resolved 2026-09-24:** own checkpoint commit from this same pass, not separate work to independently re-review — this is the orchestrating session's own WIP commit capturing this role's just-completed findings (the batched ADR-0144/Story 20.1 entry and the `0cce48da` entry, both already in `docs/management/manager-register.md`). Self-reviewing it would only re-queue itself again. No new register entry needed.
+
+## 2026-09-27 — de6ba57 — docs(review): scheduled four-role review — clears Doc Steward/L&D/Ideal Manager 7-entry backlog
+
+- **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
+- **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
 
