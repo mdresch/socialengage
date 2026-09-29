@@ -141,3 +141,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-29 — 4157ec8 — Merge origin/main into docs-review/2026-09-24 (resolve conflict from PR #42)
+
+- **Full commit:** `4157ec81d1052a9f902832c72b62eb2e21c784f8`
+- **Files touched:** 
+- **Status:** Pending review
+
