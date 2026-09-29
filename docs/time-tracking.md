@@ -15,8 +15,17 @@
 
 | Date | Start Time | End Time | Duration (min) | Activity | Story/ADR | Notes |
 |------|------------|----------|----------------|----------|-----------|-------|
+| 2026-09-29 | 03:03 | — | — | Documentation | — | chore: sync queue bookkeeping for merge commit 4157ec8 (3d2d47f) |
+| 2026-09-29 | 03:03 | — | — | Review | — | Merge origin/main into docs-review/2026-09-24 (resolve conflict from PR #42) (4157ec8) |
 | 2026-09-27 | 05:20 | — | — | Documentation | — | chore: sync post-commit queue bookkeeping for de6ba57 (6242be7) |
 | 2026-09-27 | 05:20 | — | — | Review | — | docs(review): scheduled four-role review — clears Doc Steward/L&D/Ideal Manager 7-entry backlog (de6ba57) |
+| 2026-09-24 | 05:22 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (32fec13) |
+| 2026-09-24 | 05:20 | — | — | Review | — | docs: scheduled review pass complete - Documentation Steward resolves final queue (4e30ebe) |
+| 2026-09-24 | 05:18 | — | — | Documentation | — | chore: sync queue bookkeeping for 56d506f (515d620) |
+| 2026-09-24 | 05:18 | — | — | Review | — | docs: scheduled review WIP - Ideal Manager pass complete, Documentation Steward continuing (56d506f) |
+| 2026-09-24 | 05:17 | — | — | Documentation | — | chore: sync queue bookkeeping for 0fdedec (2f20a6c) |
+| 2026-09-24 | 05:17 | — | — | Review | — | docs: scheduled review WIP - L&D Writer pass complete, Documentation Steward continuing (0fdedec) |
+| 2026-09-24 | 05:16 | — | — | Review | — | docs: scheduled review WIP - Documentation Steward pass in progress (981697f) |
 | 2026-09-23 | 02:50 | — | — | Review | — | chore: sync post-merge pending reviews and time tracking (cf318545) |
 | 2026-09-23 | 02:50 | — | — | Documentation | — | Merge remote-tracking branch 'origin/main' (0cce48da) |
 | 2026-09-22 | 05:29 | — | — | Review | — | docs: scheduled review pass complete - resolve trailing self-queue entries across all four roles (cab4f0f) |
