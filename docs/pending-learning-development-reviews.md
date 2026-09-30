@@ -8331,3 +8331,9 @@
 - ~~**Status:** Pending review~~
 - **Resolved 2026-09-30 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled pipeline's own 2026-09-27 four-role completion commit: ADR/story-table/SKILL.md drift corrections, implementation-log hash backfills, and management/queue bookkeeping — no `docs/manuals/*.md` touched, and none of the underlying corrected facts (the OpenAPI CI-artifact mechanism, the `social-listening-core` repository split, the RAG namespace-isolation stories 19.1–19.3) represent a new screen, endpoint, or workflow for any identity tier beyond what the three manuals already correctly reflect or correctly omit as not-yet-shipped.
 
+## 2026-09-30 — b7a7398 — docs(review): scheduled four-role review — clears single de6ba57 entry across all four queues
+
+- **Full commit:** `b7a7398b722cc5ac54f1d8b3b12927b960c645c9`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
