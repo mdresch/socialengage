@@ -8328,5 +8328,6 @@
 
 - **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
-- **Status:** Pending review
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-30 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled pipeline's own 2026-09-27 four-role completion commit: ADR/story-table/SKILL.md drift corrections, implementation-log hash backfills, and management/queue bookkeeping — no `docs/manuals/*.md` touched, and none of the underlying corrected facts (the OpenAPI CI-artifact mechanism, the `social-listening-core` repository split, the RAG namespace-isolation stories 19.1–19.3) represent a new screen, endpoint, or workflow for any identity tier beyond what the three manuals already correctly reflect or correctly omit as not-yet-shipped.
 
