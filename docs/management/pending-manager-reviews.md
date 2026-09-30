@@ -8519,5 +8519,12 @@
 
 - **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-09-30 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed de6ba57" entry.
+
+## 2026-09-30 — b7a7398 — docs(review): scheduled four-role review — clears single de6ba57 entry across all four queues
+
+- **Full commit:** `b7a7398b722cc5ac54f1d8b3b12927b960c645c9`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
