@@ -7327,3 +7327,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
 - **Status:** Pending review
 
+## 2026-09-30 — 69421b1 — Merge branch 'main' into docs-review/2026-09-23
+
+- **Full commit:** `69421b11c49805dcde22b9f0e2723d390bf81ebb`
+- **Files touched:** 
+- **Status:** Pending review
+
