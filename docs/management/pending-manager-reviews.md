@@ -8515,9 +8515,27 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-09-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 8e77ceb8/fc5a6856/4c9db6f2/c23bc4ca/6ac96109/648faeb3/0cce48da" entry.
 
+## 2026-09-23 — 2a06360 — docs: scheduled review WIP - Documentation Steward pass complete, L&D Writer continuing
+
+- **Full commit:** `2a06360f3d246e1209228e5124297222513e8265`
+- **Files touched:** docs/implementation-plan.md, docs/pending-documentation-steward-reviews.md, docs/project docs/Project Management Plans/Cost-Management-Plan.md, docs/project docs/Project Management Plans/Delivery-Management-Plan.md, docs/project docs/Project Management Plans/Measurement-Management-Plan.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-23 — 9e09075 — docs: scheduled review WIP - Ideal Manager pass complete, Personal Development Reviewer continuing
+
+- **Full commit:** `9e090755e0826bf2dc80d3e2f1789b79f3372834`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md
+- **Status:** Pending review
+
 ## 2026-09-27 — de6ba57 — docs(review): scheduled four-role review — clears Doc Steward/L&D/Ideal Manager 7-entry backlog
 
 - **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
+- **Status:** Pending review
+
+## 2026-09-30 — 69421b1 — Merge branch 'main' into docs-review/2026-09-23
+
+- **Full commit:** `69421b11c49805dcde22b9f0e2723d390bf81ebb`
+- **Files touched:** 
 - **Status:** Pending review
 
