@@ -8328,5 +8328,6 @@
 
 - **Full commit:** `de6ba5728f3782c4651a686d951b51229a8abc7a`
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-10-01 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled-review pass's own completion commit: every file it touches is internal paper trail (ADR/TDS README cross-references, `implementation-log.md` hash backfills, the `openapi-spec-generation` SKILL.md's internal "Known gaps" section, the manager register, and queue-bookkeeping files) or a backend/infra skill (OpenAPI generation tooling, the `social-listening-core` repo split) with no `tenant_admin`- or `tenant_user`-facing screen or endpoint behind it. None of `docs/manuals/system-admin-manual.md`, `tenant-admin-manual.md`, or `user-manual.md` need any edit from this commit.
 
