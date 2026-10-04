@@ -8330,3 +8330,9 @@
 - **Files touched:** docs/adr/README.md, docs/implementation-log.md, docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/project docs/Technical-Design/README.md, docs/user-stories/README.md, social-listening-core/.claude/skills/openapi-spec-generation/SKILL.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-10-04 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled-review pass's own checkpoint commit: traceability/hash corrections in `docs/adr/README.md`, `docs/implementation-log.md`, `docs/user-stories/README.md`, and the Technical-Design README, plus a `SKILL.md` gap correction and queue-file bookkeeping. None of it touches `social-listening-admin/` UI, a route, or any screen a `platform_admin`/`tenant_admin`/`tenant_user` would ever see — nothing for any of the three manuals.
 
+## 2026-10-04 — d875390 — docs(review): scheduled four-role review — clears 1-entry backlog in all four queues
+
+- **Full commit:** `d87539087553ac44b85b2d274474ca0dba660f14`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+

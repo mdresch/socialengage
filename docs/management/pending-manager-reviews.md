@@ -8522,3 +8522,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-04 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed de6ba57" entry.
 
+## 2026-10-04 — d875390 — docs(review): scheduled four-role review — clears 1-entry backlog in all four queues
+
+- **Full commit:** `d87539087553ac44b85b2d274474ca0dba660f14`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
