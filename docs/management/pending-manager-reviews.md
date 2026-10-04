@@ -8528,3 +8528,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
+## 2026-10-04 — b7c7f1d — docs(steward): fix stale Epic 20 header line left behind by de6ba57
+
+- **Full commit:** `b7c7f1df42140e284e5cbe708eccf1603d8a6b2b`
+- **Files touched:** docs/user-stories/epic-20-adr-0144.md
+- **Status:** Pending review
+
