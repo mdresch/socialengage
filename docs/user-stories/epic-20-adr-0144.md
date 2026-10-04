@@ -1,6 +1,6 @@
 # Epic 20: Frontend Platform Evaluation (ADR-0144)
 
-**Status:** Ready (ADR-0144 Accepted 2026-09-17)  
+**Status:** Ready (ADR-0144 Accepted 2026-09-17) — Story 20.1 Built, 20.2–20.6 remaining (*Documentation Steward correction, 2026-10-04: this epic-level header line was never updated to reflect Story 20.1 shipping — the same "master row updated, source file not carried forward" gap already caught and fixed for the Epics table in `docs/user-stories/README.md`. Found while re-verifying `de6ba57`'s own drift fixes; that commit corrected the master table but left this file's own header stale.*)  
 **Phase:** Unassigned — defer to Menno's canonical story-to-phase mapping table rather than assigning here  
 **Related:** ADR-0144, BRD-0144 (Frontend Platform Selection), FDD-0144 (Frontend Prototype Reference Scope), TDS-0144 (Repository Segregation and API Gateway Implementation)
 
