@@ -8522,3 +8522,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-05 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed de6ba57" entry — verdict proceed, with one adjustment (the `check-implementation-log.cjs` CI bug needs a concrete owner, not a fourth consecutive flag).
 
+## 2026-10-05 — 84513dd — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
