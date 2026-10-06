@@ -147,3 +147,9 @@
 - **Files touched:** 
 - **Status:** Pending review
 
+## 2026-10-06 — 8d27b17 — Merge remote-tracking branch 'origin/main' into docs-review/2026-09-23
+
+- **Full commit:** `8d27b175465e6aa539806221640be53fb75a81d5`
+- **Files touched:** 
+- **Status:** Pending review
+
