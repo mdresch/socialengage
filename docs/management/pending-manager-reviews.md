@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-06 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict escalate: the standing `check-implementation-log.cjs` CI-invocation-bug flag has now reached its third consecutive scheduled-review mention past the threshold the prior entry itself set, with Menno asked to either apply the two-line fix or explicitly accept the gap rather than let it recur a fourth time.
 
+## 2026-10-06 — 1cb85d4 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `1cb85d42f3816206db7305c9706dc2f603d976c6`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
