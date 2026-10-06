@@ -8526,5 +8526,6 @@
 
 - **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
-- **Status:** Pending review
+- **Status:** ~~Pending review~~
+- **Resolved 2026-10-06 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict escalate: the standing `check-implementation-log.cjs` CI-invocation-bug flag has now reached its third consecutive scheduled-review mention past the threshold the prior entry itself set, with Menno asked to either apply the two-line fix or explicitly accept the gap rather than let it recur a fourth time.
 
