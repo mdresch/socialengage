@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-07 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed, with one adjustment escalated to a concrete ask: the `check-implementation-log.cjs` CI bug is now on its third consecutive scheduled-review flag; Menno should either fix it or record an explicit accepted-risk decision before a fourth cycle repeats the same unresourced flag.
 
+## 2026-10-07 — bc6720e — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `bc6720edf53d5f5e3bd0af85c145f5d4f8829f03`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
