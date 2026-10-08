@@ -7330,3 +7330,9 @@
   3. **The still-open `docs/templates/check-implementation-log.cjs` CI-invocation bug** (flagged 2026-09-27, re-confirmed still-live 2026-10-05) — re-checked directly a third time: `check-implementation-log.cjs`'s `LOG_PATH` default is unchanged (`path.join(REPO_ROOT, '..', 'docs', 'implementation-log.md')`) and `.github/workflows/ci.yml:105` still invokes it with `working-directory: .`, so the "Verify Implementation Log" job still silently no-ops. This is now the fourth consecutive scheduled pass to find it unfixed — outside this role's chartered file scope (a CI workflow and a script, not a doc this role may Edit/Write), so not fixed here; see the Ideal Manager's matching 2026-10-08 register entry for the escalation this now warrants rather than a fifth repeat flag.
   4. **PM-side docs spot-checked** (`Planning-Management-Plan.md`'s AI-role-usage table, `Measurement-Management-Plan.md`'s suite/coverage claims): no new drift found beyond the already-dated 2026-08-06 gap this table itself already names (missing rows for several AI roles, already flagged in place, not reopened here).
 
+## 2026-10-08 — 6b5c982 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `6b5c9829a90b2aa88b8242b1728ee53e44fef4f7`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
