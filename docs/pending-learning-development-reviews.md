@@ -8336,3 +8336,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-10-21 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled review's own completion commit: a Documentation Steward meta-review of `de6ba57` (re-verifying hash backfills and an ADR cross-reference note, and confirming no queue-pipeline gap), an Ideal Manager register entry, and queue-file bookkeeping across all four governance queues. None of `docs/manuals/system-admin-manual.md`, `docs/manuals/tenant-admin-manual.md`, or `docs/manuals/user-manual.md` was touched, and nothing in the diff describes a `social-listening-admin` screen, route, or end-user-visible behavior for any identity tier — entirely internal paper-trail maintenance, same shape as the `de6ba57` entry this queue already resolved the same way on 2026-10-05.
 
+## 2026-10-21 — ea723dd — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `ea723dd3422a8cf88fdb3dd696eb3ae0916e3d0e`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+

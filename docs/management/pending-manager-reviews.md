@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-21 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict escalate (the `check-implementation-log.cjs` CI bug is now a fourth consecutive flag with no fix or explicit accept-the-gap decision; recommending it be surfaced in this run's own PR description rather than re-flagged a fifth time in the register alone).
 
+## 2026-10-21 — ea723dd — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `ea723dd3422a8cf88fdb3dd696eb3ae0916e3d0e`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+

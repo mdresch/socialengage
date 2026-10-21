@@ -7330,3 +7330,9 @@
   3. **No queue-pipeline gap.** The three commits made after `84513dd` and never queued in any of the four review files — `f19b3a6` (post-commit queuing `84513dd` itself into all four queues, plus a `docs/time-tracking.md` sync), `da86602` (a one-line time-tracking sync), and `8bb4628` (Menno's own GitHub-UI merge of PR #53) — were checked against `scripts/git-hooks/post-commit`'s `ONLY_TOUCHES_BOOKKEEPING` guard (`post-commit:49-64`) directly: `f19b3a6`'s and `da86602`'s entire diffs fall exactly inside the fixed `BOOKKEEPING_FILES` set (the four queue files plus `docs/time-tracking.md`), so both are correctly skipped by design, same as the `6242be7`/`7cabc12` pair this queue already reviewed clean on 2026-10-05. `8bb4628` is a GitHub-UI pull-request merge, which never runs a local hook — same structural case as `058ad34`. Nothing was missed; noted here only so a future pass doesn't re-raise the same non-issue a third time.
   4. **Broader traceability sweep (`docs/adr/README.md`, `docs/user-stories/README.md` and epic files, `docs/implementation-plan.md`'s Traceability table, component `SKILL.md` files, and all nine named PM plans under `docs/project docs/Project Management Plans/`) found nothing new to check**, for the same reason as point 1: zero commits have landed on `main` since `8bb4628` (the merge that closed the prior scheduled-review PR) as of this pass, 2026-10-21. A clean audit with nothing to report is a real, reportable outcome, not a shortcut taken.
 
+## 2026-10-21 — ea723dd — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `ea723dd3422a8cf88fdb3dd696eb3ae0916e3d0e`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
