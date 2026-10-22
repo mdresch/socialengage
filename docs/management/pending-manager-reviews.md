@@ -8526,5 +8526,12 @@
 
 - **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-10-22 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed, with one escalation (the `check-implementation-log.cjs` CI-invocation bug is now a fourth consecutive flag with no owner; Menno should make an explicit fix-or-accept call at the next touch, not let a fifth bare re-flag land).
+
+## 2026-10-22 — 7306372 — docs(review): scheduled four-role review in progress — Documentation Steward and L&D Writer passes complete
+
+- **Full commit:** `73063722c1ff51dee99528e1cdd967237ca0ca0c`
+- **Files touched:** docs/management/manager-register.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md
 - **Status:** Pending review
 
