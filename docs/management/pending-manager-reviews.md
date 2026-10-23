@@ -8529,3 +8529,10 @@
 - **Status:** ~~Pending review~~
 **Resolved 2026-10-23 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed on the commit itself, escalate on the tooling fix (`BOOKKEEPING_FILES` still missing `docs/management/manager-register.md`, five recurrences and 36 days since diagnosis).
 
+## 2026-10-23 — 7b50ec1 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `7b50ec13e9da55acb593a85f8e52a5bd01e651c0`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** ~~Pending review~~
+**Resolved 2026-10-23 (Ideal Manager):** own checkpoint commit from this same pass, not separate work to independently re-review — this is the four-role review session's own completion commit capturing the register entry and queue resolutions already made earlier in this same invocation. No new register entry needed (mirrors the established `9dd929e` precedent).
+
