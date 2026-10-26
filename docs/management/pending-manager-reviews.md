@@ -8526,5 +8526,12 @@
 
 - **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-10-26 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed on the review pass itself, escalate on the `check-implementation-log.cjs` CI gap, now unresolved across four consecutive flags.
+
+## 2026-10-26 — c927a0c — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `c927a0cf88b544f7e26f7ed748464eb9df569341`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
