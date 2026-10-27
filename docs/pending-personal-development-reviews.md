@@ -125,5 +125,12 @@
 
 - **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- ~~**Status:** Pending review~~
+- **Resolved 2026-10-27 (Personal Development Reviewer):** No skill-relevant change observed in this commit. `git show 84513dd` confirms this is the prior scheduled review's own completion commit: it clears the single queued entry each of the four review queues was carrying (all four citing `de6ba57`) and appends one Decision-Evaluator finding to the manager register. No `social-listening-core/src`, `social-listening-admin/src`, or contract-file change; no new technology, library, or architectural pattern introduced; no ADR Decision/Consequences text authored. Also checked `git log 84513dd..origin/main` for anything shipped since that might otherwise be missed between review passes: only `f19b3a6` (queue bookkeeping), `da86602` (time-tracking sync), and `8bb4628` (a GitHub-UI PR merge) — none touching application code in either repo. Per the charter's "do not count: routine governance commits... documentation corrections with no new code" rule and the established precedent for this exact commit shape (see this file's already-resolved 709444b, 64b6263, 92f685c, 1a77209, and de6ba57 entries above), no Skills Inventory, Learning Goals, or Progress Notes change was made to `docs/ai-roles/developer-learning-plan.md`. One item worth naming for awareness, not actioned here (Ideal Manager/Documentation Steward territory): the `check-implementation-log.cjs` CI-invocation defect first flagged 2026-09-27 is now thirty days unfixed, and the Ideal Manager's own matching 2026-10-27 register entry escalates it rather than flagging it again — a tooling-reliability and follow-through observation, not a developer skill event.
+
+## 2026-10-27 — a108281 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `a108281aeb2580ab6b0b08cd130d95bac20abbb7`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
