@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-27 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict **escalate**: the `check-implementation-log.cjs` CI bug this register asked (on 2026-10-05) to get a concrete owner instead of a fourth consecutive flag is now thirty days unfixed and unowned; Menno needs to either take the fix or explicitly accept the gap, not let this register raise it a fifth time.
 
+## 2026-10-27 — a108281 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `a108281aeb2580ab6b0b08cd130d95bac20abbb7`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
