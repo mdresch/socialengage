@@ -8526,5 +8526,12 @@
 
 - **Full commit:** `84513dd0966477038a9bb2c819e0b88e1ea81769`
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** ~~Pending review~~
+- **Resolved 2026-10-28 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed, with one adjustment, escalated rather than merely repeated: the `check-implementation-log.cjs` CI bug is now unfixed a full month past its original flag; Menno should make one explicit call (fix it or formally accept the gap) rather than let this register restate it a fifth time.
+
+## 2026-10-28 — 590f6ff — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `590f6ffb3f5a43a50a5267e53ab5c3b0772ff248`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** Pending review
 
