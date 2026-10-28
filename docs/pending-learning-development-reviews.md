@@ -8336,3 +8336,9 @@
 - **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
 - **Status:** ~~Pending review~~ **Reviewed 2026-10-28 (Learning & Development Writer, scheduled queue pass):** No user-facing change — nothing to document. This is the prior scheduled review's own completion commit: queue-file bookkeeping and an Ideal Manager register entry across `docs/management/manager-register.md` and the three `docs/pending-*-reviews.md` queue files. None of `docs/manuals/system-admin-manual.md`, `docs/manuals/tenant-admin-manual.md`, or `docs/manuals/user-manual.md` is touched, and nothing in the diff describes a `social-listening-admin` screen, route, or end-user-visible behavior for any identity tier — it is entirely internal governance bookkeeping. Confirmed no commits have landed on `main` since this one (other than its own immediate, bookkeeping-only follow-ups `f19b3a6`/`da86602`/`8bb4628`) in the three weeks between 2026-10-05 and today, so there is no newer shipped capability for any of the three manuals to reflect either.
 
+## 2026-10-28 — 590f6ff — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `590f6ffb3f5a43a50a5267e53ab5c3b0772ff248`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
