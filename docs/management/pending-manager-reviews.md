@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-10-30 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict **escalate** (the `check-implementation-log.cjs` CI bug has now been flagged a fourth consecutive time; recommend Menno either fix it directly or record an explicit decision to accept the gap). The 25-day commit-free gap since this commit was checked and is not a concern — a solo operator going quiet with no missed commitment or overload signal is healthy pacing, not a pattern to flag.
 
+## 2026-10-30 — 1aaf15b — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `1aaf15bdad4b2336104b836fe826187f846a125d`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
