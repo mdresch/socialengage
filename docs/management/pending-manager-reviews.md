@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-05 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict escalate: the `check-implementation-log.cjs` CI bug is now six weeks unfixed after two prior flags; this register will not file a fourth routine note on it and has named it an open decision for Menno to close, not a defect to keep re-diagnosing.
 
+## 2026-11-05 — dc9d22e — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `dc9d22e17076e001e63f7afe51eaa26b287e9caf`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
