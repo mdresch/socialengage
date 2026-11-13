@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-13 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed, with one escalated adjustment (the `check-implementation-log.cjs` CI bug's recommended owner-and-close-out from the prior register entry never happened; this is now its third consecutive scheduled-review flag, and a direct decision from Menno — fix it or explicitly accept the gap — is due now, not deferred again).
 
+## 2026-11-13 — a7e11e2 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `a7e11e2f498d25737ee90f4f916acd4322dfd719`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
