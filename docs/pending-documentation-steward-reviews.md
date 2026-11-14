@@ -7330,3 +7330,9 @@
   3. **The `check-implementation-log.cjs` CI-invocation bug this commit flagged (outside this role's file scope to fix directly) was re-checked directly, not taken on faith**: `.github/workflows/ci.yml` lines 104–114 still run the script with `working-directory: .`, and the script's `LOG_PATH` still resolves to `path.join(REPO_ROOT, '..', 'docs', 'implementation-log.md')` — one level above the actual file. `fs.existsSync(LOG_PATH)` is false under that invocation, so the whole verification block silently no-ops and the job reports "passed" unconditionally. Still live, still unfixed, 40 days after first flagged (2026-09-27). Not duplicated as a new Documentation Steward finding — see the Ideal Manager's own matching 2026-11-14 register entry, which escalates it directly.
   4. **The 9 PM-side plans, the Stakeholder Register, Business Case, and Charter** were last checked against real git state as of the 2026-10-05 pass. Since zero commits have landed since (confirmed above), the git state those files were checked against is identical to the git state today — no new drift is possible without a new commit to introduce it. No corrections proposed.
 
+## 2026-11-14 — 67d5cc5 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `67d5cc5a953e6cd6f90480f4aa4f56ec9f666104`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
