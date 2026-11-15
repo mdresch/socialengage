@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-15 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed, with a changed recommendation: stop re-flagging the `check-implementation-log.cjs` CI bug as a fresh finding (still unfixed 41 days after it was first raised); either fix it or explicitly accept it as advisory-only.
 
+## 2026-11-15 — 572be47 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `572be47a709e21d4d304f04674f45a557e835f95`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
