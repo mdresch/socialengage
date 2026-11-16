@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-16 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict **escalate** (the `check-implementation-log.cjs` CI bug, flagged 2026-09-27 and escalated 2026-10-05, is now unfixed six weeks later with the exact same two-line fix still unapplied).
 
+## 2026-11-16 — fdf489a — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `fdf489a3604ec38774ccd050b7e375f2ba0f4384`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
