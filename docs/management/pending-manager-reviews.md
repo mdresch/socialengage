@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-17 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed on the review commits, escalate on the recurring item: the `check-implementation-log.cjs` CI bug is now unfixed seven weeks and three flags running; this register will not re-litigate the diagnosis a fourth time.
 
+## 2026-11-17 — 780704d — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `780704d3507e81ff0b43c92218a8bcf2ee1356ff`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
