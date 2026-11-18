@@ -7332,3 +7332,9 @@
 
   No drift found. No corrections made.
 
+## 2026-11-18 — ec30fde — docs(review): scheduled four-role review 2026-11-18 — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `ec30fde47be477a3efe4429e7553f8a2d9b78d58`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+

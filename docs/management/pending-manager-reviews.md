@@ -8529,3 +8529,9 @@
 - **Status:** ~~Pending review~~
 - **Resolved 2026-11-18 (Ideal Manager):** see docs/management/manager-register.md's matching "reviewed 84513dd" entry — verdict proceed on the review-pass commit itself, **escalate** on the `check-implementation-log.cjs` CI-invocation bug, which this register recommended get "a concrete owner and close-out" back on 2026-10-05 and is still unfixed six weeks later.
 
+## 2026-11-18 — ec30fde — docs(review): scheduled four-role review 2026-11-18 — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `ec30fde47be477a3efe4429e7553f8a2d9b78d58`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
