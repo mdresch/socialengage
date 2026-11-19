@@ -7333,3 +7333,9 @@
 
 No corrections made — clean audit.
 
+## 2026-11-19 — fc8a7e7 — docs(review): scheduled four-role review — clears the single remaining entry in each of the four queues
+
+- **Full commit:** `fc8a7e7ca03a688fbfb192611714a825a6ce5d18`
+- **Files touched:** docs/management/manager-register.md, docs/management/pending-manager-reviews.md, docs/pending-documentation-steward-reviews.md, docs/pending-learning-development-reviews.md, docs/pending-personal-development-reviews.md
+- **Status:** Pending review
+
